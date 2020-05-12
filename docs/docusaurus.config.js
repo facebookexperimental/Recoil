@@ -8,23 +8,19 @@
  */
 
 module.exports = {
-  title: 'My Site',
-  tagline: 'The tagline of my site',
+  title: 'Recoil',
+  tagline: 'A state management library for React',
   url: 'https://your-docusaurus-test-site.com',
   baseUrl: '/',
   favicon: 'img/favicon.ico',
   organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  projectName: 'Recoil', // Usually your repo name.
   themeConfig: {
     navbar: {
-      title: 'My Facebook Project',
-      logo: {
-        alt: 'My Facebook Project Logo',
-        src: 'img/logo.svg',
-      },
+      title: 'Recoil',
       links: [
         {
-          to: 'docs/doc1',
+          to: 'docs/introduction/installation',
           activeBasePath: 'docs',
           label: 'Docs',
           position: 'left',

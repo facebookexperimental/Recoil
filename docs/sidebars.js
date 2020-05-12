@@ -9,7 +9,61 @@
 
 module.exports = {
   someSidebar: {
-    Docusaurus: ['doc1', 'doc2', 'doc3'],
-    Features: ['mdx'],
+    Introduction: [
+      'introduction/motivation',
+      'introduction/core-concepts',
+      'introduction/installation',
+      'introduction/getting-started',
+    ],
+    'Basic Tutorial': [
+      'basic-tutorial/intro',
+      'basic-tutorial/atoms',
+      'basic-tutorial/selectors',
+      'basic-tutorial/components',
+      'basic-tutorial/example',
+      'basic-tutorial/bonus',
+    ],
+    Guides: [
+      {
+        'Migrating to Recoil': [
+          'guides/migrating/from-react-state',
+          'guides/migrating/from-redux',
+          'guides/migrating/from-mobx',
+        ],
+      },
+      'guides/usage-flow',
+      'guides/usage-typescript',
+      'guides/writing-test',
+      'guides/code-splitting',
+    ],
+    'API Reference': [
+      {
+        Core: [
+          'api-reference/core/atom',
+          'api-reference/core/DefaultValue',
+          'api-reference/core/isRecoilValue',
+          'api-reference/core/RecoilRoot',
+          'api-reference/core/selector',
+          'api-reference/core/useRecoilCallback',
+          'api-reference/core/useRecoilValue',
+          'api-reference/core/useRecoilValueLoadable',
+          'api-reference/core/useResetRecoilState',
+          'api-reference/core/useSetRecoilState',
+        ],
+      },
+      {
+        Utils: [
+          'api-reference/utils/atomFamily',
+          'api-reference/utils/constSelector',
+          'api-reference/utils/errorSelector',
+          'api-reference/utils/noWait',
+          'api-reference/utils/readOnlySelector',
+          'api-reference/utils/selectorFamily',
+          'api-reference/utils/waitForAll',
+          'api-reference/utils/waitForAny',
+          'api-reference/utils/waitForNone',
+        ],
+      },
+    ],
   },
 };
