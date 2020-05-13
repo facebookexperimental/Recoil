@@ -1,0 +1,66 @@
+/**
+ * Copyright 2004-present Facebook. All Rights Reserved.
+ *
+ * @format
+ * @flow
+ */
+'use strict';
+
+import type {Loadable} from 'Recoil_Loadable';
+import type {RecoilValue, RecoilValueReadOnly} from 'Recoil_RecoilValue';
+
+type UnwrapArrayRecoilValues<RecoilValues> = $TupleMap<
+  RecoilValues,
+  <T>(RecoilValue<T>) => T,
+>;
+type UnwrapArrayRecoilValueLoadables<RecoilValues> = $TupleMap<
+  RecoilValues,
+  <T>(RecoilValue<T>) => Loadable<T>,
+>;
+
+type UnwrapObjRecoilValues<RecoilValues> = $ObjMap<
+  RecoilValues,
+  <T>(RecoilValue<T>) => T,
+>;
+type UnwrapObjRecoilValueLoadables<RecoilValues> = $ObjMap<
+  RecoilValues,
+  <T>(RecoilValue<T>) => Loadable<T>,
+>;
+
+declare function waitForNone<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
+declare function waitForNone<
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>,
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
+
+declare function waitForAny<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
+declare function waitForAny<
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>,
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
+
+// waitForAll does not return placeholder Promises or Errors in the results
+// as it only returns when all values are available.
+declare function waitForAll<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapArrayRecoilValues<RecoilValues>>;
+declare function waitForAll<
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>,
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapObjRecoilValues<RecoilValues>>;
+
+declare function noWait<T>(RecoilValue<T>): RecoilValueReadOnly<Loadable<T>>;
+
+module.exports = {
+  waitForNone,
+  waitForAny,
+  waitForAll,
+  noWait,
+};
