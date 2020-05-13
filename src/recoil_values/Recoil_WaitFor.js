@@ -17,8 +17,8 @@ const {
 } = require('Recoil_Loadable');
 const selectorFamily = require('Recoil_selectorFamily');
 
-const gkx = require('gkx');
-const isPromise = require('isPromise');
+const gkx = require('Recoil_gkx');
+const isPromise = require('Recoil_isPromise');
 
 /////////////////
 //  TRUTH TABLE

@@ -41,15 +41,15 @@ const {
 } = require('Recoil_RecoilValue');
 const Tracing = require('Recoil_Tracing');
 
-const differenceSets = require('differenceSets');
-const expectationViolation = require('expectationViolation');
-const filterMap = require('filterMap');
-const gkx = require('gkx');
-const intersectSets = require('intersectSets');
-const invariant = require('invariant');
-const mapMap = require('mapMap');
-const mergeMaps = require('mergeMaps');
-const recoverableViolation = require('recoverableViolation');
+const differenceSets = require('Recoil_differenceSets');
+const expectationViolation = require('Recoil_expectationViolation');
+const filterMap = require('Recoil_filterMap');
+const gkx = require('Recoil_gkx');
+const intersectSets = require('Recoil_intersectSets');
+const invariant = require('Recoil_invariant');
+const mapMap = require('Recoil_mapMap');
+const mergeMaps = require('Recoil_mergeMaps');
+const recoverableViolation = require('Recoil_recoverableViolation');
 
 function cloneState(state: TreeState, opts): TreeState {
   return {

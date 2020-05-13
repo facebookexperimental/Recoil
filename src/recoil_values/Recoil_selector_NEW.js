@@ -87,10 +87,10 @@ const {startPerfBlock} = require('Recoil_PerformanceTimings');
 const {isRecoilValue} = require('Recoil_RecoilValue');
 const traverseDepGraph = require('Recoil_traverseDepGraph');
 
-const differenceSets = require('differenceSets');
-const equalsSet = require('equalsSet');
-const isPromise = require('isPromise');
-const nullthrows = require('nullthrows');
+const differenceSets = require('Recoil_differenceSets');
+const equalsSet = require('Recoil_equalsSet');
+const isPromise = require('Recoil_isPromise');
+const nullthrows = require('Recoil_nullthrows');
 
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
 export type SetRecoilState = <T>(
