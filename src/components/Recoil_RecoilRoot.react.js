@@ -23,9 +23,8 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('Recoil_FunctionalCore');
+const nullthrows = require('Recoil_nullthrows');
 const Queue = require('Recoil_Queue');
-
-const nullthrows = require('nullthrows');
 
 type Props = {
   initializeState?: ({

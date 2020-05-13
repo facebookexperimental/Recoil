@@ -14,13 +14,12 @@ import type {ScopeRules} from 'Recoil_ScopedAtom';
 
 const atom = require('Recoil_atom');
 const cacheWithValueEquality = require('Recoil_cacheWithValueEquality');
+const everySet = require('Recoil_everySet');
 const {DEFAULT_VALUE, DefaultValue} = require('Recoil_Node');
 const ParameterizedAtomTaggedValue_DEPRECATED = require('Recoil_ParameterizedAtomTaggedValue_DEPRECATED');
 const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
 const selectorFamily = require('Recoil_selectorFamily');
 const stableStringify = require('Recoil_stableStringify');
-
-const everySet = require('everySet');
 
 type Primitive = void | null | boolean | number | string;
 export type Parameter =

@@ -7,7 +7,7 @@
  */
 'use strict';
 
-const isPromise = require('isPromise');
+const isPromise = require('Recoil_isPromise');
 
 const TIME_WARNING_THRESHOLD_MS = 15;
 

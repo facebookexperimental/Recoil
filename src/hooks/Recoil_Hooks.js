@@ -20,11 +20,18 @@ import type {NodeKey, Store, TreeState} from 'Recoil_State';
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 const ReactDOM = require('ReactDOM');
 const {setByAddingToSet} = require('Recoil_CopyOnWrite');
+const differenceSets = require('Recoil_differenceSets');
+const expectationViolation = require('Recoil_expectationViolation');
+const filterMap = require('Recoil_filterMap');
 const {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
 } = require('Recoil_FunctionalCore');
+const intersectSets = require('Recoil_intersectSets');
+const invariant = require('Recoil_invariant');
+const mapMap = require('Recoil_mapMap');
+const mergeMaps = require('Recoil_mergeMaps');
 const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
@@ -39,17 +46,10 @@ const {
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
 } = require('Recoil_RecoilValue');
+const recoverableViolation = require('Recoil_recoverableViolation');
 const Tracing = require('Recoil_Tracing');
 
-const differenceSets = require('differenceSets');
-const expectationViolation = require('expectationViolation');
-const filterMap = require('filterMap');
 const gkx = require('gkx');
-const intersectSets = require('intersectSets');
-const invariant = require('invariant');
-const mapMap = require('mapMap');
-const mergeMaps = require('mergeMaps');
-const recoverableViolation = require('recoverableViolation');
 
 function cloneState(state: TreeState, opts): TreeState {
   return {

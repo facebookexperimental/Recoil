@@ -68,11 +68,14 @@ const {
   setByDeletingFromSet,
 } = require('Recoil_CopyOnWrite');
 const deepFreezeValue = require('Recoil_deepFreezeValue');
+const differenceSets = require('Recoil_differenceSets');
+const equalsSet = require('Recoil_equalsSet');
 const {
   detectCircularDependencies,
   getNodeLoadable,
   setNodeValue,
 } = require('Recoil_FunctionalCore');
+const isPromise = require('Recoil_isPromise');
 const {
   loadableWithError,
   loadableWithPromise,
@@ -83,13 +86,9 @@ const {
   RecoilValueNotReady,
   registerNode,
 } = require('Recoil_Node');
+const nullthrows = require('Recoil_nullthrows');
 const {startPerfBlock} = require('Recoil_PerformanceTimings');
 const {isRecoilValue} = require('Recoil_RecoilValue');
-
-const differenceSets = require('differenceSets');
-const equalsSet = require('equalsSet');
-const isPromise = require('isPromise');
-const nullthrows = require('nullthrows');
 
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
 export type SetRecoilState = <T>(

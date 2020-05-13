@@ -12,9 +12,8 @@ import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
 
 const atom = require('Recoil_atom');
 const {DEFAULT_VALUE, DefaultValue} = require('Recoil_Node');
+const nullthrows = require('Recoil_nullthrows');
 const selector = require('Recoil_selector');
-
-const nullthrows = require('nullthrows');
 
 type AtomWithFallbackOptions<T> = $ReadOnly<{
   ...AtomOptions<T>,

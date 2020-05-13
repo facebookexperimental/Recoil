@@ -10,6 +10,7 @@
 import type {Loadable} from 'Recoil_Loadable';
 import type {RecoilValue, RecoilValueReadOnly} from 'Recoil_RecoilValue';
 
+const isPromise = require('Recoil_isPromise');
 const {
   loadableWithError,
   loadableWithPromise,
@@ -18,7 +19,6 @@ const {
 const selectorFamily = require('Recoil_selectorFamily');
 
 const gkx = require('gkx');
-const isPromise = require('isPromise');
 
 /////////////////
 //  TRUTH TABLE

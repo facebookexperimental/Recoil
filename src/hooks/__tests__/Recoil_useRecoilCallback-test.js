@@ -16,13 +16,12 @@ const {
   useRecoilCallback,
   useSetRecoilState,
 } = require('Recoil');
+const invariant = require('Recoil_invariant');
 const {
   ReadsAtom,
   flushPromisesAndTimers,
   renderElements,
 } = require('Recoil_TestingUtils');
-
-const invariant = require('invariant');
 
 test('useRecoilCallback', () => {
   it('Reads Recoil values', async () => {

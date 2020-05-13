@@ -63,14 +63,13 @@ const {
   setByAddingToSet,
 } = require('Recoil_CopyOnWrite');
 const deepFreezeValue = require('Recoil_deepFreezeValue');
+const expectationViolation = require('Recoil_expectationViolation');
+const isPromise = require('Recoil_isPromise');
 const {loadableWithValue} = require('Recoil_Loadable');
 const {DEFAULT_VALUE, DefaultValue, registerNode} = require('Recoil_Node');
+const nullthrows = require('Recoil_nullthrows');
 const {isRecoilValue} = require('Recoil_RecoilValue');
 const {scopedAtom} = require('Recoil_ScopedAtom');
-
-const expectationViolation = require('expectationViolation');
-const isPromise = require('isPromise');
-const nullthrows = require('nullthrows');
 
 // It would be nice if this didn't have to be defined at the Recoil level, but I don't want to make
 // the api cumbersome. One way to do this would be to have a selector mark the atom as persisted.

@@ -11,10 +11,9 @@ import type {Loadable} from 'Recoil_Loadable';
 import type {RecoilValue} from 'Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from 'Recoil_State';
 
+const expectationViolation = require('Recoil_expectationViolation');
 const RecoilValueInterface = require('Recoil_RecoilValue');
-
-const expectationViolation = require('expectationViolation');
-const recoverableViolation = require('recoverableViolation');
+const recoverableViolation = require('Recoil_recoverableViolation');
 
 class DefaultValue {}
 const DEFAULT_VALUE: DefaultValue = new DefaultValue();

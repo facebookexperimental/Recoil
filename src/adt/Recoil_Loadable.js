@@ -14,9 +14,10 @@
 
 import type {TreeState} from 'Recoil_State';
 
+const isPromise = require('Recoil_isPromise');
+const nullthrows = require('Recoil_nullthrows');
+
 const gkx = require('gkx');
-const isPromise = require('isPromise');
-const nullthrows = require('nullthrows');
 
 // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()

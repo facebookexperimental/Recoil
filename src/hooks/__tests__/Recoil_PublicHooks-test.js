@@ -43,9 +43,9 @@ const gkx = require('gkx');
 
 gkx.setPass('recoil_async_selector_refactor');
 
-const invariant = require('invariant');
+const invariant = require('Recoil_invariant');
 
-jest.mock('expectationViolation', () => (fmt, ...args) => {
+jest.mock('Recoil_expectationViolation', () => (fmt, ...args) => {
   throw new Error(require('sprintf')(fmt, ...args));
 });
 

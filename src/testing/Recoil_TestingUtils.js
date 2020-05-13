@@ -19,11 +19,10 @@ const {
   useResetRecoilState,
   useSetRecoilState,
 } = require('Recoil_Hooks');
+const invariant = require('Recoil_invariant');
 const {RecoilRoot} = require('Recoil_RecoilRoot.react');
 const selector = require('Recoil_selector');
 const stableStringify = require('Recoil_stableStringify');
-
-const invariant = require('invariant');
 
 // This isn't a test but is used in tests so Jest will be present:
 declare var jest: JestObjectType;
