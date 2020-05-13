@@ -11,6 +11,10 @@
     "build": "gulp",
     "dev": "gulp dev"
   },
+  "peerDependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
@@ -35,9 +39,5 @@
     "gulp-util": "^3.0.6",
     "stats-webpack-plugin": "^0.7.0",
     "webpack-stream": "^5.2.1"
-  },
-  "dependencies": {
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
   }
 }
