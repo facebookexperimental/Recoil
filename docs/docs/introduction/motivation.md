@@ -13,5 +13,5 @@ Recoil was created to solve these issues. Below are some highlights:
 - Recoil is built with Suspense, Concurrent Rendering, and Hooks in mind.
 - Derived state in recoil can move between being synchronous and asynchronous without modifying the components that use it.
 - Recoil's state definition is incremental and distributed, making code-splitting possible.
-- Recoil makes it easy to persist the entire application state in a way that is backwards-compatible, so persisted states can survive application changes.
 - Recoil treats browser navigation as a first-class concept. You can encode state transitions into links, which can then be opened in a new tab.
+- Recoil makes it easy to persist the entire application state in a way that is backwards-compatible, so persisted states can survive application changes.

@@ -80,3 +80,12 @@ function FontButton() {
 ```
 
 Clicking on the button now does two things: it increases the font size of the button while also updating the font size label to reflect the current font size.
+
+## Subscriptions
+
+Recoil makes subscribing to atoms/selectors simple by exposing the following hooks:
+
+- `useRecoilValue()`: use this hook when you only intend on **reading** the value of the atom/selector.
+- `useRecoilState()`:
+
+The following hooks allow you to get the values from your atoms/selectors:
