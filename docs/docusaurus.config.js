@@ -16,6 +16,7 @@ module.exports = {
   organizationName: 'facebookexperimental', // Usually your GitHub org/user name.
   projectName: 'Recoil', // Usually your repo name.
   themeConfig: {
+    image: 'img/og-image.png',
     navbar: {
       title: 'Recoil',
       links: [

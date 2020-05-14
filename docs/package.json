@@ -17,7 +17,8 @@
     "@docusaurus/preset-classic": "^2.0.0-alpha.54",
     "classnames": "^2.2.6",
     "react": "^16.8.4",
-    "react-dom": "^16.8.4"
+    "react-dom": "^16.8.4",
+    "recoil": "0.0.7"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.3",

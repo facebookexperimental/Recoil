@@ -33,6 +33,7 @@ yarn add recoil
 Components that use recoil state need `RecoilRoot` to appear somewhere in the parent tree. A good place to put this is in your root component:
 
 ```jsx
+import React from 'react';
 import {
   RecoilRoot,
   atom,
@@ -68,22 +69,26 @@ Components that need to read from _and_ write to an atom should use `useRecoilSt
 ```jsx
 function CharacterCounter() {
   return (
-    <>
+    <div>
       <TextInput />
       <CharacterCount />
-    </>
+    </div>
   );
 }
 
 function TextInput() {
   const [text, setText] = useRecoilState(textState);
 
+  const onChange = (event) => {
+    setText(event.target.value);
+  };
+
   return (
-    <>
-      <input type="text" value={text} onChange={setText} />
+    <div>
+      <input type="text" value={text} onChange={onChange} />
       <br />
       Echo: {text}
-    </>
+    </div>
   );
 }
 ```
@@ -112,3 +117,11 @@ function CharacterCount() {
   return <>Character Count: {count}</>;
 }
 ```
+
+## Demo
+
+Below is the finished product:
+
+import GettingStarted from '../../src/components/introduction/GettingStarted';
+
+<GettingStarted />
