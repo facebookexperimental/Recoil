@@ -37,3 +37,7 @@
 .hero__button {
   color: white;
 }
+
+.hero__button.button.button--secondary.button--outline:not(.button--active):not(:hover) {
+  color: white;
+}
