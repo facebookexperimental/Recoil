@@ -1,51 +1,39 @@
 ---
-title: useRecoilValue()
+title: useRecoilValue(state)
+sidebar_label: useRecoilValue()
 ---
+
+Hook used to read the value of atoms and selectors. This hook will implicitly subscribe the component to the given state.
+
+- `state`: an [`atom`](/docs/api-reference/core/atom) or [`selector`](/docs/api-reference/core/selector)
+
+This is the recommended hook to use when a component intends to read state without writing to it as this hook works with both **read-only state** and **writeable state**. Atoms are writeable state while selectors may be either read-only or writeable. See [`selector()`](/docs/api-reference/core/selector) for more info.
 
 ### Example
 
 ```javascript
-import {atom, selector, useRecoilState} from 'recoil';
+import {atom, selector, useRecoilValue} from 'recoil';
 
-const tempFahrenheit = atom({
-  key: 'tempFahrenheit',
-  default: 32,
+const namesState = atom({
+  key: 'namesState',
+  default: ['', 'Ella', 'Chris', '', 'Paul'],
 });
 
-const tempCelcius = selector({
-  key: 'tempCelcius',
-  get: ({get}) => ((get(temptempFahrenheit) - 32) * 5) / 9,
-  set: ({set}, newValue) => set(tempFahrenheit, (newValue * 9) / 5 + 32),
+const filteredNamesState = selector({
+  keu: 'filteredNamesState',
+  get: ({get}) => get(namesState).filter((str) => str !== ''),
 });
 
-function TempCelcius() {
-  const [tempF, setTempF] = useRecoilState(tempFahrenheit);
-  const [tempC, setTempC] = useRecoilState(tempCelcius);
-
-  const addTenCelcius = () => setTempC(tempC + 10);
-  const addTenFahrenheit = () => setTempF(tempF + 10);
+function NameDisplay() {
+  const names = useRecoilValue(namesState);
+  const filteredNames = useRecoilValue(filteredNamesState);
 
   return (
-    <div>
-      Temp (Celcius): {tempC}
+    <>
+      Original names: {names.join(',')}
       <br />
-      Temp (Fahrenheit): {tempF}
-      <br />
-      <button onClick={addTenCelcius}>Add 10 Celcius</button>
-      <br />
-      <button onClick={addTenFahrenheit}>Add 10 Fahrenheit</button>
-    </div>
+      Filtered names: {filteredNames.join(',')}
+    </>
   );
-}
-
-function Debugger() {
-  const logState = useRecoilCallback(async ({getPromise}) => {
-    const state = await getPromise(largeChunkOfState);
-
-    await logToServer(state);
-  });
-  const logStateWithDelay = delay(logState, 2000);
-
-  return <button onClick={logStateWithDelay}>Send log to server</button>;
 }
 ```

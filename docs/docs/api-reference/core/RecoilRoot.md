@@ -5,6 +5,9 @@ sidebar_label: <RecoilRoot />
 
 The entry point of an application that uses Recoil.
 
+- `props`
+  - `initializeState`: optional.
+
 ### Example
 
 ```javascript

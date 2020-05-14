@@ -18,7 +18,7 @@ import styles from './styles.module.css';
 const features = [
   {
     title: <>Minimal and Reactish</>,
-    imageUrl: 'img/undraw_docusaurus_mountain.svg',
+    // imageUrl: 'img/undraw_docusaurus_mountain.svg',
     description: (
       <>
         Recoil works and thinks like React. Add some to your app and get fast and
@@ -28,7 +28,7 @@ const features = [
   },
   {
     title: <>Data-Flow Graph</>,
-    imageUrl: 'img/undraw_docusaurus_tree.svg',
+    // imageUrl: 'img/undraw_docusaurus_tree.svg',
     description: (
       <>
         Derived data and asynchronous queries are tamed with pure functions and
@@ -38,7 +38,7 @@ const features = [
   },
   {
     title: <>Cross-App Observation</>,
-    imageUrl: 'img/undraw_docusaurus_react.svg',
+    // imageUrl: 'img/undraw_docusaurus_react.svg',
     description: (
       <>
         Implement persistence, routing, time-travel debugging, or undo by observing
@@ -77,10 +77,10 @@ function Home() {
           <div className={styles.buttons}>
             <Link
               className={classnames(
-                'button button--outline button--secondary button--lg',
+                'hero__button button button--outline button--secondary button--lg',
                 styles.getStarted,
               )}
-              to={useBaseUrl('docs/doc1')}>
+              to={useBaseUrl('docs/introduction/getting-started')}>
               Get Started
             </Link>
           </div>
