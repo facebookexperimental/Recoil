@@ -1,27 +1,17 @@
 {
-  "private": true,
   "name": "recoil",
   "version": "0.0.1",
-  "description": "Recoil- A React state management library for complex UI's",
-  "main": "recoil.js",
+  "description": "Recoil - A React state management library for complex UIs",
+  "main": "dist/recoil.js",
+  "files": ["dist/recoil.js"],
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
   "scripts": {
-    "prepublish": "rollup -c",
     "build": "rollup -c"
   },
   "peerDependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
-  },
-  "babel": {
-    "presets": [
-      "@babel/preset-react",
-      "@babel/preset-flow"
-    ],
-    "plugins": [
-      "@babel/plugin-proposal-class-properties"
-    ]
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
