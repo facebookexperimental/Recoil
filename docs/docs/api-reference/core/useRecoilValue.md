@@ -24,7 +24,7 @@ const namesState = atom({
 });
 
 const filteredNamesState = selector({
-  keu: 'filteredNamesState',
+  key: 'filteredNamesState',
   get: ({get}) => get(namesState).filter((str) => str !== ''),
 });
 
