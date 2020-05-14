@@ -20,19 +20,8 @@ const {
 } = require('./Recoil_FunctionalCore');
 const Tracing = require('../util/Recoil_Tracing');
 
-// eslint-disable-next-line no-unused-vars
-class AbstractRecoilValue<+T> {
-  key: NodeKey;
-  constructor(newKey: NodeKey) {
-    this.key = newKey;
-  }
-}
-
-class RecoilState<T> extends AbstractRecoilValue<T> {}
-
-class RecoilValueReadOnly<+T> extends AbstractRecoilValue<T> {}
-
-export type RecoilValue<T> = RecoilValueReadOnly<T> | RecoilState<T>;
+const {RecoilValue, AbstractRecoilValue, RecoilState} = require('./Recoil_RecoilValueClasses');
+export type {RecoilValue} from './Recoil_RecoilValueClasses';
 
 // NOTE: This will not update state with node subscriptions, so use sparingly!!!
 function peekRecoilValueAsLoadable<T>(
