@@ -20,7 +20,7 @@ const {
 } = require('./Recoil_FunctionalCore');
 const Tracing = require('../util/Recoil_Tracing');
 
-const {RecoilValue, AbstractRecoilValue, RecoilState} = require('./Recoil_RecoilValueClasses');
+const {RecoilValue, AbstractRecoilValue, RecoilValueReadOnly, RecoilState} = require('./Recoil_RecoilValueClasses');
 export type {RecoilValue} from './Recoil_RecoilValueClasses';
 
 // NOTE: This will not update state with node subscriptions, so use sparingly!!!
@@ -113,7 +113,6 @@ function isRecoilValue(x: mixed): boolean %checks {
 module.exports = {
   AbstractRecoilValue,
   RecoilState,
-  RecoilValueReadOnly,
   peekRecoilValueAsLoadable,
   getRecoilValueAsLoadable,
   setRecoilValue,
