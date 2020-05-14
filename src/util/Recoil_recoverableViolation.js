@@ -13,9 +13,9 @@ function recoverableViolation(
    projectName: 'recoil',
    {error}: {|error?: Error|},
  ): null {
-   if (__DEV__) {
-     console.error(message, error);
-   }
+  //  if (__DEV__) {
+  //    console.error(message, error);
+  //  }
    return null;
  }
 
