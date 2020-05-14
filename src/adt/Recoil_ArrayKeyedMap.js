@@ -19,11 +19,13 @@ const LEAF = Symbol('ArrayKeyedMap');
 const emptyMap = new Map();
 
 class ArrayKeyedMap<V> {
-  _base: Map<any, any> = new Map();
+  // _base: Map<any, any> = new Map();
 
   constructor(
     existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
   ): ArrayKeyedMap<V> {
+    this._base = new Map();
+
     if (existing instanceof ArrayKeyedMap) {
       for (const [k, v] of existing.entries()) {
         this.set(k, v);
