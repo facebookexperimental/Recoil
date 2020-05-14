@@ -10,10 +10,10 @@ Selectors represent **derived state**. You can think of derived state as the out
 ---
 
 - `options`
-  - `key`: required. A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-  - `get`: required. A function that is passed an object as the first parameter containing the following properties:
+  - `key`: A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
+  - `get`: A function that is passed an object as the first parameter containing the following properties:
     - `get`: a function used to retrieve values from other atoms/selectors. All atoms/selectors passed to this function will be implicitly added to a list of **dependencies** for the selector. If any of the selector's dependencies change, the selector will re-evaluate.
-  - `set`: optional. If this property is set, the selector will return **writeable** state. A function that is passed an object as the first parameter containing the following properties:
+  - `set?`: If this property is set, the selector will return **writeable** state. A function that is passed an object as the first parameter containing the following properties:
     - `get`: a function used to retrieve values from other atoms/selectors. This function will not subscribe the selector to the given atoms/selectors.
     - `set`: a function used to set the values of Recoil state. The first parameter is the Recoil state and the second parameter is the new value.
 

@@ -8,8 +8,8 @@ Returns writeable Recoil state.
 ---
 
 - `options`
-  - `key`: required. A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-  - `default`: required. The initial value of the atom.
+  - `key`: A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
+  - `default`: The initial value of the atom.
 
 Most often, you'll use the following hooks to read the value of atoms:
 
