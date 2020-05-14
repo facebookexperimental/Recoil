@@ -1,5 +1,5 @@
 /**
- * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
  *
  * @emails oncall+perf_viz
  * @flow strict-local
