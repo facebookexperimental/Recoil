@@ -3,7 +3,7 @@
   "name": "recoil",
   "version": "0.0.1",
   "description": "Recoil- A React state management library for complex UI's",
-  "main": "lib/Recoil.js",
+  "main": "recoil.js",
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
   "scripts": {
