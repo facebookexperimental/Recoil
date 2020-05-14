@@ -21,8 +21,8 @@ function TodoList() {
 
   return (
     <>
-      <TodoListStats />
-      <TodoListFilters />
+      {/* <TodoListStats /> */}
+      {/* <TodoListFilters /> */}
       <TodoItemCreator />
 
       {todoList.map((todoItem) => (
@@ -33,6 +33,8 @@ function TodoList() {
 }
 ```
 
+The commented-out components will be implemented in the sections that follow.
+
 To create new todo items, we need to access a setter function that will update the contents of the `todoListState`. We can use the `useSetRecoilState()` hook to get a setter function in our `TodoItemCreator` component:
 
 ```jsx
@@ -40,23 +42,33 @@ function TodoItemCreator() {
   const [inputValue, setInputValue] = useState('');
   const setTodoList = useSetRecoilState(todoListState);
 
-  const addItem = ({value}) => {
+  const addItem = () => {
     setTodoList((oldTodoList) => [
       ...oldTodoList,
       {
         id: getId(),
-        text: value,
+        text: inputValue,
         isComplete: false,
       },
     ]);
   };
 
+  const onChange = ({target: {value}}) => {
+    setInputValue(value);
+  };
+
   return (
-    <>
-      <input type="text" value={inputValue} onChange={setInputValue}>
+    <div>
+      <input type="text" value={inputValue} onChange={onChange} />
       <button onClick={addItem}>Add</button>
-    </>
+    </div>
   );
+}
+
+// utility for creating unique Id
+let id = 0;
+function getId() {
+  return id++;
 }
 ```
 
@@ -69,7 +81,7 @@ function TodoItem({item}) {
   const [todoList, setTodoList] = useRecoilState(todoListState);
   const index = todoList.findIndex((listItem) => listItem === item);
 
-  const editItemText = ({value}) => {
+  const editItemText = ({target: {value}}) => {
     const newList = replaceItemAtIndex(todoList, index, {
       ...item,
       text: value,
@@ -87,16 +99,20 @@ function TodoItem({item}) {
     setTodoList(newList);
   };
 
-  const deleteItem = () = {
-    const newList = removeItemAtIndex(arr, index);
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(todoList, index);
 
     setTodoList(newList);
   };
 
   return (
     <div>
-      <input type="text" value={item.text} onChange={editItem} />
-      <input type="checkbox" checked={item.isCompleted} />
+      <input type="text" value={item.text} onChange={editItemText} />
+      <input
+        type="checkbox"
+        checked={item.isComplete}
+        onChange={toggleItemCompletion}
+      />
       <button onClick={deleteItem}>X</button>
     </div>
   );
@@ -112,3 +128,9 @@ function removeItemAtIndex(arr, index) {
 ```
 
 And with that we've got a fully functional todo list! In the next section we'll see how we can use selectors to take our list to the next level.
+
+Below is an interactive demo of what we have so far:
+
+import TodoList from '../../src/components/basic-tutorial/TodoListAtoms';
+
+<TodoList />

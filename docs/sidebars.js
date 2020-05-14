@@ -19,22 +19,22 @@ module.exports = {
       'basic-tutorial/intro',
       'basic-tutorial/atoms',
       'basic-tutorial/selectors',
-      'basic-tutorial/demo',
-      'basic-tutorial/performance',
+      // 'basic-tutorial/demo',
+      // 'basic-tutorial/performance',
     ],
-    Guides: [
-      {
-        'Migrating to Recoil': [
-          'guides/migrating/from-react-state',
-          'guides/migrating/from-redux',
-          'guides/migrating/from-mobx',
-        ],
-      },
-      'guides/usage-flow',
-      'guides/usage-typescript',
-      'guides/writing-test',
-      'guides/code-splitting',
-    ],
+    // Guides: [
+    //   {
+    //     'Migrating to Recoil': [
+    //       'guides/migrating/from-react-state',
+    //       'guides/migrating/from-redux',
+    //       'guides/migrating/from-mobx',
+    //     ],
+    //   },
+    //   'guides/usage-flow',
+    //   'guides/usage-typescript',
+    //   'guides/writing-test',
+    //   'guides/code-splitting',
+    // ],
     'API Reference': [
       {
         Core: [

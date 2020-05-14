@@ -57,7 +57,7 @@ function TodoList() {
       <TodoItemCreator />
 
       {todoList.map((todoItem) => (
-        <TodoItem item={todoItem} />
+        <TodoItem item={todoItem} key={todoItem.id} />
       ))}
     </>
   );
@@ -70,16 +70,19 @@ Note the UI is the same as the `todoListFilterState` has a default of `"Show All
 function TodoListFilters() {
   const [filter, setFilter] = useRecoilState(todoListFilterState);
 
-  const updateFilter = ({value}) => {
+  const updateFilter = ({target: {value}}) => {
     setFilter(value);
   };
 
   return (
-    <select value={filter} onChange={updateFilter}>
-      <option value="Show All" />
-      <option value="Show Completed" />
-      <option value="Show Uncompleted" />
-    </select>
+    <>
+      Filter:
+      <select value={filter} onChange={updateFilter}>
+        <option value="Show All">All</option>
+        <option value="Show Completed">Completed</option>
+        <option value="Show Uncompleted">Uncompleted</option>
+      </select>
+    </>
   );
 }
 ```
@@ -99,18 +102,18 @@ While we could create a selector for each of the stats, an easier approach would
 const todoListStatsState = selector({
   key: 'todoListStatsState',
   get: ({get}) => {
-    const todoList = get(todoListState);
+    const todoList = get(filteredTodoListState);
     const totalNum = todoList.length;
-    const totalCompletedNum = todoList.filter(item => item.isCompleted).length;
+    const totalCompletedNum = todoList.filter((item) => item.isComplete).length;
     const totalUncompletedNum = totalNum - totalCompletedNum;
-    const percentCompleted = totalCompletedNum / totalNum,
+    const percentCompleted = totalNum === 0 ? 0 : totalCompletedNum / totalNum;
 
     return {
       totalNum,
       totalCompletedNum,
       totalUncompletedNum,
       percentCompleted,
-    }
+    };
   },
 });
 ```
@@ -147,4 +150,10 @@ To summarize, we've created a todo list app that meets all of our requirements:
 - Filter todo items
 - Display useful stats
 
-We could stop here, but there are some important performance considerations that we explore in the following section.
+We could stop here, but there are some important performance considerations that we explore in the "bonus" section.
+
+Below is an interactive demo of what we have so far:
+
+import TodoList from '../../src/components/basic-tutorial/TodoListSelectors';
+
+<TodoList />
