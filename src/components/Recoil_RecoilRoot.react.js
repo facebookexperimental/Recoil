@@ -22,18 +22,11 @@ const {
   fireNodeSubscriptions,
   setNodeValue,
   setUnvalidatedAtomValue,
-<<<<<<< HEAD
-} = require('Recoil_FunctionalCore');
-const nullthrows = require('Recoil_nullthrows');
-const Queue = require('Recoil_Queue');
-
-=======
 } = require('../core/Recoil_FunctionalCore');
 const nullthrows = require('../util/Recoil_nullthrows');
 const Queue = require('../adt/Recoil_Queue');
 
 
->>>>>>> rollup
 type Props = {
   initializeState?: ({
     set: <T>(RecoilValue<T>, T) => void,
