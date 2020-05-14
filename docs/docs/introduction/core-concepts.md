@@ -2,11 +2,18 @@
 title: Core Concepts
 ---
 
+## Overview
+
+Recoil lets you create a data-flow graph that flows from *atoms* (shared state) through *selectors* (pure functions) and down into your React components.
+Atoms are units of state that components can subscribe to. Selectors transform
+
 ## Atoms
 
-An **atom** represents a piece of **state**. Atoms can be read from and written to from any component. Components that read the value of an atom are implicitly **subscribed** to that atom, so any atom updates will result in a re-render of all components subscribed to that atom.
+Atoms are units of state. They're updateable and subscribeable: when an atom is updated, each subscribed component is re-rendered with the new value.
 
-To define an atom, use the `atom()` function:
+Atoms can be used in place of React local component state. If the same atom is used from multiple components, all those components share their state.
+
+Atoms are created using the `atom` function:
 
 ```javascript
 const fontSizeState = atom({
@@ -15,30 +22,49 @@ const fontSizeState = atom({
 });
 ```
 
-The `key` property must be a unique string (with respect to other atoms/selectors) that will be used to identify the atom internally. The `default` property holds the initial value of the atom.
+Atoms need a unique key, which is used for debugging, persistence, and for certain advanced APIs that let you see a map of all atoms. It is a fatal error
+for two atoms to have the same key, so make sure they're globally unique. Like React component state, they also have a default value.
 
-To read/write `fontSizeState`, we can use the `useRecoilState()` hook, which returns a tuple containing the state value and a **setter function** that can update the atom's value when called:
+To read and write an atom from a component, we use a hook called `useRecoilState`. It's just like React's `useState`, but now the state can be shared between components:
 
 ```jsx
 function FontButton() {
   const [fontSize, setFontSize] = useRecoilState(fontSizeState);
-  const increaseFontSizeByOne = () => setFontSize(fontSize + 1);
-
   return (
-    <button onClick={increaseFontSizeByOne} style={{fontSize}}>
-      Click Me!
+    <button onClick={() => setFontSize(size => size + 1)} style={{fontSize}}>
+      Click to Enlarge
     </button>
   );
 }
 ```
 
-Clicking on the button will increase the font size of the button by one. Because `fontSizeState` is an atom, it can be read by any component, and all components that read `fontSizeState` will re-render when its value changes.
+Clicking on the button will increase the font size of the button by one. But now some other component can also use the same font size:
+
+```jsx
+function Text() {
+  const [fontSize, setFontSize] = useRecoilState(fontSizeState);
+  return (
+    <p style={{fontSize}}>
+      This text will increase in size too.
+    </p>
+  );
+}
+```
+
 
 ## Selectors
 
-A **selector** represents a piece of **derived state**. Derived state is a **transformation** of state. You can think of derived state as the output of passing state to a pure function that modifies the given state in some way. Examples include unit/format/language conversions (synchronous) and API calls (asynchronous). For more information on asynchronous selectors, see the [selector API reference](/docs/api-reference/core/selector).
+A **selector** is a pure function that accepts atoms or other selectors as input. When upstream atoms or selectors are updated, the selector
+function will be re-evaluated. Components can subscribe to selectors just like atoms, and will then be re-rendered when those selectors change.
 
-To define a selector, use the `selector()` function:
+Selectors are used to calculate derived data that is based on state. By avoiding redundant state, this usually obviates the need for
+reducers to keep state in sync and valid. Instead, a minimal set of state is stored in atoms, while everything else is efficiently computed
+as a function of that minimal state. Since selectors keep track of what components need them and what state they depend on, they make this
+functional approach efficient.
+
+From the point of view of components, selectors and atoms have the same interface and can therefore be substituted for one another.
+
+Selec
 
 ```javascript
 const fontSizeLabelState = selector({

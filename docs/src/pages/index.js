@@ -17,32 +17,32 @@ import styles from './styles.module.css';
 
 const features = [
   {
-    title: <>Easy to Use</>,
+    title: <>Minimal and Reactish</>,
     imageUrl: 'img/undraw_docusaurus_mountain.svg',
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Recoil works and thinks like React. Add some to your app and get fast and
+        flexible shared state.
       </>
     ),
   },
   {
-    title: <>Focus on What Matters</>,
+    title: <>Data-Flow Graph</>,
     imageUrl: 'img/undraw_docusaurus_tree.svg',
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Derived data and asynchronous queries are tamed with pure functions and
+        efficient subscriptions.
       </>
     ),
   },
   {
-    title: <>Powered by React</>,
+    title: <>Cross-App Observation</>,
     imageUrl: 'img/undraw_docusaurus_react.svg',
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Implement persistence, routing, time-travel debugging, or undo by observing
+        all state changes across your app, without impairing code-splitting.
       </>
     ),
   },
@@ -103,6 +103,17 @@ function Home() {
             </div>
           </section>
         )}
+        <section className={styles.features}>
+         <div className="container">
+            <div className="row">
+              <div className="container">
+                <div className="row">
+                  <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/c1mpZgYYlgk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </Layout>
   );
