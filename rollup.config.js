@@ -9,6 +9,7 @@ export default {
     file: 'recoil.js',
     format: 'cjs',
   },
+  external: ['react', 'react-dom'],
   plugins: [
     babel({
       "presets": [
@@ -34,6 +35,6 @@ export default {
     },
     nodeResolve(),
     commonjs(),
-    // terser(),
+    terser(),
   ],
 };
