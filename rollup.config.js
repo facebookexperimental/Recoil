@@ -3,21 +3,6 @@ import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import { terser } from "rollup-plugin-terser";
 
-const includePathOptions = {
-  include: {},
-  paths: [
-    'src/adt',
-    'src/core',
-    'src/util',
-    'src/components',
-    'src/recoil_values',
-    'src/hooks',
-    'src/caches',
-  ],
-  external: [],
-  extensions: ['.js'],
-};
-
 export default {
   input: 'src/Recoil.js',
   output: {
@@ -36,6 +21,17 @@ export default {
         '@babel/plugin-proposal-class-properties'
       ]
     }),
+    {
+      resolveId: (source) => {
+        if (source === 'React') {
+          return {id: 'react', external: true};
+        }
+        if (source === 'ReactDOM') {
+          return {id: 'react-dom', external: true};
+        }
+        return null;
+      }
+    },
     nodeResolve(),
     commonjs(),
     // terser(),
