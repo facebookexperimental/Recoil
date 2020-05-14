@@ -7,20 +7,20 @@
  */
 'use strict';
 
-import type {AtomOptions, PersistenceSettings} from 'Recoil_atom';
-import type {CacheImplementation} from 'Recoil_Cache';
-import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
-import type {ScopeRules} from 'Recoil_ScopedAtom';
+import type {AtomOptions, PersistenceSettings} from './Recoil_atom';
+import type {CacheImplementation} from '../caches/Recoil_Cache';
+import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+import type {ScopeRules} from './Recoil_ScopedAtom';
 
-const atom = require('Recoil_atom');
-const cacheWithValueEquality = require('Recoil_cacheWithValueEquality');
-const {DEFAULT_VALUE, DefaultValue} = require('Recoil_Node');
-const ParameterizedAtomTaggedValue_DEPRECATED = require('Recoil_ParameterizedAtomTaggedValue_DEPRECATED');
-const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
-const selectorFamily = require('Recoil_selectorFamily');
-const stableStringify = require('Recoil_stableStringify');
+const atom = require('./Recoil_atom');
+const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
+const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
+const ParameterizedAtomTaggedValue_DEPRECATED = require('../adt/Recoil_ParameterizedAtomTaggedValue_DEPRECATED');
+const {parameterizedScopedAtomLegacy} = require('./Recoil_ScopedAtom');
+const selectorFamily = require('./Recoil_selectorFamily');
+const stableStringify = require('../util/Recoil_stableStringify');
 
-const everySet = require('everySet');
+const everySet = require('../util/Recoil_everySet');
 
 type Primitive = void | null | boolean | number | string;
 export type Parameter =

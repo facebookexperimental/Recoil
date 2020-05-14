@@ -7,14 +7,14 @@
  */
 'use strict';
 
-import type {RecoilValue} from 'Recoil_RecoilValue';
+import type {RecoilValue} from '../core/Recoil_RecoilValue';
 import type {
   NodeKey,
   Store,
   StoreRef,
   StoreState,
   TreeState,
-} from 'Recoil_State';
+} from '../core/Recoil_State';
 
 const React = require('React');
 const {useContext, useEffect, useRef, useState} = require('React');
@@ -22,9 +22,9 @@ const {
   fireNodeSubscriptions,
   setNodeValue,
   setUnvalidatedAtomValue,
-} = require('Recoil_FunctionalCore');
-const nullthrows = require('Recoil_nullthrows');
-const Queue = require('Recoil_Queue');
+} = require('../core/Recoil_FunctionalCore');
+const nullthrows = require('../util/Recoil_nullthrows');
+const Queue = require('../adt/Recoil_Queue');
 
 
 type Props = {

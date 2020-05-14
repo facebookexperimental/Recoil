@@ -30,16 +30,16 @@ import type {Parameter, ParameterizedScopeRules} from 'Recoil_atomFamily';
 import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
 import type {ScopedValue, ScopeMap} from 'Recoil_ScopedAtomTaggedValue';
 
-const ArrayKeyedMap = require('Recoil_ArrayKeyedMap');
-const atom = require('Recoil_atom');
-const {DEFAULT_VALUE, DefaultValue} = require('Recoil_Node');
-const ScopedAtomTaggedValue = require('Recoil_ScopedAtomTaggedValue');
-const selector = require('Recoil_selector');
-const selectorFamily = require('Recoil_selectorFamily');
-const stableStringify = require('Recoil_stableStringify');
-const {waitForAll} = require('Recoil_WaitFor');
+const ArrayKeyedMap = require('../adt/Recoil_ArrayKeyedMap');
+const atom = require('./Recoil_atom');
+const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
+const ScopedAtomTaggedValue = require('../adt/Recoil_ScopedAtomTaggedValue');
+const selector = require('./Recoil_selector');
+const selectorFamily = require('./Recoil_selectorFamily');
+const stableStringify = require('./Recoil_stableStringify');
+const {waitForAll} = require('./Recoil_WaitFor');
 
-const mapIterable = require('Recoil_mapIterable');
+const mapIterable = require('../util/Recoil_mapIterable');
 
 type Primitive = number | string | boolean | null | void;
 

@@ -50,47 +50,47 @@
  */
 'use strict';
 
-import type {CacheImplementation} from 'Recoil_Cache';
-import type {Loadable, LoadablePromise} from 'Recoil_Loadable';
-import type {DefaultValue} from 'Recoil_Node';
+import type {CacheImplementation} from '../caches/Recoil_Cache';
+import type {Loadable, LoadablePromise} from '../adt/Recoil_Loadable';
+import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
   RecoilValue,
   RecoilValueReadOnly,
-} from 'Recoil_RecoilValue';
-import type {NodeKey, Store, TreeState} from 'Recoil_State';
+} from '../core/Recoil_RecoilValue';
+import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-const cacheWithReferenceEquality = require('Recoil_cacheWithReferenceEquality');
+const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
 const {
   mapBySettingInMap,
   mapByUpdatingInMap,
   setByAddingToSet,
   setByDeletingFromSet,
-} = require('Recoil_CopyOnWrite');
-const deepFreezeValue = require('Recoil_deepFreezeValue');
+} = require('../util/Recoil_CopyOnWrite');
+const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const {
   detectCircularDependencies,
   getNodeLoadable,
   setNodeValue,
-} = require('Recoil_FunctionalCore');
+} = require('../core/Recoil_FunctionalCore');
 const {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} = require('Recoil_Loadable');
+} = require('../adt/Recoil_Loadable');
 const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
   registerNode,
-} = require('Recoil_Node');
-const {startPerfBlock} = require('Recoil_PerformanceTimings');
-const {isRecoilValue} = require('Recoil_RecoilValue');
-const traverseDepGraph = require('Recoil_traverseDepGraph');
+} = require('../core/Recoil_Node');
+const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
+const {isRecoilValue} = require('../core/Recoil_RecoilValue');
+const traverseDepGraph = require('../util/Recoil_traverseDepGraph');
 
-const differenceSets = require('Recoil_differenceSets');
-const equalsSet = require('Recoil_equalsSet');
-const isPromise = require('Recoil_isPromise');
-const nullthrows = require('Recoil_nullthrows');
+const differenceSets = require('../util/Recoil_differenceSets');
+const equalsSet = require('../util/Recoil_equalsSet');
+const isPromise = require('../util/Recoil_isPromise');
+const nullthrows = require('../util/Recoil_nullthrows');
 
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
 export type SetRecoilState = <T>(

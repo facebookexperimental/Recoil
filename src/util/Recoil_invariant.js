@@ -8,12 +8,10 @@
 
 'use strict';
 
-const invariant = require('invariant'); // @fb-only
-
-// @oss-only function invariant(condition: boolean, message: string) {
-// @oss-only   if (!condition) {
-// @oss-only     throw new Error(message);
-// @oss-only   }
-// @oss-only }
+function invariant(condition: boolean, message: string) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
 
 module.exports = invariant;

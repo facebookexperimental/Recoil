@@ -7,14 +7,14 @@
  */
 'use strict';
 
-import type {AtomOptions} from 'Recoil_atom';
-import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
+import type {AtomOptions} from './Recoil_atom';
+import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 
-const atom = require('Recoil_atom');
-const {DEFAULT_VALUE, DefaultValue} = require('Recoil_Node');
-const selector = require('Recoil_selector');
+const atom = require('./Recoil_atom');
+const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
+const selector = require('./Recoil_selector');
 
-const nullthrows = require('nullthrows');
+const nullthrows = require('../util/Recoil_nullthrows');
 
 type AtomWithFallbackOptions<T> = $ReadOnly<{
   ...AtomOptions<T>,

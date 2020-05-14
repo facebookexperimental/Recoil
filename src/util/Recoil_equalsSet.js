@@ -8,7 +8,7 @@
 
 'use strict';
 
-const everySet = require('Recoil_everySet');
+const everySet = require('./Recoil_everySet');
 
 /**
  * Checks if two sets are equal

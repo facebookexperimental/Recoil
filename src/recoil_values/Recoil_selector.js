@@ -50,12 +50,12 @@
  */
 'use strict';
 
-const newSelector = require('Recoil_selector_NEW');
-const oldSelector = require('Recoil_selector_OLD');
+const newSelector = require('./Recoil_selector_NEW');
+const oldSelector = require('./Recoil_selector_OLD');
 
-const gkx = require('Recoil_gkx');
+const gkx = require('../util/Recoil_gkx');
 
-export type * from 'Recoil_selector_NEW';
+export type * from './Recoil_selector_NEW';
 
 type Selector = typeof newSelector;
 

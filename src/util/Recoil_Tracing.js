@@ -9,9 +9,9 @@
  */
 'use strict';
 
-import type {RecoilValue} from 'Recoil_RecoilValue';
+import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
-const SchedulerTracing = require('SchedulerTracing'); // flowlint-line untyped-import:off
+const SchedulerTracing = require('./SchedulerTracing'); // flowlint-line untyped-import:off
 
 function trace<TResult>(
   message: string,

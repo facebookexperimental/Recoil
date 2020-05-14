@@ -7,14 +7,14 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
-import type {RecoilValue} from 'Recoil_RecoilValue';
-import type {NodeKey, Store, TreeState} from 'Recoil_State';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {RecoilValue} from './Recoil_RecoilValue';
+import type {NodeKey, Store, TreeState} from './Recoil_State';
 
-const RecoilValueInterface = require('Recoil_RecoilValue');
+const RecoilValueInterface = require('./Recoil_RecoilValue');
 
-const expectationViolation = require('Recoil_expectationViolation');
-const recoverableViolation = require('Recoil_recoverableViolation');
+const expectationViolation = require('../util/Recoil_expectationViolation');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 class DefaultValue {}
 const DEFAULT_VALUE: DefaultValue = new DefaultValue();
@@ -70,7 +70,7 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
       production. But it is safe to ignore this warning if it occured because of
       hot module replacement.`;
     if (__DEV__) {
-      const isAcceptingUpdate = require('Recoil__debug').isAcceptingUpdate;
+      const isAcceptingUpdate = require('../util/Recoil__debug').isAcceptingUpdate;
       if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
         expectationViolation(message, 'recoil');
       }

@@ -9,9 +9,9 @@
  */
 'use strict';
 
-import type {CacheImplementation} from 'Recoil_Cache';
+import type {CacheImplementation} from './Recoil_Cache';
 
-const stableStringify = require('Recoil_stableStringify');
+const stableStringify = require('../util/Recoil_stableStringify');
 
 // If we do profile and find the key equality check is expensive,
 // we could always try to optimize..  Something that comes to mind is having

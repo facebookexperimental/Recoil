@@ -51,26 +51,26 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
-import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
-import type {ScopeRules} from 'Recoil_ScopedAtom';
-import type {NodeKey, TreeState} from 'Recoil_State';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+import type {ScopeRules} from './Recoil_ScopedAtom';
+import type {NodeKey, TreeState} from '../core/Recoil_State';
 
-const atomWithFallback = require('Recoil_atomWithFallback');
+const atomWithFallback = require('./Recoil_atomWithFallback');
 const {
   mapByDeletingFromMap,
   mapBySettingInMap,
   setByAddingToSet,
-} = require('Recoil_CopyOnWrite');
-const deepFreezeValue = require('Recoil_deepFreezeValue');
-const {loadableWithValue} = require('Recoil_Loadable');
-const {DEFAULT_VALUE, DefaultValue, registerNode} = require('Recoil_Node');
-const {isRecoilValue} = require('Recoil_RecoilValue');
-const {scopedAtom} = require('Recoil_ScopedAtom');
+} = require('../util/Recoil_CopyOnWrite');
+const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+const {loadableWithValue} = require('../adt/Recoil_Loadable');
+const {DEFAULT_VALUE, DefaultValue, registerNode} = require('../core/Recoil_Node');
+const {isRecoilValue} = require('../core/Recoil_RecoilValue');
+const {scopedAtom} = require('./Recoil_ScopedAtom');
 
-const expectationViolation = require('Recoil_expectationViolation');
-const isPromise = require('Recoil_isPromise');
-const nullthrows = require('Recoil_nullthrows');
+const expectationViolation = require('../util/Recoil_expectationViolation');
+const isPromise = require('../util/Recoil_isPromise');
+const nullthrows = require('../util/Recoil_nullthrows');
 
 // It would be nice if this didn't have to be defined at the Recoil level, but I don't want to make
 // the api cumbersome. One way to do this would be to have a selector mark the atom as persisted.

@@ -7,18 +7,18 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
-import type {RecoilValue, RecoilValueReadOnly} from 'Recoil_RecoilValue';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {RecoilValue, RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
 
 const {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} = require('Recoil_Loadable');
-const selectorFamily = require('Recoil_selectorFamily');
+} = require('../adt/Recoil_Loadable');
+const selectorFamily = require('./Recoil_selectorFamily');
 
-const gkx = require('Recoil_gkx');
-const isPromise = require('Recoil_isPromise');
+const gkx = require('../util/Recoil_gkx');
+const isPromise = require('../util/Recoil_isPromise');
 
 /////////////////
 //  TRUTH TABLE

@@ -7,9 +7,9 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
-import type {DefaultValue} from 'Recoil_Node';
-import type {NodeKey, Store, TreeState} from 'Recoil_State';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {DefaultValue} from './Recoil_Node';
+import type {NodeKey, Store, TreeState} from './Recoil_State';
 
 const {
   getNodeLoadable,
@@ -17,8 +17,8 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue,
   subscribeComponentToNode,
-} = require('Recoil_FunctionalCore');
-const Tracing = require('Recoil_Tracing');
+} = require('./Recoil_FunctionalCore');
+const Tracing = require('../util/Recoil_Tracing');
 
 // eslint-disable-next-line no-unused-vars
 class AbstractRecoilValue<+T> {

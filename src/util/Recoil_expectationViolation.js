@@ -8,7 +8,7 @@
 
 'use strict';
 
-const sprintf = require('Recoil_sprintf');
+const sprintf = require('./Recoil_sprintf');
 function expectationViolation(format: string, ...args: $ReadOnlyArray<mixed>) {
   if (__DEV__) {
     const message = sprintf.call(null, format, ...args);
