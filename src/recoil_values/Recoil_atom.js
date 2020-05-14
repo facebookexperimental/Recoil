@@ -59,7 +59,6 @@ import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 // @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
 import type {NodeKey, TreeState} from '../core/Recoil_State';
 
-const atomWithFallback = require('./Recoil_atomWithFallback');
 const {
   mapByDeletingFromMap,
   mapBySettingInMap,
@@ -206,5 +205,43 @@ function atom<T>(options: AtomOptions<T>): RecoilState<T> {
     return baseAtom<T>({...restOptions, default: optionsDefault});
   }
 }
+
+type AtomWithFallbackOptions<T> = $ReadOnly<{
+  ...AtomOptions<T>,
+  default: RecoilValue<T> | Promise<T>,
+}>;
+
+function atomWithFallback<T>(
+  options: AtomWithFallbackOptions<T>,
+): RecoilState<T> {
+  const base = atom<T | DefaultValue>({
+    ...options,
+    default: DEFAULT_VALUE,
+    persistence_UNSTABLE:
+      options.persistence_UNSTABLE === undefined
+        ? undefined
+        : {
+            ...options.persistence_UNSTABLE,
+            validator: storedValue =>
+              storedValue instanceof DefaultValue
+                ? storedValue
+                : nullthrows(options.persistence_UNSTABLE).validator(
+                    storedValue,
+                    DEFAULT_VALUE,
+                  ),
+          },
+  });
+
+  return selector<T, [RecoilValue<T | DefaultValue>, RecoilValue<T>]>({
+    key: `${options.key}__withFallback`,
+    get: ({get}) => {
+      const baseValue = get(base);
+      return baseValue instanceof DefaultValue ? options.default : baseValue;
+    },
+    set: ({set}, newValue) => set(base, newValue),
+    dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+  });
+}
+
 
 module.exports = atom;
