@@ -7,19 +7,20 @@
  */
 'use strict';
 
-import type {AtomOptions, PersistenceSettings} from 'Recoil_atom';
-import type {CacheImplementation} from 'Recoil_Cache';
-import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
-import type {ScopeRules} from 'Recoil_ScopedAtom';
+import type {AtomOptions, PersistenceSettings} from './Recoil_atom';
+import type {CacheImplementation} from '../caches/Recoil_Cache';
+import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+// @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
 
-const atom = require('Recoil_atom');
-const cacheWithValueEquality = require('Recoil_cacheWithValueEquality');
-const everySet = require('Recoil_everySet');
-const {DEFAULT_VALUE, DefaultValue} = require('Recoil_Node');
-const ParameterizedAtomTaggedValue_DEPRECATED = require('Recoil_ParameterizedAtomTaggedValue_DEPRECATED');
-const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
-const selectorFamily = require('Recoil_selectorFamily');
-const stableStringify = require('Recoil_stableStringify');
+const atom = require('./Recoil_atom');
+const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
+const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
+const ParameterizedAtomTaggedValue_DEPRECATED = require('../adt/Recoil_ParameterizedAtomTaggedValue_DEPRECATED');
+// @fb-only: const {parameterizedScopedAtomLegacy} = require('./Recoil_ScopedAtom');
+const selectorFamily = require('./Recoil_selectorFamily');
+const stableStringify = require('../util/Recoil_stableStringify');
+
+const everySet = require('../util/Recoil_everySet');
 
 type Primitive = void | null | boolean | number | string;
 export type Parameter =
@@ -171,16 +172,20 @@ function atomFamily<T, P: Parameter>(
       options.persistence_UNSTABLE,
     ),
   };
-  const legacyAtom = options.scopeRules_APPEND_ONLY_READ_THE_DOCS
-    ? parameterizedScopedAtomLegacy<
-        StoredBaseValue_DEPRECATED<T> | DefaultValue,
-        P,
-      >({
-        ...legacyAtomOptions,
-        scopeRules_APPEND_ONLY_READ_THE_DOCS:
-          options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-      })
-    : atom<StoredBaseValue_DEPRECATED<T> | DefaultValue>(legacyAtomOptions);
+  let legacyAtom;
+// @fb-only:   if(
+// @fb-only:     options.scopeRules_APPEND_ONLY_READ_THE_DOCS
+// @fb-only:   ) {
+// @fb-only:   legacyAtom = parameterizedScopedAtomLegacy<
+// @fb-only:     StoredBaseValue_DEPRECATED<T> | DefaultValue,
+// @fb-only:     P>({
+// @fb-only:     ...legacyAtomOptions,
+// @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS:
+// @fb-only:     options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+// @fb-only:   });
+// @fb-only:   } else {
+    legacyAtom = atom<StoredBaseValue_DEPRECATED<T> | DefaultValue>(legacyAtomOptions);;
+// @fb-only:   }
 
   // Selector to calculate the default value based on any persisted legacy atoms
   // that were upgraded to a atomFamily

@@ -22,7 +22,7 @@ const {useRecoilInterface} = require('Recoil_Hooks');
 const {DEFAULT_VALUE} = require('Recoil_Node');
 const ParameterizedAtomTaggedValue_DEPRECATED = require('Recoil_ParameterizedAtomTaggedValue_DEPRECATED');
 const RecoilDevToolsObserver = require('Recoil_RecoilDevToolsObserver');
-const ScopedAtomTaggedValue = require('Recoil_ScopedAtomTaggedValue');
+// @fb-only: const ScopedAtomTaggedValue = require('Recoil_ScopedAtomTaggedValue');
 const stableStringify = require('Recoil_stableStringify');
 
 module.exports = {
@@ -34,7 +34,7 @@ module.exports = {
   useRecoilInterface_UNSTABLE: useRecoilInterface,
 
   // Types
-  ScopedAtomTaggedValue,
+// @fb-only:   ScopedAtomTaggedValue,
   ParameterizedAtomTaggedValue_DEPRECATED,
   ArrayKeyedMap,
   DEFAULT_VALUE,

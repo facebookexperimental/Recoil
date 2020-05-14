@@ -7,7 +7,7 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
+import type {Loadable} from '../adt/Recoil_Loadable';
 
 export type NodeKey = string;
 

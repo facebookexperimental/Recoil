@@ -7,9 +7,9 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
-import type {DefaultValue} from 'Recoil_Node';
-import type {NodeKey, Store, TreeState} from 'Recoil_State';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {DefaultValue} from './Recoil_Node';
+import type {NodeKey, Store, TreeState} from './Recoil_State';
 
 const {
   getNodeLoadable,
@@ -17,22 +17,11 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue,
   subscribeComponentToNode,
-} = require('Recoil_FunctionalCore');
-const Tracing = require('Recoil_Tracing');
+} = require('./Recoil_FunctionalCore');
+const Tracing = require('../util/Recoil_Tracing');
 
-// eslint-disable-next-line no-unused-vars
-class AbstractRecoilValue<+T> {
-  key: NodeKey;
-  constructor(newKey: NodeKey) {
-    this.key = newKey;
-  }
-}
-
-class RecoilState<T> extends AbstractRecoilValue<T> {}
-
-class RecoilValueReadOnly<+T> extends AbstractRecoilValue<T> {}
-
-export type RecoilValue<T> = RecoilValueReadOnly<T> | RecoilState<T>;
+const {RecoilValue, AbstractRecoilValue, RecoilValueReadOnly, RecoilState} = require('./Recoil_RecoilValueClasses');
+export type {RecoilValue} from './Recoil_RecoilValueClasses';
 
 // NOTE: This will not update state with node subscriptions, so use sparingly!!!
 function peekRecoilValueAsLoadable<T>(
@@ -124,7 +113,6 @@ function isRecoilValue(x: mixed): boolean %checks {
 module.exports = {
   AbstractRecoilValue,
   RecoilState,
-  RecoilValueReadOnly,
   peekRecoilValueAsLoadable,
   getRecoilValueAsLoadable,
   setRecoilValue,

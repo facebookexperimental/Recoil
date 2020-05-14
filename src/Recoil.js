@@ -9,21 +9,21 @@
  */
 'use strict';
 
-export type {PersistenceSettings, PersistenceType} from 'Recoil_atom';
-export type {SetterOrUpdater} from 'Recoil_Hooks';
-export type {Loadable} from 'Recoil_Loadable';
+export type {PersistenceSettings, PersistenceType} from './recoil_values/Recoil_atom';
+export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
+export type {Loadable} from './adt/Recoil_Loadable';
 export type {
   GetRecoilValue,
   SetRecoilState,
   ResetRecoilState,
-} from 'Recoil_selector';
+} from './recoil_values/Recoil_selector';
 export type {
   RecoilValue,
   RecoilState,
   RecoilValueReadOnly,
-} from 'Recoil_RecoilValue';
+} from './core/Recoil_RecoilValue';
 
-const atom = require('Recoil_atom');
+const atom = require('./recoil_values/Recoil_atom');
 const {
   useRecoilCallback,
   useRecoilState,
@@ -35,11 +35,11 @@ const {
   useSetUnvalidatedAtomValues,
   useTransactionObservation,
   useTransactionSubscription,
-} = require('Recoil_Hooks');
-const {DefaultValue} = require('Recoil_Node');
-const {RecoilRoot} = require('Recoil_RecoilRoot.react');
-const {isRecoilValue} = require('Recoil_RecoilValue');
-const selector = require('Recoil_selector');
+} = require('./hooks/Recoil_Hooks');
+const {DefaultValue} = require('./core/Recoil_Node');
+const {RecoilRoot} = require('./components/Recoil_RecoilRoot.react');
+const {isRecoilValue} = require('./core/Recoil_RecoilValue');
+const selector = require('./recoil_values/Recoil_selector');
 
 module.exports = {
   // Types

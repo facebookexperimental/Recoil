@@ -7,13 +7,14 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
-import type {RecoilValue} from 'Recoil_RecoilValue';
-import type {NodeKey, Store, TreeState} from 'Recoil_State';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {RecoilValue} from './Recoil_RecoilValue';
+import type {NodeKey, Store, TreeState} from './Recoil_State';
 
-const expectationViolation = require('Recoil_expectationViolation');
-const RecoilValueInterface = require('Recoil_RecoilValue');
-const recoverableViolation = require('Recoil_recoverableViolation');
+const RecoilValueClasses = require('./Recoil_RecoilValueClasses');
+
+const expectationViolation = require('../util/Recoil_expectationViolation');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 class DefaultValue {}
 const DEFAULT_VALUE: DefaultValue = new DefaultValue();
@@ -57,31 +58,31 @@ const nodes: Map<string, Node<any>> = new Map();
 /* eslint-disable no-redeclare */
 declare function registerNode<T>(
   node: ReadWriteNodeOptions<T>,
-): RecoilValueInterface.RecoilState<T>;
+): RecoilValueClasses.RecoilState<T>;
 
 declare function registerNode<T>(
   node: ReadOnlyNodeOptions<T>,
-): RecoilValueInterface.RecoilValueReadOnly<T>;
+): RecoilValueClasses.RecoilValueReadOnly<T>;
 
 function registerNode<T>(node: Node<T>): RecoilValue<T> {
   if (nodes.has(node.key)) {
     const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
       production. But it is safe to ignore this warning if it occured because of
       hot module replacement.`;
-    if (__DEV__) {
-      const isAcceptingUpdate = require('__debug').isAcceptingUpdate;
-      if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
-        expectationViolation(message, 'recoil');
-      }
-    } else {
+    // if (__DEV__) {
+    //   const isAcceptingUpdate = require('../util/Recoil__debug').isAcceptingUpdate;
+    //   if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
+    //     expectationViolation(message, 'recoil');
+    //   }
+    // } else {
       recoverableViolation(message, 'recoil');
-    }
+    // }
   }
   nodes.set(node.key, node);
 
   return node.set == null
-    ? new RecoilValueInterface.RecoilValueReadOnly(node.key)
-    : new RecoilValueInterface.RecoilState(node.key);
+    ? new RecoilValueClasses.RecoilValueReadOnly(node.key)
+    : new RecoilValueClasses.RecoilState(node.key);
 }
 /* eslint-enable no-redeclare */
 

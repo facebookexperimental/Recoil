@@ -7,14 +7,14 @@
  */
 'use strict';
 
-import type {RecoilValue} from 'Recoil_RecoilValue';
+import type {RecoilValue} from '../core/Recoil_RecoilValue';
 import type {
   NodeKey,
   Store,
   StoreRef,
   StoreState,
   TreeState,
-} from 'Recoil_State';
+} from '../core/Recoil_State';
 
 const React = require('React');
 const {useContext, useEffect, useRef, useState} = require('React');
@@ -22,10 +22,18 @@ const {
   fireNodeSubscriptions,
   setNodeValue,
   setUnvalidatedAtomValue,
+<<<<<<< HEAD
 } = require('Recoil_FunctionalCore');
 const nullthrows = require('Recoil_nullthrows');
 const Queue = require('Recoil_Queue');
 
+=======
+} = require('../core/Recoil_FunctionalCore');
+const nullthrows = require('../util/Recoil_nullthrows');
+const Queue = require('../adt/Recoil_Queue');
+
+
+>>>>>>> rollup
 type Props = {
   initializeState?: ({
     set: <T>(RecoilValue<T>, T) => void,
@@ -116,11 +124,11 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
   return null;
 }
 
-if (__DEV__) {
-  if (!window.$recoilDebugStates) {
-    window.$recoilDebugStates = [];
-  }
-}
+// if (__DEV__) {
+//   if (!window.$recoilDebugStates) {
+//     window.$recoilDebugStates = [];
+//   }
+// }
 
 function makeEmptyTreeState(): TreeState {
   return {
@@ -210,9 +218,9 @@ function RecoilRoot({initializeState, children}: Props): ReactElement {
       return;
     }
     // Save changes to nextTree and schedule a React update:
-    if (__DEV__) {
-      window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
-    }
+    // if (__DEV__) {
+    //   window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
+    // }
     storeState.nextTree = replaced;
     nullthrows(notifyBatcherOfChange.current)();
   };

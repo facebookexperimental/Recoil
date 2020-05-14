@@ -25,6 +25,9 @@
  * previous value to be restored. Applications are responsible for implementing
  * persistence by using the `useTransactionObservation` hook.
  *
+ * Scoped atoms (DEPRECATED):
+ * ===================================================================================
+ *
  * The scopeRules_APPEND_ONLY_READ_THE_DOCS option causes the atom be be "scoped".
  * A scoped atom's value depends on other parts of the application state.
  * A separate value of the atom is stored for every value of the state that it
@@ -51,25 +54,25 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
-import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
-import type {ScopeRules} from 'Recoil_ScopedAtom';
-import type {NodeKey, TreeState} from 'Recoil_State';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+// @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
+import type {NodeKey, TreeState} from '../core/Recoil_State';
 
-const atomWithFallback = require('Recoil_atomWithFallback');
 const {
   mapByDeletingFromMap,
   mapBySettingInMap,
   setByAddingToSet,
-} = require('Recoil_CopyOnWrite');
-const deepFreezeValue = require('Recoil_deepFreezeValue');
-const expectationViolation = require('Recoil_expectationViolation');
-const isPromise = require('Recoil_isPromise');
-const {loadableWithValue} = require('Recoil_Loadable');
-const {DEFAULT_VALUE, DefaultValue, registerNode} = require('Recoil_Node');
-const nullthrows = require('Recoil_nullthrows');
-const {isRecoilValue} = require('Recoil_RecoilValue');
-const {scopedAtom} = require('Recoil_ScopedAtom');
+} = require('../util/Recoil_CopyOnWrite');
+const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+const {loadableWithValue} = require('../adt/Recoil_Loadable');
+const {DEFAULT_VALUE, DefaultValue, registerNode} = require('../core/Recoil_Node');
+const {isRecoilValue} = require('../core/Recoil_RecoilValue');
+// @fb-only: const {scopedAtom} = require('./Recoil_ScopedAtom');
+
+const expectationViolation = require('../util/Recoil_expectationViolation');
+const isPromise = require('../util/Recoil_isPromise');
+const nullthrows = require('../util/Recoil_nullthrows');
 
 // It would be nice if this didn't have to be defined at the Recoil level, but I don't want to make
 // the api cumbersome. One way to do this would be to have a selector mark the atom as persisted.
@@ -89,7 +92,7 @@ export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
   default: RecoilValue<T> | Promise<T> | T,
   persistence_UNSTABLE?: PersistenceSettings<T>,
-  scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
+// @fb-only:   scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
   dangerouslyAllowMutability?: boolean,
 }>;
 
@@ -183,24 +186,62 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   const {
     default: optionsDefault,
-    scopeRules_APPEND_ONLY_READ_THE_DOCS,
+// @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS,
     ...restOptions
   } = options;
   if (isRecoilValue(optionsDefault) || isPromise(optionsDefault)) {
     return atomWithFallback<T>({
       ...restOptions,
       default: optionsDefault,
-      scopeRules_APPEND_ONLY_READ_THE_DOCS,
+// @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
     });
-  } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
-    return scopedAtom<T>({
-      ...restOptions,
-      default: optionsDefault,
-      scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    });
+// @fb-only:   } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
+// @fb-only:     return scopedAtom<T>({
+// @fb-only:       ...restOptions,
+// @fb-only:       default: optionsDefault,
+// @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
+// @fb-only:     });
   } else {
     return baseAtom<T>({...restOptions, default: optionsDefault});
   }
 }
+
+type AtomWithFallbackOptions<T> = $ReadOnly<{
+  ...AtomOptions<T>,
+  default: RecoilValue<T> | Promise<T>,
+}>;
+
+function atomWithFallback<T>(
+  options: AtomWithFallbackOptions<T>,
+): RecoilState<T> {
+  const base = atom<T | DefaultValue>({
+    ...options,
+    default: DEFAULT_VALUE,
+    persistence_UNSTABLE:
+      options.persistence_UNSTABLE === undefined
+        ? undefined
+        : {
+            ...options.persistence_UNSTABLE,
+            validator: storedValue =>
+              storedValue instanceof DefaultValue
+                ? storedValue
+                : nullthrows(options.persistence_UNSTABLE).validator(
+                    storedValue,
+                    DEFAULT_VALUE,
+                  ),
+          },
+  });
+
+  return selector<T, [RecoilValue<T | DefaultValue>, RecoilValue<T>]>({
+    key: `${options.key}__withFallback`,
+    get: ({get}) => {
+      const baseValue = get(base);
+      return baseValue instanceof DefaultValue ? options.default : baseValue;
+    },
+    set: ({set}, newValue) => set(base, newValue),
+    dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+  });
+}
+
 
 module.exports = atom;

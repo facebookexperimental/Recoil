@@ -11,8 +11,8 @@
  */
 'use strict';
 
-const isNode = require('Recoil_isNode');
-const isPromise = require('Recoil_isPromise');
+const isNode = require('./Recoil_isNode');
+const isPromise = require('./Recoil_isPromise');
 
 function shouldNotBeFrozen(value: mixed): boolean {
   // Primitives and functions:

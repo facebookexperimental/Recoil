@@ -7,7 +7,7 @@
  */
 'use strict';
 
-const isPromise = require('Recoil_isPromise');
+const isPromise = require('./Recoil_isPromise');
 
 const TIME_WARNING_THRESHOLD_MS = 15;
 
@@ -123,22 +123,22 @@ function stringify(x: mixed, opt: Options, key?: string): string {
 // * We could support BigInt, but Flow doesn't seem to like it.
 // See Recoil_stableStringify-test.js for examples
 function stableStringify(x: mixed, opt?: Options): string {
-  const startTime = window.performance ? window.performance.now() : 0;
+  // const startTime = window.performance ? window.performance.now() : 0;
 
   const str = stringify(x, opt ?? {allowFunctions: undefined});
 
-  const endTime = window.performance ? window.performance.now() : 0;
-  if (__DEV__) {
-    if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
-      /* eslint-disable fb-www/no-console */
-      console.groupCollapsed(
-        `Recoil: Spent ${endTime - startTime}ms computing a cache key`,
-      );
-      console.warn(x, str);
-      console.groupEnd();
-      /* eslint-enable fb-www/no-console */
-    }
-  }
+  // const endTime = window.performance ? window.performance.now() : 0;
+  // if (__DEV__) {
+  //   if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
+  //     /* eslint-disable fb-www/no-console */
+  //     console.groupCollapsed(
+  //       `Recoil: Spent ${endTime - startTime}ms computing a cache key`,
+  //     );
+  //     console.warn(x, str);
+  //     console.groupEnd();
+  //     /* eslint-enable fb-www/no-console */
+  //   }
+  // }
   return str;
 }
 

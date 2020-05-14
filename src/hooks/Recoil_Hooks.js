@@ -7,49 +7,49 @@
  */
 'use strict';
 
-import type {PersistenceType} from 'Recoil_atom';
-import type {Loadable} from 'Recoil_Loadable';
-import type {DefaultValue} from 'Recoil_Node';
+import type {PersistenceType} from '../recoil_values/Recoil_atom';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   ComponentSubscription,
   RecoilState,
   RecoilValue,
-} from 'Recoil_RecoilValue';
-import type {NodeKey, Store, TreeState} from 'Recoil_State';
+} from '../core/Recoil_RecoilValue';
+import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 const ReactDOM = require('ReactDOM');
-const {setByAddingToSet} = require('Recoil_CopyOnWrite');
-const differenceSets = require('Recoil_differenceSets');
-const expectationViolation = require('Recoil_expectationViolation');
-const filterMap = require('Recoil_filterMap');
+const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
-} = require('Recoil_FunctionalCore');
-const intersectSets = require('Recoil_intersectSets');
-const invariant = require('Recoil_invariant');
-const mapMap = require('Recoil_mapMap');
-const mergeMaps = require('Recoil_mergeMaps');
+} = require('../core/Recoil_FunctionalCore');
 const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
   getNode,
   nodes,
-} = require('Recoil_Node');
-const {useStoreRef} = require('Recoil_RecoilRoot.react');
+} = require('../core/Recoil_Node');
+const {useStoreRef} = require('../components/Recoil_RecoilRoot.react');
 const {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
-} = require('Recoil_RecoilValue');
-const recoverableViolation = require('Recoil_recoverableViolation');
-const Tracing = require('Recoil_Tracing');
+} = require('../core/Recoil_RecoilValue');
+const Tracing = require('../util/Recoil_Tracing');
 
-const gkx = require('gkx');
+const differenceSets = require('../util/Recoil_differenceSets');
+const expectationViolation = require('../util/Recoil_expectationViolation');
+const filterMap = require('../util/Recoil_filterMap');
+const gkx = require('../util/Recoil_gkx');
+const intersectSets = require('../util/Recoil_intersectSets');
+const invariant = require('../util/Recoil_invariant');
+const mapMap = require('../util/Recoil_mapMap');
+const mergeMaps = require('../util/Recoil_mergeMaps');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 function cloneState(state: TreeState, opts): TreeState {
   return {

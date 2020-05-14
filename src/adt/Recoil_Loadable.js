@@ -12,12 +12,12 @@
  */
 'use strict';
 
-import type {TreeState} from 'Recoil_State';
+import type {TreeState} from '../core/Recoil_State';
 
-const isPromise = require('Recoil_isPromise');
-const nullthrows = require('Recoil_nullthrows');
+const isPromise = require('../util/Recoil_isPromise');
+const nullthrows = require('../util/Recoil_nullthrows');
 
-const gkx = require('gkx');
+const gkx = require('../util/Recoil_gkx');
 
 // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()

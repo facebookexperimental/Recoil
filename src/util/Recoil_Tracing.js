@@ -9,38 +9,38 @@
  */
 'use strict';
 
-import type {RecoilValue} from 'Recoil_RecoilValue';
+import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
-const SchedulerTracing = require('SchedulerTracing'); // flowlint-line untyped-import:off
+const SchedulerTracing = require('./SchedulerTracing'); // flowlint-line untyped-import:off
 
 function trace<TResult>(
   message: string,
   node: string | RecoilValue<mixed>,
   fn: () => TResult,
 ): TResult {
-  if (__DEV__) {
-    if (
-      SchedulerTracing.unstable_trace !== undefined &&
-      window.performance !== undefined
-    ) {
-      return SchedulerTracing.unstable_trace(
-        `Recoil: ${message} for node: ${
-          typeof node === 'string' ? node : node.key
-        }`,
-        window.performance.now(),
-        fn,
-      );
-    }
-  }
+  // if (__DEV__) {
+  //   if (
+  //     SchedulerTracing.unstable_trace !== undefined &&
+  //     window.performance !== undefined
+  //   ) {
+  //     return SchedulerTracing.unstable_trace(
+  //       `Recoil: ${message} for node: ${
+  //         typeof node === 'string' ? node : node.key
+  //       }`,
+  //       window.performance.now(),
+  //       fn,
+  //     );
+  //   }
+  // }
   return fn();
 }
 
 function wrap<TFunction>(fn: TFunction): TFunction {
-  if (__DEV__) {
-    if (SchedulerTracing.unstable_wrap !== undefined) {
-      return SchedulerTracing.unstable_wrap(fn);
-    }
-  }
+  // if (__DEV__) {
+  //   if (SchedulerTracing.unstable_wrap !== undefined) {
+  //     return SchedulerTracing.unstable_wrap(fn);
+  //   }
+  // }
   return fn;
 }
 
