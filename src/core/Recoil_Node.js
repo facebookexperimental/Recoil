@@ -11,7 +11,7 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from './Recoil_State';
 
-const RecoilValueInterface = require('./Recoil_RecoilValue');
+const RecoilValueClasses = require('./Recoil_RecoilValueClasses');
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
@@ -58,11 +58,11 @@ const nodes: Map<string, Node<any>> = new Map();
 /* eslint-disable no-redeclare */
 declare function registerNode<T>(
   node: ReadWriteNodeOptions<T>,
-): RecoilValueInterface.RecoilState<T>;
+): RecoilValueClasses.RecoilState<T>;
 
 declare function registerNode<T>(
   node: ReadOnlyNodeOptions<T>,
-): RecoilValueInterface.RecoilValueReadOnly<T>;
+): RecoilValueClasses.RecoilValueReadOnly<T>;
 
 function registerNode<T>(node: Node<T>): RecoilValue<T> {
   if (nodes.has(node.key)) {
@@ -81,8 +81,8 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
   nodes.set(node.key, node);
 
   return node.set == null
-    ? new RecoilValueInterface.RecoilValueReadOnly(node.key)
-    : new RecoilValueInterface.RecoilState(node.key);
+    ? new RecoilValueClasses.RecoilValueReadOnly(node.key)
+    : new RecoilValueClasses.RecoilState(node.key);
 }
 /* eslint-enable no-redeclare */
 
