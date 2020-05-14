@@ -13,7 +13,7 @@ const itemsInCart = atom({
 });
 
 function CartInfoDebug() {
-  const logCartItems = useRecoilCallback(({getPromise}) => {
+  const logCartItems = useRecoilCallback(async ({getPromise}) => {
     const numItemsInCart = await getPromise(itemsInCart);
 
     console.log('Items in cart: ', numItemsInCart);
