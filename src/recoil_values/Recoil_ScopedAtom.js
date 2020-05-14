@@ -36,7 +36,7 @@ const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
 const ScopedAtomTaggedValue = require('../adt/Recoil_ScopedAtomTaggedValue');
 const selector = require('./Recoil_selector');
 const selectorFamily = require('./Recoil_selectorFamily');
-const stableStringify = require('./Recoil_stableStringify');
+const stableStringify = require('../util/Recoil_stableStringify');
 const {waitForAll} = require('./Recoil_WaitFor');
 
 const mapIterable = require('../util/Recoil_mapIterable');
