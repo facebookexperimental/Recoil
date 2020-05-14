@@ -64,7 +64,7 @@ functional approach efficient.
 
 From the point of view of components, selectors and atoms have the same interface and can therefore be substituted for one another.
 
-Selec
+Selectors are defined using the `selector` function:
 
 ```javascript
 const fontSizeLabelState = selector({
@@ -78,11 +78,13 @@ const fontSizeLabelState = selector({
 });
 ```
 
-The `key` property must be a unique string (with respect to other atoms/selectors) that will be used to identify the selector internally. The `get` property is assigned a function whose first parameter can be destructured to extract a `get()` function that can read the value of other atoms/selectors.
+Like atoms, selectors must have a unique key. The `get` property is the function that is to be computed. It can access the value of atoms and other
+selectors using the `get` argument passed to it. Whenever it accesses another atom or selector, a dependency relationship is created such that
+updating that atom or selector will cause the function to be recomputed.
 
-When a selector reads the value of another atom/selector, it will internally add that atom/selector to a list of dependencies so that if any of those dependencies change, the selector will re-evaluate. In the `fontSizeLabelState` example, the selector has one dependency: the `fontSizeState` atom.
+In this `fontSizeLabelState` example, the selector has one dependency: the `fontSizeState` atom. Conceptually, the `fontSizeLabelState` selector behaves like a pure function that takes a `fontSizeState` as input and returns a formatted font size label as output.
 
-Conceptually, the `fontSizeLabelState` selector behaves like a pure function that takes a `fontSizeState` as input and returns a formatted font size label as output.
+Selectors
 
 Selectors can be read using `useRecoilValue()`, which takes an atom/selector as its first parameter and returns the corresponding value. Note we can't use `useRecoilState()` as the `fontSizeLabelState` selector is not writeable (see the [selector API reference](/docs/api-reference/core/selector) for more information on writeable selectors):
 

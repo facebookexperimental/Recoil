@@ -105,11 +105,10 @@ function Home() {
         )}
         <section className={styles.features}>
          <div className="container">
-            <div className="row">
-              <div className="container">
-                <div className="row">
-                  <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/c1mpZgYYlgk" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
+          <div className="row">
+            <div className="container">
+              <div className="row" style={{justifyContent: 'center'}}>
+                <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/fb3cOMFkEzs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>                </div>
               </div>
             </div>
           </div>
