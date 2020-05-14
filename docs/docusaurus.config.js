@@ -10,10 +10,10 @@
 module.exports = {
   title: 'Recoil',
   tagline: 'A state management library for React',
-  url: 'https://your-docusaurus-test-site.com',
+  url: 'https://recoiljs.org',
   baseUrl: '/',
   favicon: 'img/favicon.ico',
-  organizationName: 'facebook', // Usually your GitHub org/user name.
+  organizationName: 'facebookexperimental', // Usually your GitHub org/user name.
   projectName: 'Recoil', // Usually your repo name.
   themeConfig: {
     navbar: {

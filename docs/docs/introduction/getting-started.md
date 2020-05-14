@@ -2,6 +2,18 @@
 title: Getting Started
 ---
 
+## Create React App
+
+Recoil is a state management library for React, so you need to have React installed and running to use Recoil. The easiest and recommended way for bootstrapping a React application is to use [Create React App](https://github.com/facebook/create-react-app#creating-an-app):
+
+```shell
+npx create-react-app my-app
+```
+
+> [`npx`](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) is a package runner tool that comes with npm 5.2+ and higher, see [instructions for older npm versions](https://gist.github.com/gaearon/4064d3c23a77c74a3614c498a8bb1c5f).
+
+For more ways to install Create React App, see the [official documentation](https://github.com/facebook/create-react-app#creating-an-app).
+
 ## Installation
 
 The Recoil package lives in <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a>. To install the latest stable version, run the following command:
@@ -15,18 +27,6 @@ Or if you're using <a href="https://classic.yarnpkg.com/en/docs/install/" target
 ```shell
 yarn add recoil
 ```
-
-## Create React App
-
-Recoil is a state management library for React, so you need to have React installed and running to use Recoil. The easiest and recommended way for bootstrapping a React application is to use [Create React App](https://github.com/facebook/create-react-app#creating-an-app):
-
-```shell
-npx create-react-app my-app
-```
-
-> [`npx`](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) is a package runner tool that comes with npm 5.2+ and higher, see [instructions for older npm versions](https://gist.github.com/gaearon/4064d3c23a77c74a3614c498a8bb1c5f).
-
-For more ways to install Create React App, see the [official documentation](https://github.com/facebook/create-react-app#creating-an-app).
 
 ## RecoilRoot
 

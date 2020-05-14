@@ -1,3 +1,10 @@
+---
+title: isRecoilValue(value)
+sidebar_label: isRecoilValue()
+---
+
+Returns `true` if `value` is either an atom or selector and `false` otherwise.
+
 ### Example
 
 ```javascript
@@ -15,4 +22,7 @@ const strCounter = selector({
 
 isRecoilValue(counter); // true
 isRecoilValue(strCounter); // true
+
+isRecoilValue(5); // false
+isRecoilValue({}); // false
 ```

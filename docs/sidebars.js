@@ -19,9 +19,8 @@ module.exports = {
       'basic-tutorial/intro',
       'basic-tutorial/atoms',
       'basic-tutorial/selectors',
-      'basic-tutorial/components',
-      'basic-tutorial/example',
-      'basic-tutorial/bonus',
+      'basic-tutorial/demo',
+      'basic-tutorial/performance',
     ],
     Guides: [
       {
@@ -39,15 +38,17 @@ module.exports = {
     'API Reference': [
       {
         Core: [
-          'api-reference/core/atom',
-          'api-reference/core/DefaultValue',
-          'api-reference/core/isRecoilValue',
           'api-reference/core/RecoilRoot',
+          'api-reference/core/atom',
+          // 'api-reference/core/DefaultValue',
+          'api-reference/core/isRecoilValue',
           'api-reference/core/selector',
           'api-reference/core/useRecoilCallback',
           'api-reference/core/useRecoilValue',
           'api-reference/core/useRecoilValueLoadable',
           'api-reference/core/useResetRecoilState',
+          'api-reference/core/useRecoilState',
+          'api-reference/core/useRecoilStateLoadable',
           'api-reference/core/useSetRecoilState',
         ],
       },
@@ -57,7 +58,6 @@ module.exports = {
           'api-reference/utils/constSelector',
           'api-reference/utils/errorSelector',
           'api-reference/utils/noWait',
-          'api-reference/utils/readOnlySelector',
           'api-reference/utils/selectorFamily',
           'api-reference/utils/waitForAll',
           'api-reference/utils/waitForAny',

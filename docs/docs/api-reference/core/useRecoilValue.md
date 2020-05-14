@@ -1,3 +1,7 @@
+---
+title: useRecoilValue()
+---
+
 ### Example
 
 ```javascript
@@ -32,5 +36,16 @@ function TempCelcius() {
       <button onClick={addTenFahrenheit}>Add 10 Fahrenheit</button>
     </div>
   );
+}
+
+function Debugger() {
+  const logState = useRecoilCallback(async ({getPromise}) => {
+    const state = await getPromise(largeChunkOfState);
+
+    await logToServer(state);
+  });
+  const logStateWithDelay = delay(logState, 2000);
+
+  return <button onClick={logStateWithDelay}>Send log to server</button>;
 }
 ```

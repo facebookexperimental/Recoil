@@ -1,3 +1,10 @@
+---
+title: <RecoilRoot />
+sidebar_label: <RecoilRoot />
+---
+
+The entry point of an application that uses Recoil.
+
 ### Example
 
 ```javascript

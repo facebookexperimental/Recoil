@@ -2,7 +2,7 @@
 title: Core Concepts
 ---
 
-## Atom
+## Atoms
 
 An **atom** represents a piece of **state**. Atoms can be read from and written to from any component. Components that read the value of an atom are implicitly **subscribed** to that atom, so any atom updates will result in a re-render of all components subscribed to that atom.
 
@@ -17,7 +17,7 @@ const fontSizeState = atom({
 
 The `key` property must be a unique string (with respect to other atoms/selectors) that will be used to identify the atom internally. The `default` property holds the initial value of the atom.
 
-To read/write the `fontSize` atom, we can use the `useRecoilState()` hook, which takes an atom as its first argument and returns a tuple containing the atom value and a **setter function** that sets the atom to a new value when called:
+To read/write `fontSizeState`, we can use the `useRecoilState()` hook, which returns a tuple containing the state value and a **setter function** that can update the atom's value when called:
 
 ```jsx
 function FontButton() {
@@ -34,7 +34,7 @@ function FontButton() {
 
 Clicking on the button will increase the font size of the button by one. Because `fontSizeState` is an atom, it can be read by any component, and all components that read `fontSizeState` will re-render when its value changes.
 
-## Selector
+## Selectors
 
 A **selector** represents a piece of **derived state**. Derived state is a **transformation** of state. You can think of derived state as the output of passing state to a pure function that modifies the given state in some way. Examples include unit/format/language conversions (synchronous) and API calls (asynchronous). For more information on asynchronous selectors, see the [selector API reference](/docs/api-reference/core/selector).
 
@@ -80,12 +80,3 @@ function FontButton() {
 ```
 
 Clicking on the button now does two things: it increases the font size of the button while also updating the font size label to reflect the current font size.
-
-## Subscriptions
-
-Recoil makes subscribing to atoms/selectors simple by exposing the following hooks:
-
-- `useRecoilValue()`: use this hook when you only intend on **reading** the value of the atom/selector.
-- `useRecoilState()`:
-
-The following hooks allow you to get the values from your atoms/selectors:
