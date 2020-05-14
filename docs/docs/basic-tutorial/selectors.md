@@ -151,9 +151,3 @@ To summarize, we've created a todo list app that meets all of our requirements:
 - Display useful stats
 
 We could stop here, but there are some important performance considerations that we explore in the "bonus" section.
-
-Below is an interactive demo of what we have so far:
-
-import TodoList from '../../src/components/basic-tutorial/TodoListSelectors';
-
-<TodoList />
