@@ -6,20 +6,23 @@ import { terser } from "rollup-plugin-terser";
 export default {
   input: 'src/Recoil.js',
   output: {
-    file: 'recoil.js',
+    file: 'dist/recoil.js',
     format: 'cjs',
+    exports: 'named',
   },
+  external: ['react', 'react-dom'],
   plugins: [
     babel({
-      "presets": [
-        "@babel/preset-react",
-        "@babel/preset-flow"
+      presets: [
+        '@babel/preset-react',
+        '@babel/preset-flow'
       ],
-      "plugins": [
+      plugins: [
         '@babel/plugin-proposal-nullish-coalescing-operator',
         '@babel/plugin-proposal-optional-chaining',
         '@babel/plugin-proposal-class-properties'
-      ]
+      ],
+      babelHelpers: 'bundled',
     }),
     {
       resolveId: (source) => {
@@ -34,6 +37,6 @@ export default {
     },
     nodeResolve(),
     commonjs(),
-    // terser(),
+    terser(),
   ],
 };
