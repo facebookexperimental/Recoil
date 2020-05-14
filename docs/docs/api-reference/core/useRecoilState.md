@@ -3,7 +3,11 @@ title: useRecoilState(state)
 sidebar_label: useRecoilState()
 ---
 
-Hook used to read and write the value of atoms and (writeable) selectors. This hook will implicitly subscribe the component to the given state.
+Returns a tuple where the first element is the value of state and the second element is a setter function that will update the value of the given state when called.
+
+This hook will implicitly subscribe the component to the given state.
+
+---
 
 - `state`: an [`atom`](/docs/api-reference/core/atom) or a _writeable_ [`selector`](/docs/api-reference/core/selector). Writeable selectors are selectors that were have both a `get` and `set` in their definition while read-only selectors only have a `get`.
 

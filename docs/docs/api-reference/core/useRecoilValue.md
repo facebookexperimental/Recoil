@@ -3,7 +3,11 @@ title: useRecoilValue(state)
 sidebar_label: useRecoilValue()
 ---
 
-Hook used to read the value of atoms and selectors. This hook will implicitly subscribe the component to the given state.
+Returns the value of the given Recoil state.
+
+This hook will implicitly subscribe the component to the given state.
+
+---
 
 - `state`: an [`atom`](/docs/api-reference/core/atom) or [`selector`](/docs/api-reference/core/selector)
 
