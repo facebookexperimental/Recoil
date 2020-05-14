@@ -25,10 +25,10 @@ module.exports = {
           label: 'Docs',
           position: 'left',
         },
-        {to: 'blog', label: 'Blog', position: 'left'},
+        // {to: 'blog', label: 'Blog', position: 'left'},
         // Please keep GitHub link to the right for consistency.
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/facebookexperimental/Recoil',
           label: 'GitHub',
           position: 'right',
         },
@@ -41,42 +41,42 @@ module.exports = {
           title: 'Learn',
           items: [
             {
-              label: 'Style Guide',
-              to: 'docs/doc1',
+              label: 'Getting Started',
+              to: 'docs/introduction/getting-started',
             },
             {
-              label: 'Second Doc',
-              to: 'docs/doc2',
+              label: 'Core Concepts',
+              to: 'docs/introduction/core-concepts',
             },
           ],
         },
         {
           title: 'Community',
           items: [
-            {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-            },
+            // {
+            //   label: 'Stack Overflow',
+            //   href: 'https://stackoverflow.com/questions/tagged/recoil',
+            // },
             {
               label: 'Twitter',
-              href: 'https://twitter.com/docusaurus',
+              href: 'https://twitter.com/recoiljs',
             },
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
+            // {
+            //   label: 'Discord',
+            //   href: 'https://discordapp.com/invite/docusaurus',
+            // },
           ],
         },
         {
           title: 'More',
           items: [
-            {
-              label: 'Blog',
-              to: 'blog',
-            },
+            // {
+            //   label: 'Blog',
+            //   to: 'blog',
+            // },
             {
               label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
+              href: 'https://github.com/facebookexperimental/Recoil',
             },
           ],
         },
