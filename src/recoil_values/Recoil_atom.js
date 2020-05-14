@@ -25,6 +25,9 @@
  * previous value to be restored. Applications are responsible for implementing
  * persistence by using the `useTransactionObservation` hook.
  *
+ * Scoped atoms (DEPRECATED):
+ * ===================================================================================
+ *
  * The scopeRules_APPEND_ONLY_READ_THE_DOCS option causes the atom be be "scoped".
  * A scoped atom's value depends on other parts of the application state.
  * A separate value of the atom is stored for every value of the state that it
@@ -53,7 +56,7 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {ScopeRules} from './Recoil_ScopedAtom';
+// @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
 import type {NodeKey, TreeState} from '../core/Recoil_State';
 
 const atomWithFallback = require('./Recoil_atomWithFallback');
@@ -66,7 +69,7 @@ const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const {loadableWithValue} = require('../adt/Recoil_Loadable');
 const {DEFAULT_VALUE, DefaultValue, registerNode} = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {scopedAtom} = require('./Recoil_ScopedAtom');
+// @fb-only: const {scopedAtom} = require('./Recoil_ScopedAtom');
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
@@ -90,7 +93,7 @@ export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
   default: RecoilValue<T> | Promise<T> | T,
   persistence_UNSTABLE?: PersistenceSettings<T>,
-  scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
+// @fb-only:   scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
   dangerouslyAllowMutability?: boolean,
 }>;
 
@@ -184,21 +187,21 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   const {
     default: optionsDefault,
-    scopeRules_APPEND_ONLY_READ_THE_DOCS,
+// @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS,
     ...restOptions
   } = options;
   if (isRecoilValue(optionsDefault) || isPromise(optionsDefault)) {
     return atomWithFallback<T>({
       ...restOptions,
       default: optionsDefault,
-      scopeRules_APPEND_ONLY_READ_THE_DOCS,
+// @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
     });
-  } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
-    return scopedAtom<T>({
-      ...restOptions,
-      default: optionsDefault,
-      scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    });
+// @fb-only:   } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
+// @fb-only:     return scopedAtom<T>({
+// @fb-only:       ...restOptions,
+// @fb-only:       default: optionsDefault,
+// @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
+// @fb-only:     });
   } else {
     return baseAtom<T>({...restOptions, default: optionsDefault});
   }
