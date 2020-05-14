@@ -2,16 +2,20 @@
 title: Motivation
 ---
 
-Managing state is hard. As your app grows, you'll discover interconnected data dependencies between deeply nested components. You can promote this common data to React Context, but in doing so you'll end up coupling the top of your component tree (your providers) with the leaves of the tree (your consumers), making it difficult to code-split.
+For reasons of compatibility and simplicity, it's best to use React's built-in state management capabilities rather than external global state. But React has certain limitations:
 
-Popular state management libraries tend to require too much boilerplate and/or don't support common patterns out of the box, including **persistence** (i.e saving state to the URL), **code-splitting**, and first-class support for managing asynchronous state using hooks and Suspense.
+- Component state can only be shared by pushing it up to the common ancestor, but this might include a huge tree that then needs to re-render.
+- Context can only store a single value, not an indefinite set of values each with their own consumers.
+- Both of these make it difficult to code-split the top of the tree (where the state has to live) from the leaves of the tree (where the state is used).
 
-Recoil was created to solve these issues. Below are some highlights:
+We want to improve this while keeping both the API and the semantics and behavior as Reactish as possible.
 
-- Recoil has minimal boilerplate.
-- Recoil exposes a simple get/set interface, similar to React state.
-- Recoil is built with Suspense, Concurrent Rendering, and Hooks in mind.
-- Derived state in recoil can move between being synchronous and asynchronous without modifying the components that use it.
-- Recoil's state definition is incremental and distributed, making code-splitting possible.
-- Recoil treats browser navigation as a first-class concept. You can encode state transitions into links, which can then be opened in a new tab.
-- Recoil makes it easy to persist the entire application state in a way that is backwards-compatible, so persisted states can survive application changes.
+Recoil defines a directed graph orthogonal to but also intrinsic and attached to your React tree. State changes flow from the roots of this graph (which we call atoms) through pure functions (which we call selectors) and into components. With this approach:
+
+- We get a boilerplate-free API where shared state has the same simple get/set interface as React local state (yet can be encapsulated with reducers etc. if needed).
+- We have the possibility of compatibility with Concurrent Mode and other new React features as they become available.
+- The state definition is incremental and distributed, making code-splitting possible.
+- State can be replaced with derived data without modifying the components that use it.
+- Derived data can move between being synchronous and asynchronous without modifying the components that use it.
+- We can treat navigation as a first-class concept, even encoding state transitions in links.
+- It's easy to persist the entire application state in a way that is backwards-compatible, so persisted states can survive application changes.
