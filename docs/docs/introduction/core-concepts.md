@@ -9,7 +9,7 @@ Atoms are units of state that components can subscribe to. Selectors transform t
 
 ## Atoms
 
-Atoms are units of state. They're updateable and subscribeable: when an atom is updated, each subscribed component is re-rendered with the new value. The can be created at runtime, too. Atoms can be used in place of React local component state. If the same atom is used from multiple components, all those components share their state.
+Atoms are units of state. They're updateable and subscribable: when an atom is updated, each subscribed component is re-rendered with the new value. The can be created at runtime, too. Atoms can be used in place of the React local component state. If the same atom is used from multiple components, all those components share their state.
 
 Atoms are created using the `atom` function:
 
@@ -21,7 +21,7 @@ const fontSizeState = atom({
 ```
 
 Atoms need a unique key, which is used for debugging, persistence, and for certain advanced APIs that let you see a map of all atoms. It is an error
-for two atoms to have the same key, so make sure they're globally unique. Like React component state, they also have a default value.
+for two atoms to have the same key, so make sure they're globally unique. Like the React component state, they also have a default value.
 
 To read and write an atom from a component, we use a hook called `useRecoilState`. It's just like React's `useState`, but now the state can be shared between components:
 
@@ -60,7 +60,7 @@ reducers to keep state in sync and valid. Instead, a minimal set of state is sto
 as a function of that minimal state. Since selectors keep track of what components need them and what state they depend on, they make this
 functional approach more efficient.
 
-From the point of view of components, selectors and atoms have the same interface and can therefore be substituted for one another.
+For components, selectors and atoms have the same interface and can, therefore, be substituted for one another.
 
 Selectors are defined using the `selector` function:
 
