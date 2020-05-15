@@ -2,7 +2,7 @@
 title: Atoms
 ---
 
-Atoms는 애플리케이션 상태의 source of truth를 포함한다. todo 리스트에서 source of truth는 todo 아이템을 나타내는 객체로 이루어진 배열이 될 것이다.
+Atoms는 애플리케이션 상태의 source of truth를 갖는다. todo 리스트에서 source of truth는 todo 아이템을 나타내는 객체로 이루어진 배열이 될 것이다.
 
 우리는 atom 리스트를 `todoListState`라고 하고 이것을 `atom()` 함수를 이용해 생성할 것이다.
 
@@ -13,7 +13,7 @@ const todoListState = atom({
 });
 ```
 
-우리는 atom에 고유한 `key`를 주고 비어있는 배열 값을 `default`로 설정할 것이다. 이 atom의 항목을 읽기 위해, 우리는 `useRecoilValue()` 훅을 우리의 `TodoList` 컴포넌트애서 사용할 수 있다.
+우리는 atom에 고유한 `key`를 주고 비어있는 배열 값을 `default`로 설정할 것이다. 이 atom의 항목을 읽기 위해, 우리는 `useRecoilValue()` 훅을 우리의 `TodoList` 컴포넌트에서 사용할 수 있다.
 
 ```jsx
 function TodoList() {
