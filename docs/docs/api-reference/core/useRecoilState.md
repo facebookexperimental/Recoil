@@ -25,7 +25,7 @@ const tempFahrenheit = atom({
 
 const tempCelcius = selector({
   key: 'tempCelcius',
-  get: ({get}) => ((get(temptempFahrenheit) - 32) * 5) / 9,
+  get: ({get}) => ((get(tempFahrenheit) - 32) * 5) / 9,
   set: ({set}, newValue) => set(tempFahrenheit, (newValue * 9) / 5 + 32),
 });
 
