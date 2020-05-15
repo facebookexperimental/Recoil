@@ -9,7 +9,7 @@ Atoms are units of state that components can subscribe to. Selectors transform t
 
 ## Atoms
 
-Atoms are units of state. They're updateable and subscribeable: when an atom is updated, each subscribed component is re-rendered with the new value. The can be created at runtime, too. Atoms can be used in place of React local component state. If the same atom is used from multiple components, all those components share their state.
+Atoms are units of state. They're updateable and subscribeable: when an atom is updated, each subscribed component is re-rendered with the new value. They can be created at runtime, too. Atoms can be used in place of React local component state. If the same atom is used from multiple components, all those components share their state.
 
 Atoms are created using the `atom` function:
 
