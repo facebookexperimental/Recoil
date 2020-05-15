@@ -15,8 +15,6 @@ const todoListState = atom({
 
 우리는 atom에 고유한 `key`를 주고 비어있는 배열 값을 `default`로 설정할 것이다. 이 atom의 항목을 읽기 위해, 우리는 `useRecoilValue()` 훅을 우리의 `TodoList` 컴포넌트애서 사용할 수 있다.
 
-We give our atom a unique `key` and set the `default` value to an empty array. To read the contents of this atom, we can use the `useRecoilValue()` hook in our `TodoList` component:
-
 ```jsx
 function TodoList() {
   const todoList = useRecoilValue(todoListState);
