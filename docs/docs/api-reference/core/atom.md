@@ -8,12 +8,12 @@ Returns writeable Recoil state.
 ---
 
 - `options`
-  - `key`: A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
+  - `key`: A unique string used to identify the atom internally. This string should be unique concerning other atoms and selectors in the entire application.
   - `default`: The initial value of the atom.
 
 Most often, you'll use the following hooks to read the value of atoms:
 
-- [`useRecoilState()`](/docs/api-reference/core/useRecoilState): use this hook when you intend on both reading and writing to the atom. This hook subscribes the component the atom.
+- [`useRecoilState()`](/docs/api-reference/core/useRecoilState): use this hook when you intend on both reading and writing to the atom. This hook subscribes to the component the atom.
 - [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue): use this hook when you intend on only reading the atom. This hook subscribes the component to the atom.
 - [`useSetRecoilState()`](/docs/api-reference/core/useRecoilState): use this hook when you intend on only writing to the atom.
 
