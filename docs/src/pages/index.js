@@ -21,7 +21,7 @@ const features = [
     // imageUrl: 'img/undraw_docusaurus_mountain.svg',
     description: (
       <>
-        Recoil works and thinks like React. Add some to your app and get fast and
+        Recoil works and thinks like React. Add some to your app and get a fast and
         flexible shared state.
       </>
     ),
