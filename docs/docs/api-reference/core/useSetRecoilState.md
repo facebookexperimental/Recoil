@@ -1,5 +1,5 @@
 ---
-title: useSetRecoilState(state)
+title: useSetRecoilState()
 sidebar_label: useSetRecoilState()
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: useRecoilValueLoadable(state)
+title: useRecoilValueLoadable()
 sidebar_label: useRecoilValueLoadable()
 ---
 
