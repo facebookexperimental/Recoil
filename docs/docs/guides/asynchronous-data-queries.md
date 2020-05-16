@@ -12,7 +12,7 @@ For example, here is a simple synchronous atom and selector to get a user name:
 ```js
 const currentUserIDState = atom({
   key: 'CurrentUserID',
-  default: 0,
+  default: 1,
 });
 
 const currentUserNameState = selector({
@@ -22,16 +22,16 @@ const currentUserNameState = selector({
   },
 });
 
-function UserInfo() {
+function CurrentUserInfo() {
   const userName = useRecoilValue(currentUserNameState);
   return <div>{userName}</div>;
 }
 
 function MyApp() {
   return (
-    <div>
-      <UserInfo />
-    </div>
+    <ReactRoot>
+      <CurrentUserInfo />
+    </ReactRoot>
   );
 }
 ```
@@ -51,7 +51,7 @@ const currentUserNameQuery = selector({
   },
 });
 
-function UserInfo() {
+function CurrentUserInfo() {
   const userName = useRecoilValue(currentUserNameQuery);
   return <div>{userName}</div>;
 }
@@ -64,9 +64,11 @@ But, since React is synchronous, what will it render before the promise resolves
 ```js
 function MyApp() {
   return (
-    <React.Suspense fallback={<div>Loading...</div>}>
-      <UserInfo />
-    </React.Suspense>
+    <ReactRoot>
+      <React.Suspense fallback={<div>Loading...</div>}>
+        <CurrentUserInfo />
+      </React.Suspense>
+    </ReactRoot>
   );
 }
 ```
@@ -89,18 +91,20 @@ const currentUserNameQuery = selector({
   },
 });
 
-function UserInfo() {
+function CurrentUserInfo() {
   const userName = useRecoilValue(currentUserNameQuery);
   return <div>{userName}</div>;
 }
 
 function MyApp() {
   return (
-    <ErrorBoundary>
-      <React.Suspense fallback={<div>Loading...</div>}>
-        <UserInfo />
-      </React.Suspense>
-    </ErrorBoundary>
+    <ReactRoot>
+      <ErrorBoundary>
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <CurrentUserInfo />
+        </React.Suspense>
+      </ErrorBoundary>
+    </ReactRoot>
   );
 }
 ```
@@ -128,15 +132,104 @@ function UserInfo({userID}) {
 
 function MyApp() {
   return (
-    <ErrorBoundary>
-      <React.Suspense fallback={<div>Loading...</div>}>
-        <UserInfo userID={1} />
-        <UserInfo userID={2} />
-        <UserInfo userID={3} />
-      </React.Suspense>
-    </ErrorBoundary>
+    <ReactRoot>
+      <ErrorBoundary>
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <UserInfo userID={1}/>
+          <UserInfo userID={2}/>
+          <UserInfo userID={3}/>
+        </React.Suspense>
+      </ErrorBoundary>
+    </ReactRoot>
   );
 }
+```
+
+## Data Flow Graph
+
+Remember, by modeling queries as selectors, we can build a data flow graph mixing state, derived state, and queries!  This graph will automatically update and re-render React components as state is updated.
+
+```js
+const currentUserIDState = atom({
+  key: 'CurrentUserID',
+  default: 1,
+});
+
+const userInfoQuery = selectorFamily({
+  key: 'UserInfoQuery',
+  get: userID => async ({get}) => {
+    const response = await myDBQuery({userID});
+    if (response.error) {
+      throw response.error;
+    }
+    return response;
+  },
+});
+
+const currentUserInfoQuery = selector({
+  key: 'CurrentUserInfoQuery',
+  get: ({get}) => get(userInfoQuery(get(currentUserIDState)),
+});
+
+const friendsInfoQuery = selector({
+  key: 'FriendsInfoQuery',
+  get: userID => ({get}) => {
+    const {friendList} = get(currentUserInfoQuery);
+    const friends = [];
+    for (const friendID of friendList) {
+      const friendInfo = get(userInfoQuery(friendID));
+      friends.push(friendInfo);
+    }
+    return friends;
+  },
+});
+
+function CurrentUserInfo() {
+  const currentUser = useRecoilValue(currentUserInfoQuery);
+  const friends = useRecoilValue(friendsInfoQuery);
+  const setCurrentUserID = useSetRecoilState(currentUserIDState);
+  return (
+    <div>
+      <h1>{currentUser.name}</h1>
+      <ul>
+        {friends.map(friend =>
+          <li key={friend.id} onClick={() => setCurrentUserID(friend.id)}>
+            {friend.name}
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+function MyApp() {
+  return (
+    <ReactRoot>
+      <ErrorBoundary>
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <CurrentUserInfo />
+        </React.Suspense>
+      </ErrorBoundary>
+    </ReactRoot>
+  );
+}
+```
+
+## Concurrent Requests
+
+If you notice in the above example, the `friendsInfoQuery` uses a query to get the info for each friend.  But, by doing this in a loop they are essentially serialized.  If the lookup is fast, maybe that's ok.  If it's expensive, you can use a concurrency helper such as `waitForAll`, `waitForNone`, or `waitForAny` to run them in parallel.  They accept both arrays and named objects of dependencies.
+
+```js
+const friendsInfoQuery = selector({
+  key: 'FriendsInfoQuery',
+  get: userID => ({get}) => {
+    const {friendList} = get(currentUserInfoQuery);
+    const friends = get(waitForAll(
+      friendList.map(friendID => userInfoQuery(friendID))
+    ));
+    return friends;
+  },
+});
 ```
 
 ## Without React Suspense
