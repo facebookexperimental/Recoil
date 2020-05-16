@@ -1,5 +1,8 @@
 /**
- * Copyright 2004-present Facebook. All Rights Reserved.
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  *
  * Returns an atom, the basic unit of state in Recoil. An atom is a reference to
  * value that can be read, written, and subscribed to. It has a `key` that is

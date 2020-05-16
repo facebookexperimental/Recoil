@@ -1,5 +1,8 @@
 /**
- * Copyright 2004-present Facebook. All Rights Reserved.
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  *
  * Return an atom whose state cannot vary independently but is derived from that
  * of other atoms. Whenever its dependency atoms change, it will re-evaluate
