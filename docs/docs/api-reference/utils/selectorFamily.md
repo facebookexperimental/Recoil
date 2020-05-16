@@ -89,14 +89,17 @@ Selector Families are also useful to use for passing parameters to queries:
 ```js
 const myDataQuery = selectorFamily({
   key: 'MyDataQuery',
-  get: queryParameters => async () => {
-    const data = await asyncDataRequest(queryParameters);
-    return data;
+  get: queryParameters => async ({get}) => {
+    const response = await asyncDataRequest(queryParameters);
+    if (response.error) {
+      throw response.error;
+    }
+    return response.data;
   },
 });
 
 function MyComponent() {
-  const response = useRecoilValue(myDataQuery({userID: 132}));
+  const data = useRecoilValue(myDataQuery({userID: 132}));
   return <div>...</div>;
 }
 ```
