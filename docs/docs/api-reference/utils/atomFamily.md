@@ -8,11 +8,13 @@ Returns a function that returns a writeable `RecoilState` atom.
 ```js
 function atomFamily<T, Parameter>({
   key: string,
+
   default:
     | RecoilValue<T>
     | Promise<T>
     | T
     | (Parameter => T | RecoilValue<T> | Promise<T>),
+
   dangerouslyAllowMutability?: boolean,
 }): RecoilState<T>
 ```
