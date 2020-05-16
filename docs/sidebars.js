@@ -32,9 +32,10 @@ module.exports = {
       //   },
       //   'guides/usage-flow',
       //   'guides/usage-typescript',
+      'guides/asynchronous-data-queries',
+      'guides/persistence',
       //   'guides/writing-test',
       //   'guides/code-splitting',
-      'guides/asynchronous-data-queries',
     ],
 
     'API Reference': [
