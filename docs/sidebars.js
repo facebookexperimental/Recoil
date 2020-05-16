@@ -57,8 +57,8 @@ module.exports = {
         ],
       },
       {
-        // Utils: [
-        //   'api-reference/utils/atomFamily',
+        Utils: [
+          'api-reference/utils/atomFamily',
         //   'api-reference/utils/constSelector',
         //   'api-reference/utils/errorSelector',
         //   'api-reference/utils/noWait',
@@ -66,7 +66,7 @@ module.exports = {
         //   'api-reference/utils/waitForAll',
         //   'api-reference/utils/waitForAny',
         //   'api-reference/utils/waitForNone',
-        // ],
+        ],
       },
     ],
   },
