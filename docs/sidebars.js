@@ -22,7 +22,7 @@ module.exports = {
       // 'basic-tutorial/demo',
       // 'basic-tutorial/performance',
     ],
-    // Guides: [
+    Guides: [
     //   {
     //     'Migrating to Recoil': [
     //       'guides/migrating/from-react-state',
@@ -34,7 +34,9 @@ module.exports = {
     //   'guides/usage-typescript',
     //   'guides/writing-test',
     //   'guides/code-splitting',
-    // ],
+      'guides/asynchronous-data-queries',
+    ],
+
     'API Reference': [
       {
         Core: [
@@ -60,12 +62,12 @@ module.exports = {
         Utils: [
           'api-reference/utils/atomFamily',
           'api-reference/utils/selectorFamily',
-        //   'api-reference/utils/constSelector',
-        //   'api-reference/utils/errorSelector',
-        //   'api-reference/utils/noWait',
-        //   'api-reference/utils/waitForAll',
-        //   'api-reference/utils/waitForAny',
-        //   'api-reference/utils/waitForNone',
+          'api-reference/utils/constSelector',
+          'api-reference/utils/errorSelector',
+          'api-reference/utils/noWait',
+          'api-reference/utils/waitForAll',
+          'api-reference/utils/waitForAny',
+          'api-reference/utils/waitForNone',
         ],
       },
     ],
