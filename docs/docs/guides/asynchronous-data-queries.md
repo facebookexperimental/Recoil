@@ -38,11 +38,14 @@ function MyApp() {
 ## Asynchronous Example
 
 If the user names were stored on some database we need to query, all we need to do is return a `Promise` or use an `async` function.  If any dependencies change, the selector will be re-evaluated and execute a new query.  The results are cached, so the query will only execute once per unique input.
+
 ```js
 const currentUserNameQuery = selector({
   key: 'CurrentUserName',
   get: async ({get}) => {
-    const response = myDBQuery({userID: get(currentUserIDState)});
+    const response = await myDBQuery({
+      userID: get(currentUserIDState),
+    });
     return response.name;
   },
 });
@@ -74,7 +77,9 @@ But what if the request has an error?  Recoil selectors can also throw errors wh
 const currentUserNameQuery = selector({
   key: 'CurrentUserName',
   get: async ({get}) => {
-    const response = myDBQuery({userID: get(currentUserIDState)});
+    const response = await myDBQuery({
+      userID: get(currentUserIDState),
+    });
     if (response.error) {
       throw response.error;
     }
@@ -104,7 +109,7 @@ Sometimes you want to be able to query based on parameters that aren't just base
 const userNameQuery = selectorFamily({
   key: 'UserName',
   get: userID => async ({get}) => {
-    const response = myDBQuery({userID});
+    const response = await myDBQuery({userID});
     if (response.error) {
       throw response.error;
     }
