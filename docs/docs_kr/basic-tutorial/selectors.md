@@ -2,14 +2,14 @@
 title: Selectors
 ---
 
-A **selector** represents a piece of **derived state**. You can think of derived state as the output of passing state to a pure function that modifies the given state in some way.
+**Selector**는 파생된 상태(**derived state**)의 일부를 나타낸다. 파생된 상태를 어떤 방법으로든 주어진 상태를 수정하는 순수 함수에 전달된 상태의 결과물로 생각할 수 있다.
 
-Derived state is a powerful concept because it lets us build dynamic data that depends on other data. In the context of our todo list application, the following are considered derived state:
+파생된 상태는 다른 데이터에 의존하는 동적인 데이터를 만들 수 있기 때문에 강력한 개념이다. 우리의 todo 리스트 애플리케이션 맥락에서는 다음과 같은 것들이 파생된 상태로 간주된다.
 
-- **Filtered todo list**: derived from the complete todo list by creating a new list that has certain items filtered out based on some criteria (such as filtering out items that are already completed).
-- **Todo list statistics**: derived from the complete todo list by calculating useful attributes of the list, such as the total number of items in the list, the number of completed items, and the percentage of items that are completed.
+- **필터링 된 todo 리스트** :  전체 todo 리스트에서 일부 기준에 따라 특정 항목이 필터링 된 새 리스트(예: 이미 완료된 항목 필터링)를 생성되어 파생된다.
+- **Todo 리스트 통계** : 전체 todo 리스트에서 목록의 총 항목 수, 완료된 항목 수, 완료된 항목의 백분율 같은 리스트의 유용한 속성들을 계산하여 파생된다.
 
-To implement a filtered todo list, we need to choose a set of filter criteria whose value can be saved in an atom. The filter options we'll use are: "Show All", "Show Completed", and "Show Uncompleted". The default value will be "Show All":
+필터링 된 todo 리스트를 구현하기 위해서 우리는 atom에 저장될 수 있는 필터 기준을 선택해야 한다. 우리가 사용하게 될 필터 옵션은 "Show All", "Show Completed"과 "Show Uncompleted"가 있다. 기본값은 "Show All"이 될 것이다.
 
 ```javascript
 const todoListFilterState = atom({
@@ -18,7 +18,7 @@ const todoListFilterState = atom({
 });
 ```
 
-Using `todoListFilterState` and `todoListState`, we can build a `filteredTodoListState` selector which derives a filtered list:
+`todoListFilterState`와 `todoListState`를 사용해서 우리는 필터링 된 리스트를 파생하는 `filteredTodoListState` selector를 구성할 수 있다.
 
 ```javascript
 const filteredTodoListState = selector({
@@ -39,11 +39,11 @@ const filteredTodoListState = selector({
 });
 ```
 
-The `filteredTodoListState` internally keeps track of two dependencies: `todoListFilterState` and `todoListState` so that it re-runs if either of those change.
+`filteredTodoListState`는 내부적으로 2개의 의존성 `todoListFilterState`와 `todoListState`을 추적한다. 그래서 둘 중 하나라도 변하면 `filteredTodoListState`는 재 실행된다.
 
-> From a component's point of view, selectors can be read using the same hooks that are used to read atoms. However it's important to note that certain hooks only work with **writable state** (i.e `useRecoilState()`). All atoms are writable state, but only some selectors are considered writable state (selectors that have both a `get` and `set` property). See the [Core Concepts](/docs/introduction/core-concepts) page for more information on this topic.
+> 컴포넌트 관점에서 보면 selector는 atom을 읽을 때 사용하는 같은 훅을 사용해서 읽을 수 있다. 그러나 특정한 훅은 **쓰기 가능 상태** (즉, `useRecoilState()`)에서만 작동하는 점을 유의해야 한다. 모든 atom은 쓰기 가능 상태지만 selector는 일부만 쓰기 가능한 상태(`get`과 `set` 속성을 둘 다 가지고 있는 `selector`)로 간주된다. 이 주제에 대해서 더 많은 정보를 보고 싶다면 [Core Concepts](/docs/introduction/core-concepts) 페이지를 보면 된다.
 
-Displaying our filtered todoList is as simple as changing one line in the `TodoList` component:
+필터링 된 todo 리스트를 표시하는 것은 `TodoList` 컴포넌트에서 한 줄만 변경하면 될 만큼 간단하다.
 
 ```jsx
 function TodoList() {
@@ -64,7 +64,7 @@ function TodoList() {
 }
 ```
 
-Note the UI is the same as the `todoListFilterState` has a default of `"Show All"`. In order to change the filter, we need to implement the `TodoListFilters` component:
+UI는 'toListFilterState'의 기본값인 'Show All'과 동일하다. 필터를 변경하려면 우리는 `TodoListFilter` 컴포넌트를 구현해야 한다.
 
 ```jsx
 function TodoListFilters() {
@@ -87,16 +87,16 @@ function TodoListFilters() {
 }
 ```
 
-With a few lines of code we've managed to implement filtering! We'll use the same concepts to implement the `TodoListStats` component.
+몇 줄의 코드로 우리는 필터링 기능을 구현할 수 있다! 우리는 `TodoListStats` 컴포넌트를 구현하기 위해 동일한 개념을 사용할 것이다.
 
-We want to display the following stats:
+우리는 다음 통계를 표시하려 한다.
 
-- Total number of todo items
-- Total number of completed items
-- Total number of uncompleted items
-- Percentage of items completed
+- todo 항목들의 총개수
+- 완료된 todo 항목들의 총개수
+- 완료되지 않은 todo 항목들의 총개수
+- 완료된 항목의 백분율
 
-While we could create a selector for each of the stats, an easier approach would be to create one selector that returns an object containing the data we need. We'll call this selector `todoListStatsState`:
+각 통계에 대해 selector를 만들 수 있지만, 필요한 데이터를 포함하는 객체를 반환하는 selector 하나를 만드는 것이 더 쉬운 방법일 것이다. 우리는 이 selector를 'toDoListStatsState'라고 부를 것이다.
 
 ```javascript
 const todoListStatsState = selector({
@@ -118,7 +118,7 @@ const todoListStatsState = selector({
 });
 ```
 
-To read the value of `todoListStatsState`, we use `useRecoilValue()` once again:
+`todoListStatsState`값을 읽기 위해, 우리는 `useRecoilValue()`를 한 번 더 사용할 것이다.
 
 ```jsx
 function TodoListStats() {
@@ -142,12 +142,12 @@ function TodoListStats() {
 }
 ```
 
-To summarize, we've created a todo list app that meets all of our requirements:
+요약하자면, 우리는 모든 요구 사항을 충족하는 todo 리스트 앱을 만들었다.
 
-- Add todo items
-- Edit todo items
-- Delete todo items
-- Filter todo items
-- Display useful stats
+- todo 아이템 추가
+- todo 아이템 수정
+- todo 아이템 삭제
+- todo 아이템 필터링
+- 유용한 통계 표시
 
-We could stop here, but there are some important performance considerations that we explore in the "bonus" section.
+여기서 멈출 수도 있지만, "보너스" 섹션에서 탐구하는 몇 가지 중요한 성능 고려사항들이 있다.
