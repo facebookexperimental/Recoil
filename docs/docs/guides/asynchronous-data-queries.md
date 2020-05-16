@@ -77,7 +77,9 @@ But what if the request has an error?  Recoil selectors can also throw errors wh
 const currentUserNameQuery = selector({
   key: 'CurrentUserName',
   get: async ({get}) => {
-    const response = myDBQuery({userID: get(currentUserIDState)});
+    const response = await myDBQuery({
+      userID: get(currentUserIDState),
+    });
     if (response.error) {
       throw response.error;
     }
@@ -107,7 +109,7 @@ Sometimes you want to be able to query based on parameters that aren't just base
 const userNameQuery = selectorFamily({
   key: 'UserName',
   get: userID => async ({get}) => {
-    const response = myDBQuery({userID});
+    const response = await myDBQuery({userID});
     if (response.error) {
       throw response.error;
     }
