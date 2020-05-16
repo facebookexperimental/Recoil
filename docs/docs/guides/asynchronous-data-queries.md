@@ -29,9 +29,9 @@ function CurrentUserInfo() {
 
 function MyApp() {
   return (
-    <ReactRoot>
+    <RecoilRoot>
       <CurrentUserInfo />
-    </ReactRoot>
+    </RecoilRoot>
   );
 }
 ```
@@ -64,11 +64,11 @@ But, since React is synchronous, what will it render before the promise resolves
 ```js
 function MyApp() {
   return (
-    <ReactRoot>
+    <RecoilRoot>
       <React.Suspense fallback={<div>Loading...</div>}>
         <CurrentUserInfo />
       </React.Suspense>
-    </ReactRoot>
+    </RecoilRoot>
   );
 }
 ```
@@ -98,13 +98,13 @@ function CurrentUserInfo() {
 
 function MyApp() {
   return (
-    <ReactRoot>
+    <RecoilRoot>
       <ErrorBoundary>
         <React.Suspense fallback={<div>Loading...</div>}>
           <CurrentUserInfo />
         </React.Suspense>
       </ErrorBoundary>
-    </ReactRoot>
+    </RecoilRoot>
   );
 }
 ```
@@ -132,7 +132,7 @@ function UserInfo({userID}) {
 
 function MyApp() {
   return (
-    <ReactRoot>
+    <RecoilRoot>
       <ErrorBoundary>
         <React.Suspense fallback={<div>Loading...</div>}>
           <UserInfo userID={1}/>
@@ -140,7 +140,7 @@ function MyApp() {
           <UserInfo userID={3}/>
         </React.Suspense>
       </ErrorBoundary>
-    </ReactRoot>
+    </RecoilRoot>
   );
 }
 ```
@@ -204,13 +204,13 @@ function CurrentUserInfo() {
 
 function MyApp() {
   return (
-    <ReactRoot>
+    <RecoilRoot>
       <ErrorBoundary>
         <React.Suspense fallback={<div>Loading...</div>}>
           <CurrentUserInfo />
         </React.Suspense>
       </ErrorBoundary>
-    </ReactRoot>
+    </RecoilRoot>
   );
 }
 ```
