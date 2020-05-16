@@ -43,7 +43,9 @@ If the user names were stored on some database we need to query, all we need to 
 const currentUserNameQuery = selector({
   key: 'CurrentUserName',
   get: async ({get}) => {
-    const response = await myDBQuery({ userID: get(currentUserIDState) });
+    const response = await myDBQuery({
+      userID: get(currentUserIDState),
+    });
     return response.name;
   },
 });
