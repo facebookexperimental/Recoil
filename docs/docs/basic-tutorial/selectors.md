@@ -149,5 +149,3 @@ To summarize, we've created a todo list app that meets all of our requirements:
 - Delete todo items
 - Filter todo items
 - Display useful stats
-
-We could stop here, but there are some important performance considerations that we explore in the "bonus" section.
