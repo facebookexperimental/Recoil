@@ -1,5 +1,5 @@
 ---
-title: useRecoilValue(state)
+title: useRecoilValue()
 sidebar_label: useRecoilValue()
 ---
 
