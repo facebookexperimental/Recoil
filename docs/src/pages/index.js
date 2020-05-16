@@ -21,8 +21,8 @@ const features = [
     // imageUrl: 'img/undraw_docusaurus_mountain.svg',
     description: (
       <>
-        Recoil works and thinks like React. Add some to your app and get fast and
-        flexible shared state.
+        Recoil works and thinks like React. Add some to your app and get fast
+        and flexible shared state.
       </>
     ),
   },
@@ -41,8 +41,9 @@ const features = [
     // imageUrl: 'img/undraw_docusaurus_react.svg',
     description: (
       <>
-        Implement persistence, routing, time-travel debugging, or undo by observing
-        all state changes across your app, without impairing code-splitting.
+        Implement persistence, routing, time-travel debugging, or undo by
+        observing all state changes across your app, without impairing
+        code-splitting.
       </>
     ),
   },
@@ -67,8 +68,7 @@ function Home() {
   const context = useDocusaurusContext();
   const {siteConfig = {}} = context;
   return (
-    <Layout
-      description="A state management library for React.">
+    <Layout description="A state management library for React.">
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
         <div className="container">
           <h1 className="hero__title">{siteConfig.title}</h1>
@@ -103,11 +103,19 @@ function Home() {
           </section>
         )}
         <section className={styles.features}>
-         <div className="container">
-          <div className="row">
-            <div className="container">
-              <div className="row" style={{justifyContent: 'center'}}>
-                <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/fb3cOMFkEzs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>                </div>
+          <div className="container">
+            <div className="row">
+              <div className="container">
+                <div className="row" style={{justifyContent: 'center'}}>
+                  <iframe
+                    width="560"
+                    height="315"
+                    src="https://www.youtube-nocookie.com/embed/fb3cOMFkEzs"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                  />{' '}
+                </div>
               </div>
             </div>
           </div>
