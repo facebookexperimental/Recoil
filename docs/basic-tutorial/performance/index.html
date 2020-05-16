@@ -13,26 +13,26 @@
 <link data-react-helmet="true" rel="shortcut icon" href="/img/favicon.ico">
 
 
-<link rel="stylesheet" href="/styles.03176d91.css">
+<link rel="stylesheet" href="/styles.cc0052f9.css">
 
 
-<link rel="preload" href="/styles.45495165.js" as="script">
+<link rel="preload" href="/styles.ed083a4b.js" as="script">
 
-<link rel="preload" href="/runtime~main.f2d1c07e.js" as="script">
+<link rel="preload" href="/runtime~main.5ac7dece.js" as="script">
 
-<link rel="preload" href="/main.dab1db01.js" as="script">
+<link rel="preload" href="/main.d9c797eb.js" as="script">
 
-<link rel="preload" href="/1.1fa87c6d.js" as="script">
+<link rel="preload" href="/1.9e24378e.js" as="script">
 
-<link rel="preload" href="/2.62637fc8.js" as="script">
+<link rel="preload" href="/2.c36e92c5.js" as="script">
 
-<link rel="preload" href="/44.a9a9b226.js" as="script">
+<link rel="preload" href="/45.bb0d5a36.js" as="script">
 
-<link rel="preload" href="/20ac7829.566d2dbf.js" as="script">
+<link rel="preload" href="/20ac7829.3232bd82.js" as="script">
 
-<link rel="preload" href="/17896441.0c31400f.js" as="script">
+<link rel="preload" href="/17896441.b40fdc04.js" as="script">
 
-<link rel="preload" href="/36b6d91f.37e87b1c.js" as="script">
+<link rel="preload" href="/36b6d91f.277fba49.js" as="script">
 
 </head>
 <body>
@@ -44,23 +44,23 @@
 </span></div><div class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token keyword" style="font-style:italic">const</span><span class="token plain"> </span><span class="token maybe-class-name">TodoListStats</span><span class="token plain"> </span><span class="token operator" style="color:rgb(137, 221, 255)">=</span><span class="token plain"> </span><span class="token maybe-class-name">React</span><span class="token punctuation" style="color:rgb(199, 146, 234)">.</span><span class="token method function property-access" style="color:rgb(130, 170, 255)">memo</span><span class="token punctuation" style="color:rgb(199, 146, 234)">(</span><span class="token punctuation" style="color:rgb(199, 146, 234)">(</span><span class="token punctuation" style="color:rgb(199, 146, 234)">)</span><span class="token plain"> </span><span class="token arrow operator" style="color:rgb(137, 221, 255)">=&gt;</span><span class="token plain"> </span><span class="token spread operator" style="color:rgb(137, 221, 255)">...</span><span class="token punctuation" style="color:rgb(199, 146, 234)">)</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span></div></div></div></div></div><p>That helps with the re-renders of <code>&lt;TodoItemCreator /&gt;</code> and <code>&lt;TodoListFilters /&gt;</code> as they no longer re-render in response to re-renders of their parent component, <code>&lt;TodoList /&gt;</code>, but we still have the problem of <code>&lt;TodoItem /&gt;</code> and <code>&lt;TodoListStats /&gt;</code> re-rendering when individual todo items have their text changed as text changes will result in a new <code>todoListFilterState</code>, which both <code>&lt;TodoItem /&gt;</code> and <code>&lt;TodoListStats /&gt;</code> are subscribed to.</p><h2><a aria-hidden="true" tabindex="-1" class="anchor enhancedAnchor_ZqCz" id="optimization-2-atomfamily"></a><a aria-hidden="true" tabindex="-1" class="hash-link" href="#optimization-2-atomfamily" title="Direct link to heading">#</a>Optimization #2: <code>atomFamily()</code></h2><h3><a aria-hidden="true" tabindex="-1" class="anchor enhancedAnchor_ZqCz" id="rethinking-state-shape"></a><a aria-hidden="true" tabindex="-1" class="hash-link" href="#rethinking-state-shape" title="Direct link to heading">#</a>Rethinking State Shape</h3><p>Thinking of a todo list as an array of objects is problematic because it forms a tight coupling between each individual todo item and the list of all todo items.</p><p>To fix this issue, we need to rethink our state shape by thinking about <strong>normalized state</strong>. In the context of our todo-list app, this means storing the <strong>list</strong> of item ids separately from the <strong>data</strong> for each invididual item.</p><blockquote><p>For a more detailed discussion on how to think about normalized state, see <a href="https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape">this page from the Redux documentation</a>.</p></blockquote><p>This ultimately means that we will be splitting our <code>todoListState</code> into two:</p><ul><li>An array of todo item IDs</li><li>A mapping of item ID to item data</li></ul><p>The array of todo item IDs can be implemented using an atom like so:</p><div class="mdxCodeBlock_iHAB"><div class="codeBlockContent_32p_"><button type="button" aria-label="Copy code to clipboard" class="copyButton_1BYj">Copy</button><div tabindex="0" class="prism-code language-javascript codeBlock_19pQ"><div class="codeBlockLines_2n9r" style="color:#bfc7d5;background-color:#292d3e"><div class="token-line" style="color:#bfc7d5"><span class="token keyword" style="font-style:italic">const</span><span class="token plain"> todoListItemIdsState </span><span class="token operator" style="color:rgb(137, 221, 255)">=</span><span class="token plain"> </span><span class="token function" style="color:rgb(130, 170, 255)">atom</span><span class="token punctuation" style="color:rgb(199, 146, 234)">(</span><span class="token punctuation" style="color:rgb(199, 146, 234)">{</span><span class="token plain"></span></div><div class="token-line" style="color:#bfc7d5"><span class="token plain">  key</span><span class="token operator" style="color:rgb(137, 221, 255)">:</span><span class="token plain"> </span><span class="token string" style="color:rgb(195, 232, 141)">&#x27;todoListItemIdsState&#x27;</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token plain"></span></div><div class="token-line" style="color:#bfc7d5"><span class="token plain">  </span><span class="token keyword module" style="font-style:italic">default</span><span class="token operator" style="color:rgb(137, 221, 255)">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(199, 146, 234)">[</span><span class="token punctuation" style="color:rgb(199, 146, 234)">]</span><span class="token punctuation" style="color:rgb(199, 146, 234)">,</span><span class="token plain"></span></div><div class="token-line" style="color:#bfc7d5"><span class="token plain"></span><span class="token punctuation" style="color:rgb(199, 146, 234)">}</span><span class="token punctuation" style="color:rgb(199, 146, 234)">)</span><span class="token punctuation" style="color:rgb(199, 146, 234)">;</span></div></div></div></div></div><p>For implementing a mapping of item ID to item data, Recoil provides a utility method that allows us to dynamically create a mapping from ID to atom. This utlity is <a href="/docs/api-reference/utils/atomFamily"><code>atomFamily()</code></a>.</p><h3><a aria-hidden="true" tabindex="-1" class="anchor enhancedAnchor_ZqCz" id="atomfamily"></a><a aria-hidden="true" tabindex="-1" class="hash-link" href="#atomfamily" title="Direct link to heading">#</a><code>atomFamily()</code></h3><p>We use the <code>atomFamily()</code> function</p></div></article><div class="margin-vert--xl"><div class="row"><div class="col"><a href="https://github.com/facebookexperimental/Recoil/edit/docs/docs/docs/basic-tutorial/performance.md" target="_blank" rel="noreferrer noopener"><svg fill="currentColor" height="1.2em" width="1.2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 40 40" style="margin-right:0.3em;vertical-align:sub"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div></div></div><div class="margin-vert--lg"><nav class="pagination-nav"><div class="pagination-nav__item"></div><div class="pagination-nav__item pagination-nav__item--next"></div></nav></div></div></div><div class="col col--3"><div class="tableOfContents_TbNY"><ul class="contents contents__left-border"><li><a href="#todolist-" class="contents__link"><code>&lt;TodoList /&gt;</code></a></li><li><a href="#todoitem-" class="contents__link"><code>&lt;TodoItem /&gt;</code></a></li><li><a href="#todoitemcreator-" class="contents__link"><code>&lt;TodoItemCreator /&gt;</code></a></li><li><a href="#todolistfilters-" class="contents__link"><code>&lt;TodoListFilters /&gt;</code></a></li><li><a href="#todoliststats-" class="contents__link"><code>&lt;TodoListStats /&gt;</code></a></li><li><a href="#room-for-improvement" class="contents__link">Room for Improvement</a></li><li><a href="#optimization-1-reactmemo" class="contents__link">Optimization #1: <code>React.memo()</code></a></li><li><a href="#optimization-2-atomfamily" class="contents__link">Optimization #2: <code>atomFamily()</code></a><ul><li><a href="#rethinking-state-shape" class="contents__link">Rethinking State Shape</a></li><li><a href="#atomfamily" class="contents__link"><code>atomFamily()</code></a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container"><div class="row footer__links"><div class="col footer__col"><h4 class="footer__title">Learn</h4><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" href="/docs/introduction/getting-started">Getting Started</a></li><li class="footer__item"><a class="footer__link-item" href="/docs/introduction/core-concepts">Core Concepts</a></li></ul></div><div class="col footer__col"><h4 class="footer__title">Community</h4><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://twitter.com/recoiljs">Twitter</a></li></ul></div><div class="col footer__col"><h4 class="footer__title">More</h4><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noopener noreferrer" href="https://github.com/facebookexperimental/Recoil">GitHub</a></li></ul></div><div class="col footer__col"><h4 class="footer__title">Legal</h4><ul class="footer__items"><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noreferrer noopener" href="https://opensource.facebook.com/legal/privacy/">Privacy</a></li><li class="footer__item"><a class="footer__link-item" target="_blank" rel="noreferrer noopener" href="https://opensource.facebook.com/legal/terms/">Terms</a></li></ul></div></div><div class="text--center"><div class="margin-bottom--sm"><a href="https://opensource.facebook.com" target="_blank" rel="noopener noreferrer" class="footerLogoLink_1Wg7"><img class="footer__logo" alt="Facebook Open Source Logo" src="/img/oss_logo.png"></a></div><div>Copyright © 2020 Facebook, Inc. Built with Docusaurus.</div></div></div></footer>
 </div>
 
-<script src="/styles.45495165.js"></script>
+<script src="/styles.ed083a4b.js"></script>
 
-<script src="/runtime~main.f2d1c07e.js"></script>
+<script src="/runtime~main.5ac7dece.js"></script>
 
-<script src="/main.dab1db01.js"></script>
+<script src="/main.d9c797eb.js"></script>
 
-<script src="/1.1fa87c6d.js"></script>
+<script src="/1.9e24378e.js"></script>
 
-<script src="/2.62637fc8.js"></script>
+<script src="/2.c36e92c5.js"></script>
 
-<script src="/44.a9a9b226.js"></script>
+<script src="/45.bb0d5a36.js"></script>
 
-<script src="/20ac7829.566d2dbf.js"></script>
+<script src="/20ac7829.3232bd82.js"></script>
 
-<script src="/17896441.0c31400f.js"></script>
+<script src="/17896441.b40fdc04.js"></script>
 
-<script src="/36b6d91f.37e87b1c.js"></script>
+<script src="/36b6d91f.277fba49.js"></script>
 
 
 </body>
