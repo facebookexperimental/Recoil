@@ -46,7 +46,7 @@ function ElementListItem({elementID}) {
 }
 ```
 
-A `familyAtom()` takes almost the same options as a simple `atom()`. However, the default value can also be parameterized. That means you could provide a function which takes the parameter value and returns the actual default value. For example:
+An `atomFamily()` takes almost the same options as a simple `atom()`.  However, the default value can also be parameterized. That means you could provide a function which takes the parameter value and returns the actual default value.  For example:
 
 ```js
 const myAtomFamily = atomFamily({
