@@ -41,7 +41,7 @@ test('useRecoilValueLoadable - loadable with value', async () => {
     expect(() => loadable.promiseOrThrow()).toThrow(Error);
     return loadable.valueOrThrow();
   }
-  const c = renderElements([<ReadLoadable />]);
+  const c = renderElements(<ReadLoadable />);
   expect(c.textContent).toEqual('VALUE');
   await promise;
 });
@@ -64,7 +64,7 @@ test('useRecoilValueLoadable - loadable with error', async () => {
     expect(() => loadable.promiseOrThrow()).toThrow(Error);
     return 'VALUE';
   }
-  const c = renderElements([<ReadLoadable />]);
+  const c = renderElements(<ReadLoadable />);
   expect(c.textContent).toEqual('VALUE');
   await promise;
 });
@@ -108,7 +108,7 @@ test('useRecoilValueLoadable - loading loadable', async () => {
       return loadable.valueOrThrow();
     }
   }
-  const c = renderElements([<ReadLoadable />]);
+  const c = renderElements(<ReadLoadable />);
   expect(c.textContent).toEqual('LOADING');
   resolve('VALUE');
   resolved = true;

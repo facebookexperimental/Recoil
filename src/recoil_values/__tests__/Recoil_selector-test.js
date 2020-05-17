@@ -28,7 +28,8 @@ const {
   asyncSelector,
   makeStore,
   ReadsAtom,
-  renderElements
+  renderElements,
+  resolvingAsyncSelector
 } = require('../../testing/Recoil_TestingUtils');
 const {DefaultValue} = require('../../core/Recoil_Node');
 
@@ -55,7 +56,7 @@ function reset(recoilState) {
 
 test('useRecoilState - static selector', () => {
   const staticSel = constSelector('HELLO');
-  const c = renderElements([<ReadsAtom atom={staticSel} />]);
+  const c = renderElements(<><ReadsAtom atom={staticSel} /></>);
   expect(c.textContent).toEqual('"HELLO"');
 });
 
@@ -116,7 +117,7 @@ test('selector reset', () => {
 
 test('useRecoilState - resolved async selector', () => {
   const resolvingSel = resolvingAsyncSelector('HELLO');
-  const c = renderElements([<ReadsAtom atom={resolvingSel} />]);
+  const c = renderElements(<><ReadsAtom atom={resolvingSel} /></>);
   expect(c.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
   expect(c.textContent).toEqual('"HELLO"');
@@ -183,7 +184,7 @@ test('selector - catching loads', () => {
 
 test('useRecoilState - selector catching exceptions', () => {
   const throwingSel = errorSelector('MY ERROR');
-  const c1 = renderElements([<ReadsAtom atom={throwingSel} />]);
+  const c1 = renderElements(<><ReadsAtom atom={throwingSel} /></>);
   expect(c1.textContent).toEqual('error');
 
   const catchingSelector = selector({
@@ -198,7 +199,7 @@ test('useRecoilState - selector catching exceptions', () => {
       }
     },
   });
-  const c2 = renderElements([<ReadsAtom atom={catchingSelector} />]);
+  const c2 = renderElements(<><ReadsAtom atom={catchingSelector} /></>);
   expect(c2.textContent).toEqual('"CAUGHT"');
 });
 
@@ -206,7 +207,7 @@ test('useRecoilState - async selector', () => {
   const resolvingSel = resolvingAsyncSelector('READY');
 
   // On first read it is blocked on the async selector
-  const c1 = renderElements([<ReadsAtom atom={resolvingSel} />]);
+  const c1 = renderElements(<><ReadsAtom atom={resolvingSel} /></>);
   expect(c1.textContent).toEqual('loading');
 
   // When that resolves the data is ready
@@ -222,7 +223,7 @@ test('useRecoilState - selector blocked on dependency', () => {
   });
 
   // On first read, the selectors dependency is still loading
-  const c2 = renderElements([<ReadsAtom atom={blockedSelector} />]);
+  const c2 = renderElements(<><ReadsAtom atom={blockedSelector} /></>);
   expect(c2.textContent).toEqual('loading');
 
   // When the dependency resolves, the data is ready
@@ -248,7 +249,7 @@ test('useRecoilState - selector catching loads', async () => {
 
   // On first read the dependency is not yet available, but the
   // selector catches and bypasses it.
-  const c3 = renderElements([<ReadsAtom atom={bypassSelector} />]);
+  const c3 = renderElements(<><ReadsAtom atom={bypassSelector} /></>);
   expect(c3.textContent).toEqual('"BYPASS"');
 
   // When the dependency does resolve, the selector re-evaluates
@@ -281,7 +282,7 @@ test('useRecoilState - selector catching all of 2 loads', async () => {
 
   // On first read the dependency is not yet available, but the
   // selector catches and bypasses it.
-  const c3 = renderElements([<ReadsAtom atom={bypassSelector} />]);
+  const c3 = renderElements(<><ReadsAtom atom={bypassSelector} /></>);
   expect(c3.textContent).toEqual('0');
 
   // After the first resolution, we're still waiting on the second
@@ -316,7 +317,7 @@ test('useRecoilState - selector catching any of 2 loads', async () => {
 
   // On first read the dependency is not yet available, but the
   // selector catches and bypasses it.
-  const c3 = renderElements([<ReadsAtom atom={bypassSelector} />]);
+  const c3 = renderElements(<><ReadsAtom atom={bypassSelector} /></>);
   expect(c3.textContent).toEqual('0');
 
   // Because both dependencies are tried, they should both resolve
@@ -341,7 +342,7 @@ test('useRecoilState - selector catching promise and resolving asynchronously', 
       }
     },
   });
-  const c = renderElements([<ReadsAtom atom={catchPromiseSelector} />]);
+  const c = renderElements(<><ReadsAtom atom={catchPromiseSelector} /></>);
 
   expect(c.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
@@ -378,7 +379,7 @@ test('useRecoilState - selector catching promise 2', async () => {
       }
     },
   });
-  const c = renderElements([<ReadsAtom atom={catchPromiseSelector} />]);
+  const c = renderElements(<><ReadsAtom atom={catchPromiseSelector} /></>);
 
   expect(c.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
@@ -442,7 +443,7 @@ test('selector is able to track dependencies discovered asynchronously', () => {
     return selVal;
   }
 
-  const container = renderElements([<Component />]);
+  const container = renderElements(<><Component /></>);
 
   expect(container.textContent).toEqual('loading');
 
@@ -496,7 +497,7 @@ test('selector should rerun entire selector when a dep changes', () => {
     return selVal;
   }
 
-  const container = renderElements([<Component />]);
+  const container = renderElements(<><Component /></>);
 
   expect(container.textContent).toEqual('loading');
 
@@ -532,9 +533,9 @@ test('async selector runs the minimum number of times required', () => {
     },
   });
 
-  const container = renderElements([
-    <ReadsAtom atom={selectorWithAsyncDeps} />,
-  ]);
+  const container = renderElements(<>
+    <ReadsAtom atom={selectorWithAsyncDeps} />
+  </>);
 
   expect(numTimesRan).toBe(1);
 
@@ -609,7 +610,7 @@ test('selector - dynamic getRecoilValue()', () => {
     },
   });
 
-  const el = renderElements([<ReadsAtom atom={sel1} />]);
+  const el = renderElements(<><ReadsAtom atom={sel1} /></>);
   expect(el.textContent).toEqual('loading');
 
   act(() => jest.runAllTimers());
