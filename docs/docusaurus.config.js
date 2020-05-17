@@ -16,6 +16,9 @@ module.exports = {
   organizationName: 'facebookexperimental', // Usually your GitHub org/user name.
   projectName: 'Recoil', // Usually your repo name.
   themeConfig: {
+    googleAnalytics: {
+      trackingID: 'UA-166885839-1',
+    },
     image: 'img/og-image.png',
     navbar: {
       title: 'Recoil',
@@ -129,4 +132,5 @@ module.exports = {
       },
     ],
   ],
+  plugins: ['@docusaurus/plugin-google-analytics'],
 };
