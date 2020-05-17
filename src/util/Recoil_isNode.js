@@ -9,6 +9,10 @@
 'use strict';
 
 function isNode(object: mixed): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
   const doc =
     object != null ? (object: $FlowFixMe).ownerDocument ?? object : document;
   const defaultView = doc.defaultView ?? window;
