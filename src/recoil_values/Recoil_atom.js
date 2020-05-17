@@ -72,7 +72,7 @@ const {loadableWithValue} = require('../adt/Recoil_Loadable');
 const {DEFAULT_VALUE, DefaultValue, registerNode} = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 // @fb-only: const {scopedAtom} = require('./Recoil_ScopedAtom');
-
+const selector = require('./Recoil_selector')
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
