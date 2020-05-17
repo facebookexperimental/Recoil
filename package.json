@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rollup -c && node scripts/postbuild.js",
-    "format": "prettier --write \"src/**/*.js\""
+    "format": "prettier --write \"./**/*.{js,jsx,md,json}\""
   },
   "peerDependencies": {
     "react": "^16.13.1",
