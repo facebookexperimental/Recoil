@@ -12,12 +12,12 @@
 
 const React = require('React');
 const {act} = require('ReactTestUtils');
-const constSelector = require('Recoil_const');
-const errorSelector = require('Recoil_error');
-const {useRecoilValueLoadable} = require('Recoil_Hooks');
-const {asyncSelector, renderElements} = require('Recoil_TestingUtils');
+const constSelector = require('../../recoil_values/Recoil_const');
+const errorSelector = require('../../recoil_values/Recoil_error');
+const {useRecoilValueLoadable} = require('../Recoil_Hooks');
+const {asyncSelector, renderElements} = require('../../testing/Recoil_TestingUtils');
 
-const gkx = require('gkx');
+const gkx = require('../../util/Recoil_gkx');
 
 gkx.setPass('recoil_async_selector_refactor');
 

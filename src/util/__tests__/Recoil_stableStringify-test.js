@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const stableStringify = require('Recoil_stableStringify');
+const stableStringify = require('../Recoil_stableStringify');
 
 const immutable = require('immutable');
 

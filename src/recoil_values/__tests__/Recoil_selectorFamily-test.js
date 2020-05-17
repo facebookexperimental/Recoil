@@ -13,19 +13,19 @@
 import type {LoadablePromise} from 'Recoil_Loadable';
 import type {RecoilValue} from 'Recoil_RecoilValue';
 
-const gkx = require('gkx');
+const gkx = require('../../util/Recoil_gkx');
 gkx.setPass('recoil_async_selector_refactor');
 
-const atom = require('Recoil_atom');
-const cacheMostRecent = require('Recoil_cacheMostRecent');
-const cacheWithReferenceEquality = require('Recoil_cacheWithReferenceEquality');
-const {DefaultValue} = require('Recoil_Node');
-const selectorFamily = require('Recoil_selectorFamily');
+const atom = require('../Recoil_atom');
+const cacheMostRecent = require('../../caches/Recoil_cacheMostRecent');
+const cacheWithReferenceEquality = require('../../caches/Recoil_cacheWithReferenceEquality');
+const {DefaultValue} = require('../../core/Recoil_Node');
+const selectorFamily = require('../Recoil_selectorFamily');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('Recoil_RecoilValue');
-const {makeStore} = require('Recoil_TestingUtils');
+} = require('../../core/Recoil_RecoilValue');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
 let store;
 beforeEach(() => {

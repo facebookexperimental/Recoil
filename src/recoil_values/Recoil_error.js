@@ -12,8 +12,8 @@
 
 import type {RecoilValueReadOnly} from 'Recoil';
 
-const cacheWithReferenceEquality = require('Recoil_cacheWithReferenceEquality');
-const selectorFamily = require('Recoil_selectorFamily');
+const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
+const selectorFamily = require('./Recoil_selectorFamily');
 
 // flowlint-next-line unclear-type:off
 const throwingSelector = selectorFamily<any, any>({

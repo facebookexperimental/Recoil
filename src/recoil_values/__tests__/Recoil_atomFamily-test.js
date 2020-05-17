@@ -13,21 +13,21 @@
 const React = require('React');
 const {useState} = require('React');
 const {act} = require('ReactTestUtils');
-const atom = require('Recoil_atom');
-const atomFamily = require('Recoil_atomFamily');
+const atom = require('../Recoil_atom');
+const atomFamily = require('../Recoil_atomFamily');
 const {
   useRecoilState,
   useRecoilValue,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
-} = require('Recoil_Hooks');
+} = require('../../hooks/Recoil_Hooks');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('Recoil_RecoilValue');
-const selectorFamily = require('Recoil_selectorFamily');
-const stableStringify = require('Recoil_stableStringify');
-const {ReadsAtom, makeStore, renderElements} = require('Recoil_TestingUtils');
+} = require('../../core/Recoil_RecoilValue');
+const selectorFamily = require('../Recoil_selectorFamily');
+const stableStringify = require('../../util/Recoil_stableStringify');
+const {ReadsAtom, makeStore, renderElements} = require('../../testing/Recoil_TestingUtils');
 
 let id = 0;
 
