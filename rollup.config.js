@@ -37,7 +37,7 @@ const config = (mode) => ({
     },
     nodeResolve(),
     commonjs(),
-    mode === 'development' ? undefined : terser(),
+    mode === 'development' ? undefined : terser({ mangle: false }),
   ],
 });
 
