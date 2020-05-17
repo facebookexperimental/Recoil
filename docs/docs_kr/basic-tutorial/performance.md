@@ -2,42 +2,42 @@
 title: 'Bonus: Performance'
 ---
 
-Our existing implementation is perfectly valid, but there are some important performance implications to consider as our app evolves from being a small toy project to a million-line corporate program.
+우리가 구현한 기존의 것은 완벽하게 유요하다. 하지만 우리 앱이 작은 토이 프로젝트에서 백만줄짜리 기업 프로그램으로 발전하면서 고려해야 할 중요한 성능적 측면이 있다.
 
-Let's think about what will cause each of our components to re-render:
+우리의 컴포넌트들을 다시 랜더링 시키는 원인이 무엇인지 생각해보자.
 
 ### `<TodoList />`
 
-This component is subscribed to `filteredTodoListState`, which is a selector that has a dependency on `todoListState` and `todoListFilterState`. This means `TodoList` will re-render when the following state changes:
+이 컴포넌트는 'todoListState'와 'todoListFilterState'에 의존하는 selector인 'filteredToListState'를 구독한다. 이는 다음 상태가 변경될 때 'TodoList'가 다시 렌더링됨을 의미한다.
 
 - `todoListState`
 - `todoListFilterState`
 
 ### `<TodoItem />`
 
-This component is subscribed to `todoListState`, so it will re-render whenever `todoListState` changes and whenever its parent component, `TodoList`, re-renders.
+이 컴포넌트는 'todoListState'를 구독한다. 그래서 'todoListState'가 바뀔 때나 부모 컴포넌트인 'todoList'가 다시 렌더링 될 때 다시 렌더링 된다.
 
 ### `<TodoItemCreator />`
 
-This component is not subscribed to Recoil state (`useSetRecoilState()` does not create a subscription), so it will only re-render when its parent component, `TodoList`, re-renders.
+이 컴포넌트는 Recoil 상태("SetRecoilState()"가 구독을 생성하지 않음)를 구독하지 않는다, 그래서 부모 컴포넌트인 `TodoList`가 다시 렌더링 될 때만 다시 렌더링 된다.
 
 ### `<TodoListFilters />`
 
-This component is subcribed to `todoListFilterState`, so it will re-render when either that state changes or when its parent component, `TodoList`, re-renders.
+이 컴포넌트는 'todoListFilterState'를 구독한다. 그래서 해당 상태가 변경되거나 부모 컴포넌트인 'todoList'가 다시 렌더링될 때 다시 렌더링된다.
 
 ### `<TodoListStats />`
 
-This component is subscribed to `filteredTodoListState`, so it will re-render whenever that state changes or when its parent component, `TodoList`, re-renders.
+이 컴포넌트는 `filteredToListState`를 구독한다. 그래서 해당 상태가 바뀌거나 부모 컴포넌트인 `TodoList`가 다시 렌더링 될 때마다 다시 렌더링 된다.
 
-## Room for Improvement
+## 개션될 여지
 
-The existing implementation has a few drawbacks, mainly that fact that we are re-rendering the entire tree whenever we make any change to `todoListState` due to the fact that `<TodoList />` is the parent of all of our components, so when it re-renders so will all of its children.
+기존 구현에는 몇 가지 단점이 있는데, 주로 `<TodoList />`가 우리 모든 컴포넌트의 부모라는 점 때문에 우리가 'todoListState'를 변경할 때마다 트리 전체를 다시 렌더링하고 있다는 점이 있다.
 
-Ideally, components would re-render only when they absolutely have to (when the data that they display on the screen has changed).
+이상적인 경우에는 컴포넌트가 반드시 필요한 경우(화면에 표시되는 데이터가 변경된 경우)에만 다시 렌더링 될 수 있다.
 
-## Optimization #1: `React.memo()`
+## 최적화 #1: `React.memo()`
 
-To mitigate the issue of child components re-rendering unnecessarily, we can make use of [`React.memo()`](https://reactjs.org/docs/react-api.html#reactmemo), which memoizes a component based on the **props** passed to that component:
+하위 컴포넌트가 불필요하게 다시 렌더링되는 문제를 완화하기 위해 우리는 그 컴포넌트에 전달된 **props**를 기반으로 컴포넌트를 기억하는 [`React.memo()`](https://reactjs.org/docs/react-api.html#reactmemo)를 사용할 수 있다.
 
 ```js
 const TodoItem = React.memo(({item}) => ...);
@@ -49,24 +49,24 @@ const TodoListFilters = React.memo(() => ...);
 const TodoListStats = React.memo(() => ...);
 ```
 
-That helps with the re-renders of `<TodoItemCreator />` and `<TodoListFilters />` as they no longer re-render in response to re-renders of their parent component, `<TodoList />`, but we still have the problem of `<TodoItem />` and `<TodoListStats />` re-rendering when individual todo items have their text changed as text changes will result in a new `todoListFilterState`, which both `<TodoItem />` and `<TodoListStats />` are subscribed to.
+그것은 `<TodoItemCreator />`와 `<TodoListFilters />`가 이것들의 부모 컴포넌트인 `<TodoList />`가 다시 렌더링 되는 반응에 의해 더 이상 다시 렌더링 되지 않도록 돕는다. 그러나  `<TodoItem />`와 `<TodoListStats />`에는 여전히 개별적인 todo 아이템이 갖는 텍스트를 변경할 때 새로운 `todoListFilterState`가 생성되면서 그것을 구독하는 `<TodoItem />`와  `<TodoListStats />`가 다시 렌더링되는 문제가 있다.
 
-## Optimization #2: `atomFamily()`
+## 최적화 #2: `atomFamily()`
 
-### Rethinking State Shape
+### 상태의 모양을 다시 생각하기
 
-Thinking of a todo list as an array of objects is problematic because it forms a tight coupling between each individual todo item and the list of all todo items.
+todo 리스트를 객체의 배열로 생각하는 것은 각각의 todo 아이템과 전체 todo 아이템 리스트 사이에 긴밀한 결합을 형성하기 때문에 문제가 있다.
 
-To fix this issue, we need to rethink our state shape by thinking about **normalized state**. In the context of our todo-list app, this means storing the **list** of item ids separately from the **data** for each invididual item.
+이 문제를 해결하기 위해 우리는 **정규화된 상태**를 생각하며 상태의 모양을 다시 생각할 필요가 있다. 우리의 todo 리스트 앱의 맥락에서 이것은 각각의 아이템에 대한 데이터와 별도로 아이템 ID 리스트를 저장하는 것을 의미한다.
 
-> For a more detailed discussion on how to think about normalized state, see [this page from the Redux documentation](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape).
+> 어떻게 정규화된 상태에 대해 생각할 것인가에 대한 더 상세한 논의는 [이 Redux 문서의 페이지](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape)를 보면된다.
 
-This ultimately means that we will be splitting our `todoListState` into two:
+이것은 궁극적으로 'todoListState'를 두 가지로 나눈다는 것을 의미한다.
 
-- An array of todo item IDs
-- A mapping of item ID to item data
+- todo 아이템의 ID를 갖는 배열
+- 아이템의 ID를 아이템의 데이터에 매핑
 
-The array of todo item IDs can be implemented using an atom like so:
+다음과 같이 atom을 사용해서 todo 아이템 ID를 갖는 배열을 구현할 수 있다.
 
 ```javascript
 const todoListItemIdsState = atom({
@@ -75,8 +75,8 @@ const todoListItemIdsState = atom({
 });
 ```
 
-For implementing a mapping of item ID to item data, Recoil provides a utility method that allows us to dynamically create a mapping from ID to atom. This utlity is [`atomFamily()`](/docs/api-reference/utils/atomFamily).
+아이템의 ID를 아이템의 데이터에 매핑하는 것을 구현하기 위해서 Recoil은 ID로 atom을 동적으로 매핑할 수 있는 유틸리티 매서드을 제공한다. 이 유틸리티가 [`atomFamily()`](/docs/api-reference/utils/atomFamily)다.
 
 ### `atomFamily()`
 
-We use the `atomFamily()` function
+우리는 `atomFamily()` 함수를 이용한다.
