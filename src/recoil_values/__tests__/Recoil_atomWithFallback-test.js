@@ -62,7 +62,7 @@ test('Async fallback', () => {
     key: 'asyncFallback',
     default: Promise.resolve(42),
   });
-  const container = renderElements([<ReadsAtom atom={asyncFallback} />]);
+  const container = renderElements(<ReadsAtom atom={asyncFallback} />);
 
   expect(container.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
@@ -88,12 +88,12 @@ describe('ReturnDefaultOrFallback', () => {
       const [value] = useRecoilState((getAtom(): any));
       return value;
     }
-    const container = renderElements([
-      <SetsUnvalidatedAtomValues />,
+    const container = renderElements(<>
+      <SetsUnvalidatedAtomValues />
       <Switch>
         <MyReadsAtom getAtom={() => theAtom} />
-      </Switch>,
-    ]);
+      </Switch>
+    </>);
     act(() => {
       setUnvalidatedAtomValues(
         new Map().set('notDefinedYetAtomValidator', 123),
@@ -131,12 +131,12 @@ describe('ReturnDefaultOrFallback', () => {
       const [value] = useRecoilState((getAtom(): any));
       return value;
     }
-    const container = renderElements([
-      <SetsUnvalidatedAtomValues />,
+    const container = renderElements(<>
+      <SetsUnvalidatedAtomValues />
       <Switch>
         <MyReadsAtom getAtom={() => theAtom} />
-      </Switch>,
-    ]);
+      </Switch>
+    </>);
     act(() => {
       setUnvalidatedAtomValues(
         new Map().set('notDefinedYetAtomWithFallback', 123),

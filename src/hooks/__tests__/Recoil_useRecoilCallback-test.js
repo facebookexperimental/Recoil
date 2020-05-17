@@ -26,7 +26,7 @@ const {
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
 
-test('useRecoilCallback', () => {
+describe('useRecoilCallback', () => {
   it('Reads Recoil values', async () => {
     const anAtom = atom({key: 'atom1', default: 'DEFAULT'});
     let pTest = Promise.reject(new Error("Callback didn't resolve"));
@@ -39,7 +39,7 @@ test('useRecoilCallback', () => {
       });
       return null;
     }
-    renderElements([<Component />]);
+    renderElements(<Component />);
     act(cb);
     await pTest;
   });
@@ -68,7 +68,7 @@ test('useRecoilCallback', () => {
       });
       return null;
     }
-    renderElements([<Component />]);
+    renderElements(<Component />);
     act(cb);
     await flushPromisesAndTimers();
     expect(didRun).toBe(true);
@@ -88,10 +88,10 @@ test('useRecoilCallback', () => {
       return null;
     }
 
-    const container = renderElements([
-      <Component />,
-      <ReadsAtom atom={anAtom} />,
-    ]);
+    const container = renderElements(<>
+      <Component />
+      <ReadsAtom atom={anAtom} />
+    </>);
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => cb(123));
     expect(container.textContent).toBe('123');
@@ -108,10 +108,10 @@ test('useRecoilCallback', () => {
       return null;
     }
 
-    const container = renderElements([
-      <Component />,
-      <ReadsAtom atom={anAtom} />,
-    ]);
+    const container = renderElements(<>
+      <Component />
+      <ReadsAtom atom={anAtom} />
+    </>);
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => setCB(123));
     expect(container.textContent).toBe('123');
@@ -137,7 +137,7 @@ test('useRecoilCallback', () => {
     }
 
     // It sees an update flushed after the cb is created:
-    renderElements([<Component />]);
+    renderElements(<Component />);
     act(() => setter(345));
     act(cb);
     await flushPromisesAndTimers();
