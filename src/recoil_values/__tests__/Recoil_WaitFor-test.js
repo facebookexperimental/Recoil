@@ -13,14 +13,14 @@
 import type {LoadablePromise} from 'Recoil_Loadable';
 import type {RecoilValue} from 'Recoil_RecoilValue';
 
-const gkx = require('gkx');
+const gkx = require('../../util/Recoil_gkx');
 gkx.setPass('recoil_async_selector_refactor');
 
 const {act} = require('ReactTestUtils');
-const {loadableWithError, loadableWithValue} = require('Recoil_Loadable');
-const {getRecoilValueAsLoadable} = require('Recoil_RecoilValue');
-const {asyncSelector, makeStore} = require('Recoil_TestingUtils');
-const {noWait, waitForAll, waitForAny, waitForNone} = require('Recoil_WaitFor');
+const {loadableWithError, loadableWithValue} = require('../../adt/Recoil_Loadable');
+const {getRecoilValueAsLoadable} = require('../../core/Recoil_RecoilValue');
+const {asyncSelector, makeStore} = require('../../testing/Recoil_TestingUtils');
+const {noWait, waitForAll, waitForAny, waitForNone} = require('../Recoil_WaitFor');
 
 let store;
 beforeEach(() => {

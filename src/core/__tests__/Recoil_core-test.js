@@ -11,16 +11,16 @@
 'use strict';
 
 const React = require('React');
-const atom = require('Recoil_atom');
+const atom = require('../../recoil_values/Recoil_atom');
 const {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
   subscribeComponentToNode,
-} = require('Recoil_FunctionalCore');
-const {RecoilState} = require('Recoil_RecoilValue');
-const selector = require('Recoil_selector');
-const {makeStore} = require('Recoil_TestingUtils');
+} = require('../Recoil_FunctionalCore');
+const {RecoilState} = require('../Recoil_RecoilValue');
+const selector = require('../../recoil_values/Recoil_selector');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
 const immutable = require('immutable');
 

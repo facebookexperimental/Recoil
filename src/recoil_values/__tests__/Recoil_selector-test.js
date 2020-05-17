@@ -10,27 +10,27 @@
  */
 'use strict';
 
-const gkx = require('gkx');
+const gkx = require('../../util/Recoil_gkx');
 gkx.setPass('recoil_async_selector_refactor');
 
 const React = require('React');
 const {act} = require('ReactTestUtils');
-const {useRecoilState, useRecoilValue} = require('Recoil');
-const atom = require('Recoil_atom');
-const constSelector = require('Recoil_const');
-const errorSelector = require('Recoil_error');
+const {useRecoilState, useRecoilValue} = require('../../Recoil');
+const atom = require('../Recoil_atom');
+const constSelector = require('../Recoil_const');
+const errorSelector = require('../Recoil_error');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('Recoil_RecoilValue');
-const selector = require('Recoil_selector');
+} = require('../../core/Recoil_RecoilValue');
+const selector = require('../Recoil_selector');
 const {
   asyncSelector,
   makeStore,
-  resolvingAsyncSelector,
-} = require('Recoil_TestingUtils');
-const {ReadsAtom, renderElements} = require('Recoil_TestingUtils');
-const {DefaultValue} = require('Recoil_Node');
+  ReadsAtom,
+  renderElements
+} = require('../../testing/Recoil_TestingUtils');
+const {DefaultValue} = require('../../core/Recoil_Node');
 
 let store;
 beforeEach(() => {

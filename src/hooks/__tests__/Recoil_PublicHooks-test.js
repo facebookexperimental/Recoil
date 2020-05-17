@@ -15,14 +15,14 @@ import type {
   RecoilState,
   RecoilValue,
   RecoilValueReadOnly,
-} from 'Recoil_RecoilValue';
+} from '../../core/Recoil_RecoilValue';
 
 const React = require('React');
 const {useEffect, useState} = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
-const atom = require('Recoil_atom');
-const errorSelector = require('Recoil_error');
+const atom = require('../../recoil_values/Recoil_atom');
+const errorSelector = require('../../recoil_values/Recoil_error');
 const {
   useRecoilState,
   useRecoilStateLoadable,
@@ -31,24 +31,24 @@ const {
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
   useTransactionObservation,
-} = require('Recoil_Hooks');
-const Queue = require('Recoil_Queue');
-const selector = require('Recoil_selector');
+} = require('../Recoil_Hooks');
+const Queue = require('../../adt/Recoil_Queue');
+const selector = require('../../recoil_values/Recoil_selector');
 const {
   ReadsAtom,
   asyncSelector,
   errorThrowingAsyncSelector,
   flushPromisesAndTimers,
   renderElements,
-} = require('Recoil_TestingUtils');
+} = require('../../testing/Recoil_TestingUtils');
 
-const gkx = require('gkx');
+const gkx = require('../../util/Recoil_gkx');
 
 gkx.setPass('recoil_async_selector_refactor');
 
-const invariant = require('Recoil_invariant');
+const invariant = require('../../lib/Recoil_invariant');
 
-jest.mock('Recoil_expectationViolation', () => (fmt, ...args) => {
+jest.mock('../../lib/Recoil_expectationViolation', () => (fmt, ...args) => {
   throw new Error(require('sprintf')(fmt, ...args));
 });
 

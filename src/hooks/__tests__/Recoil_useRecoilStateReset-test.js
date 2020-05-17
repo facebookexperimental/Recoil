@@ -12,15 +12,15 @@
 
 const React = require('React');
 const {act} = require('ReactTestUtils');
-const atom = require('Recoil_atom');
-const atomFamily = require('Recoil_atomFamily');
-const selector = require('Recoil_selector');
-const selectorFamily = require('Recoil_selectorFamily');
+const atom = require('../../recoil_values/Recoil_atom');
+const atomFamily = require('../../recoil_values/Recoil_atomFamily');
+const selector = require('../../recoil_values/Recoil_selector');
+const selectorFamily = require('../../recoil_values/Recoil_selectorFamily');
 const {
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
-} = require('Recoil_TestingUtils');
+} = require('../../testing/Recoil_TestingUtils');
 
 test('useRecoilValueReset - value default', () => {
   const myAtom = atom({
