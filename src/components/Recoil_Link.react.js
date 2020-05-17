@@ -40,7 +40,10 @@
 import type {RecoilState} from '../core/Recoil_RecoilValue';
 
 const React = require('React');
-const {useGoToSnapshot, useSnapshotWithStateChange} = require('../hooks/Recoil_Hooks');
+const {
+  useGoToSnapshot,
+  useSnapshotWithStateChange,
+} = require('../hooks/Recoil_Hooks');
 
 type Props = {
   hrefForAtomValues: (Map<string, mixed>) => string,

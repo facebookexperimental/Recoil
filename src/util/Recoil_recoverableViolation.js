@@ -9,14 +9,14 @@
 'use strict';
 
 function recoverableViolation(
-   message: string,
-   projectName: 'recoil',
-   {error}: {|error?: Error|},
- ): null {
+  message: string,
+  projectName: 'recoil',
+  {error}: {|error?: Error|},
+): null {
   //  if (__DEV__) {
   //    console.error(message, error);
   //  }
-   return null;
- }
+  return null;
+}
 
 module.exports = recoverableViolation;
