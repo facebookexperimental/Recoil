@@ -2,12 +2,12 @@
   "name": "recoil",
   "version": "0.0.7",
   "description": "Recoil - A React state management library for complex UIs",
-  "main": "dist/recoil.js",
+  "main": "dist/index.js",
   "files": ["dist/recoil.js"],
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c && node scripts/postbuild.js"
   },
   "peerDependencies": {
     "react": "^16.13.1",
