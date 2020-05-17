@@ -19,7 +19,7 @@ function mapIterable<T, K>(
   callback: (v: T, index: number) => K,
 ): Iterable<K> {
   // Use generator to create iterable/iterator
-  return (function*() {
+  return (function* () {
     let index = 0;
     for (const value of iterable) {
       yield callback(value, index++);

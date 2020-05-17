@@ -1,9 +1,9 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
 import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
-import { terser } from "rollup-plugin-terser";
+import {terser} from 'rollup-plugin-terser';
 
-const config = (mode) => ({
+const config = mode => ({
   input: 'src/Recoil.js',
   output: {
     file: `dist/recoil.${mode}.js`,
@@ -13,19 +13,16 @@ const config = (mode) => ({
   external: ['react', 'react-dom'],
   plugins: [
     babel({
-      presets: [
-        '@babel/preset-react',
-        '@babel/preset-flow'
-      ],
+      presets: ['@babel/preset-react', '@babel/preset-flow'],
       plugins: [
         '@babel/plugin-proposal-nullish-coalescing-operator',
         '@babel/plugin-proposal-optional-chaining',
-        '@babel/plugin-proposal-class-properties'
+        '@babel/plugin-proposal-class-properties',
       ],
       babelHelpers: 'bundled',
     }),
     {
-      resolveId: (source) => {
+      resolveId: source => {
         if (source === 'React') {
           return {id: 'react', external: true};
         }
@@ -33,7 +30,7 @@ const config = (mode) => ({
           return {id: 'react-dom', external: true};
         }
         return null;
-      }
+      },
     },
     nodeResolve(),
     commonjs(),

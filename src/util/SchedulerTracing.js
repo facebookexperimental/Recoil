@@ -7,4 +7,4 @@
  * This is a stub for some integration into FB internal stuff
  */
 
-module.exports = {  };
+module.exports = {};

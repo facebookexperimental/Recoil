@@ -12,7 +12,10 @@
  */
 'use strict';
 
-export type {Parameter, SelectorFamilyOptions} from './recoil_values/Recoil_selectorFamily';
+export type {
+  Parameter,
+  SelectorFamilyOptions,
+} from './recoil_values/Recoil_selectorFamily';
 
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
 const constSelector = require('./recoil_values/Recoil_const');
@@ -20,7 +23,12 @@ const errorSelector = require('./recoil_values/Recoil_error');
 const Link = require('./components/Recoil_Link.react');
 const readOnlySelector = require('./recoil_values/Recoil_readOnlySelector');
 const selectorFamily = require('./recoil_values/Recoil_selectorFamily');
-const {noWait, waitForAll, waitForAny, waitForNone} = require('./recoil_values/Recoil_WaitFor');
+const {
+  noWait,
+  waitForAll,
+  waitForAny,
+  waitForNone,
+} = require('./recoil_values/Recoil_WaitFor');
 
 module.exports = {
   // Convenience RecoilValues
