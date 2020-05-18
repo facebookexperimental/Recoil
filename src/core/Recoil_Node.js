@@ -78,7 +78,7 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
     //     expectationViolation(message, 'recoil');
     //   }
     // } else {
-      recoverableViolation(message, 'recoil');
+    recoverableViolation(message, 'recoil');
     // }
   }
   nodes.set(node.key, node);

@@ -11,4 +11,4 @@ function startPerfBlock(id) {
   return () => {};
 }
 
-module.exports = { startPerfBlock };
+module.exports = {startPerfBlock};

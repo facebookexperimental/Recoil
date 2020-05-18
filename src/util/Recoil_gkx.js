@@ -16,6 +16,6 @@ function Recoil_gkx(_gk: string): boolean {
 
 Recoil_gkx.setPass = (_gk: string): void => {
   pass = true;
-}
+};
 
 module.exports = Recoil_gkx;

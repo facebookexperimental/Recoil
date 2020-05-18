@@ -29,7 +29,6 @@ const {
 const nullthrows = require('../util/Recoil_nullthrows');
 const Queue = require('../adt/Recoil_Queue');
 
-
 type Props = {
   initializeState?: ({
     set: <T>(RecoilValue<T>, T) => void,

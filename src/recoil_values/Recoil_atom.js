@@ -69,10 +69,14 @@ const {
 } = require('../util/Recoil_CopyOnWrite');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const {loadableWithValue} = require('../adt/Recoil_Loadable');
-const {DEFAULT_VALUE, DefaultValue, registerNode} = require('../core/Recoil_Node');
+const {
+  DEFAULT_VALUE,
+  DefaultValue,
+  registerNode,
+} = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 // @fb-only: const {scopedAtom} = require('./Recoil_ScopedAtom');
-const selector = require('./Recoil_selector')
+const selector = require('./Recoil_selector');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -95,7 +99,7 @@ export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
   default: RecoilValue<T> | Promise<T> | T,
   persistence_UNSTABLE?: PersistenceSettings<T>,
-// @fb-only:   scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
+  // @fb-only:   scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
   dangerouslyAllowMutability?: boolean,
 }>;
 
@@ -189,21 +193,21 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   const {
     default: optionsDefault,
-// @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    // @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS,
     ...restOptions
   } = options;
   if (isRecoilValue(optionsDefault) || isPromise(optionsDefault)) {
     return atomWithFallback<T>({
       ...restOptions,
       default: optionsDefault,
-// @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
+      // @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
     });
-// @fb-only:   } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
-// @fb-only:     return scopedAtom<T>({
-// @fb-only:       ...restOptions,
-// @fb-only:       default: optionsDefault,
-// @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
-// @fb-only:     });
+    // @fb-only:   } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
+    // @fb-only:     return scopedAtom<T>({
+    // @fb-only:       ...restOptions,
+    // @fb-only:       default: optionsDefault,
+    // @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    // @fb-only:     });
   } else {
     return baseAtom<T>({...restOptions, default: optionsDefault});
   }
@@ -245,6 +249,5 @@ function atomWithFallback<T>(
     dangerouslyAllowMutability: options.dangerouslyAllowMutability,
   });
 }
-
 
 module.exports = atom;

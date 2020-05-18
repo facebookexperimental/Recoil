@@ -13,6 +13,7 @@
 
 // @fb-only: const recoverableViolation = require('recoverableViolation');
 
+// prettier-ignore
 function recoverableViolation( // @oss-only
   message: string, // @oss-only
   projectName: 'recoil', // @oss-only

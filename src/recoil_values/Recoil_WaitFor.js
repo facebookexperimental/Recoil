@@ -11,7 +11,10 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {RecoilValue, RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
+import type {
+  RecoilValue,
+  RecoilValueReadOnly,
+} from '../core/Recoil_RecoilValue';
 
 const isPromise = require('../util/Recoil_isPromise');
 const {

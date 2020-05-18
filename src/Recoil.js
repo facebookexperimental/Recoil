@@ -12,7 +12,10 @@
  */
 'use strict';
 
-export type {PersistenceSettings, PersistenceType} from './recoil_values/Recoil_atom';
+export type {
+  PersistenceSettings,
+  PersistenceType,
+} from './recoil_values/Recoil_atom';
 export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
 export type {Loadable} from './adt/Recoil_Loadable';
 export type {

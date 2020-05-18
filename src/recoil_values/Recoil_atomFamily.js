@@ -176,19 +176,21 @@ function atomFamily<T, P: Parameter>(
     ),
   };
   let legacyAtom;
-// @fb-only:   if(
-// @fb-only:     options.scopeRules_APPEND_ONLY_READ_THE_DOCS
-// @fb-only:   ) {
-// @fb-only:   legacyAtom = parameterizedScopedAtomLegacy<
-// @fb-only:     StoredBaseValue_DEPRECATED<T> | DefaultValue,
-// @fb-only:     P>({
-// @fb-only:     ...legacyAtomOptions,
-// @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS:
-// @fb-only:     options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-// @fb-only:   });
-// @fb-only:   } else {
-    legacyAtom = atom<StoredBaseValue_DEPRECATED<T> | DefaultValue>(legacyAtomOptions);;
-// @fb-only:   }
+  // @fb-only:   if(
+  // @fb-only:     options.scopeRules_APPEND_ONLY_READ_THE_DOCS
+  // @fb-only:   ) {
+  // @fb-only:   legacyAtom = parameterizedScopedAtomLegacy<
+  // @fb-only:     StoredBaseValue_DEPRECATED<T> | DefaultValue,
+  // @fb-only:     P>({
+  // @fb-only:     ...legacyAtomOptions,
+  // @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS:
+  // @fb-only:     options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+  // @fb-only:   });
+  // @fb-only:   } else {
+  legacyAtom = atom<StoredBaseValue_DEPRECATED<T> | DefaultValue>(
+    legacyAtomOptions,
+  );
+  // @fb-only:   }
 
   // Selector to calculate the default value based on any persisted legacy atoms
   // that were upgraded to a atomFamily

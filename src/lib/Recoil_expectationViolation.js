@@ -14,6 +14,7 @@
 // @fb-only: const expectationViolation = require('expectationViolation');
 
 const sprintf = require('Recoil_sprintf'); // @oss-only:
+// prettier-ignore
 function expectationViolation(format: string, ...args: $ReadOnlyArray<mixed>) { // @oss-only:
   if (__DEV__) { // @oss-only:
     const message = sprintf.call(null, format, ...args); // @oss-only:
