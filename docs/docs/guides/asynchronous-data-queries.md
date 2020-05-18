@@ -173,7 +173,7 @@ const currentUserInfoQuery = selector({
 
 const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
-  get: userID => ({get}) => {
+  get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
     const friends = [];
     for (const friendID of friendList) {
@@ -222,7 +222,7 @@ If you notice in the above example, the `friendsInfoQuery` uses a query to get t
 ```js
 const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
-  get: userID => ({get}) => {
+  get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
     const friends = get(waitForAll(
       friendList.map(friendID => userInfoQuery(friendID))
