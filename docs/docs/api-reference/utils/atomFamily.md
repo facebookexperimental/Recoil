@@ -31,7 +31,7 @@ An `atom` represents a piece of state with _Recoil_. An atom is created and regi
 
 ```js
 const elementPositionStateFamily = atomFamily({
-  key: ElementPosition,
+  key: 'ElementPosition',
   default: [0, 0],
 });
 
