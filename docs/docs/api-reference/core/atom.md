@@ -21,7 +21,7 @@ For rare cases where you need to read an atom's value without subscribing the co
 
 ### Example
 
-```javascript
+```jsx
 import {atom, useRecoilState} from 'recoil';
 
 const counter = atom({

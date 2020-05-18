@@ -13,7 +13,7 @@ This is the recommended hook to use when a component intends to write to state w
 
 ### Example
 
-```javascript
+```jsx
 import {atom, useSetRecoilState} from 'recoil';
 
 const namesState = atom({

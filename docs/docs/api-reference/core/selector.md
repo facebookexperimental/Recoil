@@ -19,7 +19,7 @@ Selectors represent **derived state**. You can think of derived state as the out
 
 ### Example (Synchronous)
 
-```javascript
+```jsx
 import {atom, selector, useRecoilState} from 'recoil';
 
 const tempFahrenheit = atom({

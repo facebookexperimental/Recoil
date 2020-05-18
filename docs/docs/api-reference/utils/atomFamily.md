@@ -5,7 +5,7 @@ sidebar_label: atomFamily()
 
 Returns a function that returns a writeable `RecoilState` atom.
 
-```js
+```jsx
 function atomFamily<T, Parameter>({
   key: string,
 
@@ -29,7 +29,7 @@ An `atom` represents a piece of state with _Recoil_. An atom is created and regi
 
 ## Example
 
-```js
+```jsx
 const elementPositionStateFamily = atomFamily({
   key: 'ElementPosition',
   default: [0, 0],
@@ -48,7 +48,7 @@ function ElementListItem({elementID}) {
 
 An `atomFamily()` takes almost the same options as a simple `atom()`.  However, the default value can also be parameterized. That means you could provide a function which takes the parameter value and returns the actual default value.  For example:
 
-```js
+```jsx
 const myAtomFamily = atomFamily({
   key: ‘MyAtom’,
   default: param => defaultBasedOnParam(param),
@@ -57,7 +57,7 @@ const myAtomFamily = atomFamily({
 
 or using `selectorFamily` instead of `selector`, you can also access the parameter value in a `default` selector as well.
 
-```js
+```jsx
 const myAtomFamily = atomFamily({
   key: ‘MyAtom’,
   default: selectorFamily({
