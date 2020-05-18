@@ -70,7 +70,7 @@ declare function registerNode<T>(
 function registerNode<T>(node: Node<T>): RecoilValue<T> {
   if (nodes.has(node.key)) {
     const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
-      production. But it is safe to ignore this warning if it occured because of
+      production. But it is safe to ignore this warning if it occurred because of
       hot module replacement.`;
     // if (__DEV__) {
     //   const isAcceptingUpdate = require('../util/Recoil__debug').isAcceptingUpdate;

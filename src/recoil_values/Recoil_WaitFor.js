@@ -90,7 +90,7 @@ function wrapLoadables(dependencies, results, exceptions) {
   return wrapResults(dependencies, output);
 }
 
-// Selector that requests all dependencies in parallel and immediatly returns
+// Selector that requests all dependencies in parallel and immediately returns
 // current results without waiting.
 const waitForNone: <
   RecoilValues:

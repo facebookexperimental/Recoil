@@ -232,7 +232,7 @@ function selector<T>(
    *    promises. This case is handled by the attached catch() handler.
    *
    * Both branches will eventually resolve to the final result of the selector
-   * (or an error if a real error occured).
+   * (or an error if a real error occurred).
    *
    * The execution will run to completion even if it is stale, and its value
    * will be cached. But stale executions will not update global state or update
@@ -310,7 +310,7 @@ function selector<T>(
    *    is the case handled by the attached then() handler.
    *
    * 2. The promise will throw because something went wrong with the dependency
-   *    promise (in other words a real error occured). This case is handled by
+   *    promise (in other words a real error occurred). This case is handled by
    *    the attached catch() handler. If the dependency promise throws, it is
    *    _always_ a real error and not another dependency promise (any dependency
    *    promises would have been handled upstream).
