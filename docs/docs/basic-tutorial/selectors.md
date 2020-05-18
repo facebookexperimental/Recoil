@@ -102,7 +102,7 @@ While we could create a selector for each of the stats, an easier approach would
 const todoListStatsState = selector({
   key: 'todoListStatsState',
   get: ({get}) => {
-    const todoList = get(filteredTodoListState);
+    const todoList = get(todoListState);
     const totalNum = todoList.length;
     const totalCompletedNum = todoList.filter((item) => item.isComplete).length;
     const totalUncompletedNum = totalNum - totalCompletedNum;
