@@ -9,7 +9,7 @@ Recoil provides a way to map state and derived state to React components via a d
 
 For example, here is a simple synchronous atom and selector to get a user name:
 
-```js
+```jsx
 const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
@@ -40,7 +40,7 @@ function MyApp() {
 
 If the user names were stored on some database we need to query, all we need to do is return a `Promise` or use an `async` function. If any dependencies change, the selector will be re-evaluated and execute a new query. The results are cached, so the query will only execute once per unique input.
 
-```js
+```jsx
 const currentUserNameQuery = selector({
   key: 'CurrentUserName',
   get: async ({get}) => {
@@ -61,7 +61,7 @@ The interface of the selector is the same, so the component using this selector 
 
 But, since React is synchronous, what will it render before the promise resolves? Recoil is designed to work with React Suspense to handle pending data. Wrapping your component with a Suspense boundary will catch any descendents that are still pending and render a fallback UI:
 
-```js
+```jsx
 function MyApp() {
   return (
     <RecoilRoot>
@@ -77,7 +77,7 @@ function MyApp() {
 
 But what if the request has an error? Recoil selectors can also throw errors which will then be thrown if a component tries to use that value. This can be caught with a React `<ErrorBoundary>`. For example:
 
-```js
+```jsx
 const currentUserNameQuery = selector({
   key: 'CurrentUserName',
   get: async ({get}) => {
@@ -113,7 +113,7 @@ function MyApp() {
 
 Sometimes you want to be able to query based on parameters that aren't just based on derived state. For example, you may want to query based on the component props. You can do that using the `selectorFamily` helper:
 
-```js
+```jsx
 const userNameQuery = selectorFamily({
   key: 'UserName',
   get: (userID) => async ({get}) => {
@@ -149,7 +149,7 @@ function MyApp() {
 
 Remember, by modeling queries as selectors, we can build a data flow graph mixing state, derived state, and queries!  This graph will automatically update and re-render React components as state is updated.
 
-```js
+```jsx
 const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
@@ -219,7 +219,7 @@ function MyApp() {
 
 If you notice in the above example, the `friendsInfoQuery` uses a query to get the info for each friend.  But, by doing this in a loop they are essentially serialized.  If the lookup is fast, maybe that's ok.  If it's expensive, you can use a concurrency helper such as `waitForAll`, `waitForNone`, or `waitForAny` to run them in parallel.  They accept both arrays and named objects of dependencies.
 
-```js
+```jsx
 const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
   get: ({get}) => {
@@ -236,7 +236,7 @@ const friendsInfoQuery = selector({
 
 It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the `useRecoilValueLoadable()` hook to determine the status during rendering:
 
-```js
+```jsx
 function UserInfo({userID}) {
   const userNameLoadable = useRecoilValueLoadable(userNameQuery(userID));
   switch (userNameLoadable.status) {

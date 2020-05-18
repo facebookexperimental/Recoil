@@ -17,7 +17,7 @@ Provides the context in which atoms have values. Must be an ancestor of any comp
 
 ### Example
 
-```javascript
+```jsx
 import {RecoilRoot} from 'recoil';
 
 function AppRoot() {

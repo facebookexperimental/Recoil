@@ -7,7 +7,7 @@ Returns a function that returns a read-only `RecoilValueReadOnly` or writeable `
 
 A `selectorFamily` is a powerful pattern that is similar to a `selector`, but allows you to pass parameters to the `get` and `set` callbacks of a `selector`.
 
-```js
+```jsx
 function selectorFamily<T, Parameter>({
   key: string,
 
@@ -17,7 +17,7 @@ function selectorFamily<T, Parameter>({
 }): RecoilValueReadOnly<T>
 ```
 
-```js
+```jsx
 function selectorFamily<T, Parameter>({
   key: string,
 
@@ -38,7 +38,7 @@ function selectorFamily<T, Parameter>({
 
 Where
 
-```js
+```jsx
 type GetRecoilValue = <T>(RecoilValue<T>) => T;
 type SetRecoilValue = <T>(
   RecoilState<T>,
@@ -58,7 +58,7 @@ The `selectorFamily()` utility returns a function which can be called with user-
 
 ## Example
 
-```js
+```jsx
 const myNumberState = atom({
   key: 'MyNumber',
   default: 2,
@@ -91,7 +91,7 @@ function MyComponent() {
 
 Selector Families are also useful to use for passing parameters to queries:
 
-```js
+```jsx
 const myDataQuery = selectorFamily({
   key: 'MyDataQuery',
   get: (queryParameters) => async ({get}) => {
