@@ -6,7 +6,7 @@
   "jsxBracketSameLine": true,
   "overrides": [
     {
-      "files": ["*.js", "*.jsx"],
+      "files": ["*.js"],
       "options": {
         "parser": "flow"
       }
