@@ -15,19 +15,20 @@
  *
  * Instead of an `href` prop, you supply two props:
  *
- *    hrefForAtomValues. This function takes a map of the values of all URL-persisted
- *         atoms and should return a URL which will be used for the href. It is
- *         recommended that your application wrap this component to provide a
+ *    hrefForAtomValues. This function takes a map of the values of all
+ * URL-persisted atoms and should return a URL which will be used for the href.
+ * It is recommended that your application wrap this component to provide a
  *         standardized hrefForAtomValues to be used for all links in the app;
- *         you might consider using a flexible serialization library such as Transit.
+ *         you might consider using a flexible serialization library such as
+ * Transit.
  *
- *    stateChange. This function specifies the state change to take place when the
- *         link is followed. It takes a function `update` that is used to update
- *         the value of atoms instead of using a hook. Example:
+ *    stateChange. This function specifies the state change to take place when
+ * the link is followed. It takes a function `update` that is used to update the
+ * value of atoms instead of using a hook. Example:
  *
  *         stateChange={update => update(myAtom, x => x + 1)}
  *
- * Note that, because the link must encode the entire app state, this compoment
+ * Note that, because the link must encode the entire app state, this component
  * is re-rendered whenever any URL-persisted atom changes; keep the performance
  * implications of this in mind.
  *
@@ -40,25 +41,20 @@
 import type {RecoilState} from '../core/Recoil_RecoilValue';
 
 const React = require('React');
-const {useGoToSnapshot, useSnapshotWithStateChange} = require('../hooks/Recoil_Hooks');
+const {useGoToSnapshot, useSnapshotWithStateChange} =
+    require('../hooks/Recoil_Hooks');
 
 type Props = {
   hrefForAtomValues: (Map<string, mixed>) => string,
   stateChange: (<T>(RecoilState<T>, (T) => T) => void) => void,
 
   rel?: string,
-  target?: '_blank' | '_self' | '_parent' | '_top',
+  target?: '_blank'|'_self'|'_parent'|'_top',
   onClick?: (SyntheticUIEvent<HTMLAnchorElement>) => void,
-  children: ?React.Node,
-};
+         children: ? React.Node, };
 
-function Link({
-  hrefForAtomValues,
-  stateChange,
-  onClick,
-  target,
-  ...rest
-}: Props): React.Element<'a'> {
+function Link({hrefForAtomValues, stateChange, onClick, target, ...rest}:
+                  Props): React.Element<'a'> {
   const goToSnapshot = useGoToSnapshot();
   const snapshot = useSnapshotWithStateChange(update => stateChange(update));
 
@@ -66,12 +62,9 @@ function Link({
     if (onClick) {
       onClick(event);
     }
-    if (
-      !event.defaultPrevented &&
-      event.button === 0 &&
-      !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) &&
-      (!target || target === '_self')
-    ) {
+    if (!event.defaultPrevented && event.button === 0 &&
+        !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) &&
+        (!target || target === '_self')) {
       event.preventDefault();
       goToSnapshot(snapshot);
     }
@@ -82,7 +75,8 @@ function Link({
       {...rest}
       target={target}
       onClick={myOnClick}
-      href={hrefForAtomValues(snapshot.atomValues)}
+      href={
+    hrefForAtomValues(snapshot.atomValues)}
     />
   );
 }
