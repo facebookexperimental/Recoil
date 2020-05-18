@@ -27,7 +27,7 @@
  *
  *         stateChange={update => update(myAtom, x => x + 1)}
  *
- * Note that, because the link must encode the entire app state, this compoment
+ * Note that, because the link must encode the entire app state, this component
  * is re-rendered whenever any URL-persisted atom changes; keep the performance
  * implications of this in mind.
  *

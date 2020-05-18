@@ -275,7 +275,7 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
 
 /**
   Returns a function that allows the value of a RecoilState to be updated, but does
-  not subscribe the compoment to changes to that RecoilState.
+  not subscribe the component to changes to that RecoilState.
 */
 function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
   return useCallback(useInterface().getSetRecoilState(recoilState), [
@@ -295,7 +295,7 @@ function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
 /**
   Equivalent to useState(). Allows the value of the RecoilState to be read and written.
   Subsequent updates to the RecoilState will cause the component to re-render. If the
-  RecoilState is pending, this will suspend the compoment and initiate the
+  RecoilState is pending, this will suspend the component and initiate the
   retrieval of the value. If evaluating the RecoilState resulted in an error, this will
   throw the error so that the nearest React error boundary can catch it.
 */
