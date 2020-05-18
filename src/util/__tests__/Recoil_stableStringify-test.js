@@ -120,11 +120,11 @@ test('stableStringify Immutable', () => {
   // List with mutated internal metadata (e.g. __hash or __ownerID)
   expect(stableStringify(immutable.List([1, 2]).asMutable())).toBe('[1,2]');
 
-  // Set - JSON conversion is handeled by Immutable's toJSON(), which produces
+  // Set - JSON conversion is handled by Immutable's toJSON(), which produces
   // an array, so the keys are not sorted
   expect(stableStringify(immutable.Set(['a', 'b']))).toBe('["a","b"]');
   expect(stableStringify(immutable.Set(['b', 'a']))).toBe('["b","a"]');
-  // OrderedSet is handeled the same as Set
+  // OrderedSet is handled the same as Set
 
   // Map
   expect(stableStringify(immutable.Map({foo: 2, bar: 1}))).toBe(
@@ -133,7 +133,7 @@ test('stableStringify Immutable', () => {
   expect(stableStringify(immutable.Map({bar: 1, foo: 2}))).toBe(
     '{"bar":1,"foo":2}',
   );
-  // OrderedMap is handeled the same as Map, so ordering is lost
+  // OrderedMap is handled the same as Map, so ordering is lost
 
   // Record
   const R = immutable.Record({foo: undefined});

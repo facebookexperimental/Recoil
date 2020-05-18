@@ -14,7 +14,7 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 
 export type NodeKey = string;
 
-// TODO We could just store T istead of a Loadable<T> in atomValues
+// TODO We could just store T instead of a Loadable<T> in atomValues
 // flowlint-next-line unclear-type:off
 export type AtomValues = Map<NodeKey, Loadable<any>>;
 
