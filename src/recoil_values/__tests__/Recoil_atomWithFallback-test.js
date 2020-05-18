@@ -16,15 +16,15 @@ import type {Store} from 'Recoil_State';
 const React = require('React');
 const {useState} = require('React');
 const {act} = require('ReactTestUtils');
-const atom = require('Recoil_atom');
-const constSelector = require('Recoil_const');
-const {useRecoilState, useSetUnvalidatedAtomValues} = require('Recoil_Hooks');
+const atom = require('../Recoil_atom');
+const constSelector = require('../Recoil_const');
+const {useRecoilState, useSetUnvalidatedAtomValues} = require('../../hooks/Recoil_Hooks');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
   subscribeToRecoilValue,
-} = require('Recoil_RecoilValue');
-const {ReadsAtom, makeStore, renderElements} = require('Recoil_TestingUtils');
+} = require('../../core/Recoil_RecoilValue');
+const {ReadsAtom, makeStore, renderElements} = require('../../testing/Recoil_TestingUtils');
 
 let fallback: RecoilValue<number>,
   hasFallback: RecoilValue<number>,
@@ -62,7 +62,7 @@ test('Async fallback', () => {
     key: 'asyncFallback',
     default: Promise.resolve(42),
   });
-  const container = renderElements([<ReadsAtom atom={asyncFallback} />]);
+  const container = renderElements(<ReadsAtom atom={asyncFallback} />);
 
   expect(container.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
@@ -88,12 +88,12 @@ describe('ReturnDefaultOrFallback', () => {
       const [value] = useRecoilState((getAtom(): any));
       return value;
     }
-    const container = renderElements([
-      <SetsUnvalidatedAtomValues />,
+    const container = renderElements(<>
+      <SetsUnvalidatedAtomValues />
       <Switch>
         <MyReadsAtom getAtom={() => theAtom} />
-      </Switch>,
-    ]);
+      </Switch>
+    </>);
     act(() => {
       setUnvalidatedAtomValues(
         new Map().set('notDefinedYetAtomValidator', 123),
@@ -131,12 +131,12 @@ describe('ReturnDefaultOrFallback', () => {
       const [value] = useRecoilState((getAtom(): any));
       return value;
     }
-    const container = renderElements([
-      <SetsUnvalidatedAtomValues />,
+    const container = renderElements(<>
+      <SetsUnvalidatedAtomValues />
       <Switch>
         <MyReadsAtom getAtom={() => theAtom} />
-      </Switch>,
-    ]);
+      </Switch>
+    </>);
     act(() => {
       setUnvalidatedAtomValues(
         new Map().set('notDefinedYetAtomWithFallback', 123),

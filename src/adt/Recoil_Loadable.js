@@ -125,7 +125,7 @@ const loadableAccessors = {
       } catch (e) {
         return isPromise(e)
           ? // If we "suspended", then try again.
-            // errors and subsequent retries will be handeled in 'loading' case
+            // errors and subsequent retries will be handled in 'loading' case
             loadableWithPromise(e.next(() => map(this.contents)))
           : loadableWithError(e);
       }

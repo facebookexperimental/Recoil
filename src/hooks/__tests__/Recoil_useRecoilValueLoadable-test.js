@@ -12,12 +12,12 @@
 
 const React = require('React');
 const {act} = require('ReactTestUtils');
-const constSelector = require('Recoil_const');
-const errorSelector = require('Recoil_error');
-const {useRecoilValueLoadable} = require('Recoil_Hooks');
-const {asyncSelector, renderElements} = require('Recoil_TestingUtils');
+const constSelector = require('../../recoil_values/Recoil_const');
+const errorSelector = require('../../recoil_values/Recoil_error');
+const {useRecoilValueLoadable} = require('../Recoil_Hooks');
+const {asyncSelector, renderElements} = require('../../testing/Recoil_TestingUtils');
 
-const gkx = require('gkx');
+const gkx = require('../../util/Recoil_gkx');
 
 gkx.setPass('recoil_async_selector_refactor');
 
@@ -41,7 +41,7 @@ test('useRecoilValueLoadable - loadable with value', async () => {
     expect(() => loadable.promiseOrThrow()).toThrow(Error);
     return loadable.valueOrThrow();
   }
-  const c = renderElements([<ReadLoadable />]);
+  const c = renderElements(<ReadLoadable />);
   expect(c.textContent).toEqual('VALUE');
   await promise;
 });
@@ -64,7 +64,7 @@ test('useRecoilValueLoadable - loadable with error', async () => {
     expect(() => loadable.promiseOrThrow()).toThrow(Error);
     return 'VALUE';
   }
-  const c = renderElements([<ReadLoadable />]);
+  const c = renderElements(<ReadLoadable />);
   expect(c.textContent).toEqual('VALUE');
   await promise;
 });
@@ -108,7 +108,7 @@ test('useRecoilValueLoadable - loading loadable', async () => {
       return loadable.valueOrThrow();
     }
   }
-  const c = renderElements([<ReadLoadable />]);
+  const c = renderElements(<ReadLoadable />);
   expect(c.textContent).toEqual('LOADING');
   resolve('VALUE');
   resolved = true;

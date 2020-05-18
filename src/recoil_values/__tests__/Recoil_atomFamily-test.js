@@ -13,21 +13,21 @@
 const React = require('React');
 const {useState} = require('React');
 const {act} = require('ReactTestUtils');
-const atom = require('Recoil_atom');
-const atomFamily = require('Recoil_atomFamily');
+const atom = require('../Recoil_atom');
+const atomFamily = require('../Recoil_atomFamily');
 const {
   useRecoilState,
   useRecoilValue,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
-} = require('Recoil_Hooks');
+} = require('../../hooks/Recoil_Hooks');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('Recoil_RecoilValue');
-const selectorFamily = require('Recoil_selectorFamily');
-const stableStringify = require('Recoil_stableStringify');
-const {ReadsAtom, makeStore, renderElements} = require('Recoil_TestingUtils');
+} = require('../../core/Recoil_RecoilValue');
+const selectorFamily = require('../Recoil_selectorFamily');
+const stableStringify = require('../../util/Recoil_stableStringify');
+const {ReadsAtom, makeStore, renderElements} = require('../../testing/Recoil_TestingUtils');
 
 let id = 0;
 
@@ -134,7 +134,7 @@ test('atomFamily async fallback', () => {
     default: Promise.resolve(42),
   });
 
-  const container = renderElements([<ReadsAtom atom={paramFallback({})} />]);
+  const container = renderElements(<ReadsAtom atom={paramFallback({})} />);
   expect(container.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
   expect(container.textContent).toEqual('42');
@@ -151,19 +151,19 @@ test('Parameterized fallback with atom and async', () => {
       }[param]),
   });
 
-  const valueCont = renderElements([
+  const valueCont = renderElements(
     <ReadsAtom atom={paramFallback({param: 'value'})} />,
-  ]);
+  );
   expect(valueCont.textContent).toEqual('"value"');
 
-  const atomCont = renderElements([
+  const atomCont = renderElements(
     <ReadsAtom atom={paramFallback({param: 'atom'})} />,
-  ]);
+  );
   expect(atomCont.textContent).toEqual('"atom"');
 
-  const asyncCont = renderElements([
+  const asyncCont = renderElements(
     <ReadsAtom atom={paramFallback({param: 'async'})} />,
-  ]);
+  );
   expect(asyncCont.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
   expect(asyncCont.textContent).toEqual('"async"');
@@ -284,12 +284,12 @@ test('Returns the fallback for parameterized atoms', () => {
     setAtomValue = setValue;
     return value;
   }
-  const container = renderElements([
-    <SetsUnvalidatedAtomValues />,
+  const container = renderElements(<>
+    <SetsUnvalidatedAtomValues />
     <Switch>
       <MyReadsAtom getAtom={() => theAtom} />
-    </Switch>,
-  ]);
+    </Switch>
+  </>);
   act(() => {
     setUnvalidatedAtomValues(
       new Map().set('notDefinedYetAtomFamilyWithFallback', 123),
@@ -345,12 +345,12 @@ test('Returns the fallback for parameterized atoms with a selector as the fallba
     setAtomValue = setValue;
     return value;
   }
-  const container = renderElements([
-    <SetsUnvalidatedAtomValues />,
+  const container = renderElements(<>
+    <SetsUnvalidatedAtomValues />
     <Switch>
       <MyReadsAtom getAtom={() => theAtom} />
-    </Switch>,
-  ]);
+    </Switch>
+  </>);
   act(() => {
     setUnvalidatedAtomValues(
       new Map().set('notDefinedYetAtomFamilyFallbackSel', 123),

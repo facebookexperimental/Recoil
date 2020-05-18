@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const cacheWithValueEquality = require('Recoil_cacheWithValueEquality');
+const cacheWithValueEquality = require('../Recoil_cacheWithValueEquality');
 
 const {List} = require('immutable');
 

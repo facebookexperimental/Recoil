@@ -10,12 +10,12 @@
 import type {Store} from 'Recoil_State';
 
 const {act} = require('ReactTestUtils');
-const atom = require('Recoil_atom');
+const atom = require('../Recoil_atom');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('Recoil_RecoilValue');
-const {makeStore} = require('Recoil_TestingUtils');
+} = require('../../core/Recoil_RecoilValue');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
 let store: Store;
 beforeEach(() => {

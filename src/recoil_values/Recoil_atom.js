@@ -37,7 +37,7 @@
  * depends on. The dependencies may be changed without breaking existing URLs --
  * it uses whatever rule was current when the URL was written. Values written
  * under the newer rules are overlaid atop the previously-written values just for
- * those states in which the write occured, with reads falling back to the older
+ * those states in which the write occurred, with reads falling back to the older
  * values in other states, and eventually to the default or fallback.
  *
  * The scopedRules_APPEND_ONLY_READ_THE_DOCS parameter is a list of rules;

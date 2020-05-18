@@ -16,7 +16,7 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 
-const isPromise = require('Recoil_isPromise');
+const isPromise = require('../util/Recoil_isPromise');
 const {
   loadableWithError,
   loadableWithPromise,
@@ -25,7 +25,6 @@ const {
 const selectorFamily = require('./Recoil_selectorFamily');
 
 const gkx = require('../util/Recoil_gkx');
-const isPromise = require('../util/Recoil_isPromise');
 
 /////////////////
 //  TRUTH TABLE
@@ -94,7 +93,7 @@ function wrapLoadables(dependencies, results, exceptions) {
   return wrapResults(dependencies, output);
 }
 
-// Selector that requests all dependencies in parallel and immediatly returns
+// Selector that requests all dependencies in parallel and immediately returns
 // current results without waiting.
 const waitForNone: <
   RecoilValues:
