@@ -14,7 +14,7 @@ This is the recommended hook to use when a component intends to write to state w
 ### Example
 
 ```javascript
-import { atom, useSetRecoilState } from 'recoil';
+import {atom, useSetRecoilState} from 'recoil';
 
 const namesState = atom({
   key: 'namesState',
