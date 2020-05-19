@@ -26,7 +26,7 @@ function TodoList() {
       <TodoItemCreator />
 
       {todoList.map((todoItem) => (
-        <TodoItem item={todoItem} />
+        <TodoItem key={todoItem.id} item={todoItem} />
       ))}
     </>
   );
@@ -51,6 +51,7 @@ function TodoItemCreator() {
         isComplete: false,
       },
     ]);
+    setInputValue('');
   };
 
   const onChange = ({target: {value}}) => {

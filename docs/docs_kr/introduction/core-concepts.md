@@ -4,8 +4,7 @@ title: 핵심 개념
 
 ## 개요
 
-Recoil을 사용하면 *atoms* (공유 상태)에서 *selectors* (순수 함수)를 거쳐 React 컴포넌트로 내려가는 데이터 흐름 그래프를 생성할 수 있다.
-Atoms는 컴포넌트가 구독할 수 있는 상태의 단위다. Selectors 가 이 상태를 동기 또는 비동기식으로 변환한다.
+Recoil을 사용하면 _atoms_ (공유 상태)에서 _selectors_ (순수 함수)를 거쳐 React 컴포넌트로 내려가는 데이터 흐름 그래프를 생성할 수 있다. Atoms는 컴포넌트가 구독할 수 있는 상태의 단위다. Selectors 가 이 상태를 동기 또는 비동기식으로 변환한다.
 
 ## Atoms
 
@@ -28,7 +27,7 @@ Atoms는 디버깅, 지속성, 그리고 모든 atom들의 맵을 볼 수 있는
 function FontButton() {
   const [fontSize, setFontSize] = useRecoilState(fontSizeState);
   return (
-    <button onClick={() => setFontSize(size => size + 1)} style={{fontSize}}>
+    <button onClick={() => setFontSize((size) => size + 1)} style={{fontSize}}>
       Click to Enlarge
     </button>
   );
@@ -40,24 +39,15 @@ function FontButton() {
 ```jsx
 function Text() {
   const [fontSize, setFontSize] = useRecoilState(fontSizeState);
-  return (
-    <p style={{fontSize}}>
-      This text will increase in size too.
-    </p>
-  );
+  return <p style={{fontSize}}>This text will increase in size too.</p>;
 }
 ```
 
-
 ## Selectors
 
-**Selector**는 atom이나 다른 selector를 입력으로 받아들이는 순수한 함수다.
-상위의 atom 또는 selector가 업데이트되면 selector 함수가 재평가된다. 
-컴포넌트들은 selector를 atom처럼 구독할 수 있고 selector가 변경될 때 다시 렌더링이 이루어진다.
+**Selector**는 atom이나 다른 selector를 입력으로 받아들이는 순수한 함수다. 상위의 atom 또는 selector가 업데이트되면 selector 함수가 재평가된다. 컴포넌트들은 selector를 atom처럼 구독할 수 있고 selector가 변경될 때 다시 렌더링이 이루어진다.
 
-Selector는 상태를 기반으로 하는 파생 데이터를 계산하는 데 사용된다. 
-이것은 중복 상태를 피할 수 있고 상태를 동기화하고 유효하게 유지하기 위한 reducers의 필요성을 없앤다. 
-대신, 최소의 상태는 atom에 저장되도록 하고 다른 모든 것은 효율적으로 최소 상태의 함수로 계산된다.
+Selector는 상태를 기반으로 하는 파생 데이터를 계산하는 데 사용된다. 이것은 중복 상태를 피할 수 있고 상태를 동기화하고 유효하게 유지하기 위한 reducers의 필요성을 없앤다. 대신, 최소의 상태는 atom에 저장되도록 하고 다른 모든 것은 효율적으로 최소 상태의 함수로 계산된다.
 
 Selector는 어떤 컴포넌트가 필요한지, 어떤 상태에 의존하는지 추적하기 때문에 이러한 함수적인 접근방식을 더욱 효율적으로 만든다.
 
@@ -77,14 +67,11 @@ const fontSizeLabelState = selector({
 });
 ```
 
-`get`속성은 계산될 함수다. `get`인자를 통해 atom의 값이나 다른 selector에 접근할 수 있다.
-그것이 다른 atom이나 selector에 접근할 때마다 다른 atom이나 selector를 업데이트하면 이 atom이나 selector를 다시 계산할 수 있도록 종속 관계가 만들어진다.
+`get`속성은 계산될 함수다. `get`인자를 통해 atom의 값이나 다른 selector에 접근할 수 있다. 그것이 다른 atom이나 selector에 접근할 때마다 다른 atom이나 selector를 업데이트하면 이 atom이나 selector를 다시 계산할 수 있도록 종속 관계가 만들어진다.
 
-이 `fontSizeLabelState` 예시에서 selector는 `fontSizeState` atom에서 하나의 의존성을 갖는다.
-개념적으로 `fontSizeLabelState` selector는 `fontSizeState`를 입력으로 사용하고 형식화된 글꼴 크기 레이블을 출력으로 반환하는 순수 함수처럼 동작한다.
+이 `fontSizeLabelState` 예시에서 selector는 `fontSizeState` atom에서 하나의 의존성을 갖는다. 개념적으로 `fontSizeLabelState` selector는 `fontSizeState`를 입력으로 사용하고 형식화된 글꼴 크기 레이블을 출력으로 반환하는 순수 함수처럼 동작한다.
 
-Selector는 `useRecoilValue()`를 사용해 읽을 수 있다. `useRecoilValue()`는 atom이나 selector를 인자로 받아 해당 값을 반환한다.
-`fontSizeLabelState` selector는 쓸 수 없기 때문에 우리는 `useRecoilState()`를 이용하지 않는다. (읽기 가능한 selector의 더 많은 정보를 보려면 [selector API reference](/docs/api-reference/core/selector)를 보면된다.)
+Selector는 `useRecoilValue()`를 사용해 읽을 수 있다. `useRecoilValue()`는 atom이나 selector를 인자로 받아 해당 값을 반환한다. `fontSizeLabelState` selector는 쓸 수 없기 때문에 우리는 `useRecoilState()`를 이용하지 않는다. (읽기 가능한 selector의 더 많은 정보를 보려면 [selector API reference](/docs/api-reference/core/selector)를 보면된다.)
 
 ```jsx
 function FontButton() {
@@ -104,4 +91,3 @@ function FontButton() {
 ```
 
 버튼를 클릭하면 버튼의 글꼴 크기가 증가하는 동시에 현재 글꼴 크기를 반영하도록 글꼴 크기 레이블을 업데이트하는 두 가지 작업이 수행된다.
-
