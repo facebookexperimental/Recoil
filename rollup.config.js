@@ -3,10 +3,13 @@ import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import {terser} from 'rollup-plugin-terser';
 
-const config = mode => ({
+const config = ({mode, target}) => ({
   input: 'src/Recoil.js',
   output: {
-    file: `dist/recoil.${mode}.js`,
+    file:
+      target === 'web'
+        ? `dist/recoil.${mode}.js`
+        : `dist/recoil.${mode}.${target}.js`,
     format: 'cjs',
     exports: 'named',
   },
@@ -35,10 +38,17 @@ const config = mode => ({
         return null;
       },
     },
-    nodeResolve(),
+    nodeResolve({
+      extensions: target === 'native' ? ['.native.js', '.js'] : undefined,
+    }),
     commonjs(),
     mode === 'development' ? undefined : terser({mangle: false}),
   ],
 });
 
-export default [config('development'), config('production')];
+export default [
+  config({mode: 'development', target: 'web'}),
+  config({mode: 'production', target: 'web'}),
+  config({mode: 'development', target: 'native'}),
+  config({mode: 'production', target: 'native'}),
+];

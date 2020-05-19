@@ -37,6 +37,7 @@
     "install-peers-cli": "^2.2.0",
     "jest-cli": "^26.0.1",
     "prettier": "^2.0.5",
+    "react-native": "^0.62.2",
     "rollup": "^2.10.0",
     "rollup-plugin-includepaths": "^0.2.3",
     "rollup-plugin-terser": "^5.3.0"
