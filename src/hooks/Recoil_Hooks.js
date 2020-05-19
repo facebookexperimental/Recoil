@@ -21,7 +21,6 @@ import type {
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
-const ReactDOM = require('ReactDOM');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const {
   getNodeLoadable,
