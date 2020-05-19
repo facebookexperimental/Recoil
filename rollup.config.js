@@ -2,16 +2,39 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import {terser} from 'rollup-plugin-terser';
+import path from 'path';
+import alias from '@rollup/plugin-alias';
 
-const config = mode => ({
+let emptyModulePath = path.resolve(__dirname, 'src/util/empty.js');
+
+function getExternals(target) {
+  switch (target) {
+    case 'browser':
+      return ['react', 'react-dom'];
+    case 'native':
+      return ['react', 'react-native'];
+  }
+}
+
+function getAliases(target) {
+  switch (target) {
+    case 'browser':
+      return [{find: 'react-native', replacement: emptyModulePath}];
+    case 'native':
+      return [{find: 'react-dom', replacement: emptyModulePath}];
+  }
+}
+
+const config = (target, mode) => ({
   input: 'src/Recoil.js',
   output: {
-    file: `dist/recoil.${mode}.js`,
+    file: `dist/recoil.${target}.${mode}.js`,
     format: 'cjs',
     exports: 'named',
   },
-  external: ['react', 'react-dom'],
+  external: getExternals(target),
   plugins: [
+    alias({entries: getAliases(target)}),
     babel({
       presets: ['@babel/preset-react', '@babel/preset-flow'],
       plugins: [
@@ -21,21 +44,15 @@ const config = mode => ({
       ],
       babelHelpers: 'bundled',
     }),
-    {
-      resolveId: source => {
-        if (source === 'React') {
-          return {id: 'react', external: true};
-        }
-        if (source === 'ReactDOM') {
-          return {id: 'react-dom', external: true};
-        }
-        return null;
-      },
-    },
     nodeResolve(),
     commonjs(),
-    mode === 'development' ? undefined : terser({ mangle: false }),
+    mode === 'development' ? undefined : terser({mangle: false}),
   ],
 });
 
-export default [config('development'), config('production')];
+export default [
+  config('browser', 'development'),
+  config('browser', 'production'),
+  config('native', 'development'),
+  config('native', 'production'),
+];

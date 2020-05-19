@@ -3,6 +3,7 @@
   "version": "0.0.7",
   "description": "Recoil - A React state management library for complex UIs",
   "main": "dist/index.js",
+  "react-native": "dist/native.js",
   "files": ["dist/*.js"],
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
@@ -24,6 +25,7 @@
     "@babel/plugin-transform-flow-strip-types": "^7.9.0",
     "@babel/preset-flow": "^7.9.0",
     "@babel/preset-react": "^7.9.4",
+    "@rollup/plugin-alias": "^3.1.0",
     "@rollup/plugin-babel": "^5.0.0",
     "@rollup/plugin-commonjs": "^11.1.0",
     "@rollup/plugin-node-resolve": "^7.1.3",
@@ -40,6 +42,10 @@
     "rollup-plugin-terser": "^5.3.0"
   },
   "jest": {
-    "timers": "fake"
-  }
+    "timers": "fake",
+    "moduleNameMapper": {
+      "react-native": "<rootDir>/src/util/empty.js"
+    }
+  },
+  "dependencies": {}
 }

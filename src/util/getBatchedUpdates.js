@@ -1,5 +1,5 @@
-import {unstable_batchedUpdates as rdBatched} from 'react-dom';
-import {unstable_batchedUpdates as rnBatched} from 'react-native';
+const rdBatched = require('react-dom').unstable_batchedUpdates;
+const rnBatched = require('react-native').unstable_batchedUpdates;
 
 const batchedUpdates =
   typeof rdBatched === 'function'
