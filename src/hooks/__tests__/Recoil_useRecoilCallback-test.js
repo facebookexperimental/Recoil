@@ -10,8 +10,8 @@
  */
 'use strict';
 
-const React = require('React');
-const {useRef, useState} = require('React');
+const React = require('react');
+const {useRef, useState} = require('react');
 const {act} = require('ReactTestUtils');
 const {
   atom,

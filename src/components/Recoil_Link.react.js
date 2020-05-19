@@ -39,7 +39,7 @@
 
 import type {RecoilState} from '../core/Recoil_RecoilValue';
 
-const React = require('React');
+const React = require('react');
 const {
   useGoToSnapshot,
   useSnapshotWithStateChange,

@@ -20,7 +20,7 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
+const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
 const batchedUpdates = require('../util/getBatchedUpdates');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const {

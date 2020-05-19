@@ -17,8 +17,8 @@ import type {
   RecoilValueReadOnly,
 } from '../../core/Recoil_RecoilValue';
 
-const React = require('React');
-const {useEffect, useState} = require('React');
+const React = require('react');
+const {useEffect, useState} = require('react');
 const batchedUpdates = require('../util/getBatchedUpdates');
 const {act} = require('ReactTestUtils');
 const atom = require('../../recoil_values/Recoil_atom');

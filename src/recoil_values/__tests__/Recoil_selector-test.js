@@ -13,7 +13,7 @@
 const gkx = require('../../util/Recoil_gkx');
 gkx.setPass('recoil_async_selector_refactor');
 
-const React = require('React');
+const React = require('react');
 const {act} = require('ReactTestUtils');
 const {useRecoilState, useRecoilValue} = require('../../Recoil');
 const atom = require('../Recoil_atom');

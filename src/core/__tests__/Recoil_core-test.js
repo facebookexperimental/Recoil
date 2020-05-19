@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const React = require('React');
+const React = require('react');
 const atom = require('../../recoil_values/Recoil_atom');
 const {
   getNodeLoadable,

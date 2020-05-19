@@ -13,8 +13,8 @@
 import type {RecoilValue} from 'Recoil_RecoilValue';
 import type {Store} from 'Recoil_State';
 
-const React = require('React');
-const {useState} = require('React');
+const React = require('react');
+const {useState} = require('react');
 const {act} = require('ReactTestUtils');
 const atom = require('../Recoil_atom');
 const constSelector = require('../Recoil_const');

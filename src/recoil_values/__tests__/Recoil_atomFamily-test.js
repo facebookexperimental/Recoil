@@ -10,8 +10,8 @@
  */
 'use strict';
 
-const React = require('React');
-const {useState} = require('React');
+const React = require('react');
+const {useState} = require('react');
 const {act} = require('ReactTestUtils');
 const atom = require('../Recoil_atom');
 const atomFamily = require('../Recoil_atomFamily');

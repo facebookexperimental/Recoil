@@ -19,8 +19,8 @@ import type {
   TreeState,
 } from '../core/Recoil_State';
 
-const React = require('React');
-const {useContext, useEffect, useRef, useState} = require('React');
+const React = require('react');
+const {useContext, useEffect, useRef, useState} = require('react');
 const {
   fireNodeSubscriptions,
   setNodeValue,

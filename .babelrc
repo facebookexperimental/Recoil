@@ -6,8 +6,6 @@
       {
         "root": ["./src"],
         "alias": {
-          "React": "react",
-          "ReactDOM": "react-dom",
           "ReactTestUtils": "react-dom/test-utils"
         }
       }

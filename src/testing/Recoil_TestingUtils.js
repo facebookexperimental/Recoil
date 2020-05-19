@@ -13,8 +13,8 @@
 import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
 import type {Store, StoreState, TreeState} from 'Recoil_State';
 
-const React = require('React');
-const ReactDOM = require('ReactDOM');
+const React = require('react');
+const ReactDOM = require('react-dom');
 const {act} = require('ReactTestUtils');
 const {fireNodeSubscriptions} = require('../core/Recoil_FunctionalCore');
 const {

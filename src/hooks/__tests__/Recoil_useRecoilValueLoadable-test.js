@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const React = require('React');
+const React = require('react');
 const {act} = require('ReactTestUtils');
 const constSelector = require('../../recoil_values/Recoil_const');
 const errorSelector = require('../../recoil_values/Recoil_error');
