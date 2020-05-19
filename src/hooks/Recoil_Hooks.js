@@ -21,7 +21,7 @@ import type {
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
-const ReactDOM = require('ReactDOM');
+const batchedUpdates = require('../util/getBatchedUpdates');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const {
   getNodeLoadable,
@@ -479,7 +479,7 @@ function useTransactionObservation(
 function useGoToSnapshot(): UpdatedSnapshot => void {
   const storeRef = useStoreRef();
   return (snapshot: UpdatedSnapshot) => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchedUpdates(() => {
       snapshot.updatedAtoms.forEach(key => {
         setRecoilValue(
           storeRef.current,
@@ -497,7 +497,7 @@ function useSetUnvalidatedAtomValues(): (
 ) => void {
   const storeRef = useStoreRef();
   return (values: Map<NodeKey, mixed>, transactionMetadata: {...} = {}) => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchedUpdates(() => {
       storeRef.current.addTransactionMetadata(transactionMetadata);
       values.forEach((value, key) =>
         setUnvalidatedRecoilValue(
@@ -570,7 +570,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       }
 
       let ret = SENTINEL;
-      ReactDOM.unstable_batchedUpdates(() => {
+      batchedUpdates(() => {
         // flowlint-next-line unclear-type:off
         ret = (fn: any)({getPromise, getLoadable, set, reset}, ...args);
       });
