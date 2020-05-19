@@ -53,6 +53,7 @@ const invariant = require('../util/Recoil_invariant');
 const mapMap = require('../util/Recoil_mapMap');
 const mergeMaps = require('../util/Recoil_mergeMaps');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const {batchUpdates} = require('../util/Recoil_batch');
 
 function cloneState(state: TreeState, opts): TreeState {
   return {
@@ -479,7 +480,7 @@ function useTransactionObservation(
 function useGoToSnapshot(): UpdatedSnapshot => void {
   const storeRef = useStoreRef();
   return (snapshot: UpdatedSnapshot) => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       snapshot.updatedAtoms.forEach(key => {
         setRecoilValue(
           storeRef.current,
@@ -497,7 +498,7 @@ function useSetUnvalidatedAtomValues(): (
 ) => void {
   const storeRef = useStoreRef();
   return (values: Map<NodeKey, mixed>, transactionMetadata: {...} = {}) => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       storeRef.current.addTransactionMetadata(transactionMetadata);
       values.forEach((value, key) =>
         setUnvalidatedRecoilValue(
@@ -570,13 +571,13 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       }
 
       let ret = SENTINEL;
-      ReactDOM.unstable_batchedUpdates(() => {
+      batchUpdates(() => {
         // flowlint-next-line unclear-type:off
         ret = (fn: any)({getPromise, getLoadable, set, reset}, ...args);
       });
       invariant(
         !(ret instanceof Sentinel),
-        'unstable_batchedUpdates should return immediately',
+        'batchUpdates should return immediately',
       );
       return (ret: Return);
     },

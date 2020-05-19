@@ -29,6 +29,10 @@ export type {
   RecoilValueReadOnly,
 } from './core/Recoil_RecoilValue';
 
+const {unstable_batchedUpdates} = require('./util/ReactBatchedUpdates');
+const {setBatch} = require('./util/Recoil_batch');
+setBatch(unstable_batchedUpdates);
+
 const atom = require('./recoil_values/Recoil_atom');
 const {
   useRecoilCallback,
@@ -76,4 +80,5 @@ module.exports = {
 
   // Other functions
   isRecoilValue,
+  setBatch,
 };

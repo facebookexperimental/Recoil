@@ -10,7 +10,7 @@ const config = mode => ({
     format: 'cjs',
     exports: 'named',
   },
-  external: ['react', 'react-dom'],
+  external: ['react', 'react-dom', 'react-native'],
   plugins: [
     babel({
       presets: ['@babel/preset-react', '@babel/preset-flow'],
@@ -29,12 +29,15 @@ const config = mode => ({
         if (source === 'ReactDOM') {
           return {id: 'react-dom', external: true};
         }
+        if (source === 'ReactNative') {
+          return {id: 'react-native', external: true};
+        }
         return null;
       },
     },
     nodeResolve(),
     commonjs(),
-    mode === 'development' ? undefined : terser({ mangle: false }),
+    mode === 'development' ? undefined : terser({mangle: false}),
   ],
 });
 
