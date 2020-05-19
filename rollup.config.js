@@ -45,7 +45,7 @@ const config = mode => [
   {
     input: 'src/RecoilUtils.js',
     output: {
-      file: 'dist/utils/index.js',
+      file: `dist/utils/RecoilUtils.${mode}.js`,
       format: 'cjs',
       exports: 'named',
     },
