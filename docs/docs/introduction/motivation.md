@@ -1,5 +1,5 @@
 ---
-title: Motivation
+title: 动机
 ---
 
 For reasons of compatibility and simplicity, it's best to use React's built-in state management capabilities rather than external global state. But React has certain limitations:
