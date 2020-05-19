@@ -1,5 +1,5 @@
 ---
-title: useResetRecoilState(state)
+title: useResetRecoilState()
 ---
 
 Returns a function that will reset the value of the given state to its default value.
