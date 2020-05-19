@@ -11,9 +11,9 @@ Returns a function that will reset the value of the given state to its default v
 ### Example
 
 ```jsx
-import { todoListState } from "../atoms/todoListState";
+import {todoListState} from "../atoms/todoListState";
 
-const TodoReset = () => {
+const TodoResetButton = () => {
   const resetList = useResetRecoilState(todoListState);
   return <button onClick={resetList}>Reset</button>;
 };
