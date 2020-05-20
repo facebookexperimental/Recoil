@@ -1,21 +1,21 @@
 ---
-title: 动机
+title: Motivation
 ---
 
-出于兼容性和简便性的考虑，最好使用 React 的内置状态管理功能，而不要使用外部全局状态。 但是 React 有一定的局限性：
+For reasons of compatibility and simplicity, it's best to use React's built-in state management capabilities rather than external global state. But React has certain limitations:
 
-- 只能将组件状态提升到更高层的组件上，但这可能导致需要重新渲染复杂的树型结构。
-- Context 只能存储单个值，而不能存储不确定的一组值，每个值都有自己的使用者。
-- 树型结构的顶部（状态必须存储的地方）和树的节点（使用状态的地方）和很难实现代码分离，
+- Component state can only be shared by pushing it up to the common ancestor, but this might include a huge tree that then needs to re-render.
+- Context can only store a single value, not an indefinite set of values each with its own consumers.
+- Both of these make it difficult to code-split the top of the tree (where the state has to live) from the leaves of the tree (where the state is used).
 
-我们希望在保持 API 以及语义和行为尽可能 React 风格化的同时进行改进。
+We want to improve this while keeping both the API and the semantics and behavior as Reactish as possible.
 
-Recoil 定义了一个有向图，该图既正交又是固有的，并附加到你的 React 树型结构上。 状态变化从该图的根（我们称为 atoms）到纯函数（我们称为 selectors），再到组件。 使用以下方法：
+Recoil defines a directed graph orthogonal to but also intrinsic and attached to your React tree. State changes flow from the roots of this graph (which we call atoms) through pure functions (which we call selectors) and into components. With this approach:
 
-- 我们创建了一个无样板的 API，其中共享的状态具有与 React 本地状态相同的简单 get / set 接口（但如果需要，也可以用 reducer 等封装）。
-- 我们具有与并发模式和其他新的 React 功能兼容的可能性。
-- 状态定义是增量式和分布式的，从而增加了代码分离的可能性。
-- 状态可以用派生数据替换，而无需修改使用它的组件。
-- 派生数据可以在同步和异步中使用，而无需修改使用它的组件。
-- 我们可以将导航视为一流的概念，甚至可以对链接中的状态转换进行编码。
-- 容易以向后兼容的方式持久保存整个应用程序的状态，因此持久保存的状态可以在应用程序更改后留存。
+- We get a boilerplate-free API where shared state has the same simple get/set interface as React local state (yet can be encapsulated with reducers etc. if needed).
+- We have the possibility of compatibility with Concurrent Mode and other new React features as they become available.
+- The state definition is incremental and distributed, making code-splitting possible.
+- State can be replaced with derived data without modifying the components that use it.
+- Derived data can move between being synchronous and asynchronous without modifying the components that use it.
+- We can treat navigation as a first-class concept, even encoding state transitions in links.
+- It's easy to persist the entire application state in a way that is backwards-compatible, so persisted states can survive application changes.
