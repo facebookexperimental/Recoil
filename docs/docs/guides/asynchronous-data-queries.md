@@ -239,7 +239,7 @@ It is not necessary to use React Suspense for handling pending asynchronous sele
 ```jsx
 function UserInfo({userID}) {
   const userNameLoadable = useRecoilValueLoadable(userNameQuery(userID));
-  switch (userNameLoadable.status) {
+  switch (userNameLoadable.state) {
     case 'hasValue':
       return <div>{userNameLoadable.contents}</div>;
     case 'loading':

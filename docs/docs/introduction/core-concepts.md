@@ -4,7 +4,7 @@ title: Core Concepts
 
 ## Overview
 
-Recoil lets you create a data-flow graph that flows from _atoms_ (shared state) through _selectors_ (pure functions) and down into your React components. Atoms are units of state that components can subscribe to. Selectors transform this state either synchronously or asynchronously
+Recoil lets you create a data-flow graph that flows from _atoms_ (shared state) through _selectors_ (pure functions) and down into your React components. Atoms are units of state that components can subscribe to. Selectors transform this state either synchronously or asynchronously.
 
 ## Atoms
 
@@ -80,7 +80,7 @@ function FontButton() {
     <>
       <div>Current font size: ${fontSizeLabel}</div>
 
-      <button onClick={setFontSize(fontSize + 1)} style={{fontSize}}>
+      <button onClick={() => setFontSize(fontSize + 1)} style={{fontSize}}>
         Click to Enlarge
       </button>
     </>
