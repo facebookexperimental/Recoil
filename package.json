@@ -4,8 +4,7 @@
   "description": "Recoil - A React state management library for complex UIs",
   "main": "dist/index.js",
   "files": [
-    "dist/index.js",
-    "dist/utils/index.js"
+    "dist/**/*.js"
   ],
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
