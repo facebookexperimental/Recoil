@@ -1,9 +1,8 @@
-// Default to a dummy "batch" implementation that just runs the callback
-function defaultNoopBatch(callback) {
-  callback();
+function defaultBatch() {
+  throw new Error('No batching function specified.');
 }
 
-let batch = defaultNoopBatch;
+let batch = defaultBatch;
 
 // Allow injecting another batching function later
 const setBatch = newBatch => (batch = newBatch);
