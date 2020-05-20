@@ -1,28 +1,28 @@
 ---
-title: Getting Started
+title: Comencemos
 ---
 
-## Create React App
 
-Recoil is a state management library for React, so you need to have React installed and running to use Recoil. The easiest and recommended way for bootstrapping a React application is to use [Create React App](https://github.com/facebook/create-react-app#creating-an-app):
+## Create React App
+Recoil es una librería para el manejo del estado de React, y por lo tanto necesitas tener React instalado y corriendo para poder usarlo. La forma más fácil y recomendada para usar una aplicación con React, es instalando el proyecto [Create React App](https://github.com/facebook/create-react-app#creating-an-app):
 
 ```shell
 npx create-react-app my-app
 ```
 
-> [`npx`](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) is a package runner tool that comes with npm 5.2+ and higher, see [instructions for older npm versions](https://gist.github.com/gaearon/4064d3c23a77c74a3614c498a8bb1c5f).
+> [`npx`](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) es una herramienta para correr paquetes que viene con npm 5.2+ o en cualquier versión más reciente, leer las [instrucciones para versiones viejas de npm](https://gist.github.com/gaearon/4064d3c23a77c74a3614c498a8bb1c5f).
 
-For more ways to install Create React App, see the [official documentation](https://github.com/facebook/create-react-app#creating-an-app).
+Para ver más formas de como instalar el proyecto de Create React App, mira la [documentación oficial](https://github.com/facebook/create-react-app#creating-an-app).
 
-## Installation
+## Instalación
 
-The Recoil package lives in <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a>. To install the latest stable version, run the following command:
+Recoil está disponible en <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a>. Para instalar la última versión estable ejecuta el siguiente comando:
 
 ```shell
 npm install recoil
 ```
 
-Or if you're using <a href="https://classic.yarnpkg.com/en/docs/install/" target="_blank">yarn</a>:
+O si usas <a href="https://classic.yarnpkg.com/en/docs/install/" target="_blank">yarn</a>:
 
 ```shell
 yarn add recoil
@@ -30,7 +30,8 @@ yarn add recoil
 
 ## RecoilRoot
 
-Components that use recoil state need `RecoilRoot` to appear somewhere in the parent tree. A good place to put this is in your root component:
+Los componentes que usan el estado de Recoil, necesitan tener el `RecoilRoot` en algún lugar del árbol padre. Un buen lugar para poner esto sería en tu componente principal:
+
 
 ```jsx
 import React from 'react';
@@ -51,20 +52,20 @@ function App() {
 }
 ```
 
-We'll implement the `CharacterCounter` component in the following section.
+Vamos a implementar el componente `CharacterCounter` en la siguiente sección.
 
-## Atom
+## Átomo
 
-An **atom** represents a piece of **state**. Atoms can be read from and written to from any component. Components that read the value of an atom are implicitly **subscribed** to that atom, so any atom updates will result in a re-render of all components subscribed to that atom:
+Un átomo representa una pieza del estado. Los átomos pueden ser leídos y actualizados desde cualquier componente. Los componentes que leen valores de un átomo son implícitamente suscritos a ese átomo, por lo tanto, cada cambio en el átomo renderizará todos esos componentes suscritos.
 
 ```javascript
 const textState = atom({
-  key: 'textState', // unique ID (with respect to other atoms/selectors)
-  default: '', // default value (aka initial value)
+  key: 'textState', // identificador único (con respecto a los demás átomos y selectores)
+  default: '', // valor por defecto (también conocido como valor inicial)
 });
 ```
 
-Components that need to read from _and_ write to an atom should use `useRecoilState()` as shown below:
+Los componentes que necesitan leer y actualizar valores en el átomo deberían de usar `useRecoilState()`, como se muestra aquí abajo:
 
 ```jsx
 function CharacterCounter() {
@@ -95,11 +96,11 @@ function TextInput() {
 
 ## Selector
 
-A **selector** represents a piece of **derived state**. Derived state is a **transformation** of state. You can think of derived state as the output of passing state to a pure function that modifies the given state in some way:
+Un **selector** representa una pieza de **estado derivado**. Un estado derivado es una **transformación** del estado. Puedes imaginarlo como si fuera el resultado de pasar el estado a una función pura, y que modifica el estado de alguna forma:
 
 ```jsx
 const charCountState = selector({
-  key: 'charCountState', // unique ID (with respect to other atoms/selectors)
+  key: 'charCountState', // identificador único (con respecto a los demás átomos y selectores)
   get: ({get}) => {
     const text = get(textState);
 
@@ -108,7 +109,7 @@ const charCountState = selector({
 });
 ```
 
-We can use the `useRecoilValue()` hook to read the value of `charCountState`:
+Podemos usar el hook `useRecoilValue()` para leer el valor de `charCountState`:
 
 ```jsx
 function CharacterCount() {
@@ -118,10 +119,10 @@ function CharacterCount() {
 }
 ```
 
-## Demo
+## Demostración
 
-Below is the finished product:
+Aquí esta el producto final:
 
 import GettingStarted from '../../../src/components/introduction/GettingStarted';
 
-<GettingStarted />
+<GettingStarted />+
