@@ -13,6 +13,8 @@
     "build": "rollup -c && node scripts/postbuild.js",
     "test": "jest src/*",
     "format": "prettier --write \"./**/*.{js,md,json}\""
+    "flow": "flow --show-all-errors",
+    "flow:restart": "flow stop && npm run flow"
   },
   "peerDependencies": {
     "react": "^16.13.1",
