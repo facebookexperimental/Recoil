@@ -1,6 +1,6 @@
 # Recoil
 
-![Node.js CI](https://github.com/dustinsoftware/Recoil/workflows/Node.js%20CI/badge.svg)
+[![Node.js CI](https://github.com/facebookexperimental/Recoil/workflows/Node.js%20CI/badge.svg)](https://github.com/facebookexperimental/Recoil/actions)
 
 Recoil is an experimental set of utilities for state management with React. Please see the website: https://recoiljs.org
 
