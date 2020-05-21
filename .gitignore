@@ -109,3 +109,6 @@ dist
 
 # Mac
 .DS_Store
+
+# Npm
+utils.js
