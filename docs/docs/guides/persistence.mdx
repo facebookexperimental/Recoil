@@ -45,7 +45,6 @@ const initializeState = ({ set }) => {
                     const value = JSON.parse(values[i]).value;
                     set({ key }, value);
                 }
-                setIsReady(true);
             });
         });
     }
