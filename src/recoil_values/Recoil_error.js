@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type {RecoilValueReadOnly} from 'Recoil';
+import type {RecoilValueReadOnly} from 'recoil';
 
 const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
 const selectorFamily = require('./Recoil_selectorFamily');

@@ -1,5 +1,8 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+perf_viz
  * @flow strict-local
@@ -8,10 +11,13 @@
 
 'use strict';
 
-function invariant(condition: boolean, message: string) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
+// @fb-only: const invariant = require('invariant');
+
+// prettier-ignore
+// @oss-only function invariant(condition: boolean, message: string) {
+// @oss-only   if (!condition) {
+// @oss-only     throw new Error(message);
+// @oss-only   }
+// @oss-only }
 
 module.exports = invariant;

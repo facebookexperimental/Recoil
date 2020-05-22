@@ -1,5 +1,8 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+perf_viz
  * @flow strict-local
@@ -8,14 +11,17 @@
 
 'use strict';
 
-const sprintf = require('./Recoil_sprintf');
-function expectationViolation(format: string, ...args: $ReadOnlyArray<mixed>) {
-  // if (__DEV__) {
-  //   const message = sprintf.call(null, format, ...args);
-  //   const error = new Error(message);
-  //   error.name = 'Expectation Violation';
-  //   console.error(error);
-  // }
-}
+// @fb-only: const expectationViolation = require('expectationViolation');
+
+// @oss-only const sprintf = require('Recoil_sprintf');
+// prettier-ignore
+// @oss-only function expectationViolation(format: string, ...args: $ReadOnlyArray<mixed>) {
+// @oss-only   if (__DEV__) {
+// @oss-only     const message = sprintf.call(null, format, ...args);
+// @oss-only     const error = new Error(message);
+// @oss-only     error.name = 'Expectation Violation';
+// @oss-only     console.error(error);
+// @oss-only   }
+// @oss-only }
 
 module.exports = expectationViolation;

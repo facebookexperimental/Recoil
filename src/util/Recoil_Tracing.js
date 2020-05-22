@@ -12,38 +12,58 @@
  */
 'use strict';
 
-import type {RecoilValue} from '../core/Recoil_RecoilValue';
+import type {RecoilValue} from 'Recoil_RecoilValue';
 
-const SchedulerTracing = require('./SchedulerTracing'); // flowlint-line untyped-import:off
+// flowlint-next-line untyped-import:off
+// @fb-only: const SchedulerTracing = require('SchedulerTracing');
 
 function trace<TResult>(
   message: string,
   node: string | RecoilValue<mixed>,
   fn: () => TResult,
 ): TResult {
-  // if (__DEV__) {
-  //   if (
-  //     SchedulerTracing.unstable_trace !== undefined &&
-  //     window.performance !== undefined
-  //   ) {
-  //     return SchedulerTracing.unstable_trace(
-  //       `Recoil: ${message} for node: ${
-  //         typeof node === 'string' ? node : node.key
-  //       }`,
-  //       window.performance.now(),
-  //       fn,
-  //     );
-  //   }
-  // }
+  // prettier-ignore
+  // @fb-only: if (__DEV__) {
+  // prettier-ignore
+    // @fb-only: if (
+  // prettier-ignore
+      // @fb-only: SchedulerTracing.unstable_trace !== undefined &&
+  // prettier-ignore
+      // @fb-only: window.performance !== undefined
+  // prettier-ignore
+    // @fb-only: ) {
+  // prettier-ignore
+      // @fb-only: return SchedulerTracing.unstable_trace(
+  // prettier-ignore
+        // @fb-only: `Recoil: ${message} for node: ${
+  // prettier-ignore
+          // @fb-only: typeof node === 'string' ? node : node.key
+  // prettier-ignore
+        // @fb-only: }`,
+  // prettier-ignore
+        // @fb-only: window.performance.now(),
+  // prettier-ignore
+        // @fb-only: fn,
+  // prettier-ignore
+      // @fb-only: );
+  // prettier-ignore
+    // @fb-only: }
+  // prettier-ignore
+  // @fb-only: }
   return fn();
 }
 
 function wrap<TFunction>(fn: TFunction): TFunction {
-  // if (__DEV__) {
-  //   if (SchedulerTracing.unstable_wrap !== undefined) {
-  //     return SchedulerTracing.unstable_wrap(fn);
-  //   }
-  // }
+  // prettier-ignore
+  // @fb-only: if (__DEV__) {
+  // prettier-ignore
+    // @fb-only: if (SchedulerTracing.unstable_wrap !== undefined) {
+  // prettier-ignore
+      // @fb-only: return SchedulerTracing.unstable_wrap(fn);
+  // prettier-ignore
+    // @fb-only: }
+  // prettier-ignore
+  // @fb-only: }
   return fn;
 }
 

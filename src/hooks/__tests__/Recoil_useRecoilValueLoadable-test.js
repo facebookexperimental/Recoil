@@ -15,7 +15,10 @@ const {act} = require('ReactTestUtils');
 const constSelector = require('../../recoil_values/Recoil_const');
 const errorSelector = require('../../recoil_values/Recoil_error');
 const {useRecoilValueLoadable} = require('../Recoil_Hooks');
-const {asyncSelector, renderElements} = require('../../testing/Recoil_TestingUtils');
+const {
+  asyncSelector,
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
 
 const gkx = require('../../util/Recoil_gkx');
 

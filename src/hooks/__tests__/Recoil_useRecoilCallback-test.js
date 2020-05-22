@@ -13,18 +13,19 @@
 const React = require('React');
 const {useRef, useState} = require('React');
 const {act} = require('ReactTestUtils');
+
 const {
   atom,
   selector,
   useRecoilCallback,
   useSetRecoilState,
-} = require('../../Recoil');
-const invariant = require('../../lib/Recoil_invariant');
+} = require('../../Recoil_index');
 const {
   ReadsAtom,
   flushPromisesAndTimers,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
+const invariant = require('../../util/Recoil_invariant');
 
 describe('useRecoilCallback', () => {
   it('Reads Recoil values', async () => {
@@ -88,10 +89,12 @@ describe('useRecoilCallback', () => {
       return null;
     }
 
-    const container = renderElements(<>
-      <Component />
-      <ReadsAtom atom={anAtom} />
-    </>);
+    const container = renderElements(
+      <>
+        <Component />
+        <ReadsAtom atom={anAtom} />
+      </>,
+    );
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => cb(123));
     expect(container.textContent).toBe('123');
@@ -108,10 +111,12 @@ describe('useRecoilCallback', () => {
       return null;
     }
 
-    const container = renderElements(<>
-      <Component />
-      <ReadsAtom atom={anAtom} />
-    </>);
+    const container = renderElements(
+      <>
+        <Component />
+        <ReadsAtom atom={anAtom} />
+      </>,
+    );
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => setCB(123));
     expect(container.textContent).toBe('123');
