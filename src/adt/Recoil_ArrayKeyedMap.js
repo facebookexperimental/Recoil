@@ -27,7 +27,7 @@ class ArrayKeyedMap<V> {
   constructor(
     existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
   ): ArrayKeyedMap<V> {
-    // @oss-only this._base = new Map();
+    this._base = new Map(); // @oss-only
 
     if (existing instanceof ArrayKeyedMap) {
       for (const [k, v] of existing.entries()) {

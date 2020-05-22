@@ -11,8 +11,8 @@
 
 'use strict';
 
-// @oss-only if (process.env.NODE_ENV === 'production') {
-// @oss-only   module.exports = require('./recoil.production.js');
-// @oss-only } else {
-// @oss-only   module.exports = require('./recoil.development.js');
-// @oss-only }
+if (process.env.NODE_ENV === 'production') { // @oss-only
+  module.exports = require('./recoil.production.js'); // @oss-only
+} else { // @oss-only
+  module.exports = require('./recoil.development.js'); // @oss-only
+} // @oss-only
