@@ -507,11 +507,9 @@ function selector<T>(
       };
     }
 
-    // TODO: make __DEV__ make on github
-    // prettier-ignore
-    // @fb-only: if (__DEV__) {
-      // @fb-only: detectCircularDependencies(newState, [key]);
-    // @fb-only: }
+    if (__DEV__) {
+      detectCircularDependencies(newState, [key]);
+    }
 
     return newState;
   }

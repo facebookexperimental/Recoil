@@ -372,9 +372,9 @@ function selector<T>(
       };
     }
 
-    // if (__DEV__) {
-    //   detectCircularDependencies(newState, [key]);
-    // }
+    if (__DEV__) {
+      detectCircularDependencies(newState, [key]);
+    }
     return [newState, loadable, newDepValues];
   }
 
