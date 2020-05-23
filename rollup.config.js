@@ -4,7 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import {terser} from 'rollup-plugin-terser';
 
 const config = mode => ({
-  input: 'src/Recoil.js',
+  input: 'src/Recoil_index.js',
   output: {
     file: `dist/recoil.${mode}.js`,
     format: 'cjs',

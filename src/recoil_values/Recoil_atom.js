@@ -59,15 +59,9 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-// @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
 import type {NodeKey, TreeState} from '../core/Recoil_State';
+// @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
 
-const {
-  mapByDeletingFromMap,
-  mapBySettingInMap,
-  setByAddingToSet,
-} = require('../util/Recoil_CopyOnWrite');
-const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const {loadableWithValue} = require('../adt/Recoil_Loadable');
 const {
   DEFAULT_VALUE,
@@ -75,11 +69,17 @@ const {
   registerNode,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-// @fb-only: const {scopedAtom} = require('./Recoil_ScopedAtom');
-const selector = require('./Recoil_selector');
+const {
+  mapByDeletingFromMap,
+  mapBySettingInMap,
+  setByAddingToSet,
+} = require('../util/Recoil_CopyOnWrite');
+const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
+// @fb-only: const {scopedAtom} = require('./Recoil_ScopedAtom');
+const selector = require('./Recoil_selector');
 
 // It would be nice if this didn't have to be defined at the Recoil level, but I don't want to make
 // the api cumbersome. One way to do this would be to have a selector mark the atom as persisted.
@@ -99,7 +99,7 @@ export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
   default: RecoilValue<T> | Promise<T> | T,
   persistence_UNSTABLE?: PersistenceSettings<T>,
-  // @fb-only:   scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
+  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
   dangerouslyAllowMutability?: boolean,
 }>;
 
@@ -190,24 +190,25 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   });
 }
 
+// prettier-ignore
 function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   const {
     default: optionsDefault,
-    // @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     ...restOptions
   } = options;
   if (isRecoilValue(optionsDefault) || isPromise(optionsDefault)) {
     return atomWithFallback<T>({
       ...restOptions,
       default: optionsDefault,
-      // @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
+      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     });
-    // @fb-only:   } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
-    // @fb-only:     return scopedAtom<T>({
-    // @fb-only:       ...restOptions,
-    // @fb-only:       default: optionsDefault,
-    // @fb-only:       scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    // @fb-only:     });
+  // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
+    // @fb-only: return scopedAtom<T>({
+      // @fb-only: ...restOptions,
+      // @fb-only: default: optionsDefault,
+      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    // @fb-only: });
   } else {
     return baseAtom<T>({...restOptions, default: optionsDefault});
   }

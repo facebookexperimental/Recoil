@@ -16,15 +16,16 @@ import type {Store, StoreState, TreeState} from 'Recoil_State';
 const React = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
+
+const {RecoilRoot} = require('../components/Recoil_RecoilRoot.react');
 const {fireNodeSubscriptions} = require('../core/Recoil_FunctionalCore');
 const {
   useRecoilValue,
   useResetRecoilState,
   useSetRecoilState,
 } = require('../hooks/Recoil_Hooks');
-const invariant = require('../lib/Recoil_invariant');
-const {RecoilRoot} = require('../components/Recoil_RecoilRoot.react');
 const selector = require('../recoil_values/Recoil_selector');
+const invariant = require('../util/Recoil_invariant');
 const stableStringify = require('../util/Recoil_stableStringify');
 
 // This isn't a test but is used in tests so Jest will be present:

@@ -18,13 +18,20 @@ const {useState} = require('React');
 const {act} = require('ReactTestUtils');
 const atom = require('../Recoil_atom');
 const constSelector = require('../Recoil_const');
-const {useRecoilState, useSetUnvalidatedAtomValues} = require('../../hooks/Recoil_Hooks');
+const {
+  useRecoilState,
+  useSetUnvalidatedAtomValues,
+} = require('../../hooks/Recoil_Hooks');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
   subscribeToRecoilValue,
 } = require('../../core/Recoil_RecoilValue');
-const {ReadsAtom, makeStore, renderElements} = require('../../testing/Recoil_TestingUtils');
+const {
+  ReadsAtom,
+  makeStore,
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
 
 let fallback: RecoilValue<number>,
   hasFallback: RecoilValue<number>,
@@ -88,12 +95,14 @@ describe('ReturnDefaultOrFallback', () => {
       const [value] = useRecoilState((getAtom(): any));
       return value;
     }
-    const container = renderElements(<>
-      <SetsUnvalidatedAtomValues />
-      <Switch>
-        <MyReadsAtom getAtom={() => theAtom} />
-      </Switch>
-    </>);
+    const container = renderElements(
+      <>
+        <SetsUnvalidatedAtomValues />
+        <Switch>
+          <MyReadsAtom getAtom={() => theAtom} />
+        </Switch>
+      </>,
+    );
     act(() => {
       setUnvalidatedAtomValues(
         new Map().set('notDefinedYetAtomValidator', 123),
@@ -131,12 +140,14 @@ describe('ReturnDefaultOrFallback', () => {
       const [value] = useRecoilState((getAtom(): any));
       return value;
     }
-    const container = renderElements(<>
-      <SetsUnvalidatedAtomValues />
-      <Switch>
-        <MyReadsAtom getAtom={() => theAtom} />
-      </Switch>
-    </>);
+    const container = renderElements(
+      <>
+        <SetsUnvalidatedAtomValues />
+        <Switch>
+          <MyReadsAtom getAtom={() => theAtom} />
+        </Switch>
+      </>,
+    );
     act(() => {
       setUnvalidatedAtomValues(
         new Map().set('notDefinedYetAtomWithFallback', 123),

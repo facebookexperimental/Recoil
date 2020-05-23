@@ -27,7 +27,11 @@ const {
 } = require('../../core/Recoil_RecoilValue');
 const selectorFamily = require('../Recoil_selectorFamily');
 const stableStringify = require('../../util/Recoil_stableStringify');
-const {ReadsAtom, makeStore, renderElements} = require('../../testing/Recoil_TestingUtils');
+const {
+  ReadsAtom,
+  makeStore,
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
 
 let id = 0;
 
@@ -284,12 +288,14 @@ test('Returns the fallback for parameterized atoms', () => {
     setAtomValue = setValue;
     return value;
   }
-  const container = renderElements(<>
-    <SetsUnvalidatedAtomValues />
-    <Switch>
-      <MyReadsAtom getAtom={() => theAtom} />
-    </Switch>
-  </>);
+  const container = renderElements(
+    <>
+      <SetsUnvalidatedAtomValues />
+      <Switch>
+        <MyReadsAtom getAtom={() => theAtom} />
+      </Switch>
+    </>,
+  );
   act(() => {
     setUnvalidatedAtomValues(
       new Map().set('notDefinedYetAtomFamilyWithFallback', 123),
@@ -345,12 +351,14 @@ test('Returns the fallback for parameterized atoms with a selector as the fallba
     setAtomValue = setValue;
     return value;
   }
-  const container = renderElements(<>
-    <SetsUnvalidatedAtomValues />
-    <Switch>
-      <MyReadsAtom getAtom={() => theAtom} />
-    </Switch>
-  </>);
+  const container = renderElements(
+    <>
+      <SetsUnvalidatedAtomValues />
+      <Switch>
+        <MyReadsAtom getAtom={() => theAtom} />
+      </Switch>
+    </>,
+  );
   act(() => {
     setUnvalidatedAtomValues(
       new Map().set('notDefinedYetAtomFamilyFallbackSel', 123),

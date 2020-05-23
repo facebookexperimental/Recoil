@@ -100,13 +100,11 @@ function selectorFamily<T, Params: Parameter>(
       return cachedSelector;
     }
 
-    const myKey = `${options.key}__selectorFamily/${
-      stableStringify(params, {
-        // It is possible to use functions in parameters if the user uses
-        // a cache with reference equality thanks to the incrementing index.
-        allowFunctions: true,
-      }) ?? 'void'
-    }/${nextIndex++}`; // Append index in case values serialize to the same key string
+    const myKey = `${options.key}__selectorFamily/${stableStringify(params, {
+      // It is possible to use functions in parameters if the user uses
+      // a cache with reference equality thanks to the incrementing index.
+      allowFunctions: true,
+    }) ?? 'void'}/${nextIndex++}`; // Append index in case values serialize to the same key string
     const myGet = callbacks => options.get(params)(callbacks);
     const myCacheImplementation = options.cacheImplementation_UNSTABLE?.();
 
