@@ -11,7 +11,7 @@
 /* eslint-disable fb-www/react-no-useless-fragment */
 'use strict';
 
-import type {PersistenceSettings} from 'Recoil_atom';
+import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 import type {
   RecoilState,
   RecoilValue,

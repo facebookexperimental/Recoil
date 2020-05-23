@@ -85,7 +85,7 @@ test('useResetRecoilState - async selector default', () => {
 
 // Test resetting an atom to a fallback selector with a pending async value
 test('useResetRecoilState - scoped atom', () => {
-  // @oss-only return;
+  return; // @oss-only
   const myAtom = atom({
     key: 'useResetRecoilState/scoped_atom',
     default: 'default',

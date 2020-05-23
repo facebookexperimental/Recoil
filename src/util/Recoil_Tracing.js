@@ -12,7 +12,7 @@
  */
 'use strict';
 
-import type {RecoilValue} from 'Recoil_RecoilValue';
+import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
 // flowlint-next-line untyped-import:off
 // @fb-only: const SchedulerTracing = require('SchedulerTracing');

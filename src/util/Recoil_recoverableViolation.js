@@ -14,15 +14,15 @@
 // @fb-only: const recoverableViolation = require('recoverableViolation');
 
 // prettier-ignore
-// @oss-only function recoverableViolation(
-// @oss-only   message: string,
-// @oss-only   projectName: 'recoil',
-// @oss-only   {error}: {|error?: Error|},
-// @oss-only ): null {
-// @oss-only   if (__DEV__) {
-// @oss-only     console.error(message, error);
-// @oss-only   }
-// @oss-only   return null;
-// @oss-only }
+function recoverableViolation( // @oss-only
+  message: string, // @oss-only
+  projectName: 'recoil', // @oss-only
+  {error}: {|error?: Error|}, // @oss-only
+): null { // @oss-only
+  // if (__DEV__) { // @oss-only
+  //   console.error(message, error); // @oss-only
+  // } // @oss-only
+  return null; // @oss-only
+} // @oss-only
 
 module.exports = recoverableViolation;
