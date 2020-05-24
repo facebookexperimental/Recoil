@@ -64,7 +64,7 @@ function deepFreezeValue(value: mixed) {
 
   Object.freeze(value); // Make all properties read-only
   for (const prop in value) {
-    if (value.hasOwnProperty(prop)) {
+    if (value.hasOwnProperty(prop) && !Object.isFrozen(prop)) {
       deepFreezeValue(value[prop]);
     }
   }
