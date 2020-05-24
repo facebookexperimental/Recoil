@@ -92,14 +92,14 @@ function TodoItem({item}) {
   };
 
   const toggleItemCompletion = () => {
-    const newList = todoList;
+    const newList = [...todoList];
     newList.splice(index, 1, {...item, isComplete: !item.isComplete});
 
     setTodoList(newList);
   };
 
   const deleteItem = () => {
-    const newList = todoList;
+    const newList = [...todoList];
     newList.splice(index, 1);
 
     setTodoList(newList);
