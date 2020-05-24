@@ -56,7 +56,7 @@ test('atom can store null and undefined', () => {
   expect(get(myAtom)).toBe('VALUE');
 });
 
-test('atom can store a circular reference object ', () => {
+test('atom can store a circular reference object', () => {
   class Circular {
     constructor() {
       this.self = this;
