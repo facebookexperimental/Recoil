@@ -1,15 +1,16 @@
 ---
 title: Selectors
+sidebar_label: Selectors
 ---
 
-A **selector** represents a piece of **derived state**. You can think of derived state as the output of passing state to a pure function that modifies the given state in some way.
+Un **selector** representa una porción del **estado derivado** (**derived state**). Puede pensar de el estado derivado como el resultado de pasar el estado actual a una función pura que modifica ese estado de alguna manera.
 
-Derived state is a powerful concept because it lets us build dynamic data that depends on other data. In the context of our todo list application, the following are considered derived state:
+El estado derivado es un concepto poderoso porque nos permite construir datos dinámicos que dependen de otros datos. En el contexto de nuestra lista de tareas, la siguiente parte es considerada como estado derivado:
 
-- **Filtered todo list**: derived from the complete todo list by creating a new list that has certain items filtered out based on some criteria (such as filtering out items that are already completed).
-- **Todo list statistics**: derived from the complete todo list by calculating useful attributes of the list, such as the total number of items in the list, the number of completed items, and the percentage of items that are completed.
+- **Lista de tareas filtrada**: derivada de nuestra lista de tareas completa cuando creamos una lista nueva, la cual tiene ciertas tareas filtradas por cierto criterio (como filtrar las tareas que han sido terminadas).
+- **Estadisticas de la lista de tareas**: derivada de nuestra lista de tareas completa cuando calculamos los atributos de la lista. Atributos como el numero total de la lista, el numero de tareas completas, y el porcentaje de tareas que han sido completadas.
 
-To implement a filtered todo list, we need to choose a set of filter criteria whose value can be saved in an atom. The filter options we'll use are: "Show All", "Show Completed", and "Show Uncompleted". The default value will be "Show All":
+Para poder implementar el filtro a nuestra lista de tareas, necesitamos escoger el criterio con el que iremos a filtrar. El valor cual podemos guardar en un átomo. Las opciones de filtros que usaremos son: "Show All", "Show Completed", and "Show Uncompleted". El valor predeterminado será "Show All":
 
 ```javascript
 const todoListFilterState = atom({
@@ -18,7 +19,7 @@ const todoListFilterState = atom({
 });
 ```
 
-Using `todoListFilterState` and `todoListState`, we can build a `filteredTodoListState` selector which derives a filtered list:
+Utilizando `todoListFilterState` y `todoListState`, podemos construir el selector `filteredTodoListState` el cual derivara una lista filtrada
 
 ```javascript
 const filteredTodoListState = selector({
@@ -39,15 +40,15 @@ const filteredTodoListState = selector({
 });
 ```
 
-The `filteredTodoListState` internally keeps track of two dependencies: `todoListFilterState` and `todoListState` so that it re-runs if either of those change.
+`filteredTodoListState` mantiene registro de dos dependencias: `todoListFilterState` y `todoListState`. De esta manera puede actualizarse si alguna de las dependencias cambia.
 
-> From a component's point of view, selectors can be read using the same hooks that are used to read atoms. However it's important to note that certain hooks only work with **writable state** (i.e `useRecoilState()`). All atoms are writable state, but only some selectors are considered writable state (selectors that have both a `get` and `set` property). See the [Core Concepts](/docs/introduction/core-concepts) page for more information on this topic.
+> Del punto de vista de un componente, los selectors pueden ser leidos usando los mismos hooks que se usn para leer el átomo. Sin embargo, es importante saber que ciertos hooks solo funcionan con el **estado escribible** (ejemplo `useRecoilState()`). Todos los átomos son parte del estado escribible, pero solo ciertos selectors son considerados como estado escribible (los selectos tienen ambas propiedades, `get` y `set`). Si quiere obtener mas informacion sobre el tema, lea [Conceptos Núcleos](/docs/introduction/core-concepts)
 
-Displaying our filtered todoList is as simple as changing one line in the `TodoList` component:
+Mostrar nuestro todoList filtrada es tan simple como cambiar una linea en el componente de `TodoList`:
 
 ```jsx
 function TodoList() {
-  // changed from todoListState to filteredTodoListState
+  // cambio todoListState a filteredTodoListState
   const todoList = useRecoilValue(filteredTodoListState);
 
   return (
@@ -64,7 +65,7 @@ function TodoList() {
 }
 ```
 
-Note the UI is the same as the `todoListFilterState` has a default of `"Show All"`. In order to change the filter, we need to implement the `TodoListFilters` component:
+Observe que la interface del usuario es la misma a `todoListFilterState` y tiene un valor predeterminado de `"Show All"`. Para poder cambiar el filtro, necesitamos implementar el componente de `TodoListFilters`:
 
 ```jsx
 function TodoListFilters() {
@@ -87,16 +88,16 @@ function TodoListFilters() {
 }
 ```
 
-With a few lines of code we've managed to implement filtering! We'll use the same concepts to implement the `TodoListStats` component.
+¡Con tan solo pocas lineas de código hemos podido implementar un sistema de filtración! Usaremos los mismos conceptos para implementar el componente de `TodoListStats`.
 
-We want to display the following stats:
+Queremos mostrar las siguientes estadisticas:
 
-- Total number of todo items
-- Total number of completed items
-- Total number of uncompleted items
-- Percentage of items completed
+- Numero total de tareas
+- Numero total de tareas completas
+- Numero total de tareas sin completar
+- Porcentaje de tareas completas
 
-While we could create a selector for each of the stats, an easier approach would be to create one selector that returns an object containing the data we need. We'll call this selector `todoListStatsState`:
+Aun que podemos crear un selector para cada estadística, una manera más fácil de llevar acabo, es crear un selector que nos regrese un objeto que contenga los datos que necesitamos. Llamaremos este selector `todoListStatsState`
 
 ```javascript
 const todoListStatsState = selector({
@@ -118,7 +119,7 @@ const todoListStatsState = selector({
 });
 ```
 
-To read the value of `todoListStatsState`, we use `useRecoilValue()` once again:
+Para leer el valor de `todoListStatsState`, usaremos `useRecoilValue()` otra vez:
 
 ```jsx
 function TodoListStats() {
@@ -142,10 +143,10 @@ function TodoListStats() {
 }
 ```
 
-To summarize, we've created a todo list app that meets all of our requirements:
+En resumen, hemos creado un app en forma de lista de tareas que cumple con los requisitos:
 
-- Add todo items
-- Edit todo items
-- Delete todo items
-- Filter todo items
-- Display useful stats
+- Agregar tareas
+- Editar tareas
+- Eliminar tareas
+- Filtrar tareas
+- Mostrar estadisticas útiles
