@@ -2,9 +2,9 @@
 title: Atoms
 ---
 
-Atoms contain the source of truth for our application state. In our todo-list, the source of truth will be an array of objects, with each object representing a todo item.
+Los átomos son la fuente de datos para el estado de nuestra aplicación. En nuestra lista de tareas, la estructura será un arreglo de objetos donde cada tarea es representada por un objeto.
 
-We'll call our list atom `todoListState` and create it using the `atom()` function:
+Llamaremos nuestra lista de átomos `todoListState` y crearemos esta lista usando la función que se llama `atom()`:
 
 ```javascript
 const todoListState = atom({
@@ -13,7 +13,7 @@ const todoListState = atom({
 });
 ```
 
-We give our atom a unique `key` and set the `default` value to an empty array. To read the contents of this atom, we can use the `useRecoilValue()` hook in our `TodoList` component:
+Le asignaremos a nuestro átomo un `key` único y estableceremos un arreglo vacío al valor de `default`. Para leer el contenido del átomo, podemos usar el hook llamado `useRecoilValue()` en nuestro component de `TodoList`:
 
 ```jsx
 function TodoList() {
@@ -33,9 +33,9 @@ function TodoList() {
 }
 ```
 
-The commented-out components will be implemented in the sections that follow.
+El componente que ha sido marcado como una mención sera implementado en la sección por seguir.
 
-To create new todo items, we need to access a setter function that will update the contents of the `todoListState`. We can use the `useSetRecoilState()` hook to get a setter function in our `TodoItemCreator` component:
+Para poder crear nuestra lista de tareas, necesitamos poder acceder la función de "setter". De esta manera podremos actualizar el contenido de nuestro `todoListState`. Podemos usar el hook `useSetRecoilState` para obtener la función de "setter" en nuestro component de "TodoItemCreator":
 
 ```jsx
 function TodoItemCreator() {
@@ -73,9 +73,9 @@ function getId() {
 }
 ```
 
-Notice we use the **updater** form of the setter function so that we can create a new todo list based on the old todo list.
+Observe que estamos utilizando el modo **updater** de la función "setter". De esta manera podemos crear nuestra nueva lista de tareas la cual esta basada en nuestra lista de tareas anterior.
 
-The `TodoItem` component will display the value of the todo item while allowing you to change its text and delete the item. We use `useRecoilState()` to read `todoListState` and to get a setter function that we use to update the item text, mark it as completed, and delete it:
+El componente `TodoItem` mostrara el valor de una tarea. Al mismo tiempo permitirá que usted le haga un cambio al texto o elimine la tarea. Usaremos `useRecoilState()` para leer `todoListState` y así poder obtener la función "setter" para actualizar el texto de la tarea, marcarla completa, y eliminarla:
 
 ```jsx
 function TodoItem({item}) {
@@ -128,4 +128,4 @@ function removeItemAtIndex(arr, index) {
 }
 ```
 
-And with that we've got a fully functional todo list! In the next section we'll see how we can use selectors to take our list to the next level.
+¡Y así no más obtenemos una lista de tareas completamente funcionalidad! En la próxima sección veremos como podemos usar selectors para llevar nuestra lista al siguiente nivel.
