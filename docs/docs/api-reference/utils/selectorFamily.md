@@ -39,11 +39,9 @@ function selectorFamily<T, Parameter>({
 Where
 
 ```jsx
+type ValueOrUpdater<T> =  T | DefaultValue | ((prevValue: T) => T | DefaultValue);
 type GetRecoilValue = <T>(RecoilValue<T>) => T;
-type SetRecoilValue = <T>(
-  RecoilState<T>,
-  T | DefaultValue | ((prevValue: T) => T | DefaultValue),
-) => void;
+type SetRecoilValue = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilValue = <T>(RecoilState<T>) => void;
 ```
 
