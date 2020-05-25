@@ -33,6 +33,7 @@ module.exports = {
       //   'guides/usage-flow',
       //   'guides/usage-typescript',
       'guides/asynchronous-data-queries',
+      'guides/asynchronous-state-sync',
       'guides/persistence',
       //   'guides/writing-test',
       //   'guides/code-splitting',
