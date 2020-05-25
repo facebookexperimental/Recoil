@@ -151,6 +151,8 @@ function MyApp() {
 
 Remember, by modeling queries as selectors, we can build a data-flow graph mixing state, derived state, and queries!  This graph will automatically update and re-render React components as state is updated.
 
+The following example will render the current user's name and a list of their friends.  If a friend's name is clicked on, they will become the current user and the name and list will be automatically updated.
+
 ```jsx
 const currentUserIDState = atom({
   key: 'CurrentUserID',
