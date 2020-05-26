@@ -38,7 +38,7 @@ function PersistenceObserver() {
 
 You may not wish to persist all atoms, or some atoms may have different persistence behaviors.  You can read metadata (***NOTE***: *new API coming soon*) to get options from each atom.
 
-## Reestoring State
+## Restoring State
 
 After you ensure that you're saving your state to your storage, you need to recover it when loading the app.  This can be done using the **`initializeState`** prop on thee **`<RecoilRoot>`** component. (***NOTE***: *API changes coming soon*).
 
