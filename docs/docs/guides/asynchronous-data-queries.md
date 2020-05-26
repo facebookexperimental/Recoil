@@ -156,7 +156,7 @@ The following example will render the current user's name and a list of their fr
 ```jsx
 const currentUserIDState = atom({
   key: 'CurrentUserID',
-  default: 1,
+  default: null,
 });
 
 const userInfoQuery = selectorFamily({
