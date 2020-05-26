@@ -23,7 +23,7 @@ function CurrentUserInfo() {
 
 ## Sync State From Server
 
-We can subscribe to asynchronous changes in the remote state and update the atom value to match.  This can be done using standard React `useEffect()` hook or other popular libraries.
+We can subscribe to asynchronous changes in the remote state and update the atom value to match.  This can be done using standard React [`useEffect()`]() hook or other popular libraries.
 
 ```jsx
 function CurrentUserIDSubscription() {
@@ -59,12 +59,12 @@ You can also sync the state so local changes are updated on the server:
 ```jsx
 function CurrentUserIDSubscription() {
   const [currentUserID, setCurrentUserID] = useRecoilState(currentUserIDState);
-  let knownServerCurrentUserID;
+  const knownServerCurrentUserID = useRef(currentUserID);
 
   // Subscribe server changes to update atom state
   useEffect(() => {
     function handleUserChange(id) {
-      knownServerCurrentUserID = id;
+      knownServerCurrentUserID.current = id;
       setCurrentUserID(id);
     }
 
@@ -73,15 +73,15 @@ function CurrentUserIDSubscription() {
     return function cleanup() {
       RemoteServerAPI.unsubscribeFromFriendStatus(handleUserChange);
     };
-  }, []);
+  }, [knownServerCurrentUserID]);
 
   // Subscribe atom changes to update server state
   useEffect(() => {
-    if (currentUserID !== knownServerCurrentUserID) {
-      knownServerCurrentID = currentUserID;
+    if (currentUserID !== knownServerCurrentUserID.current) {
+      knownServerCurrentID.current = currentUserID;
       RemoteServerAPI.updateCurrentUser(currentUserID);
     }
-  }, [currentUserID, knownServerCurrentUserID]);
+  }, [currentUserID, knownServerCurrentUserID.current]);
 
   return null;
 }
