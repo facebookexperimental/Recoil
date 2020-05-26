@@ -23,7 +23,7 @@ function CurrentUserInfo() {
 
 ## Sync State From Server
 
-We can subscribe to asynchronous changes in the remote state and update the atom value to match.  This can be done using standard React [`useEffect()`]() hook or other popular libraries.
+We can subscribe to asynchronous changes in the remote state and update the atom value to match.  This can be done using standard React [`useEffect()`](https://reactjs.org/docs/hooks-reference.html#useeffect) hook or other popular libraries.
 
 ```jsx
 function CurrentUserIDSubscription() {
