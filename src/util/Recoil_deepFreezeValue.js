@@ -63,9 +63,13 @@ function deepFreezeValue(value: mixed) {
   }
 
   Object.freeze(value); // Make all properties read-only
-  for (const prop in value) {
-    if (value.hasOwnProperty(prop)) {
-      deepFreezeValue(value[prop]);
+  for (const key in value) {
+    if (value.hasOwnProperty(key)) {
+      const prop = value[key];
+      // Prevent infinite recurssion for circular references.
+      if (typeof prop === 'object' && prop != null && !Object.isFrozen(prop)) {
+        deepFreezeValue(prop);
+      }
     }
   }
   Object.seal(value); // This also makes existing properties non-configurable.
