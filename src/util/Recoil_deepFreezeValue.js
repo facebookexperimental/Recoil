@@ -64,7 +64,7 @@ function deepFreezeValue(value: mixed) {
 
   Object.freeze(value); // Make all properties read-only
   for (const key in value) {
-    if (value.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
       const prop = value[key];
       // Prevent infinite recurssion for circular references.
       if (typeof prop === 'object' && prop != null && !Object.isFrozen(prop)) {
