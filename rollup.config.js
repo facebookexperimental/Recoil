@@ -1,6 +1,7 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
 import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
+import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
 
 const config = mode => ({
@@ -34,7 +35,8 @@ const config = mode => ({
     },
     nodeResolve(),
     commonjs(),
-    mode === 'development' ? undefined : terser({ mangle: false }),
+    replace({__DEV__: JSON.stringify(mode === 'development')}),
+    mode === 'development' ? undefined : terser({mangle: false}),
   ],
 });
 
