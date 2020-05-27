@@ -33,7 +33,7 @@ function CurrentUserIDSubscription() {
     RemoteStateAPI.subscribeToCurrentUserID(setCurrentUserID);
     // Specify how to cleanup after this effect
     return function cleanup() {
-      RemoteServerAPI.unsubscribeFromFriendStatus(setCurrentUserID);
+      RemoteServerAPI.unsubscribeFromCurrentUserID(setCurrentUserID);
     };
   }, []);
 
@@ -71,7 +71,7 @@ function CurrentUserIDSubscription() {
     RemoteStateAPI.subscribeToCurrentUserID(handleUserChange);
     // Specify how to cleanup after this effect
     return function cleanup() {
-      RemoteServerAPI.unsubscribeFromFriendStatus(handleUserChange);
+      RemoteServerAPI.unsubscribeFromCurrentUserID(handleUserChange);
     };
   }, [knownServerCurrentUserID]);
 
