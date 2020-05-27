@@ -2,14 +2,14 @@
 title: Introducción
 ---
 
-Ésta sección asume que ya has instalado Recoil y React. Si aún no lo haz hecho, mira la página de [Inicio](/docs/docs_es/introduction/getting-started) para ver como iniciar con Recoil y React desde cero. Los componentes en ésta sección también asumen que se tiene `<RecoilRoot />` en el componente principal.
+Esta sección asume que ya has instalado Recoil y React. Si aún no lo has hecho, mira la página de [Inicio](/docs/docs_es/introduction/getting-started) para ver cómo empezar con Recoil y React desde cero. Los componentes en ésta sección también asumen que tienes `<RecoilRoot />` en el componente principal.
 
-En éste tutorial vamos a crear una aplicación para una lista de "tareas por hacer". Nuestra aplicación tendrá la siguiente funcionalidad:
+En este tutorial vamos a crear una aplicación que muestra una lista de "tareas por hacer". Nuestra aplicación tendrá las funciones:
 
 - Agregar tareas
 - Modificar tareas
 - Borrar tareas
 - Filtrar tareas
-- Reporte útil estadístico
+- Reportar estadísticas útiles
 
-Sobre la marcha, cubriremos conceptos como átomos, selectores, familia de átomos y los hooks que vienen con la API de Recoil. También abordaremos optimización.
+Sobre la marcha, cubriremos conceptos como átomos, selectores, familias de átomos y los hooks incluidos en la API de Recoil. También hablaremos sobre optimización.
