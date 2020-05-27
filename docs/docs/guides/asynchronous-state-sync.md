@@ -89,7 +89,7 @@ function CurrentUserIDSubscription() {
 
 ## Synching State with Parameters
 
-You can also use the [`atomFamily`](/docs/api-reference/utils/atomFamily) helper to sync local state based on parameters.  Note that each call of this example hook will create a subsription, so take care to avoid redundant usage.
+You can also use the [`atomFamily`](/docs/api-reference/utils/atomFamily) helper to sync local state based on parameters.  Note that each call of this example hook will create a subscription, so take care to avoid redundant usage.
 
 ```jsx
 const friendStatusState = atomFamily({
