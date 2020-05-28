@@ -172,7 +172,7 @@ const userInfoQuery = selectorFamily({
 
 const currentUserInfoQuery = selector({
   key: 'CurrentUserInfoQuery',
-  get: ({get}) => get(userInfoQuery(get(currentUserIDState)),
+  get: ({get}) => get(userInfoQuery(get(currentUserIDState))),
 });
 
 const friendsInfoQuery = selector({
