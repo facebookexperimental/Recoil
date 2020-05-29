@@ -38,7 +38,6 @@ const config = mode => ({
     nodeResolve(),
     commonjs(),
     replace({
-      __DEV__: JSON.stringify(mode === 'development'),
       'process.env.NODE_ENV': JSON.stringify(mode),
     }),
     mode === 'development' ? undefined : terser({mangle: false}),
