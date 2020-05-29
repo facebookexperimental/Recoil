@@ -10,7 +10,6 @@
  * @flow strict-local
  * @format
  */
-
 'use strict';
 
 export type {
