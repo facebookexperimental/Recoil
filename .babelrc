@@ -12,9 +12,9 @@
         }
       }
     ],
+    "@babel/plugin-proposal-class-properties",
     "@babel/proposal-nullish-coalescing-operator",
     "@babel/proposal-optional-chaining",
-    "@babel/transform-flow-strip-types",
-    "@babel/plugin-proposal-class-properties"
+    "@babel/transform-flow-strip-types"
   ]
 }
