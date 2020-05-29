@@ -29,6 +29,11 @@ export type {
   RecoilValueReadOnly,
 } from './core/Recoil_RecoilValue';
 
+export type {
+  Parameter,
+  SelectorFamilyOptions,
+} from './recoil_values/Recoil_selectorFamily';
+
 const atom = require('./recoil_values/Recoil_atom');
 const {
   useRecoilCallback,
@@ -47,6 +52,18 @@ const {RecoilRoot} = require('./components/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const selector = require('./recoil_values/Recoil_selector');
 
+const atomFamily = require('./recoil_values/Recoil_atomFamily');
+const constSelector = require('./recoil_values/Recoil_const');
+const errorSelector = require('./recoil_values/Recoil_error');
+const readOnlySelector = require('./recoil_values/Recoil_readOnlySelector');
+const selectorFamily = require('./recoil_values/Recoil_selectorFamily');
+const {
+  noWait,
+  waitForAll,
+  waitForAny,
+  waitForNone,
+} = require('./recoil_values/Recoil_WaitFor');
+
 module.exports = {
   // Types
   DefaultValue,
@@ -57,6 +74,13 @@ module.exports = {
   // RecoilValues
   atom,
   selector,
+
+  // Convenience RecoilValues
+  atomFamily,
+  selectorFamily,
+  constSelector,
+  errorSelector,
+  readOnlySelector,
 
   // Hooks that accept RecoilValues
   useRecoilValue,
@@ -73,6 +97,12 @@ module.exports = {
   useTransactionObservation_UNSTABLE: useTransactionObservation,
   useTransactionSubscription_UNSTABLE: useTransactionSubscription,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
+
+  // Concurrency Helpers
+  noWait,
+  waitForNone,
+  waitForAny,
+  waitForAll,
 
   // Other functions
   isRecoilValue,
