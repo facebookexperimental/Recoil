@@ -29,7 +29,14 @@ export type {
   RecoilValueReadOnly,
 } from './core/Recoil_RecoilValue';
 
-const atom = require('./recoil_values/Recoil_atom');
+export type {
+  Parameter,
+  SelectorFamilyOptions,
+} from './recoil_values/Recoil_selectorFamily';
+
+const {RecoilRoot} = require('./components/Recoil_RecoilRoot.react');
+const {DefaultValue} = require('./core/Recoil_Node');
+const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {
   useRecoilCallback,
   useRecoilState,
@@ -42,10 +49,19 @@ const {
   useTransactionObservation,
   useTransactionSubscription,
 } = require('./hooks/Recoil_Hooks');
-const {DefaultValue} = require('./core/Recoil_Node');
-const {RecoilRoot} = require('./components/Recoil_RecoilRoot.react');
-const {isRecoilValue} = require('./core/Recoil_RecoilValue');
+const atom = require('./recoil_values/Recoil_atom');
+const atomFamily = require('./recoil_values/Recoil_atomFamily');
+const constSelector = require('./recoil_values/Recoil_const');
+const errorSelector = require('./recoil_values/Recoil_error');
+const readOnlySelector = require('./recoil_values/Recoil_readOnlySelector');
 const selector = require('./recoil_values/Recoil_selector');
+const selectorFamily = require('./recoil_values/Recoil_selectorFamily');
+const {
+  noWait,
+  waitForAll,
+  waitForAny,
+  waitForNone,
+} = require('./recoil_values/Recoil_WaitFor');
 
 module.exports = {
   // Types
@@ -57,6 +73,13 @@ module.exports = {
   // RecoilValues
   atom,
   selector,
+
+  // Convenience RecoilValues
+  atomFamily,
+  selectorFamily,
+  constSelector,
+  errorSelector,
+  readOnlySelector,
 
   // Hooks that accept RecoilValues
   useRecoilValue,
@@ -73,6 +96,12 @@ module.exports = {
   useTransactionObservation_UNSTABLE: useTransactionObservation,
   useTransactionSubscription_UNSTABLE: useTransactionSubscription,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
+
+  // Concurrency Helpers
+  noWait,
+  waitForNone,
+  waitForAny,
+  waitForAll,
 
   // Other functions
   isRecoilValue,
