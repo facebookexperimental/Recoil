@@ -16,6 +16,7 @@ const config = mode => ({
     babel({
       presets: ['@babel/preset-react', '@babel/preset-flow'],
       plugins: [
+        'babel-preset-fbjs/plugins/dev-expression',
         '@babel/plugin-proposal-class-properties',
         '@babel/plugin-proposal-nullish-coalescing-operator',
         '@babel/plugin-proposal-optional-chaining',
@@ -36,7 +37,10 @@ const config = mode => ({
     },
     nodeResolve(),
     commonjs(),
-    replace({__DEV__: JSON.stringify(mode === 'development')}),
+    replace({
+      __DEV__: JSON.stringify(mode === 'development'),
+      'process.env.NODE_ENV': JSON.stringify(mode),
+    }),
     mode === 'development' ? undefined : terser({mangle: false}),
   ],
 });
