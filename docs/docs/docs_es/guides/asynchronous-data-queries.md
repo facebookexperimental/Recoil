@@ -1,13 +1,13 @@
 ---
-title: Asynchronous Data Queries
-sidebar_label: Asynchronous Data Queries
+title: Consultas de Datos Asíncronos
+sidebar_label: Consultas de Datos Asíncronos
 ---
 
-Recoil provides a way to map state and derived state to React components via a data flow graph. What's really powerful is that the functions in the graph can also be asynchronous. This makes it easy to use asynchronous functions in synchronous React component render functions. Recoil allows you to seemlessly mix synchronous and asynchronous functions in your data flow graph of selectors. Simply return a Promise to a value instead of the value itself from a selector `get` callback, the interface remains exactly the same. Because these are just selectors, other selectors can also depend on them to further transform the data.
+Recoil proporciona una forma de mapear el estado y estados derivados con componentes de React a través de un grafo de flujo de datos. Lo que es realmente poderoso es que las funciones en el grafo también pueden ser asíncronas. Esto facilita el uso de funciones asíncronas en la función síncrona del render de los componentes de React. Recoil permite combinar funciones síncronas y asíncronas fácilmente en el flujo de datos de los selectores. Simplemente devuelve una Promise en la función callback `get` del selector, la interfaz permanece exactamente igual. Desde que son solo selectores, otros selectores también pueden depender de ellos para transformar aun más los datos.
 
-## Synchronous Example
+## Ejemplo Síncrono
 
-For example, here is a simple synchronous atom and selector to get a user name:
+Por ejemplo, aquí hay simplemente un átomo y un selector sincronos que obtienen el nombre de un usuario:
 
 ```js
 const currentUserIDState = atom({
@@ -36,9 +36,9 @@ function MyApp() {
 }
 ```
 
-## Asynchronous Example
+## Ejemplo Asíncrono
 
-If the user names were stored on some database we need to query, all we need to do is return a `Promise` or use an `async` function. If any dependencies change, the selector will be re-evaluated and execute a new query. The results are cached, so the query will only execute once per unique input.
+Si los nombres de usuario estuvieran guardados en alguna base de datos tendríamos que consultarla, lo único que tenemos que hacer es devolver un `Promise` o usar una función con 'async'. Si alguna de las dependencias cambia, el selector será reevaluado y ejecutara una nueva consulta. Y será ejecutada una sola vez por cada entrada única porque el resultado es guardado en caché.
 
 ```js
 const currentUserNameQuery = selector({
@@ -57,9 +57,9 @@ function CurrentUserInfo() {
 }
 ```
 
-The interface of the selector is the same, so the component using this selector doesn't need to care if it was backed with synchronous atom state, derived selector state, or asynchronous queries!
+La interfaz del selector es la misma, de este manera el componente que lo utiliza no necesita saber si es un estado de átomo síncrono, estado derivado o una consulta asíncrona.
 
-But, since React is synchronous, what will it render before the promise resolves? Recoil is designed to work with React Suspense to handle pending data. Wrapping your component with a Suspense boundary will catch any descendents that are still pending and render a fallback UI:
+Si React funciona de manera sincrónica ¿Qué despliega mientras una promise termina? Recoil esta diseñado para trabajar con React Suspense y datos pendientes. Al envolver los componentes con un límite de Suspense, se puede capturar los descendientes que están aun pendientes y desplegar una UI alternativa.
 
 ```js
 function MyApp() {
@@ -73,9 +73,9 @@ function MyApp() {
 }
 ```
 
-## Error Handling
+## Manejo de Errores
 
-But what if the request has an error? Recoil selectors can also throw errors which will then be thrown if a component tries to use that value. This can be caught with a React `<ErrorBoundary>`. For example:
+¿Qué pasa si la consulta tiene un error? Los selectores en Recoil también pueden arrojar errores, que posteriormente pueden ser detectados con `<ErrorBoundary>` de React. Por ejemplo:
 
 ```js
 const currentUserNameQuery = selector({
@@ -109,9 +109,10 @@ function MyApp() {
 }
 ```
 
-## Queries with Parameters
+## Consultas con Parámetros
 
-Sometimes you want to be able to query based on parameters that aren't just based on derived state. For example, you may want to query based on the component props. You can do that using the `selectorFamily` helper:
+A veces es necesario ejecutar consultas con parámetros que no solo dependen del estado derivado. Por ejemplo, consultas basadas en los props del componente. Esto se puede lograr usando la función auxiliar `selectorFamily`.
+
 
 ```js
 const userNameQuery = selectorFamily({
@@ -145,9 +146,9 @@ function MyApp() {
 }
 ```
 
-## Data Flow Graph
+## Grafo de Flujo de Datos
 
-Remember, by modeling queries as selectors, we can build a data flow graph mixing state, derived state, and queries!  This graph will automatically update and re-render React components as state is updated.
+Recuerda, al configurar las consultas como selectores, podemos construir un grafo de flujo de datos combinando estados, estados derivados y consultas! Y a medida que el estado es actualizado, el grafo es actualizado automáticamente y renderiza los componentes de React.
 
 ```js
 const currentUserIDState = atom({
@@ -215,9 +216,9 @@ function MyApp() {
 }
 ```
 
-## Concurrent Requests
+## Peticiones Concurrentes
 
-If you notice in the above example, the `friendsInfoQuery` uses a query to get the info for each friend.  But, by doing this in a loop they are essentially serialized.  If the lookup is fast, maybe that's ok.  If it's expensive, you can use a concurrency helper such as `waitForAll`, `waitForNone`, or `waitForAny` to run them in parallel.  They accept both arrays and named objects of dependencies.
+Si notas en el ejemplo anterior, el `friendsInfoQuery` utiliza una consulta para obtener la información de cada amigo. Al hacer esto en un bucle, estas son básicamente ejecutas en serie. Todo está bien si las búsquedas son rápidas. Pero si son lentas, puedes utilizar concurrencia auxiliar como `waitForAll`, `waitForNone` o `waitForAny` para ejecutarlas en paralelo. Aceptan tanto arrays como objetos con nombres de dependencias.
 
 ```js
 const friendsInfoQuery = selector({
@@ -232,9 +233,9 @@ const friendsInfoQuery = selector({
 });
 ```
 
-## Without React Suspense
+## Sin React Suspense
 
-It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the `useRecoilValueLoadable()` hook to determine the status during rendering:
+No es necesario utilizar React Suspense con selectores asíncronos. También puedes utilizar el hook `useRecoilValueLoadable()` para determinar la situación de los datos pendientes durante el renderizado:
 
 ```js
 function UserInfo({userID}) {
