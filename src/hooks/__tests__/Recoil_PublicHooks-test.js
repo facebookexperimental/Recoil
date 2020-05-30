@@ -185,6 +185,16 @@ function advanceTimersBy(ms) {
   });
 }
 
+test('Component throws error when passing undefined', async () => {
+  const [Component] = componentThatReadsAndWritesAtom();
+  const error = console.error;
+  console.error = jest.fn();
+
+  const container = renderElements(<Component />);
+  expect(container.textContent).toEqual('error');
+  console.error = error;
+});
+
 test('Components are re-rendered when atoms change', async () => {
   const anAtom = counterAtom();
   const [Component, updateValue] = componentThatReadsAndWritesAtom(anAtom);
