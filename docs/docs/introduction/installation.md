@@ -13,3 +13,39 @@ Or if you're using <a href="https://classic.yarnpkg.com/en/docs/install/" target
 ```shell
 yarn add recoil
 ```
+
+## ESLint
+
+If you are using [eslint-plugin-react-hooks](https://www.npmjs.com/package/eslint-plugin-react-hooks) in your project. For example, with an eslint config like this:
+
+```json
+// previous .eslint config
+{
+  "plugins": [
+    "react-hooks"
+  ],
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
+  }
+}
+```
+
+It is recommended to add [useRecoilCallback](docs/api-reference/core/useRecoilCallback) to the list of `additionalHooks`. With this change ESLint will now warns when the dependencies passed to `useRecoilCallback` are specified incorrectly and suggests a fix.
+
+```json
+// modified .eslint config
+{
+  "plugins": [
+    "react-hooks"
+  ],
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": [
+      "warn", {
+        "additionalHooks": "useRecoilCallback"
+      }
+    ]
+  }
+}
+```
