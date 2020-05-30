@@ -64,7 +64,7 @@ function TodoList() {
 }
 ```
 
-Note the UI is the same as the `todoListFilterState` has a default of `"Show All"`. In order to change the filter, we need to implement the `TodoListFilters` component:
+Note the UI is showing every todo because `todoListFilterState` was given a default value of `"Show All"`. In order to change the filter, we need to implement the `TodoListFilters` component:
 
 ```jsx
 function TodoListFilters() {
