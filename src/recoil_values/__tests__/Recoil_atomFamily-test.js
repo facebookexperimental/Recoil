@@ -13,8 +13,11 @@
 const React = require('React');
 const {useState} = require('React');
 const {act} = require('ReactTestUtils');
-const atom = require('../Recoil_atom');
-const atomFamily = require('../Recoil_atomFamily');
+
+const {
+  getRecoilValueAsLoadable,
+  setRecoilValue,
+} = require('../../core/Recoil_RecoilValue');
 const {
   useRecoilState,
   useRecoilValue,
@@ -22,16 +25,14 @@ const {
   useSetUnvalidatedAtomValues,
 } = require('../../hooks/Recoil_Hooks');
 const {
-  getRecoilValueAsLoadable,
-  setRecoilValue,
-} = require('../../core/Recoil_RecoilValue');
-const selectorFamily = require('../Recoil_selectorFamily');
-const stableStringify = require('../../util/Recoil_stableStringify');
-const {
   ReadsAtom,
   makeStore,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
+const stableStringify = require('../../util/Recoil_stableStringify');
+const atom = require('../Recoil_atom');
+const atomFamily = require('../Recoil_atomFamily');
+const selectorFamily = require('../Recoil_selectorFamily');
 
 let id = 0;
 
@@ -419,15 +420,15 @@ test('Independent atom subscriptions', () => {
   );
 
   expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
-  expect(getNumUpdatesA()).toBe(2);
+  expect(getNumUpdatesA()).toBe(3);
   expect(getNumUpdatesB()).toBe(2);
   act(() => setValueA(1));
   expect(container.textContent).toBe('1"DEFAULT"');
-  expect(getNumUpdatesA()).toBe(3);
+  expect(getNumUpdatesA()).toBe(4);
   expect(getNumUpdatesB()).toBe(2);
   act(() => setValueB(2));
   expect(container.textContent).toBe('12');
-  expect(getNumUpdatesA()).toBe(3);
+  expect(getNumUpdatesA()).toBe(4);
   expect(getNumUpdatesB()).toBe(3);
 });
 
