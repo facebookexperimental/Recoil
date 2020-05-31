@@ -21,7 +21,7 @@ module.exports = {
       indexName: 'recoiljs'
     },
     googleAnalytics: {
-      trackingID: 'UA-166885839-1',
+      trackingID: 'UA-44373548-46',
     },
     image: 'img/og-image.png',
     navbar: {
