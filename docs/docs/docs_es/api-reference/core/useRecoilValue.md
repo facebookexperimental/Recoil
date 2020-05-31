@@ -3,15 +3,15 @@ title: useRecoilValue()
 sidebar_label: useRecoilValue()
 ---
 
-Returns the value of the given Recoil state.
+Retorna el estado dado de Recoil.
 
-This hook will implicitly subscribe the component to the given state.
+Este hook se suscribe de manera implícita el componente al estado dado.
 
 ---
 
-- `state`: an [`atom`](/docs/api-reference/core/atom) or [`selector`](/docs/api-reference/core/selector)
+- `estado`: [`átomo`](/docs/api-reference/core/atom) o [`selector`](/docs/api-reference/core/selector)
 
-This is the recommended hook to use when a component intends to read state without writing to it as this hook works with both **read-only state** and **writeable state**. Atoms are writeable state while selectors may be either read-only or writeable. See [`selector()`](/docs/api-reference/core/selector) for more info.
+Este es el hook que se recomienda usar cuando el componente intenta de leer el estado sin escribir porque este hook funciona con ambos el **estado de solo-lectura** y el **estado escribible**. Los átomos son unicamente escribibles, mientras que los selectores son escribibles o solo-lectura. Para mas informacion ver, [`selector()`](/docs/api-reference/core/selector).
 
 ### Example
 
