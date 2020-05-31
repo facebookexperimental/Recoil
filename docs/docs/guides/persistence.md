@@ -7,7 +7,7 @@ Recoil allows you to persist application state using atoms.
 
 ----
 ## *IMPORTANT NOTE*
-***This API is currently under development and still evolving.  Please stay tuned...***
+***This API is currently under development and will change.  Please stay tuned...***
 
 ----
 
@@ -38,6 +38,8 @@ function PersistenceObserver() {
 
 You may not wish to persist all atoms, or some atoms may have different persistence behaviors.  You can read metadata (***NOTE***: *new API coming soon*) to get options from each atom.
 
+Note that the current hook was designed for persistence and only reports atoms with special option (property `persistence_UNSTABLE` which is an object with a non-null `type` property)
+
 ## Restoring State
 
 After you ensure that you're saving your state to your storage, you need to recover it when loading the app.  This can be done using the **`initializeState`** prop on thee **`<RecoilRoot>`** component. (***NOTE***: *API changes coming soon*).
@@ -51,18 +53,9 @@ Here is a basic example:
 
 ```jsx
 const initializeState = ({set}) => {
-  Storage.getAllKeys((error, keys) => {
-    const promises = keys.map(key =>
-      Storage.getItem(key)
-    );
-    Promise.all(promises).then(values => {
-      for (let i = 0; i < promises.length; i++) {
-        const key = keys[i];
-        const value = JSON.parse(values[i]).value;
-        set({key}, value);
-      }
-    });
-  });
+  for(const [key, value] of Storage.entries()) {
+    set({key}, JSON.parse(value)).value;
+  }
 }
 
 return (
