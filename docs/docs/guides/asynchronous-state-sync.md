@@ -3,6 +3,12 @@ title: Asynchronous State Sync
 sidebar_label: Asynchronous State Sync
 ---
 
+----
+## *IMPORTANT NOTE*
+***This API is currently under development and will change.  Please stay tuned...***
+
+----
+
 Recoil [atoms](/docs/api-reference/core/atom) represent local application state.  Your application may have remote or server-side state as well, such as via a RESTful API.  Consider synchronizing the remote state with Recoil atoms.  Doing this allows you to easily access or write to the  state from React components using the `useRecoilState()` hook, or use that state as input to the Recoil data-flow graph for other derived state selectors.  If you're looking to [query a database or server for read-only data](asynchronous-data-queries), consider using asynchronous selectors.
 
 ## Local State Example
