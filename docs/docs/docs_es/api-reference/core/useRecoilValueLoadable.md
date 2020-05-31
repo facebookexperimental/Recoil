@@ -1,23 +1,39 @@
 ---
-title: useRecoilValueLoadable()
+título: useRecoilValueLoadable()
 sidebar_label: useRecoilValueLoadable()
 ---
 
-Returns a `Loadable`.
+```jsx
+function useRecoilValueLoadable<T>(state: RecoilValue<T>): Loadable<T>
+```
 
-This hook is intended to be used for reading the value of asynchronous selectors. This hook will implicitly subscribe the component to the given state.
+Devuelve un `Loadable`.
 
-Unlike `useRecoilValue()`, this hook will not throw a `Promise` when reading from a pending asynchronous selector (for the purpose of working alongside Suspense). Instead, this hook returns a `Loadable`, which is an object with the following interface:
+Este hook está diseñado para leer el valor de los selectores asíncronos. Este hook suscribirá implícitamente el componente al estado dado.
 
-- `state`: indicates the status of the selector. Possible values are `'hasValue'`, `'hasError'`, `'loading'`.
-- `getValue()`: if there is an error, this function throws the error. If selector is still loading, it throws a Promise. Otherwise it returns the value that the selector resolved to.
-- `toPromise()`: returns a `Promise` that will resolve when the selector has resolved. If the selector is synchronous or has already resolved, it returns a `Promise` that resolves immediately.
+A diferencia de `useRecoilValue()`, este hook no arrojará un `Promise` al leer desde un selector asincrónico pendiente (con el fin de trabajar junto a Suspense). En cambio, este hook devuelve un `Loadable`, que es un objeto con la siguiente interfaz:
+
+- `state`: indica el estado del selector. Los valores posibles son `'hasValue'`, `'hasError'`, `'loading'`.
+- `contents`: el valor representado por este `Loadable`. Si el estado es `hasValue`, es el valor real, si el estado es `hasError` es el objeto `Error` que se arrojó, y si el estado se está `loading`, entonces es un `Promise` del valor.
+- `getValue()`: si hay un error, esta función arroja el error. Si el selector aún se está loading, arroja un Promise. De lo contrario, devuelve el valor que resolvió el selector.
+- `toPromise()`: devuelve un `Promise` que se resolverá cuando el selector se haya resuelto. Si el selector está sincronizado o ya se resolvió, devuelve un `Promise` que se resuelve de inmediato.
 
 ---
 
-- `state`: a [`selector`](/docs/api-reference/core/selector) that _may_ have some asynchronous operations. The status of the returned loadable will depend on the status of the given selector.
+- `state`: un [`átomo`](/docs/api-reference/core/atom) o [`selector`](/docs/api-reference/core/selector) que _puede_ tener algunas operaciones asincrónicas. El estado de el loadable devuelta dependerá del estado del selector dado. 
 
-### Example
+### Ejemplo
 
 ```jsx
+function UserInfo({userID}) {
+  const userNameLoadable = useRecoilValueLoadable(userNameQuery(userID));
+  switch (userNameLoadable.state) {
+    case 'hasValue':
+      return <div>{userNameLoadable.contents}</div>;
+    case 'loading':
+      return <div>Loading...</div>;
+    case 'hasError':
+      throw userNameLoadable.contents;
+  }
+}
 ```
