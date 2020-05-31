@@ -120,7 +120,7 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
 }
 
 if (__DEV__) {
-  if (!window.$recoilDebugStates) {
+  if (typeof window !== 'undefined' && !window.$recoilDebugStates) {
     window.$recoilDebugStates = [];
   }
 }
@@ -213,7 +213,7 @@ function RecoilRoot({initializeState, children}: Props): ReactElement {
       return;
     }
     // Save changes to nextTree and schedule a React update:
-    if (__DEV__) {
+    if (__DEV__ && typeof window !== 'undefined') {
       window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
     }
     storeState.nextTree = replaced;
