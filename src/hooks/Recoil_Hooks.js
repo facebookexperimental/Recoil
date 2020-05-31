@@ -41,6 +41,7 @@ const {
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
+  isRecoilValue,
 } = require('../core/Recoil_RecoilValue');
 const Tracing = require('../util/Recoil_Tracing');
 
@@ -53,7 +54,6 @@ const invariant = require('../util/Recoil_invariant');
 const mapMap = require('../util/Recoil_mapMap');
 const mergeMaps = require('../util/Recoil_mergeMaps');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 
 function cloneState(state: TreeState, opts): TreeState {
   return {
@@ -233,7 +233,8 @@ function useInterface(): RecoilInterface {
     function useRecoilState<T>(
       recoilState: RecoilState<T>,
     ): [T, SetterOrUpdater<T>] {
-      if (!isRecoilValue(recoilState)) throw new Error('Invalid atom provided');
+      if (!isRecoilValue(recoilState))
+        throw new Error('No atom or selector provided');
       return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
     }
 
