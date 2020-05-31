@@ -1,6 +1,6 @@
 {
   "name": "recoil",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Recoil - A React state management library for complex UIs",
   "main": "dist/index.js",
   "files": [
