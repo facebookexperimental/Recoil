@@ -108,7 +108,7 @@ Sometimes you want to be able to query based on parameters that aren't just base
 ```js
 const userNameQuery = atomFamily({
   key: 'UserName',
-  get: async userID => {
+  default: async userID => {
     const response = await myDBQuery({userID});
     if (response.error) {
       throw response.error;
