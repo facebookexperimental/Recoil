@@ -15,7 +15,7 @@ This is the recommended hook to use when a component intends to read and write s
 
 ### Example
 
-```javascript
+```jsx
 import {atom, selector, useRecoilState} from 'recoil';
 
 const tempFahrenheit = atom({

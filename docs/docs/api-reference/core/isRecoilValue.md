@@ -9,7 +9,7 @@ Returns `true` if `value` is either an atom or selector and `false` otherwise.
 
 ### Example
 
-```javascript
+```jsx
 import {atom, isRecoilValue} from 'recoil';
 
 const counter = atom({

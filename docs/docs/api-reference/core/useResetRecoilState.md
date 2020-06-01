@@ -9,3 +9,12 @@ Returns a function that will reset the value of the given state to its default v
 - `state`: a writeable Recoil state
 
 ### Example
+
+```jsx
+import {todoListState} from "../atoms/todoListState";
+
+const TodoResetButton = () => {
+  const resetList = useResetRecoilState(todoListState);
+  return <button onClick={resetList}>Reset</button>;
+};
+```
