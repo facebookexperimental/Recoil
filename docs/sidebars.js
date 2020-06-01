@@ -23,18 +23,20 @@ module.exports = {
       // 'basic-tutorial/performance',
     ],
     Guides: [
-    //   {
-    //     'Migrating to Recoil': [
-    //       'guides/migrating/from-react-state',
-    //       'guides/migrating/from-redux',
-    //       'guides/migrating/from-mobx',
-    //     ],
-    //   },
-    //   'guides/usage-flow',
-    //   'guides/usage-typescript',
-    //   'guides/writing-test',
-    //   'guides/code-splitting',
+      //   {
+      //     'Migrating to Recoil': [
+      //       'guides/migrating/from-react-state',
+      //       'guides/migrating/from-redux',
+      //       'guides/migrating/from-mobx',
+      //     ],
+      //   },
+      //   'guides/usage-flow',
+      //   'guides/usage-typescript',
       'guides/asynchronous-data-queries',
+      'guides/asynchronous-state-sync',
+      'guides/persistence',
+      //   'guides/writing-test',
+      //   'guides/code-splitting',
     ],
 
     'API Reference': [

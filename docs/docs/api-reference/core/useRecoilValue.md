@@ -15,7 +15,7 @@ This is the recommended hook to use when a component intends to read state witho
 
 ### Example
 
-```javascript
+```jsx
 import {atom, selector, useRecoilValue} from 'recoil';
 
 const namesState = atom({

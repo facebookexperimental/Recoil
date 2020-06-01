@@ -13,15 +13,16 @@ Returns writeable Recoil state.
 
 Most often, you'll use the following hooks to interact with atoms:
 
-- [`useRecoilState()`](/docs/api-reference/core/useRecoilState): use this hook when you intend on both reading and writing to the atom. This hook subscribes the component the atom.
+- [`useRecoilState()`](/docs/api-reference/core/useRecoilState): use this hook when you intend on both reading and writing to the atom. This hook subscribes the component to the atom.
 - [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue): use this hook when you intend on only reading the atom. This hook subscribes the component to the atom.
-- [`useSetRecoilState()`](/docs/api-reference/core/useRecoilState): use this hook when you intend on only writing to the atom.
+- [`useSetRecoilState()`](/docs/api-reference/core/useSetRecoilState): use this hook when you intend on only writing to the atom.
+- [`useResetRecoilState()`](/docs/api-reference/core/useResetRecoilState): use this hook to reset an atom to its default value.
 
-For rare cases where you need to read an atom's value without subscribing the component, see [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback).
+For rare cases where you need to read an atom's value without subscribing to the component, see [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback).
 
 ### Example
 
-```javascript
+```jsx
 import {atom, useRecoilState} from 'recoil';
 
 const counter = atom({
