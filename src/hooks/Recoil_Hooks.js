@@ -233,8 +233,11 @@ function useInterface(): RecoilInterface {
     function useRecoilState<T>(
       recoilState: RecoilState<T>,
     ): [T, SetterOrUpdater<T>] {
-      if (!isRecoilValue(recoilState))
-        throw new Error('No atom or selector provided');
+      if (__DEV__) {
+        if (!isRecoilValue(recoilState))
+          throw new Error('No atom or selector provided');
+      }
+
       return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
     }
 
