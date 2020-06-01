@@ -27,7 +27,7 @@ declare function useRecoilCallback<Args, ReturnValue>(
 ): (...Args) => ReturnValue
 ```
 
-* **`fn`** - The user callback function with added callback interace.  The accessor callbacks access a read-only snapshot of Recoil atom state created when the callback is called.  While the atom values are static, ascynrhonous selectors may still be pending or resolve.  Callbacks to set the state will asynchronously update the current Recoil state.
+* **`fn`** - The user callback function with added callback interface.  The accessor callbacks access a read-only snapshot of Recoil atom state created when the callback is called.  While the atom values are static, asynchronous selectors may still be pending or resolve.  Callbacks to set the state will asynchronously update the current Recoil state.
 * **`deps`** - An optional set of dependencies for memoizing the callback.  Like `useCallback()`, the produced callback will not be memoized by default and will produce a new function each time.  You can pass an empty array to always return the same function instance.  If you pass values in the `deps` array a new function will be used if the reference equality of any dep changes.  Those values can then be used from within the body of your callback without getting stale.  (See [`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback))
 
 Callback Interface:
