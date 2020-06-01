@@ -104,11 +104,11 @@ function MyApp() {
 ```
 
 ## Queries with Parameters
-Sometimes you want to be able to query based on parameters that aren't just based on derived state.  For example, you may want to query based on the component props.  You can do that using the `selectorFamily` helper:
+Sometimes you want to be able to query based on parameters that aren't just based on derived state.  For example, you may want to query based on the component props.  You can do that using the `atomFamily` helper:
 ```js
-const userNameQuery = selectorFamily({
+const userNameQuery = atomFamily({
   key: 'UserName',
-  get: userID => async ({get}) => {
+  get: async userID => {
     const response = await myDBQuery({userID});
     if (response.error) {
       throw response.error;
