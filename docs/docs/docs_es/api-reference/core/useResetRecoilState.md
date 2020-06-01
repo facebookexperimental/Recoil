@@ -1,5 +1,6 @@
 ---
 título: useResetRecoilState()
+sidebar_label: useResetRecoilState()
 ---
 
 Devuelve una función que restablecerá el valor del estado dado a su valor predeterminado. 
