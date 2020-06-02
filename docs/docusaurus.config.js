@@ -129,6 +129,10 @@ module.exports = {
           showReadingTime: true,
           editUrl:
             'https://github.com/facebookexperimental/Recoil/edit/docs/docs/blog/',
+           feedOptions: {
+            type: 'all',
+            copyright: `Copyright © ${new Date().getFullYear()} Facebook, Inc.`,
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
