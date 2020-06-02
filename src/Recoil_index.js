@@ -6,7 +6,7 @@
  *
  * See https://our.intern.facebook.com/intern/wiki/Recoil/
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */

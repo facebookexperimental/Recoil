@@ -47,7 +47,7 @@
  *     set: ({set, reset, get}, newValue) => set(atomA, newValue / 100),
  *   });
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */

@@ -8,7 +8,7 @@
  * or in general things that respond poorly to being frozen. Follows the
  * implementation of deepFreezeValue.
  *
- * @emails oncall+comparison_view
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */

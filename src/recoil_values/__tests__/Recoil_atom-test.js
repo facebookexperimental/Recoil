@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */

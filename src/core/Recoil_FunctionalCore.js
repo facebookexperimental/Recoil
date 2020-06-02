@@ -9,7 +9,7 @@
  * FUNCTIONS BETWEEN IMMUTABLE TreeState VALUES. It is permissible to call
  * `getAtomDef` because atom definitions are constant.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */

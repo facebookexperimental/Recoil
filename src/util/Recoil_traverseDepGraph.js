@@ -6,7 +6,7 @@
  *
  * Utility for traversing the dependency graph starting at some key.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
