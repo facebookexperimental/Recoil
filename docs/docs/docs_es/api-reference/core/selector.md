@@ -1,23 +1,23 @@
 ---
-title: selector(options)
+título: selector(options)
 sidebar_label: selector()
 ---
 
-Returns writeable or read-only Recoil state, depending on the options passed to the function.
+Devuelve el estado de Recoil escribible o solo lectura, según las opciones que se pasen a la función.
 
-Selectors represent **derived state**. You can think of derived state as the output of passing state to a pure function that modifies the given state in some way.
+Los selectores representan **estado derivado** (**derived state**). Puede pensar en el estado derivado como la salida del paso de estado a una función pura que modifica el estado dado de alguna manera.
 
 ---
 
 - `options`
-  - `key`: A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-  - `get`: A function that is passed an object as the first parameter containing the following properties:
-    - `get`: a function used to retrieve values from other atoms/selectors. All atoms/selectors passed to this function will be implicitly added to a list of **dependencies** for the selector. If any of the selector's dependencies change, the selector will re-evaluate.
-  - `set?`: If this property is set, the selector will return **writeable** state. A function that is passed an object as the first parameter containing the following properties:
-    - `get`: a function used to retrieve values from other atoms/selectors. This function will not subscribe the selector to the given atoms/selectors.
-    - `set`: a function used to set the values of Recoil state. The first parameter is the Recoil state and the second parameter is the new value.
+  - `key`: Una cadena de caracteres única utilizada para identificar el átomo internamente. Esta cadena de caracteres debe ser única con respecto a otros átomos y selectores en toda la aplicación.
+  - `get`: Una función a la que se le pasa un objeto como primer parámetro que contiene las siguientes propiedades:
+    - `get`: una función utilizada para recuperar valores de otros átomos/selectores. Todos los átomos/selectores pasados a esta función se agregarán implícitamente a una lista de **dependencias** para el selector. Si alguna de las dependencias del selector cambia, el selector se volverá a evaluar.
+  - `set?`: Si se establece esta propiedad, el selector devolverá el estado **escribible**. Una función a la que se le pasa un objeto como primer parámetro que contiene las siguientes propiedades: 
+    - `get`: una función utilizada para recuperar valores de otros átomos/selectores. Esta función no suscribirá el selector a los átomos/selectores dados.
+    - `set`: una función utilizada para establecer los valores del estado de Recoil. El primer parámetro es el estado de Recoil y el segundo parámetro es el nuevo valor. 
 
-### Example (Synchronous)
+### Ejemplo (Sincrónico)
 
 ```javascript
 import {atom, selector, useRecoilState} from 'recoil';
@@ -54,4 +54,4 @@ function TempCelcius() {
 }
 ```
 
-### Example (Asynchronous)
+### Ejemplo (Asincrónico)
