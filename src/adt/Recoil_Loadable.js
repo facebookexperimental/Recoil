@@ -9,7 +9,7 @@
  * when the value is available (but as with LoadObject, an individual Loadable
  * is a value type and is not mutated when the status of a request changes).
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict
  * @format
  */

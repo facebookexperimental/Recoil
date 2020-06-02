@@ -31,7 +31,7 @@
  * is re-rendered whenever any URL-persisted atom changes; keep the performance
  * implications of this in mind.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */

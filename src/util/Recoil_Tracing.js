@@ -6,7 +6,7 @@
  *
  * Interface for `scheduler/tracing` to aid in profiling Recoil and Recoil apps.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
