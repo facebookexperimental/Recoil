@@ -213,8 +213,10 @@ function RecoilRoot({initializeState, children}: Props): ReactElement {
       return;
     }
     // Save changes to nextTree and schedule a React update:
-    if (__DEV__ && typeof window !== 'undefined') {
-      window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
+    if (__DEV__) {
+      if (typeof window !== 'undefined') {
+        window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
+      }
     }
     storeState.nextTree = replaced;
     nullthrows(notifyBatcherOfChange.current)();
