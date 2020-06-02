@@ -118,7 +118,7 @@ Sometimes you want to be able to query based on parameters that aren't just base
 ```jsx
 const userNameQuery = selectorFamily({
   key: 'UserName',
-  get: (userID) => async ({get}) => {
+  get: userID => async () => {
     const response = await myDBQuery({userID});
     if (response.error) {
       throw response.error;
@@ -161,7 +161,7 @@ const currentUserIDState = atom({
 
 const userInfoQuery = selectorFamily({
   key: 'UserInfoQuery',
-  get: userID => async ({get}) => {
+  get: userID => async () => {
     const response = await myDBQuery({userID});
     if (response.error) {
       throw response.error;
