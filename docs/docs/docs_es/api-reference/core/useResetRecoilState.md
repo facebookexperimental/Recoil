@@ -1,11 +1,21 @@
 ---
-title: useResetRecoilState()
+título: useResetRecoilState()
+sidebar_label: useResetRecoilState()
 ---
 
-Returns a function that will reset the value of the given state to its default value.
+Devuelve una función que restablecerá el valor del estado dado a su valor predeterminado. 
 
 ---
 
-- `state`: a writeable Recoil state
+- `state`: un estado de Recoil escribible.
 
-### Example
+### Ejemplo
+
+```javascript
+import {todoListState} from "../atoms/todoListState";
+
+const TodoResetButton = () => {
+  const resetList = useResetRecoilState(todoListState);
+  return <button onClick={resetList}>Reset</button>;
+};
+```
