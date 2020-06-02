@@ -39,7 +39,7 @@ Interfaz de función Callback:
 - `set` - Actualiza el valor de un átomo o selector
 - `reset`: restablece el valor de un átomo o selector a su valor predeterminado.
 
-### Example
+### Ejemplo
 
 ```javascript
 import {atom, useRecoilCallback} from 'recoil';
