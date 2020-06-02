@@ -120,7 +120,7 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
 }
 
 if (__DEV__) {
-  if (!window.$recoilDebugStates) {
+  if (typeof window !== 'undefined' && !window.$recoilDebugStates) {
     window.$recoilDebugStates = [];
   }
 }
