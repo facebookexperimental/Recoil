@@ -16,9 +16,16 @@ module.exports = {
   organizationName: 'facebookexperimental', // Usually your GitHub org/user name.
   projectName: 'Recoil', // Usually your repo name.
   themeConfig: {
-     algolia: {
+    announcementBar: {
+      id: 'black_lives_matter',
+      content:
+        '<div class="blm-bar">Black Lives Matter. <a style="color: rgb(97, 218, 251)" target="_blank" href="https://support.eji.org/give/153413/#!/donation/checkout">Support the Equal Justice Innitiative</a></div>',
+      backgroundColor: '#242526',
+      textColor: '#f5f6f7',
+    },
+    algolia: {
       apiKey: '9c5a009951e793525603922b8ca66628',
-      indexName: 'recoiljs'
+      indexName: 'recoiljs',
     },
     googleAnalytics: {
       trackingID: 'UA-44373548-46',

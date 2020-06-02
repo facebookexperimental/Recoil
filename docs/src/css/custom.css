@@ -23,6 +23,7 @@
   --ifm-color-primary-lighter: #5a91ea;
   --ifm-color-primary-lightest: #80aaef;
   --ifm-code-font-size: 95%;
+  --docusaurus-announcement-bar-height: 60px !important;
 }
 
 .docusaurus-highlight-code-line {
@@ -40,4 +41,14 @@
 
 .hero__button.button.button--secondary.button--outline:not(.button--active):not(:hover) {
   color: white;
+}
+
+.blm-bar {
+  height: 60px;
+  font-size: 20px;
+  padding: 1rem;
+}
+
+.blm-bar > a:link {
+  text-decoration: none;
 }
