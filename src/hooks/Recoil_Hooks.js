@@ -110,6 +110,12 @@ function valueFromValueOrUpdater(store, state, recoilValue, valueOrUpdater) {
   }
 }
 
+function validateRecoilState(recoilState) {
+  if (!isRecoilValue(recoilState)) {
+    throw new Error('Invalid parameter, atom or selector expected');
+  }
+}
+
 export type SetterOrUpdater<T> = ((T => T) | T) => void;
 export type Resetter = () => void;
 export type RecoilInterface = {
@@ -194,6 +200,9 @@ function useInterface(): RecoilInterface {
     function useSetRecoilState<T>(
       recoilState: RecoilState<T>,
     ): SetterOrUpdater<T> {
+      if (__DEV__) {
+        validateRecoilState(recoilState);
+      }
       return (
         newValueOrUpdater: (T => T | DefaultValue) | T | DefaultValue,
       ) => {
@@ -209,12 +218,18 @@ function useInterface(): RecoilInterface {
     }
 
     function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
+      if (__DEV__) {
+        validateRecoilState(recoilState);
+      }
       return () => setRecoilValue(storeRef.current, recoilState, DEFAULT_VALUE);
     }
 
     function useRecoilValueLoadable<T>(
       recoilValue: RecoilValue<T>,
     ): Loadable<T> {
+      if (__DEV__) {
+        validateRecoilState(recoilState);
+      }
       if (!recoilValuesUsed.current.has(recoilValue.key)) {
         recoilValuesUsed.current = setByAddingToSet(
           recoilValuesUsed.current,
@@ -233,11 +248,6 @@ function useInterface(): RecoilInterface {
     function useRecoilState<T>(
       recoilState: RecoilState<T>,
     ): [T, SetterOrUpdater<T>] {
-      if (__DEV__) {
-        if (!isRecoilValue(recoilState))
-          throw new Error('No atom or selector provided');
-      }
-
       return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
     }
 
