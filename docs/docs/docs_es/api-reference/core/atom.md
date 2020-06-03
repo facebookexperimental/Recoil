@@ -3,21 +3,21 @@ title: atom(options)
 sidebar_label: atom()
 ---
 
-Returns writeable Recoil state.
+Retorna el estado escribile de Recoil.
 
 ---
 
 - `options`
-  - `key`: A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-  - `default`: The initial value of the atom.
+  - `key`: Una cadena única que se usa para identificar el átomo internamente. Esta cadena debería ser única con respecto a los otros átomos y selectores en la aplicación entera.
+  - `default`: El valor inicial del átomo.
 
-Most often, you'll use the following hooks to interact with atoms:
+Frecuentemente usara los siguientes hooks para interactuar con los átomos::
 
-- [`useRecoilState()`](/docs/api-reference/core/useRecoilState): use this hook when you intend on both reading and writing to the atom. This hook subscribes the component to the atom.
-- [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue): use this hook when you intend on only reading the atom. This hook subscribes the component to the atom.
-- [`useSetRecoilState()`](/docs/api-reference/core/useRecoilState): use this hook when you intend on only writing to the atom.
+- [`useRecoilState()`](/docs/api-reference/core/useRecoilState): utilice este hook cuando su intención sea leer y escribir a un átomo. Este hook suscribe el componente al átomo.
+- [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue): utilice este hook cuando su intención sea unicamente leer un átomo. Este hook suscribe el componente al átomo.
+- [`useSetRecoilState()`](/docs/api-reference/core/useRecoilState): utilice este hook cuando su intención sea unicamente escrbir en un átomo.
 
-For rare cases where you need to read an atom's value without subscribing the component, see [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback).
+Para aquellos casos más raros donde necesite leer el valor de un átomo sin suscribirse al componente, lea [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback).
 
 ### Example
 

@@ -3,17 +3,17 @@ title: useRecoilState()
 sidebar_label: useRecoilState()
 ---
 
-Returns a tuple where the first element is the value of state and the second element is a setter function that will update the value of the given state when called.
+Devuelve una tupla donde el primer elemento es el valor del estado y el segundo elemento es una función de establecimiento que actualizará el valor del estado dado cuando se llame.
 
-This hook will implicitly subscribe the component to the given state.
+Este hook suscribirá implícitamente el componente al estado dado.
 
 ---
 
-- `state`: an [`atom`](/docs/api-reference/core/atom) or a _writeable_ [`selector`](/docs/api-reference/core/selector). Writeable selectors are selectors that were have both a `get` and `set` in their definition while read-only selectors only have a `get`.
+- `state`: un [`átomo`](/docs/api-reference/core/atom) o un [`selector`](/docs/api-reference/core/selector) _escribible_. Los selectores escribible son selectores que tenían tanto un `get` como un `set` en su definición, mientras que los selectores de solo lectura solo tienen un `get`.
 
-This is the recommended hook to use when a component intends to read and write state.
+Este es el hook recomendado para usar cuando un componente intenta leer y escribir estado.
 
-### Example
+### Ejemplo
 
 ```javascript
 import {atom, selector, useRecoilState} from 'recoil';
