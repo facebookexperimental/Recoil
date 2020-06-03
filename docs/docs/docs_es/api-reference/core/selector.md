@@ -1,5 +1,5 @@
 ---
-título: selector(options)
+title: selector(options)
 sidebar_label: selector()
 ---
 

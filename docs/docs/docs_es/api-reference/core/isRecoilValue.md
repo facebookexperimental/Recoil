@@ -1,5 +1,5 @@
 ---
-título: isRecoilValue(value)
+title: isRecoilValue(value)
 sidebar_label: isRecoilValue()
 ---
 
