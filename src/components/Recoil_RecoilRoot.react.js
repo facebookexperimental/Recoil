@@ -21,13 +21,14 @@ import type {
 
 const React = require('React');
 const {useContext, useEffect, useRef, useState} = require('React');
+
+const Queue = require('../adt/Recoil_Queue');
 const {
   fireNodeSubscriptions,
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
 const nullthrows = require('../util/Recoil_nullthrows');
-const Queue = require('../adt/Recoil_Queue');
 
 type Props = {
   initializeState?: ({
@@ -120,7 +121,7 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
 }
 
 if (__DEV__) {
-  if (!window.$recoilDebugStates) {
+  if (typeof window !== 'undefined' && !window.$recoilDebugStates) {
     window.$recoilDebugStates = [];
   }
 }
@@ -212,10 +213,14 @@ function RecoilRoot({initializeState, children}: Props): ReactElement {
     if (replaced === nextTree) {
       return;
     }
-    // Save changes to nextTree and schedule a React update:
+
     if (__DEV__) {
-      window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
+      if (typeof window !== 'undefined') {
+        window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
+      }
     }
+
+    // Save changes to nextTree and schedule a React update:
     storeState.nextTree = replaced;
     nullthrows(notifyBatcherOfChange.current)();
   };
