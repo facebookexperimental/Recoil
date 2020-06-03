@@ -11,12 +11,12 @@
 /* eslint-disable fb-www/react-no-useless-fragment */
 'use strict';
 
-import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 import type {
   RecoilState,
   RecoilValue,
   RecoilValueReadOnly,
 } from '../../core/Recoil_RecoilValue';
+import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 
 const React = require('React');
 const {useEffect, useState} = require('React');
@@ -184,6 +184,22 @@ function advanceTimersBy(ms) {
     jest.runAllTicks();
   });
 }
+
+test('Component throws error when passing invalid node', async () => {
+  function Component() {
+    try {
+      // $FlowExpectedError
+      useRecoilValue('foo');
+    } catch (error) {
+      expect(error.message).toEqual(expect.stringContaining('useRecoilValue'));
+      return 'CAUGHT';
+    }
+    return 'INVALID';
+  }
+
+  const container = renderElements(<Component />);
+  expect(container.textContent).toEqual('CAUGHT');
+});
 
 test('Components are re-rendered when atoms change', async () => {
   const anAtom = counterAtom();

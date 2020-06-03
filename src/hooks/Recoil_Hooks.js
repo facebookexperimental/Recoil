@@ -10,7 +10,6 @@
  */
 'use strict';
 
-import type {PersistenceType} from '../recoil_values/Recoil_atom';
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
@@ -19,10 +18,12 @@ import type {
   RecoilValue,
 } from '../core/Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
+import type {PersistenceType} from '../recoil_values/Recoil_atom';
 
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 const ReactDOM = require('ReactDOM');
-const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
+
+const {useStoreRef} = require('../components/Recoil_RecoilRoot.react');
 const {
   getNodeLoadable,
   peekNodeLoadable,
@@ -34,16 +35,15 @@ const {
   getNode,
   nodes,
 } = require('../core/Recoil_Node');
-const {useStoreRef} = require('../components/Recoil_RecoilRoot.react');
 const {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
+  isRecoilValue,
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
 } = require('../core/Recoil_RecoilValue');
-const Tracing = require('../util/Recoil_Tracing');
-
+const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const differenceSets = require('../util/Recoil_differenceSets');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const filterMap = require('../util/Recoil_filterMap');
@@ -53,6 +53,7 @@ const invariant = require('../util/Recoil_invariant');
 const mapMap = require('../util/Recoil_mapMap');
 const mergeMaps = require('../util/Recoil_mergeMaps');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const Tracing = require('../util/Recoil_Tracing');
 
 function cloneState(state: TreeState, opts): TreeState {
   return {
@@ -106,6 +107,16 @@ function valueFromValueOrUpdater(store, state, recoilValue, valueOrUpdater) {
     return (valueOrUpdater: any)(current.contents); // flowlint-line unclear-type:off
   } else {
     return valueOrUpdater;
+  }
+}
+
+function validateRecoilValue(recoilValue, hookName) {
+  if (!isRecoilValue(recoilValue)) {
+    throw new Error(
+      `Invalid argument to ${hookName}: expected an atom or selector but got ${String(
+        recoilValue,
+      )}`,
+    );
   }
 }
 
@@ -193,6 +204,9 @@ function useInterface(): RecoilInterface {
     function useSetRecoilState<T>(
       recoilState: RecoilState<T>,
     ): SetterOrUpdater<T> {
+      if (__DEV__) {
+        validateRecoilValue(recoilState, 'useSetRecoilState');
+      }
       return (
         newValueOrUpdater: (T => T | DefaultValue) | T | DefaultValue,
       ) => {
@@ -208,12 +222,18 @@ function useInterface(): RecoilInterface {
     }
 
     function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
+      if (__DEV__) {
+        validateRecoilValue(recoilState, 'useResetRecoilState');
+      }
       return () => setRecoilValue(storeRef.current, recoilState, DEFAULT_VALUE);
     }
 
     function useRecoilValueLoadable<T>(
       recoilValue: RecoilValue<T>,
     ): Loadable<T> {
+      if (__DEV__) {
+        validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
+      }
       if (!recoilValuesUsed.current.has(recoilValue.key)) {
         recoilValuesUsed.current = setByAddingToSet(
           recoilValuesUsed.current,
@@ -225,6 +245,9 @@ function useInterface(): RecoilInterface {
     }
 
     function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
+      if (__DEV__) {
+        validateRecoilValue(recoilValue, 'useRecoilValue');
+      }
       const loadable = useRecoilValueLoadable(recoilValue);
       return handleLoadable(loadable, recoilValue, storeRef);
     }
@@ -232,12 +255,18 @@ function useInterface(): RecoilInterface {
     function useRecoilState<T>(
       recoilState: RecoilState<T>,
     ): [T, SetterOrUpdater<T>] {
+      if (__DEV__) {
+        validateRecoilValue(recoilState, 'useRecoilState');
+      }
       return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
     }
 
     function useRecoilStateLoadable<T>(
       recoilState: RecoilState<T>,
     ): [Loadable<T>, SetterOrUpdater<T>] {
+      if (__DEV__) {
+        validateRecoilValue(recoilState, 'useRecoilStateLoadable');
+      }
       return [
         useRecoilValueLoadable(recoilState),
         useSetRecoilState(recoilState),
