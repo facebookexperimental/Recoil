@@ -25,7 +25,6 @@ const ReactDOM = require('ReactDOM');
 
 const {useStoreRef} = require('../components/Recoil_RecoilRoot.react');
 const {
-  getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
 } = require('../core/Recoil_FunctionalCore');
@@ -43,11 +42,11 @@ const {
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
 } = require('../core/Recoil_RecoilValue');
+const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const differenceSets = require('../util/Recoil_differenceSets');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const filterMap = require('../util/Recoil_filterMap');
-const gkx = require('../util/Recoil_gkx');
 const intersectSets = require('../util/Recoil_intersectSets');
 const invariant = require('../util/Recoil_invariant');
 const mapMap = require('../util/Recoil_mapMap');
@@ -55,7 +54,7 @@ const mergeMaps = require('../util/Recoil_mergeMaps');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
 
-function cloneState(state: TreeState): TreeState {
+function cloneState_DEPRECATED(state: TreeState): TreeState {
   return {
     transactionMetadata: {...state.transactionMetadata},
     atomValues: new Map(state.atomValues),
@@ -91,11 +90,13 @@ function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   }
 }
 
-function valueFromValueOrUpdater(store, state, recoilValue, valueOrUpdater) {
+function valueFromValueOrUpdater(store, recoilValue, valueOrUpdater) {
   if (typeof valueOrUpdater === 'function') {
     // Updater form: pass in the current value. Throw if the current value
     // is unavailable (namely when updating an async selector that's
     // pending or errored):
+    const storeState = store.getState();
+    const state = storeState.nextTree ?? storeState.currentTree;
     const current = peekNodeLoadable(store, state, recoilValue.key);
     if (current.state === 'loading') {
       throw new RecoilValueNotReady(recoilValue.key);
@@ -209,10 +210,8 @@ function useInterface(): RecoilInterface {
       return (
         newValueOrUpdater: (T => T | DefaultValue) | T | DefaultValue,
       ) => {
-        const storeState = storeRef.current.getState();
         const newValue = valueFromValueOrUpdater(
           storeRef.current,
-          storeState.nextTree ?? storeState.currentTree,
           recoilState,
           newValueOrUpdater,
         );
@@ -363,12 +362,12 @@ function useTransactionSubscription(callback: (Store, TreeState) => void) {
 }
 
 // TODO instead of force update can put snapshot into local state
-function useTreeStateClone(): TreeState {
+function useTreeStateClone_DEPRECATED(): TreeState {
   const [_, setState] = useState(0);
   const forceUpdate = useCallback(() => setState(x => x + 1), []);
   useTransactionSubscription(forceUpdate);
   const storeRef = useStoreRef();
-  return cloneState(storeRef.current.getState().currentTree);
+  return cloneState_DEPRECATED(storeRef.current.getState().currentTree);
 }
 
 type UpdatedSnapshot = {
@@ -380,7 +379,7 @@ function useSnapshotWithStateChange(
   transaction: (<T>(RecoilState<T>, (T) => T) => void) => void,
 ): UpdatedSnapshot {
   const storeRef = useStoreRef();
-  let snapshot = useTreeStateClone();
+  let snapshot = useTreeStateClone_DEPRECATED();
   const update = <T>({key}: RecoilState<T>, updater: T => T) => {
     [snapshot] = setNodeValue(
       storeRef.current,
@@ -537,10 +536,9 @@ function useSetUnvalidatedAtomValues(): (
 }
 
 type CallbackInterface = $ReadOnly<{
-  getPromise: <T>(RecoilValue<T>) => Promise<T>,
-  getLoadable: <T>(RecoilValue<T>) => Loadable<T>,
   set: <T>(RecoilState<T>, (T => T) | T) => void,
   reset: <T>(RecoilState<T>) => void,
+  snapshot: Snapshot,
 }>;
 
 class Sentinel {}
@@ -553,28 +551,9 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
   const storeRef = useStoreRef();
 
   return useCallback(
-    (...args) => {
-      let snapshot = cloneState(storeRef.current.getState().currentTree);
-
-      function getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
-        let result: Loadable<T>;
-        [snapshot, result] = getNodeLoadable(
-          storeRef.current,
-          snapshot,
-          recoilValue.key,
-        );
-        return result;
-      }
-
-      function getPromise<T>(recoilValue: RecoilValue<T>): Promise<T> {
-        if (gkx('recoil_async_selector_refactor')) {
-          return getLoadable(recoilValue)
-            .toPromise()
-            .then(({value}) => value);
-        } else {
-          return (getLoadable(recoilValue).toPromise(): $FlowFixMe);
-        }
-      }
+    (...args): Return => {
+      // Use currentTree for the snapshot to show the currently committed stable state
+      const snapshot = cloneSnapshot(storeRef.current.getState().currentTree);
 
       function set<T>(
         recoilState: RecoilState<T>,
@@ -582,7 +561,6 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       ) {
         const newValue = valueFromValueOrUpdater(
           storeRef.current,
-          snapshot,
           recoilState,
           newValueOrUpdater,
         );
@@ -596,7 +574,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       let ret = SENTINEL;
       ReactDOM.unstable_batchedUpdates(() => {
         // flowlint-next-line unclear-type:off
-        ret = (fn: any)({getPromise, getLoadable, set, reset})(...args);
+        ret = (fn: any)({set, reset, snapshot})(...args);
       });
       invariant(
         !(ret instanceof Sentinel),
