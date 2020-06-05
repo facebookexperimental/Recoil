@@ -19,7 +19,7 @@ const fontSizeState = atom({
 });
 ```
 
-Atoms need a unique key, which is used for debugging, persistence, and for certain advanced APIs that let you see a map of all atoms. It is an error for two atoms to have the same key, so make sure they're globally unique. Like React component state, they also have a default value.
+Atoms need a unique key, which is used for debugging, persistence, and for certain advanced APIs that let you see a map of all atoms. Multiple atoms with the same key will through an error, so make sure they're globally unique. Like React component state, they also have a default value.
 
 To read and write an atom from a component, we use a hook called `useRecoilState`. It's just like React's `useState`, but now the state can be shared between components:
 
