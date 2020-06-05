@@ -15,8 +15,8 @@
 
 // prettier-ignore
 /* eslint-disable no-lone-blocks */
-// this {} block is necessary to keep prettier off on both internal repo and github
-{
+// this {} block is necessary to keep prettier off on internal repo
+// @fb-only: {
 function recoverableViolation( // @oss-only
   message: string, // @oss-only
   projectName: 'recoil', // @oss-only
@@ -27,7 +27,7 @@ function recoverableViolation( // @oss-only
   } // @oss-only
   return null; // @oss-only
 } // @oss-only
-}
+// @fb-only: }
 /* eslint-enable no-lone-blocks */
 
 module.exports = recoverableViolation;
