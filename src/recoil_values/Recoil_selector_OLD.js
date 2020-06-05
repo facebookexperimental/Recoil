@@ -94,11 +94,12 @@ const equalsSet = require('../util/Recoil_equalsSet');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 
+export type ValueOrUpdater<T> =
+  | T
+  | DefaultValue
+  | ((prevValue: T) => T | DefaultValue);
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
-export type SetRecoilState = <T>(
-  RecoilState<T>,
-  T | DefaultValue | ((prevValue: T) => T | DefaultValue),
-) => void;
+export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 export type ResetRecoilState = <T>(RecoilState<T>) => void;
 
 type ReadOnlySelectorOptions<T> = $ReadOnly<{

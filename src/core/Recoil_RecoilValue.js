@@ -12,9 +12,9 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DefaultValue} from './Recoil_Node';
-import type {RecoilValue} from './Recoil_RecoilValueClasses';
 export type {RecoilValue} from './Recoil_RecoilValueClasses';
 import type {Store, TreeState} from './Recoil_State';
+import type {ValueOrUpdater} from '../recoil_values/Recoil_selector';
 
 const Tracing = require('../util/Recoil_Tracing');
 const {
@@ -29,15 +29,7 @@ const {
   RecoilState,
   RecoilValueReadOnly,
 } = require('./Recoil_RecoilValueClasses');
-
-// NOTE: This will not update state with node subscriptions, so use sparingly!!!
-function peekRecoilValueAsLoadable<T>(
-  store: Store,
-  {key}: RecoilValue<T>,
-): Loadable<T> {
-  const state = store.getState().currentTree; // TODO with useMutableSource should use the tree from the individual component
-  return peekNodeLoadable(store, state, key);
-}
+const {RecoilValueNotReady} = require('./Recoil_Node');
 
 function getRecoilValueAsLoadable<T>(
   store: Store,
@@ -95,6 +87,31 @@ function setUnvalidatedRecoilValue<T>(
   );
 }
 
+function valueFromValueOrUpdater<T>(
+  store: Store,
+  {key}: RecoilState<T>,
+  valueOrUpdater: ValueOrUpdater<T>,
+): T | DefaultValue {
+  if (typeof valueOrUpdater === 'function') {
+    // Updater form: pass in the current value. Throw if the current value
+    // is unavailable (namely when updating an async selector that's
+    // pending or errored):
+    const storeState = store.getState();
+    const state = storeState.nextTree ?? storeState.currentTree;
+    // NOTE: This will not update state with node subscriptions.
+    const current = peekNodeLoadable(store, state, key);
+    if (current.state === 'loading') {
+      throw new RecoilValueNotReady(key);
+    } else if (current.state === 'hasError') {
+      throw current.contents;
+    }
+    // T itself may be a function, so our refinement is not sufficient:
+    return (valueOrUpdater: any)(current.contents); // flowlint-line unclear-type:off
+  } else {
+    return valueOrUpdater;
+  }
+}
+
 export type ComponentSubscription = {release: Store => void};
 function subscribeToRecoilValue<T>(
   store: Store,
@@ -121,10 +138,10 @@ module.exports = {
   RecoilValueReadOnly,
   AbstractRecoilValue,
   RecoilState,
-  peekRecoilValueAsLoadable,
   getRecoilValueAsLoadable,
   setRecoilValue,
   setUnvalidatedRecoilValue,
+  valueFromValueOrUpdater,
   subscribeToRecoilValue,
   isRecoilValue,
 };
