@@ -54,7 +54,7 @@ The main purpose of this repository is to continue to evolve Recoil, making it f
 Read our [contributing guide](./CONTRIBUTING.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Recoil.
 
 
-### License
+## License
 
 Recoil is [MIT licensed](./LICENSE).
 
