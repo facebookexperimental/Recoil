@@ -48,3 +48,37 @@ test('Read async selector from snapshot', async () => {
   await expect(snapshot.getPromise(asyncSel)).resolves.toEqual('SET VALUE');
   await expect(snapshot.getPromise(nestSel)).resolves.toEqual('SET VALUE');
 });
+
+test('Sync map of snapshot', () => {
+  const snapshot = freshSnapshot();
+
+  const myAtom = atom({
+    key: 'Snapshot Map Sync',
+    default: 'DEFAULT',
+  });
+
+  const atomLoadable = snapshot.getLoadable(myAtom);
+  expect(atomLoadable.state).toEqual('hasValue');
+  expect(atomLoadable.contents).toEqual('DEFAULT');
+
+  const setSnapshot = snapshot.map(({set}) => {
+    set(myAtom, 'SET');
+  });
+  const setLoadable = setSnapshot.getLoadable(myAtom);
+  expect(setLoadable.state).toEqual('hasValue');
+  expect(setLoadable.contents).toEqual('SET');
+
+  const updateSnapshot = setSnapshot.map(({set}) => {
+    set(myAtom, value => value + 'TER');
+  });
+  const updateLoadable = updateSnapshot.getLoadable(myAtom);
+  expect(updateLoadable.state).toEqual('hasValue');
+  expect(updateLoadable.contents).toEqual('SETTER');
+
+  const resetSnapshot = updateSnapshot.map(({reset}) => {
+    reset(myAtom);
+  });
+  const resetLoadable = resetSnapshot.getLoadable(myAtom);
+  expect(resetLoadable.state).toEqual('hasValue');
+  expect(resetLoadable.contents).toEqual('DEFAULT');
+});

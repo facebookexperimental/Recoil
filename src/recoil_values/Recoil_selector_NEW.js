@@ -94,11 +94,12 @@ const nullthrows = require('../util/Recoil_nullthrows');
 const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
 const traverseDepGraph = require('../util/Recoil_traverseDepGraph');
 
+export type ValueOrUpdater<T> =
+  | T
+  | DefaultValue
+  | ((prevValue: T) => T | DefaultValue);
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
-export type SetRecoilState = <T>(
-  RecoilState<T>,
-  T | DefaultValue | ((prevValue: T) => T | DefaultValue),
-) => void;
+export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 export type ResetRecoilState = <T>(RecoilState<T>) => void;
 
 type ReadOnlySelectorOptions<T> = $ReadOnly<{
