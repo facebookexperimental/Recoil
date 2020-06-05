@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "prepare": "install-peers",
-    "build": "rollup -c && node scripts/postbuild.js",
+    "build": "rollup -c",
     "test": "jest src/*",
     "format": "prettier --write \"./**/*.{js,md,json}\"",
     "flow": "flow --show-all-errors",
@@ -55,6 +55,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "rollup": "^2.10.0",
+    "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-includepaths": "^0.2.3",
     "rollup-plugin-terser": "^5.3.0",
     "typescript": "^3.9.5"
