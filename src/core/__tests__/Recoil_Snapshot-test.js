@@ -56,29 +56,54 @@ test('Sync map of snapshot', () => {
     key: 'Snapshot Map Sync',
     default: 'DEFAULT',
   });
+  const mySelector = constSelector(myAtom);
 
   const atomLoadable = snapshot.getLoadable(myAtom);
   expect(atomLoadable.state).toEqual('hasValue');
   expect(atomLoadable.contents).toEqual('DEFAULT');
+  const selectorLoadable = snapshot.getLoadable(mySelector);
+  expect(selectorLoadable.state).toEqual('hasValue');
+  expect(selectorLoadable.contents).toEqual('DEFAULT');
 
   const setSnapshot = snapshot.map(({set}) => {
     set(myAtom, 'SET');
   });
-  const setLoadable = setSnapshot.getLoadable(myAtom);
-  expect(setLoadable.state).toEqual('hasValue');
-  expect(setLoadable.contents).toEqual('SET');
+  const setAtomLoadable = setSnapshot.getLoadable(myAtom);
+  expect(setAtomLoadable.state).toEqual('hasValue');
+  expect(setAtomLoadable.contents).toEqual('SET');
+  const setSelectorLoadable = setSnapshot.getLoadable(myAtom);
+  expect(setSelectorLoadable.state).toEqual('hasValue');
+  expect(setSelectorLoadable.contents).toEqual('SET');
 
-  const updateSnapshot = setSnapshot.map(({set}) => {
-    set(myAtom, value => value + 'TER');
-  });
-  const updateLoadable = updateSnapshot.getLoadable(myAtom);
-  expect(updateLoadable.state).toEqual('hasValue');
-  expect(updateLoadable.contents).toEqual('SETTER');
-
-  const resetSnapshot = updateSnapshot.map(({reset}) => {
+  const resetSnapshot = snapshot.map(({reset}) => {
     reset(myAtom);
   });
-  const resetLoadable = resetSnapshot.getLoadable(myAtom);
-  expect(resetLoadable.state).toEqual('hasValue');
-  expect(resetLoadable.contents).toEqual('DEFAULT');
+  const resetAtomLoadable = resetSnapshot.getLoadable(myAtom);
+  expect(resetAtomLoadable.state).toEqual('hasValue');
+  expect(resetAtomLoadable.contents).toEqual('DEFAULT');
+  const resetSelectorLoadable = resetSnapshot.getLoadable(myAtom);
+  expect(resetSelectorLoadable.state).toEqual('hasValue');
+  expect(resetSelectorLoadable.contents).toEqual('DEFAULT');
+});
+
+test('Async map of snapshot', async () => {
+  const snapshot = freshSnapshot();
+
+  const myAtom = atom({
+    key: 'Snapshot Map Async',
+    default: 'DEFAULT',
+  });
+  const [asyncSel, resolve] = asyncSelector();
+
+  const newSnapshotPromise = snapshot.asyncMap(async ({getPromise, set}) => {
+    const value = await getPromise(asyncSel);
+    expect(value).toEqual('VALUE');
+    set(myAtom, value);
+  });
+
+  act(() => resolve('VALUE'));
+
+  const newSnapshot = await newSnapshotPromise;
+  const value = await newSnapshot.getPromise(myAtom);
+  expect(value).toEqual('VALUE');
 });
