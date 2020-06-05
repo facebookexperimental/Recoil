@@ -22,7 +22,6 @@ type ComponentCallback = TreeState => void;
 
 export type TreeState = $ReadOnly<{
   // Information about the TreeState itself:
-  isSnapshot: boolean,
   transactionMetadata: {...},
   dirtyAtoms: Set<NodeKey>,
 
@@ -83,4 +82,29 @@ export type StoreRef = {
   current: Store,
 };
 
-module.exports = ({}: {...});
+function makeEmptyTreeState(): TreeState {
+  return {
+    transactionMetadata: {},
+    atomValues: new Map(),
+    nonvalidatedAtoms: new Map(),
+    dirtyAtoms: new Set(),
+    nodeDeps: new Map(),
+    nodeToNodeSubscriptions: new Map(),
+    nodeToComponentSubscriptions: new Map(),
+  };
+}
+
+function makeEmptyStoreState(): StoreState {
+  return {
+    currentTree: makeEmptyTreeState(),
+    nextTree: null,
+    transactionSubscriptions: new Map(),
+    queuedComponentCallbacks: [],
+    suspendedComponentResolvers: new Set(),
+  };
+}
+
+module.exports = {
+  makeEmptyTreeState,
+  makeEmptyStoreState,
+};

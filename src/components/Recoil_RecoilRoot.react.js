@@ -11,13 +11,7 @@
 'use strict';
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
-import type {
-  NodeKey,
-  Store,
-  StoreRef,
-  StoreState,
-  TreeState,
-} from '../core/Recoil_State';
+import type {NodeKey, Store, StoreRef, StoreState} from '../core/Recoil_State';
 
 const React = require('React');
 const {useContext, useEffect, useRef, useState} = require('React');
@@ -28,6 +22,7 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
+const {makeEmptyStoreState} = require('../core/Recoil_State');
 const nullthrows = require('../util/Recoil_nullthrows');
 
 type Props = {
@@ -124,29 +119,6 @@ if (__DEV__) {
   if (typeof window !== 'undefined' && !window.$recoilDebugStates) {
     window.$recoilDebugStates = [];
   }
-}
-
-function makeEmptyTreeState(): TreeState {
-  return {
-    isSnapshot: false,
-    transactionMetadata: {},
-    atomValues: new Map(),
-    nonvalidatedAtoms: new Map(),
-    dirtyAtoms: new Set(),
-    nodeDeps: new Map(),
-    nodeToNodeSubscriptions: new Map(),
-    nodeToComponentSubscriptions: new Map(),
-  };
-}
-
-function makeEmptyStoreState(): StoreState {
-  return {
-    currentTree: makeEmptyTreeState(),
-    nextTree: null,
-    transactionSubscriptions: new Map(),
-    queuedComponentCallbacks: [],
-    suspendedComponentResolvers: new Set(),
-  };
 }
 
 function initialStoreState(store, initializeState) {
