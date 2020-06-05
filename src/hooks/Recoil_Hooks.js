@@ -550,7 +550,7 @@ class Sentinel {}
 const SENTINEL = new Sentinel();
 
 function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
-  fn: (CallbackInterface, ...Args) => Return,
+  fn: CallbackInterface => (...Args) => Return,
   deps?: $ReadOnlyArray<mixed>,
 ): (...Args) => Return {
   const storeRef = useStoreRef();
@@ -601,7 +601,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       let ret = SENTINEL;
       ReactDOM.unstable_batchedUpdates(() => {
         // flowlint-next-line unclear-type:off
-        ret = (fn: any)({getPromise, getLoadable, set, reset}, ...args);
+        ret = (fn: any)({getPromise, getLoadable, set, reset})(...args);
       });
       invariant(
         !(ret instanceof Sentinel),
