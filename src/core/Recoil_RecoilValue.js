@@ -14,7 +14,7 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DefaultValue} from './Recoil_Node';
 import type {RecoilValue} from './Recoil_RecoilValueClasses';
 export type {RecoilValue} from './Recoil_RecoilValueClasses';
-import type {NodeKey, Store, TreeState} from './Recoil_State';
+import type {Store, TreeState} from './Recoil_State';
 
 const Tracing = require('../util/Recoil_Tracing');
 const {
