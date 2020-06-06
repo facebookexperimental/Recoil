@@ -43,6 +43,8 @@
     "jest-cli": "^26.0.1",
     "lint-staged": ">=10",
     "prettier": "^2.0.5",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "rollup": "^2.10.0",
     "rollup-plugin-includepaths": "^0.2.3",
     "rollup-plugin-terser": "^5.3.0"
