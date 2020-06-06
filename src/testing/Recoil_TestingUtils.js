@@ -197,6 +197,31 @@ function flushPromisesAndTimers(): Promise<mixed> {
   });
 }
 
+// Async util function that calls predicate multiple times until it returns `true`
+// or throws if predicate never returned `true` and the function reached its timeout
+// Example:
+//    let x = 0;
+//    setTimeout(() => x = 1, 1000);
+//    await waitFor(() => x === 1);
+async function waitFor(
+  fn: () => boolean,
+  message?: string,
+  timeout: number = 1000,
+) {
+  const error = new Error(
+    message != null
+      ? message
+      : 'Expected the function to start returning "true" but it never did',
+  );
+  const startTime = Date.now();
+  while (!Boolean(fn())) {
+    if (Date.now() - startTime > timeout) {
+      throw error;
+    }
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+}
+
 module.exports = {
   makeTreeState,
   makeStore,
@@ -208,4 +233,5 @@ module.exports = {
   loadingAsyncSelector,
   asyncSelector,
   flushPromisesAndTimers,
+  waitFor,
 };

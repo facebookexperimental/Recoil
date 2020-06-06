@@ -30,6 +30,7 @@ const {
   ReadsAtom,
   renderElements,
   resolvingAsyncSelector,
+  waitFor,
 } = require('../../testing/Recoil_TestingUtils');
 const {DefaultValue} = require('../../core/Recoil_Node');
 
@@ -115,12 +116,15 @@ test('selector reset', () => {
   expect(get(selectorRW)).toEqual('DEFAULT');
 });
 
-test('useRecoilState - resolved async selector', () => {
+test('useRecoilState - resolved async selector', async () => {
+  jest.useRealTimers();
   const resolvingSel = resolvingAsyncSelector('HELLO');
   const c = renderElements(<ReadsAtom atom={resolvingSel} />);
   expect(c.textContent).toEqual('loading');
-  act(() => jest.runAllTimers());
-  expect(c.textContent).toEqual('"HELLO"');
+  await waitFor(() => {
+    act(() => {});
+    return c.textContent === '"HELLO"';
+  });
 });
 
 test('selector - evaluate to RecoilValue', () => {
