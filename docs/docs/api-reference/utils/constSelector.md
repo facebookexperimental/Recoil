@@ -1,5 +1,6 @@
 ---
 title: constSelector(constant)
+sidebar_label: constSelector()
 ---
 
 A [selector](/docs/api-reference/core/selector) which always provides a constant value.

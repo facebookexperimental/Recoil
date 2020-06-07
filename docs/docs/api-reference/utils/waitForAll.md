@@ -1,5 +1,6 @@
 ---
 title: waitForAll(dependencies)
+sidebar_label: waitForAll()
 ---
 
 A concurrency helper which allows us to concurrently evaluate multiple asynchronous dependencies.
