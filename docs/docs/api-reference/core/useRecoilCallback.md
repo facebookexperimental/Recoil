@@ -1,5 +1,5 @@
 ---
-title: useRecoilCallback()
+title: useRecoilCallback(callback)
 ---
 
 ***NOTE***: *Minor changes to this API are expected soon.*
@@ -11,7 +11,9 @@ This hook is similar to [*`useCallback()`*](https://reactjs.org/docs/hooks-refer
 Some motivations for using this hook may include:
 * Asynchronously read Recoil state without subscribing a React component to re-render if the atom or selector is updated.
 * Defering expensive lookups to an async action that you don't want to do at render-time.
-* Dynamically updating an atom or selector where we may not know at render-time which atom or selector we will want to update so we can't use `useSetRecoilState()`.
+* Dynamically updating an atom or selector where we may not know at render-time which atom or selector we will want to update, so we can't use [`useSetRecoilState()`](/docs/api-reference/core/useSetRecoilState).
+
+---
 
 ```jsx
 type CallbackInterface = {
@@ -21,7 +23,7 @@ type CallbackInterface = {
   reset: <T>(RecoilState<T>) => void,
 };
 
-declare function useRecoilCallback<Args, ReturnValue>(
+function useRecoilCallback<Args, ReturnValue>(
   fn: (CallbackInterface, ...Args) => ReturnValue,
   deps?: $ReadOnlyArray<mixed>,
 ): (...Args) => ReturnValue

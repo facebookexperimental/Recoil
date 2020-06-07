@@ -1,3 +1,5 @@
 ---
-title: waitForAny()
+title: waitForAny(dependencies)
 ---
+
+TODO Documentation
