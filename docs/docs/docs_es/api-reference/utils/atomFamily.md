@@ -3,7 +3,7 @@ title: atomFamily()
 sidebar_label: atomFamily()
 ---
 
-Returns a function that returns a writeable `RecoilState` atom.
+Regresa una función que regresa un átomo escribible del `RecoilState`.
 
 ```js
 function atomFamily<T, Parameter>({
@@ -21,13 +21,13 @@ function atomFamily<T, Parameter>({
 
 ---
 
-- `options`
-  - `key`: A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-  - `default`: The initial value of the atom. It may either be a value directly, a `RecoilValue` or `Promise` that represents the default value, or a function to get the default value. The callback function is passed a copy of the parameter used when the `atomFamily` function is called.
+- `opciones`
+  - `key`: Una cadena de caracteres para identificar el átomo internamente. Esta cadena debe ser única con respecto a los demás átomos y selectores en la aplicación.
+  - `default`: El valor inicial del átomo. Puede ser directamente un valor, un `RecoilValue` o una Promise que representa el valor inicial, o una función para obtener el valor. La función callback recibe una copia del parámetro usado cuando se ejecuta la función `atomFamily`.
 
-An `atom` represents a piece of state with _Recoil_. An atom is created and registered per `<RecoilRoot>` by your app. But, what if your state isn’t global? What if your state is associated with a particular instance of a control, or with a particular element? For example, maybe your app is a UI prototyping tool where the user can dynamically add elements and each element has state, such as its position. Idealy, each element would get its own atom of state. You could implement this yourself via a memoization pattern. But, _Recoil_ provides this pattern for you with the `atomFamily` utility. An Atom Family represents a collection of atoms. When you call `atomFamily` it will return a function which provides the `RecoilState` atom based on the parameters you pass in.
+Un `átomo` representa una pieza de estado con _Recoil_. Un átomo es creado y registrado por cada `<RecoilRoot>` por tu aplicación. Pero, ¿Y si tu estado no es global?, ¿Y si tu estado esta asociado a una instancia específica de un control? ¿O a un elemento en particular?. Por ejemplo, puede ser que tu aplicación es una herramienta de prototipado de interfaces de usuario, donde el usuario puede agregar elementos dinámicamente y cada elemento tiene su propio estado, tal como es su posición. Lo ideal sería que cada elemento pudiera tener su propio átomo de estado. Tu podrías implementarlo a través del patron de memoización. Pero _Recoil_ ya proporciona este patrón con la utilidad `atomFamily`. Una familia de átomos representa a un conjunto de átomos. Cuando mandas llamar a `atomFamily`, este regresa una función que proporciona el átomo de `RecoilState` basado en los parámetros que recibe.
 
-## Example
+## Ejemplo
 
 ```js
 const elementPositionStateFamily = atomFamily({
@@ -46,7 +46,7 @@ function ElementListItem({elementID}) {
 }
 ```
 
-An `atomFamily()` takes almost the same options as a simple `atom()`.  However, the default value can also be parameterized. That means you could provide a function which takes the parameter value and returns the actual default value.  For example:
+Un `atomFamily()` toma casi las mismas opciones como un simple `atom()`. Sin embargo, el valor inicial también puede ser parametrizado. Esto significa que puedes pasar una función que toma el valor del parámetro y regresa el valor inicial actual. Por ejemplo:
 
 ```js
 const myAtomFamily = atomFamily({
@@ -55,7 +55,7 @@ const myAtomFamily = atomFamily({
 });
 ```
 
-or using `selectorFamily` instead of `selector`, you can also access the parameter value in a `default` selector as well.
+O usando `selectorFamily` en lugar de `selector`, se puede acceder al valor del parámetro en un selector con `valor inicial` también.
 
 ```js
 const myAtomFamily = atomFamily({
@@ -67,12 +67,12 @@ const myAtomFamily = atomFamily({
 });
 ```
 
-## Subscriptions
+## Suscripciones
 
-One advantage of using this pattern for separate atoms for each element over trying to store a single atom with a map of state for all elements is that they all maintain their own individual subscriptions. So, updating the value for one element will only cause React components that have subscribed to just that atom to update.
+Una de las ventajas de usar este patrón para separar los átomos de cada elemento, en lugar de intentar guardar un solo átomo con un mapa de estados para todos los elementos, es que mantienen su propia suscripción individual.
 
-## Persistence
+## Persistencia
 
-Persistence observers will persist the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to only use parameters which are primitives or simple compound objects containing primitives. Custom classes or functions are not allowed.
+Los observadores de persistencia mantendrán el estado para cada valor de parámetro como un átomo distinto, con un identificador único basado en la serialización del valor del parámetro usado.
 
-It is allowed to “upgrade” a simple `atom` to be an `atomFamily` in a newer version of your app, based on the same key. If you do this, then any persisted values with the old simple key can still be read and all parameter values of the new `atomFamily` will default to the persisted state of the simple atom. If you change the format of the parameter in an `atomFamily`, however, it will not automatically read the previous values that were persisted before the change. However, you can add logic in a default selector to lookup values based on previous parameter formats. We hope to help automate this pattern in the future.
+Es permitido “actualizar” un `atom` simple para convertirlo en un `atomFamily` en cualquier versión nueva de tu aplicación, basado en el mismo identificador único. Si haces esto, entonces cualquier valor persistente con el valor del identificador único anterior aún podrá ser leído, y todos los valores de parámetro del nuevo `atomFamily` iniciarán con el estado persistente del átomo simple. Sin embargo, al cambiar el formato del parámetro de un `atomFamily`, no podrá leer automáticamente los valores anteriores que eran persistente antes del cambio.
