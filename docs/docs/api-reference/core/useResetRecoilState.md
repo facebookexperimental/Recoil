@@ -1,10 +1,14 @@
 ---
-title: useResetRecoilState()
+title: useResetRecoilState(state)
 ---
 
 Returns a function that will reset the value of the given state to its default value.
 
 ---
+
+```jsx
+function useResetRecoilState<T>(state: RecoilState<T>): () => void;
+```
 
 - `state`: a writeable Recoil state
 
