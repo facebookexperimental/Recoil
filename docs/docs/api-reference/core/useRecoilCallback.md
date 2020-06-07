@@ -1,5 +1,6 @@
 ---
 title: useRecoilCallback(callback)
+sidebar_label: useRecoilCallback()
 ---
 
 ***NOTE***: *Minor changes to this API are expected soon.*
