@@ -22,7 +22,7 @@ function PersistenceObserver() {
   useTransactionObservation_UNSTABLE(({atomValues, atomInfo, modifiedAtoms}) => {
     for (const modifiedAtom of modifiedAtoms) {
       Storage.setItem(
-        modifiedAtom.key,
+        modifiedAtom,
         JSON.stringify({value: atomValues.get(modifiedAtom)}),
       );
     }
@@ -54,7 +54,7 @@ Here is a basic example:
 ```jsx
 const initializeState = ({set}) => {
   for(const [key, value] of Storage.entries()) {
-    set({key}, JSON.parse(value)).value;
+    set(getAtomWithKey(key), JSON.parse(value)).value;
   }
 }
 
