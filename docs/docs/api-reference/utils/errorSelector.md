@@ -1,5 +1,6 @@
 ---
 title: errorSelector(message)
+sidebar_label: errorSelector()
 ---
 
 A [selector](/docs/api-reference/core/selector) which always throws the provided error
