@@ -19,7 +19,7 @@ function selector<T>({
     {
       get: GetRecoilValue,
       set: SetRecoilState,
-      reest: ResetRecoilValue,
+      reset: ResetRecoilState,
     },
     newValue: T | DefaultValue,
   ) => void,
