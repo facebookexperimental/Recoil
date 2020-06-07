@@ -3,7 +3,7 @@ title: selector(options)
 sidebar_label: selector()
 ---
 
-*Selectors* represent a function, or **derived state** in Recoil  You can think of them as a "pure function" without side-effects that always returns the same value for a given set of dependency values.  If only a `get` function is provided the selector is read-only and returns a `RecoilValueReadOnly` object.  If a `set` is also provided it returns a writeable `RecoilState` object.
+*Selectors* represent a function, or **derived state** in Recoil.  You can think of them as a "pure function" without side-effects that always returns the same value for a given set of dependency values.  If only a `get` function is provided, the selector is read-only and returns a `RecoilValueReadOnly` object.  If a `set` is also provided, it returns a writeable `RecoilState` object.
 
 ---
 
