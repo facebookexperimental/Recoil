@@ -45,6 +45,15 @@ type ResetRecoilState = <T>(RecoilState<T>) => void;
 
 ---
 
+A selector with a simple static dependency:
+
+```jsx
+const mySelector = selector({
+  key: 'MySelector',
+  get: ({get}) => get(myAtom) * 100,
+});
+```
+
 ### Dynamic Dependencies
 
 A read-only selector has a `get` method which evaluates the value of the selector based on dependencies.  If any of those dependencies are updated, then the selector will re-evaluate.  The dependencies are dynamically determined based on the atoms or selectors you actually use when evaluating the selector.  Depending on the values of the previous dependencies, you may dynamically use different additional dependencies.  Recoil will automatically update the current data-flow graph so that the selector is only subscribed to updates from the current set of dependencies
@@ -86,6 +95,19 @@ const transformSelector = selector({
   get: ({get}) => get(myAtom) * 100,
   set: ({set}, newValue) =>
     set(myAtom, newValue instanceof DefaultValue ? newValue : newValue / 100),
+});
+```
+
+### Asynchronous Selectors
+
+Selectors may also have asynchronous evaluation functions and return a `Promise` to the output value.  Please see [this guide](/docs/guides/asynchronous-data-queries) for more information.
+
+```jsx
+const myQuery = selector({
+  key: 'MyQuery',
+  get: async ({get}) => {
+    return await myAsyncQuery(get(queryParamState));
+  }
 });
 ```
 
