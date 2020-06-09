@@ -30,6 +30,7 @@ const {
   ReadsAtom,
   renderElements,
   resolvingAsyncSelector,
+  flushPromisesAndTimers,
 } = require('../../testing/Recoil_TestingUtils');
 const {DefaultValue} = require('../../core/Recoil_Node');
 
@@ -422,7 +423,7 @@ test('Detect circular dependencies', () => {
   window.__DEV__ = devStatus;
 });
 
-test('selector is able to track dependencies discovered asynchronously', () => {
+test('selector is able to track dependencies discovered asynchronously', async () => {
   const anAtom = atom({key: 'atomTrackedAsync', default: 'Async Dep Value'});
 
   const selectorWithAsyncDeps = selector({
@@ -447,7 +448,8 @@ test('selector is able to track dependencies discovered asynchronously', () => {
 
   expect(container.textContent).toEqual('loading');
 
-  act(() => jest.runAllTimers());
+  await get(selectorWithAsyncDeps);
+  await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('Async Dep Value');
 
@@ -455,7 +457,8 @@ test('selector is able to track dependencies discovered asynchronously', () => {
 
   expect(container.textContent).toEqual('loading');
 
-  act(() => jest.runAllTimers());
+  await get(selectorWithAsyncDeps);
+  await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('CHANGED Async Dep');
 });
@@ -466,7 +469,7 @@ test('selector is able to track dependencies discovered asynchronously', () => {
  * responds to changes in dependencies that were discovered asynchronously, the
  * selector should run through the entire selector in response to those changes.
  */
-test('selector should rerun entire selector when a dep changes', () => {
+test('selector should rerun entire selector when a dep changes', async () => {
   const resolvingSel1 = resolvingAsyncSelector(1);
   const resolvingSel2 = resolvingAsyncSelector(2);
   const anAtom3 = atom({key: 'atomTrackedAsync3', default: 3});
@@ -501,6 +504,7 @@ test('selector should rerun entire selector when a dep changes', () => {
 
   expect(container.textContent).toEqual('loading');
 
+  await get(selectorWithAsyncDeps);
   act(() => jest.runAllTimers());
 
   expect(container.textContent).toEqual('6');
@@ -509,6 +513,7 @@ test('selector should rerun entire selector when a dep changes', () => {
 
   expect(container.textContent).toEqual('loading');
 
+  await get(selectorWithAsyncDeps);
   act(() => jest.runAllTimers());
 
   expect(container.textContent).toEqual('7');
@@ -594,7 +599,7 @@ test('async selector with changing dependencies finishes execution using origina
 
 // Test that an async selector will resolve to its dependency's value
 // when it provides the dependency from an async callback.
-test('selector - dynamic getRecoilValue()', () => {
+test('selector - dynamic getRecoilValue()', async () => {
   const sel2 = selector({
     key: 'MySelector2',
     get: async () => 'READY',
@@ -611,6 +616,7 @@ test('selector - dynamic getRecoilValue()', () => {
   const el = renderElements(<ReadsAtom atom={sel1} />);
   expect(el.textContent).toEqual('loading');
 
+  await get(sel1);
   act(() => jest.runAllTimers());
 
   expect(el.textContent).toEqual('"READY"');
