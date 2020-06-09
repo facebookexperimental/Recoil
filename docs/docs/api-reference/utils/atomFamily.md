@@ -65,7 +65,9 @@ const myAtomFamily = atomFamily({
   key: ‘MyAtom’,
   default: selectorFamily({
     key: 'MyAtom/Default',
-    get: param => ({get}) => { ... },
+    get: param => ({get}) => {
+      return computeDefaultUsingParam(param);
+    },
   }),
 });
 ```
