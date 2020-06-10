@@ -267,7 +267,7 @@ function selector<T>(
 
     function getRecoilValue<S>({key}: RecoilValue<S>): S {
       let loadable: Loadable<S>;
-      [newState, loadable] = getNodeLoadable(store, state, key);
+      [newState, loadable] = getNodeLoadable(store, newState, key);
       depValues.set(key, loadable);
       if (loadable.state === 'hasValue') {
         return loadable.contents;
