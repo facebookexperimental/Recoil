@@ -53,7 +53,18 @@
     "timers": "fake",
     "globals": {
       "__DEV__": true
-    }
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "src/hooks/__tests__/Recoil_PublicHooks-test.js",
+      "src/recoil_values/__tests__/Recoil_WaitFor-test.js",
+      "src/hooks/__tests__/Recoil_useRecoilCallback-test.js",
+      "src/recoil_values/__tests__/Recoil_atomWithFallback-test.js",
+      "src/hooks/__tests__/Recoil_useRecoilValueLoadable-test.js",
+      "src/hooks/__tests__/Recoil_useRecoilStateReset-test.js",
+      "src/recoil_values/__tests__/Recoil_atomFamily-test.js",
+      "src/recoil_values/__tests__/Recoil_selector-test.js"
+    ]
   },
   "husky": {
     "hooks": {
