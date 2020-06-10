@@ -1,27 +1,27 @@
 import {
-    DefaultValue,
-    RecoilRoot,
-    RecoilValueReadOnly,
-    atom,
-    selector,
-    useRecoilValue,
-    useRecoilValueLoadable,
-    useRecoilState,
-    useRecoilStateLoadable,
-    useSetRecoilState,
-    useResetRecoilState,
-    useRecoilCallback,
-    isRecoilValue,
-    RecoilState,
-    atomFamily,
-    selectorFamily,
-    constSelector,
-    errorSelector,
-    readOnlySelector,
-    noWait,
-    waitForNone,
-    waitForAny,
-    waitForAll,
+  DefaultValue,
+  RecoilRoot,
+  RecoilValueReadOnly,
+  atom,
+  selector,
+  useRecoilValue,
+  useRecoilValueLoadable,
+  useRecoilState,
+  useRecoilStateLoadable,
+  useSetRecoilState,
+  useResetRecoilState,
+  useRecoilCallback,
+  isRecoilValue,
+  RecoilState,
+  atomFamily,
+  selectorFamily,
+  constSelector,
+  errorSelector,
+  readOnlySelector,
+  noWait,
+  waitForNone,
+  waitForAny,
+  waitForAll,
 } from 'recoil';
 
 // DefaultValue
@@ -29,61 +29,61 @@ new DefaultValue();
 
 // atom
 const myAtom = atom({
-    key: 'asds',
-    default: 5,
+  key: 'asds',
+  default: 5,
 });
 
 // selector
 const mySelector1 = selector({
-    key: 'asdfasfds',
-    get: () => 5,
+  key: 'asdfasfds',
+  get: () => 5,
 });
 
 const mySelector2 = selector({
-    key: 'asds',
-    get: () => '',
+  key: 'asds',
+  get: () => '',
 });
 
 // $ExpectError
 selector({
-    key: 'asdfasfds',
-    get: () => '',
+  key: 'asdfasfds',
+  get: () => '',
 }) as RecoilValueReadOnly<boolean>;
 
 const readOnlySelectorSel = selector({
-    key: 'asdfasf',
-    get: ({ get }) => {
-        get(myAtom) + 10;
-        get(mySelector1);
-        get(5); // $ExpectError
-    },
+  key: 'asdfasf',
+  get: ({ get }) => {
+      get(myAtom) + 10;
+      get(mySelector1);
+      get(5); // $ExpectError
+  },
 });
 
 const writeableSelector = selector({
-    key: 'asdfsadfs',
-    get: ({ get }) => {
-        get(mySelector1) + 10;
-    },
-    set: ({ get, set, reset }) => {
-        get(myAtom);
-        set(myAtom, 5);
-        reset(myAtom);
+  key: 'asdfsadfs',
+  get: ({ get }) => {
+    get(mySelector1) + 10;
+  },
+  set: ({ get, set, reset }) => {
+    get(myAtom);
+    set(myAtom, 5);
+    reset(myAtom);
 
-        set(readOnlySelectorSel, 2); // $ExpectError
-        reset(readOnlySelectorSel); // $ExpectError
-    },
+    set(readOnlySelectorSel, 2); // $ExpectError
+    reset(readOnlySelectorSel); // $ExpectError
+  },
 });
 
 // RecoilRoot
 RecoilRoot({});
 RecoilRoot({
-    initializeState: ({ set, setUnvalidatedAtomValues }) => {
-        set(myAtom, 5);
-        setUnvalidatedAtomValues(new Map());
+  initializeState: ({ set, setUnvalidatedAtomValues }) => {
+    set(myAtom, 5);
+    setUnvalidatedAtomValues(new Map());
 
-        set(readOnlySelectorSel, 2); // $ExpectError
-        setUnvalidatedAtomValues({}); // $ExpectError
-    },
+    set(readOnlySelectorSel, 2); // $ExpectError
+    setUnvalidatedAtomValues({}); // $ExpectError
+  },
 });
 
 // Hooks
@@ -135,14 +135,14 @@ useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
 
 useRecoilCallback(async ({ getPromise, getLoadable, set, reset }) => {
-    const val: number = await getPromise(mySelector1);
-    const loadable = getLoadable(mySelector1);
+  const val: number = await getPromise(mySelector1);
+  const loadable = getLoadable(mySelector1);
 
-    loadable.contents;
-    loadable.state;
+  loadable.contents;
+  loadable.state;
 
-    set(myAtom, 5);
-    reset(myAtom);
+  set(myAtom, 5);
+  reset(myAtom);
 });
 
 // Other
@@ -160,146 +160,146 @@ isRecoilValue(mySelector1);
  */
 
 {
-    const myAtomFam = atomFamily({
-        key: 'myAtomFam1',
-        default: (param: number) => param,
-    });
+  const myAtomFam = atomFamily({
+    key: 'myAtomFam1',
+    default: (param: number) => param,
+  });
 
-    const atm = myAtomFam(2); // $ExpectType RecoilState<number>
-    useRecoilValue(atm); // $ExpectType number
+  const atm = myAtomFam(2); // $ExpectType RecoilState<number>
+  useRecoilValue(atm); // $ExpectType number
 
-    myAtomFam(''); // $ExpectError
+  myAtomFam(''); // $ExpectError
 }
 
 /**
  * selectorFamily() tests
  */
 {
-    const mySelectorFam = selectorFamily({
-        key: 'myAtomFam1',
-        get: (param: number) => ({ get }) => {
-            get(mySelector1); // $ExpectType number
+  const mySelectorFam = selectorFamily({
+    key: 'myAtomFam1',
+    get: (param: number) => ({ get }) => {
+      get(mySelector1); // $ExpectType number
 
-            return param;
-        },
-    });
+      return param;
+    },
+  });
 
-    const atm = mySelectorFam(2); // $ExpectType RecoilValueReadOnly<number>
-    useRecoilValue(atm); // $ExpectType number
+  const atm = mySelectorFam(2); // $ExpectType RecoilValueReadOnly<number>
+  useRecoilValue(atm); // $ExpectType number
 
-    mySelectorFam(''); // $ExpectError
+  mySelectorFam(''); // $ExpectError
 
-    useRecoilState(mySelectorFam(3)); // $ExpectError
+  useRecoilState(mySelectorFam(3)); // $ExpectError
 
-    const mySelectorFamWritable = selectorFamily({
-        key: 'myAtomFam1',
-        get: (param: number) => ({ get }) => {
-            get(mySelector1); // $ExpectType number
+  const mySelectorFamWritable = selectorFamily({
+    key: 'myAtomFam1',
+    get: (param: number) => ({ get }) => {
+      get(mySelector1); // $ExpectType number
 
-            return param;
-        },
-        set: (param: number) => () => {},
-    });
+      return param;
+    },
+    set: (param: number) => () => {},
+  });
 
-    useRecoilState(mySelectorFamWritable(3))[0]; // $ExpectType number
+  useRecoilState(mySelectorFamWritable(3))[0]; // $ExpectType number
 }
 
 /**
  * constSelector() tests
  */
 {
-    const mySel = constSelector(1);
-    const mySel2 = constSelector('hello');
-    const mySel3 = constSelector([1, 2]);
-    const mySel4 = constSelector({ a: 1, b: '2' });
+  const mySel = constSelector(1);
+  const mySel2 = constSelector('hello');
+  const mySel3 = constSelector([1, 2]);
+  const mySel4 = constSelector({ a: 1, b: '2' });
 
-    useRecoilValue(mySel); // $ExpectType 1
-    useRecoilValue(mySel2); // $ExpectType "hello"
-    useRecoilValue(mySel3); // $ExpectType number[]
-    useRecoilValue(mySel4); // $ExpectType { a: number; b: string; }
+  useRecoilValue(mySel); // $ExpectType 1
+  useRecoilValue(mySel2); // $ExpectType "hello"
+  useRecoilValue(mySel3); // $ExpectType number[]
+  useRecoilValue(mySel4); // $ExpectType { a: number; b: string; }
 
-    constSelector(new Map()); // $ExpectError
-    constSelector(new Set()); // $ExpectError
+  constSelector(new Map()); // $ExpectError
+  constSelector(new Set()); // $ExpectError
 }
 
 /**
  * errorSelector() tests
  */
 {
-    const mySel = errorSelector('Error msg');
+  const mySel = errorSelector('Error msg');
 
-    useRecoilValue(mySel); // $ExpectType never
+  useRecoilValue(mySel); // $ExpectType never
 
-    errorSelector(2); // $ExpectError
-    errorSelector({}); // $ExpectError
+  errorSelector(2); // $ExpectError
+  errorSelector({}); // $ExpectError
 }
 
 /**
  * readOnlySelector() tests
  */
 {
-    const myWritableSel: RecoilState<number> = {} as any;
+  const myWritableSel: RecoilState<number> = {} as any;
 
-    readOnlySelector(myWritableSel); // $ExpectType RecoilValueReadOnly<number>
+  readOnlySelector(myWritableSel); // $ExpectType RecoilValueReadOnly<number>
 }
 
 /**
  * noWait() tests
  */
 {
-    const numSel: RecoilValueReadOnly<number> = {} as any;
-    const mySel = noWait(numSel);
+  const numSel: RecoilValueReadOnly<number> = {} as any;
+  const mySel = noWait(numSel);
 
-    useRecoilValue(mySel); // $ExpectType Loadable<number>
+  useRecoilValue(mySel); // $ExpectType Loadable<number>
 }
 
 /**
  * waitForNone() tests
  */
 {
-    const numSel: RecoilValueReadOnly<number> = {} as any;
-    const strSel: RecoilValueReadOnly<string> = {} as any;
+  const numSel: RecoilValueReadOnly<number> = {} as any;
+  const strSel: RecoilValueReadOnly<string> = {} as any;
 
-    const mySel = waitForNone([numSel, strSel]);
-    const mySel2 = waitForNone({ a: numSel, b: strSel });
+  const mySel = waitForNone([numSel, strSel]);
+  const mySel2 = waitForNone({ a: numSel, b: strSel });
 
-    useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
-    useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
+  useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
+  useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
 
-    useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
-    useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
+  useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
+  useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
 }
 
 /**
  * waitForAny() tests
  */
 {
-    const numSel: RecoilValueReadOnly<number> = {} as any;
-    const strSel: RecoilValueReadOnly<string> = {} as any;
+  const numSel: RecoilValueReadOnly<number> = {} as any;
+  const strSel: RecoilValueReadOnly<string> = {} as any;
 
-    const mySel = waitForAny([numSel, strSel]);
-    const mySel2 = waitForAny({ a: numSel, b: strSel });
+  const mySel = waitForAny([numSel, strSel]);
+  const mySel2 = waitForAny({ a: numSel, b: strSel });
 
-    useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
-    useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
+  useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
+  useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
 
-    useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
-    useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
+  useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
+  useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
 }
 
 /**
  * waitForAll() tests
  */
 {
-    const numSel: RecoilValueReadOnly<number> = {} as any;
-    const strSel: RecoilValueReadOnly<string> = {} as any;
+  const numSel: RecoilValueReadOnly<number> = {} as any;
+  const strSel: RecoilValueReadOnly<string> = {} as any;
 
-    const mySel = waitForAll([numSel, strSel]);
-    const mySel2 = waitForAll({ a: numSel, b: strSel });
+  const mySel = waitForAll([numSel, strSel]);
+  const mySel2 = waitForAll({ a: numSel, b: strSel });
 
-    useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
-    useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
+  useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
+  useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
 
-    useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
-    useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
+  useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
+  useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
 }
