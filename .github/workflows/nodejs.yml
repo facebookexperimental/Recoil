@@ -27,6 +27,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm i -g yarn
     - run: yarn install --frozen-lockfile
+    - run: yarn jest
     - run: yarn build
     - run: yarn pack
     - name: Create package
