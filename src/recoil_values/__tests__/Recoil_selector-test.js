@@ -448,7 +448,7 @@ test('selector is able to track dependencies discovered asynchronously', async (
 
   expect(container.textContent).toEqual('loading');
 
-  await get(selectorWithAsyncDeps);
+  await act(() => get(selectorWithAsyncDeps));
   await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('Async Dep Value');
@@ -457,7 +457,7 @@ test('selector is able to track dependencies discovered asynchronously', async (
 
   expect(container.textContent).toEqual('loading');
 
-  await get(selectorWithAsyncDeps);
+  await act(() => get(selectorWithAsyncDeps));
   await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('CHANGED Async Dep');
@@ -504,7 +504,7 @@ test('selector should rerun entire selector when a dep changes', async () => {
 
   expect(container.textContent).toEqual('loading');
 
-  await get(selectorWithAsyncDeps);
+  await act(() => get(selectorWithAsyncDeps));
   act(() => jest.runAllTimers());
 
   expect(container.textContent).toEqual('6');
@@ -513,7 +513,7 @@ test('selector should rerun entire selector when a dep changes', async () => {
 
   expect(container.textContent).toEqual('loading');
 
-  await get(selectorWithAsyncDeps);
+  await act(() => get(selectorWithAsyncDeps));
   act(() => jest.runAllTimers());
 
   expect(container.textContent).toEqual('7');
@@ -616,7 +616,7 @@ test('selector - dynamic getRecoilValue()', async () => {
   const el = renderElements(<ReadsAtom atom={sel1} />);
   expect(el.textContent).toEqual('loading');
 
-  await get(sel1);
+  await act(() => get(sel1));
   act(() => jest.runAllTimers());
 
   expect(el.textContent).toEqual('"READY"');
