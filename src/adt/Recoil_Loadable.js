@@ -32,7 +32,7 @@ type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
 
 export type LoadablePromise<T> = Promise<ResolvedLoadablePromiseInfo<T>>;
 
-type Accessors<T> = $ReadOnly<{
+type Accessors<T> = $ReadOnly<{|
   // Attempt to get the value.
   // If there's an error, throw an error.  If it's still loading, throw a Promise
   // This is useful for composing with React Suspense or in a Recoil Selector.
@@ -49,7 +49,7 @@ type Accessors<T> = $ReadOnly<{
   promiseOrThrow: () => Promise<T>,
 
   map: <T, S>(map: (T) => Promise<S> | S) => Loadable<S>,
-}>;
+|}>;
 
 export type Loadable<+T> =
   | $ReadOnly<{state: 'hasValue', contents: T, ...Accessors<T>}>
