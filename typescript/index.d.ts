@@ -1,10 +1,16 @@
 // Minimum TypeScript Version: 3.7
 
+/**
+ * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
+ */
+
+export {};
+
 // state.d.ts
-export type NodeKey = string;
-export type AtomValues = Map<NodeKey, Loadable<any>>;
-export type ComponentCallback = (state: TreeState) => void;
-export type TreeState = Readonly<{
+type NodeKey = string;
+type AtomValues = Map<NodeKey, Loadable<any>>;
+type ComponentCallback = (state: TreeState) => void;
+type TreeState = Readonly<{
   isSnapshot: boolean;
   transactionMetadata: object;
   dirtyAtoms: Set<NodeKey>;
@@ -23,8 +29,8 @@ import * as React from 'react';
 
 export interface RecoilRootProps {
   initializeState?: (options: {
-      set: <T>(recoilVal: RecoilState<T>, newVal: T) => void;
-      setUnvalidatedAtomValues: (atomMap: Map<string, unknown>) => void;
+    set: <T>(recoilVal: RecoilState<T>, newVal: T) => void;
+    setUnvalidatedAtomValues: (atomMap: Map<string, unknown>) => void;
   }) => void;
 }
 
@@ -42,14 +48,14 @@ export interface AtomOptions<T> {
 export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
 
 // selector.d.ts
-export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
+type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
 
-export type SetRecoilState = <T>(
+type SetRecoilState = <T>(
     recoilVal: RecoilState<T>,
     newVal: T | DefaultValue | ((prevValue: T) => T | DefaultValue),
 ) => void;
 
-export type ResetRecoilState = (recoilVal: RecoilState<any>) => void;
+type ResetRecoilState = (recoilVal: RecoilState<any>) => void;
 
 export interface ReadOnlySelectorOptions<T> {
     key: string;
@@ -131,7 +137,7 @@ export function useRecoilCallback<Args extends ReadonlyArray<unknown>, Return>(
 ): (...args: Args) => Return;
 
 // loadable.d.ts
-export type ResolvedLoadablePromiseInfo<T> = Readonly<{
+type ResolvedLoadablePromiseInfo<T> = Readonly<{
   value: T;
   upstreamState__INTERNAL_DO_NOT_USE?: TreeState;
 }>;
@@ -153,7 +159,7 @@ export type Loadable<T> =
     }>;
 
 // recoilValue.d.ts
-export class AbstractRecoilValue<T> {
+declare class AbstractRecoilValue<T> {
   __tag: [T];
   __cTag: (t: T) => void; // for contravariance
 
@@ -161,7 +167,7 @@ export class AbstractRecoilValue<T> {
   constructor(newKey: NodeKey);
 }
 
-export class AbstractRecoilValueReadonly<T> {
+declare class AbstractRecoilValueReadonly<T> {
   __tag: [T];
 
   key: NodeKey;
@@ -177,7 +183,7 @@ export function isRecoilValue(val: unknown): val is RecoilValue<any>;
 /** Utilities */
 
 // bigint not supported yet
-export type Primitive = undefined | null | boolean | number | symbol | string;
+type Primitive = undefined | null | boolean | number | symbol | string;
 
 export type SerializableParam = Primitive | SerializableParam[] | { [key: string]: SerializableParam };
 
