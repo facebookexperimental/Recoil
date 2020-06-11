@@ -122,27 +122,36 @@ function stringify(x: mixed, opt: Options, key?: string): string {
 // * Sort the keys of Objects and Maps to have a stable order based on string conversion.
 //    This overrides their default insertion order.
 // * Still uses toJSON() of any object to override serialization
-// * Support Symbols
+// * Support Symbols (though don't guarantee uniqueness)
 // * We could support BigInt, but Flow doesn't seem to like it.
 // See Recoil_stableStringify-test.js for examples
-function stableStringify(x: mixed, opt?: Options): string {
-  const startTime = window.performance ? window.performance.now() : 0;
-
-  const str = stringify(x, opt ?? {allowFunctions: undefined});
-
-  const endTime = window.performance ? window.performance.now() : 0;
+function stableStringify(
+  x: mixed,
+  opt: Options = {allowFunctions: false},
+): string {
   if (__DEV__) {
-    if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
-      /* eslint-disable fb-www/no-console */
-      console.groupCollapsed(
-        `Recoil: Spent ${endTime - startTime}ms computing a cache key`,
-      );
-      console.warn(x, str);
-      console.groupEnd();
-      /* eslint-enable fb-www/no-console */
+    if (typeof window !== 'undefined') {
+      const startTime = window.performance ? window.performance.now() : 0;
+
+      const str = stringify(x, opt);
+
+      const endTime = window.performance ? window.performance.now() : 0;
+
+      if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
+        /* eslint-disable fb-www/no-console */
+        console.groupCollapsed(
+          `Recoil: Spent ${endTime - startTime}ms computing a cache key`,
+        );
+        console.warn(x, str);
+        console.groupEnd();
+        /* eslint-enable fb-www/no-console */
+      }
+
+      return str;
     }
   }
-  return str;
+
+  return stringify(x, opt);
 }
 
 module.exports = stableStringify;

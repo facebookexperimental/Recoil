@@ -47,6 +47,7 @@
     "jest-cli": "^26.0.1",
     "lint-staged": ">=10",
     "prettier": "^2.0.5",
+    "promise-polyfill": "^8.1.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "rollup": "^2.10.0",
@@ -58,7 +59,17 @@
     "timers": "fake",
     "globals": {
       "__DEV__": true
-    }
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "src/hooks/__tests__/Recoil_PublicHooks-test.js",
+      "src/hooks/__tests__/Recoil_useRecoilCallback-test.js",
+      "src/recoil_values/__tests__/Recoil_atomFamily-test.js",
+      "src/recoil_values/__tests__/Recoil_selector-test.js"
+    ],
+    "setupFiles": [
+      "./setupJestMock.js"
+    ]
   },
   "husky": {
     "hooks": {
