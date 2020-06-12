@@ -31,12 +31,16 @@ module.name_mapper='Recoil_atom' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_ato
 module.name_mapper='Recoil_WaitFor' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_WaitFor.js'
 
 module.name_mapper='Recoil_Hooks' -> '<PROJECT_ROOT>/src/hooks/Recoil_Hooks.js'
+module.name_mapper='Recoil_Loadable' -> '<PROJECT_ROOT>/src/adt/Recoil_Loadable.js'
 
 [strict]
 deprecated-type
 sketchy-null
 unclear-type
 unsafe-getters-setters
+
+[lints]
+all=warn
 
 [version]
 ^0.124.0
