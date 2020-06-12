@@ -78,7 +78,7 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
     // call useEffect in an unpredictable order sometimes.
     Queue.enqueueExecution('Batcher', () => {
       const storeState = storeRef.current.getState();
-      const {currentTree, nextTree} = storeState;
+      const {nextTree} = storeState;
 
       // Ignore commits that are not because of Recoil transactions -- namely,
       // because something above RecoilRoot re-rendered:
@@ -89,11 +89,8 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
       // Inform transaction subscribers of the transaction:
       const dirtyAtoms = nextTree.dirtyAtoms;
       if (dirtyAtoms.size) {
-        // NOTE that this passes the committed (current, aka previous) tree,
-        // whereas the nextTree is retrieved from storeRef by the transaction subscriber.
-        // (This interface can be cleaned up, TODO)
         storeState.transactionSubscriptions.forEach(sub =>
-          sub(storeRef.current, currentTree),
+          sub(storeRef.current),
         );
       }
 
