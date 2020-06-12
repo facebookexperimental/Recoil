@@ -28,12 +28,7 @@ const {
   peekNodeLoadable,
   setNodeValue,
 } = require('../core/Recoil_FunctionalCore');
-const {
-  DEFAULT_VALUE,
-  RecoilValueNotReady,
-  getNode,
-  nodes,
-} = require('../core/Recoil_Node');
+const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
 const {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
@@ -41,6 +36,7 @@ const {
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
+  valueFromValueOrUpdater,
 } = require('../core/Recoil_RecoilValue');
 const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
@@ -87,26 +83,6 @@ function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
     throw loadable.contents;
   } else {
     throw new Error(`Invalid value of loadable atom "${atom.key}"`);
-  }
-}
-
-function valueFromValueOrUpdater(store, recoilValue, valueOrUpdater) {
-  if (typeof valueOrUpdater === 'function') {
-    // Updater form: pass in the current value. Throw if the current value
-    // is unavailable (namely when updating an async selector that's
-    // pending or errored):
-    const storeState = store.getState();
-    const state = storeState.nextTree ?? storeState.currentTree;
-    const current = peekNodeLoadable(store, state, recoilValue.key);
-    if (current.state === 'loading') {
-      throw new RecoilValueNotReady(recoilValue.key);
-    } else if (current.state === 'hasError') {
-      throw current.contents;
-    }
-    // T itself may be a function, so our refinement is not sufficient:
-    return (valueOrUpdater: any)(current.contents); // flowlint-line unclear-type:off
-  } else {
-    return valueOrUpdater;
   }
 }
 
