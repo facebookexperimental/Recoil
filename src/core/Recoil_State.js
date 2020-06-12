@@ -94,9 +94,9 @@ function makeEmptyTreeState(): TreeState {
   };
 }
 
-function makeEmptyStoreState(): StoreState {
+function makeStoreState(treeState: TreeState): StoreState {
   return {
-    currentTree: makeEmptyTreeState(),
+    currentTree: treeState,
     nextTree: null,
     transactionSubscriptions: new Map(),
     queuedComponentCallbacks: [],
@@ -104,7 +104,12 @@ function makeEmptyStoreState(): StoreState {
   };
 }
 
+function makeEmptyStoreState(): StoreState {
+  return makeStoreState(makeEmptyTreeState());
+}
+
 module.exports = {
   makeEmptyTreeState,
   makeEmptyStoreState,
+  makeStoreState,
 };
