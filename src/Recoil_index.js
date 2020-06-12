@@ -51,8 +51,8 @@ const {
 } = require('./hooks/Recoil_Hooks');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
-const constSelector = require('./recoil_values/Recoil_const');
-const errorSelector = require('./recoil_values/Recoil_error');
+const constSelector = require('./recoil_values/Recoil_constSelector');
+const errorSelector = require('./recoil_values/Recoil_errorSelector');
 const readOnlySelector = require('./recoil_values/Recoil_readOnlySelector');
 const selector = require('./recoil_values/Recoil_selector');
 const selectorFamily = require('./recoil_values/Recoil_selectorFamily');
