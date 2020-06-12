@@ -8,16 +8,22 @@
  * @flow strict-local
  * @format
  */
-
 'use strict';
 
+import type {GetRecoilValue} from '../recoil_values/Recoil_selector_OLD';
 import type {NodeKey} from './Recoil_State';
 
-// eslint-disable-next-line no-unused-vars
+const mapSelector = require('../recoil_values/Recoil_mapSelector');
+
 class AbstractRecoilValue<+T> {
   key: NodeKey;
+
   constructor(newKey: NodeKey) {
     this.key = newKey;
+  }
+
+  map<S>(map: (T, {get: GetRecoilValue}) => S): RecoilValueReadOnly<S> {
+    return mapSelector<T, S>(this, map);
   }
 }
 
