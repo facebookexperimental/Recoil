@@ -329,7 +329,7 @@ function useRecoilStateLoadable<T>(
   return [value, setValue];
 }
 
-function useTransactionSubscription(callback: (Store, TreeState) => void) {
+function useTransactionSubscription(callback: Store => void) {
   const storeRef = useStoreRef();
   useEffect(() => {
     const sub = storeRef.current.subscribeToTransactions(callback);
@@ -433,7 +433,7 @@ type ExternallyVisibleAtomInfo = {
           useSetUnvalidatedAtomValues hook. Useful for ignoring the useSetUnvalidatedAtomValues
           transaction, to avoid loops.
 */
-function useTransactionObservation(
+function useTransactionObservation_DEPRECATED(
   callback: ({
     atomValues: Map<NodeKey, mixed>,
     previousAtomValues: Map<NodeKey, mixed>,
@@ -444,16 +444,18 @@ function useTransactionObservation(
 ) {
   useTransactionSubscription(
     useCallback(
-      (store, previousState) => {
-        let nextTree = store.getState().nextTree;
-        if (!nextTree) {
+      store => {
+        const previousState = store.getState().currentTree;
+        let nextState = store.getState().nextTree;
+        if (!nextState) {
           recoverableViolation(
             'Transaction subscribers notified without a next tree being present -- this is a bug in Recoil',
             'recoil',
           );
-          nextTree = store.getState().currentTree; // attempt to trundle on
+          nextState = store.getState().currentTree; // attempt to trundle on
         }
-        const atomValues = externallyVisibleAtomValuesInState(nextTree);
+
+        const atomValues = externallyVisibleAtomValuesInState(nextState);
         const previousAtomValues = externallyVisibleAtomValuesInState(
           previousState,
         );
@@ -463,13 +465,43 @@ function useTransactionObservation(
             backButton: node.options?.persistence_UNSTABLE?.backButton ?? false,
           },
         }));
-        const modifiedAtoms = new Set(nextTree.dirtyAtoms);
+        const modifiedAtoms = new Set(nextState.dirtyAtoms);
+
         callback({
           atomValues,
           previousAtomValues,
           atomInfo,
           modifiedAtoms,
-          transactionMetadata: {...nextTree.transactionMetadata},
+          transactionMetadata: {...nextState.transactionMetadata},
+        });
+      },
+      [callback],
+    ),
+  );
+}
+
+function useRecoilTransactionObserver(
+  callback: ({
+    snapshot: Snapshot,
+    previousSnapshot: Snapshot,
+  }) => void,
+) {
+  useTransactionSubscription(
+    useCallback(
+      store => {
+        const previousState = store.getState().currentTree;
+        let nextState = store.getState().nextTree;
+        if (!nextState) {
+          recoverableViolation(
+            'Transaction subscribers notified without a next tree being present -- this is a bug in Recoil',
+            'recoil',
+          );
+          nextState = previousState; // attempt to trundle on
+        }
+
+        callback({
+          snapshot: cloneSnapshot(nextState),
+          previousSnapshot: cloneSnapshot(previousState),
         });
       },
       [callback],
@@ -571,9 +603,10 @@ module.exports = {
   useSetRecoilState,
   useResetRecoilState,
   useRecoilInterface: useInterface,
-  useTransactionSubscription,
   useSnapshotWithStateChange,
-  useTransactionObservation,
+  useTransactionSubscription_DEPRECATED: useTransactionSubscription,
+  useTransactionObservation_DEPRECATED,
+  useRecoilTransactionObserver,
   useGoToSnapshot,
   useSetUnvalidatedAtomValues,
 };

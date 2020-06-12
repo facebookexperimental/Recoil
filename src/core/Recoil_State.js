@@ -55,7 +55,7 @@ export type StoreState = {
   nextTree: null | TreeState,
 
   // For observing transactions:
-  +transactionSubscriptions: Map<number, (Store, previous: TreeState) => void>,
+  +transactionSubscriptions: Map<number, (Store) => void>,
 
   // Callbacks to render external components that are subscribed to nodes
   // These are executed at the end of the transaction or asynchronously.
@@ -68,9 +68,7 @@ export type StoreState = {
 export type Store = $ReadOnly<{
   getState: () => StoreState,
   replaceState: ((TreeState) => TreeState) => void,
-  subscribeToTransactions: (
-    (Store, previous: TreeState) => void,
-  ) => {release: () => void, ...},
+  subscribeToTransactions: ((Store) => void) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
   fireNodeSubscriptions: (
     updatedNodes: $ReadOnlySet<NodeKey>,
