@@ -40,8 +40,9 @@
 import type {RecoilState} from '../core/Recoil_RecoilValue';
 
 const React = require('React');
+
 const {
-  useGoToSnapshot,
+  useGoToSnapshot_DEPRECATED,
   useSnapshotWithStateChange,
 } = require('../hooks/Recoil_Hooks');
 
@@ -62,7 +63,7 @@ function Link({
   target,
   ...rest
 }: Props): React.Element<'a'> {
-  const goToSnapshot = useGoToSnapshot();
+  const goToSnapshot = useGoToSnapshot_DEPRECATED();
   const snapshot = useSnapshotWithStateChange(update => stateChange(update));
 
   function myOnClick(event) {
