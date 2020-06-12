@@ -12,14 +12,15 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilValue} from './Recoil_RecoilValue';
-import type {Store} from './Recoil_State';
+import type {Store, TreeState} from './Recoil_State';
 
+const mapMap = require('../util/Recoil_mapMap');
 const {getRecoilValueAsLoadable} = require('./Recoil_RecoilValue');
-const {makeEmptyStoreState} = require('./Recoil_State');
+const {makeEmptyTreeState, makeStoreState} = require('./Recoil_State');
 const gkx = require('gkx');
 
-function makeStore(): Store {
-  const storeState = makeEmptyStoreState();
+function makeStore(treeState: TreeState): Store {
+  const storeState = makeStoreState(treeState);
   const store = {
     getState: () => storeState,
     replaceState: replacer => {
@@ -42,30 +43,47 @@ function makeStore(): Store {
 class Snapshot {
   _store: Store;
 
-  constructor(store: Store) {
-    this._store = store;
+  constructor(treeState: TreeState) {
+    this._store = makeStore(treeState);
   }
 
-  getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
-    return getRecoilValueAsLoadable(this._store, recoilValue);
-  }
+  getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
+    recoilValue: RecoilValue<T>,
+  ) => getRecoilValueAsLoadable(this._store, recoilValue);
 
-  getPromise<T>(recoilValue: RecoilValue<T>): Promise<T> {
-    if (gkx('recoil_async_selector_refactor')) {
-      return this.getLoadable(recoilValue)
-        .toPromise()
-        .then(({value}) => value);
-    } else {
-      return (this.getLoadable(recoilValue).toPromise(): $FlowFixMe);
-    }
-  }
+  getPromise: <T>(RecoilValue<T>) => Promise<T> = <T>(
+    recoilValue: RecoilValue<T>,
+  ) =>
+    gkx('recoil_async_selector_refactor')
+      ? this.getLoadable(recoilValue)
+          .toPromise()
+          .then(({value}) => value)
+      : (this.getLoadable(recoilValue).toPromise(): $FlowFixMe);
 }
 
-function makeSnapshot(): Snapshot {
-  return new Snapshot(makeStore());
+// Factory to build a fresh snapshot
+function freshSnapshot(): Snapshot {
+  return new Snapshot(makeEmptyTreeState());
+}
+
+// Factory to clone a snapahot state
+function cloneSnapshot(treeState: TreeState): Snapshot {
+  return new Snapshot({
+    transactionMetadata: {...treeState.transactionMetadata},
+    atomValues: new Map(treeState.atomValues),
+    nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
+    dirtyAtoms: new Set(treeState.dirtyAtoms),
+    nodeDeps: new Map(treeState.nodeDeps),
+    nodeToNodeSubscriptions: mapMap(
+      treeState.nodeToNodeSubscriptions,
+      keys => new Set(keys),
+    ),
+    nodeToComponentSubscriptions: new Map(),
+  });
 }
 
 module.exports = {
   Snapshot,
-  makeSnapshot,
+  freshSnapshot,
+  cloneSnapshot,
 };
