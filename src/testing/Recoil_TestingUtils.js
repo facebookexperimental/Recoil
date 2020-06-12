@@ -28,9 +28,6 @@ const selector = require('../recoil_values/Recoil_selector');
 const invariant = require('../util/Recoil_invariant');
 const stableStringify = require('../util/Recoil_stableStringify');
 
-// This isn't a test but is used in tests so Jest will be present:
-declare var jest: JestObjectType;
-
 function makeTreeState(): TreeState {
   return {
     isSnapshot: false,
@@ -82,7 +79,7 @@ function makeStore(): Store {
 }
 
 class ErrorBoundary extends React.Component<
-  {children: ?React.Node, ...},
+  {children: React.Node | null, ...},
   {hasError: boolean, ...},
 > {
   state = {hasError: false};
