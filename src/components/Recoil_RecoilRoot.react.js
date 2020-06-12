@@ -176,7 +176,10 @@ function initialStoreState(store, initializeState) {
 }
 
 let nextID = 0;
-function RecoilRoot({initializeState, children}: Props): ReactElement {
+function RecoilRoot({
+  initializeState,
+  children,
+}: Props): React.Element<typeof AppContext.Provider> {
   let storeState; // eslint-disable-line prefer-const
 
   const subscribeToTransactions = callback => {
