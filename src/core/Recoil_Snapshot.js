@@ -84,6 +84,18 @@ class Snapshot {
     const newState = mutableSnapshot.getStore_INTERNAL().getState().currentTree;
     return cloneSnapshot(newState);
   };
+
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  asyncMap: (
+    (MutableSnapshot) => Promise<void>,
+  ) => Promise<Snapshot> = async mapper => {
+    const mutableSnapshot = new MutableSnapshot(
+      this._store.getState().currentTree,
+    );
+    await mapper(mutableSnapshot);
+    const newState = mutableSnapshot.getStore_INTERNAL().getState().currentTree;
+    return cloneSnapshot(newState);
+  };
 }
 
 function cloneTreeState(treeState: TreeState): TreeState {
