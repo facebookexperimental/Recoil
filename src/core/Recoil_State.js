@@ -29,11 +29,12 @@ export type TreeState = $ReadOnly<{
   atomValues: AtomValues,
   nonvalidatedAtoms: Map<NodeKey, mixed>,
 
-  // NODE GRAPH -- will soon move to StoreState
+  // NODE GRAPH
   // Upstream Node dependencies
   nodeDeps: Map<NodeKey, Set<NodeKey>>,
   // Downstream Node subscriptions
   nodeToNodeSubscriptions: Map<NodeKey, Set<NodeKey>>,
+  // TODO -- will soon move to StoreState
   nodeToComponentSubscriptions: Map<
     NodeKey,
     Map<number, [string, ComponentCallback]>,

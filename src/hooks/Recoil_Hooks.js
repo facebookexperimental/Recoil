@@ -509,7 +509,7 @@ function useRecoilTransactionObserver(
   );
 }
 
-function useGoToSnapshot(): UpdatedSnapshot => void {
+function useGoToSnapshot_DEPRECATED(): UpdatedSnapshot => void {
   const storeRef = useStoreRef();
   return (snapshot: UpdatedSnapshot) => {
     ReactDOM.unstable_batchedUpdates(() => {
@@ -522,6 +522,44 @@ function useGoToSnapshot(): UpdatedSnapshot => void {
       });
     });
   };
+}
+
+function useGotoRecoilSnapshot(): Snapshot => void {
+  const storeRef = useStoreRef();
+  return useCallback(
+    (snapshot: Snapshot) => {
+      ReactDOM.unstable_batchedUpdates(() => {
+        storeRef.current.replaceState(prevState => {
+          const nextState = snapshot.getStore_INTERNAL().getState().currentTree;
+
+          // Fire subscriptions for any atoms that changed values
+          const updatedKeys = new Set();
+          // Going through both seems to be more efficient than constructing a union set of keys
+          for (const keys of [
+            prevState.atomValues.keys(),
+            nextState.atomValues.keys(),
+          ]) {
+            for (const key of keys) {
+              if (
+                prevState.atomValues.get(key)?.contents !==
+                nextState.atomValues.get(key)?.contents
+              ) {
+                updatedKeys.add(key);
+              }
+            }
+          }
+          storeRef.current.fireNodeSubscriptions(updatedKeys, 'enqueue');
+
+          return {
+            ...nextState,
+            nodeToComponentSubscriptions:
+              prevState.nodeToComponentSubscriptions,
+          };
+        });
+      });
+    },
+    [storeRef],
+  );
 }
 
 function useSetUnvalidatedAtomValues(): (
@@ -547,6 +585,7 @@ type CallbackInterface = $ReadOnly<{
   set: <T>(RecoilState<T>, (T => T) | T) => void,
   reset: <T>(RecoilState<T>) => void,
   snapshot: Snapshot,
+  gotoSnapshot: Snapshot => void,
 }>;
 
 class Sentinel {}
@@ -557,6 +596,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
   deps?: $ReadOnlyArray<mixed>,
 ): (...Args) => Return {
   const storeRef = useStoreRef();
+  const gotoSnapshot = useGotoRecoilSnapshot();
 
   return useCallback(
     (...args): Return => {
@@ -582,7 +622,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       let ret = SENTINEL;
       ReactDOM.unstable_batchedUpdates(() => {
         // flowlint-next-line unclear-type:off
-        ret = (fn: any)({set, reset, snapshot})(...args);
+        ret = (fn: any)({set, reset, snapshot, gotoSnapshot})(...args);
       });
       invariant(
         !(ret instanceof Sentinel),
@@ -607,6 +647,7 @@ module.exports = {
   useTransactionSubscription_DEPRECATED: useTransactionSubscription,
   useTransactionObservation_DEPRECATED,
   useRecoilTransactionObserver,
-  useGoToSnapshot,
+  useGoToSnapshot_DEPRECATED,
+  useGotoRecoilSnapshot,
   useSetUnvalidatedAtomValues,
 };
