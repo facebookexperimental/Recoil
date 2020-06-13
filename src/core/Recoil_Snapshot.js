@@ -149,6 +149,7 @@ class MutableSnapshot extends Snapshot {
 
 module.exports = {
   Snapshot,
+  MutableSnapshot,
   freshSnapshot,
   cloneSnapshot,
 };

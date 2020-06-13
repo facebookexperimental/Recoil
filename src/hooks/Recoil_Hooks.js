@@ -23,12 +23,12 @@ import type {PersistenceType} from '../recoil_values/Recoil_atom';
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 const ReactDOM = require('ReactDOM');
 
-const {useStoreRef} = require('../components/Recoil_RecoilRoot.react');
 const {
   peekNodeLoadable,
   setNodeValue,
 } = require('../core/Recoil_FunctionalCore');
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
 const {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
