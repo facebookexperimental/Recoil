@@ -14,7 +14,7 @@ const {act} = require('ReactTestUtils');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../../core/Recoil_RecoilValue');
+} = require('../../core/Recoil_RecoilValueInterface');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
 const atom = require('../Recoil_atom');
 

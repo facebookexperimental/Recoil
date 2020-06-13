@@ -22,7 +22,7 @@ const errorSelector = require('../Recoil_errorSelector');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../../core/Recoil_RecoilValue');
+} = require('../../core/Recoil_RecoilValueInterface');
 const selector = require('../Recoil_selector');
 const {
   asyncSelector,
