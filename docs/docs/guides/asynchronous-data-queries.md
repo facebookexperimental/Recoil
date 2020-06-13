@@ -236,6 +236,37 @@ const friendsInfoQuery = selector({
 });
 ```
 
+## Pre-Fetching
+
+For performance reasons, you may with to kick off fetching *before* rendering.  That way we can have the query going while we start rendering.  The [React docs](https://reactjs.org/docs/concurrent-mode-suspense.html#start-fetching-early) give some examples.  This pattern works with Recoil as well.
+
+Let's change the above example to initiate a fetch for the next user info as soon as the user clicks the button to change users:
+
+```jsx
+function CurrentUserInfo() {
+  const currentUser = useRecoilValue(currentUserInfoQuery);
+  const friends = useRecoilValue(friendsInfoQuery);
+
+  const changeUser = useRecoilCallback(({snapshot, set}) => userID => {
+    snapshot.getLoadable(userInfoQuery(userID)); // pre-fetch user info
+    set(currentUserIDState, userID); // change current user to start new render
+  });
+
+  return (
+    <div>
+      <h1>{currentUser.name}</h1>
+      <ul>
+        {friends.map(friend =>
+          <li key={friend.id} onClick={() => changeUser(friend.id)}>
+            {friend.name}
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+```
+
 ## Without React Suspense
 
 It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the status during rendering:
