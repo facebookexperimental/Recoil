@@ -25,8 +25,8 @@ const {
   mapByUpdatingInMap,
   setByAddingToSet,
 } = require('../util/Recoil_CopyOnWrite');
-const {getNode} = require('./Recoil_Node');
 const Tracing = require('../util/Recoil_Tracing');
+const {getNode} = require('./Recoil_Node');
 
 // flowlint-next-line unclear-type:off
 const emptyMap: $ReadOnlyMap<any, any> = Object.freeze(new Map());
@@ -174,7 +174,7 @@ function fireNodeSubscriptions(
 
   for (const key of dependentNodes) {
     (state.nodeToComponentSubscriptions.get(key) ?? []).forEach(
-      ([debugName, cb]) => {
+      ([_debugName, cb]) => {
         when === 'enqueue'
           ? store.getState().queuedComponentCallbacks.push(cb)
           : cb(state);
