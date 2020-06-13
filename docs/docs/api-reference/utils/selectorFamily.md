@@ -107,3 +107,38 @@ function MyComponent() {
   return <div>...</div>;
 }
 ```
+
+## Destructuring Example
+
+```jsx
+const formState = atom({
+  key: 'formState',
+  default: {
+    field1: "1",
+    field2: "2",
+    field3: "3",
+  },
+});
+
+const formFieldState = selectorFamily({
+  key: 'FormField',
+  get: field => ({get}) => get(formState)[field],
+  set: field => ({set}, newValue) =>
+    set(formState, prevState => {...prevState, [field]: newValue}),
+});
+
+const Component1 = () => {
+  const [value, onChange] = useRecoilState(formFieldState('field1'));
+  return (
+    <input value={value} onChange={onChange} />
+    <Component2 />
+  )
+}
+
+const Component2 = () => {
+  const [value, onChange] = useRecoilState(formFieldState('field2'));
+  return (
+    <input value={value} onChange={onChange} />
+  )
+}
+```
