@@ -21,7 +21,9 @@ const {
   loadableWithError,
   loadableWithValue,
 } = require('../../adt/Recoil_Loadable');
-const {getRecoilValueAsLoadable} = require('../../core/Recoil_RecoilValue');
+const {
+  getRecoilValueAsLoadable,
+} = require('../../core/Recoil_RecoilValueInterface');
 const {asyncSelector, makeStore} = require('../../testing/Recoil_TestingUtils');
 const {
   noWait,

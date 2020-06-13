@@ -10,7 +10,9 @@
  */
 'use strict';
 
-const {getRecoilValueAsLoadable} = require('../../core/Recoil_RecoilValue');
+const {
+  getRecoilValueAsLoadable,
+} = require('../../core/Recoil_RecoilValueInterface');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
 const errorSelector = require('../Recoil_errorSelector');
 

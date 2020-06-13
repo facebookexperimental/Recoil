@@ -11,14 +11,14 @@
 'use strict';
 
 const atom = require('../../recoil_values/Recoil_atom');
+const selector = require('../../recoil_values/Recoil_selector');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
 const {
   getRecoilValueAsLoadable,
   peekRecoilValueAsLoadable,
   setRecoilValue,
   subscribeToRecoilValue,
-} = require('../Recoil_RecoilValue');
-const selector = require('../../recoil_values/Recoil_selector');
-const {makeStore} = require('../../testing/Recoil_TestingUtils');
+} = require('../Recoil_RecoilValueInterface');
 
 const a = atom<number>({key: 'a', default: 0});
 const dependsOnAFn = jest.fn(x => x + 1);

@@ -21,7 +21,7 @@ const {
   getRecoilValueAsLoadable,
   setRecoilValue,
   subscribeToRecoilValue,
-} = require('../../core/Recoil_RecoilValue');
+} = require('../../core/Recoil_RecoilValueInterface');
 const {
   useRecoilState,
   useSetUnvalidatedAtomValues,

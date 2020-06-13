@@ -12,11 +12,8 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DefaultValue} from '../core/Recoil_Node';
-import type {
-  ComponentSubscription,
-  RecoilState,
-  RecoilValue,
-} from '../core/Recoil_RecoilValue';
+import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 import type {PersistenceType} from '../recoil_values/Recoil_atom';
 
@@ -35,14 +32,14 @@ const {
   getNode,
   nodes,
 } = require('../core/Recoil_Node');
+const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
-  isRecoilValue,
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
-} = require('../core/Recoil_RecoilValue');
+} = require('../core/Recoil_RecoilValueInterface');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const differenceSets = require('../util/Recoil_differenceSets');
 const expectationViolation = require('../util/Recoil_expectationViolation');
