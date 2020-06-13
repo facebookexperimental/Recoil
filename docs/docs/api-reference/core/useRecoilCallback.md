@@ -13,6 +13,7 @@ Some motivations for using this hook may include:
 * Asynchronously read Recoil state without subscribing a React component to re-render if the atom or selector is updated.
 * Defering expensive lookups to an async action that you don't want to do at render-time.
 * Dynamically updating an atom or selector where we may not know at render-time which atom or selector we will want to update, so we can't use [`useSetRecoilState()`](/docs/api-reference/core/useSetRecoilState).
+* [Pre-fetching](/docs/guides/asynchronous-data-queries#pre-fetching) data before rendering.
 
 ---
 
