@@ -12,15 +12,15 @@
 
 const React = require('React');
 const {act} = require('ReactTestUtils');
-const constSelector = require('../../recoil_values/Recoil_const');
-const errorSelector = require('../../recoil_values/Recoil_error');
-const {useRecoilValueLoadable} = require('../Recoil_Hooks');
+
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+const errorSelector = require('../../recoil_values/Recoil_errorSelector');
 const {
   asyncSelector,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
-
 const gkx = require('../../util/Recoil_gkx');
+const {useRecoilValueLoadable} = require('../Recoil_Hooks');
 
 gkx.setPass('recoil_async_selector_refactor');
 
@@ -35,6 +35,7 @@ test('useRecoilValueLoadable - loadable with value', async () => {
     expect(loadable.state).toBe('hasValue');
     expect(loadable.contents).toBe('VALUE');
     expect(loadable.getValue()).toBe('VALUE');
+    // eslint-disable-next-line jest/valid-expect
     promise = expect(loadable.toPromise()).resolves.toBe('VALUE');
     expect(loadable.valueMaybe()).toBe('VALUE');
     expect(loadable.valueOrThrow()).toBe('VALUE');
@@ -57,6 +58,7 @@ test('useRecoilValueLoadable - loadable with error', async () => {
     expect(loadable.state).toBe('hasError');
     expect(loadable.contents).toBeInstanceOf(Error);
     expect(() => loadable.getValue()).toThrow('ERROR');
+    // eslint-disable-next-line jest/valid-expect
     promise = expect(loadable.toPromise()).rejects.toBeInstanceOf(Error);
     expect(loadable.valueMaybe()).toBe(undefined);
     expect(() => loadable.valueOrThrow()).toThrow(Error);
@@ -95,7 +97,6 @@ test('useRecoilValueLoadable - loading loadable', async () => {
       expect(loadable.promiseMaybe() === loadable.promiseOrThrow()).toBe(true);
       expect(loadable.promiseMaybe()).toBeInstanceOf(Promise);
       promises.push(loadable.promiseMaybe());
-      expect(loadable.promiseMaybe()).resolves.toBe('VALUE');
       return 'LOADING';
     } else {
       expect(loadable.state).toBe('hasValue');
