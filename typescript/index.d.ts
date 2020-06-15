@@ -139,7 +139,6 @@ export function useRecoilCallback<Args extends ReadonlyArray<unknown>, Return>(
 // loadable.d.ts
 type ResolvedLoadablePromiseInfo<T> = Readonly<{
   value: T;
-  upstreamState__INTERNAL_DO_NOT_USE?: TreeState;
 }>;
 
 export type LoadablePromise<T> = Promise<ResolvedLoadablePromiseInfo<T>>;
