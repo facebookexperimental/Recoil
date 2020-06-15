@@ -235,8 +235,8 @@ function atomFamily<T, P: Parameter>(
     const newAtom = atom<T>({
       key: `${options.key}__${stableStringify(params) ?? 'void'}`,
       default: atomFamilyDefault(params),
-      scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
-        // @fb-only
+      // prettier-ignore
+      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
         // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
         // @fb-only: params,
       // @fb-only: ),
