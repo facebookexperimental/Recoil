@@ -21,7 +21,7 @@ module.exports = {
       indexName: 'recoiljs'
     },
     googleAnalytics: {
-      trackingID: 'UA-166885839-1',
+      trackingID: 'UA-44373548-46',
     },
     image: 'img/og-image.png',
     navbar: {
@@ -33,7 +33,7 @@ module.exports = {
           label: 'Docs',
           position: 'left',
         },
-        // {to: 'blog', label: 'Blog', position: 'left'},
+        {to: 'blog', label: 'Blog', position: 'left'},
         // Please keep GitHub link to the right for consistency.
         {
           href: 'https://github.com/facebookexperimental/Recoil',
@@ -129,6 +129,10 @@ module.exports = {
           showReadingTime: true,
           editUrl:
             'https://github.com/facebookexperimental/Recoil/edit/docs/docs/blog/',
+           feedOptions: {
+            type: 'all',
+            copyright: `Copyright © ${new Date().getFullYear()} Facebook, Inc.`,
+          },
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),

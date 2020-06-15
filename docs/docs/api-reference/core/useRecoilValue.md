@@ -1,5 +1,5 @@
 ---
-title: useRecoilValue()
+title: useRecoilValue(state)
 sidebar_label: useRecoilValue()
 ---
 
@@ -9,9 +9,17 @@ This hook will implicitly subscribe the component to the given state.
 
 ---
 
+```jsx
+function useRecoilValue<T>(state: RecoilValue<T>): T;
+```
+
 - `state`: an [`atom`](/docs/api-reference/core/atom) or [`selector`](/docs/api-reference/core/selector)
 
-This is the recommended hook to use when a component intends to read state without writing to it as this hook works with both **read-only state** and **writeable state**. Atoms are writeable state while selectors may be either read-only or writeable. See [`selector()`](/docs/api-reference/core/selector) for more info.
+---
+
+This is the recommended hook to use when a component intends to read state without writing to it, as this hook works with both **read-only state** and **writeable state**. Atoms are writeable state while selectors may be either read-only or writeable. See [`selector()`](/docs/api-reference/core/selector) for more info.
+
+Using this hook in a React component will subscibe the component to re-render when the state is updated.  This hook may throw if the state has an error or is pending asynchronous resolution.  Please see [this guide](/docs/guides/asynchronous-data-queries).
 
 ### Example
 

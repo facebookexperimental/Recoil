@@ -75,7 +75,7 @@ const todoListItemIdsState = atom({
 });
 ```
 
-For implementing a mapping of item ID to item data, Recoil provides a utility method that allows us to dynamically create a mapping from ID to atom. This utlity is [`atomFamily()`](/docs/api-reference/utils/atomFamily).
+For implementing a mapping of item ID to item data, Recoil provides a utility method that allows us to dynamically create a mapping from ID to atom. This utility is [`atomFamily()`](/docs/api-reference/utils/atomFamily).
 
 ### `atomFamily()`
 
