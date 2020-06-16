@@ -11,11 +11,21 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {RecoilValue} from './Recoil_RecoilValue';
+import type {
+  ResetRecoilState,
+  SetRecoilState,
+  ValueOrUpdater,
+} from '../recoil_values/Recoil_selector';
+import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {Store, TreeState} from './Recoil_State';
 
 const mapMap = require('../util/Recoil_mapMap');
-const {getRecoilValueAsLoadable} = require('./Recoil_RecoilValueInterface');
+const {DEFAULT_VALUE} = require('./Recoil_Node');
+const {
+  getRecoilValueAsLoadable,
+  setRecoilValue,
+  valueFromValueOrUpdater,
+} = require('./Recoil_RecoilValueInterface');
 const {makeEmptyTreeState, makeStoreState} = require('./Recoil_State');
 const gkx = require('gkx');
 
@@ -47,6 +57,10 @@ class Snapshot {
     this._store = makeStore(treeState);
   }
 
+  getStore_INTERNAL(): Store {
+    return this._store;
+  }
+
   getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
     recoilValue: RecoilValue<T>,
   ) => getRecoilValueAsLoadable(this._store, recoilValue);
@@ -59,16 +73,21 @@ class Snapshot {
           .toPromise()
           .then(({value}) => value)
       : (this.getLoadable(recoilValue).toPromise(): $FlowFixMe);
+
+  // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  map: ((MutableSnapshot) => void) => Snapshot = mapper => {
+    const mutableSnapshot = new MutableSnapshot(
+      this._store.getState().currentTree,
+    );
+    mapper(mutableSnapshot);
+    const newState = mutableSnapshot.getStore_INTERNAL().getState().currentTree;
+    return cloneSnapshot(newState);
+  };
 }
 
-// Factory to build a fresh snapshot
-function freshSnapshot(): Snapshot {
-  return new Snapshot(makeEmptyTreeState());
-}
-
-// Factory to clone a snapahot state
-function cloneSnapshot(treeState: TreeState): Snapshot {
-  return new Snapshot({
+function cloneTreeState(treeState: TreeState): TreeState {
+  return {
     transactionMetadata: {...treeState.transactionMetadata},
     atomValues: new Map(treeState.atomValues),
     nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
@@ -79,7 +98,41 @@ function cloneSnapshot(treeState: TreeState): Snapshot {
       keys => new Set(keys),
     ),
     nodeToComponentSubscriptions: new Map(),
-  });
+  };
+}
+
+// Factory to build a fresh snapshot
+function freshSnapshot(): Snapshot {
+  return new Snapshot(makeEmptyTreeState());
+}
+
+// Factory to clone a snapahot state
+function cloneSnapshot(treeState: TreeState): Snapshot {
+  return new Snapshot(cloneTreeState(treeState));
+}
+
+class MutableSnapshot extends Snapshot {
+  constructor(treeState: TreeState) {
+    super(cloneTreeState(treeState));
+  }
+
+  // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  set: SetRecoilState = <T>(
+    recoilState: RecoilState<T>,
+    newValueOrUpdater: ValueOrUpdater<T>,
+  ) => {
+    const store = this.getStore_INTERNAL();
+    const newValue = valueFromValueOrUpdater(
+      store,
+      recoilState,
+      newValueOrUpdater,
+    );
+    setRecoilValue(store, recoilState, newValue);
+  };
+
+  reset: ResetRecoilState = recoilState =>
+    setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE);
 }
 
 module.exports = {
