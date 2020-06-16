@@ -35,6 +35,7 @@ module.name_mapper='Recoil_Loadable' -> '<PROJECT_ROOT>/src/adt/Recoil_Loadable.
 module.name_mapper='Recoil_Cache' -> '<PROJECT_ROOT>/src/caches/Recoil_Cache.js'
 module.name_mapper='Recoil_ScopedAtomTaggedValue' -> '<PROJECT_ROOT>/src/adt/Recoil_ScopedAtomTaggedValue.js'
 module.name_mapper='Recoil_ArrayKeyedMap' -> '<PROJECT_ROOT>/src/adt/Recoil_ArrayKeyedMap.js'
+module.name_mapper='gkx' -> '<PROJECT_ROOT>/__mocks__/gkx.js'
 
 exact_by_default=true
 
