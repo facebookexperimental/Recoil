@@ -15,10 +15,10 @@ const {act} = require('ReactTestUtils');
 const atom = require('../../recoil_values/Recoil_atom');
 const constSelector = require('../../recoil_values/Recoil_constSelector');
 const {asyncSelector} = require('../../testing/Recoil_TestingUtils');
-const {Snapshot, makeSnapshot} = require('../Recoil_Snapshot');
+const {Snapshot, freshSnapshot} = require('../Recoil_Snapshot');
 
 test('Read default loadable from snapshot', () => {
-  const snapshot: Snapshot = makeSnapshot();
+  const snapshot: Snapshot = freshSnapshot();
 
   const myAtom = atom({
     key: 'Snapshot Atom Default',
@@ -36,7 +36,7 @@ test('Read default loadable from snapshot', () => {
 });
 
 test('Read async selector from snapshot', async () => {
-  const snapshot = makeSnapshot();
+  const snapshot = freshSnapshot();
 
   const [asyncSel, resolve] = asyncSelector();
   const nestSel = constSelector(asyncSel);
