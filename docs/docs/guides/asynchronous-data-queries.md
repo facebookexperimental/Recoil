@@ -221,7 +221,7 @@ function MyApp() {
 
 ## Concurrent Requests
 
-If you notice in the above example, the `friendsInfoQuery` uses a query to get the info for each friend.  But, by doing this in a loop they are essentially serialized.  If the lookup is fast, maybe that's ok.  If it's expensive, you can use a concurrency helper such as [`waitForAll`](/docs/api-reference/utils/waitForAll), [`waitForNone`](/docs/api-reference/utils/waitForNone), or [`waitForAny`](/docs/api-reference/utils/waitForAny) to run them in parallel or handle partial results.  They accept both arrays and named objects of dependencies.
+If you notice in the above example, the `friendsInfoQuery` uses a query to get the info for each friend.  But, by doing this in a loop they are essentially serialized.  If the lookup is fast, maybe that's ok.  If it's expensive, you can use a concurrency helper such as [`waitForAll`](/docs/api-reference/utils/waitForAll) to run them in parallel.  This helper accepts both arrays and named objects of dependencies.
 
 ```jsx
 const friendsInfoQuery = selector({
@@ -232,6 +232,23 @@ const friendsInfoQuery = selector({
       friendList.map(friendID => userInfoQuery(friendID))
     ));
     return friends;
+  },
+});
+```
+
+You can use [`waitForNone`](/docs/api-reference/utils/waitForNone) to handle incremental updates to the UI with partial data
+
+```jsx
+const friendsInfoQuery = selector({
+  key: 'FriendsInfoQuery',
+  get: ({get}) => {
+    const {friendList} = get(currentUserInfoQuery);
+    const friendLoadables = get(waitForNone(
+      friendList.map(friendID => userInfoQuery(friendID))
+    ));
+    return friends
+      .filter(({state}) => state === 'hasValue')
+      .map(({contents}) => contents);
   },
 });
 ```
