@@ -204,6 +204,47 @@ describe('useRecoilCallback', () => {
     expect(seenValue).toBe(345);
   });
 
+  it('Setter updater sees current state', () => {
+    const myAtom = atom({key: 'useRecoilCallback updater', default: 'DEFAULT'});
+
+    let setAtom;
+    let cb;
+    function Component() {
+      setAtom = useSetRecoilState(myAtom);
+      cb = useRecoilCallback(({snapshot, set}) => () => {
+        // snapshot sees the stable snapshot from begining of transaction
+        expect(snapshot.getLoadable(myAtom).contents).toEqual('DEFAULT');
+
+        // Test that callback sees value updates from within the same transaction
+        set(myAtom, value => {
+          expect(value).toEqual('SET');
+          return 'UPDATE';
+        });
+        set(myAtom, value => {
+          expect(value).toEqual('UPDATE');
+          return 'UPDATE AGAIN';
+        });
+      });
+      return null;
+    }
+
+    const c = renderElements(
+      <>
+        <ReadsAtom atom={myAtom} />
+        <Component />
+      </>,
+    );
+
+    expect(c.textContent).toEqual('"DEFAULT"');
+
+    // Set then callback in the same transaction
+    act(() => {
+      setAtom('SET');
+      cb();
+    });
+    expect(c.textContent).toEqual('"UPDATE AGAIN"');
+  });
+
   it('goes to snapshot', async () => {
     const myAtom = atom({
       key: 'Goto Snapshot From Callback',
