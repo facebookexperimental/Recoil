@@ -203,6 +203,37 @@ describe('useRecoilCallback', () => {
     await flushPromisesAndTimers();
     expect(seenValue).toBe(345);
   });
+
+  it('goes to snapshot', async () => {
+    const myAtom = atom({
+      key: 'Goto Snapshot From Callback',
+      default: 'DEFAULT',
+    });
+
+    let cb;
+    function RecoilCallback() {
+      cb = useRecoilCallback(({snapshot, gotoSnapshot}) => () => {
+        const updatedSnapshot = snapshot.map(({set}) => {
+          set(myAtom, 'SET IN SNAPSHOT');
+        });
+        gotoSnapshot(updatedSnapshot);
+      });
+      return null;
+    }
+
+    const c = renderElements(
+      <>
+        <ReadsAtom atom={myAtom} />
+        <RecoilCallback />
+      </>,
+    );
+
+    expect(c.textContent).toEqual('"DEFAULT"');
+
+    act(cb);
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"SET IN SNAPSHOT"');
+  });
 });
 
 // Test that we always get a consistent instance of the callback function
