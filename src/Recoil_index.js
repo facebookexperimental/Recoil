@@ -34,8 +34,8 @@ export type {
   SelectorFamilyOptions,
 } from './recoil_values/Recoil_selectorFamily';
 
-const {RecoilRoot} = require('./components/Recoil_RecoilRoot.react');
 const {DefaultValue} = require('./core/Recoil_Node');
+const {RecoilRoot} = require('./core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {
   useRecoilCallback,

@@ -17,8 +17,8 @@ const React = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
-const {RecoilRoot} = require('../components/Recoil_RecoilRoot.react');
 const {fireNodeSubscriptions} = require('../core/Recoil_FunctionalCore');
+const {RecoilRoot} = require('../core/Recoil_RecoilRoot.react');
 const {makeEmptyStoreState} = require('../core/Recoil_State');
 const {
   useRecoilValue,

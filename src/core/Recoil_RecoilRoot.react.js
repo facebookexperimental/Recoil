@@ -11,6 +11,7 @@
 'use strict';
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
+import type {MutableSnapshot} from '../core/Recoil_Snapshot';
 import type {NodeKey, Store, StoreRef, StoreState} from '../core/Recoil_State';
 
 const React = require('React');
@@ -22,14 +23,16 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
-const {makeEmptyStoreState} = require('../core/Recoil_State');
+const {freshSnapshot} = require('../core/Recoil_Snapshot');
+const {makeEmptyStoreState, makeStoreState} = require('../core/Recoil_State');
 const nullthrows = require('../util/Recoil_nullthrows');
 
 type Props = {
-  initializeState?: ({
+  initializeState_DEPRECATED?: ({
     set: <T>(RecoilValue<T>, T) => void,
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
+  initializeState?: MutableSnapshot => void,
   children: React.Node,
 };
 
@@ -118,34 +121,41 @@ if (__DEV__) {
   }
 }
 
-function initialStoreState(store, initializeState) {
+function initialStoreState_DEPRECATED(store, initializeState): StoreState {
   const initial: StoreState = makeEmptyStoreState();
-  if (initializeState) {
-    initializeState({
-      set: (atom, value) => {
-        initial.currentTree = setNodeValue(
-          store,
+  initializeState({
+    set: (atom, value) => {
+      initial.currentTree = setNodeValue(
+        store,
+        initial.currentTree,
+        atom.key,
+        value,
+      )[0];
+    },
+    setUnvalidatedAtomValues: atomValues => {
+      atomValues.forEach((v, k) => {
+        initial.currentTree = setUnvalidatedAtomValue(
           initial.currentTree,
-          atom.key,
-          value,
-        )[0];
-      },
-      setUnvalidatedAtomValues: atomValues => {
-        atomValues.forEach((v, k) => {
-          initial.currentTree = setUnvalidatedAtomValue(
-            initial.currentTree,
-            k,
-            v,
-          );
-        });
-      },
-    });
-  }
+          k,
+          v,
+        );
+      });
+    },
+  });
   return initial;
 }
 
+function initialStoreState(initializeState): StoreState {
+  const snapshot = freshSnapshot().map(initializeState);
+  return makeStoreState(snapshot.getStore_INTERNAL().getState().currentTree);
+}
+
 let nextID = 0;
-function RecoilRoot({initializeState, children}: Props): ReactElement {
+function RecoilRoot({
+  initializeState_DEPRECATED,
+  initializeState,
+  children,
+}: Props): ReactElement {
   let storeState; // eslint-disable-line prefer-const
 
   const subscribeToTransactions = callback => {
@@ -207,7 +217,13 @@ function RecoilRoot({initializeState, children}: Props): ReactElement {
     fireNodeSubscriptions: fireNodeSubscriptionsForStore,
   };
   const storeRef = useRef(store);
-  storeState = useRef(initialStoreState(store, initializeState));
+  storeState = useRef(
+    initializeState_DEPRECATED != null
+      ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED)
+      : initializeState != null
+      ? initialStoreState(initializeState)
+      : makeEmptyStoreState(),
+  );
 
   return (
     <AppContext.Provider value={storeRef}>
