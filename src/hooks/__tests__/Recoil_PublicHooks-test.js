@@ -42,7 +42,7 @@ const {
   useRecoilValueLoadable,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
-  useTransactionObservation,
+  useTransactionObservation_DEPRECATED,
 } = require('../Recoil_Hooks');
 
 gkx.setPass('recoil_async_selector_refactor');
@@ -170,7 +170,7 @@ function componentThatToggles(a, b) {
 }
 
 function ObservesTransactions({fn}) {
-  useTransactionObservation(fn);
+  useTransactionObservation_DEPRECATED(fn);
   return null;
 }
 
