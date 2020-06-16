@@ -8,7 +8,6 @@
  * @flow strict-local
  * @format
  */
-
 'use strict';
 
 import type {NodeKey} from './Recoil_State';

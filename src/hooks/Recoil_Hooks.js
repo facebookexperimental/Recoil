@@ -52,9 +52,8 @@ const mergeMaps = require('../util/Recoil_mergeMaps');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
 
-function cloneState(state: TreeState, opts): TreeState {
+function cloneState(state: TreeState): TreeState {
   return {
-    isSnapshot: opts.isSnapshot,
     transactionMetadata: {...state.transactionMetadata},
     atomValues: new Map(state.atomValues),
     nonvalidatedAtoms: new Map(state.nonvalidatedAtoms),
@@ -366,9 +365,7 @@ function useTreeStateClone(): TreeState {
   const forceUpdate = useCallback(() => setState(x => x + 1), []);
   useTransactionSubscription(forceUpdate);
   const storeRef = useStoreRef();
-  return cloneState(storeRef.current.getState().currentTree, {
-    isSnapshot: true,
-  });
+  return cloneState(storeRef.current.getState().currentTree);
 }
 
 type UpdatedSnapshot = {
@@ -554,9 +551,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
 
   return useCallback(
     (...args) => {
-      let snapshot = cloneState(storeRef.current.getState().currentTree, {
-        isSnapshot: true,
-      });
+      let snapshot = cloneState(storeRef.current.getState().currentTree);
 
       function getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
         let result: Loadable<T>;
