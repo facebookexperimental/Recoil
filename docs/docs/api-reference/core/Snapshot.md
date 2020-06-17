@@ -17,7 +17,7 @@ class Snapshot {
 
 ### Reading Snapshots
 
-Snapshots are read-only with respect to atom state.  They can be used to read atom state and evaluate selectors derived state.  The `getPromise()` method can be used to wait for the evaluated value of asynchronous selectors, so you can see what the value would be based on the static atom state.
+Snapshots are read-only with respect to atom state.  They can be used to read atom state and evaluate selectors' derived state.  The `getPromise()` method can be used to wait for the evaluated value of asynchronous selectors, so you can see what the value would be based on the static atom state.
 
 ### Transforming Snapshots
 
