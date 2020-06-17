@@ -237,8 +237,8 @@ function atomFamily<T, P: Parameter>(
       default: atomFamilyDefault(params),
       // prettier-ignore
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
-      // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-      // @fb-only: params,
+        // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+        // @fb-only: params,
       // @fb-only: ),
       persistence_UNSTABLE: options.persistence_UNSTABLE,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
