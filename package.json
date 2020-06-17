@@ -73,7 +73,8 @@
       "src/recoil_values/__tests__/Recoil_selector-test.js"
     ],
     "setupFiles": [
-      "./setupJestMock.js"
+      "./setupJestMock.js",
+      "./setupReactBatching.js"
     ]
   },
   "husky": {
