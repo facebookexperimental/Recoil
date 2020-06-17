@@ -27,6 +27,7 @@ class ArrayKeyedMap<V> {
   constructor(
     existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
   ): ArrayKeyedMap<V> {
+    // $FlowOSSFixMe
     this._base = new Map(); // @oss-only
 
     if (existing instanceof ArrayKeyedMap) {
@@ -43,6 +44,7 @@ class ArrayKeyedMap<V> {
 
   get(key: mixed): V | void {
     const ks = Array.isArray(key) ? key : [key];
+    // $FlowOSSFixMe
     let map = this._base;
     ks.forEach(k => {
       map = map.get(k) ?? emptyMap;
@@ -52,6 +54,7 @@ class ArrayKeyedMap<V> {
 
   set(key: mixed, value: V): any {
     const ks = Array.isArray(key) ? key : [key];
+    // $FlowOSSFixMe
     let map = this._base;
     let next = map;
     ks.forEach(k => {
@@ -68,6 +71,7 @@ class ArrayKeyedMap<V> {
 
   delete(key: mixed): any {
     const ks = Array.isArray(key) ? key : [key];
+    // $FlowOSSFixMe
     let map = this._base;
     let next = map;
     ks.forEach(k => {
@@ -94,6 +98,7 @@ class ArrayKeyedMap<V> {
         }
       });
     }
+    // $FlowOSSFixMe
     recurse(this._base, []);
     return answer.values();
   }

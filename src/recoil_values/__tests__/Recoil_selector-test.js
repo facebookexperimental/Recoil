@@ -17,12 +17,12 @@ const React = require('React');
 const {act} = require('ReactTestUtils');
 const {useRecoilState, useRecoilValue} = require('../../Recoil_index');
 const atom = require('../Recoil_atom');
-const constSelector = require('../Recoil_const');
-const errorSelector = require('../Recoil_error');
+const constSelector = require('../Recoil_constSelector');
+const errorSelector = require('../Recoil_errorSelector');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../../core/Recoil_RecoilValue');
+} = require('../../core/Recoil_RecoilValueInterface');
 const selector = require('../Recoil_selector');
 const {
   asyncSelector,

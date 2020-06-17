@@ -22,7 +22,6 @@ type ComponentCallback = TreeState => void;
 
 export type TreeState = $ReadOnly<{
   // Information about the TreeState itself:
-  isSnapshot: boolean,
   transactionMetadata: {...},
   dirtyAtoms: Set<NodeKey>,
 
@@ -30,11 +29,12 @@ export type TreeState = $ReadOnly<{
   atomValues: AtomValues,
   nonvalidatedAtoms: Map<NodeKey, mixed>,
 
-  // NODE GRAPH -- will soon move to StoreState
+  // NODE GRAPH
   // Upstream Node dependencies
   nodeDeps: Map<NodeKey, Set<NodeKey>>,
   // Downstream Node subscriptions
   nodeToNodeSubscriptions: Map<NodeKey, Set<NodeKey>>,
+  // TODO -- will soon move to StoreState
   nodeToComponentSubscriptions: Map<
     NodeKey,
     Map<number, [string, ComponentCallback]>,
@@ -56,7 +56,7 @@ export type StoreState = {
   nextTree: null | TreeState,
 
   // For observing transactions:
-  +transactionSubscriptions: Map<number, (Store, previous: TreeState) => void>,
+  +transactionSubscriptions: Map<number, (Store) => void>,
 
   // Callbacks to render external components that are subscribed to nodes
   // These are executed at the end of the transaction or asynchronously.
@@ -69,9 +69,7 @@ export type StoreState = {
 export type Store = $ReadOnly<{
   getState: () => StoreState,
   replaceState: ((TreeState) => TreeState) => void,
-  subscribeToTransactions: (
-    (Store, previous: TreeState) => void,
-  ) => {release: () => void, ...},
+  subscribeToTransactions: ((Store) => void) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
   fireNodeSubscriptions: (
     updatedNodes: $ReadOnlySet<NodeKey>,
@@ -83,4 +81,34 @@ export type StoreRef = {
   current: Store,
 };
 
-module.exports = ({}: {...});
+function makeEmptyTreeState(): TreeState {
+  return {
+    transactionMetadata: {},
+    atomValues: new Map(),
+    nonvalidatedAtoms: new Map(),
+    dirtyAtoms: new Set(),
+    nodeDeps: new Map(),
+    nodeToNodeSubscriptions: new Map(),
+    nodeToComponentSubscriptions: new Map(),
+  };
+}
+
+function makeStoreState(treeState: TreeState): StoreState {
+  return {
+    currentTree: treeState,
+    nextTree: null,
+    transactionSubscriptions: new Map(),
+    queuedComponentCallbacks: [],
+    suspendedComponentResolvers: new Set(),
+  };
+}
+
+function makeEmptyStoreState(): StoreState {
+  return makeStoreState(makeEmptyTreeState());
+}
+
+module.exports = {
+  makeEmptyTreeState,
+  makeEmptyStoreState,
+  makeStoreState,
+};

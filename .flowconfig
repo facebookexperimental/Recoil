@@ -1,6 +1,5 @@
 [ignore]
 .*/__tests__.*
-.*/node_modules.*
 
 [include]
 
@@ -15,7 +14,10 @@ esproposal.nullish_coalescing=enable
 
 suppress_type=$FlowIssue
 suppress_type=$FlowFixMe
-suppress_comment=\\(.\\|\n\\)*\\$FlowFixMe\\($\\|[^(]\\|(\\(>=0\\.\\(2[0-8]\\|1[0-9]\\|[0-9]\\).[0-9]\\)? *\\).*\n
+suppress_type=$FlowOSSFixMe
+suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
+suppress_comment= \\(.\\|\n\\)*\\$FlowOSSFixMe
+suppress_comment= \\(.\\|\n\\)*\\$FlowIssue
 suppress_comment=\\(.\\|\n\\)*\\$FlowExpectedError
 
 module.name_mapper='React' -> '<PROJECT_ROOT>/node_modules/react'
@@ -23,14 +25,19 @@ module.name_mapper='ReactDOM' -> '<PROJECT_ROOT>/node_modules/react-dom'
 module.name_mapper='ReactTestUtils' -> '<PROJECT_ROOT>/node_modules/react-dom/test-utils'
 
 module.name_mapper='RecoilUtils' -> '<PROJECT_ROOT>/src/RecoilUtils.js'
-
 module.name_mapper='Recoil_RecoilValue' -> '<PROJECT_ROOT>/src/core/Recoil_RecoilValue.js'
 module.name_mapper='Recoil_State' -> '<PROJECT_ROOT>/src/core/Recoil_State.js'
-
 module.name_mapper='Recoil_atom' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_atom.js'
+module.name_mapper='Recoil_atomFamily' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_atomFamily.js'
 module.name_mapper='Recoil_WaitFor' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_WaitFor.js'
-
 module.name_mapper='Recoil_Hooks' -> '<PROJECT_ROOT>/src/hooks/Recoil_Hooks.js'
+module.name_mapper='Recoil_Loadable' -> '<PROJECT_ROOT>/src/adt/Recoil_Loadable.js'
+module.name_mapper='Recoil_Cache' -> '<PROJECT_ROOT>/src/caches/Recoil_Cache.js'
+module.name_mapper='Recoil_ScopedAtomTaggedValue' -> '<PROJECT_ROOT>/src/adt/Recoil_ScopedAtomTaggedValue.js'
+module.name_mapper='Recoil_ArrayKeyedMap' -> '<PROJECT_ROOT>/src/adt/Recoil_ArrayKeyedMap.js'
+module.name_mapper='gkx' -> '<PROJECT_ROOT>/__mocks__/gkx.js'
+
+exact_by_default=true
 
 [strict]
 deprecated-type
@@ -38,5 +45,8 @@ sketchy-null
 unclear-type
 unsafe-getters-setters
 
+[lints]
+all=warn
+
 [version]
-^0.124.0
+^0.126.0

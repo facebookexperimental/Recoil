@@ -34,25 +34,25 @@ export type {
   SelectorFamilyOptions,
 } from './recoil_values/Recoil_selectorFamily';
 
-const {RecoilRoot} = require('./components/Recoil_RecoilRoot.react');
 const {DefaultValue} = require('./core/Recoil_Node');
+const {RecoilRoot} = require('./core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {
   useRecoilCallback,
   useRecoilState,
   useRecoilStateLoadable,
+  useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
   useResetRecoilState,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
-  useTransactionObservation,
-  useTransactionSubscription,
+  useTransactionObservation_DEPRECATED,
 } = require('./hooks/Recoil_Hooks');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
-const constSelector = require('./recoil_values/Recoil_const');
-const errorSelector = require('./recoil_values/Recoil_error');
+const constSelector = require('./recoil_values/Recoil_constSelector');
+const errorSelector = require('./recoil_values/Recoil_errorSelector');
 const readOnlySelector = require('./recoil_values/Recoil_readOnlySelector');
 const selector = require('./recoil_values/Recoil_selector');
 const selectorFamily = require('./recoil_values/Recoil_selectorFamily');
@@ -93,8 +93,8 @@ module.exports = {
   useRecoilCallback,
 
   // Hooks for Persistence/Debugging
-  useTransactionObservation_UNSTABLE: useTransactionObservation,
-  useTransactionSubscription_UNSTABLE: useTransactionSubscription,
+  useRecoilTransactionObserver,
+  useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
 
   // Concurrency Helpers

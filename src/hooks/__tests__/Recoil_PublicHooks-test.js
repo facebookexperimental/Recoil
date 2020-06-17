@@ -25,7 +25,7 @@ const {act} = require('ReactTestUtils');
 
 const Queue = require('../../adt/Recoil_Queue');
 const atom = require('../../recoil_values/Recoil_atom');
-const errorSelector = require('../../recoil_values/Recoil_error');
+const errorSelector = require('../../recoil_values/Recoil_errorSelector');
 const selector = require('../../recoil_values/Recoil_selector');
 const {
   ReadsAtom,
@@ -42,7 +42,7 @@ const {
   useRecoilValueLoadable,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
-  useTransactionObservation,
+  useTransactionObservation_DEPRECATED,
 } = require('../Recoil_Hooks');
 
 gkx.setPass('recoil_async_selector_refactor');
@@ -170,7 +170,7 @@ function componentThatToggles(a, b) {
 }
 
 function ObservesTransactions({fn}) {
-  useTransactionObservation(fn);
+  useTransactionObservation_DEPRECATED(fn);
   return null;
 }
 

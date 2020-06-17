@@ -177,18 +177,18 @@ function atomFamily<T, P: Parameter>(
   let legacyAtom;
   // prettier-ignore
   // @fb-only: if (
-    // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
+  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
   // @fb-only: ) {
-    // @fb-only: legacyAtom = parameterizedScopedAtomLegacy<
-        // @fb-only: StoredBaseValue_DEPRECATED<T> | DefaultValue,
-        // @fb-only: P,
-      // @fb-only: >({
-        // @fb-only: ...legacyAtomOptions,
-        // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
-          // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-      // @fb-only: });
+  // @fb-only: legacyAtom = parameterizedScopedAtomLegacy<
+  // @fb-only: StoredBaseValue_DEPRECATED<T> | DefaultValue,
+  // @fb-only: P,
+  // @fb-only: >({
+  // @fb-only: ...legacyAtomOptions,
+  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
+  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+  // @fb-only: });
   // @fb-only: } else {
-    legacyAtom = atom<StoredBaseValue_DEPRECATED<T> | DefaultValue>(legacyAtomOptions);
+  legacyAtom = atom<StoredBaseValue_DEPRECATED<T> | DefaultValue>(legacyAtomOptions);
   // @fb-only: }
 
   // Selector to calculate the default value based on any persisted legacy atoms
@@ -235,10 +235,11 @@ function atomFamily<T, P: Parameter>(
     const newAtom = atom<T>({
       key: `${options.key}__${stableStringify(params) ?? 'void'}`,
       default: atomFamilyDefault(params),
-      scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
-        options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-        params,
-      ),
+      // prettier-ignore
+      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
+      // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+      // @fb-only: params,
+      // @fb-only: ),
       persistence_UNSTABLE: options.persistence_UNSTABLE,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
     });

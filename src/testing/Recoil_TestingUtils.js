@@ -11,14 +11,15 @@
 'use strict';
 
 import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
-import type {Store, StoreState, TreeState} from 'Recoil_State';
+import type {Store} from 'Recoil_State';
 
 const React = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
-const {RecoilRoot} = require('../components/Recoil_RecoilRoot.react');
 const {fireNodeSubscriptions} = require('../core/Recoil_FunctionalCore');
+const {RecoilRoot} = require('../core/Recoil_RecoilRoot.react');
+const {makeEmptyStoreState} = require('../core/Recoil_State');
 const {
   useRecoilValue,
   useResetRecoilState,
@@ -28,34 +29,9 @@ const selector = require('../recoil_values/Recoil_selector');
 const invariant = require('../util/Recoil_invariant');
 const stableStringify = require('../util/Recoil_stableStringify');
 
-// This isn't a test but is used in tests so Jest will be present:
-declare var jest: JestObjectType;
-
-function makeTreeState(): TreeState {
-  return {
-    isSnapshot: false,
-    atomValues: new Map(),
-    nonvalidatedAtoms: new Map(),
-    dirtyAtoms: new Set(),
-    nodeDeps: new Map(),
-    nodeToNodeSubscriptions: new Map(),
-    nodeToComponentSubscriptions: new Map(),
-    transactionMetadata: {},
-  };
-}
-
-function makeStoreState(): StoreState {
-  return {
-    currentTree: makeTreeState(),
-    nextTree: null,
-    transactionSubscriptions: new Map(),
-    queuedComponentCallbacks: [],
-    suspendedComponentResolvers: new Set(),
-  };
-}
-
+// TODO Use Snapshot for testing instead of this thunk?
 function makeStore(): Store {
-  const state = makeStoreState();
+  const state = makeEmptyStoreState();
   const store = {
     getState: () => state,
     replaceState: replacer => {
@@ -82,7 +58,7 @@ function makeStore(): Store {
 }
 
 class ErrorBoundary extends React.Component<
-  {children: ?React.Node, ...},
+  {children: React.Node | null, ...},
   {hasError: boolean, ...},
 > {
   state = {hasError: false};
@@ -198,7 +174,6 @@ function flushPromisesAndTimers(): Promise<mixed> {
 }
 
 module.exports = {
-  makeTreeState,
   makeStore,
   renderElements,
   ReadsAtom,
