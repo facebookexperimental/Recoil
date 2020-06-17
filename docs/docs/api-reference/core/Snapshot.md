@@ -3,7 +3,7 @@ title: class Snapshot
 sidebar_label: Snapshot
 ---
 
-A `Snapshot` object represents an immutable snapshot of the state of Recoil [atoms](/docs/api-reference/core/atom).  It is inteded to standardize the API for observing, inspecting, and managing global Reocil state.  It is mostly useful for dev tools, global state synchronization, history navigation, &c.
+A `Snapshot` object represents an immutable snapshot of the state of Recoil [atoms](/docs/api-reference/core/atom).  It is intended to standardize the API for observing, inspecting, and managing global Recoil state.  It is mostly useful for dev tools, global state synchronization, history navigation, &c.
 
 ```jsx
 class Snapshot {
@@ -43,7 +43,7 @@ Recoil has the following hooks for working with snapshots:
 
 ### State Initialization
 
-The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component takes an `initializeState` prop for initializing the globla state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For most state initialization and persistence, though, consider Atom Effects.
+The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component takes an `initializeState` prop for initializing the global state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For most state initialization and persistence, though, consider Atom Effects.
 
 ### Example
 

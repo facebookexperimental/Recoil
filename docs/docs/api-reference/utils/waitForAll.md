@@ -20,7 +20,7 @@ function waitForAll(dependencies: {[string]: RecoilValue<>}):
 ```
 ---
 
-Becuase the concurrency helper is provided as a selector, it may be used by Recoil hooks in a React component, as a dependency in a Recoil selector, or anywhere a Recoil state is used.
+Because the concurrency helper is provided as a selector, it may be used by Recoil hooks in a React component, as a dependency in a Recoil selector, or anywhere a Recoil state is used.
 
 ### Examples
 

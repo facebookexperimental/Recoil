@@ -23,7 +23,7 @@ This API is similar to the React (`useState()`)[https://reactjs.org/docs/hooks-r
 
 This is the recommended hook to use when a component intends to read and write state.
 
-Using this hook in a React component will subscibe the component to re-render when the state is updated.  This hook may throw if the state has an error or is pending asynchronous resolution.  Please see [this guide](/docs/guides/asynchronous-data-queries).
+Using this hook in a React component will subscribe the component to re-render when the state is updated.  This hook may throw if the state has an error or is pending asynchronous resolution.  Please see [this guide](/docs/guides/asynchronous-data-queries).
 
 ### Example
 

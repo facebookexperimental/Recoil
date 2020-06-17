@@ -11,7 +11,7 @@ function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T>>
 
 ---
 
-This helper can be used to obtain the current state of a potentially asynchronous dependency without throwing if there is an error or the dependency is still pending.  It is similar to [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) except that it is a selector instead of a hook.  Becuase `noWait()` returns a selector, it can in turn be used by other Recoil selectors as well as hooks.
+This helper can be used to obtain the current state of a potentially asynchronous dependency without throwing if there is an error or the dependency is still pending.  It is similar to [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) except that it is a selector instead of a hook.  Because `noWait()` returns a selector, it can in turn be used by other Recoil selectors as well as hooks.
 
 ### Example
 

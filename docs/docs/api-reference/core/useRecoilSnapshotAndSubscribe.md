@@ -9,7 +9,7 @@ This hook synchronously returns a [`Snapshot`](/docs/api-reference/core/Snapshot
 function useRecoilSnapshotAndSubscribe(): Snapshot
 ```
 
-Be careful using this hook because it will cause the component to rerender for *all* Recoil state changes.   In the future we hope to provide the ability to debounce for performance.
+Be careful using this hook because it will cause the component to re-render for *all* Recoil state changes.   In the future we hope to provide the ability to debounce for performance.
 
 ### Link Example
 Define a `<LinkToNewView>` component that renders an `<a>` anchor with an href based on the current state with a mutation applied.  In this example `uriFromSnapshot()` is some user-defined function which encodes the current state in the URI which can be restored when loading the page.

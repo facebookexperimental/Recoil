@@ -7,7 +7,7 @@ This hook is similar to [*`useCallback()`*](https://reactjs.org/docs/hooks-refer
 
 Some motivations for using this hook may include:
 * Asynchronously read Recoil state without subscribing a React component to re-render if the atom or selector is updated.
-* Defering expensive lookups to an async action that you don't want to do at render-time.
+* Deferring expensive lookups to an async action that you don't want to do at render-time.
 * Performing side-effects where you would like to also read or write to Recoil state.
 * Dynamically updating an atom or selector where we may not know at render-time which atom or selector we will want to update, so we can't use [`useSetRecoilState()`](/docs/api-reference/core/useSetRecoilState).
 * [Pre-fetching](/docs/guides/asynchronous-data-queries#pre-fetching) data before rendering.
@@ -34,7 +34,7 @@ function useRecoilCallback<Args, ReturnValue>(
 Callback Interface:
 * **`snapshot`** - The [`Snapshot`](/docs/api-reference/core/Snapshot) provides a read-only look at Recoil atom state committed with a React batch when the current transaction the callback is called from began.  While the atom values are static, asynchronous selectors may still be pending or resolve.
 * **`gotoSnapshot`** - Enqueue updating the global state to match the provided [`Snapshot`](/docs/api-reference/core/Snapshot).
-* **`set`** - Enqueue setting the value of an atom or selector.  Like elsewhere, you may eithe provide the new value directly or an updater function that returns the new value and takes the current value as a parameter.  The curent value represents all other enqueued state changes to date in the current transaction.
+* **`set`** - Enqueue setting the value of an atom or selector.  Like elsewhere, you may either provide the new value directly or an updater function that returns the new value and takes the current value as a parameter.  The current value represents all other enqueued state changes to date in the current transaction.
 * **`reset`** - Reset the value of an atom or selector to its default.
 
 ### Example
