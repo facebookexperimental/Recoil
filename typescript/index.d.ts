@@ -93,6 +93,7 @@ export type CallbackInterface = Readonly<{
   set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
   reset: (recoilVal: RecoilState<any>) => void;
   snapshot: Snapshot,
+  gotoSnapshot: (snapshot: Snapshot) => void,
 }>;
 
 /**

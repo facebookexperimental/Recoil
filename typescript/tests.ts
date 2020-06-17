@@ -138,9 +138,14 @@ useResetRecoilState(writeableSelector);
 useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
 
-useRecoilCallback(({ snapshot, set, reset }) => async () => {
+useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   const val: number = await snapshot.getPromise(mySelector1);
   const loadable = snapshot.getLoadable(mySelector1);
+
+  gotoSnapshot(snapshot);
+
+  gotoSnapshot(3); // $ExpectError
+  gotoSnapshot(myAtom); // $ExpectError
 
   loadable.contents;
   loadable.state;
