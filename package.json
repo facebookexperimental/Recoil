@@ -1,10 +1,10 @@
 {
   "name": "recoil",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Recoil - A React state management library for complex UIs",
   "main": "dist/index.js",
   "files": [
-    "dist/recoil.js"
+    "dist"
   ],
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
@@ -12,7 +12,11 @@
     "prepare": "install-peers",
     "build": "rollup -c && node scripts/postbuild.js",
     "test": "jest src/*",
-    "format": "prettier --write \"./**/*.{js,jsx,md,json}\""
+    "format": "prettier --write \"./**/*.{js,md,json}\"",
+    "flow": "flow --show-all-errors",
+    "flow:restart": "flow stop && npm run flow",
+    "test:typescript": "dtslint typescript",
+    "lint": "eslint ."
   },
   "peerDependencies": {
     "react": "^16.13.1",
@@ -30,18 +34,54 @@
     "@rollup/plugin-babel": "^5.0.0",
     "@rollup/plugin-commonjs": "^11.1.0",
     "@rollup/plugin-node-resolve": "^7.1.3",
+    "@rollup/plugin-replace": "^2.3.2",
+    "@types/react": "^16.9.35",
+    "babel-eslint": "^10.1.0",
     "babel-jest": "^26.0.1",
     "babel-plugin-module-resolver": "^4.0.0",
+    "babel-preset-fbjs": "^3.3.0",
+    "dtslint": "^3.6.11",
     "flow-bin": "^0.124.0",
+    "eslint": "^7.2.0",
+    "eslint-plugin-flowtype": "^5.1.3",
+    "eslint-plugin-react": "^7.20.0",
+    "flow-bin": "^0.126.1",
+    "husky": ">=4",
     "immutable": "^4.0.0-rc.12",
     "install-peers-cli": "^2.2.0",
     "jest-cli": "^26.0.1",
+    "lint-staged": ">=10",
     "prettier": "^2.0.5",
+    "promise-polyfill": "^8.1.3",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "rollup": "^2.10.0",
     "rollup-plugin-includepaths": "^0.2.3",
-    "rollup-plugin-terser": "^5.3.0"
+    "rollup-plugin-terser": "^5.3.0",
+    "typescript": "^3.9.5"
   },
   "jest": {
-    "timers": "fake"
+    "timers": "fake",
+    "globals": {
+      "__DEV__": true
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "src/hooks/__tests__/Recoil_PublicHooks-test.js",
+      "src/hooks/__tests__/Recoil_useRecoilCallback-test.js",
+      "src/recoil_values/__tests__/Recoil_atomFamily-test.js",
+      "src/recoil_values/__tests__/Recoil_selector-test.js"
+    ],
+    "setupFiles": [
+      "./setupJestMock.js"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,md,json}": "prettier --write"
   }
 }

@@ -9,7 +9,7 @@
  * when the value is available (but as with LoadObject, an individual Loadable
  * is a value type and is not mutated when the status of a request changes).
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict
  * @format
  */
@@ -17,10 +17,9 @@
 
 import type {TreeState} from '../core/Recoil_State';
 
+const gkx = require('../util/Recoil_gkx');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
-
-const gkx = require('../util/Recoil_gkx');
 
 // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()

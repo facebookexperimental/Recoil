@@ -4,15 +4,17 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
 
-const errorSelector = require('../Recoil_error');
-const {getRecoilValueAsLoadable} = require('../../core/Recoil_RecoilValue');
+const {
+  getRecoilValueAsLoadable,
+} = require('../../core/Recoil_RecoilValueInterface');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
+const errorSelector = require('../Recoil_errorSelector');
 
 let store;
 beforeEach(() => {

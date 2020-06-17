@@ -9,7 +9,7 @@
  * equality semantics of built-in Map. Operations are at worst O(n*b) where n is
  * the array length and b is the complexity of the built-in operation.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow
  * @format
  */
@@ -22,12 +22,13 @@ const LEAF = Symbol('ArrayKeyedMap');
 const emptyMap = new Map();
 
 class ArrayKeyedMap<V> {
-  // _base: Map<any, any> = new Map();
+  // @fb-only: _base: Map<any, any> = new Map();
 
   constructor(
     existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
   ): ArrayKeyedMap<V> {
-    this._base = new Map();
+    // $FlowOSSFixMe
+    this._base = new Map(); // @oss-only
 
     if (existing instanceof ArrayKeyedMap) {
       for (const [k, v] of existing.entries()) {
@@ -43,6 +44,7 @@ class ArrayKeyedMap<V> {
 
   get(key: mixed): V | void {
     const ks = Array.isArray(key) ? key : [key];
+    // $FlowOSSFixMe
     let map = this._base;
     ks.forEach(k => {
       map = map.get(k) ?? emptyMap;
@@ -52,6 +54,7 @@ class ArrayKeyedMap<V> {
 
   set(key: mixed, value: V): any {
     const ks = Array.isArray(key) ? key : [key];
+    // $FlowOSSFixMe
     let map = this._base;
     let next = map;
     ks.forEach(k => {
@@ -68,6 +71,7 @@ class ArrayKeyedMap<V> {
 
   delete(key: mixed): any {
     const ks = Array.isArray(key) ? key : [key];
+    // $FlowOSSFixMe
     let map = this._base;
     let next = map;
     ks.forEach(k => {
@@ -94,6 +98,7 @@ class ArrayKeyedMap<V> {
         }
       });
     }
+    // $FlowOSSFixMe
     recurse(this._base, []);
     return answer.values();
   }

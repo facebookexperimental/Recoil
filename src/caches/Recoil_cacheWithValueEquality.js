@@ -6,7 +6,7 @@
  *
  * Cache implementation with value equality for keys
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict
  * @format
  */

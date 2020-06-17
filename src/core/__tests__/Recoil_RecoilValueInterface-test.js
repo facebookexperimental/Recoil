@@ -4,21 +4,20 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
 
 const atom = require('../../recoil_values/Recoil_atom');
-const {
-  getRecoilValueAsLoadable,
-  peekRecoilValueAsLoadable,
-  setRecoilValue,
-  subscribeToRecoilValue,
-} = require('../Recoil_RecoilValue');
 const selector = require('../../recoil_values/Recoil_selector');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
+const {
+  getRecoilValueAsLoadable,
+  setRecoilValue,
+  subscribeToRecoilValue,
+} = require('../Recoil_RecoilValueInterface');
 
 const a = atom<number>({key: 'a', default: 0});
 const dependsOnAFn = jest.fn(x => x + 1);
@@ -33,7 +32,7 @@ const dependsOnDependsOnA = selector({
 
 test('read default value', () => {
   const store = makeStore();
-  expect(peekRecoilValueAsLoadable(store, a)).toMatchObject({
+  expect(getRecoilValueAsLoadable(store, a)).toMatchObject({
     state: 'hasValue',
     contents: 0,
   });
@@ -42,7 +41,7 @@ test('read default value', () => {
 test('read written value, visited contains written value', () => {
   const store = makeStore();
   setRecoilValue(store, a, 1);
-  expect(peekRecoilValueAsLoadable(store, a)).toMatchObject({
+  expect(getRecoilValueAsLoadable(store, a)).toMatchObject({
     state: 'hasValue',
     contents: 1,
   });
@@ -50,13 +49,13 @@ test('read written value, visited contains written value', () => {
 
 test('read selector based on default upstream', () => {
   const store = makeStore();
-  expect(peekRecoilValueAsLoadable(store, dependsOnA).contents).toEqual(1);
+  expect(getRecoilValueAsLoadable(store, dependsOnA).contents).toEqual(1);
 });
 
 test('read selector based on written upstream', () => {
   const store = makeStore();
   setRecoilValue(store, a, 1);
-  expect(peekRecoilValueAsLoadable(store, dependsOnA).contents).toEqual(2);
+  expect(getRecoilValueAsLoadable(store, dependsOnA).contents).toEqual(2);
 });
 
 test('selector subscriber is called when upstream changes', () => {

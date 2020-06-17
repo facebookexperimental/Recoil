@@ -4,23 +4,27 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
 
-const constSelector = require('../Recoil_const');
-const {getRecoilValueAsLoadable} = require('../../core/Recoil_RecoilValue');
+import type {RecoilValue} from '../../core/Recoil_RecoilValue';
+
+const {
+  getRecoilValueAsLoadable,
+} = require('../../core/Recoil_RecoilValueInterface');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
+const constSelector = require('../Recoil_constSelector');
 
 let store;
 beforeEach(() => {
   store = makeStore();
 });
 
-function get(recoilValue) {
-  return getRecoilValueAsLoadable(store, recoilValue).contents;
+function get<T>(recoilValue: RecoilValue<T>): T {
+  return getRecoilValueAsLoadable<T>(store, recoilValue).valueOrThrow();
 }
 
 test('constSelector - string', () => {
@@ -77,4 +81,17 @@ test('constSelector - object', () => {
   const objSelector3 = constSelector(newObj);
   expect(get(objSelector3)).toEqual({foo: 'bar'});
   expect(get(objSelector3)).toBe(newObj);
+});
+
+test('constSelector - function', () => {
+  const foo = () => 'FOO';
+  const bar = () => 'BAR';
+
+  const fooSelector = constSelector(foo);
+  const barSelector = constSelector(bar);
+
+  expect(get(fooSelector)()).toEqual('FOO');
+  expect(get(barSelector)()).toEqual('BAR');
+
+  expect(constSelector(foo)).toEqual(fooSelector);
 });

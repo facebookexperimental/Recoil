@@ -47,16 +47,15 @@
  *     set: ({set, reset, get}, newValue) => set(atomA, newValue / 100),
  *   });
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
 
+const gkx = require('../util/Recoil_gkx');
 const newSelector = require('./Recoil_selector_NEW');
 const oldSelector = require('./Recoil_selector_OLD');
-
-const gkx = require('../util/Recoil_gkx');
 
 export type * from './Recoil_selector_NEW';
 

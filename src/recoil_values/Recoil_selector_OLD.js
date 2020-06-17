@@ -47,7 +47,7 @@
  *     set: ({set, reset, get}, newValue) => set(atomA, newValue / 100),
  *   });
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
@@ -94,11 +94,12 @@ const equalsSet = require('../util/Recoil_equalsSet');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 
+export type ValueOrUpdater<T> =
+  | T
+  | DefaultValue
+  | ((prevValue: T) => T | DefaultValue);
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
-export type SetRecoilState = <T>(
-  RecoilState<T>,
-  T | DefaultValue | ((prevValue: T) => T | DefaultValue),
-) => void;
+export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 export type ResetRecoilState = <T>(RecoilState<T>) => void;
 
 type ReadOnlySelectorOptions<T> = $ReadOnly<{
@@ -267,7 +268,7 @@ function selector<T>(
 
     function getRecoilValue<S>({key}: RecoilValue<S>): S {
       let loadable: Loadable<S>;
-      [newState, loadable] = getNodeLoadable(store, state, key);
+      [newState, loadable] = getNodeLoadable(store, newState, key);
       depValues.set(key, loadable);
       if (loadable.state === 'hasValue') {
         return loadable.contents;
@@ -372,9 +373,9 @@ function selector<T>(
       };
     }
 
-    // if (__DEV__) {
-    //   detectCircularDependencies(newState, [key]);
-    // }
+    if (__DEV__) {
+      detectCircularDependencies(newState, [key]);
+    }
     return [newState, loadable, newDepValues];
   }
 

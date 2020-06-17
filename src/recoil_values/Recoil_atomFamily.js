@@ -4,26 +4,25 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
 
-import type {AtomOptions, PersistenceSettings} from './Recoil_atom';
 import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+import type {AtomOptions, PersistenceSettings} from './Recoil_atom';
 // @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
 
-const atom = require('./Recoil_atom');
+const ParameterizedAtomTaggedValue_DEPRECATED = require('../adt/Recoil_ParameterizedAtomTaggedValue_DEPRECATED');
 const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
 const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
-const ParameterizedAtomTaggedValue_DEPRECATED = require('../adt/Recoil_ParameterizedAtomTaggedValue_DEPRECATED');
+const everySet = require('../util/Recoil_everySet');
+const stableStringify = require('../util/Recoil_stableStringify');
+const atom = require('./Recoil_atom');
 // @fb-only: const {parameterizedScopedAtomLegacy} = require('./Recoil_ScopedAtom');
 const selectorFamily = require('./Recoil_selectorFamily');
-const stableStringify = require('../util/Recoil_stableStringify');
-
-const everySet = require('../util/Recoil_everySet');
 
 type Primitive = void | null | boolean | number | string;
 export type Parameter =
@@ -176,21 +175,21 @@ function atomFamily<T, P: Parameter>(
     ),
   };
   let legacyAtom;
-  // @fb-only:   if(
-  // @fb-only:     options.scopeRules_APPEND_ONLY_READ_THE_DOCS
-  // @fb-only:   ) {
-  // @fb-only:   legacyAtom = parameterizedScopedAtomLegacy<
-  // @fb-only:     StoredBaseValue_DEPRECATED<T> | DefaultValue,
-  // @fb-only:     P>({
-  // @fb-only:     ...legacyAtomOptions,
-  // @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS:
-  // @fb-only:     options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-  // @fb-only:   });
-  // @fb-only:   } else {
-  legacyAtom = atom<StoredBaseValue_DEPRECATED<T> | DefaultValue>(
-    legacyAtomOptions,
-  );
-  // @fb-only:   }
+  // prettier-ignore
+  // @fb-only: if (
+  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
+  // @fb-only: ) {
+  // @fb-only: legacyAtom = parameterizedScopedAtomLegacy<
+  // @fb-only: StoredBaseValue_DEPRECATED<T> | DefaultValue,
+  // @fb-only: P,
+  // @fb-only: >({
+  // @fb-only: ...legacyAtomOptions,
+  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
+  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+  // @fb-only: });
+  // @fb-only: } else {
+  legacyAtom = atom<StoredBaseValue_DEPRECATED<T> | DefaultValue>(legacyAtomOptions);
+  // @fb-only: }
 
   // Selector to calculate the default value based on any persisted legacy atoms
   // that were upgraded to a atomFamily
@@ -236,10 +235,11 @@ function atomFamily<T, P: Parameter>(
     const newAtom = atom<T>({
       key: `${options.key}__${stableStringify(params) ?? 'void'}`,
       default: atomFamilyDefault(params),
-      scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
-        options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-        params,
-      ),
+      // prettier-ignore
+      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
+      // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+      // @fb-only: params,
+      // @fb-only: ),
       persistence_UNSTABLE: options.persistence_UNSTABLE,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
     });

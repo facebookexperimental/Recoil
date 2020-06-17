@@ -47,14 +47,14 @@
  *     set: ({set, reset, get}, newValue) => set(atomA, newValue / 100),
  *   });
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
 
-import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {Loadable, LoadablePromise} from '../adt/Recoil_Loadable';
+import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
@@ -63,7 +63,23 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
+const {
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue,
+} = require('../adt/Recoil_Loadable');
 const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
+const {
+  detectCircularDependencies,
+  getNodeLoadable,
+  setNodeValue,
+} = require('../core/Recoil_FunctionalCore');
+const {
+  DEFAULT_VALUE,
+  RecoilValueNotReady,
+  registerNode,
+} = require('../core/Recoil_Node');
+const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   mapBySettingInMap,
   mapByUpdatingInMap,
@@ -71,35 +87,19 @@ const {
   setByDeletingFromSet,
 } = require('../util/Recoil_CopyOnWrite');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
-const {
-  detectCircularDependencies,
-  getNodeLoadable,
-  setNodeValue,
-} = require('../core/Recoil_FunctionalCore');
-const {
-  loadableWithError,
-  loadableWithPromise,
-  loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const {
-  DEFAULT_VALUE,
-  RecoilValueNotReady,
-  registerNode,
-} = require('../core/Recoil_Node');
-const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const traverseDepGraph = require('../util/Recoil_traverseDepGraph');
-
 const differenceSets = require('../util/Recoil_differenceSets');
 const equalsSet = require('../util/Recoil_equalsSet');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
+const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
+const traverseDepGraph = require('../util/Recoil_traverseDepGraph');
 
+export type ValueOrUpdater<T> =
+  | T
+  | DefaultValue
+  | ((prevValue: T) => T | DefaultValue);
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
-export type SetRecoilState = <T>(
-  RecoilState<T>,
-  T | DefaultValue | ((prevValue: T) => T | DefaultValue),
-) => void;
+export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 export type ResetRecoilState = <T>(RecoilState<T>) => void;
 
 type ReadOnlySelectorOptions<T> = $ReadOnly<{
@@ -508,9 +508,9 @@ function selector<T>(
       };
     }
 
-    // if (__DEV__) {
-    //   detectCircularDependencies(newState, [key]);
-    // }
+    if (__DEV__) {
+      detectCircularDependencies(newState, [key]);
+    }
 
     return newState;
   }

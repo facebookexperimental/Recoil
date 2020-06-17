@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
@@ -14,10 +14,9 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from './Recoil_State';
 
-const RecoilValueClasses = require('./Recoil_RecoilValueClasses');
-
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const RecoilValueClasses = require('./Recoil_RecoilValue');
 
 class DefaultValue {}
 const DEFAULT_VALUE: DefaultValue = new DefaultValue();
@@ -72,14 +71,18 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
     const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
       production. But it is safe to ignore this warning if it occurred because of
       hot module replacement.`;
-    // if (__DEV__) {
-    //   const isAcceptingUpdate = require('../util/Recoil__debug').isAcceptingUpdate;
-    //   if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
-    //     expectationViolation(message, 'recoil');
-    //   }
-    // } else {
+    // TODO Need to figure out if there is a standard/open-source equivalent to see if hot module replacement is happening:
+    // prettier-ignore
+    // @fb-only: if (__DEV__) {
+    // @fb-only: const isAcceptingUpdate = require('__debug').isAcceptingUpdate;
+    // prettier-ignore
+    // @fb-only: if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
+    // @fb-only: expectationViolation(message, 'recoil');
+    // @fb-only: }
+    // prettier-ignore
+    // @fb-only: } else {
     recoverableViolation(message, 'recoil');
-    // }
+    // @fb-only: }
   }
   nodes.set(node.key, node);
 

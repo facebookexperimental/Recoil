@@ -1,3 +1,10 @@
 const fs = require('fs');
 
-fs.copyFileSync('./src/npm/index.js', './dist/index.js');
+function logErrors(err) {
+  if (err) {
+    throw err;
+  }
+}
+
+fs.copyFile('./src/npm/index.js', './dist/index.js', logErrors);
+fs.copyFile('./typescript/index.d.ts', './dist/index.d.ts', logErrors);

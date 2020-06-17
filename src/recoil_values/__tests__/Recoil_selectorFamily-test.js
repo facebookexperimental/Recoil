@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
@@ -24,7 +24,7 @@ const selectorFamily = require('../Recoil_selectorFamily');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../../core/Recoil_RecoilValue');
+} = require('../../core/Recoil_RecoilValueInterface');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
 let store;

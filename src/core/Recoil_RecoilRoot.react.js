@@ -4,36 +4,35 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
-import type {
-  NodeKey,
-  Store,
-  StoreRef,
-  StoreState,
-  TreeState,
-} from '../core/Recoil_State';
+import type {MutableSnapshot} from '../core/Recoil_Snapshot';
+import type {NodeKey, Store, StoreRef, StoreState} from '../core/Recoil_State';
 
 const React = require('React');
 const {useContext, useEffect, useRef, useState} = require('React');
+
+const Queue = require('../adt/Recoil_Queue');
 const {
   fireNodeSubscriptions,
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
+const {freshSnapshot} = require('../core/Recoil_Snapshot');
+const {makeEmptyStoreState, makeStoreState} = require('../core/Recoil_State');
 const nullthrows = require('../util/Recoil_nullthrows');
-const Queue = require('../adt/Recoil_Queue');
 
 type Props = {
-  initializeState?: ({
+  initializeState_DEPRECATED?: ({
     set: <T>(RecoilValue<T>, T) => void,
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
+  initializeState?: MutableSnapshot => void,
   children: React.Node,
 };
 
@@ -82,7 +81,7 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
     // call useEffect in an unpredictable order sometimes.
     Queue.enqueueExecution('Batcher', () => {
       const storeState = storeRef.current.getState();
-      const {currentTree, nextTree} = storeState;
+      const {nextTree} = storeState;
 
       // Ignore commits that are not because of Recoil transactions -- namely,
       // because something above RecoilRoot re-rendered:
@@ -93,11 +92,8 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
       // Inform transaction subscribers of the transaction:
       const dirtyAtoms = nextTree.dirtyAtoms;
       if (dirtyAtoms.size) {
-        // NOTE that this passes the committed (current, aka previous) tree,
-        // whereas the nextTree is retrieved from storeRef by the transaction subscriber.
-        // (This interface can be cleaned up, TODO)
         storeState.transactionSubscriptions.forEach(sub =>
-          sub(storeRef.current, currentTree),
+          sub(storeRef.current),
         );
       }
 
@@ -119,63 +115,47 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
   return null;
 }
 
-// if (__DEV__) {
-//   if (!window.$recoilDebugStates) {
-//     window.$recoilDebugStates = [];
-//   }
-// }
-
-function makeEmptyTreeState(): TreeState {
-  return {
-    isSnapshot: false,
-    transactionMetadata: {},
-    atomValues: new Map(),
-    nonvalidatedAtoms: new Map(),
-    dirtyAtoms: new Set(),
-    nodeDeps: new Map(),
-    nodeToNodeSubscriptions: new Map(),
-    nodeToComponentSubscriptions: new Map(),
-  };
-}
-
-function makeEmptyStoreState(): StoreState {
-  return {
-    currentTree: makeEmptyTreeState(),
-    nextTree: null,
-    transactionSubscriptions: new Map(),
-    queuedComponentCallbacks: [],
-    suspendedComponentResolvers: new Set(),
-  };
-}
-
-function initialStoreState(store, initializeState) {
-  const initial: StoreState = makeEmptyStoreState();
-  if (initializeState) {
-    initializeState({
-      set: (atom, value) => {
-        initial.currentTree = setNodeValue(
-          store,
-          initial.currentTree,
-          atom.key,
-          value,
-        )[0];
-      },
-      setUnvalidatedAtomValues: atomValues => {
-        atomValues.forEach((v, k) => {
-          initial.currentTree = setUnvalidatedAtomValue(
-            initial.currentTree,
-            k,
-            v,
-          );
-        });
-      },
-    });
+if (__DEV__) {
+  if (typeof window !== 'undefined' && !window.$recoilDebugStates) {
+    window.$recoilDebugStates = [];
   }
+}
+
+function initialStoreState_DEPRECATED(store, initializeState): StoreState {
+  const initial: StoreState = makeEmptyStoreState();
+  initializeState({
+    set: (atom, value) => {
+      initial.currentTree = setNodeValue(
+        store,
+        initial.currentTree,
+        atom.key,
+        value,
+      )[0];
+    },
+    setUnvalidatedAtomValues: atomValues => {
+      atomValues.forEach((v, k) => {
+        initial.currentTree = setUnvalidatedAtomValue(
+          initial.currentTree,
+          k,
+          v,
+        );
+      });
+    },
+  });
   return initial;
 }
 
+function initialStoreState(initializeState): StoreState {
+  const snapshot = freshSnapshot().map(initializeState);
+  return makeStoreState(snapshot.getStore_INTERNAL().getState().currentTree);
+}
+
 let nextID = 0;
-function RecoilRoot({initializeState, children}: Props): ReactElement {
+function RecoilRoot({
+  initializeState_DEPRECATED,
+  initializeState,
+  children,
+}: Props): ReactElement {
   let storeState; // eslint-disable-line prefer-const
 
   const subscribeToTransactions = callback => {
@@ -212,10 +192,14 @@ function RecoilRoot({initializeState, children}: Props): ReactElement {
     if (replaced === nextTree) {
       return;
     }
+
+    if (__DEV__) {
+      if (typeof window !== 'undefined') {
+        window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
+      }
+    }
+
     // Save changes to nextTree and schedule a React update:
-    // if (__DEV__) {
-    //   window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
-    // }
     storeState.nextTree = replaced;
     nullthrows(notifyBatcherOfChange.current)();
   };
@@ -233,7 +217,13 @@ function RecoilRoot({initializeState, children}: Props): ReactElement {
     fireNodeSubscriptions: fireNodeSubscriptionsForStore,
   };
   const storeRef = useRef(store);
-  storeState = useRef(initialStoreState(store, initializeState));
+  storeState = useRef(
+    initializeState_DEPRECATED != null
+      ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED)
+      : initializeState != null
+      ? initialStoreState(initializeState)
+      : makeEmptyStoreState(),
+  );
 
   return (
     <AppContext.Provider value={storeRef}>

@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
@@ -10,12 +10,13 @@
 import type {Store} from 'Recoil_State';
 
 const {act} = require('ReactTestUtils');
-const atom = require('../Recoil_atom');
+
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../../core/Recoil_RecoilValue');
+} = require('../../core/Recoil_RecoilValueInterface');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
+const atom = require('../Recoil_atom');
 
 let store: Store;
 beforeEach(() => {
@@ -54,4 +55,22 @@ test('atom can store null and undefined', () => {
   expect(get(myAtom)).toBe(undefined);
   act(() => set(myAtom, 'VALUE'));
   expect(get(myAtom)).toBe('VALUE');
+});
+
+test('atom can store a circular reference object', () => {
+  class Circular {
+    self: Circular;
+
+    constructor() {
+      this.self = this;
+    }
+  }
+  const circular = new Circular();
+  const myAtom = atom<?Circular>({
+    key: 'atom',
+    default: undefined,
+  });
+  expect(get(myAtom)).toBe(undefined);
+  act(() => set(myAtom, circular));
+  expect(get(myAtom)).toBe(circular);
 });

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
@@ -12,10 +12,10 @@
 
 import type {RecoilState} from 'Recoil_RecoilValue';
 
-const atom = require('Recoil_atom');
-const {useRecoilValue} = require('Recoil_Hooks');
-const {noWait, waitForAll, waitForNone} = require('Recoil_WaitFor');
-const {readOnlySelector} = require('RecoilUtils');
+const {useRecoilValue} = require('../../hooks/Recoil_Hooks');
+const atom = require('../Recoil_atom');
+const readOnlySelector = require('../Recoil_readOnlySelector');
+const {noWait, waitForAll, waitForNone} = require('../Recoil_WaitFor');
 
 const numberAtom: RecoilState<number> = atom({key: 'number', default: 0});
 const stringAtom: RecoilState<string> = atom({key: 'string', default: ''});

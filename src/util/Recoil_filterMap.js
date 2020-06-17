@@ -1,7 +1,10 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ * Copyright (c) Facebook, Inc. and its affiliates.
  *
- * @emails oncall+perf_viz
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */

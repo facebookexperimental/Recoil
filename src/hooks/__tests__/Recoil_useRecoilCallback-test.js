@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
@@ -13,18 +13,23 @@
 const React = require('React');
 const {useRef, useState} = require('React');
 const {act} = require('ReactTestUtils');
+
 const {
   atom,
   selector,
   useRecoilCallback,
   useSetRecoilState,
-} = require('../../Recoil');
-const invariant = require('../../lib/Recoil_invariant');
+} = require('../../Recoil_index');
 const {
   ReadsAtom,
+  componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
+const invariant = require('../../util/Recoil_invariant');
+
+// This shouldn't be needed, but something with React and Jest needs a kick..
+const kickAtom = atom({key: 'kicker', default: undefined});
 
 describe('useRecoilCallback', () => {
   it('Reads Recoil values', async () => {
@@ -33,9 +38,9 @@ describe('useRecoilCallback', () => {
     let cb;
 
     function Component() {
-      cb = useRecoilCallback(async ({getPromise}) => {
+      cb = useRecoilCallback(({snapshot}) => () => {
         // eslint-disable-next-line jest/valid-expect
-        pTest = expect(getPromise(anAtom)).resolves.toBe('DEFAULT');
+        pTest = expect(snapshot.getPromise(anAtom)).resolves.toBe('DEFAULT');
       });
       return null;
     }
@@ -56,12 +61,12 @@ describe('useRecoilCallback', () => {
     let cb;
 
     function Component() {
-      cb = useRecoilCallback(({getLoadable}) => {
-        expect(getLoadable(anAtom)).toMatchObject({
+      cb = useRecoilCallback(({snapshot}) => () => {
+        expect(snapshot.getLoadable(anAtom)).toMatchObject({
           state: 'hasValue',
           contents: 123,
         });
-        expect(getLoadable(asyncSelector)).toMatchObject({
+        expect(snapshot.getLoadable(asyncSelector)).toMatchObject({
           state: 'loading',
         });
         didRun = true; // ensure these assertions do get made
@@ -70,7 +75,6 @@ describe('useRecoilCallback', () => {
     }
     renderElements(<Component />);
     act(cb);
-    await flushPromisesAndTimers();
     expect(didRun).toBe(true);
   });
 
@@ -80,18 +84,20 @@ describe('useRecoilCallback', () => {
     let pTest = Promise.reject(new Error("Callback didn't resolve"));
 
     function Component() {
-      cb = useRecoilCallback(async ({getPromise, set}, value) => {
+      cb = useRecoilCallback(({snapshot, set}) => value => {
         set(anAtom, value);
         // eslint-disable-next-line jest/valid-expect
-        pTest = expect(getPromise(anAtom)).resolves.toBe('DEFAULT');
+        pTest = expect(snapshot.getPromise(anAtom)).resolves.toBe('DEFAULT');
       });
       return null;
     }
 
-    const container = renderElements(<>
-      <Component />
-      <ReadsAtom atom={anAtom} />
-    </>);
+    const container = renderElements(
+      <>
+        <Component />
+        <ReadsAtom atom={anAtom} />
+      </>,
+    );
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => cb(123));
     expect(container.textContent).toBe('123');
@@ -103,20 +109,60 @@ describe('useRecoilCallback', () => {
     let setCB, resetCB;
 
     function Component() {
-      setCB = useRecoilCallback(async ({set}, value) => set(anAtom, value));
-      resetCB = useRecoilCallback(async ({reset}) => reset(anAtom));
+      setCB = useRecoilCallback(({set}) => value => set(anAtom, value));
+      resetCB = useRecoilCallback(({reset}) => () => reset(anAtom));
       return null;
     }
 
-    const container = renderElements(<>
-      <Component />
-      <ReadsAtom atom={anAtom} />
-    </>);
+    const container = renderElements(
+      <>
+        <Component />
+        <ReadsAtom atom={anAtom} />
+      </>,
+    );
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => setCB(123));
     expect(container.textContent).toBe('123');
     act(resetCB);
     expect(container.textContent).toBe('"DEFAULT"');
+  });
+
+  it('Sets Recoil values from async callback', async () => {
+    const anAtom = atom({key: 'set async callback', default: 'DEFAULT'});
+    let cb;
+    // let pTest = Promise.reject(new Error("Callback didn't resolve"));
+    const pTest = [];
+
+    function Component() {
+      cb = useRecoilCallback(({snapshot, set}) => async value => {
+        set(anAtom, value);
+        pTest.push(
+          // eslint-disable-next-line jest/valid-expect
+          expect(snapshot.getPromise(anAtom)).resolves.toBe(
+            value === 123 ? 'DEFAULT' : 123,
+          ),
+        );
+      });
+      return null;
+    }
+
+    // Something with React and Jest requires this extra kick...
+    const [Kick, kick] = componentThatReadsAndWritesAtom(kickAtom);
+
+    const container = renderElements([
+      <Component />,
+      <ReadsAtom atom={anAtom} />,
+      <Kick />,
+    ]);
+    expect(container.textContent).toBe('"DEFAULT"');
+    act(() => cb(123));
+    act(kick);
+    expect(container.textContent).toBe('123');
+    act(() => cb(456));
+    expect(container.textContent).toBe('456');
+    for (const aTest of pTest) {
+      await aTest;
+    }
   });
 
   it('Reads from a snapshot created at callback call time', async () => {
@@ -129,9 +175,9 @@ describe('useRecoilCallback', () => {
 
     function Component() {
       setter = useSetRecoilState(anAtom);
-      cb = useRecoilCallback(async ({getPromise}) => {
+      cb = useRecoilCallback(({snapshot}) => async () => {
         await delay();
-        seenValue = await getPromise(anAtom);
+        seenValue = await snapshot.getPromise(anAtom);
       });
       return null;
     }
@@ -153,10 +199,82 @@ describe('useRecoilCallback', () => {
     };
     act(cb);
     act(() => setter(678));
-    await flushPromisesAndTimers();
     resumeCallback();
     await flushPromisesAndTimers();
     expect(seenValue).toBe(345);
+  });
+
+  it('Setter updater sees current state', () => {
+    const myAtom = atom({key: 'useRecoilCallback updater', default: 'DEFAULT'});
+
+    let setAtom;
+    let cb;
+    function Component() {
+      setAtom = useSetRecoilState(myAtom);
+      cb = useRecoilCallback(({snapshot, set}) => prevValue => {
+        // snapshot sees the stable snapshot from batch at beginning of transaction
+        expect(snapshot.getLoadable(myAtom).contents).toEqual('DEFAULT');
+
+        // Test that callback sees value updates from within the same transaction
+        set(myAtom, value => {
+          expect(value).toEqual(prevValue);
+          return 'UPDATE';
+        });
+        set(myAtom, value => {
+          expect(value).toEqual('UPDATE');
+          return 'UPDATE AGAIN';
+        });
+      });
+      return null;
+    }
+
+    const c = renderElements(
+      <>
+        <ReadsAtom atom={myAtom} />
+        <Component />
+      </>,
+    );
+
+    expect(c.textContent).toEqual('"DEFAULT"');
+
+    // Set then callback in the same transaction
+    act(() => {
+      setAtom('SET');
+      cb('SET');
+      cb('UPDATE AGAIN');
+    });
+    expect(c.textContent).toEqual('"UPDATE AGAIN"');
+  });
+
+  it('goes to snapshot', async () => {
+    const myAtom = atom({
+      key: 'Goto Snapshot From Callback',
+      default: 'DEFAULT',
+    });
+
+    let cb;
+    function RecoilCallback() {
+      cb = useRecoilCallback(({snapshot, gotoSnapshot}) => () => {
+        const updatedSnapshot = snapshot.map(({set}) => {
+          set(myAtom, 'SET IN SNAPSHOT');
+        });
+        gotoSnapshot(updatedSnapshot);
+      });
+      return null;
+    }
+
+    const c = renderElements(
+      <>
+        <ReadsAtom atom={myAtom} />
+        <RecoilCallback />
+      </>,
+    );
+
+    expect(c.textContent).toEqual('"DEFAULT"');
+
+    act(cb);
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"SET IN SNAPSHOT"');
   });
 });
 
@@ -168,13 +286,13 @@ test('Consistent callback function', () => {
     const [iteration, _setIteration] = useState(0);
     setIteration = _setIteration;
 
-    const callback = useRecoilCallback(() => {});
+    const callback = useRecoilCallback(() => () => {});
     const callbackRef = useRef(callback);
     iteration
       ? expect(callback).not.toBe(callbackRef.current)
       : expect(callback).toBe(callbackRef.current);
 
-    const callbackMemoized = useRecoilCallback(() => {}, []);
+    const callbackMemoized = useRecoilCallback(() => () => {}, []);
     const callbackMemoizedRef = useRef(callbackMemoized);
     expect(callbackMemoized).toBe(callbackMemoizedRef.current);
 

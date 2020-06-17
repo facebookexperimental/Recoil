@@ -10,6 +10,7 @@
  * Note: this is written procedurally (i.e., without filterSet) for performant
  * use in tight loops.
  *
+ * @emails oncall+recoil
  * @flow strict
  * @format
  */

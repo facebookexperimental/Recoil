@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+perf_viz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
@@ -17,10 +17,20 @@ const gkx = require('../../util/Recoil_gkx');
 gkx.setPass('recoil_async_selector_refactor');
 
 const {act} = require('ReactTestUtils');
-const {loadableWithError, loadableWithValue} = require('../../adt/Recoil_Loadable');
-const {getRecoilValueAsLoadable} = require('../../core/Recoil_RecoilValue');
+const {
+  loadableWithError,
+  loadableWithValue,
+} = require('../../adt/Recoil_Loadable');
+const {
+  getRecoilValueAsLoadable,
+} = require('../../core/Recoil_RecoilValueInterface');
 const {asyncSelector, makeStore} = require('../../testing/Recoil_TestingUtils');
-const {noWait, waitForAll, waitForAny, waitForNone} = require('../Recoil_WaitFor');
+const {
+  noWait,
+  waitForAll,
+  waitForAny,
+  waitForNone,
+} = require('../Recoil_WaitFor');
 
 let store;
 beforeEach(() => {
