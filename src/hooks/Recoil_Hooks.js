@@ -18,7 +18,6 @@ import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 import type {PersistenceType} from '../recoil_values/Recoil_atom';
 
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
-const ReactDOM = require('ReactDOM');
 
 const {
   peekNodeLoadable,
@@ -546,7 +545,7 @@ function useGotoRecoilSnapshot(): Snapshot => void {
   const storeRef = useStoreRef();
   return useCallback(
     (snapshot: Snapshot) => {
-      ReactDOM.unstable_batchedUpdates(() => {
+      batchUpdates(() => {
         storeRef.current.replaceState(prevState => {
           const nextState = snapshot.getStore_INTERNAL().getState().currentTree;
 

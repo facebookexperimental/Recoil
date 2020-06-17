@@ -44,6 +44,7 @@ const {
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
 } = require('../Recoil_Hooks');
+const {batchUpdates} = require('../util/Recoil_batch');
 
 gkx.setPass('recoil_async_selector_refactor');
 
@@ -437,7 +438,7 @@ test('Selector functions are evaluated just once even if multiple upstreams chan
   );
   expect(selectorFn).toHaveBeenCalledTimes(1);
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
@@ -461,7 +462,7 @@ test('Component that depends on multiple atoms via selector is rendered just onc
   );
   expect(ReadComp).toHaveBeenCalledTimes(2);
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
@@ -484,7 +485,7 @@ test('Component that depends on multiple atoms directly is rendered just once', 
   );
   expect(ReadComp).toHaveBeenCalledTimes(2);
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
@@ -504,7 +505,7 @@ test('Component is rendered just once when atom is changed twice', () => {
   );
   expect(ReadComp).toHaveBeenCalledTimes(2);
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       updateValueA(1);
       updateValueA(2);
     });
@@ -535,7 +536,7 @@ test('Can subscribe to and also change an atom in the same batch', () => {
   expect(container.textContent).toEqual('');
 
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       setVisible(true);
       updateValue(1337);
     });
@@ -796,7 +797,7 @@ test('Selector depedencies are updated transactionally', () => {
   );
 
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
