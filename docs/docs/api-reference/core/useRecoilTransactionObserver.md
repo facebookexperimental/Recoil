@@ -12,7 +12,7 @@ function useRecoilTransactionObserver(({
 }) => void)
 ```
 
-The callback provides a [`Snapshot`](/docs/api-reference/core/Snapshot) of the current and previous state for the React batch transaction.  If you would only like to subscribe to changes for individual atoms, consider Atom Effects.  In the future, we may allow the ability to subscribe to specific conditions or provide debouncing for performance.
+The callback provides a [`Snapshot`](/docs/api-reference/core/Snapshot) of the current and previous state for the React batch transaction.  If you would only like to subscribe to changes for individual atoms, consider effects instead.  In the future, we may allow the ability to subscribe to specific conditions or provide debouncing for performance.
 
 ### Debug Example
 
