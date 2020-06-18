@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.0.10 (2020-06-18)
+
+### Bug Fix
+
+- Fix exports for snapshot hooks
+
 ## 0.0.9 (2020-06-17)
 
 ### Features
@@ -15,7 +21,7 @@
 
 ### Bug Fixes
 
-- Some fixes for Server Side Rendering, though we do not officically support it yet. (#233, #220, #284) - Thanks @fyber-LJX, @Chrischuck, and @aulneau
+- Some fixes for Server Side Rendering, though we do not officially support it yet. (#233, #220, #284) - Thanks @fyber-LJX, @Chrischuck, and @aulneau
 - Fix selectors recording dependency subscriptions in some cases (#296) - Thanks @drarmstr
 - Fix updaters in `useRecoilCallback()` getting current state (#260) - Thanks @drarmstr
 - Fix error messages when throwing certain errors in the open-source build. (#199) - Thanks @jonthomp
