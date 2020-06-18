@@ -101,7 +101,7 @@ module.exports = {
   
   // Hooks for Snapshots
   useGotoRecoilSnapshot,
-  useRecoilSnapshotAndSubscribe
+  useRecoilSnapshotAndSubscribe,
 
   // Concurrency Helpers
   noWait,
