@@ -127,7 +127,7 @@ const tempCelcius = selector({
   set: ({set}, newValue) =>
     set(
       tempFahrenheit,
-      neValue instanceof DefaultValue ? newValue : (newValue * 9) / 5 + 32
+      newValue instanceof DefaultValue ? newValue : (newValue * 9) / 5 + 32
     ),
 });
 
