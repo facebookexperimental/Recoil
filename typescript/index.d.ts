@@ -145,7 +145,7 @@ export function useRecoilCallback<Args extends ReadonlyArray<unknown>, Return>(
   deps?: ReadonlyArray<unknown>,
 ): (...args: Args) => Return;
 
-export function useRecoilTransactionObserver(
+export function useRecoilTransactionObserver_UNSTABLE(
   callback: (opts: {
     snapshot: Snapshot,
     previousSnapshot: Snapshot,

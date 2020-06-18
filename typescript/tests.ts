@@ -22,7 +22,7 @@ import {
   waitForNone,
   waitForAny,
   waitForAll,
-  useRecoilTransactionObserver,
+  useRecoilTransactionObserver_UNSTABLE,
   useGotoRecoilSnapshot,
   Snapshot,
   useRecoilSnapshotAndSubscribe,
@@ -155,10 +155,10 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
 });
 
 /**
- * useRecoilTransactionObserver()
+ * useRecoilTransactionObserver_UNSTABLE()
  */
 {
-  useRecoilTransactionObserver(
+  useRecoilTransactionObserver_UNSTABLE(
     ({snapshot, previousSnapshot}) => {
       snapshot.getLoadable(myAtom);
       snapshot.getPromise(mySelector1);
