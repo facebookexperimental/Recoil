@@ -9,11 +9,11 @@
     <icon>https://recoiljs.org/img/favicon.ico</icon>
     <rights>Copyright © 2020 Facebook, Inc.</rights>
     <entry>
-        <title type="html"><![CDATA[0.0.9-released]]></title>
-        <id>0.0.9-released</id>
-        <link href="https://recoiljs.org/blog/2020/06/18/0.0.9-released"/>
+        <title type="html"><![CDATA[0.0.10-released]]></title>
+        <id>0.0.10-released</id>
+        <link href="https://recoiljs.org/blog/2020/06/18/0.0.10-released"/>
         <updated>2020-06-18T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[# Recoil 0.0.9]]></summary>
+        <summary type="html"><![CDATA[# Recoil 0.0.10]]></summary>
     </entry>
     <entry>
         <title type="html"><![CDATA[0.0.8-released]]></title>
