@@ -154,7 +154,7 @@ export function useRecoilTransactionObserver_UNSTABLE(
 
 export function useGotoRecoilSnapshot(): (snapshot: Snapshot) => void;
 
-export function useRecoilSnapshotAndSubscribe(): Snapshot;
+export function useRecoilSnapshot(): Snapshot;
 
 // loadable.d.ts
 type ResolvedLoadablePromiseInfo<T> = Readonly<{

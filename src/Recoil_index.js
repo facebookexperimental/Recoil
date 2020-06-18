@@ -40,7 +40,7 @@ const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {
   useGotoRecoilSnapshot,
   useRecoilCallback,
-  useRecoilSnapshotAndSubscribe,
+  useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
   useRecoilTransactionObserver,
@@ -96,7 +96,7 @@ module.exports = {
 
   // Hooks for Snapshots
   useGotoRecoilSnapshot,
-  useRecoilSnapshotAndSubscribe,
+  useRecoilSnapshot,
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
   useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,

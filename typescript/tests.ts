@@ -25,7 +25,7 @@ import {
   useRecoilTransactionObserver_UNSTABLE,
   useGotoRecoilSnapshot,
   Snapshot,
-  useRecoilSnapshotAndSubscribe,
+  useRecoilSnapshot,
 } from 'recoil';
 
 // DefaultValue
@@ -184,10 +184,10 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
 }
 
 /**
- * useRecoilSnapshotAndSubscribe()
+ * useRecoilSnapshot()
  */
 {
-  useRecoilSnapshotAndSubscribe(); // $ExpectType Snapshot
+  useRecoilSnapshot(); // $ExpectType Snapshot
 }
 
 // Other
