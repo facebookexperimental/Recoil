@@ -3,6 +3,8 @@ title: useRecoilTransactionObserver_UNSTABLE(callback)
 sidebar_label: useRecoilTransactionObserver()
 ---
 
+## ***NOTE***: *Please consider this API as unstable*
+
 This hook subscribes a callback to be executed every time there is a change to Recoil atom state.  Multiple updates may be batched together in a single transaction.  This hook is great for persisting state changes, dev tools, building history, &c.
 
 ```jsx
