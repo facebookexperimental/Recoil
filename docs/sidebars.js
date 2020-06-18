@@ -67,7 +67,7 @@ module.exports = {
                 Hooks: [
                   'api-reference/core/useRecoilCallback',
                   'api-reference/core/useRecoilTransactionObserver',
-                  'api-reference/core/useRecoilSnapshotAndSubscribe',
+                  'api-reference/core/useRecoilSnapshot',
                   'api-reference/core/useGotoRecoilSnapshot',
                 ],
               },

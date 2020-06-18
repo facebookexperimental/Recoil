@@ -1,12 +1,12 @@
 ---
-title: useRecoilTransactionObserver(callback)
+title: useRecoilTransactionObserver_UNSTABLE(callback)
 sidebar_label: useRecoilTransactionObserver()
 ---
 
 This hook subscribes a callback to be executed every time there is a change to Recoil atom state.  Multiple updates may be batched together in a single transaction.  This hook is great for persisting state changes, dev tools, building history, &c.
 
 ```jsx
-function useRecoilTransactionObserver(({
+function useRecoilTransactionObserver_UNSTABLE(({
   snapshot: Snapshot,
   previousSnapshot: Snapshot,
 }) => void)
@@ -18,7 +18,7 @@ The callback provides a [`Snapshot`](/docs/api-reference/core/Snapshot) of the c
 
 ```jsx
 function DebugObserver() {
-  useRecoilTransactionObserver(({snapshot}) => {
+  useRecoilTransactionObserver_UNSTABLE(({snapshot}) => {
     window.myDebugState = {
       a: snapshot.getLoadable(atomA).contents,
       b: snapshot.getLoadable(atomB).contents,

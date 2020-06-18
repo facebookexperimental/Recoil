@@ -1,12 +1,12 @@
 ---
-title: useRecoilSnapshotAndSubscribe()
-sidebar_label: useRecoilSnapshotAndSubscribe()
+title: useRecoilSnapshot()
+sidebar_label: useRecoilSnapshot()
 ---
 
 This hook synchronously returns a [`Snapshot`](/docs/api-reference/core/Snapshot) object during rendering and subscribes the calling component for all Recoil state changes.  You may want to use this hook for debug tools, or for server-side rendering where you need to synchronously have the state during the initial render.
 
 ```jsx
-function useRecoilSnapshotAndSubscribe(): Snapshot
+function useRecoilSnapshot(): Snapshot
 ```
 
 Be careful using this hook because it will cause the component to re-render for *all* Recoil state changes.   In the future we hope to provide the ability to debounce for performance.
@@ -16,7 +16,7 @@ Define a `<LinkToNewView>` component that renders an `<a>` anchor with an `href`
 
 ```jsx
 function LinkToNewView() {
-  const snapshot = useRecoilSnapshotAndSubscribe();
+  const snapshot = useRecoilSnapshot();
   const newSnapshot = snapshot.map(({set}) => set(viewState, 'New View'));
   return <a href={uriFromSnapshot(newSnapshot)}>Click Me!</a>;
 }

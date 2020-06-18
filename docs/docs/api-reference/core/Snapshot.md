@@ -30,14 +30,14 @@ class MutableSnapshot {
 }
 ```
 
-Notice that `set()` and `reset()` have the same signatue as callbacks provided to a writeable selector's `set` property, but they only effect the new snapshot, not the current state.
+Notice that `set()` and `reset()` have the same signature as callbacks provided to a writeable selector's `set` property, but they only effect the new snapshot, not the current state.
 
 ### Hooks
 
 Recoil has the following hooks for working with snapshots:
 
 - [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback) - Asynchronous access to snapshot
-- [`useRecoilSnapshotAndSubscribe()`](/docs/api-reference/core/useRecoilSnapshotAndSubscribe) - Synchronous access to snapshot
+- [`useRecoilSnapshot()`](/docs/api-reference/core/useRecoilSnapshot) - Synchronous access to snapshot
 - [`useRecoilTransactionObserver()`](/docs/api-reference/core/useRecoilTransactionObserver) - Subscribe to snapshots for all state changes
 - [`useGotoRecoilSnapshot()`](/docs/api-reference/core/useGotoRecoilSnapshot) - Update current state to match snapshot
 
