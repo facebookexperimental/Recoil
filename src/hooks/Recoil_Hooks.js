@@ -507,7 +507,7 @@ function useRecoilTransactionObserver(
 }
 
 // Return a snapshot of the current state and subscribe to all state changes
-function useRecoilSnapshotAndSubscribe(): Snapshot {
+function useRecoilSnapshot(): Snapshot {
   const store = useStoreRef();
   const [snapshot, setSnapshot] = useState(() =>
     cloneSnapshot(store.current.getState().currentTree),
@@ -664,7 +664,7 @@ module.exports = {
   useTransactionSubscription_DEPRECATED: useTransactionSubscription,
   useTransactionObservation_DEPRECATED,
   useRecoilTransactionObserver,
-  useRecoilSnapshotAndSubscribe,
+  useRecoilSnapshot,
   useGoToSnapshot_DEPRECATED,
   useGotoRecoilSnapshot,
   useSetUnvalidatedAtomValues,
