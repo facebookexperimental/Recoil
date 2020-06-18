@@ -22,6 +22,10 @@ import {
   waitForNone,
   waitForAny,
   waitForAll,
+  useRecoilTransactionObserver,
+  useGotoRecoilSnapshot,
+  Snapshot,
+  useRecoilSnapshotAndSubscribe,
 } from 'recoil';
 
 // DefaultValue
@@ -77,9 +81,9 @@ const writeableSelector = selector({
 // RecoilRoot
 RecoilRoot({});
 RecoilRoot({
-  initializeState: ({ set, setUnvalidatedAtomValues }) => {
+  initializeState: ({ set, reset }) => {
     set(myAtom, 5);
-    setUnvalidatedAtomValues(new Map());
+    reset(myAtom);
 
     set(readOnlySelectorSel, 2); // $ExpectError
     setUnvalidatedAtomValues({}); // $ExpectError
@@ -134,9 +138,14 @@ useResetRecoilState(writeableSelector);
 useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
 
-useRecoilCallback(async ({ getPromise, getLoadable, set, reset }) => {
-  const val: number = await getPromise(mySelector1);
-  const loadable = getLoadable(mySelector1);
+useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
+  const val: number = await snapshot.getPromise(mySelector1);
+  const loadable = snapshot.getLoadable(mySelector1);
+
+  gotoSnapshot(snapshot);
+
+  gotoSnapshot(3); // $ExpectError
+  gotoSnapshot(myAtom); // $ExpectError
 
   loadable.contents;
   loadable.state;
@@ -144,6 +153,42 @@ useRecoilCallback(async ({ getPromise, getLoadable, set, reset }) => {
   set(myAtom, 5);
   reset(myAtom);
 });
+
+/**
+ * useRecoilTransactionObserver()
+ */
+{
+  useRecoilTransactionObserver(
+    ({snapshot, previousSnapshot}) => {
+      snapshot.getLoadable(myAtom);
+      snapshot.getPromise(mySelector1);
+
+      previousSnapshot.getLoadable(myAtom);
+      previousSnapshot.getPromise(mySelector2);
+    },
+  );
+}
+
+/**
+ * useGotoRecoilSnapshot()
+ */
+{
+  const snapshot: Snapshot = ({} as any);
+
+  const gotoSnap = useGotoRecoilSnapshot();
+
+  gotoSnap(snapshot);
+
+  gotoSnap(5); // $ExpectError
+  gotoSnap(myAtom); // $ExpectError
+}
+
+/**
+ * useRecoilSnapshotAndSubscribe()
+ */
+{
+  useRecoilSnapshotAndSubscribe(); // $ExpectType Snapshot
+}
 
 // Other
 isRecoilValue(4);
