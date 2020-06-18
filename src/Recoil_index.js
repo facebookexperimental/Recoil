@@ -46,6 +46,7 @@ const {
   useRecoilValueLoadable,
   useResetRecoilState,
   useSetRecoilState,
+  useRecoilInterface,
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
 } = require('./hooks/Recoil_Hooks');
@@ -105,4 +106,5 @@ module.exports = {
 
   // Other functions
   isRecoilValue,
+  useRecoilInterface_LIBRARY_INTERFACE: useRecoilInterface,
 };
