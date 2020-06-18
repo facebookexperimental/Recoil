@@ -178,7 +178,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
             newValue instanceof DefaultValue
               ? mapByDeletingFromMap(state.atomValues, key)
               : mapBySettingInMap(
-                  state.atomValues,
+                  new Map(state.atomValues),
                   key,
                   loadableWithValue(newValue),
                 ),

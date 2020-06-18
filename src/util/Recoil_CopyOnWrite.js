@@ -25,24 +25,18 @@ function setByDeletingFromSet<V>(set: $ReadOnlySet<V>, v: V): Set<V> {
   return next;
 }
 
-function mapBySettingInMap<K, V>(
-  map: $ReadOnlyMap<K, V>,
-  k: K,
-  v: V,
-): Map<K, V> {
-  const next = new Map(map);
-  next.set(k, v);
-  return next;
+function mapBySettingInMap<K, V>(map: Map<K, V>, k: K, v: V): Map<K, V> {
+  map.set(k, v);
+  return map;
 }
 
 function mapByUpdatingInMap<K, V>(
-  map: $ReadOnlyMap<K, V>,
+  map: Map<K, V>,
   k: K,
   updater: (V | void) => V,
 ): Map<K, V> {
-  const next = new Map(map);
-  next.set(k, updater(next.get(k)));
-  return next;
+  map.set(k, updater(map.get(k)));
+  return map;
 }
 
 function mapByDeletingFromMap<K, V>(map: $ReadOnlyMap<K, V>, k: K): Map<K, V> {

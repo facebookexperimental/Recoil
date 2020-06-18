@@ -107,7 +107,16 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
 
       // nextTree is now committed -- note that copying and reset occurs when
       // a transaction begins, in startNextTreeIfNeeded:
-      storeState.currentTree = nextTree;
+      storeState.currentTree = {
+        ...nextTree,
+        atomValues: new Map(nextTree.atomValues),
+        nodeDeps: new Map(nextTree.nodeDeps),
+        nodeToNodeSubscriptions: new Map(nextTree.nodeToNodeSubscriptions),
+        nonvalidatedAtoms: new Map(nextTree.nonvalidatedAtoms),
+        nodeToComponentSubscriptions: new Map(
+          nextTree.nodeToComponentSubscriptions,
+        ),
+      };
       storeState.nextTree = null;
     });
   });

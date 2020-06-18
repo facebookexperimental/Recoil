@@ -128,7 +128,7 @@ function subscribeComponentToNode(
       state.nodeToComponentSubscriptions,
       key,
       subsForAtom =>
-        mapBySettingInMap(subsForAtom ?? emptyMap, subID, [
+        mapBySettingInMap(subsForAtom ?? new Map(emptyMap), subID, [
           'TODO debug name',
           callback,
         ]),
