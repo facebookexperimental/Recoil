@@ -11,7 +11,6 @@
 'use strict';
 
 const cacheWithValueEquality = require('../Recoil_cacheWithValueEquality');
-
 const {List} = require('immutable');
 
 test('cacheWithValueEquality - set string', () => {
