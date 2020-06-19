@@ -240,7 +240,7 @@ function atomWithFallback<T>(
           },
   });
 
-  return selector<T, [RecoilValue<T | DefaultValue>, RecoilValue<T>]>({
+  return selector<T>({
     key: `${options.key}__withFallback`,
     get: ({get}) => {
       const baseValue = get(base);
