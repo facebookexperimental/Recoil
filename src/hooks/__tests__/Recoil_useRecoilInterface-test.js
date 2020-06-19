@@ -13,9 +13,10 @@
 const React = require('React');
 const {useRef, useState} = require('React');
 const {act} = require('ReactTestUtils');
+
 const atom = require('../../recoil_values/Recoil_atom');
-const {useRecoilInterface} = require('../Recoil_Hooks');
 const {renderElements} = require('../../testing/Recoil_TestingUtils');
+const {useRecoilInterface} = require('../Recoil_Hooks');
 
 const counterAtom = atom({
   key: `counterAtom`,

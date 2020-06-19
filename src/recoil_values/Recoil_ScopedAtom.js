@@ -34,15 +34,14 @@ import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
 import type {ScopedValue, ScopeMap} from 'Recoil_ScopedAtomTaggedValue';
 
 const ArrayKeyedMap = require('../adt/Recoil_ArrayKeyedMap');
-const atom = require('./Recoil_atom');
-const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
 const ScopedAtomTaggedValue = require('../adt/Recoil_ScopedAtomTaggedValue');
+const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
+const mapIterable = require('../util/Recoil_mapIterable');
+const stableStringify = require('../util/Recoil_stableStringify');
+const atom = require('./Recoil_atom');
 const selector = require('./Recoil_selector');
 const selectorFamily = require('./Recoil_selectorFamily');
-const stableStringify = require('../util/Recoil_stableStringify');
 const {waitForAll} = require('./Recoil_WaitFor');
-
-const mapIterable = require('../util/Recoil_mapIterable');
 
 type Primitive = number | string | boolean | null | void;
 

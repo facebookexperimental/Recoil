@@ -32,6 +32,8 @@ const {
   waitForNone,
 } = require('../Recoil_WaitFor');
 
+/* eslint-disable jest/valid-expect */
+
 let store;
 beforeEach(() => {
   store = makeStore();
@@ -370,3 +372,5 @@ test('waitFor - named dependency version', async () => {
   await allTest0;
   await allTest1;
 });
+
+/* eslint-enable jest/valid-expect */
