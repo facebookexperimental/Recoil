@@ -23,7 +23,7 @@ module.exports = {
     ecmaVersion: 11,
     sourceType: 'module',
   },
-  plugins: ['flowtype', 'react'],
+  plugins: ['flowtype', 'react', 'jest'],
   rules: {
     strict: 0,
     'jsx-a11y/href-no-hash': 'off',
