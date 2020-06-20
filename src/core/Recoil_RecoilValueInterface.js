@@ -44,6 +44,7 @@ function getRecoilValueAsLoadable<T>(
         result = loadable;
         return newState;
       }),
+      true,
     ),
   );
   return (result: any); // flowlint-line unclear-type:off

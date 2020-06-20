@@ -183,7 +183,7 @@ function RecoilRoot({
     fireNodeSubscriptions(storeRef.current, updatedNodes, when);
   }
 
-  const replaceState = replacer => {
+  const replaceState = (replacer, shouldNotNotifyBatcher) => {
     const storeState = storeRef.current.getState();
     startNextTreeIfNeeded(storeState);
     // Use replacer to get the next state:
@@ -201,6 +201,9 @@ function RecoilRoot({
 
     // Save changes to nextTree and schedule a React update:
     storeState.nextTree = replaced;
+    if (shouldNotNotifyBatcher === true) {
+      return;
+    }
     nullthrows(notifyBatcherOfChange.current)();
   };
 

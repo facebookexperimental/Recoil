@@ -68,7 +68,10 @@ export type StoreState = {
 
 export type Store = $ReadOnly<{
   getState: () => StoreState,
-  replaceState: ((TreeState) => TreeState) => void,
+  replaceState: (
+    (TreeState) => TreeState,
+    shouldNotNotifyBatcher: ?boolean,
+  ) => void,
   subscribeToTransactions: ((Store) => void) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
   fireNodeSubscriptions: (
