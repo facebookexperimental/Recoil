@@ -149,13 +149,12 @@ describe('useRecoilCallback', () => {
     // Something with React and Jest requires this extra kick...
     const [Kick, kick] = componentThatReadsAndWritesAtom(kickAtom);
 
-    /* eslint-disable react/jsx-key */
     const container = renderElements([
       <Component />,
       <ReadsAtom atom={anAtom} />,
       <Kick />,
     ]);
-    /* eslint-enable react/jsx-key */
+
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => cb(123));
     act(kick);

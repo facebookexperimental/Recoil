@@ -27,6 +27,7 @@ module.exports = {
   rules: {
     strict: 0,
     'jsx-a11y/href-no-hash': 'off',
+    'react/jsx-key': 'off',
   },
   settings: {
     react: {
