@@ -19,6 +19,7 @@ import type {
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {Store, TreeState} from './Recoil_State';
 
+const gkx = require('../util/Recoil_gkx');
 const mapMap = require('../util/Recoil_mapMap');
 const {DEFAULT_VALUE} = require('./Recoil_Node');
 const {
@@ -27,7 +28,6 @@ const {
   valueFromValueOrUpdater,
 } = require('./Recoil_RecoilValueInterface');
 const {makeEmptyTreeState, makeStoreState} = require('./Recoil_State');
-const gkx = require('gkx');
 
 function makeStore(treeState: TreeState): Store {
   const storeState = makeStoreState(treeState);
