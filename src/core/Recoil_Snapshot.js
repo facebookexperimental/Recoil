@@ -98,6 +98,21 @@ class Snapshot {
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
+  getDeps_UNSTABLE: <T>(RecoilValue<T>) => Iterable<RecoilValue<mixed>> = <T>(
+    recoilValue: RecoilValue<T>,
+  ) => {
+    this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
+    const deps = this._store
+      .getState()
+      .currentTree.nodeDeps.get(recoilValue.key);
+    return (function*() {
+      for (const key of deps ?? []) {
+        yield nullthrows(recoilValues.get(key));
+      }
+    })();
+  };
+
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
     const mutableSnapshot = new MutableSnapshot(
       this._store.getState().currentTree,

@@ -180,3 +180,36 @@ test('getNodes', () => {
 
   // TODO Test dirty selectors
 });
+
+test('getDeps', () => {
+  const snapshot = freshSnapshot();
+
+  const myAtom = atom<string>({key: 'snapshot getDeps atom', default: 'ATOM'});
+  const selectorA = selector({
+    key: 'getDepsA',
+    get: ({get}) => get(myAtom),
+  });
+  const selectorB = selector({
+    key: 'getDepsB',
+    get: ({get}) => get(selectorA) + get(myAtom),
+  });
+  const selectorC = selector({
+    key: 'getDepsC',
+    get: async ({get}) => {
+      const ret = get(selectorA) + get(selectorB);
+      await Promise.resolve();
+      return ret;
+    },
+  });
+
+  expect(Array.from(snapshot.getDeps_UNSTABLE(myAtom))).toEqual([]);
+  expect(Array.from(snapshot.getDeps_UNSTABLE(selectorA))).toEqual(
+    expect.arrayContaining([myAtom]),
+  );
+  expect(Array.from(snapshot.getDeps_UNSTABLE(selectorB))).toEqual(
+    expect.arrayContaining([selectorA, myAtom]),
+  );
+  expect(Array.from(snapshot.getDeps_UNSTABLE(selectorC))).toEqual(
+    expect.arrayContaining([selectorA, selectorB]),
+  );
+});
