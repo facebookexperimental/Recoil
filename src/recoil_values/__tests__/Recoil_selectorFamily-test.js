@@ -59,6 +59,17 @@ test('selectorFamily - number parameter', () => {
   expect(get(mySelector(100))).toBe(200);
 });
 
+test('selectorFamily - array parameter', () => {
+  const mySelector = selectorFamily({
+    key: 'selectorFamily/array',
+    get: numbers => () => numbers.reduce((x, y) => x + y, 0),
+  });
+
+  expect(get(mySelector([]))).toBe(0);
+  expect(get(mySelector([1, 2, 3]))).toBe(6);
+  expect(get(mySelector([0, 1, 1, 2, 3, 5]))).toBe(12);
+});
+
 test('selectorFamily - object parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/object',
@@ -81,9 +92,6 @@ test('Works with supersets', () => {
   set(myAtom, 1);
   expect(get(mySelector({multiplier: 10}))).toBe(10);
   expect(get(mySelector({multiplier: 100}))).toBe(100);
-  // Unlike atomFactories, parameters are considered as simple values.
-  // Adding a new key to the object is considered a whole new parameter value.
-  // Selectors don't persist, though, so this distinction shouldn't matter.
   expect(get(mySelector({multiplier: 100, extra: 'foo'}))).toBe(100);
 });
 
