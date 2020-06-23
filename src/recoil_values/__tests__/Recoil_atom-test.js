@@ -17,6 +17,7 @@ const {
   getRecoilValueAsLoadable,
   setRecoilValue,
 } = require('../../core/Recoil_RecoilValueInterface');
+const {useRecoilTransactionObserver} = require('../../hooks/Recoil_Hooks');
 const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
@@ -201,7 +202,7 @@ describe('Effects', () => {
     expect(get(myAtom)).toEqual('OTHER');
   });
 
-  test('async set', async () => {
+  test('async set', () => {
     let setAtom, resetAtom;
 
     const myAtom = atom({
@@ -255,7 +256,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('');
   });
 
-  test('once per root', async () => {
+  test('once per root', () => {
     let inited = 0;
     const myAtom = atom({
       key: 'atom effect once per root',
@@ -283,5 +284,84 @@ describe('Effects', () => {
     expect(c2.textContent).toEqual('"INIT"');
 
     expect(inited).toEqual(2);
+  });
+
+  test('onSet', () => {
+    const sets = {a: 0, b: 0};
+    const observer = key => newValue => {
+      sets[key]++;
+      expect(newValue).toEqual(sets[key]);
+    };
+
+    const atomA = atom({
+      key: 'atom effect onSet A',
+      default: 'A',
+      effects_UNSTABLE: [({onSet}) => onSet(observer('a'))],
+    });
+
+    const atomB = atom({
+      key: 'atom effect onSet B',
+      default: 'B',
+      effects_UNSTABLE: [({onSet}) => onSet(observer('b'))],
+    });
+
+    expect(sets).toEqual({a: 0, b: 0});
+
+    const [AtomA, setA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
+    const c = renderElements(
+      <>
+        <AtomA />
+        <AtomB />
+      </>,
+    );
+
+    act(() => setA(1));
+    expect(sets).toEqual({a: 1, b: 0});
+
+    act(() => setA(2));
+    expect(sets).toEqual({a: 2, b: 0});
+
+    act(() => setB(1));
+    expect(sets).toEqual({a: 2, b: 1});
+    expect(c.textContent).toEqual('21');
+  });
+
+  test('onSet ordering', () => {
+    let set = false;
+
+    const myAtom = atom({
+      key: 'atom effect onSet ordering',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({onSet}) => {
+          onSet(() => {
+            set = true;
+          });
+        },
+      ],
+    });
+
+    function TransactionObserver({callback}) {
+      useRecoilTransactionObserver(callback);
+      return null;
+    }
+
+    const [AtomA, setA] = componentThatReadsAndWritesAtom(myAtom);
+    const c = renderElements(
+      <>
+        <AtomA />
+        <TransactionObserver
+          callback={() => {
+            expect(set).toBe(true);
+          }}
+        />
+      </>,
+    );
+
+    expect(set).toEqual(false);
+    act(() => setA(1));
+    expect(set).toEqual(true);
+    expect(c.textContent).toEqual('1');
   });
 });

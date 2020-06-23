@@ -110,6 +110,10 @@ type AtomEffect<T> = ({
   ) => void,
   resetSelf: () => void,
   getSnapshot: () => Snapshot,
+
+  // Subscribe callbacks to events.
+  // Atom effect observers are called before global transaction observers
+  onSet: ((newValue: T | DefaultValue) => void) => void,
 }) => void; // TODO Allow returning a cleanup function
 
 export type AtomOptions<T> = $ReadOnly<{
@@ -192,8 +196,20 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       }
       const resetSelf = () => setSelf(DEFAULT_VALUE);
 
+      function onSet(handler: (T | DefaultValue) => void) {
+        store.subscribeToTransactions(asyncStore => {
+          const nextState =
+            asyncStore.getState().nextTree ?? asyncStore.getState().currentTree;
+          const {atomValues} = nextState;
+          const newValue: T | DefaultValue = atomValues.has(key)
+            ? nullthrows(atomValues.get(key)).valueOrThrow()
+            : DEFAULT_VALUE;
+          handler(newValue);
+        }, key);
+      }
+
       for (const effect of options.effects_UNSTABLE ?? []) {
-        effect({node, trigger, setSelf, resetSelf, getSnapshot});
+        effect({node, trigger, setSelf, resetSelf, getSnapshot, onSet});
       }
 
       duringInit = false;
