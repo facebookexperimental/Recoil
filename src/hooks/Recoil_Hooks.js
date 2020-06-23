@@ -20,10 +20,6 @@ import type {PersistenceType} from '../recoil_values/Recoil_atom';
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 const ReactDOM = require('ReactDOM');
 
-const {
-  peekNodeLoadable,
-  setNodeValue,
-} = require('../core/Recoil_FunctionalCore');
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
 const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
@@ -40,30 +36,11 @@ const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const differenceSets = require('../util/Recoil_differenceSets');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const filterMap = require('../util/Recoil_filterMap');
-const intersectSets = require('../util/Recoil_intersectSets');
 const invariant = require('../util/Recoil_invariant');
 const mapMap = require('../util/Recoil_mapMap');
 const mergeMaps = require('../util/Recoil_mergeMaps');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
-
-function cloneState_DEPRECATED(state: TreeState): TreeState {
-  return {
-    transactionMetadata: {...state.transactionMetadata},
-    atomValues: new Map(state.atomValues),
-    nonvalidatedAtoms: new Map(state.nonvalidatedAtoms),
-    dirtyAtoms: new Set(state.dirtyAtoms),
-    nodeDeps: new Map(state.nodeDeps),
-    nodeToNodeSubscriptions: mapMap(
-      state.nodeToNodeSubscriptions,
-      keys => new Set(keys),
-    ),
-    nodeToComponentSubscriptions: mapMap(
-      state.nodeToComponentSubscriptions,
-      subsByAtom => new Map(subsByAtom),
-    ),
-  };
-}
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -334,48 +311,6 @@ function useTransactionSubscription(callback: Store => void) {
   }, [callback, storeRef]);
 }
 
-// TODO instead of force update can put snapshot into local state
-function useTreeStateClone_DEPRECATED(): TreeState {
-  const [_, setState] = useState(0);
-  const forceUpdate = useCallback(() => setState(x => x + 1), []);
-  useTransactionSubscription(forceUpdate);
-  const storeRef = useStoreRef();
-  return cloneState_DEPRECATED(storeRef.current.getState().currentTree);
-}
-
-type UpdatedSnapshot = {
-  atomValues: Map<NodeKey, mixed>,
-  updatedAtoms: Set<NodeKey>,
-};
-
-function useSnapshotWithStateChange_DEPRECATED(
-  transaction: (<T>(RecoilState<T>, (T) => T) => void) => void,
-): UpdatedSnapshot {
-  const storeRef = useStoreRef();
-  let snapshot = useTreeStateClone_DEPRECATED();
-  const update = <T>({key}: RecoilState<T>, updater: T => T) => {
-    [snapshot] = setNodeValue(
-      storeRef.current,
-      snapshot,
-      key,
-      peekNodeLoadable(storeRef.current, snapshot, key).map(updater),
-    );
-  };
-
-  transaction(update);
-
-  const atomValues: Map<NodeKey, mixed> = mapMap(
-    snapshot.atomValues,
-    v => v.contents,
-  );
-  // Only report atoms, not selectors
-  const updatedAtoms = intersectSets(
-    snapshot.dirtyAtoms,
-    new Set(atomValues.keys()),
-  );
-  return {atomValues, updatedAtoms};
-}
-
 function externallyVisibleAtomValuesInState(
   state: TreeState,
 ): Map<NodeKey, mixed> {
@@ -526,21 +461,6 @@ function useRecoilSnapshot(): Snapshot {
   return snapshot;
 }
 
-function useGoToSnapshot_DEPRECATED(): UpdatedSnapshot => void {
-  const storeRef = useStoreRef();
-  return (snapshot: UpdatedSnapshot) => {
-    ReactDOM.unstable_batchedUpdates(() => {
-      snapshot.updatedAtoms.forEach(key => {
-        setRecoilValue(
-          storeRef.current,
-          new AbstractRecoilValue(key),
-          snapshot.atomValues.get(key),
-        );
-      });
-    });
-  };
-}
-
 function useGotoRecoilSnapshot(): Snapshot => void {
   const storeRef = useStoreRef();
   return useCallback(
@@ -660,12 +580,10 @@ module.exports = {
   useSetRecoilState,
   useResetRecoilState,
   useRecoilInterface: useInterface,
-  useSnapshotWithStateChange_DEPRECATED,
   useTransactionSubscription_DEPRECATED: useTransactionSubscription,
   useTransactionObservation_DEPRECATED,
   useRecoilTransactionObserver,
   useRecoilSnapshot,
-  useGoToSnapshot_DEPRECATED,
   useGotoRecoilSnapshot,
   useSetUnvalidatedAtomValues,
 };
