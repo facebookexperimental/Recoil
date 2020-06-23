@@ -285,6 +285,15 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   ): [TreeState, $ReadOnlySet<NodeKey>] {
     const state = initAtom(store, initState, 'set');
 
+    // Only update if setting a new value
+    if (
+      state.atomValues.has(key)
+        ? newValue === state.atomValues.get(key)?.contents
+        : newValue instanceof DefaultValue
+    ) {
+      return [state, new Set()];
+    }
+
     if (options.dangerouslyAllowMutability !== true) {
       deepFreezeValue(newValue);
     }

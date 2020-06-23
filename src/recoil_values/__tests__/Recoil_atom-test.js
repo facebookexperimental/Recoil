@@ -17,7 +17,11 @@ const {
   getRecoilValueAsLoadable,
   setRecoilValue,
 } = require('../../core/Recoil_RecoilValueInterface');
-const {useRecoilTransactionObserver} = require('../../hooks/Recoil_Hooks');
+const {
+  useRecoilState,
+  useRecoilTransactionObserver,
+  useResetRecoilState,
+} = require('../../hooks/Recoil_Hooks');
 const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
@@ -87,6 +91,47 @@ describe('Valid values', () => {
     act(() => set(myAtom, circular));
     expect(get(myAtom)).toBe(circular);
   });
+});
+
+test("Updating with same value doesn't rerender", () => {
+  const myAtom = atom({key: 'atom same value rerender', default: 'DEFAULT'});
+
+  let setAtom;
+  let resetAtom;
+  let renders = 0;
+  function AtomComponent() {
+    renders++;
+    const [value, setValue] = useRecoilState(myAtom);
+    const resetValue = useResetRecoilState(myAtom);
+    setAtom = setValue;
+    resetAtom = resetValue;
+    return value;
+  }
+  expect(renders).toEqual(0);
+  const c = renderElements(<AtomComponent />);
+
+  expect(renders).toEqual(3);
+  expect(c.textContent).toEqual('DEFAULT');
+
+  act(() => setAtom('SET'));
+  expect(renders).toEqual(4);
+  expect(c.textContent).toEqual('SET');
+
+  act(() => setAtom('SET'));
+  expect(renders).toEqual(4);
+  expect(c.textContent).toEqual('SET');
+
+  act(() => setAtom('CHANGE'));
+  expect(renders).toEqual(5);
+  expect(c.textContent).toEqual('CHANGE');
+
+  act(resetAtom);
+  expect(renders).toEqual(6);
+  expect(c.textContent).toEqual('DEFAULT');
+
+  act(resetAtom);
+  expect(renders).toEqual(6);
+  expect(c.textContent).toEqual('DEFAULT');
 });
 
 describe('Effects', () => {
