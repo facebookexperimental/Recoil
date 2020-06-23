@@ -23,11 +23,12 @@ type ComponentCallback = TreeState => void;
 export type TreeState = $ReadOnly<{
   // Information about the TreeState itself:
   transactionMetadata: {...},
-  dirtyAtoms: Set<NodeKey>,
 
   // ATOMS
+  knownAtoms: Set<NodeKey>,
   atomValues: AtomValues,
   nonvalidatedAtoms: Map<NodeKey, mixed>,
+  dirtyAtoms: Set<NodeKey>,
 
   // NODE GRAPH
   // Upstream Node dependencies
@@ -84,6 +85,7 @@ export type StoreRef = {
 function makeEmptyTreeState(): TreeState {
   return {
     transactionMetadata: {},
+    knownAtoms: new Set(),
     atomValues: new Map(),
     nonvalidatedAtoms: new Map(),
     dirtyAtoms: new Set(),
