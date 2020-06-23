@@ -19,14 +19,11 @@ const {
   flushPromisesAndTimers,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
-const {
-  useGotoRecoilSnapshot,
-  useRecoilSnapshotAndSubscribe,
-} = require('../Recoil_Hooks');
+const {useGotoRecoilSnapshot, useRecoilSnapshot} = require('../Recoil_Hooks');
 
-test('useRecoilSnapshotAndSubcribe - subscribe to updates', () => {
+test('useRecoilSnapshot - subscribe to updates', () => {
   const myAtom = atom({
-    key: 'useRecoilSnapshotAndSubcribe - subscribe',
+    key: 'useRecoilSnapshot - subscribe',
     default: 'DEFAULT',
   });
   const [
@@ -39,7 +36,7 @@ test('useRecoilSnapshotAndSubcribe - subscribe to updates', () => {
 
   const snapshots = [];
   function RecoilSnapshotAndSubscribe() {
-    const snapshot = useRecoilSnapshotAndSubscribe();
+    const snapshot = useRecoilSnapshot();
     snapshots.push(snapshot);
     return null;
   }
@@ -69,9 +66,9 @@ test('useRecoilSnapshotAndSubcribe - subscribe to updates', () => {
   expect(snapshots[2].getLoadable(myAtom).contents).toEqual('DEFAULT');
 });
 
-test('useRecoilSnapshotAndSubscribe - goto snapshots', () => {
+test('useRecoilSnapshot - goto snapshots', () => {
   const atomA = atom({
-    key: 'useRecoilSnapshotAndSubcribe - goto A',
+    key: 'useRecoilSnapshot - goto A',
     default: 'DEFAULT',
   });
   const [ReadsAndWritesAtomA, setAtomA] = componentThatReadsAndWritesAtom(
@@ -79,7 +76,7 @@ test('useRecoilSnapshotAndSubscribe - goto snapshots', () => {
   );
 
   const atomB = atom({
-    key: 'useRecoilSnapshotAndSubcribe - goto B',
+    key: 'useRecoilSnapshot - goto B',
     default: 'DEFAULT',
   });
   const [ReadsAndWritesAtomB, setAtomB] = componentThatReadsAndWritesAtom(
@@ -90,7 +87,7 @@ test('useRecoilSnapshotAndSubscribe - goto snapshots', () => {
   let gotoSnapshot;
   function RecoilSnapshotAndSubscribe() {
     gotoSnapshot = useGotoRecoilSnapshot();
-    const snapshot = useRecoilSnapshotAndSubscribe();
+    const snapshot = useRecoilSnapshot();
     snapshots.push(snapshot);
     return null;
   }
@@ -123,12 +120,12 @@ test('useRecoilSnapshotAndSubscribe - goto snapshots', () => {
   expect(c.textContent).toEqual('13');
 });
 
-test('useRecoilSnapshotAndSubscribe - async selectors', async () => {
+test('useRecoilSnapshot - async selectors', async () => {
   const [mySelector, resolve] = asyncSelector();
 
   const snapshots = [];
   function RecoilSnapshotAndSubscribe() {
-    const snapshot = useRecoilSnapshotAndSubscribe();
+    const snapshot = useRecoilSnapshot();
     snapshots.push(snapshot);
     return null;
   }

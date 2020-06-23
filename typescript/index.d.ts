@@ -28,10 +28,7 @@ export class DefaultValue {}
 import * as React from 'react';
 
 export interface RecoilRootProps {
-  initializeState?: (options: {
-    set: <T>(recoilVal: RecoilState<T>, newVal: T) => void;
-    setUnvalidatedAtomValues: (atomMap: Map<string, unknown>) => void;
-  }) => void;
+  initializeState?: (mutableSnapshot: MutableSnapshot) => void;
 }
 
 export const RecoilRoot: React.FC<RecoilRootProps>;
@@ -78,13 +75,25 @@ export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T
 export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
 
 // hooks.d.ts
+export class Snapshot {
+  getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+  getPromise<T>(recoilValue: RecoilValue<T>): Promise<T>;
+  map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
+  asyncMap(cb: (mutableSnapshot: MutableSnapshot) => Promise<void>): Promise<Snapshot>;
+}
+
+export class MutableSnapshot extends Snapshot {
+  set: SetRecoilState;
+  reset: ResetRecoilState;
+}
+
 export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
 export type Resetter = () => void;
 export type CallbackInterface = Readonly<{
-  getPromise: <T>(recoilVal: RecoilValue<T>) => Promise<T>;
-  getLoadable: <T>(recoilVal: RecoilValue<T>) => Loadable<T>;
   set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
   reset: (recoilVal: RecoilState<any>) => void;
+  snapshot: Snapshot,
+  gotoSnapshot: (snapshot: Snapshot) => void,
 }>;
 
 /**
@@ -132,9 +141,20 @@ export function useResetRecoilState(recoilState: RecoilState<any>): Resetter;
  * events.
  */
 export function useRecoilCallback<Args extends ReadonlyArray<unknown>, Return>(
-  fn: (interface: CallbackInterface, ...args: Args) => Return,
+  fn: (interface: CallbackInterface) => (...args: Args) => Return,
   deps?: ReadonlyArray<unknown>,
 ): (...args: Args) => Return;
+
+export function useRecoilTransactionObserver_UNSTABLE(
+  callback: (opts: {
+    snapshot: Snapshot,
+    previousSnapshot: Snapshot,
+  }) => void,
+): void;
+
+export function useGotoRecoilSnapshot(): (snapshot: Snapshot) => void;
+
+export function useRecoilSnapshot(): Snapshot;
 
 // loadable.d.ts
 type ResolvedLoadablePromiseInfo<T> = Readonly<{

@@ -154,6 +154,7 @@ describe('useRecoilCallback', () => {
       <ReadsAtom atom={anAtom} />,
       <Kick />,
     ]);
+
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => cb(123));
     act(kick);

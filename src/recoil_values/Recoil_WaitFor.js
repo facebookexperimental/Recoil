@@ -16,15 +16,14 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 
-const isPromise = require('../util/Recoil_isPromise');
 const {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
-const selectorFamily = require('./Recoil_selectorFamily');
-
 const gkx = require('../util/Recoil_gkx');
+const isPromise = require('../util/Recoil_isPromise');
+const selectorFamily = require('./Recoil_selectorFamily');
 
 /////////////////
 //  TRUTH TABLE

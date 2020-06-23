@@ -42,7 +42,9 @@ const {DefaultValue} = require('./core/Recoil_Node');
 const {RecoilRoot} = require('./core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {
+  useGotoRecoilSnapshot,
   useRecoilCallback,
+  useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
   useRecoilTransactionObserver,
@@ -96,8 +98,10 @@ module.exports = {
   // Hooks for asynchronous Recoil
   useRecoilCallback,
 
-  // Hooks for Persistence/Debugging
-  useRecoilTransactionObserver,
+  // Hooks for Snapshots
+  useGotoRecoilSnapshot,
+  useRecoilSnapshot,
+  useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
   useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
 

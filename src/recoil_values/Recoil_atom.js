@@ -167,8 +167,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       state: TreeState,
       newValue: T | DefaultValue,
     ): [TreeState, $ReadOnlySet<NodeKey>] => {
-      if (options.dangerouslyAllowMutability !== true) {
-        deepFreezeValue(newValue);
+      if (__DEV__) {
+        if (options.dangerouslyAllowMutability !== true) {
+          deepFreezeValue(newValue);
+        }
       }
       return [
         {
@@ -240,7 +242,7 @@ function atomWithFallback<T>(
           },
   });
 
-  return selector<T, [RecoilValue<T | DefaultValue>, RecoilValue<T>]>({
+  return selector<T>({
     key: `${options.key}__withFallback`,
     get: ({get}) => {
       const baseValue = get(base);

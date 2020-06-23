@@ -10,8 +10,8 @@
  */
 'use strict';
 
-import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {Loadable} from '../adt/Recoil_Loadable';
+import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
@@ -25,8 +25,8 @@ import type {
 } from './Recoil_selector';
 
 const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
-const selector = require('./Recoil_selector');
 const stableStringify = require('../util/Recoil_stableStringify');
+const selector = require('./Recoil_selector');
 
 // Keep in mind the parameter needs to be serializable as a cahche key
 // using Recoil_stableStringify
