@@ -10,16 +10,17 @@
  */
 'use strict';
 
+// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {AtomOptions} from './Recoil_atom';
-// @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
+
+// @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
 
 const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
 const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
 const stableStringify = require('../util/Recoil_stableStringify');
 const atom = require('./Recoil_atom');
-// @fb-only: const {parameterizedScopedAtomLegacy} = require('./Recoil_ScopedAtom');
 const selectorFamily = require('./Recoil_selectorFamily');
 
 type Primitive = void | null | boolean | number | string;
