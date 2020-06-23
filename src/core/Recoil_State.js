@@ -26,9 +26,12 @@ export type TreeState = $ReadOnly<{
 
   // ATOMS
   knownAtoms: Set<NodeKey>,
+  dirtyAtoms: Set<NodeKey>,
   atomValues: AtomValues,
   nonvalidatedAtoms: Map<NodeKey, mixed>,
-  dirtyAtoms: Set<NodeKey>,
+
+  // SELECTORS
+  knownSelectors: Set<NodeKey>,
 
   // NODE GRAPH
   // Upstream Node dependencies
@@ -86,9 +89,10 @@ function makeEmptyTreeState(): TreeState {
   return {
     transactionMetadata: {},
     knownAtoms: new Set(),
+    dirtyAtoms: new Set(),
     atomValues: new Map(),
     nonvalidatedAtoms: new Map(),
-    dirtyAtoms: new Set(),
+    knownSelectors: new Set(),
     nodeDeps: new Map(),
     nodeToNodeSubscriptions: new Map(),
     nodeToComponentSubscriptions: new Map(),
