@@ -11,7 +11,10 @@
 'use strict';
 
 const React = require('React');
+
 const atom = require('../../recoil_values/Recoil_atom');
+const selector = require('../../recoil_values/Recoil_selector');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
 const {
   getNodeLoadable,
   peekNodeLoadable,
@@ -19,9 +22,6 @@ const {
   subscribeComponentToNode,
 } = require('../Recoil_FunctionalCore');
 const {RecoilState} = require('../Recoil_RecoilValue');
-const selector = require('../../recoil_values/Recoil_selector');
-const {makeStore} = require('../../testing/Recoil_TestingUtils');
-
 const immutable = require('immutable');
 
 const a = atom<number>({key: 'a', default: 0}).key;
