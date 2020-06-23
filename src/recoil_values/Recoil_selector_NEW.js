@@ -694,8 +694,10 @@ function selector<T>(
   }
 
   function maybeFreezeValue(val) {
-    if (Boolean(options.dangerouslyAllowMutability) === false) {
-      deepFreezeValue(val);
+    if (__DEV__) {
+      if (Boolean(options.dangerouslyAllowMutability) === false) {
+        deepFreezeValue(val);
+      }
     }
   }
 
