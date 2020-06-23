@@ -113,7 +113,9 @@ type AtomEffect<T> = ({
 
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
-  onSet: ((newValue: T | DefaultValue) => void) => void,
+  onSet: (
+    (newValue: T | DefaultValue, oldValue: T | DefaultValue) => void,
+  ) => void,
 }) => void; // TODO Allow returning a cleanup function
 
 export type AtomOptions<T> = $ReadOnly<{
@@ -196,15 +198,18 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       }
       const resetSelf = () => setSelf(DEFAULT_VALUE);
 
-      function onSet(handler: (T | DefaultValue) => void) {
+      function onSet(handler: (T | DefaultValue, T | DefaultValue) => void) {
         store.subscribeToTransactions(asyncStore => {
-          const nextState =
-            asyncStore.getState().nextTree ?? asyncStore.getState().currentTree;
-          const {atomValues} = nextState;
-          const newValue: T | DefaultValue = atomValues.has(key)
-            ? nullthrows(atomValues.get(key)).valueOrThrow()
+          const state = asyncStore.getState();
+          const nextState = state.nextTree ?? state.currentTree;
+          const prevState = state.currentTree;
+          const newValue: T | DefaultValue = nextState.atomValues.has(key)
+            ? nullthrows(nextState.atomValues.get(key)).valueOrThrow()
             : DEFAULT_VALUE;
-          handler(newValue);
+          const oldValue: T | DefaultValue = prevState.atomValues.has(key)
+            ? nullthrows(prevState.atomValues.get(key)).valueOrThrow()
+            : DEFAULT_VALUE;
+          handler(newValue, oldValue);
         }, key);
       }
 
