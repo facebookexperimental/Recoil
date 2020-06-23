@@ -101,6 +101,7 @@ class Snapshot {
 function cloneTreeState(treeState: TreeState): TreeState {
   return {
     transactionMetadata: {...treeState.transactionMetadata},
+    knownAtoms: new Set(treeState.knownAtoms),
     atomValues: new Map(treeState.atomValues),
     nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
     dirtyAtoms: new Set(treeState.dirtyAtoms),
