@@ -53,8 +53,8 @@
  */
 'use strict';
 
-import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {Loadable} from '../adt/Recoil_Loadable';
+import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
@@ -63,7 +63,23 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
+const {
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue,
+} = require('../adt/Recoil_Loadable');
 const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
+const {
+  detectCircularDependencies,
+  getNodeLoadable,
+  setNodeValue,
+} = require('../core/Recoil_FunctionalCore');
+const {
+  DEFAULT_VALUE,
+  RecoilValueNotReady,
+  registerNode,
+} = require('../core/Recoil_Node');
+const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   mapBySettingInMap,
   mapByUpdatingInMap,
@@ -71,28 +87,11 @@ const {
   setByDeletingFromSet,
 } = require('../util/Recoil_CopyOnWrite');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
-const {
-  detectCircularDependencies,
-  getNodeLoadable,
-  setNodeValue,
-} = require('../core/Recoil_FunctionalCore');
-const {
-  loadableWithError,
-  loadableWithPromise,
-  loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const {
-  DEFAULT_VALUE,
-  RecoilValueNotReady,
-  registerNode,
-} = require('../core/Recoil_Node');
-const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-
 const differenceSets = require('../util/Recoil_differenceSets');
 const equalsSet = require('../util/Recoil_equalsSet');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
+const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
 
 export type ValueOrUpdater<T> =
   | T
@@ -151,6 +150,17 @@ function selector<T>(
 
   let cache: CacheImplementation<Loadable<T>> =
     cacheImplementation ?? cacheWithReferenceEquality();
+
+  function initSelector(state: TreeState): TreeState {
+    if (state.knownSelectors.has(key)) {
+      return state;
+    }
+
+    return {
+      ...state,
+      knownSelectors: setByAddingToSet(state.knownSelectors, key),
+    };
+  }
 
   function putIntoCache(
     store: Store,
@@ -379,7 +389,9 @@ function selector<T>(
     return [newState, loadable, newDepValues];
   }
 
-  function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+  function myGet(store: Store, initState: TreeState): [TreeState, Loadable<T>] {
+    const state = initSelector(initState);
+
     // TODO memoize a value if no deps have changed to avoid a cache lookup
     // Lookup the node value in the cache.  If not there, then compute
     // the value and update the state with any changed node subscriptions.
@@ -387,8 +399,8 @@ function selector<T>(
   }
 
   if (set != null) {
-    function mySet(store, state, newValue) {
-      let newState = state;
+    function mySet(store, initState, newValue) {
+      let newState = initSelector(initState);
       const writtenNodes: Set<NodeKey> = new Set();
 
       function getRecoilValue<S>({key}: RecoilValue<S>): S {
