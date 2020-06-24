@@ -12,7 +12,7 @@ import type {Store} from 'Recoil_State';
 const React = require('React');
 const {act} = require('ReactTestUtils');
 
-const {DEFAULT_VALUE} = require('../../core/Recoil_Node');
+const {DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -375,5 +375,68 @@ describe('Effects', () => {
     expect(set2).toEqual(true);
     expect(globalObserver).toEqual(true);
     expect(c.textContent).toEqual('1');
+  });
+
+  test('onSet History', () => {
+    const history: Array<() => void> = []; // Array of undo functions
+
+    function historyEffect({node, setSelf, onSet, getSnapshot}) {
+      let ignore = false;
+      onSet((newValue, oldValue) => {
+        if (!(newValue instanceof DefaultValue)) {
+          const {getLoadable} = getSnapshot();
+          expect(newValue).toEqual(getLoadable(node).contents);
+        }
+        if (ignore) {
+          ignore = false;
+          return;
+        }
+        history.push(() => {
+          ignore = true;
+          setSelf(oldValue);
+        });
+      });
+    }
+
+    const atomA = atom({
+      key: 'atom effect onSte history A',
+      default: 'DEFAULT_A',
+      effects_UNSTABLE: [historyEffect],
+    });
+    const atomB = atom({
+      key: 'atom effect onSte history B',
+      default: 'DEFAULT_B',
+      effects_UNSTABLE: [historyEffect],
+    });
+
+    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
+    const c = renderElements(
+      <>
+        <AtomA />
+        <AtomB />
+      </>,
+    );
+
+    expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
+    act(() => setA('SET_A'));
+    expect(c.textContent).toEqual('"SET_A""DEFAULT_B"');
+    act(() => setB('SET_B'));
+    expect(c.textContent).toEqual('"SET_A""SET_B"');
+    act(() => setB('CHANGE_B'));
+    expect(c.textContent).toEqual('"SET_A""CHANGE_B"');
+    act(resetA);
+    expect(c.textContent).toEqual('"DEFAULT_A""CHANGE_B"');
+
+    expect(history.length).toEqual(4);
+
+    act(() => history.pop()());
+    expect(c.textContent).toEqual('"SET_A""CHANGE_B"');
+    act(() => history.pop()());
+    expect(c.textContent).toEqual('"SET_A""SET_B"');
+    act(() => history.pop()());
+    expect(c.textContent).toEqual('"SET_A""DEFAULT_B"');
+    act(() => history.pop()());
+    expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
 });
