@@ -32,6 +32,9 @@ class RecoilValueNotReady extends Error {
 export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   key: NodeKey,
 
+  // Returns the current value without evaluating or modifying state
+  peek: TreeState => ?Loadable<T>,
+
   // Returns the updated state and the loadable value of the node
   get: (Store, TreeState) => [TreeState, Loadable<T>],
 

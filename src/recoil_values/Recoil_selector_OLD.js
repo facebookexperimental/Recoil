@@ -72,6 +72,7 @@ const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceE
 const {
   detectCircularDependencies,
   getNodeLoadable,
+  peekNodeLoadable,
   setNodeValue,
 } = require('../core/Recoil_FunctionalCore');
 const {
@@ -396,6 +397,29 @@ function selector<T>(
     return [newState, loadable, newDepValues];
   }
 
+  function myPeek(state: TreeState): ?Loadable<T> {
+    // First, get the current deps for this selector
+    const currentDeps = state.nodeDeps.get(key) ?? emptySet;
+    const depValues: Map<NodeKey, ?Loadable<mixed>> = new Map(
+      Array.from(currentDeps)
+        .sort()
+        .map(depKey => [depKey, peekNodeLoadable(state, depKey)]),
+    );
+
+    const cacheDepValues = new Map();
+    for (const [depKey, depValue] of depValues.entries()) {
+      if (depValue == null) {
+        return undefined;
+      }
+      cacheDepValues.set(depKey, depValue);
+    }
+
+    // Always cache and evaluate a selector
+    // It may provide a result even when not all deps are available.
+    const cacheKey = cacheKeyFromDepValues(cacheDepValues);
+    return cache.get(cacheKey);
+  }
+
   function myGet(store: Store, initState: TreeState): [TreeState, Loadable<T>] {
     const state = initSelector(initState);
 
@@ -455,6 +479,7 @@ function selector<T>(
     return registerNode<T>({
       key,
       options,
+      peek: myPeek,
       get: myGet,
       set: mySet,
     });
@@ -462,6 +487,8 @@ function selector<T>(
     return registerNode<T>({
       key,
       options,
+      peek: myPeek,
+
       get: myGet,
     });
   }

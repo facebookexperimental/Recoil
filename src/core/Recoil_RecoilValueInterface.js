@@ -18,7 +18,6 @@ import type {Store, TreeState} from './Recoil_State';
 const Tracing = require('../util/Recoil_Tracing');
 const {
   getNodeLoadable,
-  peekNodeLoadable,
   setNodeValue,
   setUnvalidatedAtomValue,
   subscribeComponentToNode,
@@ -97,8 +96,8 @@ function valueFromValueOrUpdater<T>(
     // pending or errored):
     const storeState = store.getState();
     const state = storeState.nextTree ?? storeState.currentTree;
-    // NOTE: This will not update state with node subscriptions.
-    const current = peekNodeLoadable(store, state, key);
+    // NOTE: This will evaluate node, but not update state with node subscriptions!
+    const current = getNodeLoadable(store, state, key)[1];
     if (current.state === 'loading') {
       throw new RecoilValueNotReady(key);
     } else if (current.state === 'hasError') {

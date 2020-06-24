@@ -22,6 +22,7 @@ const {Snapshot, freshSnapshot} = require('../Recoil_Snapshot');
 test('getNodes', () => {
   const snapshot = freshSnapshot();
   const {getNodes_UNSTABLE} = snapshot;
+
   expect(Array.from(getNodes_UNSTABLE({status: 'registered'})).length).toEqual(
     0,
   );
@@ -287,4 +288,214 @@ describe('getSubscriptions', () => {
       Array.from(snapshot.getSubscribers_UNSTABLE(selectorC).nodes),
     ).toEqual(expect.arrayContaining([]));
   });
+});
+
+test('peekStatus', () => {
+  const snapshot = freshSnapshot();
+
+  const myAtom = atom<string>({
+    key: 'snapshot peekStatus atom',
+    default: 'DEFAULT',
+  });
+  const selectorA = selector({
+    key: 'peekStatus A',
+    get: ({get}) => get(myAtom),
+  });
+  const selectorB = selector({
+    key: 'peekStatus B',
+    get: ({get}) => get(selectorA) + get(myAtom),
+  });
+
+  // Initial status
+  expect(snapshot.peekStatus_UNSTABLE(myAtom)).toEqual(
+    expect.objectContaining({
+      status: 'registered',
+      state: 'hasValue',
+      contents: 'DEFAULT',
+      modified: false,
+      type: undefined,
+    }),
+  );
+  expect(Array.from(snapshot.peekStatus_UNSTABLE(myAtom).deps)).toEqual(
+    expect.arrayContaining([]),
+  );
+  expect(
+    Array.from(snapshot.peekStatus_UNSTABLE(myAtom).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([]));
+  expect(snapshot.peekStatus_UNSTABLE(selectorA)).toEqual(
+    expect.objectContaining({
+      status: 'registered',
+      state: undefined,
+      contents: undefined,
+      modified: false,
+      type: undefined,
+    }),
+  );
+  expect(Array.from(snapshot.peekStatus_UNSTABLE(selectorA).deps)).toEqual(
+    expect.arrayContaining([]),
+  );
+  expect(
+    Array.from(snapshot.peekStatus_UNSTABLE(selectorA).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([]));
+  expect(snapshot.peekStatus_UNSTABLE(selectorB)).toEqual(
+    expect.objectContaining({
+      status: 'registered',
+      state: undefined,
+      contents: undefined,
+      modified: false,
+      type: undefined,
+    }),
+  );
+  expect(Array.from(snapshot.peekStatus_UNSTABLE(selectorB).deps)).toEqual(
+    expect.arrayContaining([]),
+  );
+  expect(
+    Array.from(snapshot.peekStatus_UNSTABLE(selectorB).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([]));
+
+  // After reading values
+  snapshot.getLoadable(selectorB);
+  expect(snapshot.peekStatus_UNSTABLE(myAtom)).toEqual(
+    expect.objectContaining({
+      status: 'initialized',
+      state: 'hasValue',
+      contents: 'DEFAULT',
+      modified: false,
+      type: 'atom',
+    }),
+  );
+  expect(Array.from(snapshot.peekStatus_UNSTABLE(myAtom).deps)).toEqual(
+    expect.arrayContaining([]),
+  );
+  expect(
+    Array.from(snapshot.peekStatus_UNSTABLE(myAtom).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorA, selectorB]));
+  expect(snapshot.peekStatus_UNSTABLE(selectorA)).toEqual(
+    expect.objectContaining({
+      status: 'initialized',
+      state: 'hasValue',
+      contents: 'DEFAULT',
+      modified: false,
+      type: 'selector',
+    }),
+  );
+  expect(Array.from(snapshot.peekStatus_UNSTABLE(selectorA).deps)).toEqual(
+    expect.arrayContaining([myAtom]),
+  );
+  expect(
+    Array.from(snapshot.peekStatus_UNSTABLE(selectorA).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorB]));
+  expect(snapshot.peekStatus_UNSTABLE(selectorB)).toEqual(
+    expect.objectContaining({
+      status: 'initialized',
+      state: 'hasValue',
+      contents: 'DEFAULTDEFAULT',
+      modified: false,
+      type: 'selector',
+    }),
+  );
+  expect(Array.from(snapshot.peekStatus_UNSTABLE(selectorB).deps)).toEqual(
+    expect.arrayContaining([myAtom, selectorA]),
+  );
+  expect(
+    Array.from(snapshot.peekStatus_UNSTABLE(selectorB).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([]));
+
+  // After setting a value
+  const setSnapshot = snapshot.map(({set}) => set(myAtom, 'SET'));
+  setSnapshot.getLoadable(selectorB); // Read value to prime
+  expect(setSnapshot.peekStatus_UNSTABLE(myAtom)).toEqual(
+    expect.objectContaining({
+      status: 'set',
+      state: 'hasValue',
+      contents: 'SET',
+      modified: true,
+      type: 'atom',
+    }),
+  );
+  expect(Array.from(setSnapshot.peekStatus_UNSTABLE(myAtom).deps)).toEqual(
+    expect.arrayContaining([]),
+  );
+  expect(
+    Array.from(setSnapshot.peekStatus_UNSTABLE(myAtom).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorA, selectorB]));
+  expect(setSnapshot.peekStatus_UNSTABLE(selectorA)).toEqual(
+    expect.objectContaining({
+      status: 'initialized',
+      state: 'hasValue',
+      contents: 'SET',
+      modified: false,
+      type: 'selector',
+    }),
+  );
+  expect(Array.from(setSnapshot.peekStatus_UNSTABLE(selectorA).deps)).toEqual(
+    expect.arrayContaining([myAtom]),
+  );
+  expect(
+    Array.from(setSnapshot.peekStatus_UNSTABLE(selectorA).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorB]));
+  expect(setSnapshot.peekStatus_UNSTABLE(selectorB)).toEqual(
+    expect.objectContaining({
+      status: 'initialized',
+      state: 'hasValue',
+      contents: 'SETSET',
+      modified: false,
+      type: 'selector',
+    }),
+  );
+  expect(Array.from(setSnapshot.peekStatus_UNSTABLE(selectorB).deps)).toEqual(
+    expect.arrayContaining([myAtom, selectorA]),
+  );
+  expect(
+    Array.from(setSnapshot.peekStatus_UNSTABLE(selectorB).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([]));
+
+  // After reseting a value
+  const resetSnapshot = snapshot.map(({reset}) => reset(myAtom));
+  resetSnapshot.getLoadable(selectorB); // prime snapshot
+  expect(resetSnapshot.peekStatus_UNSTABLE(myAtom)).toEqual(
+    expect.objectContaining({
+      status: 'initialized',
+      state: 'hasValue',
+      contents: 'DEFAULT',
+      modified: true,
+      type: 'atom',
+    }),
+  );
+  expect(Array.from(resetSnapshot.peekStatus_UNSTABLE(myAtom).deps)).toEqual(
+    expect.arrayContaining([]),
+  );
+  expect(
+    Array.from(resetSnapshot.peekStatus_UNSTABLE(myAtom).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorA, selectorB]));
+  expect(resetSnapshot.peekStatus_UNSTABLE(selectorA)).toEqual(
+    expect.objectContaining({
+      status: 'initialized',
+      state: 'hasValue',
+      contents: 'DEFAULT',
+      modified: false,
+      type: 'selector',
+    }),
+  );
+  expect(Array.from(resetSnapshot.peekStatus_UNSTABLE(selectorA).deps)).toEqual(
+    expect.arrayContaining([myAtom]),
+  );
+  expect(
+    Array.from(resetSnapshot.peekStatus_UNSTABLE(selectorA).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorB]));
+  expect(resetSnapshot.peekStatus_UNSTABLE(selectorB)).toEqual(
+    expect.objectContaining({
+      status: 'initialized',
+      state: 'hasValue',
+      contents: 'DEFAULTDEFAULT',
+      modified: false,
+      type: 'selector',
+    }),
+  );
+  expect(Array.from(resetSnapshot.peekStatus_UNSTABLE(selectorB).deps)).toEqual(
+    expect.arrayContaining([myAtom, selectorA]),
+  );
+  expect(
+    Array.from(resetSnapshot.peekStatus_UNSTABLE(selectorB).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([]));
 });

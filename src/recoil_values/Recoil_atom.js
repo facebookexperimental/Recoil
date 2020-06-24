@@ -233,6 +233,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     };
   }
 
+  function myPeek(state: TreeState): ?Loadable<T> {
+    return state.atomValues.get(key) ?? loadableWithValue(options.default);
+  }
+
   function myGet(store: Store, initState: TreeState): [TreeState, Loadable<T>] {
     const state = initAtom(store, initState, 'get');
 
@@ -317,6 +321,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const node = registerNode({
     key,
     options,
+    peek: myPeek,
     get: myGet,
     set: mySet,
   });

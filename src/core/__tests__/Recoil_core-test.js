@@ -17,7 +17,6 @@ const selector = require('../../recoil_values/Recoil_selector');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
 const {
   getNodeLoadable,
-  peekNodeLoadable,
   setNodeValue,
   subscribeComponentToNode,
 } = require('../Recoil_FunctionalCore');
@@ -34,7 +33,7 @@ const dependsOnA = selector({
 test('read default value', () => {
   const store = makeStore();
   expect(
-    peekNodeLoadable(store, store.getState().currentTree, a),
+    getNodeLoadable(store, store.getState().currentTree, a)[1],
   ).toMatchObject({
     state: 'hasValue',
     contents: 0,
@@ -49,7 +48,7 @@ test('read written value, visited contains written value', () => {
     a,
     1,
   );
-  expect(peekNodeLoadable(store, state, a)).toMatchObject({
+  expect(getNodeLoadable(store, state, a)[1]).toMatchObject({
     state: 'hasValue',
     contents: 1,
   });
@@ -59,14 +58,15 @@ test('read written value, visited contains written value', () => {
 test('read selector based on default upstream', () => {
   const store = makeStore();
   expect(
-    peekNodeLoadable(store, store.getState().currentTree, dependsOnA).contents,
+    getNodeLoadable(store, store.getState().currentTree, dependsOnA)[1]
+      .contents,
   ).toEqual(1);
 });
 
 test('read selector based on written upstream', () => {
   const store = makeStore();
   const [state, _] = setNodeValue(store, store.getState().currentTree, a, 1);
-  expect(peekNodeLoadable(store, state, dependsOnA).contents).toEqual(2);
+  expect(getNodeLoadable(store, state, dependsOnA)[1].contents).toEqual(2);
 });
 
 test('selector function is evaluated only on first read', () => {
@@ -80,9 +80,9 @@ test('selector function is evaluated only on first read', () => {
   [state, _] = getNodeLoadable(store, state, dependsOnA);
   [state, _] = setNodeValue(store, state, a, 2);
   expect(dependsOnAFn).toHaveBeenCalledTimes(1);
-  peekNodeLoadable(store, state, dependsOnA);
+  getNodeLoadable(store, state, dependsOnA);
   expect(dependsOnAFn).toHaveBeenCalledTimes(2);
-  peekNodeLoadable(store, state, dependsOnA);
+  getNodeLoadable(store, state, dependsOnA);
   expect(dependsOnAFn).toHaveBeenCalledTimes(2);
 });
 
@@ -97,7 +97,7 @@ test('object is frozen when stored in atom', () => {
       anAtom,
       value,
     );
-    return (peekNodeLoadable(store, state, anAtom).contents: any);
+    return (getNodeLoadable(store, state, anAtom)[1].contents: any);
   }
 
   function isFrozen(value, getter = x => x) {

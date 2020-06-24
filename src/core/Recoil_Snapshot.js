@@ -22,7 +22,10 @@ import type {NodeKey, Store, TreeState} from './Recoil_State';
 const gkx = require('../util/Recoil_gkx');
 const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
-const {getDownstreamNodes} = require('./Recoil_FunctionalCore');
+const {
+  getDownstreamNodes,
+  peekNodeLoadable,
+} = require('./Recoil_FunctionalCore');
 const {DEFAULT_VALUE, nodes, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
@@ -153,6 +156,51 @@ class Snapshot {
           yield nullthrows(recoilValues.get(node));
         }
       })(),
+    };
+  };
+
+  // Report the current status of a node.
+  // This peeks the current state and does not affect the snapshot state at all
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  peekStatus_UNSTABLE: <T>(
+    RecoilValue<T>,
+  ) => {
+    status: 'registered' | 'initialized' | 'set',
+    state: 'hasValue' | 'hasError' | 'loading' | void,
+    loadable: ?Loadable<T>,
+    contents: T | Error | Promise<T> | void,
+    modified: boolean, // TODO report modified selectors
+    type: 'atom' | 'selector' | void,
+    deps: Iterable<RecoilValue<mixed>>,
+    subscribers: {
+      nodes: Iterable<RecoilValue<mixed>>,
+    },
+  } = <T>(recoilValue: RecoilValue<T>) => {
+    const {key} = recoilValue;
+    const state = this._store.getState().currentTree;
+    const loadable = peekNodeLoadable(state, key);
+    return {
+      status: state.atomValues.has(key)
+        ? 'set'
+        : state.knownAtoms.has(key) || state.knownSelectors.has(key)
+        ? 'initialized'
+        : 'registered',
+      loadable,
+      state: loadable?.state,
+      contents: loadable?.contents,
+      modified: state.dirtyAtoms.has(key),
+      type: state.knownAtoms.has(key)
+        ? 'atom'
+        : state.knownSelectors.has(key)
+        ? 'selector'
+        : undefined,
+      // Don't use this.getDeps() as it will evaluate the node
+      deps: state.nodeDeps.has(key)
+        ? Array.from(nullthrows(state.nodeDeps.get(key))).map(key =>
+            nullthrows(recoilValues.get(key)),
+          )
+        : [],
+      subscribers: this.getSubscribers_UNSTABLE(recoilValue),
     };
   };
 
