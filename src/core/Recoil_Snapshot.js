@@ -19,7 +19,10 @@ import type {
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from './Recoil_State';
 
+const concatIterables = require('../util/Recoil_concatIterables');
+const filterIterable = require('../util/Recoil_filterIterable');
 const gkx = require('../util/Recoil_gkx');
+const mapIterable = require('../util/Recoil_mapIterable');
 const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {
@@ -51,6 +54,11 @@ function makeStore(treeState: TreeState): Store {
   };
   return store;
 }
+
+const recoilValuesForKeys: (
+  Iterable<NodeKey>,
+) => Iterable<RecoilValue<mixed>> = keys =>
+  mapIterable(keys, key => nullthrows(recoilValues.get(key)));
 
 // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
@@ -89,7 +97,7 @@ class Snapshot {
     } | void,
   ) => Iterable<RecoilValue<mixed>> = opt => {
     const state = this._store.getState().currentTree;
-    const keySets: Iterable<Iterable<NodeKey>> =
+    const keySets: Array<Iterable<NodeKey>> =
       opt?.modified === true
         ? // TODO mark modified selectors
           [state.dirtyAtoms]
@@ -110,13 +118,7 @@ class Snapshot {
       throw new Error('Cannot get all registered nodes of a specific type');
     }
 
-    return (function*() {
-      for (const keys of keySets) {
-        for (const key of keys) {
-          yield nullthrows(recoilValues.get(key));
-        }
-      }
-    })();
+    return concatIterables(keySets.map(recoilValuesForKeys));
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
@@ -127,11 +129,7 @@ class Snapshot {
     const deps = this._store
       .getState()
       .currentTree.nodeDeps.get(recoilValue.key);
-    return (function*() {
-      for (const key of deps ?? []) {
-        yield nullthrows(recoilValues.get(key));
-      }
-    })();
+    return recoilValuesForKeys(deps ?? []);
   };
 
   // This reports all "current" subscribers.  It does not report all possible
@@ -145,17 +143,13 @@ class Snapshot {
     // An issue is that Snapshots don't include subscriptions...
   } = <T>({key}: RecoilValue<T>) => {
     const state = this._store.getState().currentTree;
-    const downstreamNodes = getDownstreamNodes(state, new Set([key]));
+    const downstreamNodes = filterIterable(
+      getDownstreamNodes(state, new Set([key])),
+      nodeKey => nodeKey !== key,
+    );
 
     return {
-      nodes: (function*() {
-        for (const node of downstreamNodes) {
-          if (node === key) {
-            continue;
-          }
-          yield nullthrows(recoilValues.get(node));
-        }
-      })(),
+      nodes: recoilValuesForKeys(downstreamNodes),
     };
   };
 
@@ -194,12 +188,8 @@ class Snapshot {
         : state.knownSelectors.has(key)
         ? 'selector'
         : undefined,
-      // Don't use this.getDeps() as it will evaluate the node
-      deps: state.nodeDeps.has(key)
-        ? Array.from(nullthrows(state.nodeDeps.get(key))).map(key =>
-            nullthrows(recoilValues.get(key)),
-          )
-        : [],
+      // Don't use this.getDeps() as it will evaluate the node and we are only peeking
+      deps: recoilValuesForKeys(state.nodeDeps.get(key) ?? []),
       subscribers: this.getSubscribers_UNSTABLE(recoilValue),
     };
   };
