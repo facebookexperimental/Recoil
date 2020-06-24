@@ -227,13 +227,13 @@ test('getNodes', () => {
   );
 
   // Test atom A is set
-  const aDirty = Array.from(snapshot.getNodes_UNSTABLE({dirty: true}));
+  const aDirty = Array.from(snapshot.getNodes_UNSTABLE({modified: true}));
   expect(aDirty.length).toEqual(1);
   expect(snapshot.getLoadable(aDirty[0]).contents).toEqual('A');
 
   // Test atom B is set
   act(() => setAtomB('B'));
-  const bDirty = Array.from(snapshot.getNodes_UNSTABLE({dirty: true}));
+  const bDirty = Array.from(snapshot.getNodes_UNSTABLE({modified: true}));
   expect(bDirty.length).toEqual(1);
   expect(snapshot.getLoadable(bDirty[0]).contents).toEqual('B');
 
@@ -253,7 +253,7 @@ test('getNodes', () => {
 
   // Test Reset
   act(resetAtomA);
-  const resetDirty = Array.from(snapshot.getNodes_UNSTABLE({dirty: true}));
+  const resetDirty = Array.from(snapshot.getNodes_UNSTABLE({modified: true}));
   expect(resetDirty.length).toEqual(1);
   expect(resetDirty[0]).toBe(aDirty[0]);
 

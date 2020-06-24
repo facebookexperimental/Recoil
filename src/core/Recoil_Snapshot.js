@@ -17,13 +17,13 @@ import type {
   ValueOrUpdater,
 } from '../recoil_values/Recoil_selector';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
-import type {Store, TreeState} from './Recoil_State';
+import type {NodeKey, Store, TreeState} from './Recoil_State';
 
 const gkx = require('../util/Recoil_gkx');
 const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {getDownstreamNodes} = require('./Recoil_FunctionalCore');
-const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
+const {DEFAULT_VALUE, nodes, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -81,18 +81,34 @@ class Snapshot {
   getNodes_UNSTABLE: (
     {
       types?: $ReadOnlyArray<'atom' | 'selector'>,
-      dirty?: boolean,
+      status?: 'registered' | 'initialized' | 'set', // Defaults to 'initialized'
+      modified?: boolean,
     } | void,
   ) => Iterable<RecoilValue<mixed>> = opt => {
     const state = this._store.getState().currentTree;
-    const atoms = opt?.dirty === true ? state.dirtyAtoms : state.knownAtoms;
-    // TODO mark dirty selectors
-    const selectors = opt?.dirty === true ? new Set() : state.knownSelectors;
-    const types = opt?.types ?? ['atom', 'selector'];
+    const keySets: Iterable<Iterable<NodeKey>> =
+      opt?.modified === true
+        ? // TODO mark modified selectors
+          [state.dirtyAtoms]
+        : {
+            registered: [nodes.keys()],
+            initialized: (opt?.types ?? ['atom', 'selector']).map(type =>
+              type === 'atom' ? state.knownAtoms : state.knownSelectors,
+            ),
+            set: [state.atomValues.keys()],
+          }[opt?.status ?? 'initialized'];
+
+    if (
+      (opt?.status ?? 'initialized') === 'regsitered' &&
+      opt?.modified !== true &&
+      opt?.types != null &&
+      (!opt.types.includes('atom') || !opt?.types?.includes('selector'))
+    ) {
+      throw new Error('Cannot get all registered nodes of a specific type');
+    }
 
     return (function*() {
-      for (const type of types) {
-        const keys = {atom: atoms, selector: selectors}[type];
+      for (const keys of keySets) {
         for (const key of keys) {
           yield nullthrows(recoilValues.get(key));
         }
