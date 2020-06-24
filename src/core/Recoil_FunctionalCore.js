@@ -230,6 +230,7 @@ module.exports = {
   setNodeValue,
   setUnvalidatedAtomValue,
   subscribeComponentToNode,
+  getDownstreamNodes,
   fireNodeSubscriptions,
   detectCircularDependencies,
 };

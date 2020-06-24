@@ -22,6 +22,7 @@ import type {Store, TreeState} from './Recoil_State';
 const gkx = require('../util/Recoil_gkx');
 const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
+const {getDownstreamNodes} = require('./Recoil_FunctionalCore');
 const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
@@ -112,6 +113,31 @@ class Snapshot {
         yield nullthrows(recoilValues.get(key));
       }
     })();
+  };
+
+  // This reports all "current" subscribers.  It does not report all possible
+  // downstream nodes.  Evaluating other nodes may introduce new subscribers.
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  getSubscribers_UNSTABLE: <T>(
+    RecoilValue<T>,
+  ) => {
+    nodes: Iterable<RecoilValue<mixed>>,
+    // TODO components, observers, and effects
+    // An issue is that Snapshots don't include subscriptions...
+  } = <T>({key}: RecoilValue<T>) => {
+    const state = this._store.getState().currentTree;
+    const downstreamNodes = getDownstreamNodes(state, new Set([key]));
+
+    return {
+      nodes: (function*() {
+        for (const node of downstreamNodes) {
+          if (node === key) {
+            continue;
+          }
+          yield nullthrows(recoilValues.get(node));
+        }
+      })(),
+    };
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
