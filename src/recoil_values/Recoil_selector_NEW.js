@@ -213,6 +213,17 @@ function selector<T>(
 
   const executionInfo: ExecutionInfo<T> = getInitialExecutionInfo();
 
+  function initSelector(state: TreeState): TreeState {
+    if (state.knownSelectors.has(key)) {
+      return state;
+    }
+
+    return {
+      ...state,
+      knownSelectors: setByAddingToSet(state.knownSelectors, key),
+    };
+  }
+
   /**
    * This function attaches a then() and a catch() to a promise that was
    * returned from a selector's get() (either explicitly or implicitly by
@@ -742,14 +753,15 @@ function selector<T>(
     cache = cache.set(key, val);
   }
 
-  function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+  function myGet(store: Store, initState: TreeState): [TreeState, Loadable<T>] {
+    const state = initSelector(initState);
     // TODO memoize a value if no deps have changed to avoid a cache lookup
     return getSelectorResult(store, state);
   }
 
   if (set != null) {
-    function mySet(store, state, newValue) {
-      let newState = state;
+    function mySet(store, initState, newValue) {
+      let newState = initSelector(initState);
       const writtenNodes: Set<NodeKey> = new Set();
 
       function getRecoilValue<S>({key}: RecoilValue<S>): S {

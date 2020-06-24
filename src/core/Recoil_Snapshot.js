@@ -21,7 +21,8 @@ import type {Store, TreeState} from './Recoil_State';
 
 const gkx = require('../util/Recoil_gkx');
 const mapMap = require('../util/Recoil_mapMap');
-const {DEFAULT_VALUE} = require('./Recoil_Node');
+const nullthrows = require('../util/Recoil_nullthrows');
+const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -76,6 +77,29 @@ class Snapshot {
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
+  getNodes_UNSTABLE: (
+    {
+      types?: $ReadOnlyArray<'atom' | 'selector'>,
+      dirty?: boolean,
+    } | void,
+  ) => Iterable<RecoilValue<mixed>> = opt => {
+    const state = this._store.getState().currentTree;
+    const atoms = opt?.dirty === true ? state.dirtyAtoms : state.knownAtoms;
+    // TODO mark dirty selectors
+    const selectors = opt?.dirty === true ? new Set() : state.knownSelectors;
+    const types = opt?.types ?? ['atom', 'selector'];
+
+    return (function*() {
+      for (const type of types) {
+        const keys = {atom: atoms, selector: selectors}[type];
+        for (const key of keys) {
+          yield nullthrows(recoilValues.get(key));
+        }
+      }
+    })();
+  };
+
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
     const mutableSnapshot = new MutableSnapshot(
       this._store.getState().currentTree,
@@ -102,9 +126,10 @@ function cloneTreeState(treeState: TreeState): TreeState {
   return {
     transactionMetadata: {...treeState.transactionMetadata},
     knownAtoms: new Set(treeState.knownAtoms),
+    dirtyAtoms: new Set(treeState.dirtyAtoms),
     atomValues: new Map(treeState.atomValues),
     nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
-    dirtyAtoms: new Set(treeState.dirtyAtoms),
+    knownSelectors: new Set(treeState.knownSelectors),
     nodeDeps: new Map(treeState.nodeDeps),
     nodeToNodeSubscriptions: mapMap(
       treeState.nodeToNodeSubscriptions,
