@@ -59,7 +59,8 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {NodeKey, TreeState} from '../core/Recoil_State';
+import type {Snapshot} from '../core/Recoil_Snapshot';
+import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 // @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
 
 const {loadableWithValue} = require('../adt/Recoil_Loadable');
@@ -69,6 +70,7 @@ const {
   registerNode,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
+const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {
   mapByDeletingFromMap,
   mapBySettingInMap,
@@ -76,6 +78,7 @@ const {
 } = require('../util/Recoil_CopyOnWrite');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const expectationViolation = require('../util/Recoil_expectationViolation');
+const invariant = require('../util/Recoil_invariant');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 // @fb-only: const {scopedAtom} = require('./Recoil_ScopedAtom');
@@ -95,9 +98,23 @@ export type PersistenceSettings<Stored> = $ReadOnly<{
   validator: (mixed, DefaultValue) => Stored | DefaultValue,
 }>;
 
+// Effect is called the first time a node is used with a <RecoilRoot>
+type AtomEffect<T> = ({
+  node: RecoilState<T>,
+  trigger: 'set' | 'get',
+
+  // Call synchronously to initialize value or async to change it later
+  setSelf: (
+    T | DefaultValue | ((T | DefaultValue) => T | DefaultValue),
+  ) => void,
+  resetSelf: () => void,
+  getSnapshot: () => Snapshot,
+}) => void; // TODO Allow returning a cleanup function
+
 export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
   default: RecoilValue<T> | Promise<T> | T,
+  effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>>,
   persistence_UNSTABLE?: PersistenceSettings<T>,
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
   dangerouslyAllowMutability?: boolean,
@@ -110,86 +127,178 @@ type BaseAtomOptions<T> = $ReadOnly<{
 
 function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const {key, persistence_UNSTABLE: persistence} = options;
-  return registerNode({
-    key,
-    options,
 
-    get: (_store, state: TreeState): [TreeState, Loadable<T>] => {
-      if (state.atomValues.has(key)) {
-        // atom value is stored in state
-        return [state, nullthrows(state.atomValues.get(key))];
-      } else if (state.nonvalidatedAtoms.has(key)) {
-        if (persistence == null) {
-          expectationViolation(
-            `Tried to restore a persisted value for atom ${key} but it has no persistence settings.`,
-          );
-          return [state, loadableWithValue(options.default)];
-        }
-        const nonvalidatedValue = state.nonvalidatedAtoms.get(key);
-        const validatedValue: T | DefaultValue = persistence.validator(
-          nonvalidatedValue,
-          DEFAULT_VALUE,
+  function initAtom(
+    store: Store,
+    initState: TreeState,
+    trigger: 'set' | 'get',
+  ): TreeState {
+    if (initState.knownAtoms.has(key)) {
+      return initState;
+    }
+
+    // Run Atom Effects
+    let initValue: T | DefaultValue = DEFAULT_VALUE;
+    if (options.effects_UNSTABLE != null) {
+      let duringInit = true;
+
+      function getSnapshot() {
+        return cloneSnapshot(
+          duringInit
+            ? initState
+            : store.getState().nextTree ?? store.getState().currentTree,
         );
+      }
 
-        return validatedValue instanceof DefaultValue
-          ? [
-              {
-                ...state,
-                nonvalidatedAtoms: mapByDeletingFromMap(
-                  state.nonvalidatedAtoms,
-                  key,
-                ),
-              },
-              loadableWithValue(options.default),
-            ]
-          : [
-              {
-                ...state,
-                atomValues: mapBySettingInMap(
-                  state.atomValues,
-                  key,
-                  loadableWithValue(validatedValue),
-                ),
-                nonvalidatedAtoms: mapByDeletingFromMap(
-                  state.nonvalidatedAtoms,
-                  key,
-                ),
-              },
-              loadableWithValue(validatedValue),
-            ];
-      } else {
+      function setSelf(
+        valueOrUpdater: T | DefaultValue | (T => T | DefaultValue),
+      ) {
+        if (duringInit) {
+          const currentValue: T =
+            initValue instanceof DefaultValue ? options.default : initValue;
+          initValue =
+            typeof valueOrUpdater === 'function'
+              ? // cast to any because we can't restrict type from being a function itself without losing support for opaque types
+                // flowlint-next-line unclear-type:off
+                (valueOrUpdater: any)(currentValue)
+              : valueOrUpdater;
+        } else {
+          store.replaceState(asyncState => {
+            let newState = asyncState;
+            const newValue: T | DefaultValue =
+              typeof valueOrUpdater !== 'function'
+                ? valueOrUpdater
+                : (() => {
+                    const [_, loadable] = myGet(store, asyncState);
+                    invariant(
+                      loadable.state === 'hasValue',
+                      "Recoil doesn't support async Atoms yet",
+                    );
+                    // cast to any because we can't restrict type from being a function itself without losing support for opaque types
+                    // flowlint-next-line unclear-type:off
+                    return (valueOrUpdater: any)(loadable.contents);
+                  })();
+            const [nextState, writtenNodes] = mySet(
+              store,
+              asyncState,
+              newValue,
+            );
+            newState = nextState;
+            store.fireNodeSubscriptions(writtenNodes, 'enqueue');
+            return newState;
+          });
+        }
+      }
+      const resetSelf = () => setSelf(DEFAULT_VALUE);
+
+      for (const effect of options.effects_UNSTABLE ?? []) {
+        effect({node, trigger, setSelf, resetSelf, getSnapshot});
+      }
+
+      duringInit = false;
+    }
+
+    return {
+      ...initState,
+      knownAtoms: setByAddingToSet(initState.knownAtoms, key),
+      atomValues: !(initValue instanceof DefaultValue)
+        ? mapBySettingInMap(
+            initState.atomValues,
+            key,
+            loadableWithValue(initValue),
+          )
+        : initState.atomValues,
+    };
+  }
+
+  function myGet(store: Store, initState: TreeState): [TreeState, Loadable<T>] {
+    const state = initAtom(store, initState, 'get');
+
+    if (state.atomValues.has(key)) {
+      // atom value is stored in state
+      return [state, nullthrows(state.atomValues.get(key))];
+    } else if (state.nonvalidatedAtoms.has(key)) {
+      if (persistence == null) {
+        expectationViolation(
+          `Tried to restore a persisted value for atom ${key} but it has no persistence settings.`,
+        );
         return [state, loadableWithValue(options.default)];
       }
-    },
+      const nonvalidatedValue = state.nonvalidatedAtoms.get(key);
+      const validatedValue: T | DefaultValue = persistence.validator(
+        nonvalidatedValue,
+        DEFAULT_VALUE,
+      );
 
-    set: (
-      _store,
-      state: TreeState,
-      newValue: T | DefaultValue,
-    ): [TreeState, $ReadOnlySet<NodeKey>] => {
-      if (__DEV__) {
-        if (options.dangerouslyAllowMutability !== true) {
-          deepFreezeValue(newValue);
-        }
+      return validatedValue instanceof DefaultValue
+        ? [
+            {
+              ...state,
+              nonvalidatedAtoms: mapByDeletingFromMap(
+                state.nonvalidatedAtoms,
+                key,
+              ),
+            },
+            loadableWithValue(options.default),
+          ]
+        : [
+            {
+              ...state,
+              atomValues: mapBySettingInMap(
+                state.atomValues,
+                key,
+                loadableWithValue(validatedValue),
+              ),
+              nonvalidatedAtoms: mapByDeletingFromMap(
+                state.nonvalidatedAtoms,
+                key,
+              ),
+            },
+            loadableWithValue(validatedValue),
+          ];
+    } else {
+      return [state, loadableWithValue(options.default)];
+    }
+  }
+
+  function mySet(
+    store: Store,
+    initState: TreeState,
+    newValue: T | DefaultValue,
+  ): [TreeState, $ReadOnlySet<NodeKey>] {
+    const state = initAtom(store, initState, 'set');
+
+    if (__DEV__) {
+      if (options.dangerouslyAllowMutability !== true) {
+        deepFreezeValue(newValue);
       }
-      return [
-        {
-          ...state,
-          dirtyAtoms: setByAddingToSet(state.dirtyAtoms, key),
-          atomValues:
-            newValue instanceof DefaultValue
-              ? mapByDeletingFromMap(state.atomValues, key)
-              : mapBySettingInMap(
-                  state.atomValues,
-                  key,
-                  loadableWithValue(newValue),
-                ),
-          nonvalidatedAtoms: mapByDeletingFromMap(state.nonvalidatedAtoms, key),
-        },
-        new Set([key]),
-      ];
-    },
+    }
+
+    return [
+      {
+        ...state,
+        dirtyAtoms: setByAddingToSet(state.dirtyAtoms, key),
+        atomValues:
+          newValue instanceof DefaultValue
+            ? mapByDeletingFromMap(state.atomValues, key)
+            : mapBySettingInMap(
+                state.atomValues,
+                key,
+                loadableWithValue(newValue),
+              ),
+        nonvalidatedAtoms: mapByDeletingFromMap(state.nonvalidatedAtoms, key),
+      },
+      new Set([key]),
+    ];
+  }
+
+  const node = registerNode({
+    key,
+    options,
+    get: myGet,
+    set: mySet,
   });
+  return node;
 }
 
 // prettier-ignore
@@ -240,6 +349,9 @@ function atomWithFallback<T>(
                     DEFAULT_VALUE,
                   ),
           },
+    // TODO Hack for now.
+    // flowlint-next-line unclear-type: off
+    effects_UNSTABLE: (options.effects_UNSTABLE: any),
   });
 
   return selector<T>({
