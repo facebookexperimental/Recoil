@@ -57,11 +57,13 @@
  */
 'use strict';
 
+// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {Snapshot} from '../core/Recoil_Snapshot';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
-// @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
+
+// @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
 const {loadableWithValue} = require('../adt/Recoil_Loadable');
 const {
@@ -81,7 +83,6 @@ const expectationViolation = require('../util/Recoil_expectationViolation');
 const invariant = require('../util/Recoil_invariant');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
-// @fb-only: const {scopedAtom} = require('./Recoil_ScopedAtom');
 const selector = require('./Recoil_selector');
 
 // It would be nice if this didn't have to be defined at the Recoil level, but I don't want to make
