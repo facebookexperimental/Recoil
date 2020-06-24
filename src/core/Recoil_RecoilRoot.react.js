@@ -92,9 +92,20 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
       // Inform transaction subscribers of the transaction:
       const dirtyAtoms = nextTree.dirtyAtoms;
       if (dirtyAtoms.size) {
-        storeState.transactionSubscriptions.forEach(sub =>
-          sub(storeRef.current),
-        );
+        // Execute Node-specific subscribers before global subscribers
+        for (const [
+          key,
+          subscriptions,
+        ] of storeState.nodeTransactionSubscriptions) {
+          if (dirtyAtoms.has(key)) {
+            for (const subscription of subscriptions) {
+              subscription(storeRef.current);
+            }
+          }
+        }
+        for (const [_, subscription] of storeState.transactionSubscriptions) {
+          subscription(storeRef.current);
+        }
       }
 
       // Inform components that depend on dirty atoms of the transaction:
@@ -158,14 +169,27 @@ function RecoilRoot({
 }: Props): ReactElement {
   let storeState; // eslint-disable-line prefer-const
 
-  const subscribeToTransactions = callback => {
-    const id = nextID++;
-    storeRef.current.getState().transactionSubscriptions.set(id, callback);
-    return {
-      release: () => {
-        storeRef.current.getState().transactionSubscriptions.delete(id);
-      },
-    };
+  const subscribeToTransactions = (callback, key) => {
+    if (key == null) {
+      // Global transaction subscriptions
+      const {transactionSubscriptions} = storeRef.current.getState();
+      const id = nextID++;
+      transactionSubscriptions.set(id, callback);
+      return {
+        release: () => {
+          transactionSubscriptions.delete(id);
+        },
+      };
+    } else {
+      // Node-specific transaction subscriptions from onSet() effect
+      const {nodeTransactionSubscriptions} = storeRef.current.getState();
+      if (!nodeTransactionSubscriptions.has(key)) {
+        nodeTransactionSubscriptions.set(key, []);
+      }
+      nullthrows(nodeTransactionSubscriptions.get(key)).push(callback);
+      // We don't currently support canceling onSet() handlers, but can if needed
+      return {release: () => {}};
+    }
   };
 
   const addTransactionMetadata = (metadata: {...}) => {

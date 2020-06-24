@@ -14,7 +14,6 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 
 export type NodeKey = string;
 
-// TODO We could just store T instead of a Loadable<T> in atomValues
 // flowlint-next-line unclear-type:off
 export type AtomValues = Map<NodeKey, Loadable<any>>;
 
@@ -61,6 +60,7 @@ export type StoreState = {
 
   // For observing transactions:
   +transactionSubscriptions: Map<number, (Store) => void>,
+  +nodeTransactionSubscriptions: Map<NodeKey, Array<(Store) => void>>,
 
   // Callbacks to render external components that are subscribed to nodes
   // These are executed at the end of the transaction or asynchronously.
@@ -73,7 +73,7 @@ export type StoreState = {
 export type Store = $ReadOnly<{
   getState: () => StoreState,
   replaceState: ((TreeState) => TreeState) => void,
-  subscribeToTransactions: ((Store) => void) => {release: () => void},
+  subscribeToTransactions: ((Store) => void, ?NodeKey) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
   fireNodeSubscriptions: (
     updatedNodes: $ReadOnlySet<NodeKey>,
@@ -104,6 +104,7 @@ function makeStoreState(treeState: TreeState): StoreState {
     currentTree: treeState,
     nextTree: null,
     transactionSubscriptions: new Map(),
+    nodeTransactionSubscriptions: new Map(),
     queuedComponentCallbacks: [],
     suspendedComponentResolvers: new Set(),
   };
