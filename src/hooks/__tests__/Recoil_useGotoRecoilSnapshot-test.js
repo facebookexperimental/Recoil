@@ -196,8 +196,8 @@ test('Goto snapshot with async selector', async () => {
 });
 
 // Test that going to a snapshot where an atom was not yet initialized will
-// cause the atom to be re-initialized when used again.
-test('Effects going to new snapshot', () => {
+// not cause the atom to be re-initialized when used again.
+test('Effects going to previous snapshot', () => {
   let init = 0;
   const myAtom = atom({
     key: 'gotoSnapshot effect',
@@ -238,8 +238,8 @@ test('Effects going to new snapshot', () => {
   gotoRecoilSnapshot?.(freshSnapshot());
   expect(init).toEqual(1);
   act(forceUpdate);
-  expect(init).toEqual(2);
+  expect(init).toEqual(1);
 
   act(forceUpdate);
-  expect(init).toEqual(2);
+  expect(init).toEqual(1);
 });
