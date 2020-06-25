@@ -139,9 +139,9 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     store: Store,
     initState: TreeState,
     trigger: 'set' | 'get',
-  ): TreeState {
+  ) {
     if (store.getState().knownAtoms.has(key)) {
-      return initState;
+      return;
     }
     store.getState().knownAtoms.add(key);
 
@@ -221,20 +221,16 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       duringInit = false;
     }
 
-    return {
-      ...initState,
-      atomValues: !(initValue instanceof DefaultValue)
-        ? mapBySettingInMap(
-            initState.atomValues,
-            key,
-            loadableWithValue(initValue),
-          )
-        : initState.atomValues,
-    };
+    // Mutate initial state in place since we know there are no other subscribers
+    // since we are the ones initializing on first use.
+
+    if (!(initValue instanceof DefaultValue)) {
+      initState.atomValues.set(key, loadableWithValue(initValue));
+    }
   }
 
-  function myGet(store: Store, initState: TreeState): [TreeState, Loadable<T>] {
-    const state = initAtom(store, initState, 'get');
+  function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+    initAtom(store, state, 'get');
 
     if (state.atomValues.has(key)) {
       // atom value is stored in state
@@ -285,10 +281,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
   function mySet(
     store: Store,
-    initState: TreeState,
+    state: TreeState,
     newValue: T | DefaultValue,
   ): [TreeState, $ReadOnlySet<NodeKey>] {
-    const state = initAtom(store, initState, 'set');
+    initAtom(store, state, 'set');
 
     if (__DEV__) {
       if (options.dangerouslyAllowMutability !== true) {
