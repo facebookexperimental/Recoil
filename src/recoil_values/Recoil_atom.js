@@ -72,6 +72,7 @@ const {
   registerNode,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
+const {setRecoilValue} = require('../core/Recoil_RecoilValueInterface');
 const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {
   mapByDeletingFromMap,
@@ -80,7 +81,6 @@ const {
 } = require('../util/Recoil_CopyOnWrite');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const expectationViolation = require('../util/Recoil_expectationViolation');
-const invariant = require('../util/Recoil_invariant');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 const selector = require('./Recoil_selector');
@@ -171,30 +171,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
                 (valueOrUpdater: any)(currentValue)
               : valueOrUpdater;
         } else {
-          store.replaceState(asyncState => {
-            let newState = asyncState;
-            const newValue: T | DefaultValue =
-              typeof valueOrUpdater !== 'function'
-                ? valueOrUpdater
-                : (() => {
-                    const [_, loadable] = myGet(store, asyncState);
-                    invariant(
-                      loadable.state === 'hasValue',
-                      "Recoil doesn't support async Atoms yet",
-                    );
-                    // cast to any because we can't restrict type from being a function itself without losing support for opaque types
-                    // flowlint-next-line unclear-type:off
-                    return (valueOrUpdater: any)(loadable.contents);
-                  })();
-            const [nextState, writtenNodes] = mySet(
-              store,
-              asyncState,
-              newValue,
-            );
-            newState = nextState;
-            store.fireNodeSubscriptions(writtenNodes, 'enqueue');
-            return newState;
-          });
+          setRecoilValue(store, node, valueOrUpdater);
         }
       }
       const resetSelf = () => setSelf(DEFAULT_VALUE);
