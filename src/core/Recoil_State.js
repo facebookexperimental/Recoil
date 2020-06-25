@@ -24,13 +24,9 @@ export type TreeState = $ReadOnly<{
   transactionMetadata: {...},
 
   // ATOMS
-  knownAtoms: Set<NodeKey>,
   dirtyAtoms: Set<NodeKey>,
   atomValues: AtomValues,
   nonvalidatedAtoms: Map<NodeKey, mixed>,
-
-  // SELECTORS
-  knownSelectors: Set<NodeKey>,
 
   // NODE GRAPH
   // Upstream Node dependencies
@@ -57,6 +53,10 @@ export type StoreState = {
   // The TreeState that is written to when during the course of a transaction
   // (generally equal to a React batch) when atom values are updated.
   nextTree: null | TreeState,
+
+  // Node lifetimes
+  knownAtoms: Set<NodeKey>,
+  knownSelectors: Set<NodeKey>,
 
   // For observing transactions:
   +transactionSubscriptions: Map<number, (Store) => void>,
@@ -88,11 +88,9 @@ export type StoreRef = {
 function makeEmptyTreeState(): TreeState {
   return {
     transactionMetadata: {},
-    knownAtoms: new Set(),
     dirtyAtoms: new Set(),
     atomValues: new Map(),
     nonvalidatedAtoms: new Map(),
-    knownSelectors: new Set(),
     nodeDeps: new Map(),
     nodeToNodeSubscriptions: new Map(),
     nodeToComponentSubscriptions: new Map(),
@@ -103,6 +101,8 @@ function makeStoreState(treeState: TreeState): StoreState {
   return {
     currentTree: treeState,
     nextTree: null,
+    knownAtoms: new Set(),
+    knownSelectors: new Set(),
     transactionSubscriptions: new Map(),
     nodeTransactionSubscriptions: new Map(),
     queuedComponentCallbacks: [],

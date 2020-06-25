@@ -20,6 +20,7 @@ import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {Store, TreeState} from './Recoil_State';
 
 const gkx = require('../util/Recoil_gkx');
+const mapIterable = require('../util/Recoil_mapIterable');
 const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
@@ -30,16 +31,15 @@ const {
 } = require('./Recoil_RecoilValueInterface');
 const {makeEmptyTreeState, makeStoreState} = require('./Recoil_State');
 
-function makeStore(treeState: TreeState): Store {
+// TODO Temporary until Snapshots only contain state
+function makeSnapshotStore(treeState: TreeState): Store {
   const storeState = makeStoreState(treeState);
-  const store = {
+  const store: Store = {
     getState: () => storeState,
     replaceState: replacer => {
       storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
     },
-    subscribeToTransactions: () => {
-      throw new Error('Cannot subscribe to Snapshots');
-    },
+    subscribeToTransactions: () => ({release: () => {}}),
     addTransactionMetadata: () => {
       throw new Error('Cannot subscribe to Snapshots');
     },
@@ -55,7 +55,7 @@ class Snapshot {
   _store: Store;
 
   constructor(treeState: TreeState) {
-    this._store = makeStore(treeState);
+    this._store = makeSnapshotStore(treeState);
   }
 
   getStore_INTERNAL(): Store {
@@ -79,24 +79,18 @@ class Snapshot {
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   getNodes_UNSTABLE: (
     {
-      types?: $ReadOnlyArray<'atom' | 'selector'>,
       dirty?: boolean,
     } | void,
   ) => Iterable<RecoilValue<mixed>> = opt => {
-    const state = this._store.getState().currentTree;
-    const atoms = opt?.dirty === true ? state.dirtyAtoms : state.knownAtoms;
-    // TODO mark dirty selectors
-    const selectors = opt?.dirty === true ? new Set() : state.knownSelectors;
-    const types = opt?.types ?? ['atom', 'selector'];
+    // TODO Deal with modified selectors
+    if (opt?.dirty === true) {
+      const state = this._store.getState().currentTree;
+      return mapIterable(state.dirtyAtoms, key =>
+        nullthrows(recoilValues.get(key)),
+      );
+    }
 
-    return (function*() {
-      for (const type of types) {
-        const keys = {atom: atoms, selector: selectors}[type];
-        for (const key of keys) {
-          yield nullthrows(recoilValues.get(key));
-        }
-      }
-    })();
+    return recoilValues.values();
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
@@ -140,11 +134,9 @@ class Snapshot {
 function cloneTreeState(treeState: TreeState): TreeState {
   return {
     transactionMetadata: {...treeState.transactionMetadata},
-    knownAtoms: new Set(treeState.knownAtoms),
     dirtyAtoms: new Set(treeState.dirtyAtoms),
     atomValues: new Map(treeState.atomValues),
     nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
-    knownSelectors: new Set(treeState.knownSelectors),
     nodeDeps: new Map(treeState.nodeDeps),
     nodeToNodeSubscriptions: mapMap(
       treeState.nodeToNodeSubscriptions,

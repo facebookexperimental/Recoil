@@ -233,7 +233,7 @@ function RecoilRoot({
     notifyBatcherOfChange.current = x;
   }
 
-  const store = {
+  const store: Store = {
     getState: () => storeState.current,
     replaceState,
     subscribeToTransactions,
