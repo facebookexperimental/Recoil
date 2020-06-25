@@ -27,7 +27,6 @@ const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-  valueFromValueOrUpdater,
 } = require('./Recoil_RecoilValueInterface');
 const {makeEmptyTreeState, makeStoreState} = require('./Recoil_State');
 
@@ -168,12 +167,7 @@ class MutableSnapshot extends Snapshot {
     newValueOrUpdater: ValueOrUpdater<T>,
   ) => {
     const store = this.getStore_INTERNAL();
-    const newValue = valueFromValueOrUpdater(
-      store,
-      recoilState,
-      newValueOrUpdater,
-    );
-    setRecoilValue(store, recoilState, newValue);
+    setRecoilValue(store, recoilState, newValueOrUpdater);
   };
 
   reset: ResetRecoilState = recoilState =>
