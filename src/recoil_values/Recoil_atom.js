@@ -140,9 +140,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     initState: TreeState,
     trigger: 'set' | 'get',
   ): TreeState {
-    if (initState.knownAtoms.has(key)) {
+    if (store.getState().knownAtoms.has(key)) {
       return initState;
     }
+    store.getState().knownAtoms.add(key);
 
     // Run Atom Effects
     let initValue: T | DefaultValue = DEFAULT_VALUE;
@@ -222,7 +223,6 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
     return {
       ...initState,
-      knownAtoms: setByAddingToSet(initState.knownAtoms, key),
       atomValues: !(initValue instanceof DefaultValue)
         ? mapBySettingInMap(
             initState.atomValues,

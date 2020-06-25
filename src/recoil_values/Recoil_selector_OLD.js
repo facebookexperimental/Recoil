@@ -151,15 +151,8 @@ function selector<T>(
   let cache: CacheImplementation<Loadable<T>> =
     cacheImplementation ?? cacheWithReferenceEquality();
 
-  function initSelector(state: TreeState): TreeState {
-    if (state.knownSelectors.has(key)) {
-      return state;
-    }
-
-    return {
-      ...state,
-      knownSelectors: setByAddingToSet(state.knownSelectors, key),
-    };
+  function initSelector(store: Store) {
+    store.getState().knownSelectors.add(key);
   }
 
   function putIntoCache(
@@ -396,8 +389,8 @@ function selector<T>(
     return [newState, loadable, newDepValues];
   }
 
-  function myGet(store: Store, initState: TreeState): [TreeState, Loadable<T>] {
-    const state = initSelector(initState);
+  function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+    initSelector(store);
 
     // TODO memoize a value if no deps have changed to avoid a cache lookup
     // Lookup the node value in the cache.  If not there, then compute
@@ -406,8 +399,9 @@ function selector<T>(
   }
 
   if (set != null) {
-    function mySet(store, initState, newValue) {
-      let newState = initSelector(initState);
+    function mySet(store, state, newValue) {
+      initSelector(store);
+      let newState = state;
       const writtenNodes: Set<NodeKey> = new Set();
 
       function getRecoilValue<S>({key}: RecoilValue<S>): S {
