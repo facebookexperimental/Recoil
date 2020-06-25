@@ -246,7 +246,7 @@ const friendsInfoQuery = selector({
     const friendLoadables = get(waitForNone(
       friendList.map(friendID => userInfoQuery(friendID))
     ));
-    return friends
+    return friendLoadables
       .filter(({state}) => state === 'hasValue')
       .map(({contents}) => contents);
   },
