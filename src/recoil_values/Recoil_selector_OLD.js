@@ -151,6 +151,10 @@ function selector<T>(
   let cache: CacheImplementation<Loadable<T>> =
     cacheImplementation ?? cacheWithReferenceEquality();
 
+  function initSelector(store: Store) {
+    store.getState().knownSelectors.add(key);
+  }
+
   function putIntoCache(
     store: Store,
     cacheKey: CacheKey,
@@ -386,6 +390,8 @@ function selector<T>(
   }
 
   function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+    initSelector(store);
+
     // TODO memoize a value if no deps have changed to avoid a cache lookup
     // Lookup the node value in the cache.  If not there, then compute
     // the value and update the state with any changed node subscriptions.
@@ -394,6 +400,7 @@ function selector<T>(
 
   if (set != null) {
     function mySet(store, state, newValue) {
+      initSelector(store);
       let newState = state;
       const writtenNodes: Set<NodeKey> = new Set();
 

@@ -10,16 +10,17 @@
  */
 'use strict';
 
+// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {AtomOptions} from './Recoil_atom';
-// @fb-only: import type {ScopeRules} from './Recoil_ScopedAtom';
+
+// @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
 
 const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
 const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
 const stableStringify = require('../util/Recoil_stableStringify');
 const atom = require('./Recoil_atom');
-// @fb-only: const {parameterizedScopedAtomLegacy} = require('./Recoil_ScopedAtom');
 const selectorFamily = require('./Recoil_selectorFamily');
 
 type Primitive = void | null | boolean | number | string;
@@ -131,15 +132,14 @@ function atomFamily<T, P: Parameter>(
     }
 
     const newAtom = atom<T>({
+      ...options,
       key: `${options.key}__${stableStringify(params) ?? 'void'}`,
-      default: atomFamilyDefault(params),
+      default: atomFamilyDefault(params)
       // prettier-ignore
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
       // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
       // @fb-only: params,
-      // @fb-only: ),
-      persistence_UNSTABLE: options.persistence_UNSTABLE,
-      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+      // @fb-only: )
     });
 
     atomCache = atomCache.set(params, newAtom);

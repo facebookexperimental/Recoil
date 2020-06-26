@@ -213,6 +213,10 @@ function selector<T>(
 
   const executionInfo: ExecutionInfo<T> = getInitialExecutionInfo();
 
+  function initSelector(store: Store) {
+    store.getState().knownSelectors.add(key);
+  }
+
   /**
    * This function attaches a then() and a catch() to a promise that was
    * returned from a selector's get() (either explicitly or implicitly by
@@ -743,12 +747,14 @@ function selector<T>(
   }
 
   function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+    initSelector(store);
     // TODO memoize a value if no deps have changed to avoid a cache lookup
     return getSelectorResult(store, state);
   }
 
   if (set != null) {
     function mySet(store, state, newValue) {
+      initSelector(store);
       let newState = state;
       const writtenNodes: Set<NodeKey> = new Set();
 

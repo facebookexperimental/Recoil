@@ -28,7 +28,6 @@ const {
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
-  valueFromValueOrUpdater,
 } = require('../core/Recoil_RecoilValueInterface');
 const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
@@ -160,12 +159,7 @@ function useInterface(): RecoilInterface {
       return (
         newValueOrUpdater: (T => T | DefaultValue) | T | DefaultValue,
       ) => {
-        const newValue = valueFromValueOrUpdater(
-          storeRef.current,
-          recoilState,
-          newValueOrUpdater,
-        );
-        setRecoilValue(storeRef.current, recoilState, newValue);
+        setRecoilValue(storeRef.current, recoilState, newValueOrUpdater);
       };
     }
 
@@ -544,12 +538,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
         recoilState: RecoilState<T>,
         newValueOrUpdater: (T => T) | T,
       ) {
-        const newValue = valueFromValueOrUpdater(
-          storeRef.current,
-          recoilState,
-          newValueOrUpdater,
-        );
-        setRecoilValue(storeRef.current, recoilState, newValue);
+        setRecoilValue(storeRef.current, recoilState, newValueOrUpdater);
       }
 
       function reset<T>(recoilState: RecoilState<T>) {

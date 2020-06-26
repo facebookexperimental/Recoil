@@ -28,6 +28,7 @@ const {
 } = require('../../hooks/Recoil_Hooks');
 const {
   ReadsAtom,
+  componentThatReadsAndWritesAtom,
   makeStore,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
@@ -208,4 +209,30 @@ test('Atom with selector fallback can store null and undefined', () => {
   expect(get(myAtom)).toBe(undefined);
   act(() => set(myAtom, 'VALUE'));
   expect(get(myAtom)).toBe('VALUE');
+});
+
+test('Effects', () => {
+  let inited = false;
+  const myAtom = atom<string>({
+    key: 'atom hooks init',
+    default: Promise.resolve('RESOLVE'),
+    effects_UNSTABLE: [
+      ({setSelf}) => {
+        inited = true;
+        setSelf('INIT');
+      },
+    ],
+  });
+
+  expect(get(myAtom)).toEqual('INIT');
+  expect(inited).toEqual(true);
+
+  const [ReadsWritesAtom, _, reset] = componentThatReadsAndWritesAtom(myAtom);
+  const c = renderElements(<ReadsWritesAtom />);
+  expect(c.textContent).toEqual('"INIT"');
+
+  act(reset);
+  expect(c.textContent).toEqual('loading');
+  act(() => jest.runAllTimers());
+  expect(c.textContent).toEqual('"RESOLVE"');
 });

@@ -26,6 +26,7 @@ const {
 } = require('../../hooks/Recoil_Hooks');
 const {
   ReadsAtom,
+  componentThatReadsAndWritesAtom,
   makeStore,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
@@ -430,6 +431,36 @@ test('Independent atom subscriptions', () => {
   expect(container.textContent).toBe('12');
   expect(getNumUpdatesA()).toBe(4);
   expect(getNumUpdatesB()).toBe(3);
+});
+
+test('Effects', () => {
+  let inited = 0;
+  const myAtom = atomFamily<string, number>({
+    key: 'atomFamily hooks init',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => {
+        inited++;
+        setSelf('INIT');
+      },
+    ],
+  });
+  expect(inited).toEqual(0);
+
+  expect(get(myAtom(1))).toEqual('INIT');
+  expect(inited).toEqual(1);
+
+  set(myAtom(2));
+  expect(inited).toEqual(2);
+
+  const [ReadsWritesAtom, _, reset] = componentThatReadsAndWritesAtom(
+    myAtom(1),
+  );
+  const c = renderElements(<ReadsWritesAtom />);
+  expect(c.textContent).toEqual('"INIT"');
+
+  act(reset);
+  expect(c.textContent).toEqual('"DEFAULT"');
 });
 
 // TODO add non-current-entry tests
