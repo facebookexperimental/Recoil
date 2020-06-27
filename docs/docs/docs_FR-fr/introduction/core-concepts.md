@@ -1,16 +1,16 @@
 ---
-title: Core Concepts
+title: Concepts de base
 ---
 
-## Overview
+## Aperçu
 
-Recoil lets you create a data-flow graph that flows from _atoms_ (shared state) through _selectors_ (pure functions) and down into your React components. Atoms are units of state that components can subscribe to. Selectors transform this state either synchronously or asynchronously.
+Recoil vous permet de créer un graphe de flux de données qui s'écoule des _atomes_ (état partagé) via des _sélecteurs_ (fonctions pures) et descend dans vos composants React. Les atomes sont des unités d'état auxquelles les composants peuvent s'abonner. Les sélecteurs transforment cet état de manière synchrone ou asynchrone.
 
-## Atoms
+## Atomes
 
-Atoms are units of state. They're updateable and subscribable: when an atom is updated, each subscribed component is re-rendered with the new value. They can be created at runtime, too. Atoms can be used in place of React local component state. If the same atom is used from multiple components, all those components share their state.
+Les atomes sont des unités d'état. Ils peuvent être mis à jour et il est possible de s'y abonner: lorsqu'un atome est mis à jour, chaque composant abonné est re-rendu avec la nouvelle valeur. Ils peuvent également être créés à l'exécution. Les atomes peuvent être utilisés à la place de l'état local du composant React. Si le même atome est utilisé à partir de plusieurs composants, tous ces composants partagent leur état.
 
-Atoms are created using the `atom` function:
+Les atomes sont créés en utilisant la fonction `atom`:
 
 ```javascript
 const fontSizeState = atom({
@@ -19,39 +19,40 @@ const fontSizeState = atom({
 });
 ```
 
-Atoms need a unique key, which is used for debugging, persistence, and for certain advanced APIs that let you see a map of all atoms. It is an error for two atoms to have the same key, so make sure they're globally unique. Like React component state, they also have a default value.
+Les atomes ont besoin d'une clé unique, qui est utilisée pour le débogage, la persistance et pour certaines API avancées qui vous permettent de voir une carte de tous les atomes. C'est une erreur pour deux atomes d'avoir la même clé, alors assurez-vous qu'ils sont uniques à travers toute l'application. Comme les états locaux de composant React, ils ont également une valeur par défaut.
 
-To read and write an atom from a component, we use a hook called `useRecoilState`. It's just like React's `useState`, but now the state can be shared between components:
+Pour lire et écrire un atome à partir d'un composant, nous utilisons un _Hook_ appelé `useRecoilState`. C'est exactement comme `useState` de React, mais maintenant l'état peut être partagé entre les composants:
+
 
 ```jsx
 function FontButton() {
   const [fontSize, setFontSize] = useRecoilState(fontSizeState);
   return (
     <button onClick={() => setFontSize((size) => size + 1)} style={{fontSize}}>
-      Click to Enlarge
+      Cliquer pour agrandir
     </button>
   );
 }
 ```
 
-Clicking on the button will increase the font size of the button by one. But now some other component can also use the same font size:
+Cliquer sur le bouton augmentera la taille de la police du bouton d'une unité. Mais maintenant, un autre composant peut également utiliser la même taille de police:
 
 ```jsx
 function Text() {
   const [fontSize, setFontSize] = useRecoilState(fontSizeState);
-  return <p style={{fontSize}}>This text will increase in size too.</p>;
+  return <p style={{fontSize}}>Ce text va aussi s'agrandir.</p>;
 }
 ```
 
-## Selectors
+## Sélecteurs
 
-A **selector** is a pure function that accepts atoms or other selectors as input. When these upstream atoms or selectors are updated, the selector function will be re-evaluated. Components can subscribe to selectors just like atoms, and will then be re-rendered when the selectors change.
+Un **sélecteur** est une fonction pure qui accepte des atomes ou d'autres sélecteurs en entrée. Lorsque ces atomes ou sélecteurs en amont sont mis à jour, le sélecteur sera réévaluée. Les composants peuvent s'abonner à des sélecteurs tout comme les atomes, et seront ensuite re-rendu lorsque les sélecteurs changent.
 
-Selectors are used to calculate derived data that is based on state. This lets us avoid redundant state, usually obviating the need for reducers to keep state in sync and valid. Instead, a minimal set of state is stored in atoms, while everything else is efficiently computed as a function of that minimal state. Since selectors keep track of what components need them and what state they depend on, they make this functional approach more efficient.
+Les sélecteurs sont utilisés pour calculer des données dérivées basées sur l'état. Cela nous permet d'éviter un état redondant, ce qui annule généralement la nécessité d'utiliser des réducteurs pour maintenir l'état synchronisé et valide. Au lieu de cela, un ensemble minimal d'états est stocké dans des atomes, tandis que tout le reste est calculé efficacement en fonction de ces états minimaux. Étant donné que les sélecteurs gardent une trace des composants qui en ont besoin et de leur état, ils rendent cette approche fonctionnelle plus efficace.
 
-From the point of view of components, selectors and atoms have the same interface and can therefore be substituted for one another.
+Du point de vue des composants, les sélecteurs et les atomes ont la même interface et peuvent donc se substituer les uns aux autres.
 
-Selectors are defined using the `selector` function:
+Les sélecteurs sont définis à l'aide de la fonction `selector`:
 
 ```javascript
 const fontSizeLabelState = selector({
@@ -65,11 +66,11 @@ const fontSizeLabelState = selector({
 });
 ```
 
-The `get` property is the function that is to be computed. It can access the value of atoms and other selectors using the `get` argument passed to it. Whenever it accesses another atom or selector, a dependency relationship is created such that updating the other atom or selector will cause this one to be recomputed.
+La propriété `get` est la fonction à calculer. Elle peut accéder à la valeur des atomes et d'autres sélecteurs à l'aide de l'argument `get` qui lui est transmis. Chaque fois qu'elle accède à un autre atome ou sélecteur, une relation de dépendance est créée de telle sorte que la mise à jour de l'autre atome ou sélecteur entraîne le recalcul de celle-ci.
 
-In this `fontSizeLabelState` example, the selector has one dependency: the `fontSizeState` atom. Conceptually, the `fontSizeLabelState` selector behaves like a pure function that takes a `fontSizeState` as input and returns a formatted font size label as output.
+Dans cet exemple `fontSizeLabelState`, le sélecteur a une dépendance: l'atome `fontSizeState`. Conceptuellement, le sélecteur `fontSizeLabelState` se comporte comme une fonction pure qui prend `fontSizeState` en entrée et renvoie la de taille de police formatée en sortie.
 
-Selectors can be read using `useRecoilValue()`, which takes an atom or selector as an argument and returns the corresponding value. We don't use the `useRecoilState()` as the `fontSizeLabelState` selector is not writeable (see the [selector API reference](/docs/api-reference/core/selector) for more information on writeable selectors):
+Les sélecteurs peuvent être lus à l'aide de `useRecoilValue()`, qui prend un atome ou un sélecteur comme argument et renvoie la valeur correspondante. Nous n'utilisons pas `useRecoilState()` car le sélecteur `fontSizeLabelState` n'est pas accessible en écriture (voir la [référence de l'API selector](/docs/api-reference/core/selector) pour plus d'informations sur les sélecteurs accessibles en écriture):
 
 ```jsx
 function FontButton() {
@@ -78,14 +79,14 @@ function FontButton() {
 
   return (
     <>
-      <div>Current font size: ${fontSizeLabel}</div>
+      <div>Taille actuelle: ${fontSizeLabel}</div>
 
       <button onClick={() => setFontSize(fontSize + 1)} style={{fontSize}}>
-        Click to Enlarge
+        Cliquer pour agrandir
       </button>
     </>
   );
 }
 ```
 
-Clicking on the button now does two things: it increases the font size of the button while also updating the font size label to reflect the current font size.
+Cliquer sur le bouton fait maintenant deux choses: cela augmente la taille de police du bouton tout en mettant à jour la taille de police pour refléter la taille de police actuelle.

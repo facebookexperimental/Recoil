@@ -2,20 +2,20 @@
 title: Motivation
 ---
 
-For reasons of compatibility and simplicity, it's best to use React's built-in state management capabilities rather than external global state. But React has certain limitations:
+Pour des raisons de compatibilité et de simplicité, il est préférable d'utiliser les capacités de gestion d'état intégrées de React plutôt qu'un solution d'état global externe. Mais React a certaines limites:
 
-- Component state can only be shared by pushing it up to the common ancestor, but this might include a huge tree that then needs to re-render.
-- Context can only store a single value, not an indefinite set of values each with its own consumers.
-- Both of these make it difficult to code-split the top of the tree (where the state has to live) from the leaves of the tree (where the state is used).
+- L'état des composants ne peut être partagé qu'en étant poussant vers un ancêtre commun, mais cela peut inclure un arbre de taille conséquente qui doit ensuite être re-rendu.
+- Le contexte ne peut stocker qu'une valeur seule, pas un jeu indéfini de valeures avec chacune leur propre composant consommateurs.
+- Ces deux éléments rendent difficile la fragmentation de code du haut de l'arbre (où l'état doit vivre) vers les feuilles de l'arbre (où l'état est utilisé).
 
-We want to improve this while keeping both the API and the semantics and behavior as Reactish as possible.
+Nous voulons améliorer cela tout en gardant l'API et la sémantique ainsi que le qu'un comportement aussi _React_ que possible.
 
-Recoil defines a directed graph orthogonal to but also intrinsic and attached to your React tree. State changes flow from the roots of this graph (which we call atoms) through pure functions (which we call selectors) and into components. With this approach:
+Recoil définit un graphe orienté orthogonal mais également intrinsèque et attaché à votre arbre React. Les changements d'état découlent des racines de ce graphe (que nous appelons des atomes) à travers des fonctions pures (que nous appelons des sélecteurs) et enfin vers les composants. Avec cette approche:
 
-- We get a boilerplate-free API where shared state has the same simple get/set interface as React local state (yet can be encapsulated with reducers etc. if needed).
-- We have the possibility of compatibility with Concurrent Mode and other new React features as they become available.
-- The state definition is incremental and distributed, making code-splitting possible.
-- State can be replaced with derived data without modifying the components that use it.
-- Derived data can move between being synchronous and asynchronous without modifying the components that use it.
-- We can treat navigation as a first-class concept, even encoding state transitions in links.
-- It's easy to persist the entire application state in a way that is backwards-compatible, so persisted states can survive application changes.
+- Nous obtenons une API sans code squelette où l'état partagé a la même interface get / set simple que l'état local React (mais peut être encapsulé avec des réducteurs, etc. si nécessaire).
+- Nous avons la possibilité de compatibilité avec le mode concurrent et d'autres nouvelles fonctionnalités de React dès qu'elles seront disponibles.
+- La définition de l'état est incrémentielle et distribuée, ce qui rend possible la fragmentation de code.
+- L'état peut être remplacé par des données dérivées sans modifier les composants qui l'utilisent.
+- Les données dérivées peuvent passer de synchrones à asynchrones sans modifier les composants qui les utilisent.
+- Nous pouvons traiter la navigation comme un concept de première classe, même en codant les transitions d'état dans les liens.
+- Il est facile de conserver l'intégralité de l'état de l'application d'une manière rétrocompatible, de sorte que les états persistants puissent survivre les modifications apportées à l'application.
