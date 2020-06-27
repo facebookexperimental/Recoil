@@ -56,6 +56,8 @@ type Node<T> = ReadOnlyNodeOptions<T> | ReadWriteNodeOptions<T>;
 
 // flowlint-next-line unclear-type:off
 const nodes: Map<string, Node<any>> = new Map();
+// flowlint-next-line unclear-type:off
+const recoilValues: Map<string, RecoilValue<any>> = new Map();
 
 /* eslint-disable no-redeclare */
 declare function registerNode<T>(
@@ -86,9 +88,13 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
   }
   nodes.set(node.key, node);
 
-  return node.set == null
-    ? new RecoilValueClasses.RecoilValueReadOnly(node.key)
-    : new RecoilValueClasses.RecoilState(node.key);
+  const recoilValue: RecoilValue<T> =
+    node.set == null
+      ? new RecoilValueClasses.RecoilValueReadOnly(node.key)
+      : new RecoilValueClasses.RecoilState(node.key);
+
+  recoilValues.set(node.key, recoilValue);
+  return recoilValue;
 }
 /* eslint-enable no-redeclare */
 
@@ -105,6 +111,7 @@ function getNode(key: NodeKey): Node<any> {
 
 module.exports = {
   nodes,
+  recoilValues,
   registerNode,
   getNode,
   NodeMissingError,

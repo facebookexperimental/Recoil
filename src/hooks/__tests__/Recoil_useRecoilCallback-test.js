@@ -154,6 +154,7 @@ describe('useRecoilCallback', () => {
       <ReadsAtom atom={anAtom} />,
       <Kick />,
     ]);
+
     expect(container.textContent).toBe('"DEFAULT"');
     act(() => cb(123));
     act(kick);
@@ -228,10 +229,12 @@ describe('useRecoilCallback', () => {
       return null;
     }
 
+    const [Kick, kick] = componentThatReadsAndWritesAtom(kickAtom);
     const c = renderElements(
       <>
         <ReadsAtom atom={myAtom} />
         <Component />
+        <Kick />
       </>,
     );
 
@@ -243,10 +246,11 @@ describe('useRecoilCallback', () => {
       cb('SET');
       cb('UPDATE AGAIN');
     });
+    act(kick);
     expect(c.textContent).toEqual('"UPDATE AGAIN"');
   });
 
-  it('goes to snapshot', async () => {
+  it('goes to snapshot', () => {
     const myAtom = atom({
       key: 'Goto Snapshot From Callback',
       default: 'DEFAULT',
@@ -258,22 +262,29 @@ describe('useRecoilCallback', () => {
         const updatedSnapshot = snapshot.map(({set}) => {
           set(myAtom, 'SET IN SNAPSHOT');
         });
+        expect(updatedSnapshot.getLoadable(myAtom).contents).toEqual(
+          'SET IN SNAPSHOT',
+        );
         gotoSnapshot(updatedSnapshot);
       });
       return null;
     }
 
+    // Something with React and Jest requires this extra kick...
+    const [Kick, kick] = componentThatReadsAndWritesAtom(kickAtom);
+
     const c = renderElements(
       <>
         <ReadsAtom atom={myAtom} />
         <RecoilCallback />
+        <Kick />
       </>,
     );
 
     expect(c.textContent).toEqual('"DEFAULT"');
 
     act(cb);
-    await flushPromisesAndTimers();
+    act(kick);
     expect(c.textContent).toEqual('"SET IN SNAPSHOT"');
   });
 });

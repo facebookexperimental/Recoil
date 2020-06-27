@@ -53,8 +53,8 @@
  */
 'use strict';
 
-import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {Loadable} from '../adt/Recoil_Loadable';
+import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
@@ -63,7 +63,23 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
+const {
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue,
+} = require('../adt/Recoil_Loadable');
 const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
+const {
+  detectCircularDependencies,
+  getNodeLoadable,
+  setNodeValue,
+} = require('../core/Recoil_FunctionalCore');
+const {
+  DEFAULT_VALUE,
+  RecoilValueNotReady,
+  registerNode,
+} = require('../core/Recoil_Node');
+const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   mapBySettingInMap,
   mapByUpdatingInMap,
@@ -71,28 +87,11 @@ const {
   setByDeletingFromSet,
 } = require('../util/Recoil_CopyOnWrite');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
-const {
-  detectCircularDependencies,
-  getNodeLoadable,
-  setNodeValue,
-} = require('../core/Recoil_FunctionalCore');
-const {
-  loadableWithError,
-  loadableWithPromise,
-  loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const {
-  DEFAULT_VALUE,
-  RecoilValueNotReady,
-  registerNode,
-} = require('../core/Recoil_Node');
-const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-
 const differenceSets = require('../util/Recoil_differenceSets');
 const equalsSet = require('../util/Recoil_equalsSet');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
+const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
 
 export type ValueOrUpdater<T> =
   | T
@@ -152,6 +151,10 @@ function selector<T>(
   let cache: CacheImplementation<Loadable<T>> =
     cacheImplementation ?? cacheWithReferenceEquality();
 
+  function initSelector(store: Store) {
+    store.getState().knownSelectors.add(key);
+  }
+
   function putIntoCache(
     store: Store,
     cacheKey: CacheKey,
@@ -159,8 +162,10 @@ function selector<T>(
   ) {
     if (loadable.state !== 'loading') {
       // Synchronous result
-      if (!options.dangerouslyAllowMutability === true) {
-        deepFreezeValue(loadable.contents);
+      if (__DEV__) {
+        if (!options.dangerouslyAllowMutability === true) {
+          deepFreezeValue(loadable.contents);
+        }
       }
     } else {
       // Asynchronous result
@@ -168,10 +173,13 @@ function selector<T>(
       // cache and fire any external subscriptions to re-render with the new value.
       loadable.contents
         .then((result: $FlowFixMe) => {
-          // If the value is now resolved, then update the cache with the new value
-          if (!options.dangerouslyAllowMutability === true) {
-            deepFreezeValue(result);
+          if (__DEV__) {
+            if (!options.dangerouslyAllowMutability === true) {
+              deepFreezeValue(result);
+            }
           }
+
+          // If the value is now resolved, then update the cache with the new value
           cache = cache.set(cacheKey, loadableWithValue(result));
 
           // TODO Potential optimization: I think this is updating the cache
@@ -200,11 +208,13 @@ function selector<T>(
           if (isPromise(error)) {
             return error;
           }
+          if (__DEV__) {
+            if (!options.dangerouslyAllowMutability === true) {
+              deepFreezeValue(error);
+            }
+          }
           // The async value was rejected with an error.  Update the cache with
           // the error and fire subscriptions to re-render.
-          if (!options.dangerouslyAllowMutability === true) {
-            deepFreezeValue(error);
-          }
           cache = cache.set(cacheKey, loadableWithError(error));
           store.fireNodeSubscriptions(new Set([key]), 'now');
           return error;
@@ -380,6 +390,8 @@ function selector<T>(
   }
 
   function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+    initSelector(store);
+
     // TODO memoize a value if no deps have changed to avoid a cache lookup
     // Lookup the node value in the cache.  If not there, then compute
     // the value and update the state with any changed node subscriptions.
@@ -388,6 +400,7 @@ function selector<T>(
 
   if (set != null) {
     function mySet(store, state, newValue) {
+      initSelector(store);
       let newState = state;
       const writtenNodes: Set<NodeKey> = new Set();
 

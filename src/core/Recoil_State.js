@@ -14,7 +14,6 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 
 export type NodeKey = string;
 
-// TODO We could just store T instead of a Loadable<T> in atomValues
 // flowlint-next-line unclear-type:off
 export type AtomValues = Map<NodeKey, Loadable<any>>;
 
@@ -23,9 +22,9 @@ type ComponentCallback = TreeState => void;
 export type TreeState = $ReadOnly<{
   // Information about the TreeState itself:
   transactionMetadata: {...},
-  dirtyAtoms: Set<NodeKey>,
 
   // ATOMS
+  dirtyAtoms: Set<NodeKey>,
   atomValues: AtomValues,
   nonvalidatedAtoms: Map<NodeKey, mixed>,
 
@@ -55,8 +54,13 @@ export type StoreState = {
   // (generally equal to a React batch) when atom values are updated.
   nextTree: null | TreeState,
 
+  // Node lifetimes
+  knownAtoms: Set<NodeKey>,
+  knownSelectors: Set<NodeKey>,
+
   // For observing transactions:
   +transactionSubscriptions: Map<number, (Store) => void>,
+  +nodeTransactionSubscriptions: Map<NodeKey, Array<(Store) => void>>,
 
   // Callbacks to render external components that are subscribed to nodes
   // These are executed at the end of the transaction or asynchronously.
@@ -72,7 +76,7 @@ export type Store = $ReadOnly<{
     (TreeState) => TreeState,
     shouldNotNotifyBatcher: ?boolean,
   ) => void,
-  subscribeToTransactions: ((Store) => void) => {release: () => void},
+  subscribeToTransactions: ((Store) => void, ?NodeKey) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
   fireNodeSubscriptions: (
     updatedNodes: $ReadOnlySet<NodeKey>,
@@ -87,9 +91,9 @@ export type StoreRef = {
 function makeEmptyTreeState(): TreeState {
   return {
     transactionMetadata: {},
+    dirtyAtoms: new Set(),
     atomValues: new Map(),
     nonvalidatedAtoms: new Map(),
-    dirtyAtoms: new Set(),
     nodeDeps: new Map(),
     nodeToNodeSubscriptions: new Map(),
     nodeToComponentSubscriptions: new Map(),
@@ -100,7 +104,10 @@ function makeStoreState(treeState: TreeState): StoreState {
   return {
     currentTree: treeState,
     nextTree: null,
+    knownAtoms: new Set(),
+    knownSelectors: new Set(),
     transactionSubscriptions: new Map(),
+    nodeTransactionSubscriptions: new Map(),
     queuedComponentCallbacks: [],
     suspendedComponentResolvers: new Set(),
   };

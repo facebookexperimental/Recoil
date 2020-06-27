@@ -14,8 +14,63 @@ const {act} = require('ReactTestUtils');
 
 const atom = require('../../recoil_values/Recoil_atom');
 const constSelector = require('../../recoil_values/Recoil_constSelector');
+const selector = require('../../recoil_values/Recoil_selector');
 const {asyncSelector} = require('../../testing/Recoil_TestingUtils');
 const {Snapshot, freshSnapshot} = require('../Recoil_Snapshot');
+
+// Run test first since it is testing all registered atoms
+test('getNodes', () => {
+  const snapshot = freshSnapshot();
+  const {getNodes_UNSTABLE} = snapshot;
+  expect(Array.from(getNodes_UNSTABLE()).length).toEqual(0);
+
+  // Test atoms
+  const myAtom = atom({key: 'snapshot getNodes atom', default: 'DEFAULT'});
+  expect(Array.from(getNodes_UNSTABLE()).length).toEqual(1);
+  expect(snapshot.getLoadable(myAtom).contents).toEqual('DEFAULT');
+  const nodesAfterGet = Array.from(getNodes_UNSTABLE());
+  expect(nodesAfterGet.length).toEqual(1);
+  expect(nodesAfterGet[0]).toBe(myAtom);
+  expect(snapshot.getLoadable(nodesAfterGet[0]).contents).toEqual('DEFAULT');
+
+  // Test selectors
+  const mySelector = selector({
+    key: 'snapshot getNodes selector',
+    get: ({get}) => get(myAtom) + '-SELECTOR',
+  });
+  expect(Array.from(getNodes_UNSTABLE()).length).toEqual(2);
+  expect(snapshot.getLoadable(mySelector).contents).toEqual('DEFAULT-SELECTOR');
+  expect(Array.from(getNodes_UNSTABLE()).length).toEqual(2);
+  // expect(Array.from(getNodes_UNSTABLE({types: ['atom']})).length).toEqual(1);
+  // const selectorNodes = Array.from(getNodes_UNSTABLE({types: ['selector']}));
+  // expect(selectorNodes.length).toEqual(1);
+  // expect(selectorNodes[0]).toBe(mySelector);
+
+  // Test dirty atoms
+  expect(Array.from(snapshot.getNodes_UNSTABLE({dirty: true})).length).toEqual(
+    0,
+  );
+  const updatedSnapshot = snapshot.map(({set}) => set(myAtom, 'SET'));
+  expect(Array.from(snapshot.getNodes_UNSTABLE({dirty: true})).length).toEqual(
+    0,
+  );
+  expect(
+    Array.from(updatedSnapshot.getNodes_UNSTABLE({dirty: true})).length,
+  ).toEqual(1);
+  const dirtyAtom = Array.from(
+    updatedSnapshot.getNodes_UNSTABLE({dirty: true}),
+  )[0];
+  expect(snapshot.getLoadable(dirtyAtom).contents).toEqual('DEFAULT');
+  expect(updatedSnapshot.getLoadable(dirtyAtom).contents).toEqual('SET');
+
+  // Test reset
+  const resetSnapshot = updatedSnapshot.map(({reset}) => reset(myAtom));
+  expect(
+    Array.from(resetSnapshot.getNodes_UNSTABLE({dirty: true})).length,
+  ).toEqual(1);
+
+  // TODO Test dirty selectors
+});
 
 test('Read default loadable from snapshot', () => {
   const snapshot: Snapshot = freshSnapshot();
@@ -120,4 +175,37 @@ test('Async map of snapshot', async () => {
   const newSnapshot = await newSnapshotPromise;
   const value = await newSnapshot.getPromise(myAtom);
   expect(value).toEqual('VALUE');
+});
+
+test('getDeps', () => {
+  const snapshot = freshSnapshot();
+
+  const myAtom = atom<string>({key: 'snapshot getDeps atom', default: 'ATOM'});
+  const selectorA = selector({
+    key: 'getDepsA',
+    get: ({get}) => get(myAtom),
+  });
+  const selectorB = selector({
+    key: 'getDepsB',
+    get: ({get}) => get(selectorA) + get(myAtom),
+  });
+  const selectorC = selector({
+    key: 'getDepsC',
+    get: async ({get}) => {
+      const ret = get(selectorA) + get(selectorB);
+      await Promise.resolve();
+      return ret;
+    },
+  });
+
+  expect(Array.from(snapshot.getDeps_UNSTABLE(myAtom))).toEqual([]);
+  expect(Array.from(snapshot.getDeps_UNSTABLE(selectorA))).toEqual(
+    expect.arrayContaining([myAtom]),
+  );
+  expect(Array.from(snapshot.getDeps_UNSTABLE(selectorB))).toEqual(
+    expect.arrayContaining([selectorA, myAtom]),
+  );
+  expect(Array.from(snapshot.getDeps_UNSTABLE(selectorC))).toEqual(
+    expect.arrayContaining([selectorA, selectorB]),
+  );
 });

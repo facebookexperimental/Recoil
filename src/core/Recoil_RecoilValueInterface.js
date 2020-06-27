@@ -50,14 +50,46 @@ function getRecoilValueAsLoadable<T>(
   return (result: any); // flowlint-line unclear-type:off
 }
 
-function setRecoilValue<T>(
+function valueFromValueOrUpdater<T>(
   store: Store,
   {key}: AbstractRecoilValue<T>,
-  newValue: T | DefaultValue,
+  valueOrUpdater: ValueOrUpdater<T>,
+): T | DefaultValue {
+  if (typeof valueOrUpdater === 'function') {
+    // Updater form: pass in the current value. Throw if the current value
+    // is unavailable (namely when updating an async selector that's
+    // pending or errored):
+    const storeState = store.getState();
+    const state = storeState.nextTree ?? storeState.currentTree;
+    // NOTE: This will not update state with node subscriptions.
+    const current = peekNodeLoadable(store, state, key);
+    if (current.state === 'loading') {
+      throw new RecoilValueNotReady(key);
+    } else if (current.state === 'hasError') {
+      throw current.contents;
+    }
+    // T itself may be a function, so our refinement is not sufficient:
+    return (valueOrUpdater: any)(current.contents); // flowlint-line unclear-type:off
+  } else {
+    return valueOrUpdater;
+  }
+}
+
+function setRecoilValue<T>(
+  store: Store,
+  recoilValue: AbstractRecoilValue<T>,
+  valueOrUpdater: T | DefaultValue | (T => T | DefaultValue),
 ): void {
+  const {key} = recoilValue;
   Tracing.trace('set RecoilValue', key, () =>
     store.replaceState(
       Tracing.wrap(state => {
+        const newValue = valueFromValueOrUpdater(
+          store,
+          recoilValue,
+          valueOrUpdater,
+        );
+
         const [newState, writtenNodes] = setNodeValue(
           store,
           state,
@@ -87,31 +119,6 @@ function setUnvalidatedRecoilValue<T>(
   );
 }
 
-function valueFromValueOrUpdater<T>(
-  store: Store,
-  {key}: RecoilState<T>,
-  valueOrUpdater: ValueOrUpdater<T>,
-): T | DefaultValue {
-  if (typeof valueOrUpdater === 'function') {
-    // Updater form: pass in the current value. Throw if the current value
-    // is unavailable (namely when updating an async selector that's
-    // pending or errored):
-    const storeState = store.getState();
-    const state = storeState.nextTree ?? storeState.currentTree;
-    // NOTE: This will not update state with node subscriptions.
-    const current = peekNodeLoadable(store, state, key);
-    if (current.state === 'loading') {
-      throw new RecoilValueNotReady(key);
-    } else if (current.state === 'hasError') {
-      throw current.contents;
-    }
-    // T itself may be a function, so our refinement is not sufficient:
-    return (valueOrUpdater: any)(current.contents); // flowlint-line unclear-type:off
-  } else {
-    return valueOrUpdater;
-  }
-}
-
 export type ComponentSubscription = {release: Store => void};
 function subscribeToRecoilValue<T>(
   store: Store,
@@ -134,7 +141,6 @@ module.exports = {
   RecoilValueReadOnly,
   AbstractRecoilValue,
   RecoilState,
-  valueFromValueOrUpdater,
   getRecoilValueAsLoadable,
   setRecoilValue,
   setUnvalidatedRecoilValue,

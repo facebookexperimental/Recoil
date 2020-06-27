@@ -20,25 +20,25 @@ import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {Store, TreeState} from './Recoil_State';
 
 const gkx = require('../util/Recoil_gkx');
+const mapIterable = require('../util/Recoil_mapIterable');
 const mapMap = require('../util/Recoil_mapMap');
-const {DEFAULT_VALUE} = require('./Recoil_Node');
+const nullthrows = require('../util/Recoil_nullthrows');
+const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-  valueFromValueOrUpdater,
 } = require('./Recoil_RecoilValueInterface');
 const {makeEmptyTreeState, makeStoreState} = require('./Recoil_State');
 
-function makeStore(treeState: TreeState): Store {
+// TODO Temporary until Snapshots only contain state
+function makeSnapshotStore(treeState: TreeState): Store {
   const storeState = makeStoreState(treeState);
-  const store = {
+  const store: Store = {
     getState: () => storeState,
     replaceState: replacer => {
       storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
     },
-    subscribeToTransactions: () => {
-      throw new Error('Cannot subscribe to Snapshots');
-    },
+    subscribeToTransactions: () => ({release: () => {}}),
     addTransactionMetadata: () => {
       throw new Error('Cannot subscribe to Snapshots');
     },
@@ -54,7 +54,7 @@ class Snapshot {
   _store: Store;
 
   constructor(treeState: TreeState) {
-    this._store = makeStore(treeState);
+    this._store = makeSnapshotStore(treeState);
   }
 
   getStore_INTERNAL(): Store {
@@ -75,6 +75,38 @@ class Snapshot {
       : (this.getLoadable(recoilValue).toPromise(): $FlowFixMe);
 
   // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  getNodes_UNSTABLE: (
+    {
+      dirty?: boolean,
+    } | void,
+  ) => Iterable<RecoilValue<mixed>> = opt => {
+    // TODO Deal with modified selectors
+    if (opt?.dirty === true) {
+      const state = this._store.getState().currentTree;
+      return mapIterable(state.dirtyAtoms, key =>
+        nullthrows(recoilValues.get(key)),
+      );
+    }
+
+    return recoilValues.values();
+  };
+
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  getDeps_UNSTABLE: <T>(RecoilValue<T>) => Iterable<RecoilValue<mixed>> = <T>(
+    recoilValue: RecoilValue<T>,
+  ) => {
+    this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
+    const deps = this._store
+      .getState()
+      .currentTree.nodeDeps.get(recoilValue.key);
+    return (function*() {
+      for (const key of deps ?? []) {
+        yield nullthrows(recoilValues.get(key));
+      }
+    })();
+  };
+
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
     const mutableSnapshot = new MutableSnapshot(
@@ -101,9 +133,9 @@ class Snapshot {
 function cloneTreeState(treeState: TreeState): TreeState {
   return {
     transactionMetadata: {...treeState.transactionMetadata},
+    dirtyAtoms: new Set(treeState.dirtyAtoms),
     atomValues: new Map(treeState.atomValues),
     nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
-    dirtyAtoms: new Set(treeState.dirtyAtoms),
     nodeDeps: new Map(treeState.nodeDeps),
     nodeToNodeSubscriptions: mapMap(
       treeState.nodeToNodeSubscriptions,
@@ -135,12 +167,7 @@ class MutableSnapshot extends Snapshot {
     newValueOrUpdater: ValueOrUpdater<T>,
   ) => {
     const store = this.getStore_INTERNAL();
-    const newValue = valueFromValueOrUpdater(
-      store,
-      recoilState,
-      newValueOrUpdater,
-    );
-    setRecoilValue(store, recoilState, newValue);
+    setRecoilValue(store, recoilState, newValueOrUpdater);
   };
 
   reset: ResetRecoilState = recoilState =>
