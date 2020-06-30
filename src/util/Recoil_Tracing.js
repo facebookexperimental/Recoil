@@ -25,29 +25,29 @@ function trace<TResult>(
   // prettier-ignore
   // @fb-only: if (__DEV__) {
   // prettier-ignore
-  // @fb-only: if (
+    // @fb-only: if (
   // prettier-ignore
-  // @fb-only: SchedulerTracing.unstable_trace !== undefined &&
+      // @fb-only: SchedulerTracing.unstable_trace !== undefined &&
   // prettier-ignore
-  // @fb-only: window.performance !== undefined
+      // @fb-only: window.performance !== undefined
   // prettier-ignore
-  // @fb-only: ) {
+    // @fb-only: ) {
   // prettier-ignore
-  // @fb-only: return SchedulerTracing.unstable_trace(
+      // @fb-only: return SchedulerTracing.unstable_trace(
   // prettier-ignore
-  // @fb-only: `Recoil: ${message} for node: ${
+        // @fb-only: `Recoil: ${message} for node: ${
   // prettier-ignore
-  // @fb-only: typeof node === 'string' ? node : node.key
+          // @fb-only: typeof node === 'string' ? node : node.key
   // prettier-ignore
-  // @fb-only: }`,
+        // @fb-only: }`,
   // prettier-ignore
-  // @fb-only: window.performance.now(),
+        // @fb-only: window.performance.now(),
   // prettier-ignore
-  // @fb-only: fn,
+        // @fb-only: fn,
   // prettier-ignore
-  // @fb-only: );
+      // @fb-only: );
   // prettier-ignore
-  // @fb-only: }
+    // @fb-only: }
   // prettier-ignore
   // @fb-only: }
   return fn();
@@ -57,11 +57,11 @@ function wrap<TFunction>(fn: TFunction): TFunction {
   // prettier-ignore
   // @fb-only: if (__DEV__) {
   // prettier-ignore
-  // @fb-only: if (SchedulerTracing.unstable_wrap !== undefined) {
+    // @fb-only: if (SchedulerTracing.unstable_wrap !== undefined) {
   // prettier-ignore
-  // @fb-only: return SchedulerTracing.unstable_wrap(fn);
+      // @fb-only: return SchedulerTracing.unstable_wrap(fn);
   // prettier-ignore
-  // @fb-only: }
+    // @fb-only: }
   // prettier-ignore
   // @fb-only: }
   return fn;
