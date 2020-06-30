@@ -100,7 +100,7 @@ class Snapshot {
     const deps = this._store
       .getState()
       .currentTree.nodeDeps.get(recoilValue.key);
-    return (function* () {
+    return (function*() {
       for (const key of deps ?? []) {
         yield nullthrows(recoilValues.get(key));
       }
