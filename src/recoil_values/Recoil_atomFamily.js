@@ -43,7 +43,8 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
     | Promise<T>
     | T
     | (P => T | RecoilValue<T> | Promise<T>),
-  scopeRules_APPEND_ONLY_READ_THE_DOCS?: ParameterizedScopeRules<P>,
+
+  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ParameterizedScopeRules<P>,
 }>;
 
 // Process scopeRules to handle any entries which are functions taking parameters
