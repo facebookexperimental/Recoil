@@ -12,7 +12,7 @@ import type {Store} from 'Recoil_State';
 const React = require('React');
 const {act} = require('ReactTestUtils');
 
-const {DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node');
+const {DEFAULT_VALUE} = require('../../core/Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -110,27 +110,27 @@ test("Updating with same value doesn't rerender", () => {
   expect(renders).toEqual(0);
   const c = renderElements(<AtomComponent />);
 
-  expect(renders).toEqual(3);
+  expect(renders).toEqual(2);
   expect(c.textContent).toEqual('DEFAULT');
 
   act(() => setAtom('SET'));
-  expect(renders).toEqual(4);
+  expect(renders).toEqual(3);
   expect(c.textContent).toEqual('SET');
 
   act(() => setAtom('SET'));
-  expect(renders).toEqual(4);
+  expect(renders).toEqual(3);
   expect(c.textContent).toEqual('SET');
 
   act(() => setAtom('CHANGE'));
-  expect(renders).toEqual(5);
+  expect(renders).toEqual(4);
   expect(c.textContent).toEqual('CHANGE');
 
   act(resetAtom);
-  expect(renders).toEqual(6);
+  expect(renders).toEqual(5);
   expect(c.textContent).toEqual('DEFAULT');
 
   act(resetAtom);
-  expect(renders).toEqual(6);
+  expect(renders).toEqual(5);
   expect(c.textContent).toEqual('DEFAULT');
 });
 
@@ -223,28 +223,6 @@ describe('Effects', () => {
     reset(myAtom);
     expect(get(myAtom)).toEqual('DEFAULT');
     expect(inited).toEqual(1);
-  });
-
-  test('init from other atom', () => {
-    const myAtom = atom({
-      key: 'atom effect - init from other atom',
-      default: 'DEFAULT',
-      effects_UNSTABLE: [
-        ({setSelf, getSnapshot}) => {
-          const snapshot = getSnapshot();
-          const otherValue = snapshot.getLoadable(otherAtom).contents;
-          expect(otherValue).toEqual('OTHER');
-          setSelf(otherValue);
-        },
-      ],
-    });
-
-    const otherAtom = atom({
-      key: 'atom effect - other atom',
-      default: 'OTHER',
-    });
-
-    expect(get(myAtom)).toEqual('OTHER');
   });
 
   test('async set', () => {
@@ -425,13 +403,9 @@ describe('Effects', () => {
   test('onSet History', () => {
     const history: Array<() => void> = []; // Array of undo functions
 
-    function historyEffect({node, setSelf, onSet, getSnapshot}) {
+    function historyEffect({setSelf, onSet}) {
       let ignore = false;
-      onSet((newValue, oldValue) => {
-        if (!(newValue instanceof DefaultValue)) {
-          const {getLoadable} = getSnapshot();
-          expect(newValue).toEqual(getLoadable(node).contents);
-        }
+      onSet((_, oldValue) => {
         if (ignore) {
           ignore = false;
           return;

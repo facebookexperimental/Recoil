@@ -60,7 +60,6 @@
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {Snapshot} from '../core/Recoil_Snapshot';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
@@ -73,7 +72,6 @@ const {
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {setRecoilValue} = require('../core/Recoil_RecoilValueInterface');
-const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {
   mapByDeletingFromMap,
   mapBySettingInMap,
@@ -109,7 +107,6 @@ type AtomEffect<T> = ({
     T | DefaultValue | ((T | DefaultValue) => T | DefaultValue),
   ) => void,
   resetSelf: () => void,
-  getSnapshot: () => Snapshot,
 
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
@@ -150,14 +147,6 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     if (options.effects_UNSTABLE != null) {
       let duringInit = true;
 
-      function getSnapshot() {
-        return cloneSnapshot(
-          duringInit
-            ? initState
-            : store.getState().nextTree ?? store.getState().currentTree,
-        );
-      }
-
       function setSelf(
         valueOrUpdater: T | DefaultValue | (T => T | DefaultValue),
       ) {
@@ -192,7 +181,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       }
 
       for (const effect of options.effects_UNSTABLE ?? []) {
-        effect({node, trigger, setSelf, resetSelf, getSnapshot, onSet});
+        effect({node, trigger, setSelf, resetSelf, onSet});
       }
 
       duringInit = false;
