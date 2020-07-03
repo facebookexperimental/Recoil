@@ -11,8 +11,9 @@
 
 'use strict';
 
-// @fb-only: const recoverableViolation = require('recoverableViolation');
+function sprintf(format: string, ...args: Array<mixed>): string {
+  let index = 0;
+  return format.replace(/%s/g, () => String(args[index++]));
+}
 
-const recoverableViolation = require('./polyfill/recoverableViolation.js'); // @oss-only
-
-module.exports = recoverableViolation;
+module.exports = sprintf;

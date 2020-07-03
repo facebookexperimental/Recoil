@@ -10,8 +10,15 @@
  */
 'use strict';
 
-// @fb-only: const expectationViolation = require('expectationViolation');
+const sprintf = require('./sprintf');
 
-const expectationViolation = require('./polyfill/expectationViolation.js'); // @oss-only
+function expectationViolation(format: string, ...args: $ReadOnlyArray<mixed>) {
+  if (__DEV__) {
+    const message = sprintf.call(null, format, ...args);
+    const error = new Error(message);
+    error.name = 'Expectation Violation';
+    console.error(error);
+  }
+}
 
 module.exports = expectationViolation;

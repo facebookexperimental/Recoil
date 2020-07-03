@@ -13,11 +13,6 @@
 
 // @fb-only: const invariant = require('invariant');
 
-// prettier-ignore
-function invariant(condition: boolean, message: string) { // @oss-only
-  if (!condition) { // @oss-only
-    throw new Error(message); // @oss-only
-  } // @oss-only
-} // @oss-only
+const invariant = require('./polyfill/invariant.js'); // @oss-only
 
 module.exports = invariant;
