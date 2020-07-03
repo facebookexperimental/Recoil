@@ -4,13 +4,22 @@ import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
 
-const config = mode => ({
+const modes = ['development', 'production'];
+
+const config = modes.map(mode => ({
   input: 'src/Recoil_index.js',
-  output: {
-    file: `dist/recoil.${mode}.js`,
-    format: 'cjs',
-    exports: 'named',
-  },
+  output: [
+    {
+      file: `esm/recoil.${mode}.js`,
+      format: 'es',
+      exports: 'named',
+    },
+    {
+      file: `dist/recoil.${mode}.js`,
+      format: 'cjs',
+      exports: 'named',
+    },
+  ],
   external: ['react', 'react-dom'],
   plugins: [
     babel({
@@ -42,6 +51,6 @@ const config = mode => ({
     }),
     mode === 'development' ? undefined : terser({mangle: false}),
   ],
-});
+}));
 
-export default [config('development'), config('production')];
+export default config;
