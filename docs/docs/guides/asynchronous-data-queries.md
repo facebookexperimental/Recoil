@@ -179,12 +179,7 @@ const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
   get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
-    const friends = [];
-    for (const friendID of friendList) {
-      const friendInfo = get(userInfoQuery(friendID));
-      friends.push(friendInfo);
-    }
-    return friends;
+    return friendList.map(get(userInfoQuery);
   },
 });
 
