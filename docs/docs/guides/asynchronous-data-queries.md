@@ -179,7 +179,7 @@ const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
   get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
-    return friendList.map(get(userInfoQuery);
+    return friendList.map(friendID => get(userInfoQuery(friendID)));
   },
 });
 
