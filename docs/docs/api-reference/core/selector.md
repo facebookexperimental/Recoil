@@ -164,7 +164,8 @@ import {selector, useRecoilValue} from 'recoil';
 const myQuery = selector({
   key: 'MyDBQuery',
   get: async () => {
-    return myDBQueryPromise();
+    const response = await fetch(getMyRequestUrl());
+    return response.json();
   },
 });
 
