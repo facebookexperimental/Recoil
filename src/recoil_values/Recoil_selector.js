@@ -53,16 +53,16 @@
  */
 'use strict';
 
-const gkx = require('../util/Recoil_gkx');
-const newSelector = require('./Recoil_selector_NEW');
+// const gkx = require('../util/Recoil_gkx');
+// const newSelector = require('./Recoil_selector_NEW');
 const oldSelector = require('./Recoil_selector_OLD');
 
-export type * from './Recoil_selector_NEW';
+export type * from './Recoil_selector_OLD';
 
-type Selector = typeof newSelector;
+// type Selector = typeof newSelector;
 
-const selector: Selector = gkx('recoil_async_selector_refactor')
-  ? newSelector
-  : oldSelector;
+// const selector: Selector = gkx('recoil_async_selector_refactor')
+//   ? newSelector
+//   : oldSelector;
 
-module.exports = selector;
+module.exports = oldSelector;

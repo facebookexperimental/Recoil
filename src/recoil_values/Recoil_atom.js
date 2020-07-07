@@ -59,8 +59,9 @@
 
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
+import type {DependencyMap} from '../core/Recoil_Graph';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
+import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
@@ -72,11 +73,6 @@ const {
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {setRecoilValue} = require('../core/Recoil_RecoilValueInterface');
-const {
-  mapByDeletingFromMap,
-  mapBySettingInMap,
-  setByAddingToSet,
-} = require('../util/Recoil_CopyOnWrite');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
@@ -131,6 +127,10 @@ type BaseAtomOptions<T> = $ReadOnly<{
 
 function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const {key, persistence_UNSTABLE: persistence} = options;
+
+  let cachedAnswerForUnvalidatedValue:
+    | void
+    | [DependencyMap, Loadable<T>] = undefined;
 
   function initAtom(
     store: Store,
@@ -195,70 +195,65 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     }
   }
 
-  function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+  function myGet(store: Store, state: TreeState): [DependencyMap, Loadable<T>] {
     initAtom(store, state, 'get');
 
     if (state.atomValues.has(key)) {
-      // atom value is stored in state
-      return [state, nullthrows(state.atomValues.get(key))];
+      // Atom value is stored in state:
+      return [new Map(), nullthrows(state.atomValues.get(key))];
     } else if (state.nonvalidatedAtoms.has(key)) {
+      // Atom value is stored but needs validation before use.
+      // We might have already validated it and have a cached validated value:
+      if (cachedAnswerForUnvalidatedValue !== undefined) {
+        return cachedAnswerForUnvalidatedValue;
+      }
       if (persistence == null) {
         expectationViolation(
           `Tried to restore a persisted value for atom ${key} but it has no persistence settings.`,
         );
-        return [state, loadableWithValue(options.default)];
+        return [new Map(), loadableWithValue(options.default)];
       }
       const nonvalidatedValue = state.nonvalidatedAtoms.get(key);
-      const validatedValue: T | DefaultValue = persistence.validator(
+      const validatorResult: T | DefaultValue = persistence.validator(
         nonvalidatedValue,
         DEFAULT_VALUE,
       );
 
-      return validatedValue instanceof DefaultValue
-        ? [
-            {
-              ...state,
-              nonvalidatedAtoms: mapByDeletingFromMap(
-                state.nonvalidatedAtoms,
-                key,
-              ),
-            },
-            loadableWithValue(options.default),
-          ]
-        : [
-            {
-              ...state,
-              atomValues: mapBySettingInMap(
-                state.atomValues,
-                key,
-                loadableWithValue(validatedValue),
-              ),
-              nonvalidatedAtoms: mapByDeletingFromMap(
-                state.nonvalidatedAtoms,
-                key,
-              ),
-            },
-            loadableWithValue(validatedValue),
-          ];
+      const validatedValueLoadable = loadableWithValue(
+        validatorResult instanceof DefaultValue
+          ? options.default
+          : validatorResult,
+      );
+      cachedAnswerForUnvalidatedValue = [new Map(), validatedValueLoadable];
+      return cachedAnswerForUnvalidatedValue;
     } else {
-      return [state, loadableWithValue(options.default)];
+      return [new Map(), loadableWithValue(options.default)];
     }
+  }
+
+  function invalidate() {
+    cachedAnswerForUnvalidatedValue = undefined;
   }
 
   function mySet(
     store: Store,
     state: TreeState,
     newValue: T | DefaultValue,
-  ): [TreeState, $ReadOnlySet<NodeKey>] {
+  ): [DependencyMap, AtomValues] {
     initAtom(store, state, 'set');
 
-    // Only update if setting a new value
-    if (
-      state.atomValues.has(key)
-        ? newValue === state.atomValues.get(key)?.contents
-        : newValue instanceof DefaultValue
+    // Bail out if we're being set to the existing value, or if we're being
+    // reset but have no stored value (validated or unvalidated) to reset from:
+    if (state.atomValues.has(key)) {
+      const existing = nullthrows(state.atomValues.get(key));
+      if (existing.state === 'hasValue' && newValue === existing.contents) {
+        return [new Map(), new Map()];
+      }
+    } else if (
+      !state.nonvalidatedAtoms.has(key) &&
+      newValue instanceof DefaultValue
     ) {
-      return [state, new Set()];
+      return [new Map(), new Map()];
     }
 
     if (__DEV__) {
@@ -267,28 +262,15 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       }
     }
 
-    return [
-      {
-        ...state,
-        dirtyAtoms: setByAddingToSet(state.dirtyAtoms, key),
-        atomValues:
-          newValue instanceof DefaultValue
-            ? mapByDeletingFromMap(state.atomValues, key)
-            : mapBySettingInMap(
-                state.atomValues,
-                key,
-                loadableWithValue(newValue),
-              ),
-        nonvalidatedAtoms: mapByDeletingFromMap(state.nonvalidatedAtoms, key),
-      },
-      new Set([key]),
-    ];
+    cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
+    return [new Map(), new Map().set(key, loadableWithValue(newValue))];
   }
 
   const node = registerNode({
     key,
     options,
     get: myGet,
+    invalidate,
     set: mySet,
   });
   return node;

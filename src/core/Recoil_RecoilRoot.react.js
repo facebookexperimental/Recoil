@@ -23,9 +23,14 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
+const {saveDependencyMapToStore} = require('../core/Recoil_Graph');
+const {cloneGraph} = require('../core/Recoil_Graph');
+const {applyAtomValueWrites} = require('../core/Recoil_RecoilValueInterface');
 const {freshSnapshot} = require('../core/Recoil_Snapshot');
 const {makeEmptyStoreState, makeStoreState} = require('../core/Recoil_State');
+const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const nullthrows = require('../util/Recoil_nullthrows');
+const unionSets = require('../util/Recoil_unionSets');
 
 type Props = {
   initializeState_DEPRECATED?: ({
@@ -52,11 +57,17 @@ const defaultStore: Store = Object.freeze({
 
 function startNextTreeIfNeeded(storeState: StoreState): void {
   if (storeState.nextTree === null) {
+    const version = storeState.currentTree.version;
     storeState.nextTree = {
       ...storeState.currentTree,
+      version: version + 1,
       dirtyAtoms: new Set(),
       transactionMetadata: {},
     };
+    storeState.graphsByVersion.set(
+      version + 1,
+      cloneGraph(nullthrows(storeState.graphsByVersion.get(version))),
+    );
   }
 }
 
@@ -132,16 +143,29 @@ if (__DEV__) {
   }
 }
 
+// When removing this deprecated function, remove stateBySettingRecoilValue
+// which will no longer be needed.
 function initialStoreState_DEPRECATED(store, initializeState): StoreState {
   const initial: StoreState = makeEmptyStoreState();
   initializeState({
     set: (atom, value) => {
-      initial.currentTree = setNodeValue(
-        store,
-        initial.currentTree,
-        atom.key,
-        value,
-      )[0];
+      const state = initial.currentTree;
+      const [depMap, writes] = setNodeValue(store, state, atom.key, value);
+      const writtenNodes = new Set(writes.keys());
+
+      saveDependencyMapToStore(depMap, store, state.version);
+
+      const nonvalidatedAtoms = mapByDeletingMultipleFromMap(
+        state.nonvalidatedAtoms,
+        writtenNodes,
+      );
+
+      initial.currentTree = {
+        ...state,
+        dirtyAtoms: unionSets(state.dirtyAtoms, writtenNodes),
+        atomValues: applyAtomValueWrites(state.atomValues, writes), // NB: PLEASE un-export applyAtomValueWrites when deleting this code
+        nonvalidatedAtoms,
+      };
     },
     setUnvalidatedAtomValues: atomValues => {
       atomValues.forEach((v, k) => {

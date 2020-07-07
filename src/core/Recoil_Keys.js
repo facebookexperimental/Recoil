@@ -11,18 +11,8 @@
 
 'use strict';
 
-let pass = false;
+export type NodeKey = string;
+export type ComponentID = number;
+export type Version = number;
 
-function Recoil_gkx(_gk: string): boolean {
-  return pass;
-}
-
-Recoil_gkx.setFail = (_gk: string): void => {
-  pass = true;
-};
-
-Recoil_gkx.setFail = (_gk: string): void => {
-  pass = false;
-};
-
-module.exports = Recoil_gkx;
+module.exports = ({}: {...});
