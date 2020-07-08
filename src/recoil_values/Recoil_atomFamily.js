@@ -13,7 +13,7 @@
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {AtomOptions} from './Recoil_atom';
+import type {AtomEffect, AtomOptions} from './Recoil_atom';
 
 // @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
 
@@ -43,6 +43,9 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
     | Promise<T>
     | T
     | (P => T | RecoilValue<T> | Promise<T>),
+  effects_UNSTABLE?:
+    | $ReadOnlyArray<AtomEffect<T>>
+    | (P => $ReadOnlyArray<AtomEffect<T>>),
 
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ParameterizedScopeRules<P>,
 }>;
@@ -136,6 +139,12 @@ function atomFamily<T, P: Parameter>(
       ...options,
       key: `${options.key}__${stableStringify(params) ?? 'void'}`,
       default: atomFamilyDefault(params),
+
+      effects_UNSTABLE:
+        typeof options.effects_UNSTABLE === 'function'
+          ? options.effects_UNSTABLE(params)
+          : options.effects_UNSTABLE,
+
       // prettier-ignore
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
         // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
