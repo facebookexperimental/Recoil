@@ -59,6 +59,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "rollup": "^2.10.0",
+    "rollup-plugin-flow-entry": "^0.3.4",
     "rollup-plugin-includepaths": "^0.2.3",
     "rollup-plugin-terser": "^5.3.0",
     "typescript": "^3.9.5"

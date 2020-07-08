@@ -3,6 +3,7 @@ import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
+import flowEntry from 'rollup-plugin-flow-entry';
 
 const modes = ['development', 'production'];
 
@@ -46,6 +47,7 @@ const config = modes.map(mode => ({
     },
     nodeResolve(),
     commonjs(),
+    flowEntry(),
     replace({
       'process.env.NODE_ENV': JSON.stringify(mode),
     }),
