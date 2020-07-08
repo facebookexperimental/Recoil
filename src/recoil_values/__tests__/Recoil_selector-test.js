@@ -11,7 +11,7 @@
 'use strict';
 
 const gkx = require('../../util/Recoil_gkx');
-gkx.setFail('recoil_async_selector_refactor');
+gkx.setPass('recoil_async_selector_refactor');
 
 const React = require('React');
 const {act} = require('ReactTestUtils');
@@ -357,9 +357,8 @@ test('useRecoilState - selector catching promise and resolving asynchronously', 
 });
 
 // This tests ability to catch a pending result as a promise and
-// that the promise resolves to the dependency's value and it is handled
+// that the promise resolves to the dependencies value and handle it
 // as an asynchronous selector
-/* FIXME broken without new selector implementation
 test('useRecoilState - selector catching promise 2', async () => {
   let dependencyPromiseTest;
   const resolvingSel = resolvingAsyncSelector('READY');
@@ -399,7 +398,6 @@ test('useRecoilState - selector catching promise 2', async () => {
   // to the dependency's value.
   await dependencyPromiseTest;
 });
-*/
 
 // Test that Recoil will throw an error with a useful debug message instead of
 // infinite recurssion when there is a circular dependency
@@ -425,7 +423,6 @@ test('Detect circular dependencies', () => {
   window.__DEV__ = devStatus;
 });
 
-/* FIXME broken without new selector implementation
 test('selector is able to track dependencies discovered asynchronously', async () => {
   const anAtom = atom({key: 'atomTrackedAsync', default: 'Async Dep Value'});
 
@@ -465,7 +462,6 @@ test('selector is able to track dependencies discovered asynchronously', async (
 
   expect(container.textContent).toEqual('CHANGED Async Dep');
 });
-*/
 
 /**
  * This test is an extension of the 'selector is able to track dependencies
@@ -473,7 +469,6 @@ test('selector is able to track dependencies discovered asynchronously', async (
  * responds to changes in dependencies that were discovered asynchronously, the
  * selector should run through the entire selector in response to those changes.
  */
-/* FIXME broken without new selector implementation
 test('selector should rerun entire selector when a dep changes', async () => {
   const resolvingSel1 = resolvingAsyncSelector(1);
   const resolvingSel2 = resolvingAsyncSelector(2);
@@ -523,14 +518,12 @@ test('selector should rerun entire selector when a dep changes', async () => {
 
   expect(container.textContent).toEqual('7');
 });
-*/
 
 /**
  * This test ensures that we are not running the selector's get() an unnecessary
  * number of times in response to async selectors resolving (i.e. by retrying
  * more times than we have to or creating numerous promises that retry).
  */
-/* FIXME broken without new selector implementation
 test('async selector runs the minimum number of times required', () => {
   const [asyncDep1, resolveAsyncDep1] = asyncSelector();
   const [asyncDep2, resolveAsyncDep2] = asyncSelector();
@@ -562,9 +555,7 @@ test('async selector runs the minimum number of times required', () => {
   expect(numTimesRan).toBe(3);
   expect(container.textContent).toEqual('"ab"');
 });
-*/
 
-/* FIXME broken without new selector implementation
 test('async selector with changing dependencies finishes execution using original state', async () => {
   const [asyncDep, resolveAsyncDep] = asyncSelector();
   const anAtom = atom({key: 'atomChangingDeps', default: 3});
@@ -605,11 +596,9 @@ test('async selector with changing dependencies finishes execution using origina
     expect(promiseAfterChangingAtom).resolves.toHaveProperty('value', 10 + 10),
   ]);
 });
-*/
 
 // Test that an async selector will resolve to its dependency's value
 // when it provides the dependency from an async callback.
-/* FIXME broken without new selector implementation
 test('selector - dynamic getRecoilValue()', async () => {
   const sel2 = selector({
     key: 'MySelector2',
@@ -632,4 +621,3 @@ test('selector - dynamic getRecoilValue()', async () => {
 
   expect(el.textContent).toEqual('"READY"');
 });
-*/

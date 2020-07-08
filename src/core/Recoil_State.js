@@ -11,29 +11,33 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {Graph} from './Recoil_GraphTypes';
-import type {ComponentID, NodeKey, Version} from './Recoil_Keys';
-export type {ComponentID, NodeKey, Version} from './Recoil_Keys';
 
-const {graph} = require('./Recoil_Graph');
+export type NodeKey = string;
 
 // flowlint-next-line unclear-type:off
 export type AtomValues = Map<NodeKey, Loadable<any>>;
 
 type ComponentCallback = TreeState => void;
 
-// TreeState represents the state of a rendered React tree. As such, multiple
-// TreeStates may be in play at one time due to concurrent rendering, and each
-// TreeState is immutable.
 export type TreeState = $ReadOnly<{
   // Information about the TreeState itself:
-  version: Version,
   transactionMetadata: {...},
 
-  // Atoms:
+  // ATOMS
   dirtyAtoms: Set<NodeKey>,
   atomValues: AtomValues,
   nonvalidatedAtoms: Map<NodeKey, mixed>,
+
+  // NODE GRAPH
+  // Upstream Node dependencies
+  nodeDeps: Map<NodeKey, Set<NodeKey>>,
+  // Downstream Node subscriptions
+  nodeToNodeSubscriptions: Map<NodeKey, Set<NodeKey>>,
+  // TODO -- will soon move to StoreState
+  nodeToComponentSubscriptions: Map<
+    NodeKey,
+    Map<number, [string, ComponentCallback]>,
+  >,
 }>;
 
 // StoreState represents the state of a Recoil context. It is global and mutable.
@@ -54,33 +58,6 @@ export type StoreState = {
   knownAtoms: Set<NodeKey>,
   knownSelectors: Set<NodeKey>,
 
-  // Which state versions are being read by a given component. (COMMIT/SUSPEND)
-  // Added to when components commit or suspend after reading a version.
-  // Removed from when components (1) unmount (2) commit another version
-  // or (3) wake from suspense.
-  +versionsUsedByComponent: Map<ComponentID, Version>,
-
-  // Which components depend on a specific node. (COMMIT/SUSPEND updates).
-  +nodeToComponentSubscriptions: Map<
-    NodeKey,
-    Map<ComponentID, [string, ComponentCallback]>,
-  >,
-
-  // Which nodes depend on which. A pure function of the version (atom state)
-  // and nodeToComponentSubscriptions. Recomputed when:
-  // (1) A transaction occurs (atoms written) or
-  // (2) An async request is completed or
-  // (3) (IN FUTURE) nodeToComponentSubscriptions is updated
-  // How incremental computation is performed:
-  // In case of transactions, we walk downward from the updated atoms
-  // In case of async request completion, we walk downward from updated selector
-  // In (future) case of component subscriptions updated, we walk upwards from
-  // component and then downward from any no-longer-depended on nodes
-  +graphsByVersion: Map<Version, Graph>,
-  // Side note: it would be useful to consider async request completion as
-  // another type of transaction since it should increase version etc. and many
-  // things have to happen in both of these cases.
-
   // For observing transactions:
   +transactionSubscriptions: Map<number, (Store) => void>,
   +nodeTransactionSubscriptions: Map<NodeKey, Array<(Store) => void>>,
@@ -93,8 +70,6 @@ export type StoreState = {
   +suspendedComponentResolvers: Set<() => void>,
 };
 
-// The Store is just the interface that is made available via the context.
-// It is constant within a given Recoil root.
 export type Store = $ReadOnly<{
   getState: () => StoreState,
   replaceState: ((TreeState) => TreeState) => void,
@@ -112,11 +87,13 @@ export type StoreRef = {
 
 function makeEmptyTreeState(): TreeState {
   return {
-    version: 0,
     transactionMetadata: {},
     dirtyAtoms: new Set(),
     atomValues: new Map(),
     nonvalidatedAtoms: new Map(),
+    nodeDeps: new Map(),
+    nodeToNodeSubscriptions: new Map(),
+    nodeToComponentSubscriptions: new Map(),
   };
 }
 
@@ -130,9 +107,6 @@ function makeStoreState(treeState: TreeState): StoreState {
     nodeTransactionSubscriptions: new Map(),
     queuedComponentCallbacks: [],
     suspendedComponentResolvers: new Set(),
-    nodeToComponentSubscriptions: new Map(),
-    graphsByVersion: new Map().set(treeState.version, graph()),
-    versionsUsedByComponent: new Map(),
   };
 }
 

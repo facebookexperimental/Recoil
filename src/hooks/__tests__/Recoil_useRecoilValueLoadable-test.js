@@ -22,7 +22,7 @@ const {
 const gkx = require('../../util/Recoil_gkx');
 const {useRecoilValueLoadable} = require('../Recoil_Hooks');
 
-gkx.setFail('recoil_async_selector_refactor');
+gkx.setPass('recoil_async_selector_refactor');
 
 // These tests should cover the Loadable interface returned by useRecoilValueLoadable.
 // It is also used by useRecoilStateNoThrow, waitForNone, and waitForAny

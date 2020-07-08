@@ -129,34 +129,8 @@ function useInterface(): RecoilInterface {
         },
       );
       subscriptions.current.set(key, sub);
-
       Tracing.trace('initial update on subscribing', key, () => {
-        /**
-         * Since we're subscribing in an effect we need to update to the latest
-         * value of the atom since it may have changed since we rendered. We can
-         * go ahead and do that now, unless we're in the middle of a batch --
-         * in which case we should do it at the end of the batch, due to the
-         * following edge case: Suppose an atom is updated in another useEffect
-         * of this same component. Then the following sequence of events occur:
-         * 1. Atom is updated and subs fired (but we may not be subscribed
-         *    yet depending on order of effects, so we miss this) Updated value
-         *    is now in nextTree, but not currentTree.
-         * 2. This effect happens. We subscribe and update.
-         * 3. From the update we re-render and read currentTree, with old value.
-         * 4. Batcher's effect sets currentTree to nextTree.
-         * In this sequence we miss the update. To avoid that, add the update
-         * to queuedComponentCallback if a batch is in progress.
-         */
-        const state = store.getState();
-        if (state.nextTree) {
-          store.getState().queuedComponentCallbacks.push(
-            Tracing.wrap(() => {
-              updateState(store.getState(), key);
-            }),
-          );
-        } else {
-          updateState(store.getState(), key);
-        }
+        updateState(store.getState(), key);
       });
     });
 
@@ -507,7 +481,11 @@ function useGotoRecoilSnapshot(): Snapshot => void {
           }
           storeRef.current.fireNodeSubscriptions(updatedKeys, 'enqueue');
 
-          return nextState;
+          return {
+            ...nextState,
+            nodeToComponentSubscriptions:
+              prevState.nodeToComponentSubscriptions,
+          };
         });
       });
     },
