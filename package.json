@@ -6,7 +6,8 @@
   "module": "esm/index.js",
   "files": [
     "dist",
-    "esm"
+    "esm",
+    "src"
   ],
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
