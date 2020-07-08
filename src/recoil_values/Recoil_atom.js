@@ -65,14 +65,21 @@ import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
-const {loadableWithValue} = require('../adt/Recoil_Loadable');
+const {
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue,
+} = require('../adt/Recoil_Loadable');
 const {
   DEFAULT_VALUE,
   DefaultValue,
   registerNode,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {setRecoilValue} = require('../core/Recoil_RecoilValueInterface');
+const {
+  setRecoilValue,
+  setRecoilValueLoadable,
+} = require('../core/Recoil_RecoilValueInterface');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
@@ -100,7 +107,7 @@ export type AtomEffect<T> = ({
 
   // Call synchronously to initialize value or async to change it later
   setSelf: (
-    T | DefaultValue | ((T | DefaultValue) => T | DefaultValue),
+    T | DefaultValue | Promise<T> | ((T | DefaultValue) => T | DefaultValue),
   ) => void,
   resetSelf: () => void,
 
@@ -132,6 +139,25 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     | void
     | [DependencyMap, Loadable<T>] = undefined;
 
+  function wrapPendingPromise(store: Store, promise: Promise<T>): Promise<T> {
+    const wrappedPromise = promise
+      .then(value => {
+        const state = store.getState().nextTree ?? store.getState().currentTree;
+        if (state.atomValues.get(key)?.contents === wrappedPromise) {
+          setRecoilValue(store, node, value);
+        }
+        return value;
+      })
+      .catch(error => {
+        const state = store.getState().nextTree ?? store.getState().currentTree;
+        if (state.atomValues.get(key)?.contents === wrappedPromise) {
+          setRecoilValueLoadable(store, node, loadableWithError(error));
+        }
+        throw error;
+      });
+    return wrappedPromise;
+  }
+
   function initAtom(
     store: Store,
     initState: TreeState,
@@ -143,16 +169,18 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     store.getState().knownAtoms.add(key);
 
     // Run Atom Effects
-    let initValue: T | DefaultValue = DEFAULT_VALUE;
+    let initValue: T | DefaultValue | Promise<T> = DEFAULT_VALUE;
     if (options.effects_UNSTABLE != null) {
       let duringInit = true;
 
       function setSelf(
-        valueOrUpdater: T | DefaultValue | (T => T | DefaultValue),
+        valueOrUpdater: T | DefaultValue | Promise<T> | (T => T | DefaultValue),
       ) {
         if (duringInit) {
           const currentValue: T =
-            initValue instanceof DefaultValue ? options.default : initValue;
+            initValue instanceof DefaultValue || isPromise(initValue)
+              ? options.default
+              : initValue;
           initValue =
             typeof valueOrUpdater === 'function'
               ? // cast to any because we can't restrict type from being a function itself without losing support for opaque types
@@ -160,23 +188,34 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
                 (valueOrUpdater: any)(currentValue)
               : valueOrUpdater;
         } else {
+          if (isPromise(valueOrUpdater)) {
+            throw new Error(
+              'Setting atoms to async values is not implemented.',
+            );
+          }
           setRecoilValue(store, node, valueOrUpdater);
         }
       }
       const resetSelf = () => setSelf(DEFAULT_VALUE);
 
       function onSet(handler: (T | DefaultValue, T | DefaultValue) => void) {
-        store.subscribeToTransactions(asyncStore => {
-          const state = asyncStore.getState();
+        store.subscribeToTransactions(currentStore => {
+          const state = currentStore.getState();
           const nextState = state.nextTree ?? state.currentTree;
           const prevState = state.currentTree;
-          const newValue: T | DefaultValue = nextState.atomValues.has(key)
-            ? nullthrows(nextState.atomValues.get(key)).valueOrThrow()
-            : DEFAULT_VALUE;
-          const oldValue: T | DefaultValue = prevState.atomValues.has(key)
-            ? nullthrows(prevState.atomValues.get(key)).valueOrThrow()
-            : DEFAULT_VALUE;
-          handler(newValue, oldValue);
+          const newLoadable = nextState.atomValues.get(key);
+          if (newLoadable == null || newLoadable.state === 'hasValue') {
+            const newValue: T | DefaultValue =
+              newLoadable != null ? newLoadable.contents : DEFAULT_VALUE;
+            const oldLoadable = prevState.atomValues.get(key);
+            const oldValue: T | DefaultValue =
+              oldLoadable == null
+                ? options.default
+                : oldLoadable.state === 'hasValue'
+                ? oldLoadable.contents
+                : DEFAULT_VALUE; // TODO This isn't actually valid, use as a placeholder for now.
+            handler(newValue, oldValue);
+          }
         }, key);
       }
 
@@ -189,9 +228,16 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
     // Mutate initial state in place since we know there are no other subscribers
     // since we are the ones initializing on first use.
-
     if (!(initValue instanceof DefaultValue)) {
-      initState.atomValues.set(key, loadableWithValue(initValue));
+      initState.atomValues.set(
+        key,
+        isPromise(initValue)
+          ? // TODO Temp disable Flow due to pending selector_NEW refactor using LoadablePromise
+            loadableWithPromise(
+              (wrapPendingPromise(store, initValue): $FlowFixMe),
+            )
+          : loadableWithValue(initValue),
+      );
     }
   }
 
