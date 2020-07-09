@@ -14,6 +14,7 @@ import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
 import type {Store} from 'Recoil_State';
 
 const React = require('React');
+const {useEffect} = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
@@ -85,6 +86,28 @@ function renderElements(elements: ?React.Node): HTMLDivElement {
     );
   });
   return container;
+}
+
+function renderElementsWithSuspenseCount(
+  elements: ?React.Node,
+): [HTMLDivElement, JestMockFn<[], void>] {
+  const container = document.createElement('div');
+  const suspenseCommit = jest.fn(() => {});
+  function Fallback() {
+    useEffect(suspenseCommit);
+    return 'loading';
+  }
+  act(() => {
+    ReactDOM.render(
+      <RecoilRoot>
+        <ErrorBoundary>
+          <React.Suspense fallback={<Fallback />}>{elements}</React.Suspense>
+        </ErrorBoundary>
+      </RecoilRoot>,
+      container,
+    );
+  });
+  return [container, suspenseCommit];
 }
 
 ////////////////////////////////////////
@@ -176,6 +199,7 @@ function flushPromisesAndTimers(): Promise<mixed> {
 module.exports = {
   makeStore,
   renderElements,
+  renderElementsWithSuspenseCount,
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   errorThrowingAsyncSelector,

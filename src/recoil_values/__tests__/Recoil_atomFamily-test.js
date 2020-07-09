@@ -11,7 +11,7 @@
 'use strict';
 
 const React = require('React');
-const {useState} = require('React');
+const {useEffect, useState} = require('React');
 const {act} = require('ReactTestUtils');
 
 const {
@@ -403,7 +403,9 @@ test('Independent atom subscriptions', () => {
     let setValue;
 
     const Component = () => {
-      numUpdates++;
+      useEffect(() => {
+        numUpdates++;
+      });
       setValue = useSetRecoilState(myAtom(param));
       return stableStringify(useRecoilValue(myAtom(param)));
     };
@@ -420,16 +422,21 @@ test('Independent atom subscriptions', () => {
     </>,
   );
 
+  // Initial:
   expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
-  expect(getNumUpdatesA()).toBe(3);
+  expect(getNumUpdatesA()).toBe(2);
   expect(getNumUpdatesB()).toBe(2);
+
+  // After setting at parameter A, component A should update:
   act(() => setValueA(1));
   expect(container.textContent).toBe('1"DEFAULT"');
-  expect(getNumUpdatesA()).toBe(4);
+  expect(getNumUpdatesA()).toBe(3);
   expect(getNumUpdatesB()).toBe(2);
+
+  // After setting at parameter B, component B should update:
   act(() => setValueB(2));
   expect(container.textContent).toBe('12');
-  expect(getNumUpdatesA()).toBe(4);
+  expect(getNumUpdatesA()).toBe(3);
   expect(getNumUpdatesB()).toBe(3);
 });
 
