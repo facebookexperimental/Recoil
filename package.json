@@ -3,6 +3,7 @@
   "version": "0.0.10",
   "description": "Recoil - A state management library for React",
   "main": "dist/index.js",
+  "module": "esm/index.js",
   "files": [
     "dist",
     "esm"
