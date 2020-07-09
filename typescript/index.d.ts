@@ -47,9 +47,9 @@ export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
 // selector.d.ts
 type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
 
-type SetRecoilState = <T>(
-    recoilVal: RecoilState<T>,
-    newVal: T | DefaultValue | ((prevValue: T) => T | DefaultValue),
+type SetRecoilState = <T, TSetter = T>(
+  recoilVal: RecoilState<T, TSetter>,
+  newVal: TSetter | DefaultValue | ((prevValue: TSetter) => T | DefaultValue),
 ) => void;
 
 type ResetRecoilState = (recoilVal: RecoilState<any>) => void;
@@ -60,18 +60,18 @@ export interface ReadOnlySelectorOptions<T> {
     dangerouslyAllowMutability?: boolean;
 }
 
-export interface ReadWriteSelectorOptions<T> extends ReadOnlySelectorOptions<T> {
+export interface ReadWriteSelectorOptions<T, TSetter = T> extends ReadOnlySelectorOptions<T> {
   set: (
     opts: {
       set: SetRecoilState;
       get: GetRecoilValue;
       reset: ResetRecoilState;
     },
-    newValue: T | DefaultValue,
+    newValue: TSetter | DefaultValue,
   ) => void;
 }
 
-export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
+export function selector<T, TSetter = T>(options: ReadWriteSelectorOptions<T, TSetter>): RecoilState<T, TSetter>;
 export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
 
 // hooks.d.ts
@@ -87,7 +87,7 @@ export class MutableSnapshot extends Snapshot {
   reset: ResetRecoilState;
 }
 
-export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
+export type SetterOrUpdater<T, TSetter = T> = (valOrUpdater: ((currVal: T) => TSetter) | TSetter) => void;
 export type Resetter = () => void;
 export type CallbackInterface = Readonly<{
   set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
@@ -114,7 +114,7 @@ export function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable
  * and the second is a setter to update that state. Subscribes component
  * to updates of the given state.
  */
-export function useRecoilState<T>(recoilState: RecoilState<T>): [T, SetterOrUpdater<T>];
+export function useRecoilState<T, TSetter = T>(recoilState: RecoilState<T, TSetter>): [T, SetterOrUpdater<T, TSetter>];
 
 /**
  * Returns a tuple where the first element is a Loadable and the second
@@ -193,9 +193,9 @@ declare class AbstractRecoilValueReadonly<T> {
   constructor(newKey: NodeKey);
 }
 
-export class RecoilState<T> extends AbstractRecoilValue<T> {}
+export class RecoilState<T, TSetter = T> extends AbstractRecoilValue<T> {}
 export class RecoilValueReadOnly<T> extends AbstractRecoilValueReadonly<T> {}
-export type RecoilValue<T> = RecoilValueReadOnly<T> | RecoilState<T>;
+export type RecoilValue<T, TSetter = T> = RecoilValueReadOnly<T> | RecoilState<T, TSetter>;
 
 export function isRecoilValue(val: unknown): val is RecoilValue<any>;
 
