@@ -14,7 +14,7 @@ import type {LoadablePromise} from 'Recoil_Loadable';
 import type {RecoilValue} from 'Recoil_RecoilValue';
 
 const gkx = require('../../util/Recoil_gkx');
-gkx.setFail('recoil_async_selector_refactor');
+gkx.setPass('recoil_async_selector_refactor');
 
 const atom = require('../Recoil_atom');
 const cacheMostRecent = require('../../caches/Recoil_cacheMostRecent');

@@ -13,10 +13,9 @@
 
 'use strict';
 
-import type {Graph} from 'Recoil_Graph';
-import type {NodeKey} from 'Recoil_State';
+import type {NodeKey, TreeState} from 'Recoil_State';
 
-type DepGraph = $PropertyType<Graph, 'nodeDeps'>;
+type DepGraph = $PropertyType<TreeState, 'nodeDeps'>;
 
 type VisitInfo = $ReadOnly<{
   key: NodeKey,

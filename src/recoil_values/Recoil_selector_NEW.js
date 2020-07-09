@@ -52,7 +52,7 @@
  * @format
  */
 'use strict';
-/*
+
 import type {Loadable, LoadablePromise} from '../adt/Recoil_Loadable';
 import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {DefaultValue} from '../core/Recoil_Node';
@@ -121,7 +121,7 @@ type ReadWriteSelectorOptions<T> = $ReadOnly<{
 // Array of interlaced node keys and values
 type CacheKey = $ReadOnlyArray<mixed>;
 export type DepValues = Map<NodeKey, Loadable<mixed>>;
-*/
+
 /**
  * An ExecutionId is an arbitrary ID that lets us distinguish executions from
  * each other. This is necessary as we need a way of solving this problem:
@@ -130,7 +130,7 @@ export type DepValues = Map<NodeKey, Loadable<mixed>>;
  * provide a convenient way of identifying executions so that we can track and
  * manage them over time.
  */
-// type ExecutionId = number;
+type ExecutionId = number;
 
 /**
  * ExecutionInfo is useful for managing async work and resolving race
@@ -152,11 +152,11 @@ export type DepValues = Map<NodeKey, Loadable<mixed>>;
  *    represents the execution that will make its way to the UI and make updates
  *    to global state when it finishes.
  */
-/*type ExecutionInfo<T> = {
+type ExecutionInfo<T> = {
   depValuesDiscoveredSoFarDuringAsyncWork: ?DepValues,
   latestLoadable: ?Loadable<T>,
   latestExecutionId: ?ExecutionId,
-};*/
+};
 
 /**
  * A state containier is needed to capture the _latest_ value of state for
@@ -167,7 +167,7 @@ export type DepValues = Map<NodeKey, Loadable<mixed>>;
  * a promise resolves). Otherwise the wrapping function will use a stale version
  * of state.
  */
-/*type StateContainer = {current: TreeState};
+type StateContainer = {current: TreeState};
 
 const emptySet: $ReadOnlySet<NodeKey> = Object.freeze(new Set());
 
@@ -180,9 +180,9 @@ function cacheKeyFromDepValues(depValues: DepValues): CacheKey {
   }
   return answer;
 }
-*/
-/* ----eslint-disable no-redeclare */
-/*declare function selector<T>(
+
+/* eslint-disable no-redeclare */
+declare function selector<T>(
   options: ReadOnlySelectorOptions<T>,
 ): RecoilValueReadOnly<T>;
 declare function selector<T>(
@@ -216,37 +216,37 @@ function selector<T>(
   function initSelector(store: Store) {
     store.getState().knownSelectors.add(key);
   }
-*/
-/**
- * This function attaches a then() and a catch() to a promise that was
- * returned from a selector's get() (either explicitly or implicitly by
- * running a function that uses the "async" keyword). If a selector's get()
- * returns a promise, we have two possibilities:
- *
- * 1. The promise will resolve, in which case it will have completely finished
- *    executing without any remaining pending dependencies. No more retries
- *    are needed and we can proceed with updating the cache and notifying
- *    subscribers (if it is the latest execution, otherwise only the cache
- *    will be updated and subscriptions will not be fired). This is the case
- *    handled by the attached then() handler.
- *
- * 2. The promise will throw because it either has an error or it came across
- *    an async dependency that has not yet resolved, in which case we will
- *    call wrapDepdencyPromise(), whose responsibility is to handle dependency
- *    promises. This case is handled by the attached catch() handler.
- *
- * Both branches will eventually resolve to the final result of the selector
- * (or an error if a real error occurred).
- *
- * The execution will run to completion even if it is stale, and its value
- * will be cached. But stale executions will not update global state or update
- * executionInfo as that is the responsibility of the 'latest' execution.
- *
- * Note this function should not be passed a promise that was thrown--AKA a
- * dependency promise. Dependency promises should be passed to
- * wrapPendingDependencyPromise()).
- */
-/*  function wrapPendingPromise(
+
+  /**
+   * This function attaches a then() and a catch() to a promise that was
+   * returned from a selector's get() (either explicitly or implicitly by
+   * running a function that uses the "async" keyword). If a selector's get()
+   * returns a promise, we have two possibilities:
+   *
+   * 1. The promise will resolve, in which case it will have completely finished
+   *    executing without any remaining pending dependencies. No more retries
+   *    are needed and we can proceed with updating the cache and notifying
+   *    subscribers (if it is the latest execution, otherwise only the cache
+   *    will be updated and subscriptions will not be fired). This is the case
+   *    handled by the attached then() handler.
+   *
+   * 2. The promise will throw because it either has an error or it came across
+   *    an async dependency that has not yet resolved, in which case we will
+   *    call wrapDepdencyPromise(), whose responsibility is to handle dependency
+   *    promises. This case is handled by the attached catch() handler.
+   *
+   * Both branches will eventually resolve to the final result of the selector
+   * (or an error if a real error occurred).
+   *
+   * The execution will run to completion even if it is stale, and its value
+   * will be cached. But stale executions will not update global state or update
+   * executionInfo as that is the responsibility of the 'latest' execution.
+   *
+   * Note this function should not be passed a promise that was thrown--AKA a
+   * dependency promise. Dependency promises should be passed to
+   * wrapPendingDependencyPromise()).
+   */
+  function wrapPendingPromise(
     store: Store,
     promise: Promise<T>,
     stateContainer: StateContainer,
@@ -303,38 +303,38 @@ function selector<T>(
         throw errorOrPromise;
       });
   }
-*/
-/**
- * This function attaches a then() and a catch() to a promise that was
- * thrown from a selector's get(). If a selector's get() throws a promise,
- * we have two possibilities:
- *
- * 1. The promise will resolve, meaning one of our selector's dependencies is
- *    now available and we should "retry" our get() by running it again. This
- *    is the case handled by the attached then() handler.
- *
- * 2. The promise will throw because something went wrong with the dependency
- *    promise (in other words a real error occurred). This case is handled by
- *    the attached catch() handler. If the dependency promise throws, it is
- *    _always_ a real error and not another dependency promise (any dependency
- *    promises would have been handled upstream).
- *
- * The then() branch will eventually resolve to the final result of the
- * selector (or an error if a real error occurs), and the catch() will always
- * resolve to an error because the dependency promise is a promise that was
- * wrapped upstream, meaning it will only resolve to its real value or to a
- * real error.
- *
- * The execution will run to completion even if it is stale, and its value
- * will be cached. But stale executions will not update global state or update
- * executionInfo as that is the responsibility of the 'latest' execution.
- *
- * Note this function should not be passed a promise that was returned from
- * get(). The intention is that this function is only passed promises that
- * were thrown due to a pending dependency. Promises returned by get() should
- * be passed to wrapPendingPromise() instead.
- */
-/*  function wrapPendingDependencyPromise(
+
+  /**
+   * This function attaches a then() and a catch() to a promise that was
+   * thrown from a selector's get(). If a selector's get() throws a promise,
+   * we have two possibilities:
+   *
+   * 1. The promise will resolve, meaning one of our selector's dependencies is
+   *    now available and we should "retry" our get() by running it again. This
+   *    is the case handled by the attached then() handler.
+   *
+   * 2. The promise will throw because something went wrong with the dependency
+   *    promise (in other words a real error occurred). This case is handled by
+   *    the attached catch() handler. If the dependency promise throws, it is
+   *    _always_ a real error and not another dependency promise (any dependency
+   *    promises would have been handled upstream).
+   *
+   * The then() branch will eventually resolve to the final result of the
+   * selector (or an error if a real error occurs), and the catch() will always
+   * resolve to an error because the dependency promise is a promise that was
+   * wrapped upstream, meaning it will only resolve to its real value or to a
+   * real error.
+   *
+   * The execution will run to completion even if it is stale, and its value
+   * will be cached. But stale executions will not update global state or update
+   * executionInfo as that is the responsibility of the 'latest' execution.
+   *
+   * Note this function should not be passed a promise that was returned from
+   * get(). The intention is that this function is only passed promises that
+   * were thrown due to a pending dependency. Promises returned by get() should
+   * be passed to wrapPendingPromise() instead.
+   */
+  function wrapPendingDependencyPromise(
     store: Store,
     promise: LoadablePromise<mixed>,
     state: TreeState,
@@ -543,27 +543,27 @@ function selector<T>(
 
     return [currDepValues, newStateFromGettingDeps];
   }
-*/
-/**
- * Given a tree state, this function returns the "selector result", which is
- * defined as a size-2 tuple of [TreeState, Loadable<T>].
- *
- * The selector's get() function will only be re-evaluated if _both_ of the
- * following statements are true:
- *
- * 1. The current dep values from the given state produced a cache key that
- *    was not found in the cache.
- * 2. There is no currently running async execution OR there is an
- *    async execution that is running, but after comparing the dep values in
- *    the given state with the dep values that the execution has discovered so
- *    far we find that at least one dep value has changed, in which case we
- *    start a new execution (the previously running execution will continue to
- *    run to completion, but only the new execution will be deemed the
- *    'latest' execution, meaning it will be the only execution that will
- *    update global state when it is finished. Any non-latest executions will
- *    run to completion and update the selector cache but not global state).
- */
-/*  function getSelectorResult(
+
+  /**
+   * Given a tree state, this function returns the "selector result", which is
+   * defined as a size-2 tuple of [TreeState, Loadable<T>].
+   *
+   * The selector's get() function will only be re-evaluated if _both_ of the
+   * following statements are true:
+   *
+   * 1. The current dep values from the given state produced a cache key that
+   *    was not found in the cache.
+   * 2. There is no currently running async execution OR there is an
+   *    async execution that is running, but after comparing the dep values in
+   *    the given state with the dep values that the execution has discovered so
+   *    far we find that at least one dep value has changed, in which case we
+   *    start a new execution (the previously running execution will continue to
+   *    run to completion, but only the new execution will be deemed the
+   *    'latest' execution, meaning it will be the only execution that will
+   *    update global state when it is finished. Any non-latest executions will
+   *    run to completion and update the selector cache but not global state).
+   */
+  function getSelectorResult(
     store: Store,
     state: TreeState,
   ): [TreeState, Loadable<T>] {
@@ -619,35 +619,35 @@ function selector<T>(
     return Array.from(oldDepValues).some(
       ([key, oldVal]) =>
         newDepValues.has(key) &&
-        nullthrows(newDepValues.get(key)).contents !== oldVal.contents &&*/
-/**
- * FIXME: in the condition below we're making the assumption that a
- * dependency that goes from loading to having a value is always because
- * the dependency resolved to that value, so we don't count it as a dep
- * change as the normal retry loop will handle retrying in response to a
- * resolved async dep. This is an incorrect assumption for the edge case
- * where there is an async selector that is loading, and while it is
- * loading one of its dependencies changes, triggering a new execution,
- * and that new execution produces a value synchronously (we don't make
- * that assumption for asynchronous work b/c it's guaranteed that a
- * loadable that goes from 'loading' to 'loading' in a new loadable is
- * a dep change).
- */
-/*        !(
+        nullthrows(newDepValues.get(key)).contents !== oldVal.contents &&
+        /**
+         * FIXME: in the condition below we're making the assumption that a
+         * dependency that goes from loading to having a value is always because
+         * the dependency resolved to that value, so we don't count it as a dep
+         * change as the normal retry loop will handle retrying in response to a
+         * resolved async dep. This is an incorrect assumption for the edge case
+         * where there is an async selector that is loading, and while it is
+         * loading one of its dependencies changes, triggering a new execution,
+         * and that new execution produces a value synchronously (we don't make
+         * that assumption for asynchronous work b/c it's guaranteed that a
+         * loadable that goes from 'loading' to 'loading' in a new loadable is
+         * a dep change).
+         */
+        !(
           oldVal.state === 'loading' &&
           nullthrows(newDepValues.get(key)).state !== 'loading'
         ),
     );
-  }*/
+  }
 
-/**
- * This function will update the selector's execution info when the selector
- * has either finished running an execution or has started a new execution. If
- * the given loadable is in a 'loading' state, the intention is that a new
- * execution has started. Otherwise, the intention is that an execution has
- * just finished.
- */
-/*  function setExecutionInfo(
+  /**
+   * This function will update the selector's execution info when the selector
+   * has either finished running an execution or has started a new execution. If
+   * the given loadable is in a 'loading' state, the intention is that a new
+   * execution has started. Otherwise, the intention is that an execution has
+   * just finished.
+   */
+  function setExecutionInfo(
     loadable: Loadable<T>,
     depValues?: DepValues,
     newExecutionId?: ExecutionId,
@@ -662,19 +662,19 @@ function selector<T>(
       executionInfo.latestLoadable = null;
     }
   }
-*/
-/**
- * Conditionally updates the cache with a given loadable.
- *
- * We only cache loadables that are not loading because our cache keys are
- * based on dep values, which are in an unfinished state for loadables that
- * have a 'loading' state (new deps may be discovered while the selector
- * runs its async code). We never want to cache partial dependencies b/c it
- * could lead to errors, such as prematurely returning the result based on a
- * partial list of deps-- we need the full list of deps to ensure that we
- * are returning the correct result from cache.
- */
-/*  function maybeSetCacheWithLoadable(
+
+  /**
+   * Conditionally updates the cache with a given loadable.
+   *
+   * We only cache loadables that are not loading because our cache keys are
+   * based on dep values, which are in an unfinished state for loadables that
+   * have a 'loading' state (new deps may be discovered while the selector
+   * runs its async code). We never want to cache partial dependencies b/c it
+   * could lead to errors, such as prematurely returning the result based on a
+   * partial list of deps-- we need the full list of deps to ensure that we
+   * are returning the correct result from cache.
+   */
+  function maybeSetCacheWithLoadable(
     depValues: DepValues,
     loadable: Loadable<T>,
   ) {
@@ -704,17 +704,17 @@ function selector<T>(
       }
     }
   }
-*/
-/**
- * This function should only be called from async code b/c synchronous
- * selectors will have their state updated upstream (hence why we return a
- * a new state from the get() in the object passed to registerNode())
- *
- * This function makes the assumption that any upstream dependencies have
- * already updated global state with their dependencies, hence why this
- * function only updates latest states with its own new dependencies.
- */
-/*  function updateStateWithNewDepsFromAsync(store: Store, state: TreeState) {
+
+  /**
+   * This function should only be called from async code b/c synchronous
+   * selectors will have their state updated upstream (hence why we return a
+   * a new state from the get() in the object passed to registerNode())
+   *
+   * This function makes the assumption that any upstream dependencies have
+   * already updated global state with their dependencies, hence why this
+   * function only updates latest states with its own new dependencies.
+   */
+  function updateStateWithNewDepsFromAsync(store: Store, state: TreeState) {
     store.replaceState(latestState => {
       return mergeUpstreamStateWithCurrentState(state, latestState, key);
     });
@@ -813,7 +813,7 @@ function selector<T>(
       get: myGet,
     });
   }
-}*/
-/* ----eslint-enable no-redeclare */
+}
+/* eslint-enable no-redeclare */
 
-// module.exports = selector;
+module.exports = selector;

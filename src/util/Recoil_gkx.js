@@ -17,12 +17,8 @@ function Recoil_gkx(_gk: string): boolean {
   return pass;
 }
 
-Recoil_gkx.setFail = (_gk: string): void => {
+Recoil_gkx.setPass = (_gk: string): void => {
   pass = true;
-};
-
-Recoil_gkx.setFail = (_gk: string): void => {
-  pass = false;
 };
 
 module.exports = Recoil_gkx;

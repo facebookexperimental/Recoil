@@ -10,7 +10,6 @@
 import type {Store} from 'Recoil_State';
 
 const React = require('React');
-const {useEffect} = require('React');
 const {act} = require('ReactTestUtils');
 
 const {DEFAULT_VALUE} = require('../../core/Recoil_Node');
@@ -30,7 +29,6 @@ const {
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
 const atom = require('../Recoil_atom');
-const immutable = require('immutable');
 
 let store: Store;
 beforeEach(() => {
@@ -102,9 +100,7 @@ test("Updating with same value doesn't rerender", () => {
   let resetAtom;
   let renders = 0;
   function AtomComponent() {
-    useEffect(() => {
-      renders++;
-    });
+    renders++;
     const [value, setValue] = useRecoilState(myAtom);
     const resetValue = useResetRecoilState(myAtom);
     setAtom = setValue;
@@ -462,39 +458,4 @@ describe('Effects', () => {
     act(() => history.pop()());
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
-});
-
-test('object is frozen when stored in atom', () => {
-  const anAtom = atom<{x: mixed, ...}>({key: 'anAtom', default: {x: 0}});
-
-  function valueAfterSettingInAtom<T>(value: T): T {
-    act(() => set(anAtom, value));
-    return value;
-  }
-
-  function isFrozen(value, getter = x => x) {
-    const object = valueAfterSettingInAtom({x: value});
-    return Object.isFrozen(getter(object.x));
-  }
-
-  expect(isFrozen({y: 0})).toBe(true);
-
-  // React elements are not deep-frozen (they are already shallow-frozen on creation):
-  const element = {
-    ...(<div />),
-    _owner: {ifThisWereAReactFiberItShouldNotBeFrozen: true},
-  };
-  expect(isFrozen(element, x => (x: any)._owner)).toBe(false); // flowlint-line unclear-type:off
-
-  // Immutable stuff is not frozen:
-  expect(isFrozen(immutable.List())).toBe(false);
-  expect(isFrozen(immutable.Map())).toBe(false);
-  expect(isFrozen(immutable.OrderedMap())).toBe(false);
-  expect(isFrozen(immutable.Set())).toBe(false);
-  expect(isFrozen(immutable.OrderedSet())).toBe(false);
-  expect(isFrozen(immutable.Seq())).toBe(false);
-  expect(isFrozen(immutable.Stack())).toBe(false);
-  expect(isFrozen(immutable.Range())).toBe(false);
-  expect(isFrozen(immutable.Repeat())).toBe(false);
-  expect(isFrozen(new (immutable.Record({}))())).toBe(false);
 });

@@ -14,7 +14,7 @@ import type {LoadablePromise} from 'Recoil_Loadable';
 import type {RecoilValue} from 'Recoil_RecoilValue';
 
 const gkx = require('../../util/Recoil_gkx');
-gkx.setFail('recoil_async_selector_refactor');
+gkx.setPass('recoil_async_selector_refactor');
 
 const {act} = require('ReactTestUtils');
 const {
@@ -59,7 +59,6 @@ function getPromise<T>(recoilValue: RecoilValue<T>): LoadablePromise<T> {
   return loadable.contents;
 }
 
-/* FIXME broken without new selector implementation
 test('noWait - resolve', async () => {
   const [dep, resolve] = asyncSelector();
 
@@ -73,7 +72,6 @@ test('noWait - resolve', async () => {
   expect(getValue(noWait(dep)).contents).toBe(42);
   await pTest;
 });
-*/
 
 test('noWait - reject', async () => {
   const [dep, _resolve, reject] = asyncSelector();
@@ -94,7 +92,6 @@ test('noWait - reject', async () => {
 // [loading, loading]  [Promise, Promise]  Promise           Promise
 // [value, loading]    [value, Promise]    [value, Promise]  Promise
 // [value, value]      [value, value]      [value, value]    [value, value]
-/* FIXME broken without new selector implementation
 test('waitFor - resolve to values', async () => {
   const [depA, resolveA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
@@ -169,7 +166,6 @@ test('waitFor - resolve to values', async () => {
   await allTest0;
   await allTest1;
 });
-*/
 
 // TRUTH TABLE
 //  Dependencies      waitForNone         waitForAny   waitForAll
@@ -258,7 +254,6 @@ test('waitFor - resolve then reject', async () => {
 // [loading, loading]  [Promise, Promise]  Promise         Promise
 // [error, loading]    [Error, Promise]    Promise         Error
 // [error, value]      [Error, value]      [Error, value]  Error
-/* FIXME broken without new selector implementation
 test('waitFor - reject then resolve', async () => {
   const [depA, _resolveA, rejectA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
@@ -303,11 +298,8 @@ test('waitFor - reject then resolve', async () => {
   await anyTest1;
   await allTest;
 });
-*/
 
 // Similar as the first test that resolves both dependencies, but with named dependencies.
-/*
-FIXME broken without new selector implementation
 test('waitFor - named dependency version', async () => {
   const [depA, resolveA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
@@ -380,5 +372,5 @@ test('waitFor - named dependency version', async () => {
   await allTest0;
   await allTest1;
 });
-*/
+
 /* eslint-enable jest/valid-expect */
