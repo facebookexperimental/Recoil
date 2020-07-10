@@ -94,7 +94,7 @@ export type PersistenceSettings<Stored> = $ReadOnly<{
 }>;
 
 // Effect is called the first time a node is used with a <RecoilRoot>
-type AtomEffect<T> = ({
+export type AtomEffect<T> = ({
   node: RecoilState<T>,
   trigger: 'set' | 'get',
 
