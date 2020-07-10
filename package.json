@@ -2,13 +2,13 @@
   "name": "recoil",
   "version": "0.0.10",
   "description": "Recoil - A state management library for React",
-  "main": "lib/recoil.js",
+  "main": "cjs/recoil.js",
   "module": "es/recoil.js",
-  "unpkg": "dist/recoil.js",
+  "unpkg": "umd/recoil.js",
   "files": [
-    "dist",
+    "umd",
     "es",
-    "lib",
+    "cjs",
     "index.d.ts"
   ],
   "repository": "https://github.com/facebookexperimental/recoil.git",
