@@ -97,12 +97,12 @@ function mergeDepsIntoDependencyMap(
   from: DependencyMap,
   into: DependencyMap,
 ): void {
-  from.forEach((downstreams, upstream) => {
-    if (!into.has(upstream)) {
-      into.set(upstream, new Set());
+  from.forEach((upstreamDeps, downstreamNode) => {
+    if (!into.has(downstreamNode)) {
+      into.set(downstreamNode, new Set());
     }
-    const set = nullthrows(into.get(upstream));
-    downstreams.forEach(d => set.add(d));
+    const deps = nullthrows(into.get(downstreamNode));
+    upstreamDeps.forEach(dep => deps.add(dep));
   });
 }
 
