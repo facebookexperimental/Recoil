@@ -14,7 +14,10 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 import type {ValueOrUpdater} from '../recoil_values/Recoil_selector';
 import type {AtomValues, Store, TreeState} from './Recoil_State';
 
-const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
+const {
+  mapByDeletingFromMap,
+  mapByDeletingMultipleFromMap,
+} = require('../util/Recoil_CopyOnWrite');
 const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
@@ -110,16 +113,41 @@ function setRecoilValue<T>(
         store.fireNodeSubscriptions(writtenNodes, 'enqueue');
         saveDependencyMapToStore(depMap, store, state.version);
 
-        const nonvalidatedAtoms = mapByDeletingMultipleFromMap(
-          state.nonvalidatedAtoms,
-          writtenNodes,
-        );
-
         return {
           ...state,
           dirtyAtoms: unionSets(state.dirtyAtoms, writtenNodes),
           atomValues: applyAtomValueWrites(state.atomValues, writes),
-          nonvalidatedAtoms,
+          nonvalidatedAtoms: mapByDeletingMultipleFromMap(
+            state.nonvalidatedAtoms,
+            writtenNodes,
+          ),
+        };
+      }),
+    ),
+  );
+}
+
+function setRecoilValueLoadable<T>(
+  store: Store,
+  recoilValue: AbstractRecoilValue<T>,
+  loadable: Loadable<T>,
+): void {
+  const {key} = recoilValue;
+  Tracing.trace('set RecoilValue', key, () =>
+    store.replaceState(
+      Tracing.wrap(state => {
+        const writtenNode = new Set([key]);
+
+        store.fireNodeSubscriptions(writtenNode, 'enqueue');
+
+        return {
+          ...state,
+          dirtyAtoms: unionSets(state.dirtyAtoms, writtenNode),
+          atomValues: applyAtomValueWrites(
+            state.atomValues,
+            new Map([[key, loadable]]),
+          ),
+          nonvalidatedAtoms: mapByDeletingFromMap(state.nonvalidatedAtoms, key),
         };
       }),
     ),
@@ -184,6 +212,7 @@ module.exports = {
   RecoilState,
   getRecoilValueAsLoadable,
   setRecoilValue,
+  setRecoilValueLoadable,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
   isRecoilValue,

@@ -26,6 +26,7 @@ const {
 const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
+  flushPromisesAndTimers,
   makeStore,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
@@ -283,6 +284,104 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('');
   });
 
+  test('set promise', async () => {
+    let resolveAtom;
+    let validated;
+    const myAtom = atom({
+      key: 'atom effect init set promise',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({setSelf, onSet}) => {
+          setSelf(
+            new Promise(resolve => {
+              resolveAtom = resolve;
+            }),
+          );
+          onSet(value => {
+            expect(value).toEqual('RESOLVE');
+            validated = true;
+          });
+        },
+      ],
+    });
+
+    const c = renderElements(<ReadsAtom atom={myAtom} />);
+    expect(c.textContent).toEqual('loading');
+
+    act(() => resolveAtom?.('RESOLVE'));
+    await flushPromisesAndTimers();
+    act(() => undefined);
+    expect(c.textContent).toEqual('"RESOLVE"');
+    expect(validated).toEqual(true);
+  });
+
+  // NOTE: This test throws an expected error
+  test('reject promise', async () => {
+    let rejectAtom;
+    let validated = false;
+    const myAtom = atom({
+      key: 'atom effect init reject promise',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({setSelf, onSet}) => {
+          setSelf(
+            new Promise((_resolve, reject) => {
+              rejectAtom = reject;
+            }),
+          );
+          onSet(() => {
+            validated = true;
+          });
+        },
+      ],
+    });
+
+    const c = renderElements(<ReadsAtom atom={myAtom} />);
+    expect(c.textContent).toEqual('loading');
+
+    act(() => rejectAtom?.(new Error('REJECT')));
+    await flushPromisesAndTimers();
+    act(() => undefined);
+    expect(c.textContent).toEqual('error');
+    expect(validated).toEqual(false);
+  });
+
+  test('overwrite promise', async () => {
+    let resolveAtom;
+    let validated;
+    const myAtom = atom({
+      key: 'atom effect init overwrite promise',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({setSelf, onSet}) => {
+          setSelf(
+            new Promise(resolve => {
+              resolveAtom = resolve;
+            }),
+          );
+          onSet(value => {
+            expect(value).toEqual('OVERWRITE');
+            validated = true;
+          });
+        },
+      ],
+    });
+
+    const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+    const c = renderElements(<ReadsWritesAtom />);
+    expect(c.textContent).toEqual('loading');
+
+    act(() => setAtom('OVERWRITE'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"OVERWRITE"');
+
+    // Resolving after atom is set to another value will be ignored.
+    act(() => resolveAtom?.('RESOLVE'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"OVERWRITE"');
+    expect(validated).toEqual(true);
+  });
+
   test('once per root', () => {
     let inited = 0;
     const myAtom = atom({
@@ -315,20 +414,21 @@ describe('Effects', () => {
 
   test('onSet', () => {
     const sets = {a: 0, b: 0};
-    const observer = key => newValue => {
+    const observer = key => (newValue, oldValue) => {
+      expect(oldValue).toEqual(sets[key]);
       sets[key]++;
       expect(newValue).toEqual(sets[key]);
     };
 
     const atomA = atom({
       key: 'atom effect onSet A',
-      default: 'A',
+      default: 0,
       effects_UNSTABLE: [({onSet}) => onSet(observer('a'))],
     });
 
     const atomB = atom({
       key: 'atom effect onSet B',
-      default: 'B',
+      default: 0,
       effects_UNSTABLE: [({onSet}) => onSet(observer('b'))],
     });
 
