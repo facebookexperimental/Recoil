@@ -13,6 +13,7 @@
 'use strict';
 
 export type {
+  AtomEffect,
   PersistenceSettings,
   PersistenceType,
 } from './recoil_values/Recoil_atom';
