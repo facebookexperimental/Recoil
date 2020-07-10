@@ -13,7 +13,7 @@ const React = require('React');
 const {useEffect} = require('React');
 const {act} = require('ReactTestUtils');
 
-const {DEFAULT_VALUE} = require('../../core/Recoil_Node');
+const {DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -379,6 +379,37 @@ describe('Effects', () => {
     act(() => resolveAtom?.('RESOLVE'));
     await flushPromisesAndTimers();
     expect(c.textContent).toEqual('"OVERWRITE"');
+    expect(validated).toEqual(true);
+  });
+
+  test('abort promise init', async () => {
+    let resolveAtom;
+    let validated;
+    const myAtom = atom({
+      key: 'atom effect abort promise init',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({setSelf, onSet}) => {
+          setSelf(
+            new Promise(resolve => {
+              resolveAtom = resolve;
+            }),
+          );
+          onSet(value => {
+            expect(value).toBeInstanceOf(DefaultValue);
+            validated = true;
+          });
+        },
+      ],
+    });
+
+    const c = renderElements(<ReadsAtom atom={myAtom} />);
+    expect(c.textContent).toEqual('loading');
+
+    act(() => resolveAtom?.(new DefaultValue()));
+    await flushPromisesAndTimers();
+    act(() => undefined);
+    expect(c.textContent).toEqual('"DEFAULT"');
     expect(validated).toEqual(true);
   });
 
