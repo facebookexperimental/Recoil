@@ -34,6 +34,15 @@ const commonPlugins = [
   commonjs(),
 ];
 
+const replaceGlobalPlugins = [
+  replace({
+    'global.react': 'global.React',
+  }),
+  replace({
+    'global.reactDom': 'global.ReactDOM',
+  }),
+];
+
 const developmentPlugins = [
   ...commonPlugins,
   replace({
@@ -96,7 +105,7 @@ const configs = [
       exports: 'named',
     },
     external: externalLibs,
-    plugins: developmentPlugins,
+    plugins: [...developmentPlugins, ...replaceGlobalPlugins],
   },
 
   // UMD Production
@@ -109,7 +118,7 @@ const configs = [
       exports: 'named',
     },
     external: externalLibs,
-    plugins: productionPlugins,
+    plugins: [...productionPlugins, ...replaceGlobalPlugins],
   },
 ];
 
