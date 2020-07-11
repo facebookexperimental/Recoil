@@ -11,14 +11,18 @@
 
 'use strict';
 
-let pass = false;
+const gks = new Map();
 
-function Recoil_gkx(_gk: string): boolean {
-  return pass;
+function Recoil_gkx(gk: string): boolean {
+  return gks.get(gk) ?? false;
 }
 
-Recoil_gkx.setPass = (_gk: string): void => {
-  pass = true;
+Recoil_gkx.setPass = (gk: string): void => {
+  gks.set(gk, true);
+};
+
+Recoil_gkx.setFail = (gk: string): void => {
+  gks.set(gk, false);
 };
 
 module.exports = Recoil_gkx;

@@ -21,7 +21,6 @@ import type {Store, TreeState} from './Recoil_State';
 
 const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
-const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
@@ -97,10 +96,11 @@ class Snapshot {
     recoilValue: RecoilValue<T>,
   ) => {
     this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
-    const deps = this._store
-      .getState()
-      .currentTree.nodeDeps.get(recoilValue.key);
-    return (function*() {
+    const storeState = this._store.getState();
+    const deps = storeState.graphsByVersion
+      .get(storeState.currentTree.version)
+      ?.nodeDeps.get(recoilValue.key);
+    return (function* () {
       for (const key of deps ?? []) {
         yield nullthrows(recoilValues.get(key));
       }
@@ -132,16 +132,11 @@ class Snapshot {
 
 function cloneTreeState(treeState: TreeState): TreeState {
   return {
+    version: treeState.version,
     transactionMetadata: {...treeState.transactionMetadata},
     dirtyAtoms: new Set(treeState.dirtyAtoms),
     atomValues: new Map(treeState.atomValues),
     nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
-    nodeDeps: new Map(treeState.nodeDeps),
-    nodeToNodeSubscriptions: mapMap(
-      treeState.nodeToNodeSubscriptions,
-      keys => new Set(keys),
-    ),
-    nodeToComponentSubscriptions: new Map(),
   };
 }
 

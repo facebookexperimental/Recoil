@@ -10,12 +10,12 @@
  * @flow strict-local
  * @format
  */
-
 'use strict';
 
-import type {NodeKey, TreeState} from 'Recoil_State';
+import type {Graph} from '../core/Recoil_Graph';
+import type {NodeKey} from '../core/Recoil_State';
 
-type DepGraph = $PropertyType<TreeState, 'nodeDeps'>;
+type DepGraph = $PropertyType<Graph, 'nodeDeps'>;
 
 type VisitInfo = $ReadOnly<{
   key: NodeKey,

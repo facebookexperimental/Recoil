@@ -51,10 +51,20 @@ function mapByDeletingFromMap<K, V>(map: $ReadOnlyMap<K, V>, k: K): Map<K, V> {
   return next;
 }
 
+function mapByDeletingMultipleFromMap<K, V>(
+  map: $ReadOnlyMap<K, V>,
+  ks: Set<K>,
+): Map<K, V> {
+  const next = new Map(map);
+  ks.forEach(k => next.delete(k));
+  return next;
+}
+
 module.exports = {
   setByAddingToSet,
   setByDeletingFromSet,
   mapBySettingInMap,
   mapByUpdatingInMap,
   mapByDeletingFromMap,
+  mapByDeletingMultipleFromMap,
 };

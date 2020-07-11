@@ -11,7 +11,7 @@
 'use strict';
 
 const React = require('React');
-const {useState} = require('React');
+const {useEffect, useState} = require('React');
 const {act} = require('ReactTestUtils');
 
 const {
@@ -403,7 +403,9 @@ test('Independent atom subscriptions', () => {
     let setValue;
 
     const Component = () => {
-      numUpdates++;
+      useEffect(() => {
+        numUpdates++;
+      });
       setValue = useSetRecoilState(myAtom(param));
       return stableStringify(useRecoilValue(myAtom(param)));
     };
@@ -420,47 +422,65 @@ test('Independent atom subscriptions', () => {
     </>,
   );
 
+  // Initial:
   expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
-  expect(getNumUpdatesA()).toBe(3);
+  expect(getNumUpdatesA()).toBe(2);
   expect(getNumUpdatesB()).toBe(2);
+
+  // After setting at parameter A, component A should update:
   act(() => setValueA(1));
   expect(container.textContent).toBe('1"DEFAULT"');
-  expect(getNumUpdatesA()).toBe(4);
+  expect(getNumUpdatesA()).toBe(3);
   expect(getNumUpdatesB()).toBe(2);
+
+  // After setting at parameter B, component B should update:
   act(() => setValueB(2));
   expect(container.textContent).toBe('12');
-  expect(getNumUpdatesA()).toBe(4);
+  expect(getNumUpdatesA()).toBe(3);
   expect(getNumUpdatesB()).toBe(3);
 });
 
-test('Effects', () => {
-  let inited = 0;
-  const myAtom = atomFamily<string, number>({
-    key: 'atomFamily hooks init',
-    default: 'DEFAULT',
-    effects_UNSTABLE: [
-      ({setSelf}) => {
-        inited++;
-        setSelf('INIT');
-      },
-    ],
+describe('Effects', () => {
+  test('Initialization', () => {
+    let inited = 0;
+    const myFamily = atomFamily<string, number>({
+      key: 'atomFamily effect init',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({setSelf}) => {
+          inited++;
+          setSelf('INIT');
+        },
+      ],
+    });
+    expect(inited).toEqual(0);
+
+    expect(get(myFamily(1))).toEqual('INIT');
+    expect(inited).toEqual(1);
+
+    set(myFamily(2));
+    expect(inited).toEqual(2);
+
+    const [ReadsWritesAtom, _, reset] = componentThatReadsAndWritesAtom(
+      myFamily(1),
+    );
+    const c = renderElements(<ReadsWritesAtom />);
+    expect(c.textContent).toEqual('"INIT"');
+
+    act(reset);
+    expect(c.textContent).toEqual('"DEFAULT"');
   });
-  expect(inited).toEqual(0);
 
-  expect(get(myAtom(1))).toEqual('INIT');
-  expect(inited).toEqual(1);
+  test('Parameterized Initialization', () => {
+    const myFamily = atomFamily({
+      key: 'atomFamily effect parameterized init',
+      default: 'DEFAULT',
+      effects_UNSTABLE: param => [({setSelf}) => setSelf(param)],
+    });
 
-  set(myAtom(2));
-  expect(inited).toEqual(2);
-
-  const [ReadsWritesAtom, _, reset] = componentThatReadsAndWritesAtom(
-    myAtom(1),
-  );
-  const c = renderElements(<ReadsWritesAtom />);
-  expect(c.textContent).toEqual('"INIT"');
-
-  act(reset);
-  expect(c.textContent).toEqual('"DEFAULT"');
+    expect(get(myFamily(1))).toEqual(1);
+    expect(get(myFamily(2))).toEqual(2);
+  });
 });
 
 // TODO add non-current-entry tests

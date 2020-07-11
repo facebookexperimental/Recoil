@@ -16,20 +16,19 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
+import type {DependencyMap, Graph} from './Recoil_Graph';
 import type {DefaultValue} from './Recoil_Node';
-import type {NodeKey, Store, TreeState} from './Recoil_State';
+import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
 
 const {
   mapByDeletingFromMap,
   mapBySettingInMap,
-  mapByUpdatingInMap,
   setByAddingToSet,
 } = require('../util/Recoil_CopyOnWrite');
+const nullthrows = require('../util/Recoil_nullthrows');
 const Tracing = require('../util/Recoil_Tracing');
-const {getNode} = require('./Recoil_Node');
+const {getNode, getNodeMaybe} = require('./Recoil_Node');
 
-// flowlint-next-line unclear-type:off
-const emptyMap: $ReadOnlyMap<any, any> = Object.freeze(new Map());
 // flowlint-next-line unclear-type:off
 const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());
 
@@ -42,12 +41,13 @@ function getNodeLoadable<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
-): [TreeState, Loadable<T>] {
+): [DependencyMap, Loadable<T>] {
   return getNode(key).get(store, state);
 }
 
 // Peek at the current value loadable for a node.
-// NOTE: This will ignore updating the state for subscriptions so use sparingly!!
+// NOTE: Only use in contexts where you don't need to update the store with
+//       new dependencies for the node!
 function peekNodeLoadable<T>(
   store: Store,
   state: TreeState,
@@ -63,6 +63,9 @@ function setUnvalidatedAtomValue<T>(
   key: NodeKey,
   newValue: T,
 ): TreeState {
+  const node = getNodeMaybe(key);
+  node?.invalidate?.();
+
   return {
     ...state,
     atomValues: mapByDeletingFromMap(state.atomValues, key),
@@ -75,26 +78,31 @@ function setUnvalidatedAtomValue<T>(
   };
 }
 
-// Set a node value and return the set of nodes that were actually written.
-// That does not include any downstream nodes which are dependent on them.
+// Return the discovered dependencies and values to be written by setting
+// a node value. (Multiple values may be written due to selectors getting to
+// set upstreams; deps may be discovered because of reads in updater functions.)
 function setNodeValue<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
   newValue: T | DefaultValue,
-): [TreeState, $ReadOnlySet<NodeKey>] {
+): [DependencyMap, AtomValues] {
   const node = getNode(key);
   if (node.set == null) {
     throw new ReadOnlyRecoilValueError(
       `Attempt to set read-only RecoilValue: ${key}`,
     );
   }
-  const [newState, writtenNodes] = node.set(store, state, newValue);
-  return [newState, writtenNodes];
+  return node.set(store, state, newValue);
+}
+
+function graphForTreeState(store: Store, treeState: TreeState): Graph {
+  return nullthrows(store.getState().graphsByVersion.get(treeState.version));
 }
 
 // Find all of the recursively dependent nodes
 function getDownstreamNodes(
+  store: Store,
   state: TreeState,
   keys: $ReadOnlySet<NodeKey>,
 ): $ReadOnlySet<NodeKey> {
@@ -104,7 +112,9 @@ function getDownstreamNodes(
   for (let key = visitingNodes.pop(); key; key = visitingNodes.pop()) {
     dependentNodes.add(key);
     visitedNodes.add(key);
-    const subscribedNodes = state.nodeToNodeSubscriptions.get(key) ?? emptySet;
+    const subscribedNodes =
+      graphForTreeState(store, state).nodeToNodeSubscriptions.get(key) ??
+      emptySet;
     for (const downstreamNode of subscribedNodes) {
       if (!visitedNodes.has(downstreamNode)) {
         visitingNodes.push(downstreamNode);
@@ -112,42 +122,6 @@ function getDownstreamNodes(
     }
   }
   return dependentNodes;
-}
-
-let subscriptionID = 0;
-function subscribeComponentToNode(
-  state: TreeState,
-  key: NodeKey,
-  callback: TreeState => void,
-): [TreeState, (TreeState) => TreeState] {
-  const subID = subscriptionID++;
-
-  const newState = {
-    ...state,
-    nodeToComponentSubscriptions: mapByUpdatingInMap(
-      state.nodeToComponentSubscriptions,
-      key,
-      subsForAtom =>
-        mapBySettingInMap(subsForAtom ?? emptyMap, subID, [
-          'TODO debug name',
-          callback,
-        ]),
-    ),
-  };
-
-  function release(state: TreeState): TreeState {
-    const newState = {
-      ...state,
-      nodeToComponentSubscriptions: mapByUpdatingInMap(
-        state.nodeToComponentSubscriptions,
-        key,
-        subsForAtom => mapByDeletingFromMap(subsForAtom ?? emptyMap, subID),
-      ),
-    };
-    return newState;
-  }
-
-  return [newState, release];
 }
 
 // Fire or enqueue callbacks to rerender components that are subscribed to
@@ -170,16 +144,16 @@ function fireNodeSubscriptions(
       ? store.getState().nextTree ?? store.getState().currentTree
       : store.getState().currentTree;
 
-  const dependentNodes = getDownstreamNodes(state, updatedNodes);
+  const callOrQueue =
+    when === 'enqueue'
+      ? cb => store.getState().queuedComponentCallbacks.push(cb)
+      : cb => cb(state);
 
+  const dependentNodes = getDownstreamNodes(store, state, updatedNodes);
   for (const key of dependentNodes) {
-    (state.nodeToComponentSubscriptions.get(key) ?? []).forEach(
-      ([_debugName, cb]) => {
-        when === 'enqueue'
-          ? store.getState().queuedComponentCallbacks.push(cb)
-          : cb(state);
-      },
-    );
+    const subscribers =
+      store.getState().nodeToComponentSubscriptions.get(key) ?? [];
+    subscribers.forEach(([_debugName, cb]) => callOrQueue(cb));
   }
 
   // Wake all suspended components so the right one(s) can try to re-render.
@@ -188,40 +162,13 @@ function fireNodeSubscriptions(
   // they may cause a selector to change from asynchronous to synchronous, in
   // which case there would be no follow-up asynchronous resolution to wake us up.
   // TODO OPTIMIZATION Only wake up related downstream components
-  Tracing.trace(
-    'value became available, waking components',
-    Array.from(updatedNodes).join(', '),
-    () => {
-      const resolvers = store.getState().suspendedComponentResolvers;
-      resolvers.forEach(r => r());
-      resolvers.clear();
-    },
+  const nodeNames = Array.from(updatedNodes).join(', ');
+  const resolvers = store.getState().suspendedComponentResolvers;
+  resolvers.forEach(cb =>
+    callOrQueue(_state =>
+      Tracing.trace('value became available, waking components', nodeNames, cb),
+    ),
   );
-}
-
-function detectCircularDependencies(
-  state: TreeState,
-  stack: $ReadOnlyArray<NodeKey>,
-) {
-  if (!stack.length) {
-    return;
-  }
-  const leaf = stack[stack.length - 1];
-  const downstream = state.nodeToNodeSubscriptions.get(leaf);
-  if (!downstream?.size) {
-    return;
-  }
-  const root = stack[0];
-  if (downstream.has(root)) {
-    throw new Error(
-      `Recoil selector has circular dependencies: ${[...stack, root]
-        .reverse()
-        .join(' \u2192 ')}`,
-    );
-  }
-  for (const next of downstream) {
-    detectCircularDependencies(state, [...stack, next]);
-  }
 }
 
 module.exports = {
@@ -229,7 +176,5 @@ module.exports = {
   peekNodeLoadable,
   setNodeValue,
   setUnvalidatedAtomValue,
-  subscribeComponentToNode,
   fireNodeSubscriptions,
-  detectCircularDependencies,
 };

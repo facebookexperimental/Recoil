@@ -12,41 +12,59 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {ValueOrUpdater} from '../recoil_values/Recoil_selector';
-import type {DefaultValue} from './Recoil_Node';
-import type {Store, TreeState} from './Recoil_State';
+import type {AtomValues, Store, TreeState} from './Recoil_State';
 
+const {
+  mapByDeletingFromMap,
+  mapByDeletingMultipleFromMap,
+} = require('../util/Recoil_CopyOnWrite');
+const mapMap = require('../util/Recoil_mapMap');
+const nullthrows = require('../util/Recoil_nullthrows');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
+const unionSets = require('../util/Recoil_unionSets');
 const {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
   setUnvalidatedAtomValue,
-  subscribeComponentToNode,
 } = require('./Recoil_FunctionalCore');
-const {RecoilValueNotReady} = require('./Recoil_Node');
+const {saveDependencyMapToStore} = require('./Recoil_Graph');
+const {DefaultValue, RecoilValueNotReady} = require('./Recoil_Node');
 const {
   AbstractRecoilValue,
   RecoilState,
   RecoilValueReadOnly,
+  isRecoilValue,
 } = require('./Recoil_RecoilValue');
 
 function getRecoilValueAsLoadable<T>(
   store: Store,
   {key}: AbstractRecoilValue<T>,
 ): Loadable<T> {
-  let result: Loadable<T>;
-  // Save any state changes during read, such as validating atoms,
-  // updated selector subscriptions/dependencies, &c.
-  Tracing.trace('get RecoilValue', key, () =>
-    store.replaceState(
-      Tracing.wrap(state => {
-        const [newState, loadable] = getNodeLoadable(store, state, key);
-        result = loadable;
-        return newState;
-      }),
-    ),
-  );
-  return (result: any); // flowlint-line unclear-type:off
+  // FIXME, should be the tree of the individual component when useMutableSource is in use
+  const treeState = store.getState().currentTree;
+  const version = treeState.version;
+  const [dependencyMap, loadable] = getNodeLoadable(store, treeState, key);
+
+  saveDependencyMapToStore(dependencyMap, store, version);
+
+  return loadable;
+}
+
+function applyAtomValueWrites(
+  atomValues: AtomValues,
+  writes: AtomValues,
+): AtomValues {
+  const result = mapMap(atomValues, v => v);
+  writes.forEach((v, k) => {
+    if (v.state === 'hasValue' && v.contents instanceof DefaultValue) {
+      result.delete(k);
+    } else {
+      result.set(k, v);
+    }
+  });
+  return result;
 }
 
 function valueFromValueOrUpdater<T>(
@@ -89,14 +107,48 @@ function setRecoilValue<T>(
           valueOrUpdater,
         );
 
-        const [newState, writtenNodes] = setNodeValue(
-          store,
-          state,
-          key,
-          newValue,
-        );
+        const [depMap, writes] = setNodeValue(store, state, key, newValue);
+        const writtenNodes = new Set(writes.keys());
+
         store.fireNodeSubscriptions(writtenNodes, 'enqueue');
-        return newState;
+        saveDependencyMapToStore(depMap, store, state.version);
+
+        return {
+          ...state,
+          dirtyAtoms: unionSets(state.dirtyAtoms, writtenNodes),
+          atomValues: applyAtomValueWrites(state.atomValues, writes),
+          nonvalidatedAtoms: mapByDeletingMultipleFromMap(
+            state.nonvalidatedAtoms,
+            writtenNodes,
+          ),
+        };
+      }),
+    ),
+  );
+}
+
+function setRecoilValueLoadable<T>(
+  store: Store,
+  recoilValue: AbstractRecoilValue<T>,
+  loadable: Loadable<T>,
+): void {
+  const {key} = recoilValue;
+  Tracing.trace('set RecoilValue', key, () =>
+    store.replaceState(
+      Tracing.wrap(state => {
+        const writtenNode = new Set([key]);
+
+        store.fireNodeSubscriptions(writtenNode, 'enqueue');
+
+        return {
+          ...state,
+          dirtyAtoms: unionSets(state.dirtyAtoms, writtenNode),
+          atomValues: applyAtomValueWrites(
+            state.atomValues,
+            new Map([[key, loadable]]),
+          ),
+          nonvalidatedAtoms: mapByDeletingFromMap(state.nonvalidatedAtoms, key),
+        };
       }),
     ),
   );
@@ -119,21 +171,39 @@ function setUnvalidatedRecoilValue<T>(
 }
 
 export type ComponentSubscription = {release: Store => void};
+let subscriptionID = 0;
 function subscribeToRecoilValue<T>(
   store: Store,
   {key}: AbstractRecoilValue<T>,
   callback: TreeState => void,
 ): ComponentSubscription {
-  let newState, releaseFn;
-  Tracing.trace('subscribe component to RecoilValue', key, () =>
-    store.replaceState(
-      Tracing.wrap(state => {
-        [newState, releaseFn] = subscribeComponentToNode(state, key, callback);
-        return newState;
-      }),
-    ),
-  );
-  return {release: store => store.replaceState(releaseFn)};
+  const subID = subscriptionID++;
+  const storeState = store.getState();
+  if (!storeState.nodeToComponentSubscriptions.has(key)) {
+    storeState.nodeToComponentSubscriptions.set(key, new Map());
+  }
+  nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [
+    'TODO debug name',
+    callback,
+  ]);
+
+  return {
+    release: () => {
+      const storeState = store.getState();
+      const subs = storeState.nodeToComponentSubscriptions.get(key);
+      if (subs === undefined || !subs.has(subID)) {
+        recoverableViolation(
+          `Subscription missing at release time for atom ${key}. This is a bug in Recoil.`,
+          'recoil',
+        );
+        return;
+      }
+      subs.delete(subID);
+      if (subs.size === 0) {
+        storeState.nodeToComponentSubscriptions.delete(key);
+      }
+    },
+  };
 }
 
 module.exports = {
@@ -142,6 +212,9 @@ module.exports = {
   RecoilState,
   getRecoilValueAsLoadable,
   setRecoilValue,
+  setRecoilValueLoadable,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
+  isRecoilValue,
+  applyAtomValueWrites, // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
 };
