@@ -100,6 +100,8 @@ export type PersistenceSettings<Stored> = $ReadOnly<{
   validator: (mixed, DefaultValue) => Stored | DefaultValue,
 }>;
 
+type NewValue<T> = T | DefaultValue | Promise<T | DefaultValue>;
+
 // Effect is called the first time a node is used with a <RecoilRoot>
 export type AtomEffect<T> = ({
   node: RecoilState<T>,
@@ -107,7 +109,10 @@ export type AtomEffect<T> = ({
 
   // Call synchronously to initialize value or async to change it later
   setSelf: (
-    T | DefaultValue | Promise<T> | ((T | DefaultValue) => T | DefaultValue),
+    | T
+    | DefaultValue
+    | Promise<T | DefaultValue>
+    | ((T | DefaultValue) => T | DefaultValue),
   ) => void,
   resetSelf: () => void,
 
@@ -139,7 +144,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     | void
     | [DependencyMap, Loadable<T>] = undefined;
 
-  function wrapPendingPromise(store: Store, promise: Promise<T>): Promise<T> {
+  function wrapPendingPromise(
+    store: Store,
+    promise: Promise<T | DefaultValue>,
+  ): Promise<T | DefaultValue> {
     const wrappedPromise = promise
       .then(value => {
         const state = store.getState().nextTree ?? store.getState().currentTree;
@@ -169,13 +177,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     store.getState().knownAtoms.add(key);
 
     // Run Atom Effects
-    let initValue: T | DefaultValue | Promise<T> = DEFAULT_VALUE;
+    let initValue: NewValue<T> = DEFAULT_VALUE;
     if (options.effects_UNSTABLE != null) {
       let duringInit = true;
 
-      function setSelf(
-        valueOrUpdater: T | DefaultValue | Promise<T> | (T => T | DefaultValue),
-      ) {
+      function setSelf(valueOrUpdater: NewValue<T> | (T => T | DefaultValue)) {
         if (duringInit) {
           const currentValue: T =
             initValue instanceof DefaultValue || isPromise(initValue)
