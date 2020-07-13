@@ -202,7 +202,7 @@ function advanceTimersBy(ms) {
 test('Component throws error when passing invalid node', async () => {
   function Component() {
     try {
-      // $FlowExpectedError
+      // $FlowExpectedError[incompatible-call]
       useRecoilValue('foo');
     } catch (error) {
       expect(error.message).toEqual(expect.stringContaining('useRecoilValue'));
