@@ -114,7 +114,7 @@ const myQuery = selector({
 ### Example (Synchronous)
 
 ```jsx
-import {atom, selector, useRecoilState} from 'recoil';
+import {atom, selector, useRecoilState, DefaultValue} from 'recoil';
 
 const tempFahrenheit = atom({
   key: 'tempFahrenheit',
@@ -164,7 +164,8 @@ import {selector, useRecoilValue} from 'recoil';
 const myQuery = selector({
   key: 'MyDBQuery',
   get: async () => {
-    return myDBQueryPromise();
+    const response = await fetch(getMyRequestUrl());
+    return response.json();
   },
 });
 
