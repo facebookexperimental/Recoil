@@ -42,6 +42,7 @@ const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {
   useGotoRecoilSnapshot,
   useRecoilCallback,
+  useRecoilInterface,
   useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
@@ -86,6 +87,7 @@ module.exports = {
   readOnlySelector,
 
   // Hooks that accept RecoilValues
+  useRecoilInterface,
   useRecoilValue,
   useRecoilValueLoadable,
   useRecoilState,
