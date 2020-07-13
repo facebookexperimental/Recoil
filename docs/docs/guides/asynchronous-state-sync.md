@@ -140,7 +140,7 @@ const currentUserInfoQuery = selector({
 const friendColorState = selectorFamily({
   key: 'FriendColor',
   get: friendID => ({get}) => {
-    const [status] = useRecoilState(friendStatusState(friendID));
+    const [status] = get(friendStatusState(friendID));
     return status === 'offline' ? 'red' : 'green';
   }
 })
