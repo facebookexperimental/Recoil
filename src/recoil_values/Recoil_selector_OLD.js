@@ -77,6 +77,7 @@ const {
 const {
   addToDependencyMap,
   mergeDepsIntoDependencyMap,
+  saveDependencyMapToStore,
 } = require('../core/Recoil_Graph');
 const {
   DEFAULT_VALUE,
@@ -245,6 +246,8 @@ function selector<T>(
         .map(depKey => {
           const [deps, loadable] = getNodeLoadable(store, state, depKey);
           mergeDepsIntoDependencyMap(deps, dependencyMap);
+          saveDependencyMapToStore(dependencyMap, store, state.version);
+
           return [depKey, loadable];
         }),
     );
@@ -265,6 +268,7 @@ function selector<T>(
     );
 
     mergeDepsIntoDependencyMap(deps, dependencyMap);
+    saveDependencyMapToStore(dependencyMap, store, state.version);
 
     // Save result in cache
     const newCacheKey = cacheKeyFromDepValues(newDepValues);
@@ -285,6 +289,7 @@ function selector<T>(
       const [deps, loadable] = getNodeLoadable(store, state, depKey);
       depValues.set(depKey, loadable);
       mergeDepsIntoDependencyMap(deps, dependencyMap);
+      saveDependencyMapToStore(dependencyMap, store, state.version);
       if (loadable.state === 'hasValue') {
         return loadable.contents;
       } else {
@@ -373,6 +378,7 @@ function selector<T>(
       function getRecoilValue<S>({key}: RecoilValue<S>): S {
         const [deps, loadable] = getNodeLoadable(store, state, key);
         mergeDepsIntoDependencyMap(deps, dependencyMap);
+
         if (loadable.state === 'hasValue') {
           return loadable.contents;
         } else if (loadable.state === 'loading') {
@@ -399,6 +405,7 @@ function selector<T>(
           newValue,
         );
         mergeDepsIntoDependencyMap(deps, dependencyMap);
+
         upstreamWrites.forEach((v, k) => writes.set(k, v));
       }
 
