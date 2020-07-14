@@ -19,7 +19,7 @@ This helper can be used to obtain the current state of a potentially asynchronou
 const myQuery = selector({
   key: 'MyQuery',
   get: ({get}) => {
-    const results = noWait(dbQuerySelector);
+    const results = get(noWait(dbQuerySelector));
 
     return {
       hasValue: {data: results.contents},
