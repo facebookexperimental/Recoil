@@ -80,7 +80,7 @@ export type RecoilInterface = {
   getResetRecoilState: <T>(RecoilState<T>) => Resetter,
 };
 
-function useInterface(): RecoilInterface {
+function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const storeRef = useStoreRef();
   const [_, forceUpdate] = useState([]);
 
@@ -253,21 +253,71 @@ function useInterface(): RecoilInterface {
 }
 
 /**
+  Like useRecoilValue(), but either returns the value if available or
+  just undefined if not available for any reason, such as pending or error.
+*/
+function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
+  if (__DEV__) {
+    validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
+  }
+  const storeRef = useStoreRef();
+  const [_, forceUpdate] = useState([]);
+
+  useEffect(() => {
+    const store = storeRef.current;
+    const sub = subscribeToRecoilValue(store, recoilValue, _state => {
+      Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
+        forceUpdate([]);
+      });
+    });
+    Tracing.trace('initial update on subscribing', recoilValue.key, () => {
+      /**
+       * Since we're subscribing in an effect we need to update to the latest
+       * value of the atom since it may have changed since we rendered. We can
+       * go ahead and do that now, unless we're in the middle of a batch --
+       * in which case we should do it at the end of the batch, due to the
+       * following edge case: Suppose an atom is updated in another useEffect
+       * of this same component. Then the following sequence of events occur:
+       * 1. Atom is updated and subs fired (but we may not be subscribed
+       *    yet depending on order of effects, so we miss this) Updated value
+       *    is now in nextTree, but not currentTree.
+       * 2. This effect happens. We subscribe and update.
+       * 3. From the update we re-render and read currentTree, with old value.
+       * 4. Batcher's effect sets currentTree to nextTree.
+       * In this sequence we miss the update. To avoid that, add the update
+       * to queuedComponentCallback if a batch is in progress.
+       */
+      const state = store.getState();
+      if (state.nextTree) {
+        store.getState().queuedComponentCallbacks.push(
+          Tracing.wrap(() => {
+            forceUpdate([]);
+          }),
+        );
+      } else {
+        forceUpdate([]);
+      }
+    });
+
+    return () => sub.release(store);
+  }, [recoilValue, storeRef]);
+
+  return getRecoilValueAsLoadable(storeRef.current, recoilValue);
+}
+
+/**
   Returns the value represented by the RecoilValue.
   If the value is pending, it will throw a Promise to suspend the component,
   if the value is an error it will throw it for the nearest React error boundary.
   This will also subscribe the component for any updates in the value.
   */
 function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
-  return useInterface().getRecoilValue(recoilValue);
-}
-
-/**
-  Like useRecoilValue(), but either returns the value if available or
-  just undefined if not available for any reason, such as pending or error.
-*/
-function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
-  return useInterface().getRecoilValueLoadable(recoilValue);
+  if (__DEV__) {
+    validateRecoilValue(recoilValue, 'useRecoilValue');
+  }
+  const storeRef = useStoreRef();
+  const loadable = useRecoilValueLoadable(recoilValue);
+  return handleLoadable(loadable, recoilValue, storeRef);
 }
 
 /**
@@ -275,18 +325,29 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   not subscribe the component to changes to that RecoilState.
 */
 function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
-  return useCallback(useInterface().getSetRecoilState(recoilState), [
-    recoilState,
-  ]);
+  if (__DEV__) {
+    validateRecoilValue(recoilState, 'useSetRecoilState');
+  }
+  const storeRef = useStoreRef();
+  return useCallback(
+    (newValueOrUpdater: (T => T | DefaultValue) | T | DefaultValue) => {
+      setRecoilValue(storeRef.current, recoilState, newValueOrUpdater);
+    },
+    [storeRef, recoilState],
+  );
 }
 
 /**
   Returns a function that will reset the value of a RecoilState to its default
 */
 function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
-  return useCallback(useInterface().getResetRecoilState(recoilState), [
-    recoilState,
-  ]);
+  if (__DEV__) {
+    validateRecoilValue(recoilState, 'useResetRecoilState');
+  }
+  const storeRef = useStoreRef();
+  return useCallback(() => {
+    setRecoilValue(storeRef.current, recoilState, DEFAULT_VALUE);
+  }, [storeRef, recoilState]);
 }
 
 /**
@@ -299,12 +360,10 @@ function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
 function useRecoilState<T>(
   recoilState: RecoilState<T>,
 ): [T, SetterOrUpdater<T>] {
-  const recoilInterface = useInterface();
-  const [value] = recoilInterface.getRecoilState(recoilState);
-  const setValue = useCallback(recoilInterface.getSetRecoilState(recoilState), [
-    recoilState,
-  ]);
-  return [value, setValue];
+  if (__DEV__) {
+    validateRecoilValue(recoilState, 'useRecoilState');
+  }
+  return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
 }
 
 /**
@@ -315,12 +374,10 @@ function useRecoilState<T>(
 function useRecoilStateLoadable<T>(
   recoilState: RecoilState<T>,
 ): [Loadable<T>, SetterOrUpdater<T>] {
-  const recoilInterface = useInterface();
-  const [value] = recoilInterface.getRecoilStateLoadable(recoilState);
-  const setValue = useCallback(recoilInterface.getSetRecoilState(recoilState), [
-    recoilState,
-  ]);
-  return [value, setValue];
+  if (__DEV__) {
+    validateRecoilValue(recoilState, 'useRecoilStateLoadable');
+  }
+  return [useRecoilValueLoadable(recoilState), useSetRecoilState(recoilState)];
 }
 
 function useTransactionSubscription(callback: Store => void) {
@@ -590,7 +647,7 @@ module.exports = {
   useRecoilStateLoadable,
   useSetRecoilState,
   useResetRecoilState,
-  useRecoilInterface: useInterface,
+  useRecoilInterface: useRecoilInterface_DEPRECATED,
   useTransactionSubscription_DEPRECATED: useTransactionSubscription,
   useTransactionObservation_DEPRECATED,
   useRecoilTransactionObserver,
