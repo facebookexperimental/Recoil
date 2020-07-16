@@ -34,15 +34,6 @@ const commonPlugins = [
   commonjs(),
 ];
 
-const replaceGlobalPlugins = [
-  replace({
-    'global.react': 'global.React',
-  }),
-  replace({
-    'global.reactDom': 'global.ReactDOM',
-  }),
-];
-
 const developmentPlugins = [
   ...commonPlugins,
   replace({
@@ -103,9 +94,13 @@ const configs = [
       format: 'umd',
       name: 'Recoil',
       exports: 'named',
+      globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
     },
     external: externalLibs,
-    plugins: [...developmentPlugins, ...replaceGlobalPlugins],
+    plugins: developmentPlugins,
   },
 
   // UMD Production
@@ -116,9 +111,13 @@ const configs = [
       format: 'umd',
       name: 'Recoil',
       exports: 'named',
+      globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
     },
     external: externalLibs,
-    plugins: [...productionPlugins, ...replaceGlobalPlugins],
+    plugins: productionPlugins,
   },
 ];
 
