@@ -19,6 +19,7 @@ const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
 const {fireNodeSubscriptions} = require('../core/Recoil_FunctionalCore');
+const {graph} = require('../core/Recoil_Graph');
 const {RecoilRoot} = require('../core/Recoil_RecoilRoot.react');
 const {makeEmptyStoreState} = require('../core/Recoil_State');
 const {
@@ -28,13 +29,14 @@ const {
 } = require('../hooks/Recoil_Hooks');
 const selector = require('../recoil_values/Recoil_selector');
 const invariant = require('../util/Recoil_invariant');
+const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
 
 // TODO Use Snapshot for testing instead of this thunk?
 function makeStore(): Store {
-  const state = makeEmptyStoreState();
+  const storeState = makeEmptyStoreState();
   const store = {
-    getState: () => state,
+    getState: () => storeState,
     replaceState: replacer => {
       const storeState = store.getState();
       storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
@@ -45,6 +47,15 @@ function makeStore(): Store {
         0,
         storeState.queuedComponentCallbacks.length,
       );
+    },
+    getGraph: version => {
+      const graphs = storeState.graphsByVersion;
+      if (graphs.has(version)) {
+        return nullthrows(graphs.get(version));
+      }
+      const newGraph = graph();
+      graphs.set(version, newGraph);
+      return newGraph;
     },
     subscribeToTransactions: () => {
       throw new Error('not tested at this level');

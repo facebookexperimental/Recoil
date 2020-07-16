@@ -98,6 +98,7 @@ export type StoreState = {
 export type Store = $ReadOnly<{
   getState: () => StoreState,
   replaceState: ((TreeState) => TreeState) => void,
+  getGraph: Version => Graph,
   subscribeToTransactions: ((Store) => void, ?NodeKey) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
   fireNodeSubscriptions: (
@@ -110,9 +111,12 @@ export type StoreRef = {
   current: Store,
 };
 
+let nextTreeStateVersion = 0;
+const getNextTreeStateVersion = (): Version => nextTreeStateVersion++;
+
 function makeEmptyTreeState(): TreeState {
   return {
-    version: 0,
+    version: getNextTreeStateVersion(),
     transactionMetadata: {},
     dirtyAtoms: new Set(),
     atomValues: new Map(),
@@ -144,4 +148,5 @@ module.exports = {
   makeEmptyTreeState,
   makeEmptyStoreState,
   makeStoreState,
+  getNextTreeStateVersion,
 };

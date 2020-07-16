@@ -22,12 +22,19 @@ import type {Store, TreeState} from './Recoil_State';
 const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
 const nullthrows = require('../util/Recoil_nullthrows');
+const {graph} = require('./Recoil_Graph');
 const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
 } = require('./Recoil_RecoilValueInterface');
-const {makeEmptyTreeState, makeStoreState} = require('./Recoil_State');
+const {
+  getNextTreeStateVersion,
+  makeEmptyTreeState,
+  makeStoreState,
+} = require('./Recoil_State');
+
+opaque type SnapshotID = number;
 
 // TODO Temporary until Snapshots only contain state
 function makeSnapshotStore(treeState: TreeState): Store {
@@ -36,6 +43,15 @@ function makeSnapshotStore(treeState: TreeState): Store {
     getState: () => storeState,
     replaceState: replacer => {
       storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
+    },
+    getGraph: version => {
+      const graphs = storeState.graphsByVersion;
+      if (graphs.has(version)) {
+        return nullthrows(graphs.get(version));
+      }
+      const newGraph = graph();
+      graphs.set(version, newGraph);
+      return newGraph;
     },
     subscribeToTransactions: () => ({release: () => {}}),
     addTransactionMetadata: () => {
@@ -58,6 +74,10 @@ class Snapshot {
 
   getStore_INTERNAL(): Store {
     return this._store;
+  }
+
+  getID(): SnapshotID {
+    return this._store.getState().currentTree.version;
   }
 
   getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
@@ -131,6 +151,8 @@ class Snapshot {
 }
 
 function cloneTreeState(treeState: TreeState): TreeState {
+  // TODO copying these structures shouldn't be necessary unless we are
+  // creating a MutableSnapshot
   return {
     version: treeState.version,
     transactionMetadata: {...treeState.transactionMetadata},
@@ -152,7 +174,7 @@ function cloneSnapshot(treeState: TreeState): Snapshot {
 
 class MutableSnapshot extends Snapshot {
   constructor(treeState: TreeState) {
-    super(cloneTreeState(treeState));
+    super({...cloneTreeState(treeState), version: getNextTreeStateVersion()});
   }
 
   // We want to allow the methods to be destructured and used as accessors
