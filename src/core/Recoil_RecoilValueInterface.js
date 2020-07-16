@@ -44,10 +44,9 @@ function getRecoilValueAsLoadable<T>(
 ): Loadable<T> {
   // FIXME, should be the tree of the individual component when useMutableSource is in use
   const treeState = store.getState().currentTree;
-  const version = treeState.version;
   const [dependencyMap, loadable] = getNodeLoadable(store, treeState, key);
 
-  saveDependencyMapToStore(dependencyMap, store, version);
+  saveDependencyMapToStore(dependencyMap, store, treeState.version);
 
   return loadable;
 }

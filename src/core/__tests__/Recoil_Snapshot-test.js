@@ -10,12 +10,22 @@
  */
 'use strict';
 
+const React = require('React');
 const {act} = require('ReactTestUtils');
 
+const {
+  useGotoRecoilSnapshot,
+  useRecoilTransactionObserver,
+} = require('../../hooks/Recoil_Hooks');
 const atom = require('../../recoil_values/Recoil_atom');
 const constSelector = require('../../recoil_values/Recoil_constSelector');
 const selector = require('../../recoil_values/Recoil_selector');
-const {asyncSelector} = require('../../testing/Recoil_TestingUtils');
+const {
+  ReadsAtom,
+  asyncSelector,
+  componentThatReadsAndWritesAtom,
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
 const {Snapshot, freshSnapshot} = require('../Recoil_Snapshot');
 
 // Run test first since it is testing all registered atoms
@@ -70,6 +80,76 @@ test('getNodes', () => {
   ).toEqual(1);
 
   // TODO Test dirty selectors
+});
+
+test('Snapshot Versions', () => {
+  const seenIDs = new Set();
+  const snapshots = [];
+  let expectedSnapshotID = null;
+
+  const myAtom = atom({key: 'Snapshot ID atom', default: 0});
+  const mySelector = constSelector(myAtom); // For read-only testing below
+
+  const transactionObserver = ({snapshot}) => {
+    const snapshotID = snapshot.getID();
+    if (expectedSnapshotID != null) {
+      expect(seenIDs.has(snapshotID)).toBe(true);
+      expect(snapshotID).toBe(expectedSnapshotID);
+    } else {
+      expect(seenIDs.has(snapshotID)).toBe(false);
+    }
+    seenIDs.add(snapshotID);
+    snapshots.push({snapshotID, snapshot});
+  };
+  function TransactionObserver() {
+    useRecoilTransactionObserver(transactionObserver);
+    return null;
+  }
+
+  let gotoSnapshot;
+  function GotoSnapshot() {
+    gotoSnapshot = useGotoRecoilSnapshot();
+    return null;
+  }
+
+  const [WriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+  const c = renderElements(
+    <>
+      <TransactionObserver />
+      <GotoSnapshot />
+      <WriteAtom />
+      <ReadsAtom atom={mySelector} />
+    </>,
+  );
+  expect(c.textContent).toBe('00');
+
+  // Test changing state produces a new state version
+  act(() => setAtom(1));
+  act(() => setAtom(2));
+  expect(snapshots.length).toBe(2);
+  expect(seenIDs.size).toBe(2);
+
+  // Test going to a previous snapshot re-uses the state version
+  expectedSnapshotID = snapshots[0].snapshotID;
+  act(() => gotoSnapshot(snapshots[0].snapshot));
+
+  // Test changing state after going to a previous snapshot uses a new version
+  expectedSnapshotID = null;
+  act(() => setAtom(3));
+
+  // Test mutating a snapshot creates a new version
+  const transactionSnapshot = snapshots[0].snapshot.map(({set}) => {
+    set(myAtom, 4);
+  });
+  act(() => gotoSnapshot(transactionSnapshot));
+  expect(seenIDs.size).toBe(4);
+  expect(snapshots.length).toBe(5);
+
+  // Test that added read-only selector doesn't cause an issue getting the
+  // current version to see the current deps of the selector since we mutated a
+  // state after going to a snapshot, so that version may not be known by the store.
+  // If there was a problem, then the component may throw an error when evaluating the selector.
+  expect(c.textContent).toBe('44');
 });
 
 test('Read default loadable from snapshot', () => {

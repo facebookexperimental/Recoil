@@ -96,10 +96,6 @@ function setNodeValue<T>(
   return node.set(store, state, newValue);
 }
 
-function graphForTreeState(store: Store, treeState: TreeState): Graph {
-  return nullthrows(store.getState().graphsByVersion.get(treeState.version));
-}
-
 // Find all of the recursively dependent nodes
 function getDownstreamNodes(
   store: Store,
@@ -113,7 +109,7 @@ function getDownstreamNodes(
     dependentNodes.add(key);
     visitedNodes.add(key);
     const subscribedNodes =
-      graphForTreeState(store, state).nodeToNodeSubscriptions.get(key) ??
+      store.getGraph(state.version).nodeToNodeSubscriptions.get(key) ??
       emptySet;
     for (const downstreamNode of subscribedNodes) {
       if (!visitedNodes.has(downstreamNode)) {

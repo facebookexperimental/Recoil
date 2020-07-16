@@ -29,8 +29,11 @@ export type {
   RecoilState,
   RecoilValueReadOnly,
 } from './core/Recoil_RecoilValue';
-export type {MutableSnapshot, Snapshot} from './core/Recoil_Snapshot';
-
+export type {
+  MutableSnapshot,
+  Snapshot,
+  SnapshotID,
+} from './core/Recoil_Snapshot';
 export type {
   Parameter,
   SelectorFamilyOptions,

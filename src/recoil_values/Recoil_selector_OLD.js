@@ -237,9 +237,8 @@ function selector<T>(
 
     // First, get the current deps for this selector
     const currentDeps =
-      nullthrows(
-        store.getState().graphsByVersion.get(state.version),
-      ).nodeDeps.get(key) ?? emptySet;
+      store.getGraph(state.version).nodeDeps.get(key) ?? emptySet;
+
     const depValues: DepValues = new Map(
       Array.from(currentDeps)
         .sort()

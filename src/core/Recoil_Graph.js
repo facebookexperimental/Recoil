@@ -85,12 +85,8 @@ function saveDependencyMapToStore(
 ): void {
   // Merge the dependencies discovered into the store's dependency map
   // for the version that was read:
-  const depsByVersion = store.getState().graphsByVersion;
-  if (!depsByVersion.has(version)) {
-    depsByVersion.set(version, graph());
-  }
-  const existingMap = nullthrows(depsByVersion.get(version));
-  mergeDepedencyMapIntoGraph(dependencyMap, existingMap);
+  const graph = store.getGraph(version);
+  mergeDepedencyMapIntoGraph(dependencyMap, graph);
 }
 
 function mergeDepsIntoDependencyMap(

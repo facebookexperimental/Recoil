@@ -23,11 +23,15 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
-const {saveDependencyMapToStore} = require('../core/Recoil_Graph');
+const {graph, saveDependencyMapToStore} = require('../core/Recoil_Graph');
 const {cloneGraph} = require('../core/Recoil_Graph');
 const {applyAtomValueWrites} = require('../core/Recoil_RecoilValueInterface');
 const {freshSnapshot} = require('../core/Recoil_Snapshot');
-const {makeEmptyStoreState, makeStoreState} = require('../core/Recoil_State');
+const {
+  getNextTreeStateVersion,
+  makeEmptyStoreState,
+  makeStoreState,
+} = require('../core/Recoil_State');
 const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const nullthrows = require('../util/Recoil_nullthrows');
 const unionSets = require('../util/Recoil_unionSets');
@@ -50,6 +54,7 @@ function notInAContext() {
 const defaultStore: Store = Object.freeze({
   getState: notInAContext,
   replaceState: notInAContext,
+  getGraph: notInAContext,
   subscribeToTransactions: notInAContext,
   addTransactionMetadata: notInAContext,
   fireNodeSubscriptions: notInAContext,
@@ -58,14 +63,15 @@ const defaultStore: Store = Object.freeze({
 function startNextTreeIfNeeded(storeState: StoreState): void {
   if (storeState.nextTree === null) {
     const version = storeState.currentTree.version;
+    const nextVersion = getNextTreeStateVersion();
     storeState.nextTree = {
       ...storeState.currentTree,
-      version: version + 1,
+      version: nextVersion,
       dirtyAtoms: new Set(),
       transactionMetadata: {},
     };
     storeState.graphsByVersion.set(
-      version + 1,
+      nextVersion,
       cloneGraph(nullthrows(storeState.graphsByVersion.get(version))),
     );
   }
@@ -193,6 +199,16 @@ function RecoilRoot({
 }: Props): ReactElement {
   let storeState; // eslint-disable-line prefer-const
 
+  const getGraph = version => {
+    const graphs = storeState.current.graphsByVersion;
+    if (graphs.has(version)) {
+      return nullthrows(graphs.get(version));
+    }
+    const newGraph = graph();
+    graphs.set(version, newGraph);
+    return newGraph;
+  };
+
   const subscribeToTransactions = (callback, key) => {
     if (key == null) {
       // Global transaction subscriptions
@@ -260,6 +276,7 @@ function RecoilRoot({
   const store: Store = {
     getState: () => storeState.current,
     replaceState,
+    getGraph,
     subscribeToTransactions,
     addTransactionMetadata,
     fireNodeSubscriptions: fireNodeSubscriptionsForStore,

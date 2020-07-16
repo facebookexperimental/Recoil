@@ -25,6 +25,7 @@ import {
   useRecoilTransactionObserver_UNSTABLE,
   useGotoRecoilSnapshot,
   Snapshot,
+  SnapshotID,
   useRecoilSnapshot,
 } from 'recoil';
 
@@ -139,6 +140,7 @@ useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
 
 useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
+  const id: SnapshotID = snapshot.getID();
   const val: number = await snapshot.getPromise(mySelector1);
   const loadable = snapshot.getLoadable(mySelector1);
 
