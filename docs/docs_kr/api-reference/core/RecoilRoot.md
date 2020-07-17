@@ -7,12 +7,12 @@ sidebar_label: <RecoilRoot />
 
 ---
 
-**Props**:
+**속성**:
 
 - `initializeState?`: `(MutableSnapshot => void)`
   - [`MutableSnapshot`](/docs/api-reference/core/Snapshot#transforming-snapshots)을 사용하여 `<RecoilRoot>`의 원자 상태를 초기화하는 옵션 함수. 이것은 초기 렌더링에 대한 상태를 설정하며 이후 상태 변경이나 비동기적인 초기화를 위한 것이 아니다. 비동기 상태 변경에는 [`useSetRecoilState()`](/docs/api-reference/core/useSetRecoilState) 또는 [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback)과 같은 Hooks를 사용하십시오.
 
-### Example
+### 예시
 
 ```jsx
 import {RecoilRoot} from 'recoil';
