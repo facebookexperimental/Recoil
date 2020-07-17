@@ -47,6 +47,10 @@ Recoil has the following hooks for working with snapshots:
 
 The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component takes an `initializeState` prop for initializing the global state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For most state initialization and persistence, though, consider Atom Effects.
 
+### Snapshot IDs
+
+Each committed state or mutated Snapshot has a unique opaque version ID that can be obtained via `getID()`.  This can be used from the hooks above to obtain snapshots to determine if we have gone back to a previous snapshot via `useGotoRecoilSnapshot()`.
+
 ### Example
 
 ```jsx
