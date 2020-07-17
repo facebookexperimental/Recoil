@@ -29,7 +29,7 @@ yarn add recoil
 }
 ```
 
-[useRecoilCallback](docs/api-reference/core/useRecoilCallback)을 `additionalHooks` 목록에 추가하는 것이 좋다. 이런 변경으로 ESLint는 `useRecoilCallback`에 전달된 종속성이 잘못 지정되었을 때 경고하고 수정을 제안한다. `additionalHooks`의 형식은 정규식 문자열이다.
+[`'useRecoilCallback'`](docs/api-reference/core/useRecoilCallback)을 `additionalHooks` 목록에 추가하는 것이 좋다. 이런 변경으로 ESLint는 `useRecoilCallback`에 전달된 종속성이 잘못 지정되었을 때 경고하고 수정을 제안한다. `additionalHooks`의 형식은 정규식 문자열이다.
 
 ```json
 // 수정된 .eslint 설정
