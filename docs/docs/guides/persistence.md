@@ -42,7 +42,7 @@ Note that the current hook was designed for persistence and only reports atoms w
 
 ## Restoring State
 
-After you ensure that you're saving your state to your storage, you need to recover it when loading the app.  This can be done using the **`initializeState`** prop on thee **`<RecoilRoot>`** component. (***NOTE***: *API changes coming soon*).
+After you ensure that you're saving your state to your storage, you need to recover it when loading the app.  This can be done using the **`initializeState`** prop on the **`<RecoilRoot>`** component. (***NOTE***: *API changes coming soon*).
 
 `initializeState` is a function that provides a **`set`** method to provide the initial atom value for an atom key.
 Pass the key for the atom and the stored value to this callback and it will initialize the atom to the restored state.
@@ -54,7 +54,7 @@ Here is a basic example:
 ```jsx
 const initializeState = ({set}) => {
   for(const [key, value] of Storage.entries()) {
-    set(getAtomWithKey(key), JSON.parse(value)).value;
+    set(getAtomWithKey(key), JSON.parse(value).value);
   }
 }
 
