@@ -7,6 +7,8 @@ A `Snapshot` object represents an immutable snapshot of the state of Recoil [ato
 
 ```jsx
 class Snapshot {
+  getID: () => SnapshotID;
+
   getLoadable: <T>(RecoilValue<T>) => Loadable<T>;
   getPromise: <T>(RecoilValue<T>) => Promise<T>;
 
