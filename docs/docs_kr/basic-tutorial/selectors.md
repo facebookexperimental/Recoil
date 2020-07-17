@@ -6,7 +6,7 @@ title: Selectors
 
 파생된 상태는 다른 데이터에 의존하는 동적인 데이터를 만들 수 있기 때문에 강력한 개념이다. 우리의 todo 리스트 애플리케이션 맥락에서는 다음과 같은 것들이 파생된 상태로 간주된다.
 
-- **필터링 된 todo 리스트** :  전체 todo 리스트에서 일부 기준에 따라 특정 항목이 필터링 된 새 리스트(예: 이미 완료된 항목 필터링)를 생성되어 파생된다.
+- **필터링 된 todo 리스트** : 전체 todo 리스트에서 일부 기준에 따라 특정 항목이 필터링 된 새 리스트(예: 이미 완료된 항목 필터링)를 생성되어 파생된다.
 - **Todo 리스트 통계** : 전체 todo 리스트에서 목록의 총 항목 수, 완료된 항목 수, 완료된 항목의 백분율 같은 리스트의 유용한 속성들을 계산하여 파생된다.
 
 필터링 된 todo 리스트를 구현하기 위해서 우리는 atom에 저장될 수 있는 필터 기준을 선택해야 한다. 우리가 사용하게 될 필터 옵션은 "Show All", "Show Completed"과 "Show Uncompleted"가 있다. 기본값은 "Show All"이 될 것이다.
@@ -102,7 +102,7 @@ function TodoListFilters() {
 const todoListStatsState = selector({
   key: 'todoListStatsState',
   get: ({get}) => {
-    const todoList = get(filteredTodoListState);
+    const todoList = get(todoListState);
     const totalNum = todoList.length;
     const totalCompletedNum = todoList.filter((item) => item.isComplete).length;
     const totalUncompletedNum = totalNum - totalCompletedNum;
@@ -149,5 +149,3 @@ function TodoListStats() {
 - todo 아이템 삭제
 - todo 아이템 필터링
 - 유용한 통계 표시
-
-여기서 멈출 수도 있지만, "보너스" 섹션에서 탐구하는 몇 가지 중요한 성능 고려사항들이 있다.
