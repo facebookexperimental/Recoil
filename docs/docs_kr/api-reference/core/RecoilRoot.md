@@ -3,21 +3,18 @@ title: <RecoilRoot ...props />
 sidebar_label: <RecoilRoot />
 ---
 
-Provides the context in which atoms have values. Must be an ancestor of any component that uses any Recoil hooks. Multiple roots may co-exist; atoms will have distinct values within each root. If they are nested, the innermost root will completely mask any outer roots.
+값들을 갖는 원자 컨텍스트를 제공한다. Recoil의 hooks를 사용하는 모든 구성 요소의 조상이어야 한다. 여러개의 루트가 같이 존재할 수 있다. 원자는 각각의 루트 안에서 구별되는 값들을 가질 것 이다. 만약 그것들이 중첩되어 있다면, 가장 안쪽의 루트는 완벽하게 바깥쪽의 루트들을 가릴 것이다.
 
 ---
 
-- `props`
-  - `initializeState?`: `({set, setUnvalidatedAtomValues}) => void`.
-    - A function that will be called when RecoilStore is first rendered which can set initial values for atoms. It is provided with two arguments:
-      - `set`: `<T>(RecoilValue<T>, T) => void`
-        - Sets the initial value of a single atom to the provided value.
-      - `setUnvalidatedAtomValues`: `(Map<string, mixed>) => void`
-        - Sets the initial value for any number of atoms whose keys are the keys in the provided map. As with `useSetUnvalidatedAtomValues`, the validator for each atom will be called when it is next read, and setting an atom without a configured validator will result in an exception.
+**Props**:
+
+- `initializeState?`: `(MutableSnapshot => void)`
+  - [`MutableSnapshot`](/docs/api-reference/core/Snapshot#transforming-snapshots)을 사용하여 `<RecoilRoot>`의 원자 상태를 초기화하는 옵션 함수. 이것은 초기 렌더링에 대한 상태를 설정하며 이후 상태 변경이나 비동기적인 초기화를 위한 것이 아니다. 비동기 상태 변경에는 [`useSetRecoilState()`](/docs/api-reference/core/useSetRecoilState) 또는 [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback)과 같은 Hooks를 사용하십시오.
 
 ### Example
 
-```javascript
+```jsx
 import {RecoilRoot} from 'recoil';
 
 function AppRoot() {
