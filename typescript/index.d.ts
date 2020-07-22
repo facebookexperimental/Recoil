@@ -22,7 +22,9 @@ type TreeState = Readonly<{
 }>;
 
 // node.d.ts
-export class DefaultValue {}
+export class DefaultValue {
+  private __tag: 'DefaultValue';
+}
 
 // recoilRoot.d.ts
 import * as React from 'react';
@@ -76,7 +78,9 @@ export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueRea
 
 // Snapshot.d.ts
 declare const SnapshotID_OPAQUE: unique symbol;
-export type SnapshotID = {readonly [SnapshotID_OPAQUE]: true};
+export interface SnapshotID {
+  readonly [SnapshotID_OPAQUE]: true;
+}
 
 export class Snapshot {
   getID(): SnapshotID;
