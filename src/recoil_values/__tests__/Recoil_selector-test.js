@@ -633,3 +633,29 @@ test('selector - dynamic getRecoilValue()', async () => {
   expect(el.textContent).toEqual('"READY"');
 });
 */
+
+test('distinct loading dependencies are treated as distinct', async () => {
+  const upstreamAtom = atom({
+    key: 'distinct loading dependencies/upstreamAtom',
+    default: 0,
+  });
+  const upstreamAsyncSelector = selector({
+    key: 'distinct loading dependencies/upstreamAsyncSelector',
+    get: ({get}) => Promise.resolve(get(upstreamAtom)),
+  });
+  const directSelector = selector({
+    key: 'distinct loading dependencies/directSelector',
+    get: ({get}) => get(upstreamAsyncSelector),
+  });
+
+  expect(get(directSelector) instanceof Promise).toBe(true);
+
+  act(() => jest.runAllTimers());
+  expect(get(directSelector)).toEqual(0);
+
+  set(upstreamAtom, 1);
+  expect(get(directSelector) instanceof Promise).toBe(true);
+
+  act(() => jest.runAllTimers());
+  expect(get(directSelector)).toEqual(1);
+});
