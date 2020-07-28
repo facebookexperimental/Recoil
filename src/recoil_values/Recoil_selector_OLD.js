@@ -125,14 +125,13 @@ type DepValues = Map<NodeKey, Loadable<mixed>>;
 // flowlint-next-line unclear-type:off
 const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());
 
-const LOADING = {recoilDependencyLoadingPlaceholder: null};
-
 function cacheKeyFromDepValues(depValues: DepValues): CacheKey {
   const answer = [];
   for (const key of Array.from(depValues.keys()).sort()) {
     const loadable = nullthrows(depValues.get(key));
     answer.push(key);
-    answer.push(loadable.state === 'loading' ? LOADING : loadable.contents);
+    answer.push(loadable.state);
+    answer.push(loadable.contents);
   }
   return answer;
 }
