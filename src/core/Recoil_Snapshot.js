@@ -17,11 +17,12 @@ import type {
   ValueOrUpdater,
 } from '../recoil_values/Recoil_selector';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
-import type {StateID, Store, TreeState} from './Recoil_State';
+import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
 const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
 const nullthrows = require('../util/Recoil_nullthrows');
+const {getDownstreamNodes} = require('./Recoil_FunctionalCore');
 const {graph} = require('./Recoil_Graph');
 const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
@@ -30,38 +31,11 @@ const {
 } = require('./Recoil_RecoilValueInterface');
 const {
   getNextTreeStateVersion,
-  makeEmptyTreeState,
-  makeStoreState,
+  makeEmptyStoreState,
 } = require('./Recoil_State');
 
 // Opaque at this surface because it's part of the public API from here.
 export opaque type SnapshotID = StateID;
-
-// TODO Temporary until Snapshots only contain state
-function makeSnapshotStore(treeState: TreeState): Store {
-  const storeState = makeStoreState(treeState);
-  const store: Store = {
-    getState: () => storeState,
-    replaceState: replacer => {
-      storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
-    },
-    getGraph: version => {
-      const graphs = storeState.graphsByVersion;
-      if (graphs.has(version)) {
-        return nullthrows(graphs.get(version));
-      }
-      const newGraph = graph();
-      graphs.set(version, newGraph);
-      return newGraph;
-    },
-    subscribeToTransactions: () => ({release: () => {}}),
-    addTransactionMetadata: () => {
-      throw new Error('Cannot subscribe to Snapshots');
-    },
-    mutableSource: null,
-  };
-  return store;
-}
 
 // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
@@ -69,8 +43,27 @@ function makeSnapshotStore(treeState: TreeState): Store {
 class Snapshot {
   _store: Store;
 
-  constructor(treeState: TreeState) {
-    this._store = makeSnapshotStore(treeState);
+  constructor(storeState: StoreState) {
+    this._store = {
+      getState: () => storeState,
+      replaceState: replacer => {
+        storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
+      },
+      getGraph: version => {
+        const graphs = storeState.graphsByVersion;
+        if (graphs.has(version)) {
+          return nullthrows(graphs.get(version));
+        }
+        const newGraph = graph();
+        graphs.set(version, newGraph);
+        return newGraph;
+      },
+      subscribeToTransactions: () => ({release: () => {}}),
+      addTransactionMetadata: () => {
+        throw new Error('Cannot subscribe to Snapshots');
+      },
+      mutableSource: null,
+    };
   }
 
   getStore_INTERNAL(): Store {
@@ -132,65 +125,111 @@ class Snapshot {
     })();
   };
 
+  // This reports all "current" subscribers.  It does not report all possible
+  // downstream nodes.  Evaluating other nodes may introduce new subscribers.
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  getSubscribers_UNSTABLE: <T>(
+    RecoilValue<T>,
+  ) => {
+    nodes: Iterable<RecoilValue<mixed>>,
+    // TODO components, observers, and atom effects
+  } = <T>({key}: RecoilValue<T>) => {
+    const state = this._store.getState().currentTree;
+    const downstreamNodes = getDownstreamNodes(
+      this._store,
+      state,
+      new Set([key]),
+    );
+
+    return {
+      nodes: (function*() {
+        for (const node of downstreamNodes) {
+          if (node === key) {
+            continue;
+          }
+          yield nullthrows(recoilValues.get(node));
+        }
+      })(),
+    };
+  };
+
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
-    const mutableSnapshot = new MutableSnapshot(
-      this._store.getState().currentTree,
-    );
+    const mutableSnapshot = new MutableSnapshot(this);
     mapper(mutableSnapshot);
-    const newState = mutableSnapshot.getStore_INTERNAL().getState().currentTree;
-    return newSnapshotFromState(newState);
+    return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   asyncMap: (
     (MutableSnapshot) => Promise<void>,
   ) => Promise<Snapshot> = async mapper => {
-    const mutableSnapshot = new MutableSnapshot(
-      this._store.getState().currentTree,
-    );
+    const mutableSnapshot = new MutableSnapshot(this);
     await mapper(mutableSnapshot);
-    const newState = mutableSnapshot.getStore_INTERNAL().getState().currentTree;
-    return newSnapshotFromState(newState);
+    return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
   };
 }
 
-function cloneTreeState(
+function cloneStoreState(
+  store: Store,
   treeState: TreeState,
-  stateID: StateID = treeState.stateID,
-): TreeState {
-  // TODO copying these structures shouldn't be necessary unless we are
-  // creating a MutableSnapshot
+  bumpVersion: boolean = false,
+): StoreState {
+  const storeState = store.getState();
+  const version = bumpVersion ? getNextTreeStateVersion() : treeState.version;
   return {
-    // TODO snapshots shouldn't really have versions because a new version number
-    // is always assigned when the snapshot is gone to.
-    version: treeState.version,
-    stateID,
-    transactionMetadata: {...treeState.transactionMetadata},
-    dirtyAtoms: new Set(treeState.dirtyAtoms),
-    atomValues: new Map(treeState.atomValues),
-    nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
+    // TODO We shouldn't need to clone immutable TreeState if not updating the version
+    currentTree: {
+      // TODO snapshots shouldn't really have versions because a new version number
+      // is always assigned when the snapshot is gone to.
+      version,
+      stateID: bumpVersion ? version : treeState.stateID,
+      transactionMetadata: {...treeState.transactionMetadata},
+      dirtyAtoms: new Set(treeState.dirtyAtoms),
+      atomValues: new Map(treeState.atomValues),
+      nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
+    },
+    nextTree: null,
+    previousTree: null,
+    knownAtoms: new Set(storeState.knownAtoms),
+    knownSelectors: new Set(storeState.knownSelectors),
+    transactionSubscriptions: new Map(),
+    nodeTransactionSubscriptions: new Map(),
+    nodeToComponentSubscriptions: new Map(),
+    queuedComponentCallbacks_DEPRECATED: [],
+    suspendedComponentResolvers: new Set(),
+    graphsByVersion: new Map().set(version, store.getGraph(treeState.version)),
+    versionsUsedByComponent: new Map(),
   };
 }
 
 // Factory to build a fresh snapshot
 function freshSnapshot(): Snapshot {
-  return new Snapshot(makeEmptyTreeState());
+  return new Snapshot(makeEmptyStoreState());
 }
 
 // Factory to clone a snapahot state
-function cloneSnapshot(treeState: TreeState): Snapshot {
-  return new Snapshot(cloneTreeState(treeState));
-}
-
-// Clone a snapshot state and give it a new ID
-function newSnapshotFromState(treeState: TreeState): Snapshot {
-  return new Snapshot(cloneTreeState(treeState, getNextTreeStateVersion()));
+function cloneSnapshot(
+  store: Store,
+  version: 'current' | 'previous' = 'current',
+): Snapshot {
+  const storeState = store.getState();
+  const treeState =
+    version === 'current'
+      ? storeState.currentTree
+      : nullthrows(storeState.previousTree);
+  return new Snapshot(cloneStoreState(store, treeState));
 }
 
 class MutableSnapshot extends Snapshot {
-  constructor(treeState: TreeState) {
-    super({...cloneTreeState(treeState), version: getNextTreeStateVersion()});
+  constructor(snapshot: Snapshot) {
+    super(
+      cloneStoreState(
+        snapshot.getStore_INTERNAL(),
+        snapshot.getStore_INTERNAL().getState().currentTree,
+        true,
+      ),
+    );
   }
 
   // We want to allow the methods to be destructured and used as accessors
