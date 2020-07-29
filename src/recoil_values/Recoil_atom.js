@@ -245,6 +245,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     }
   }
 
+  function myPeek(_store, state: TreeState): ?Loadable<T> {
+    return state.atomValues.get(key) ?? loadableWithValue(options.default);
+  }
+
   function myGet(store: Store, state: TreeState): [DependencyMap, Loadable<T>] {
     initAtom(store, state, 'get');
 
@@ -318,6 +322,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
   const node = registerNode({
     key,
+    peek: myPeek,
+    get: myGet,
+    set: mySet,
+    invalidate,
     dangerouslyAllowMutability: options.dangerouslyAllowMutability,
     persistence_UNSTABLE: options.persistence_UNSTABLE
       ? {
@@ -325,9 +333,6 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           backButton: options.persistence_UNSTABLE.backButton,
         }
       : undefined,
-    get: myGet,
-    invalidate,
-    set: mySet,
     shouldRestoreFromSnapshots: true,
   });
   return node;

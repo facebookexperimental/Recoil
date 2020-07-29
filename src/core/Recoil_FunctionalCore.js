@@ -43,15 +43,13 @@ function getNodeLoadable<T>(
   return getNode(key).get(store, state);
 }
 
-// Peek at the current value loadable for a node.
-// NOTE: Only use in contexts where you don't need to update the store with
-//       new dependencies for the node!
+// Peek at the current value loadable for a node without any evaluation or state change
 function peekNodeLoadable<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
-): Loadable<T> {
-  return getNodeLoadable(store, state, key)[1];
+): ?Loadable<T> {
+  return getNode(key).peek(store, state);
 }
 
 // Write value directly to state bypassing the Node interface as the node
