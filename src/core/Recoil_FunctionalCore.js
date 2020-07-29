@@ -100,22 +100,20 @@ function getDownstreamNodes(
   state: TreeState,
   keys: $ReadOnlySet<NodeKey>,
 ): $ReadOnlySet<NodeKey> {
-  const dependentNodes = new Set();
   const visitedNodes = new Set();
   const visitingNodes = Array.from(keys);
+  const graph = store.getGraph(state.version);
+
   for (let key = visitingNodes.pop(); key; key = visitingNodes.pop()) {
-    dependentNodes.add(key);
     visitedNodes.add(key);
-    const subscribedNodes =
-      store.getGraph(state.version).nodeToNodeSubscriptions.get(key) ??
-      emptySet;
+    const subscribedNodes = graph.nodeToNodeSubscriptions.get(key) ?? emptySet;
     for (const downstreamNode of subscribedNodes) {
       if (!visitedNodes.has(downstreamNode)) {
         visitingNodes.push(downstreamNode);
       }
     }
   }
-  return dependentNodes;
+  return visitedNodes;
 }
 
 module.exports = {
