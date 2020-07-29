@@ -558,19 +558,9 @@ function useRecoilTransactionObserver(
   useTransactionSubscription(
     useCallback(
       store => {
-        let previousTree = store.getState().previousTree;
-        const currentTree = store.getState().currentTree;
-        if (!previousTree) {
-          recoverableViolation(
-            'Transaction subscribers notified without a next tree being present -- this is a bug in Recoil',
-            'recoil',
-          );
-          previousTree = currentTree; // attempt to trundle on
-        }
-
         callback({
-          snapshot: cloneSnapshot(currentTree),
-          previousSnapshot: cloneSnapshot(previousTree),
+          snapshot: cloneSnapshot(store, 'current'),
+          previousSnapshot: cloneSnapshot(store, 'previous'),
         });
       },
       [callback],
@@ -580,15 +570,12 @@ function useRecoilTransactionObserver(
 
 // Return a snapshot of the current state and subscribe to all state changes
 function useRecoilSnapshot(): Snapshot {
-  const store = useStoreRef();
+  const storeRef = useStoreRef();
   const [snapshot, setSnapshot] = useState(() =>
-    cloneSnapshot(store.current.getState().currentTree),
+    cloneSnapshot(storeRef.current),
   );
   useTransactionSubscription(
-    useCallback(
-      store => setSnapshot(cloneSnapshot(store.getState().currentTree)),
-      [],
-    ),
+    useCallback(store => setSnapshot(cloneSnapshot(store)), []),
   );
   return snapshot;
 }
@@ -672,8 +659,8 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
 
   return useCallback(
     (...args): Return => {
-      // Use currentTree for the snapshot to show the currently committed stable state
-      const snapshot = cloneSnapshot(storeRef.current.getState().currentTree);
+      // Use currentTree for the snapshot to show the currently committed state
+      const snapshot = cloneSnapshot(storeRef.current);
 
       function set<T>(
         recoilState: RecoilState<T>,

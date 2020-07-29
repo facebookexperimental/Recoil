@@ -30,7 +30,6 @@ const {freshSnapshot} = require('../core/Recoil_Snapshot');
 const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
-  makeStoreState,
 } = require('../core/Recoil_State');
 const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -227,7 +226,7 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
 
 function initialStoreState(initializeState): StoreState {
   const snapshot = freshSnapshot().map(initializeState);
-  return makeStoreState(snapshot.getStore_INTERNAL().getState().currentTree);
+  return snapshot.getStore_INTERNAL().getState();
 }
 
 let nextID = 0;
