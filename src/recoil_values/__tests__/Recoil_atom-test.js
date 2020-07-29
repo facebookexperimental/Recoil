@@ -96,6 +96,65 @@ describe('Valid values', () => {
   });
 });
 
+describe('Async Defaults', () => {
+  test('default promise', async () => {
+    const myAtom = atom<string>({
+      key: 'atom async default',
+      default: Promise.resolve('RESOLVE'),
+    });
+    const container = renderElements(<ReadsAtom atom={myAtom} />);
+
+    expect(container.textContent).toEqual('loading');
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('"RESOLVE"');
+  });
+
+  test('default promise overwritten before resolution', () => {
+    let resolveAtom;
+    const myAtom = atom<string>({
+      key: 'atom async default overwritten',
+      default: new Promise(resolve => {
+        resolveAtom = resolve;
+      }),
+    });
+
+    const [
+      ReadsWritesAtom,
+      setAtom,
+      resetAtom,
+    ] = componentThatReadsAndWritesAtom(myAtom);
+    const container = renderElements(<ReadsWritesAtom />);
+
+    expect(container.textContent).toEqual('loading');
+
+    act(() => setAtom('SET'));
+    act(() => jest.runAllTimers());
+    expect(container.textContent).toEqual('"SET"');
+
+    act(() => resolveAtom('RESOLVE'));
+    expect(container.textContent).toEqual('"SET"');
+
+    act(() => resetAtom());
+    act(() => jest.runAllTimers());
+    expect(container.textContent).toEqual('"RESOLVE"');
+  });
+
+  // NOTE: This test intentionally throws an error
+  test('default promise rejection', async () => {
+    const myAtom = atom<string>({
+      key: 'atom async default',
+      default: Promise.reject('REJECT'),
+    });
+    const container = renderElements(<ReadsAtom atom={myAtom} />);
+
+    expect(container.textContent).toEqual('loading');
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('error');
+  });
+});
+
 test("Updating with same value doesn't rerender", () => {
   const myAtom = atom({key: 'atom same value rerender', default: 'DEFAULT'});
 
@@ -140,7 +199,7 @@ test("Updating with same value doesn't rerender", () => {
 });
 
 describe('Effects', () => {
-  test('effect', () => {
+  test('initialization', () => {
     let inited = false;
     const myAtom = atom({
       key: 'atom effect',
@@ -150,12 +209,42 @@ describe('Effects', () => {
           inited = true;
           expect(trigger).toEqual('get');
           expect(node).toBe(myAtom);
-          setSelf('EFFECT');
+          setSelf('INIT');
         },
       ],
     });
-    expect(get(myAtom)).toEqual('EFFECT');
+    expect(get(myAtom)).toEqual('INIT');
     expect(inited).toEqual(true);
+  });
+
+  test('async default', () => {
+    let inited = false;
+    const myAtom = atom<string>({
+      key: 'atom effect async default',
+      default: Promise.resolve('RESOLVE'),
+      effects_UNSTABLE: [
+        ({setSelf, onSet}) => {
+          inited = true;
+          setSelf('INIT');
+          // This only fires on the reset action, not the default promise resolving
+          onSet(newValue => {
+            expect(newValue).toBeInstanceOf(DefaultValue);
+          });
+        },
+      ],
+    });
+
+    expect(inited).toEqual(false);
+
+    const [ReadsWritesAtom, _, reset] = componentThatReadsAndWritesAtom(myAtom);
+    const c = renderElements(<ReadsWritesAtom />);
+    expect(inited).toEqual(true);
+    expect(c.textContent).toEqual('"INIT"');
+
+    act(reset);
+    expect(c.textContent).toEqual('loading');
+    act(() => jest.runAllTimers());
+    expect(c.textContent).toEqual('"RESOLVE"');
   });
 
   test('order of effects', () => {

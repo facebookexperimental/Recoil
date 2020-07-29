@@ -27,9 +27,7 @@ const {
   useSetUnvalidatedAtomValues,
 } = require('../../hooks/Recoil_Hooks');
 const {
-  ReadsAtom,
   componentThatReadsAndWritesAtom,
-  flushPromisesAndTimers,
   makeStore,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
@@ -65,19 +63,6 @@ test('atomWithFallback', () => {
   expect(get(hasFallback)).toBe(2);
   set(hasFallback, 3);
   expect(get(hasFallback)).toBe(3);
-});
-
-test('Async fallback', async () => {
-  const asyncFallback = atom<number>({
-    key: 'asyncFallback',
-    default: Promise.resolve(42),
-  });
-  const container = renderElements(<ReadsAtom atom={asyncFallback} />);
-
-  expect(container.textContent).toEqual('loading');
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('42');
 });
 
 describe('ReturnDefaultOrFallback', () => {
@@ -215,9 +200,13 @@ test('Atom with selector fallback can store null and undefined', () => {
 
 test('Effects', () => {
   let inited = false;
+  const fallbackAtom = atom({
+    key: 'atom with fallback effects init fallback',
+    default: 'FALLBACK',
+  });
   const myAtom = atom<string>({
-    key: 'atom hooks init',
-    default: Promise.resolve('RESOLVE'),
+    key: 'atom with fallback effects init',
+    default: fallbackAtom,
     effects_UNSTABLE: [
       ({setSelf}) => {
         inited = true;
@@ -234,7 +223,5 @@ test('Effects', () => {
   expect(c.textContent).toEqual('"INIT"');
 
   act(reset);
-  expect(c.textContent).toEqual('loading');
-  act(() => jest.runAllTimers());
-  expect(c.textContent).toEqual('"RESOLVE"');
+  expect(c.textContent).toEqual('"FALLBACK"');
 });

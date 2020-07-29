@@ -150,6 +150,20 @@ function setRecoilValueLoadable<T>(
   );
 }
 
+function markRecoilValueModified<T>(
+  store: Store,
+  {key}: AbstractRecoilValue<T>,
+): void {
+  Tracing.trace('mark RecoilValue modified', key, () =>
+    store.replaceState(
+      Tracing.wrap(state => ({
+        ...state,
+        dirtyAtoms: unionSets(state.dirtyAtoms, new Set([key])),
+      })),
+    ),
+  );
+}
+
 function setUnvalidatedRecoilValue<T>(
   store: Store,
   {key}: AbstractRecoilValue<T>,
@@ -208,6 +222,7 @@ module.exports = {
   getRecoilValueAsLoadable,
   setRecoilValue,
   setRecoilValueLoadable,
+  markRecoilValueModified,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
   isRecoilValue,
