@@ -230,17 +230,18 @@ function cloneStoreState(
   const storeState = store.getState();
   const version = bumpVersion ? getNextTreeStateVersion() : treeState.version;
   return {
-    // TODO We shouldn't need to clone immutable TreeState if not updating the version
-    currentTree: {
-      // TODO snapshots shouldn't really have versions because a new version number
-      // is always assigned when the snapshot is gone to.
-      version,
-      stateID: bumpVersion ? version : treeState.stateID,
-      transactionMetadata: {...treeState.transactionMetadata},
-      dirtyAtoms: new Set(treeState.dirtyAtoms),
-      atomValues: new Map(treeState.atomValues),
-      nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
-    },
+    currentTree: bumpVersion
+      ? {
+          // TODO snapshots shouldn't really have versions because a new version number
+          // is always assigned when the snapshot is gone to.
+          version,
+          stateID: version,
+          transactionMetadata: {...treeState.transactionMetadata},
+          dirtyAtoms: new Set(treeState.dirtyAtoms),
+          atomValues: new Map(treeState.atomValues),
+          nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
+        }
+      : treeState,
     nextTree: null,
     previousTree: null,
     knownAtoms: new Set(storeState.knownAtoms),
