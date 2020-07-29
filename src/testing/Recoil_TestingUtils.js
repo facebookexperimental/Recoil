@@ -18,9 +18,11 @@ const {useEffect} = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
-const {fireNodeSubscriptions} = require('../core/Recoil_FunctionalCore');
 const {graph} = require('../core/Recoil_Graph');
-const {RecoilRoot} = require('../core/Recoil_RecoilRoot.react');
+const {
+  RecoilRoot,
+  sendEndOfBatchNotifications_FOR_TESTING,
+} = require('../core/Recoil_RecoilRoot.react');
 const {makeEmptyStoreState} = require('../core/Recoil_State');
 const {
   useRecoilValue,
@@ -40,13 +42,7 @@ function makeStore(): Store {
     replaceState: replacer => {
       const storeState = store.getState();
       storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
-      storeState.queuedComponentCallbacks.forEach(cb =>
-        cb(storeState.currentTree),
-      );
-      storeState.queuedComponentCallbacks.splice(
-        0,
-        storeState.queuedComponentCallbacks.length,
-      );
+      sendEndOfBatchNotifications_FOR_TESTING(store);
     },
     getGraph: version => {
       const graphs = storeState.graphsByVersion;
@@ -63,8 +59,7 @@ function makeStore(): Store {
     addTransactionMetadata: () => {
       throw new Error('not implemented');
     },
-    fireNodeSubscriptions: (updatedNodes, when) =>
-      fireNodeSubscriptions(store, updatedNodes, when),
+    mutableSource: null,
   };
   return store;
 }
@@ -84,16 +79,22 @@ class ErrorBoundary extends React.Component<
   }
 }
 
+function createReactRoot(container, contents) {
+  // To test in Concurrent Mode replace with:
+  // ReactDOM.createRoot(container).render(contents);
+  ReactDOM.render(contents, container);
+}
+
 function renderElements(elements: ?React.Node): HTMLDivElement {
   const container = document.createElement('div');
   act(() => {
-    ReactDOM.render(
+    createReactRoot(
+      container,
       <RecoilRoot>
         <ErrorBoundary>
           <React.Suspense fallback="loading">{elements}</React.Suspense>
         </ErrorBoundary>
       </RecoilRoot>,
-      container,
     );
   });
   return container;
@@ -109,13 +110,13 @@ function renderElementsWithSuspenseCount(
     return 'loading';
   }
   act(() => {
-    ReactDOM.render(
+    createReactRoot(
+      container,
       <RecoilRoot>
         <ErrorBoundary>
           <React.Suspense fallback={<Fallback />}>{elements}</React.Suspense>
         </ErrorBoundary>
       </RecoilRoot>,
-      container,
     );
   });
   return [container, suspenseCommit];

@@ -29,6 +29,7 @@ const {
 const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
+  flushPromisesAndTimers,
   makeStore,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
@@ -66,7 +67,7 @@ test('atomWithFallback', () => {
   expect(get(hasFallback)).toBe(3);
 });
 
-test('Async fallback', () => {
+test('Async fallback', async () => {
   const asyncFallback = atom<number>({
     key: 'asyncFallback',
     default: Promise.resolve(42),
@@ -75,6 +76,7 @@ test('Async fallback', () => {
 
   expect(container.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('42');
 });
 

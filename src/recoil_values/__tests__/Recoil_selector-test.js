@@ -116,11 +116,12 @@ test('selector reset', () => {
   expect(get(selectorRW)).toEqual('DEFAULT');
 });
 
-test('useRecoilState - resolved async selector', () => {
+test('useRecoilState - resolved async selector', async () => {
   const resolvingSel = resolvingAsyncSelector('HELLO');
   const c = renderElements(<ReadsAtom atom={resolvingSel} />);
   expect(c.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"HELLO"');
 });
 
@@ -204,7 +205,7 @@ test('useRecoilState - selector catching exceptions', () => {
   expect(c2.textContent).toEqual('"CAUGHT"');
 });
 
-test('useRecoilState - async selector', () => {
+test('useRecoilState - async selector', async () => {
   const resolvingSel = resolvingAsyncSelector('READY');
 
   // On first read it is blocked on the async selector
@@ -213,10 +214,11 @@ test('useRecoilState - async selector', () => {
 
   // When that resolves the data is ready
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c1.textContent).toEqual('"READY"');
 });
 
-test('useRecoilState - selector blocked on dependency', () => {
+test('useRecoilState - selector blocked on dependency', async () => {
   const resolvingSel = resolvingAsyncSelector('READY');
   const blockedSelector = selector({
     key: 'useRecoilState/blocked selector',
@@ -229,6 +231,7 @@ test('useRecoilState - selector blocked on dependency', () => {
 
   // When the dependency resolves, the data is ready
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c2.textContent).toEqual('"READY"');
 });
 
@@ -329,7 +332,7 @@ test('useRecoilState - selector catching any of 2 loads', async () => {
 
 // Test the ability to catch a promise for a pending dependency that we can
 // then handle by returning an async promise.
-test('useRecoilState - selector catching promise and resolving asynchronously', () => {
+test('useRecoilState - selector catching promise and resolving asynchronously', async () => {
   const [originalDep, resolveOriginal] = asyncSelector();
   const [bypassDep, resolveBypass] = asyncSelector();
   const catchPromiseSelector = selector({
@@ -350,9 +353,11 @@ test('useRecoilState - selector catching promise and resolving asynchronously', 
   expect(c.textContent).toEqual('loading');
   resolveBypass('BYPASS');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"BYPASS"');
   resolveOriginal('READY');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"READY"');
 });
 

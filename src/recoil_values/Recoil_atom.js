@@ -84,6 +84,7 @@ const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const selector = require('./Recoil_selector');
 
 // It would be nice if this didn't have to be defined at the Recoil level, but I don't want to make
@@ -206,14 +207,19 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
       function onSet(handler: (T | DefaultValue, T | DefaultValue) => void) {
         store.subscribeToTransactions(currentStore => {
-          const state = currentStore.getState();
-          const nextState = state.nextTree ?? state.currentTree;
-          const prevState = state.currentTree;
-          const newLoadable = nextState.atomValues.get(key);
+          let {currentTree, previousTree} = currentStore.getState();
+          if (!previousTree) {
+            recoverableViolation(
+              'Transaction subscribers notified without a next tree being present -- this is a bug in Recoil',
+              'recoil',
+            );
+            previousTree = currentTree; // attempt to trundle on
+          }
+          const newLoadable = currentTree.atomValues.get(key);
           if (newLoadable == null || newLoadable.state === 'hasValue') {
             const newValue: T | DefaultValue =
               newLoadable != null ? newLoadable.contents : DEFAULT_VALUE;
-            const oldLoadable = prevState.atomValues.get(key);
+            const oldLoadable = previousTree.atomValues.get(key);
             const oldValue: T | DefaultValue =
               oldLoadable == null
                 ? options.default
@@ -324,6 +330,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     get: myGet,
     invalidate,
     set: mySet,
+    shouldRestoreFromSnapshots: true,
   });
   return node;
 }

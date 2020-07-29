@@ -88,6 +88,7 @@ const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   getRecoilValueAsLoadable,
   isRecoilValue,
+  setRecoilValueLoadable,
 } = require('../core/Recoil_RecoilValueInterface');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const isPromise = require('../util/Recoil_isPromise');
@@ -182,9 +183,10 @@ function selector<T>(
               deepFreezeValue(result);
             }
           }
+          const newLoadable = loadableWithValue(result);
 
           // If the value is now resolved, then update the cache with the new value
-          cache = cache.set(cacheKey, loadableWithValue(result));
+          cache = cache.set(cacheKey, newLoadable);
 
           // TODO Potential optimization: I think this is updating the cache
           // with a cacheKey of the dep when it wasn't ready yet.  We could also
@@ -203,7 +205,13 @@ function selector<T>(
           // Fire subscriptions to re-render any subscribed components with the new value.
           // The store uses the CURRENT state, not the old state from which
           // this was called.  That state likely doesn't have the subscriptions saved yet.
-          store.fireNodeSubscriptions(new Set([key]), 'now');
+          // Note that we have to set the value for this key, not just notify
+          // components, so that there will be a new version for useMutableSource.
+          setRecoilValueLoadable(
+            store,
+            new AbstractRecoilValue(key),
+            newLoadable,
+          );
           return result;
         })
         .catch(error => {
@@ -219,8 +227,13 @@ function selector<T>(
           }
           // The async value was rejected with an error.  Update the cache with
           // the error and fire subscriptions to re-render.
-          cache = cache.set(cacheKey, loadableWithError(error));
-          store.fireNodeSubscriptions(new Set([key]), 'now');
+          const newLoadable = loadableWithError(error);
+          cache = cache.set(cacheKey, newLoadable);
+          setRecoilValueLoadable(
+            store,
+            new AbstractRecoilValue(key),
+            newLoadable,
+          );
           return error;
         });
     }
@@ -422,12 +435,14 @@ function selector<T>(
       options,
       get: myGet,
       set: mySet,
+      shouldRestoreFromSnapshots: false,
     });
   } else {
     return registerNode<T>({
       key,
       options,
       get: myGet,
+      shouldRestoreFromSnapshots: false,
     });
   }
 }

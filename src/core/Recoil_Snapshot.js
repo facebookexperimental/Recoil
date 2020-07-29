@@ -17,7 +17,7 @@ import type {
   ValueOrUpdater,
 } from '../recoil_values/Recoil_selector';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
-import type {Store, TreeState} from './Recoil_State';
+import type {StateID, Store, TreeState} from './Recoil_State';
 
 const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
@@ -34,7 +34,8 @@ const {
   makeStoreState,
 } = require('./Recoil_State');
 
-export opaque type SnapshotID = number;
+// Opaque at this surface because it's part of the public API from here.
+export opaque type SnapshotID = StateID;
 
 // TODO Temporary until Snapshots only contain state
 function makeSnapshotStore(treeState: TreeState): Store {
@@ -57,7 +58,7 @@ function makeSnapshotStore(treeState: TreeState): Store {
     addTransactionMetadata: () => {
       throw new Error('Cannot subscribe to Snapshots');
     },
-    fireNodeSubscriptions: () => {},
+    mutableSource: null,
   };
   return store;
 }
@@ -77,7 +78,11 @@ class Snapshot {
   }
 
   getID(): SnapshotID {
-    return this._store.getState().currentTree.version;
+    return this.getID_INTERNAL();
+  }
+
+  getID_INTERNAL(): StateID {
+    return this._store.getState().currentTree.stateID;
   }
 
   getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
@@ -134,7 +139,7 @@ class Snapshot {
     );
     mapper(mutableSnapshot);
     const newState = mutableSnapshot.getStore_INTERNAL().getState().currentTree;
-    return cloneSnapshot(newState);
+    return newSnapshotFromState(newState);
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
@@ -146,15 +151,21 @@ class Snapshot {
     );
     await mapper(mutableSnapshot);
     const newState = mutableSnapshot.getStore_INTERNAL().getState().currentTree;
-    return cloneSnapshot(newState);
+    return newSnapshotFromState(newState);
   };
 }
 
-function cloneTreeState(treeState: TreeState): TreeState {
+function cloneTreeState(
+  treeState: TreeState,
+  stateID: StateID = treeState.stateID,
+): TreeState {
   // TODO copying these structures shouldn't be necessary unless we are
   // creating a MutableSnapshot
   return {
+    // TODO snapshots shouldn't really have versions because a new version number
+    // is always assigned when the snapshot is gone to.
     version: treeState.version,
+    stateID,
     transactionMetadata: {...treeState.transactionMetadata},
     dirtyAtoms: new Set(treeState.dirtyAtoms),
     atomValues: new Map(treeState.atomValues),
@@ -170,6 +181,11 @@ function freshSnapshot(): Snapshot {
 // Factory to clone a snapahot state
 function cloneSnapshot(treeState: TreeState): Snapshot {
   return new Snapshot(cloneTreeState(treeState));
+}
+
+// Clone a snapshot state and give it a new ID
+function newSnapshotFromState(treeState: TreeState): Snapshot {
+  return new Snapshot(cloneTreeState(treeState, getNextTreeStateVersion()));
 }
 
 class MutableSnapshot extends Snapshot {

@@ -27,6 +27,7 @@ const {
 const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
+  flushPromisesAndTimers,
   makeStore,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
@@ -134,7 +135,7 @@ test('Works with parameterized fallback', () => {
   expect(get(paramFallbackAtom({num: 2}))).toBe(200);
 });
 
-test('atomFamily async fallback', () => {
+test('atomFamily async fallback', async () => {
   const paramFallback = atomFamily({
     key: 'paramaterizedAtom async Fallback',
     default: Promise.resolve(42),
@@ -143,10 +144,11 @@ test('atomFamily async fallback', () => {
   const container = renderElements(<ReadsAtom atom={paramFallback({})} />);
   expect(container.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('42');
 });
 
-test('Parameterized fallback with atom and async', () => {
+test('Parameterized fallback with atom and async', async () => {
   const paramFallback = atomFamily({
     key: 'parameterized async Fallback',
     default: ({param}) =>
@@ -172,6 +174,7 @@ test('Parameterized fallback with atom and async', () => {
   );
   expect(asyncCont.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(asyncCont.textContent).toEqual('"async"');
 });
 
@@ -424,20 +427,20 @@ test('Independent atom subscriptions', () => {
 
   // Initial:
   expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
-  expect(getNumUpdatesA()).toBe(2);
-  expect(getNumUpdatesB()).toBe(2);
+  expect(getNumUpdatesA()).toBe(1);
+  expect(getNumUpdatesB()).toBe(1);
 
   // After setting at parameter A, component A should update:
   act(() => setValueA(1));
   expect(container.textContent).toBe('1"DEFAULT"');
-  expect(getNumUpdatesA()).toBe(3);
-  expect(getNumUpdatesB()).toBe(2);
+  expect(getNumUpdatesA()).toBe(2);
+  expect(getNumUpdatesB()).toBe(1);
 
   // After setting at parameter B, component B should update:
   act(() => setValueB(2));
   expect(container.textContent).toBe('12');
-  expect(getNumUpdatesA()).toBe(3);
-  expect(getNumUpdatesB()).toBe(3);
+  expect(getNumUpdatesA()).toBe(2);
+  expect(getNumUpdatesB()).toBe(2);
 });
 
 describe('Effects', () => {

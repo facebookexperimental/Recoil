@@ -255,7 +255,7 @@ test('Selectors can depend on other selectors', () => {
   expect(container.textContent).toEqual('3');
 });
 
-test('Selectors can depend on async selectors', () => {
+test('Selectors can depend on async selectors', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [selectorA, _] = plusOneAsyncSelector(anAtom);
@@ -270,16 +270,19 @@ test('Selectors can depend on async selectors', () => {
   expect(container.textContent).toEqual('loading');
 
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('2');
 
   act(() => updateValue(1));
+
   expect(container.textContent).toEqual('loading');
 
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('3');
 });
 
-test('Async selectors can depend on async selectors', () => {
+test('Async selectors can depend on async selectors', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [selectorA, _] = plusOneAsyncSelector(anAtom);
@@ -294,12 +297,15 @@ test('Async selectors can depend on async selectors', () => {
   expect(container.textContent).toEqual('loading');
 
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('2');
 
   act(() => updateValue(1));
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('loading');
 
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('3');
 });
 
@@ -381,6 +387,7 @@ test('Rejected promises are propogated through selectors (immediate rejection)',
   );
   expect(container.textContent).toEqual('loading');
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('error');
 });
 
@@ -396,6 +403,7 @@ test('Rejected promises are propogated through selectors (later rejection)', asy
   expect(container.textContent).toEqual('loading');
   act(() => reject(new Error()));
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('error');
 });
 
@@ -407,9 +415,9 @@ test('Component subscribed to atom is rendered just once', () => {
       <Component />
     </>,
   );
-  expect(Component).toHaveBeenCalledTimes(2);
+  expect(Component).toHaveBeenCalledTimes(1);
   act(() => updateValue(1));
-  expect(Component).toHaveBeenCalledTimes(3);
+  expect(Component).toHaveBeenCalledTimes(2);
 });
 
 test('Write-only components are not subscribed', () => {
@@ -436,10 +444,9 @@ test('Component that depends on atom in multiple ways is rendered just once', ()
       <ReadComp />
     </>,
   );
-  expect(ReadComp).toHaveBeenCalledTimes(2);
+  expect(ReadComp).toHaveBeenCalledTimes(1);
   act(() => updateValue(1));
-  // TODO FIX THIS OPTIMIZATION
-  // expect(ReadComp).toHaveBeenCalledTimes(3);
+  expect(ReadComp).toHaveBeenCalledTimes(2);
 });
 
 test('Selector functions are evaluated just once', () => {
@@ -494,14 +501,14 @@ test('Component that depends on multiple atoms via selector is rendered just onc
       <ReadComp />
     </>,
   );
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(commit).toHaveBeenCalledTimes(1);
   act(() => {
     ReactDOM.unstable_batchedUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
   });
-  expect(commit).toHaveBeenCalledTimes(3);
+  expect(commit).toHaveBeenCalledTimes(2);
 });
 
 test('Component that depends on multiple atoms directly is rendered just once', () => {
@@ -517,14 +524,14 @@ test('Component that depends on multiple atoms directly is rendered just once', 
       <ReadComp />
     </>,
   );
-  expect(ReadComp).toHaveBeenCalledTimes(2);
+  expect(ReadComp).toHaveBeenCalledTimes(1);
   act(() => {
     ReactDOM.unstable_batchedUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
   });
-  expect(ReadComp).toHaveBeenCalledTimes(3);
+  expect(ReadComp).toHaveBeenCalledTimes(2);
 });
 
 test('Component is rendered just once when atom is changed twice', () => {
@@ -537,14 +544,14 @@ test('Component is rendered just once when atom is changed twice', () => {
       <ReadComp />
     </>,
   );
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(commit).toHaveBeenCalledTimes(1);
   act(() => {
     ReactDOM.unstable_batchedUpdates(() => {
       updateValueA(1);
       updateValueA(2);
     });
   });
-  expect(commit).toHaveBeenCalledTimes(3);
+  expect(commit).toHaveBeenCalledTimes(2);
 });
 
 test('Can subscribe to and also change an atom in the same batch', () => {
@@ -632,25 +639,25 @@ test('Components unsubscribe from atoms when rendered without using them', () =>
     </>,
   );
   expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(2);
+  expect(Component).toHaveBeenCalledTimes(1);
 
   act(() => updateValueA(1));
   expect(container.textContent).toEqual('1');
-  expect(Component).toHaveBeenCalledTimes(3);
+  expect(Component).toHaveBeenCalledTimes(2);
 
   act(() => toggleSwitch());
   expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(5); // TODO why not 4?
+  expect(Component).toHaveBeenCalledTimes(3);
 
   // Now update the atom that it used to be subscribed to but should be no longer:
   act(() => updateValueA(2));
   expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(5); // Important part: same as before
+  expect(Component).toHaveBeenCalledTimes(3); // Important part: same as before
 
   // It is subscribed to the atom that it switched to:
   act(() => updateValueB(3));
   expect(container.textContent).toEqual('3');
-  expect(Component).toHaveBeenCalledTimes(6);
+  expect(Component).toHaveBeenCalledTimes(4);
 });
 
 test('Selectors unsubscribe from upstream when they have no subscribers', () => {
@@ -827,32 +834,32 @@ test('Selectors can gain and lose depnedencies', () => {
     </>,
   );
   expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(commit).toHaveBeenCalledTimes(1);
 
   // Input is not a dep yet, so this has no effect:
   act(() => setInput(1));
   expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(commit).toHaveBeenCalledTimes(1);
 
   // Flip switch:
   act(() => setSwitch(true));
   expect(container.textContent).toEqual('1');
-  expect(commit).toHaveBeenCalledTimes(3);
+  expect(commit).toHaveBeenCalledTimes(2);
 
   // Now changing input causes a re-render:
   act(() => setInput(2));
   expect(container.textContent).toEqual('2');
-  expect(commit).toHaveBeenCalledTimes(4);
+  expect(commit).toHaveBeenCalledTimes(3);
 
   // Now that we've added the dep, we can remove it...
   act(() => setSwitch(false));
   expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(5);
+  expect(commit).toHaveBeenCalledTimes(4);
 
   // ... and again changing input will not cause a re-render:
   act(() => setInput(3));
   expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(5);
+  expect(commit).toHaveBeenCalledTimes(4);
 });
 
 test('Selector depedencies are updated transactionally', () => {
@@ -998,6 +1005,10 @@ test('Can set atom during post-atom-setting effect (NOT during initial render)',
       <Comp />
     </>,
   );
+  act(() => undefined);
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('1');
 });
@@ -1058,7 +1069,7 @@ test('Can set atom during post-atom-setting effect regardless of effect order', 
   testWithOrder(['Batcher', 'SetsDuringEffect']);
 });
 
-test('Basic async selector test', () => {
+test('Basic async selector test', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
@@ -1072,6 +1083,7 @@ test('Basic async selector test', () => {
   // Begins in loading state, then shows initial value:
   expect(container.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('1');
   // Changing dependency makes it go back to loading, then to show new value:
   act(() => updateValue(1));
@@ -1222,6 +1234,7 @@ test('Async selectors do not re-query when re-subscribed from having no subscrib
   expect(resolvers.length).toBe(2);
   resolvers[1][0]('hello');
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('"hello"');
 
   // Cause sel to have no subscribers:
@@ -1280,6 +1293,7 @@ test('Can move out of suspense by changing deps', async () => {
   // When the faster second request resolves, we should see its result:
   resolvers[1][0]('hello');
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('"hello"');
 });
 
@@ -1301,13 +1315,15 @@ test('Can use an already-resolved promise', async () => {
     </>,
   );
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('1');
   act(() => updateValue(1));
+  await flushPromisesAndTimers();
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('2');
 });
 
-test('Resolution of suspense causes render just once', () => {
+test('Resolution of suspense causes render just once', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
@@ -1321,51 +1337,57 @@ test('Resolution of suspense causes render just once', () => {
   );
   // Begins in loading state, then shows initial value:
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(suspense).toHaveBeenCalledTimes(1);
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(commit).toHaveBeenCalledTimes(1);
   // Changing dependency makes it go back to loading, then to show new value:
   act(() => updateValue(1));
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(suspense).toHaveBeenCalledTimes(2);
-  expect(commit).toHaveBeenCalledTimes(3);
+  expect(commit).toHaveBeenCalledTimes(2);
   // Returning to a seen value does not cause the loading state:
   act(() => updateValue(0));
+  await flushPromisesAndTimers();
   expect(suspense).toHaveBeenCalledTimes(2);
-  expect(commit).toHaveBeenCalledTimes(4);
+  expect(commit).toHaveBeenCalledTimes(3);
 });
 
-test('Transaction dirty atoms are set', () => {
-  const anAtom = counterAtom();
+test('useTransactionObservation_DEPRECATED: Transaction dirty atoms are set', async () => {
+  const anAtom = counterAtom({
+    type: 'url',
+    validator: x => (x: any),
+  });
   const [aSelector, _] = plusOneSelector(anAtom);
   const [anAsyncSelector, __] = plusOneAsyncSelector(aSelector);
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
-  let dirtyAtoms = {
-    size: undefined,
-    has: _ => {
-      throw new Error();
-    },
-  };
+  const modifiedAtomsList = [];
   renderElements(
     <>
       <Component />
       <ReadsAtom atom={aSelector} />
-      <ReadsAtom atom={anAsyncSelector} />
+      <React.Suspense fallback="loading">
+        <ReadsAtom atom={anAsyncSelector} />
+      </React.Suspense>
       <ObservesTransactions
         fn={({modifiedAtoms}) => {
-          dirtyAtoms = modifiedAtoms;
+          modifiedAtomsList.push(modifiedAtoms);
         }}
       />
     </>,
   );
 
-  // Changing an atom causes everything downstream of it to become dirty:
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   act(() => updateValue(1));
-  expect(dirtyAtoms.size).toBe(1);
-  expect(dirtyAtoms.has(anAtom.key)).toBe(true);
-
-  // Selectors are not stored in dirtyAtoms
-  expect(dirtyAtoms.has(aSelector.key)).toBe(false);
-  expect(dirtyAtoms.has(anAsyncSelector.key)).toBe(false);
+  await flushPromisesAndTimers();
+  expect(modifiedAtomsList.length).toBe(3);
+  expect(modifiedAtomsList[1].size).toBe(1);
+  expect(modifiedAtomsList[1].has(anAtom.key)).toBe(true);
+  for (const modifiedAtoms of modifiedAtomsList) {
+    expect(modifiedAtoms.has(aSelector.key)).toBe(false);
+    expect(modifiedAtoms.has(anAsyncSelector.key)).toBe(false);
+  }
 });
 
 test('Can restore persisted values before atom def code is loaded', () => {
@@ -1412,7 +1434,7 @@ test('Can restore persisted values before atom def code is loaded', () => {
   expect(container.textContent).toBe('789');
 });
 
-test('Nonvalidated atoms are included in transaction observation', () => {
+test('useTransactionObservation_DEPRECATED: Nonvalidated atoms are included in transaction observation', () => {
   const anAtom = counterAtom({
     type: 'url',
     validator: x => (x: any),

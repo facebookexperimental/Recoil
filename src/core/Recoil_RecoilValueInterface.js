@@ -41,13 +41,10 @@ const {
 function getRecoilValueAsLoadable<T>(
   store: Store,
   {key}: AbstractRecoilValue<T>,
+  treeState: TreeState = store.getState().currentTree,
 ): Loadable<T> {
-  // FIXME, should be the tree of the individual component when useMutableSource is in use
-  const treeState = store.getState().currentTree;
   const [dependencyMap, loadable] = getNodeLoadable(store, treeState, key);
-
   saveDependencyMapToStore(dependencyMap, store, treeState.version);
-
   return loadable;
 }
 
@@ -109,7 +106,6 @@ function setRecoilValue<T>(
         const [depMap, writes] = setNodeValue(store, state, key, newValue);
         const writtenNodes = new Set(writes.keys());
 
-        store.fireNodeSubscriptions(writtenNodes, 'enqueue');
         saveDependencyMapToStore(depMap, store, state.version);
 
         return {
@@ -129,15 +125,16 @@ function setRecoilValue<T>(
 function setRecoilValueLoadable<T>(
   store: Store,
   recoilValue: AbstractRecoilValue<T>,
-  loadable: Loadable<T>,
+  loadable: DefaultValue | Loadable<T>,
 ): void {
+  if (loadable instanceof DefaultValue) {
+    return setRecoilValue(store, recoilValue, loadable);
+  }
   const {key} = recoilValue;
   Tracing.trace('set RecoilValue', key, () =>
     store.replaceState(
       Tracing.wrap(state => {
         const writtenNode = new Set([key]);
-
-        store.fireNodeSubscriptions(writtenNode, 'enqueue');
 
         return {
           ...state,
@@ -162,7 +159,6 @@ function setUnvalidatedRecoilValue<T>(
     store.replaceState(
       Tracing.wrap(state => {
         const newState = setUnvalidatedAtomValue(state, key, newValue);
-        store.fireNodeSubscriptions(new Set([key]), 'enqueue');
         return newState;
       }),
     ),

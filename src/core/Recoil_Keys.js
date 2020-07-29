@@ -14,5 +14,6 @@
 export type NodeKey = string;
 export type ComponentID = number;
 export type Version = number;
+export type StateID = number;
 
 module.exports = ({}: {...});

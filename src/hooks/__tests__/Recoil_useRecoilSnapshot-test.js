@@ -8,6 +8,7 @@
 'use strict';
 
 const React = require('React');
+const {useEffect} = require('React');
 const {act} = require('ReactTestUtils');
 
 const atom = require('../../recoil_values/Recoil_atom');
@@ -126,13 +127,17 @@ test('useRecoilSnapshot - async selectors', async () => {
   const snapshots = [];
   function RecoilSnapshotAndSubscribe() {
     const snapshot = useRecoilSnapshot();
-    snapshots.push(snapshot);
+    useEffect(() => {
+      snapshots.push(snapshot);
+    });
     return null;
   }
 
   const c = renderElements(
     <>
-      <ReadsAtom atom={mySelector} />
+      <React.Suspense fallback="loading">
+        <ReadsAtom atom={mySelector} />
+      </React.Suspense>
       <RecoilSnapshotAndSubscribe />
     </>,
   );
@@ -141,8 +146,9 @@ test('useRecoilSnapshot - async selectors', async () => {
 
   act(() => resolve('RESOLVE'));
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"RESOLVE"');
 
-  expect(snapshots.length).toEqual(1);
+  expect(snapshots.length).toEqual(2);
   expect(snapshots[0].getLoadable(mySelector).contents).toEqual('RESOLVE');
 });

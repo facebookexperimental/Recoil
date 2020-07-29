@@ -115,27 +115,27 @@ test("Updating with same value doesn't rerender", () => {
   expect(renders).toEqual(0);
   const c = renderElements(<AtomComponent />);
 
-  expect(renders).toEqual(2);
+  expect(renders).toEqual(1);
   expect(c.textContent).toEqual('DEFAULT');
 
   act(() => setAtom('SET'));
-  expect(renders).toEqual(3);
+  expect(renders).toEqual(2);
   expect(c.textContent).toEqual('SET');
 
   act(() => setAtom('SET'));
-  expect(renders).toEqual(3);
+  expect(renders).toEqual(2);
   expect(c.textContent).toEqual('SET');
 
   act(() => setAtom('CHANGE'));
-  expect(renders).toEqual(4);
+  expect(renders).toEqual(3);
   expect(c.textContent).toEqual('CHANGE');
 
   act(resetAtom);
-  expect(renders).toEqual(5);
+  expect(renders).toEqual(4);
   expect(c.textContent).toEqual('DEFAULT');
 
   act(resetAtom);
-  expect(renders).toEqual(5);
+  expect(renders).toEqual(4);
   expect(c.textContent).toEqual('DEFAULT');
 });
 

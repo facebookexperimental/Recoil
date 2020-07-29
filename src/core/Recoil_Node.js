@@ -40,6 +40,8 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   // in cases other than when `set` is called (when this will not be)
   invalidate?: () => void,
 
+  shouldRestoreFromSnapshots: boolean,
+
   // Store the options for the observation hooks
   // TODO Use proper Flow typing
   // flowlint-next-line unclear-type:off

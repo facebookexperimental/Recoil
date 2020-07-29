@@ -82,7 +82,7 @@ test('getNodes', () => {
   // TODO Test dirty selectors
 });
 
-test('Snapshot Versions', () => {
+test('State ID after going to snapshot matches the ID of the snapshot', () => {
   const seenIDs = new Set();
   const snapshots = [];
   let expectedSnapshotID = null;
@@ -129,7 +129,7 @@ test('Snapshot Versions', () => {
   expect(snapshots.length).toBe(2);
   expect(seenIDs.size).toBe(2);
 
-  // Test going to a previous snapshot re-uses the state version
+  // Test going to a previous snapshot re-uses the state ID
   expectedSnapshotID = snapshots[0].snapshotID;
   act(() => gotoSnapshot(snapshots[0].snapshot));
 
@@ -142,6 +142,7 @@ test('Snapshot Versions', () => {
     set(myAtom, 4);
   });
   act(() => gotoSnapshot(transactionSnapshot));
+
   expect(seenIDs.size).toBe(4);
   expect(snapshots.length).toBe(5);
 

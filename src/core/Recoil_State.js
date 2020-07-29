@@ -12,8 +12,8 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {Graph} from './Recoil_GraphTypes';
-import type {ComponentID, NodeKey, Version} from './Recoil_Keys';
-export type {ComponentID, NodeKey, Version} from './Recoil_Keys';
+import type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
+export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
 const {graph} = require('./Recoil_Graph');
 
@@ -26,8 +26,14 @@ type ComponentCallback = TreeState => void;
 // TreeStates may be in play at one time due to concurrent rendering, and each
 // TreeState is immutable.
 export type TreeState = $ReadOnly<{
-  // Information about the TreeState itself:
+  // Version always increments when moving from one state to another, even
+  // if the same state has been seen before.
   version: Version,
+
+  // State ID usually increments, but when going to a snapshot that was
+  // previously rendered the state ID will be re-used:
+  stateID: StateID,
+
   transactionMetadata: {...},
 
   // Atoms:
@@ -49,6 +55,10 @@ export type StoreState = {
   // The TreeState that is written to when during the course of a transaction
   // (generally equal to a React batch) when atom values are updated.
   nextTree: null | TreeState,
+
+  // This TreeState exists only during the time that components and observers
+  // are being notified of a newly-committed tree:
+  previousTree: null | TreeState,
 
   // Node lifetimes
   knownAtoms: Set<NodeKey>,
@@ -83,11 +93,12 @@ export type StoreState = {
 
   // For observing transactions:
   +transactionSubscriptions: Map<number, (Store) => void>,
-  +nodeTransactionSubscriptions: Map<NodeKey, Array<(Store) => void>>,
+  +nodeTransactionSubscriptions: Map<NodeKey, Map<number, (Store) => void>>,
 
   // Callbacks to render external components that are subscribed to nodes
   // These are executed at the end of the transaction or asynchronously.
-  +queuedComponentCallbacks: Array<ComponentCallback>,
+  // FIXME remove when removing useInterface
+  +queuedComponentCallbacks_DEPRECATED: Array<ComponentCallback>,
 
   // Promise resolvers to wake any components we suspended with React Suspense
   +suspendedComponentResolvers: Set<() => void>,
@@ -101,10 +112,7 @@ export type Store = $ReadOnly<{
   getGraph: Version => Graph,
   subscribeToTransactions: ((Store) => void, ?NodeKey) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
-  fireNodeSubscriptions: (
-    updatedNodes: $ReadOnlySet<NodeKey>,
-    when: 'enqueue' | 'now',
-  ) => void,
+  mutableSource: mixed, // FIXME T2710559282599660
 }>;
 
 export type StoreRef = {
@@ -115,8 +123,10 @@ let nextTreeStateVersion = 0;
 const getNextTreeStateVersion = (): Version => nextTreeStateVersion++;
 
 function makeEmptyTreeState(): TreeState {
+  const version = getNextTreeStateVersion();
   return {
-    version: getNextTreeStateVersion(),
+    version,
+    stateID: version,
     transactionMetadata: {},
     dirtyAtoms: new Set(),
     atomValues: new Map(),
@@ -128,11 +138,12 @@ function makeStoreState(treeState: TreeState): StoreState {
   return {
     currentTree: treeState,
     nextTree: null,
+    previousTree: null,
     knownAtoms: new Set(),
     knownSelectors: new Set(),
     transactionSubscriptions: new Map(),
     nodeTransactionSubscriptions: new Map(),
-    queuedComponentCallbacks: [],
+    queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
     nodeToComponentSubscriptions: new Map(),
     graphsByVersion: new Map().set(treeState.version, graph()),
