@@ -30,6 +30,12 @@ class RecoilValueNotReady extends Error {
   }
 }
 
+export type PersistenceType = 'none' | 'url';
+export type PersistenceInfo = $ReadOnly<{
+  type: PersistenceType,
+  backButton?: boolean,
+}>;
+
 export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   key: NodeKey,
 
@@ -42,10 +48,8 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
 
   shouldRestoreFromSnapshots: boolean,
 
-  // Store the options for the observation hooks
-  // TODO Use proper Flow typing
-  // flowlint-next-line unclear-type:off
-  options: Object,
+  dangerouslyAllowMutability?: boolean,
+  persistence_UNSTABLE?: PersistenceInfo,
 }>;
 
 export type ReadWriteNodeOptions<T> = $ReadOnly<{

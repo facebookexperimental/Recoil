@@ -12,10 +12,10 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DefaultValue} from '../core/Recoil_Node';
+import type {PersistenceType} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
-import type {PersistenceType} from '../recoil_values/Recoil_atom';
 
 const React = require('React');
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
@@ -450,7 +450,7 @@ function externallyVisibleAtomValuesInState(
   const persistedAtomContentsValues = mapMap(
     filterMap(atomValues, (v, k) => {
       const node = getNode(k);
-      const persistence = node.options?.persistence_UNSTABLE;
+      const persistence = node.persistence_UNSTABLE;
       return (
         persistence != null &&
         persistence.type !== 'none' &&
@@ -525,8 +525,8 @@ function useTransactionObservation_DEPRECATED(
         );
         const atomInfo = mapMap(nodes, node => ({
           persistence_UNSTABLE: {
-            type: node.options?.persistence_UNSTABLE?.type ?? 'none',
-            backButton: node.options?.persistence_UNSTABLE?.backButton ?? false,
+            type: node.persistence_UNSTABLE?.type ?? 'none',
+            backButton: node.persistence_UNSTABLE?.backButton ?? false,
           },
         }));
         // Filter on existance in atomValues so that externally-visible rules

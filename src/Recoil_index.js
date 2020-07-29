@@ -13,7 +13,6 @@
 export type {
   AtomEffect,
   PersistenceSettings,
-  PersistenceType,
 } from './recoil_values/Recoil_atom';
 export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
 export type {Loadable} from './adt/Recoil_Loadable';
@@ -22,6 +21,7 @@ export type {
   SetRecoilState,
   ResetRecoilState,
 } from './recoil_values/Recoil_selector';
+export type {PersistenceType} from './core/Recoil_Node';
 export type {
   RecoilValue,
   RecoilState,

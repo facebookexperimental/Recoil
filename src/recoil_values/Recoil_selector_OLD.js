@@ -432,7 +432,7 @@ function selector<T>(
     }
     return registerNode<T>({
       key,
-      options,
+      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       get: myGet,
       set: mySet,
       shouldRestoreFromSnapshots: false,
@@ -440,7 +440,7 @@ function selector<T>(
   } else {
     return registerNode<T>({
       key,
-      options,
+      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       get: myGet,
       shouldRestoreFromSnapshots: false,
     });

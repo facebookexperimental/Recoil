@@ -60,6 +60,7 @@
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DependencyMap} from '../core/Recoil_Graph';
+import type {PersistenceInfo} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
@@ -87,15 +88,6 @@ const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const selector = require('./Recoil_selector');
 
-// It would be nice if this didn't have to be defined at the Recoil level, but I don't want to make
-// the api cumbersome. One way to do this would be to have a selector mark the atom as persisted.
-// Note that this should also allow for special URL handling. (Although the persistence observer could
-// have this as a separate configuration.)
-export type PersistenceType = 'none' | 'url';
-export type PersistenceInfo = $ReadOnly<{
-  type: PersistenceType,
-  backButton?: boolean,
-}>;
 export type PersistenceSettings<Stored> = $ReadOnly<{
   ...PersistenceInfo,
   validator: (mixed, DefaultValue) => Stored | DefaultValue,
@@ -326,7 +318,13 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
   const node = registerNode({
     key,
-    options,
+    dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+    persistence_UNSTABLE: options.persistence_UNSTABLE
+      ? {
+          type: options.persistence_UNSTABLE.type,
+          backButton: options.persistence_UNSTABLE.backButton,
+        }
+      : undefined,
     get: myGet,
     invalidate,
     set: mySet,
