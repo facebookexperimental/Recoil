@@ -42,6 +42,7 @@ type Props = {
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
   initializeState?: MutableSnapshot => void,
+  store?: Store,
   children: React.Node,
 };
 
