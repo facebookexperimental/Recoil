@@ -688,6 +688,10 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
   );
 }
 
+function useRecoilStore() {
+  return useStoreRef().current;
+}
+
 module.exports = {
   useRecoilCallback,
   useRecoilValue,
@@ -703,4 +707,5 @@ module.exports = {
   useRecoilSnapshot,
   useGotoRecoilSnapshot,
   useSetUnvalidatedAtomValues,
+  useRecoilStore,
 };

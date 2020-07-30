@@ -53,6 +53,7 @@ const {
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
+  useRecoilStore,
 } = require('./hooks/Recoil_Hooks');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
@@ -103,6 +104,7 @@ module.exports = {
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
   useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
+  useRecoilStore_UNSTABLE: useRecoilStore,
 
   // Concurrency Helpers
   noWait,
