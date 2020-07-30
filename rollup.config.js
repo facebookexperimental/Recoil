@@ -54,7 +54,7 @@ const configs = [
   {
     input: inputFile,
     output: {
-      file: `lib/recoil.js`,
+      file: `cjs/recoil.js`,
       format: 'cjs',
       exports: 'named',
     },
@@ -90,10 +90,14 @@ const configs = [
   {
     input: inputFile,
     output: {
-      file: `dist/recoil.js`,
+      file: `umd/recoil.js`,
       format: 'umd',
       name: 'Recoil',
       exports: 'named',
+      globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
     },
     external: externalLibs,
     plugins: developmentPlugins,
@@ -103,10 +107,14 @@ const configs = [
   {
     input: inputFile,
     output: {
-      file: `dist/recoil.min.js`,
+      file: `umd/recoil.min.js`,
       format: 'umd',
       name: 'Recoil',
       exports: 'named',
+      globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
     },
     external: externalLibs,
     plugins: productionPlugins,
