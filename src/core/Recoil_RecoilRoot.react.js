@@ -233,6 +233,7 @@ let nextID = 0;
 function RecoilRoot({
   initializeState_DEPRECATED,
   initializeState,
+  store: providedStore,
   children,
 }: Props): ReactElement {
   let storeState; // eslint-disable-line prefer-const
@@ -319,7 +320,7 @@ function RecoilRoot({
     (React: any).createMutableSource ?? // flowlint-line unclear-type:off
     (React: any).unstable_createMutableSource; // flowlint-line unclear-type:off
 
-  const store: Store = {
+  const store: Store = providedStore ?? {
     getState: () => storeState.current,
     replaceState,
     getGraph,
@@ -332,6 +333,7 @@ function RecoilRoot({
         )
       : null,
   };
+
   const storeRef = useRef(store);
   storeState = useRef(
     initializeState_DEPRECATED != null
