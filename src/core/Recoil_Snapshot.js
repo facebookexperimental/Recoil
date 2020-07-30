@@ -95,18 +95,34 @@ class Snapshot {
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   getNodes_UNSTABLE: (
     {
-      dirty?: boolean,
+      isModified?: boolean,
+      isInitialized?: boolean,
     } | void,
   ) => Iterable<RecoilValue<mixed>> = opt => {
     // TODO Deal with modified selectors
-    if (opt?.dirty === true) {
+    if (opt?.isModified === true) {
+      if (opt?.isInitialized === false) {
+        return [];
+      }
       const state = this._store.getState().currentTree;
       return mapIterable(state.dirtyAtoms, key =>
         nullthrows(recoilValues.get(key)),
       );
     }
+    const knownAtoms = this._store.getState().knownAtoms;
+    const knownSelectors = this._store.getState().knownSelectors;
 
-    return recoilValues.values();
+    return opt?.isInitialized == null
+      ? recoilValues.values()
+      : // TODO use generator with D22217444
+      opt.isInitialized === true
+      ? mapIterable(
+          [...Array.from(knownAtoms), ...Array.from(knownSelectors)],
+          key => nullthrows(recoilValues.get(key)),
+        )
+      : Array.from(recoilValues.values()).filter(
+          ({key}) => !knownAtoms.has(key) && !knownSelectors.has(key),
+        );
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
