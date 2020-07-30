@@ -134,30 +134,26 @@ function makeEmptyTreeState(): TreeState {
   };
 }
 
-function makeStoreState(treeState: TreeState): StoreState {
+function makeEmptyStoreState(): StoreState {
+  const currentTree = makeEmptyTreeState();
   return {
-    currentTree: treeState,
+    currentTree,
     nextTree: null,
     previousTree: null,
     knownAtoms: new Set(),
     knownSelectors: new Set(),
     transactionSubscriptions: new Map(),
     nodeTransactionSubscriptions: new Map(),
+    nodeToComponentSubscriptions: new Map(),
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
-    nodeToComponentSubscriptions: new Map(),
-    graphsByVersion: new Map().set(treeState.version, graph()),
+    graphsByVersion: new Map().set(currentTree.version, graph()),
     versionsUsedByComponent: new Map(),
   };
-}
-
-function makeEmptyStoreState(): StoreState {
-  return makeStoreState(makeEmptyTreeState());
 }
 
 module.exports = {
   makeEmptyTreeState,
   makeEmptyStoreState,
-  makeStoreState,
   getNextTreeStateVersion,
 };

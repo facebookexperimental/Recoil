@@ -290,3 +290,53 @@ test('getDeps', () => {
     expect.arrayContaining([selectorA, selectorB]),
   );
 });
+
+describe('getSubscriptions', () => {
+  test('nodes', () => {
+    const snapshot = freshSnapshot();
+
+    const myAtom = atom<string>({
+      key: 'snapshot getSubscriptions atom',
+      default: 'ATOM',
+    });
+    const selectorA = selector({
+      key: 'getSubscriptions A',
+      get: ({get}) => get(myAtom),
+    });
+    const selectorB = selector({
+      key: 'getSubscriptions B',
+      get: ({get}) => get(selectorA) + get(myAtom),
+    });
+    const selectorC = selector({
+      key: 'getSubscriptions C',
+      get: async ({get}) => {
+        const ret = get(selectorA) + get(selectorB);
+        await Promise.resolve();
+        return ret;
+      },
+    });
+
+    // No initial subscribers
+    expect(Array.from(snapshot.getSubscribers_UNSTABLE(myAtom).nodes)).toEqual(
+      expect.arrayContaining([]),
+    );
+    expect(
+      Array.from(snapshot.getSubscribers_UNSTABLE(selectorC).nodes),
+    ).toEqual(expect.arrayContaining([]));
+
+    // Evaluate selectorC to update all of its upstream node subscriptions
+    snapshot.getLoadable(selectorC);
+    expect(Array.from(snapshot.getSubscribers_UNSTABLE(myAtom).nodes)).toEqual(
+      expect.arrayContaining([selectorA, selectorB, selectorC]),
+    );
+    expect(
+      Array.from(snapshot.getSubscribers_UNSTABLE(selectorA).nodes),
+    ).toEqual(expect.arrayContaining([selectorB, selectorC]));
+    expect(
+      Array.from(snapshot.getSubscribers_UNSTABLE(selectorB).nodes),
+    ).toEqual(expect.arrayContaining([selectorC]));
+    expect(
+      Array.from(snapshot.getSubscribers_UNSTABLE(selectorC).nodes),
+    ).toEqual(expect.arrayContaining([]));
+  });
+});
