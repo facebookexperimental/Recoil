@@ -22,7 +22,10 @@ import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
 const nullthrows = require('../util/Recoil_nullthrows');
-const {getDownstreamNodes} = require('./Recoil_FunctionalCore');
+const {
+  getDownstreamNodes,
+  peekNodeLoadable,
+} = require('./Recoil_FunctionalCore');
 const {graph} = require('./Recoil_Graph');
 const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
@@ -130,10 +133,13 @@ class Snapshot {
     recoilValue: RecoilValue<T>,
   ) => {
     this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
-    const storeState = this._store.getState();
-    const deps = storeState.graphsByVersion
-      .get(storeState.currentTree.version)
-      ?.nodeDeps.get(recoilValue.key);
+    const deps = this._store
+      .getGraph(this._store.getState().currentTree.version)
+      .nodeDeps.get(recoilValue.key);
+    // const storeState = this._store.getState();
+    // const deps = storeState.graphsByVersion
+    //   .get(storeState.currentTree.version)
+    //   ?.nodeDeps.get(recoilValue.key);
     return (function*() {
       for (const key of deps ?? []) {
         yield nullthrows(recoilValues.get(key));
@@ -166,6 +172,47 @@ class Snapshot {
           yield nullthrows(recoilValues.get(node));
         }
       })(),
+    };
+  };
+
+  // Report the current status of a node.
+  // This peeks the current state and does not affect the snapshot state at all
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  getInfo_UNSTABLE: <T>(
+    RecoilValue<T>,
+  ) => {
+    loadable: ?Loadable<T>,
+    isActive: boolean,
+    isSet: boolean,
+    isModified: boolean, // TODO report modified selectors
+    type: 'atom' | 'selector' | void, // void until initialized for now
+    deps: Iterable<RecoilValue<mixed>>,
+    subscribers: {
+      nodes: Iterable<RecoilValue<mixed>>,
+    },
+  } = <T>(recoilValue: RecoilValue<T>) => {
+    const {key} = recoilValue;
+    const state = this._store.getState().currentTree;
+    const graph = this._store.getGraph(state.version);
+    return {
+      loadable: peekNodeLoadable(this._store, state, key),
+      isActive:
+        this._store.getState().knownAtoms.has(key) ||
+        this._store.getState().knownSelectors.has(key),
+      isSet: state.atomValues.has(key),
+      isModified: state.dirtyAtoms.has(key),
+      type: this._store.getState().knownAtoms.has(key)
+        ? 'atom'
+        : this._store.getState().knownSelectors.has(key)
+        ? 'selector'
+        : undefined,
+      // Don't use this.getDeps() as it will evaluate the node
+      deps: graph.nodeDeps.has(key)
+        ? Array.from(nullthrows(graph.nodeDeps.get(key))).map(key =>
+            nullthrows(recoilValues.get(key)),
+          )
+        : [],
+      subscribers: this.getSubscribers_UNSTABLE(recoilValue),
     };
   };
 

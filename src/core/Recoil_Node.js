@@ -39,6 +39,9 @@ export type PersistenceInfo = $ReadOnly<{
 export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   key: NodeKey,
 
+  // Returns the current value without evaluating or modifying state
+  peek: (Store, TreeState) => ?Loadable<T>,
+
   // Returns the discovered deps and the loadable value of the node
   get: (Store, TreeState) => [DependencyMap, Loadable<T>],
 

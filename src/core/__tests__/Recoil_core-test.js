@@ -13,14 +13,14 @@
 const atom = require('../../recoil_values/Recoil_atom');
 const {makeStore} = require('../../testing/Recoil_TestingUtils');
 const nullthrows = require('../../util/Recoil_nullthrows');
-const {peekNodeLoadable, setNodeValue} = require('../Recoil_FunctionalCore');
+const {getNodeLoadable, setNodeValue} = require('../Recoil_FunctionalCore');
 
 const a = atom<number>({key: 'a', default: 0}).key;
 
 test('read default value', () => {
   const store = makeStore();
   expect(
-    peekNodeLoadable(store, store.getState().currentTree, a),
+    getNodeLoadable(store, store.getState().currentTree, a)[1],
   ).toMatchObject({
     state: 'hasValue',
     contents: 0,

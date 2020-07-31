@@ -72,6 +72,7 @@ const {
 const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
 const {
   getNodeLoadable,
+  peekNodeLoadable,
   setNodeValue,
 } = require('../core/Recoil_FunctionalCore');
 const {
@@ -365,6 +366,30 @@ function selector<T>(
     }
   }
 
+  function myPeek(store: Store, state: TreeState): ?Loadable<T> {
+    // First, get the current deps for this selector
+    const currentDeps =
+      store.getGraph(state.version).nodeDeps.get(key) ?? emptySet;
+    const depValues: Map<NodeKey, ?Loadable<mixed>> = new Map(
+      Array.from(currentDeps)
+        .sort()
+        .map(depKey => [depKey, peekNodeLoadable(store, state, depKey)]),
+    );
+
+    const cacheDepValues = new Map();
+    for (const [depKey, depValue] of depValues.entries()) {
+      if (depValue == null) {
+        return undefined;
+      }
+      cacheDepValues.set(depKey, depValue);
+    }
+
+    // Always cache and evaluate a selector
+    // It may provide a result even when not all deps are available.
+    const cacheKey = cacheKeyFromDepValues(cacheDepValues);
+    return cache.get(cacheKey);
+  }
+
   function myGet(store: Store, state: TreeState): [DependencyMap, Loadable<T>] {
     initSelector(store);
     // TODO memoize a value if no deps have changed to avoid a cache lookup
@@ -432,16 +457,18 @@ function selector<T>(
     }
     return registerNode<T>({
       key,
-      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+      peek: myPeek,
       get: myGet,
       set: mySet,
+      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
     });
   } else {
     return registerNode<T>({
       key,
-      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+      peek: myPeek,
       get: myGet,
+      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
     });
   }
