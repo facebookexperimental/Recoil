@@ -16,9 +16,12 @@ import type {
   SetRecoilState,
   ValueOrUpdater,
 } from '../recoil_values/Recoil_selector';
+import type {NodeKey} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
+const concatIterables = require('../util/Recoil_concatIterables');
+const filterIterable = require('../util/Recoil_filterIterable');
 const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -39,6 +42,12 @@ const {
 
 // Opaque at this surface because it's part of the public API from here.
 export opaque type SnapshotID = StateID;
+
+function recoilValuesForKeys(
+  keys: Iterable<NodeKey>,
+): Iterable<RecoilValue<mixed>> {
+  return mapIterable(keys, key => nullthrows(recoilValues.get(key)));
+}
 
 // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
@@ -108,22 +117,22 @@ class Snapshot {
         return [];
       }
       const state = this._store.getState().currentTree;
-      return mapIterable(state.dirtyAtoms, key =>
-        nullthrows(recoilValues.get(key)),
-      );
+      return recoilValuesForKeys(state.dirtyAtoms);
     }
     const knownAtoms = this._store.getState().knownAtoms;
     const knownSelectors = this._store.getState().knownSelectors;
 
     return opt?.isInitialized == null
       ? recoilValues.values()
-      : // TODO use generator with D22217444
-      opt.isInitialized === true
-      ? mapIterable(
-          [...Array.from(knownAtoms), ...Array.from(knownSelectors)],
-          key => nullthrows(recoilValues.get(key)),
+      : opt.isInitialized === true
+      ? recoilValuesForKeys(
+          concatIterables([
+            this._store.getState().knownAtoms,
+            this._store.getState().knownSelectors,
+          ]),
         )
-      : Array.from(recoilValues.values()).filter(
+      : filterIterable(
+          recoilValues.values(),
           ({key}) => !knownAtoms.has(key) && !knownSelectors.has(key),
         );
   };
@@ -136,15 +145,7 @@ class Snapshot {
     const deps = this._store
       .getGraph(this._store.getState().currentTree.version)
       .nodeDeps.get(recoilValue.key);
-    // const storeState = this._store.getState();
-    // const deps = storeState.graphsByVersion
-    //   .get(storeState.currentTree.version)
-    //   ?.nodeDeps.get(recoilValue.key);
-    return (function*() {
-      for (const key of deps ?? []) {
-        yield nullthrows(recoilValues.get(key));
-      }
-    })();
+    return recoilValuesForKeys(deps ?? []);
   };
 
   // This reports all "current" subscribers.  It does not report all possible
@@ -157,21 +158,13 @@ class Snapshot {
     // TODO components, observers, and atom effects
   } = <T>({key}: RecoilValue<T>) => {
     const state = this._store.getState().currentTree;
-    const downstreamNodes = getDownstreamNodes(
-      this._store,
-      state,
-      new Set([key]),
+    const downstreamNodes = filterIterable(
+      getDownstreamNodes(this._store, state, new Set([key])),
+      nodeKey => nodeKey !== key,
     );
 
     return {
-      nodes: (function*() {
-        for (const node of downstreamNodes) {
-          if (node === key) {
-            continue;
-          }
-          yield nullthrows(recoilValues.get(node));
-        }
-      })(),
+      nodes: recoilValuesForKeys(downstreamNodes),
     };
   };
 
@@ -206,12 +199,8 @@ class Snapshot {
         : this._store.getState().knownSelectors.has(key)
         ? 'selector'
         : undefined,
-      // Don't use this.getDeps() as it will evaluate the node
-      deps: graph.nodeDeps.has(key)
-        ? Array.from(nullthrows(graph.nodeDeps.get(key))).map(key =>
-            nullthrows(recoilValues.get(key)),
-          )
-        : [],
+      // Don't use this.getDeps() as it will evaluate the node and we are only peeking
+      deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
       subscribers: this.getSubscribers_UNSTABLE(recoilValue),
     };
   };
