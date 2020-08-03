@@ -18,6 +18,7 @@ const {useEffect} = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
+const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
 const {graph} = require('../core/Recoil_Graph');
 const {
   RecoilRoot,
@@ -208,11 +209,16 @@ function flushPromisesAndTimers(): Promise<mixed> {
   });
 }
 
+const GetStore = ({children}: {children: (store: Store) => React.Node}) => {
+  return children(useStoreRef().current);
+};
+
 module.exports = {
   makeStore,
   renderElements,
   renderElementsWithSuspenseCount,
   ReadsAtom,
+  GetStore,
   componentThatReadsAndWritesAtom,
   errorThrowingAsyncSelector,
   resolvingAsyncSelector,
