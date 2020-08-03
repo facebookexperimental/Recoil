@@ -14,7 +14,8 @@ const {act} = require('ReactTestUtils');
 const atom = require('../../recoil_values/Recoil_atom');
 const constSelector = require('../../recoil_values/Recoil_constSelector');
 const selector = require('../../recoil_values/Recoil_selector');
-const {ReadsAtom} = require('../../testing/Recoil_TestingUtils');
+const stableStringify = require('../../util/Recoil_stableStringify');
+const {ReadsAtom, GetStore} = require('../../testing/Recoil_TestingUtils');
 const {RecoilRoot} = require('../Recoil_RecoilRoot.react');
 
 describe('initializeState', () => {
@@ -78,5 +79,32 @@ describe('initializeState', () => {
     });
 
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
+  });
+
+  test('initialize with nested store', () => {
+    const myAtom = atom({
+      key: 'RecoilRoot - initializeState - with nested store',
+      default: 'DEFAULT',
+    });
+
+    const container = document.createElement('div');
+    act(() => {
+      ReactDOM.render(
+        <RecoilRoot>
+          <GetStore>
+            {storeA => (
+              <RecoilRoot store={storeA}>
+                <GetStore>
+                  {storeB => stableStringify(storeA === storeB)}
+                </GetStore>
+              </RecoilRoot>
+            )}
+          </GetStore>
+        </RecoilRoot>,
+        container,
+      );
+    });
+
+    expect(container.textContent).toEqual('true');
   });
 });
