@@ -44,7 +44,7 @@ type Props = {
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
   initializeState?: MutableSnapshot => void,
-  store_UNSTABLE?: RecoilStore,
+  store_INTERNAL?: RecoilStore,
   children: React.Node,
 };
 
@@ -236,7 +236,7 @@ let nextID = 0;
 function RecoilRoot({
   initializeState_DEPRECATED,
   initializeState,
-  store_UNSTABLE: storeProp, // For use with React "context bridging"
+  store_INTERNAL: storeProp, // For use with React "context bridging"
   children,
 }: Props): ReactElement {
   let storeState; // eslint-disable-line prefer-const
@@ -354,8 +354,23 @@ function RecoilRoot({
   );
 }
 
+// A <RecoilBridge> can be used for context bridging when using a nested React renderer
+type BridgedRecoilRoot = ({children: React.Node}) => React.Node;
+function RecoilBridge({
+  children,
+}: {
+  children: BridgedRecoilRoot => React.Node,
+}): React.Node {
+  const store = useStoreRef().current;
+  const BridgedRecoilRoot = ({children}) => (
+    <RecoilRoot store_INTERNAL={store}>{children}</RecoilRoot>
+  );
+  return children(BridgedRecoilRoot);
+}
+
 module.exports = {
   useStoreRef,
   RecoilRoot,
+  RecoilBridge,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,
 };

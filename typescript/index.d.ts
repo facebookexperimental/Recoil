@@ -29,17 +29,17 @@ export class DefaultValue {
 }
 
 // recoilRoot.d.ts
-declare const RecoilStore_OPAQUE: unique symbol;
-export interface RecoilStore {
-  readonly [RecoilStore_OPAQUE]: true;
-}
-
 export interface RecoilRootProps {
   initializeState?: (mutableSnapshot: MutableSnapshot) => void;
-  store_UNSTABLE?: RecoilStore;
 }
-
 export const RecoilRoot: React.FC<RecoilRootProps>;
+
+
+type BridgedRecoilRoot = React.FC<{}>;
+export interface RecoilBridgeProps {
+  children: BridgedRecoilRoot => React.Node;
+}
+export const RecoilBridge_UNSTABLE: React.FC<RecoilBridgeProps>;
 
 // atom.d.ts
 export interface AtomOptions<T> {

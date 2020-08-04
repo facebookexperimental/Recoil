@@ -94,7 +94,7 @@ describe('initializeState', () => {
         <RecoilRoot>
           <GetStore>
             {storeA => (
-              <RecoilRoot store_UNSTABLE={storeA}>
+              <RecoilRoot store_INTERNAL={storeA}>
                 <GetStore>
                   {storeB => {
                     expect(storeA === storeB).toBe(true);
