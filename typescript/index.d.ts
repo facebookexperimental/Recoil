@@ -6,6 +6,8 @@
 
 export {};
 
+import * as React from 'react';
+
 // state.d.ts
 type NodeKey = string;
 type AtomValues = Map<NodeKey, Loadable<any>>;
@@ -27,10 +29,14 @@ export class DefaultValue {
 }
 
 // recoilRoot.d.ts
-import * as React from 'react';
+declare const RecoilStore_OPAQUE: unique symbol;
+export interface RecoilStore {
+  readonly [RecoilStore_OPAQUE]: true;
+}
 
 export interface RecoilRootProps {
   initializeState?: (mutableSnapshot: MutableSnapshot) => void;
+  store_UNSTABLE?: RecoilStore;
 }
 
 export const RecoilRoot: React.FC<RecoilRootProps>;
@@ -165,6 +171,9 @@ export function useGotoRecoilSnapshot(): (snapshot: Snapshot) => void;
 
 export function useRecoilSnapshot(): Snapshot;
 
+// useRecoilStore.d.ts
+export function useRecoilStore(): RecoilStore;
+
 // loadable.d.ts
 type ResolvedLoadablePromiseInfo<T> = Readonly<{
   value: T;
@@ -296,3 +305,4 @@ export function waitForAll<RecoilValues extends Array<RecoilValue<any>> | [Recoi
 export function waitForAll<RecoilValues extends { [key: string]: RecoilValue<any> }>(
   param: RecoilValues,
 ): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+

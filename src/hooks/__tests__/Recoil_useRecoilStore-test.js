@@ -1,22 +1,33 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
 const React = require('React');
 const ReactDOM = require('ReactDOM');
-const {useEffect} = require('React');
 const {act} = require('ReactTestUtils');
 
-const {SimpleRenderer} = require('../../testing/Recoil_SimpleReconciler');
-const {ReadsAtom} = require('../../testing/Recoil_TestingUtils');
-
-const {useRecoilValue} = require('../Recoil_Hooks');
-const {RecoilRoot} = require('../../../src/core/Recoil_RecoilRoot.react');
+const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
 const atom = require('../../recoil_values/Recoil_atom');
-const {useRecoilStore_UNSTABLE} = require('../../Recoil_index');
+const {SimpleRenderer} = require('../../testing/Recoil_SimpleReconciler');
+const {
+  componentThatReadsAndWritesAtom,
+} = require('../../testing/Recoil_TestingUtils');
+const useRecoilStore = require('../Recoil_useRecoilStore');
 
 const SimpleRendererBridge = ({children}) => {
-  const store = useRecoilStore_UNSTABLE();
+  const store = useRecoilStore();
 
   return (
     <SimpleRenderer>
-      <RecoilRoot store={store}>{children}</RecoilRoot>
+      <RecoilRoot store_UNSTABLE={store}>{children}</RecoilRoot>
     </SimpleRenderer>
   );
 };
@@ -25,7 +36,7 @@ test('useRecoilStore - create a context bridge', () => {
   const container = document.createElement('div');
 
   const myAtom = atom({
-    key: 'useRecoilStore - create bridge',
+    key: 'useRecoilStore - context bridge',
     default: 'DEFAULT',
   });
 
@@ -35,13 +46,15 @@ test('useRecoilStore - create a context bridge', () => {
     expect(getLoadable(myAtom).contents).toEqual('INITIALIZE');
   }
 
+  const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+
   act(() => {
     ReactDOM.render(
       <RecoilRoot initializeState={initializeState}>
-        <ReadsAtom atom={myAtom} />
+        <ReadWriteAtom />
 
         <SimpleRendererBridge>
-          <ReadsAtom atom={myAtom} />
+          <ReadWriteAtom />
         </SimpleRendererBridge>
       </RecoilRoot>,
       container,
@@ -49,4 +62,8 @@ test('useRecoilStore - create a context bridge', () => {
   });
 
   expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
+
+  act(() => setAtom('SET'));
+  expect(container.textContent).toEqual('"SET""SET"');
 });
+

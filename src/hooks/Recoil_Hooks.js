@@ -346,12 +346,15 @@ function useRecoilValueLoadable_LEGACY<T>(
 const useMutableSource =
   (React: any).useMutableSource ?? (React: any).unstable_useMutableSource; // flowlint-line unclear-type:off
 
+// TEMPORARY DISABLE REACT CONCURRENT MODE TO TEST CONTEXT BRIDGING @nocommit
+window.disableRecoilValueMutableSource = true;
+
 /**
   Like useRecoilValue(), but either returns the value if available or
   just undefined if not available for any reason, such as pending or error.
 */
 function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
-  if (useMutableSource) {
+  if (useMutableSource && !window.disableRecoilValueMutableSource) {
     // eslint-disable-next-line fb-www/react-hooks
     return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
   } else {
@@ -688,10 +691,6 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
   );
 }
 
-function useRecoilStore() {
-  return useStoreRef().current;
-}
-
 module.exports = {
   useRecoilCallback,
   useRecoilValue,
@@ -707,5 +706,5 @@ module.exports = {
   useRecoilSnapshot,
   useGotoRecoilSnapshot,
   useSetUnvalidatedAtomValues,
-  useRecoilStore,
 };
+

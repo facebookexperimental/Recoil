@@ -53,8 +53,8 @@ const {
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
-  useRecoilStore,
 } = require('./hooks/Recoil_Hooks');
+const useRecoilStore = require('./hooks/Recoil_useRecoilStore');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
 const constSelector = require('./recoil_values/Recoil_constSelector');
@@ -115,3 +115,4 @@ module.exports = {
   // Other functions
   isRecoilValue,
 };
+

@@ -36,13 +36,15 @@ const nullthrows = require('../util/Recoil_nullthrows');
 const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
 
+export type RecoilStore = Store;
+
 type Props = {
   initializeState_DEPRECATED?: ({
     set: <T>(RecoilValue<T>, T) => void,
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
   initializeState?: MutableSnapshot => void,
-  store?: Store,
+  store_UNSTABLE?: RecoilStore,
   children: React.Node,
 };
 
@@ -234,7 +236,7 @@ let nextID = 0;
 function RecoilRoot({
   initializeState_DEPRECATED,
   initializeState,
-  store: providedStore,
+  store_UNSTABLE: storeProp, // For use with React "context bridging"
   children,
 }: Props): ReactElement {
   let storeState; // eslint-disable-line prefer-const
@@ -321,7 +323,7 @@ function RecoilRoot({
     (React: any).createMutableSource ?? // flowlint-line unclear-type:off
     (React: any).unstable_createMutableSource; // flowlint-line unclear-type:off
 
-  const store: Store = providedStore ?? {
+  const store: Store = storeProp ?? {
     getState: () => storeState.current,
     replaceState,
     getGraph,
@@ -357,3 +359,4 @@ module.exports = {
   RecoilRoot,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,
 };
+

@@ -1,31 +1,32 @@
-const ReactReconciler = require('react-reconciler');
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
 const React = require('React');
+const {useEffect, useRef} = require('React');
+
+const ReactReconciler = require('react-reconciler');
 
 const rootHostContext = {};
 const childHostContext = {};
 
 const hostConfig = {
   now: Date.now,
-  getRootHostContext: () => {
-    return rootHostContext;
-  },
+  getRootHostContext: () => rootHostContext,
   prepareForCommit: () => {},
   resetAfterCommit: () => {},
-  getChildHostContext: () => {
-    return childHostContext;
-  },
-  shouldSetTextContent: (type, props) => {
-    return (
-      typeof props.children === 'string' || typeof props.children === 'number'
-    );
-  },
-  createInstance: (
-    type,
-    newProps,
-    rootContainerInstance,
-    _currentHostContext,
-    workInProgress,
-  ) => {
+  getChildHostContext: () => childHostContext,
+  shouldSetTextContent: (_type, props) =>
+    typeof props.children === 'string' || typeof props.children === 'number',
+  createInstance: (type, newProps) => {
     const domElement = document.createElement(type);
     Object.keys(newProps).forEach(propName => {
       const propValue = newProps[propName];
@@ -44,24 +45,20 @@ const hostConfig = {
     });
     return domElement;
   },
-  createTextInstance: text => {
-    return document.createTextNode(text);
-  },
+  createTextInstance: text => document.createTextNode(text),
   appendInitialChild: (parent, child) => {
     parent.appendChild(child);
   },
   appendChild(parent, child) {
     parent.appendChild(child);
   },
-  finalizeInitialChildren: (domElement, type, props) => {},
+  finalizeInitialChildren: () => {},
   supportsMutation: true,
   appendChildToContainer: (parent, child) => {
     parent.appendChild(child);
   },
-  prepareUpdate(domElement, oldProps, newProps) {
-    return true;
-  },
-  commitUpdate(domElement, updatePayload, type, oldProps, newProps) {
+  prepareUpdate: () => true,
+  commitUpdate(domElement, _updatePayload, _type, _oldProps, newProps) {
     Object.keys(newProps).forEach(propName => {
       const propValue = newProps[propName];
       if (propName === 'children') {
@@ -74,7 +71,7 @@ const hostConfig = {
       }
     });
   },
-  commitTextUpdate(textInstance, oldText, newText) {
+  commitTextUpdate(textInstance, _oldText, newText) {
     textInstance.text = newText;
   },
   removeChild(parentInstance, child) {
@@ -84,18 +81,18 @@ const hostConfig = {
 
 const SimpleReconcilerInstance = ReactReconciler(hostConfig);
 
-const SimpleRenderer = ({children}) => {
-  const containerRef = React.useRef();
-  const reconcilerRef = React.useRef();
+const SimpleRenderer = ({children}: {children: React.Node}): React.Node => {
+  const containerRef = useRef();
+  const reconcilerRef = useRef();
 
-  React.useEffect(() => {
+  useEffect(() => {
     reconcilerRef.current = SimpleReconcilerInstance.createContainer(
       containerRef.current,
       false,
     );
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (reconcilerRef.current) {
       SimpleReconcilerInstance.updateContainer(
         children,
@@ -109,6 +106,6 @@ const SimpleRenderer = ({children}) => {
 };
 
 module.exports = {
-  SimpleReconcilerInstance,
   SimpleRenderer,
 };
+
