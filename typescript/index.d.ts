@@ -29,14 +29,8 @@ export class DefaultValue {
 }
 
 // recoilRoot.d.ts
-declare const RecoilStore_OPAQUE: unique symbol;
-export interface RecoilStore {
-  readonly [RecoilStore_OPAQUE]: true;
-}
-
 export interface RecoilRootProps {
   initializeState?: (mutableSnapshot: MutableSnapshot) => void;
-  store_UNSTABLE?: RecoilStore;
 }
 
 export const RecoilRoot: React.FC<RecoilRootProps>;
@@ -171,8 +165,9 @@ export function useGotoRecoilSnapshot(): (snapshot: Snapshot) => void;
 
 export function useRecoilSnapshot(): Snapshot;
 
-// useRecoilStore.d.ts
-export function useRecoilStore(): RecoilStore;
+// useRecoilBridge.d.ts
+export const RecoilBridge: React.FC<{}>;
+export function useRecoilBridge(): RecoilBridge;
 
 // loadable.d.ts
 type ResolvedLoadablePromiseInfo<T> = Readonly<{

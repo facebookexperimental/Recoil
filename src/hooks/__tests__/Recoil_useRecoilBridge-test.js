@@ -20,23 +20,11 @@ const {SimpleRenderer} = require('../../testing/Recoil_SimpleReconciler');
 const {
   componentThatReadsAndWritesAtom,
 } = require('../../testing/Recoil_TestingUtils');
-const useRecoilStore = require('../Recoil_useRecoilStore');
+const useRecoilBridge = require('../Recoil_useRecoilBridge');
 
-const SimpleRendererBridge = ({children}) => {
-  const store = useRecoilStore();
-
-  return (
-    <SimpleRenderer>
-      <RecoilRoot store_UNSTABLE={store}>{children}</RecoilRoot>
-    </SimpleRenderer>
-  );
-};
-
-test('useRecoilStore - create a context bridge', () => {
-  const container = document.createElement('div');
-
+test('useRecoilBridge - create a context bridge', () => {
   const myAtom = atom({
-    key: 'useRecoilStore - context bridge',
+    key: 'useRecoilBridge - context bridge',
     default: 'DEFAULT',
   });
 
@@ -48,14 +36,26 @@ test('useRecoilStore - create a context bridge', () => {
 
   const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
+  function TestApp() {
+    const RecoilBridge = useRecoilBridge();
+    return (
+      <>
+        <ReadWriteAtom />
+
+        <SimpleRenderer>
+          <RecoilBridge>
+            <ReadWriteAtom />
+          </RecoilBridge>
+        </SimpleRenderer>
+      </>
+    );
+  }
+
+  const container = document.createElement('div');
   act(() => {
     ReactDOM.render(
       <RecoilRoot initializeState={initializeState}>
-        <ReadWriteAtom />
-
-        <SimpleRendererBridge>
-          <ReadWriteAtom />
-        </SimpleRendererBridge>
+        <TestApp />
       </RecoilRoot>,
       container,
     );
