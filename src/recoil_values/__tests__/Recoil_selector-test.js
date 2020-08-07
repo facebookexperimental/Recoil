@@ -15,7 +15,6 @@ gkx.setFail('recoil_async_selector_refactor');
 
 const React = require('React');
 const {act} = require('ReactTestUtils');
-const {useRecoilState, useRecoilValue} = require('../../Recoil_index');
 const atom = require('../Recoil_atom');
 const constSelector = require('../Recoil_constSelector');
 const errorSelector = require('../Recoil_errorSelector');
