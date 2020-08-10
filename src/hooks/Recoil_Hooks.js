@@ -42,7 +42,7 @@ const mapMap = require('../util/Recoil_mapMap');
 const mergeMaps = require('../util/Recoil_mergeMaps');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const {batchUpdates} = require('../util/Recoil_batch');
+const {batchUpdates} = require('../util/Recoil_batcher');
 const Tracing = require('../util/Recoil_Tracing');
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {

@@ -45,7 +45,7 @@ const {
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
 } = require('../Recoil_Hooks');
-const {batchUpdates} = require('../util/Recoil_batch');
+const {batchUpdates} = require('../util/Recoil_batcher');
 
 gkx.setFail('recoil_async_selector_refactor');
 
