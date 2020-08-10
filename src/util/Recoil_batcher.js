@@ -19,12 +19,27 @@ let batcher = unstable_batchedUpdates;
 type Callback = () => any;
 type Batcher = (callback: Callback) => void;
 
-// Allow injecting another batching function later
+/**
+ * Sets the provided batcher function as the batcher function used by Recoil.
+ *
+ * Set the batcher to a custom batcher for your renderer,
+ * if you use a renderer other than React DOM or React Native.
+ */
 const setBatcher = (newBatcher: Batcher) => (batcher = newBatcher);
 
+/**
+ * Returns the current batcher function.
+ */
+const getBatcher = () => batcher;
+
+/**
+ * Calls the current batcher function and passes the
+ * provided callback function.
+ */
 const batchUpdates = (callback: Callback) => batcher(callback);
 
 module.exports = {
+  getBatcher,
   setBatcher,
   batchUpdates,
 };
