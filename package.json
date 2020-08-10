@@ -4,6 +4,7 @@
   "description": "Recoil - A state management library for React",
   "main": "cjs/recoil.js",
   "module": "es/recoil.js",
+  "react-native": "native/recoil.js",
   "unpkg": "umd/recoil.js",
   "files": [
     "umd",
@@ -79,8 +80,7 @@
       "src/recoil_values/__tests__/Recoil_selector-test.js"
     ],
     "setupFiles": [
-      "./setupJestMock.js",
-      "./setupReactBatching.js"
+      "./setupJestMock.js"
     ]
   },
   "husky": {
