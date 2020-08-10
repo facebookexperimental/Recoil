@@ -22,14 +22,10 @@ const {
 } = require('../../Recoil_index');
 const {
   ReadsAtom,
-  componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
 const invariant = require('../../util/Recoil_invariant');
-
-// This shouldn't be needed, but something with React and Jest needs a kick..
-const kickAtom = atom({key: 'kicker', default: undefined});
 
 describe('useRecoilCallback', () => {
   it('Reads Recoil values', async () => {
@@ -45,7 +41,7 @@ describe('useRecoilCallback', () => {
       return null;
     }
     renderElements(<Component />);
-    act(cb);
+    act(() => void cb());
     await pTest;
   });
 
@@ -74,7 +70,7 @@ describe('useRecoilCallback', () => {
       return null;
     }
     renderElements(<Component />);
-    act(cb);
+    act(() => void cb());
     expect(didRun).toBe(true);
   });
 
@@ -99,7 +95,7 @@ describe('useRecoilCallback', () => {
       </>,
     );
     expect(container.textContent).toBe('"DEFAULT"');
-    act(() => cb(123));
+    act(() => void cb(123));
     expect(container.textContent).toBe('123');
     await pTest;
   });
@@ -121,16 +117,15 @@ describe('useRecoilCallback', () => {
       </>,
     );
     expect(container.textContent).toBe('"DEFAULT"');
-    act(() => setCB(123));
+    act(() => void setCB(123));
     expect(container.textContent).toBe('123');
-    act(resetCB);
+    act(() => void resetCB());
     expect(container.textContent).toBe('"DEFAULT"');
   });
 
   it('Sets Recoil values from async callback', async () => {
     const anAtom = atom({key: 'set async callback', default: 'DEFAULT'});
     let cb;
-    // let pTest = Promise.reject(new Error("Callback didn't resolve"));
     const pTest = [];
 
     function Component() {
@@ -146,20 +141,15 @@ describe('useRecoilCallback', () => {
       return null;
     }
 
-    // Something with React and Jest requires this extra kick...
-    const [Kick, kick] = componentThatReadsAndWritesAtom(kickAtom);
-
     const container = renderElements([
       <Component />,
       <ReadsAtom atom={anAtom} />,
-      <Kick />,
     ]);
 
     expect(container.textContent).toBe('"DEFAULT"');
-    act(() => cb(123));
-    act(kick);
+    act(() => void cb(123));
     expect(container.textContent).toBe('123');
-    act(() => cb(456));
+    act(() => void cb(456));
     expect(container.textContent).toBe('456');
     for (const aTest of pTest) {
       await aTest;
@@ -186,7 +176,7 @@ describe('useRecoilCallback', () => {
     // It sees an update flushed after the cb is created:
     renderElements(<Component />);
     act(() => setter(345));
-    act(cb);
+    act(() => void cb());
     await flushPromisesAndTimers();
     expect(seenValue).toBe(345);
 
@@ -198,7 +188,7 @@ describe('useRecoilCallback', () => {
         resumeCallback = resolve;
       });
     };
-    act(cb);
+    act(() => void cb());
     act(() => setter(678));
     resumeCallback();
     await flushPromisesAndTimers();
@@ -229,12 +219,10 @@ describe('useRecoilCallback', () => {
       return null;
     }
 
-    const [Kick, kick] = componentThatReadsAndWritesAtom(kickAtom);
     const c = renderElements(
       <>
         <ReadsAtom atom={myAtom} />
         <Component />
-        <Kick />
       </>,
     );
 
@@ -246,11 +234,10 @@ describe('useRecoilCallback', () => {
       cb('SET');
       cb('UPDATE AGAIN');
     });
-    act(kick);
     expect(c.textContent).toEqual('"UPDATE AGAIN"');
   });
 
-  it('goes to snapshot', () => {
+  it('goes to snapshot', async () => {
     const myAtom = atom({
       key: 'Goto Snapshot From Callback',
       default: 'DEFAULT',
@@ -270,21 +257,17 @@ describe('useRecoilCallback', () => {
       return null;
     }
 
-    // Something with React and Jest requires this extra kick...
-    const [Kick, kick] = componentThatReadsAndWritesAtom(kickAtom);
-
     const c = renderElements(
       <>
         <ReadsAtom atom={myAtom} />
         <RecoilCallback />
-        <Kick />
       </>,
     );
 
     expect(c.textContent).toEqual('"DEFAULT"');
 
-    act(cb);
-    act(kick);
+    act(() => void cb());
+    await flushPromisesAndTimers();
     expect(c.textContent).toEqual('"SET IN SNAPSHOT"');
   });
 });

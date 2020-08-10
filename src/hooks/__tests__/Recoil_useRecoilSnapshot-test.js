@@ -8,10 +8,13 @@
 'use strict';
 
 const React = require('React');
+const {useEffect} = require('React');
 const {act} = require('ReactTestUtils');
 
+const {freshSnapshot} = require('../../core/Recoil_Snapshot');
 const atom = require('../../recoil_values/Recoil_atom');
 const constSelector = require('../../recoil_values/Recoil_constSelector');
+const selector = require('../../recoil_values/Recoil_selector');
 const {
   ReadsAtom,
   asyncSelector,
@@ -126,13 +129,17 @@ test('useRecoilSnapshot - async selectors', async () => {
   const snapshots = [];
   function RecoilSnapshotAndSubscribe() {
     const snapshot = useRecoilSnapshot();
-    snapshots.push(snapshot);
+    useEffect(() => {
+      snapshots.push(snapshot);
+    });
     return null;
   }
 
   const c = renderElements(
     <>
-      <ReadsAtom atom={mySelector} />
+      <React.Suspense fallback="loading">
+        <ReadsAtom atom={mySelector} />
+      </React.Suspense>
       <RecoilSnapshotAndSubscribe />
     </>,
   );
@@ -141,8 +148,72 @@ test('useRecoilSnapshot - async selectors', async () => {
 
   act(() => resolve('RESOLVE'));
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"RESOLVE"');
 
-  expect(snapshots.length).toEqual(1);
+  expect(snapshots.length).toEqual(2);
   expect(snapshots[0].getLoadable(mySelector).contents).toEqual('RESOLVE');
+});
+
+test('getSubscriptions', async () => {
+  const myAtom = atom<string>({
+    key: 'useRecoilSnapshot getSubscriptions atom',
+    default: 'ATOM',
+  });
+  const selectorA = selector({
+    key: 'useRecoilSnapshot getSubscriptions A',
+    get: ({get}) => get(myAtom),
+  });
+  const selectorB = selector({
+    key: 'useRecoilSnapshot getSubscriptions B',
+    get: ({get}) => get(selectorA) + get(myAtom),
+  });
+  const selectorC = selector({
+    key: 'useRecoilSnapshot getSubscriptions C',
+    get: async ({get}) => {
+      const ret = get(selectorA) + get(selectorB);
+      await Promise.resolve();
+      return ret;
+    },
+  });
+
+  let snapshot = freshSnapshot();
+  function RecoilSnapshot() {
+    snapshot = useRecoilSnapshot();
+    return null;
+  }
+  const c = renderElements(
+    <>
+      <ReadsAtom atom={selectorC} />
+      <RecoilSnapshot />
+    </>,
+  );
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('"ATOMATOMATOM"');
+
+  expect(
+    Array.from(snapshot.getSubscribers_UNSTABLE(myAtom).nodes).length,
+  ).toBe(3);
+  expect(Array.from(snapshot.getSubscribers_UNSTABLE(myAtom).nodes)).toEqual(
+    expect.arrayContaining([selectorA, selectorB, selectorC]),
+  );
+  expect(
+    Array.from(snapshot.getSubscribers_UNSTABLE(selectorA).nodes).length,
+  ).toBe(2);
+  expect(Array.from(snapshot.getSubscribers_UNSTABLE(selectorA).nodes)).toEqual(
+    expect.arrayContaining([selectorB, selectorC]),
+  );
+  expect(
+    Array.from(snapshot.getSubscribers_UNSTABLE(selectorB).nodes).length,
+  ).toBe(1);
+  expect(Array.from(snapshot.getSubscribers_UNSTABLE(selectorB).nodes)).toEqual(
+    expect.arrayContaining([selectorC]),
+  );
+  expect(
+    Array.from(snapshot.getSubscribers_UNSTABLE(selectorC).nodes).length,
+  ).toBe(0);
+  expect(Array.from(snapshot.getSubscribers_UNSTABLE(selectorC).nodes)).toEqual(
+    expect.arrayContaining([]),
+  );
 });

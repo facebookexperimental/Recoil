@@ -59,57 +59,61 @@
 
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
+import type {DependencyMap} from '../core/Recoil_Graph';
+import type {PersistenceInfo} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {Snapshot} from '../core/Recoil_Snapshot';
-import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
+import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
-const {loadableWithValue} = require('../adt/Recoil_Loadable');
+const {
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue,
+} = require('../adt/Recoil_Loadable');
 const {
   DEFAULT_VALUE,
   DefaultValue,
   registerNode,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {setRecoilValue} = require('../core/Recoil_RecoilValueInterface');
-const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {
-  mapByDeletingFromMap,
-  mapBySettingInMap,
-  setByAddingToSet,
-} = require('../util/Recoil_CopyOnWrite');
+  markRecoilValueModified,
+  setRecoilValue,
+  setRecoilValueLoadable,
+} = require('../core/Recoil_RecoilValueInterface');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const selector = require('./Recoil_selector');
 
-// It would be nice if this didn't have to be defined at the Recoil level, but I don't want to make
-// the api cumbersome. One way to do this would be to have a selector mark the atom as persisted.
-// Note that this should also allow for special URL handling. (Although the persistence observer could
-// have this as a separate configuration.)
-export type PersistenceType = 'none' | 'url';
-export type PersistenceInfo = $ReadOnly<{
-  type: PersistenceType,
-  backButton?: boolean,
-}>;
 export type PersistenceSettings<Stored> = $ReadOnly<{
   ...PersistenceInfo,
   validator: (mixed, DefaultValue) => Stored | DefaultValue,
 }>;
 
+type NewValue<T> = T | DefaultValue | Promise<T | DefaultValue>;
+type NewValueOrUpdater<T> =
+  | T
+  | DefaultValue
+  | Promise<T | DefaultValue>
+  | ((T | DefaultValue) => T | DefaultValue);
+
 // Effect is called the first time a node is used with a <RecoilRoot>
-type AtomEffect<T> = ({
+export type AtomEffect<T> = ({
   node: RecoilState<T>,
   trigger: 'set' | 'get',
 
   // Call synchronously to initialize value or async to change it later
   setSelf: (
-    T | DefaultValue | ((T | DefaultValue) => T | DefaultValue),
+    | T
+    | DefaultValue
+    | Promise<T | DefaultValue>
+    | ((T | DefaultValue) => T | DefaultValue),
   ) => void,
   resetSelf: () => void,
-  getSnapshot: () => Snapshot,
 
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
@@ -129,11 +133,52 @@ export type AtomOptions<T> = $ReadOnly<{
 
 type BaseAtomOptions<T> = $ReadOnly<{
   ...AtomOptions<T>,
-  default: T,
+  default: T | Promise<T>,
 }>;
 
 function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const {key, persistence_UNSTABLE: persistence} = options;
+
+  let defaultLoadable: Loadable<T> = isPromise(options.default)
+    ? loadableWithPromise(
+        options.default
+          .then(value => {
+            defaultLoadable = loadableWithValue(value);
+            // TODO Temporary disable Flow due to pending selector_NEW refactor
+            return (value: $FlowFixMe);
+          })
+          .catch(error => {
+            defaultLoadable = loadableWithError(error);
+            throw error;
+          }),
+      )
+    : loadableWithValue(options.default);
+
+  let cachedAnswerForUnvalidatedValue:
+    | void
+    | [DependencyMap, Loadable<T>] = undefined;
+
+  function wrapPendingPromise(
+    store: Store,
+    promise: Promise<T | DefaultValue>,
+  ): Promise<T | DefaultValue> {
+    const wrappedPromise = promise
+      .then(value => {
+        const state = store.getState().nextTree ?? store.getState().currentTree;
+        if (state.atomValues.get(key)?.contents === wrappedPromise) {
+          setRecoilValue(store, node, value);
+        }
+        return value;
+      })
+      .catch(error => {
+        const state = store.getState().nextTree ?? store.getState().currentTree;
+        if (state.atomValues.get(key)?.contents === wrappedPromise) {
+          setRecoilValueLoadable(store, node, loadableWithError(error));
+        }
+        throw error;
+      });
+    return wrappedPromise;
+  }
 
   function initAtom(
     store: Store,
@@ -145,25 +190,32 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     }
     store.getState().knownAtoms.add(key);
 
+    // Setup async defaults to notify subscribers when they resolve
+    if (defaultLoadable.state === 'loading') {
+      function notifyDefaultSubscribers() {
+        const state = store.getState().nextTree ?? store.getState().currentTree;
+        if (!state.atomValues.has(key)) {
+          markRecoilValueModified(store, node);
+        }
+      }
+      defaultLoadable.contents
+        .then(notifyDefaultSubscribers)
+        .catch(notifyDefaultSubscribers);
+    }
+
     // Run Atom Effects
-    let initValue: T | DefaultValue = DEFAULT_VALUE;
+    let initValue: NewValue<T> = DEFAULT_VALUE;
     if (options.effects_UNSTABLE != null) {
       let duringInit = true;
 
-      function getSnapshot() {
-        return cloneSnapshot(
-          duringInit
-            ? initState
-            : store.getState().nextTree ?? store.getState().currentTree,
-        );
-      }
-
-      function setSelf(
-        valueOrUpdater: T | DefaultValue | (T => T | DefaultValue),
-      ) {
+      function setSelf(valueOrUpdater: NewValueOrUpdater<T>) {
         if (duringInit) {
-          const currentValue: T =
-            initValue instanceof DefaultValue ? options.default : initValue;
+          const currentValue: T | DefaultValue =
+            initValue instanceof DefaultValue || isPromise(initValue)
+              ? defaultLoadable.state === 'hasValue'
+                ? defaultLoadable.contents
+                : DEFAULT_VALUE
+              : initValue;
           initValue =
             typeof valueOrUpdater === 'function'
               ? // cast to any because we can't restrict type from being a function itself without losing support for opaque types
@@ -171,28 +223,43 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
                 (valueOrUpdater: any)(currentValue)
               : valueOrUpdater;
         } else {
+          if (isPromise(valueOrUpdater)) {
+            throw new Error(
+              'Setting atoms to async values is not implemented.',
+            );
+          }
           setRecoilValue(store, node, valueOrUpdater);
         }
       }
       const resetSelf = () => setSelf(DEFAULT_VALUE);
 
       function onSet(handler: (T | DefaultValue, T | DefaultValue) => void) {
-        store.subscribeToTransactions(asyncStore => {
-          const state = asyncStore.getState();
-          const nextState = state.nextTree ?? state.currentTree;
-          const prevState = state.currentTree;
-          const newValue: T | DefaultValue = nextState.atomValues.has(key)
-            ? nullthrows(nextState.atomValues.get(key)).valueOrThrow()
-            : DEFAULT_VALUE;
-          const oldValue: T | DefaultValue = prevState.atomValues.has(key)
-            ? nullthrows(prevState.atomValues.get(key)).valueOrThrow()
-            : DEFAULT_VALUE;
-          handler(newValue, oldValue);
+        store.subscribeToTransactions(currentStore => {
+          let {currentTree, previousTree} = currentStore.getState();
+          if (!previousTree) {
+            recoverableViolation(
+              'Transaction subscribers notified without a next tree being present -- this is a bug in Recoil',
+              'recoil',
+            );
+            previousTree = currentTree; // attempt to trundle on
+          }
+          const newLoadable = currentTree.atomValues.get(key);
+          if (newLoadable == null || newLoadable.state === 'hasValue') {
+            const newValue: T | DefaultValue =
+              newLoadable != null ? newLoadable.contents : DEFAULT_VALUE;
+            const oldLoadable =
+              previousTree.atomValues.get(key) ?? defaultLoadable;
+            const oldValue: T | DefaultValue =
+              oldLoadable.state === 'hasValue'
+                ? oldLoadable.contents
+                : DEFAULT_VALUE; // TODO This isn't actually valid, use as a placeholder for now.
+            handler(newValue, oldValue);
+          }
         }, key);
       }
 
       for (const effect of options.effects_UNSTABLE ?? []) {
-        effect({node, trigger, setSelf, resetSelf, getSnapshot, onSet});
+        effect({node, trigger, setSelf, resetSelf, onSet});
       }
 
       duringInit = false;
@@ -200,76 +267,85 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
     // Mutate initial state in place since we know there are no other subscribers
     // since we are the ones initializing on first use.
-
     if (!(initValue instanceof DefaultValue)) {
-      initState.atomValues.set(key, loadableWithValue(initValue));
+      initState.atomValues.set(
+        key,
+        isPromise(initValue)
+          ? // TODO Temp disable Flow due to pending selector_NEW refactor using LoadablePromise
+            loadableWithPromise(
+              (wrapPendingPromise(store, initValue): $FlowFixMe),
+            )
+          : loadableWithValue(initValue),
+      );
     }
   }
 
-  function myGet(store: Store, state: TreeState): [TreeState, Loadable<T>] {
+  function myPeek(_store, state: TreeState): ?Loadable<T> {
+    return (
+      state.atomValues.get(key) ??
+      cachedAnswerForUnvalidatedValue?.[1] ??
+      defaultLoadable
+    );
+  }
+
+  function myGet(store: Store, state: TreeState): [DependencyMap, Loadable<T>] {
     initAtom(store, state, 'get');
 
     if (state.atomValues.has(key)) {
-      // atom value is stored in state
-      return [state, nullthrows(state.atomValues.get(key))];
+      // Atom value is stored in state:
+      return [new Map(), nullthrows(state.atomValues.get(key))];
     } else if (state.nonvalidatedAtoms.has(key)) {
+      // Atom value is stored but needs validation before use.
+      // We might have already validated it and have a cached validated value:
+      if (cachedAnswerForUnvalidatedValue != null) {
+        return cachedAnswerForUnvalidatedValue;
+      }
       if (persistence == null) {
         expectationViolation(
           `Tried to restore a persisted value for atom ${key} but it has no persistence settings.`,
         );
-        return [state, loadableWithValue(options.default)];
+        return [new Map(), defaultLoadable];
       }
       const nonvalidatedValue = state.nonvalidatedAtoms.get(key);
-      const validatedValue: T | DefaultValue = persistence.validator(
+      const validatorResult: T | DefaultValue = persistence.validator(
         nonvalidatedValue,
         DEFAULT_VALUE,
       );
 
-      return validatedValue instanceof DefaultValue
-        ? [
-            {
-              ...state,
-              nonvalidatedAtoms: mapByDeletingFromMap(
-                state.nonvalidatedAtoms,
-                key,
-              ),
-            },
-            loadableWithValue(options.default),
-          ]
-        : [
-            {
-              ...state,
-              atomValues: mapBySettingInMap(
-                state.atomValues,
-                key,
-                loadableWithValue(validatedValue),
-              ),
-              nonvalidatedAtoms: mapByDeletingFromMap(
-                state.nonvalidatedAtoms,
-                key,
-              ),
-            },
-            loadableWithValue(validatedValue),
-          ];
+      const validatedValueLoadable =
+        validatorResult instanceof DefaultValue
+          ? defaultLoadable
+          : loadableWithValue(validatorResult);
+      cachedAnswerForUnvalidatedValue = [new Map(), validatedValueLoadable];
+      return cachedAnswerForUnvalidatedValue;
     } else {
-      return [state, loadableWithValue(options.default)];
+      return [new Map(), defaultLoadable];
     }
+  }
+
+  function invalidate() {
+    cachedAnswerForUnvalidatedValue = undefined;
   }
 
   function mySet(
     store: Store,
     state: TreeState,
     newValue: T | DefaultValue,
-  ): [TreeState, $ReadOnlySet<NodeKey>] {
+  ): [DependencyMap, AtomValues] {
     initAtom(store, state, 'set');
 
-    // Only update if setting a new value
-    if (
-      state.atomValues.has(key)
-        ? newValue === state.atomValues.get(key)?.contents
-        : newValue instanceof DefaultValue
+    // Bail out if we're being set to the existing value, or if we're being
+    // reset but have no stored value (validated or unvalidated) to reset from:
+    if (state.atomValues.has(key)) {
+      const existing = nullthrows(state.atomValues.get(key));
+      if (existing.state === 'hasValue' && newValue === existing.contents) {
+        return [new Map(), new Map()];
+      }
+    } else if (
+      !state.nonvalidatedAtoms.has(key) &&
+      newValue instanceof DefaultValue
     ) {
-      return [state, new Set()];
+      return [new Map(), new Map()];
     }
 
     if (__DEV__) {
@@ -278,29 +354,24 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       }
     }
 
-    return [
-      {
-        ...state,
-        dirtyAtoms: setByAddingToSet(state.dirtyAtoms, key),
-        atomValues:
-          newValue instanceof DefaultValue
-            ? mapByDeletingFromMap(state.atomValues, key)
-            : mapBySettingInMap(
-                state.atomValues,
-                key,
-                loadableWithValue(newValue),
-              ),
-        nonvalidatedAtoms: mapByDeletingFromMap(state.nonvalidatedAtoms, key),
-      },
-      new Set([key]),
-    ];
+    cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
+    return [new Map(), new Map().set(key, loadableWithValue(newValue))];
   }
 
   const node = registerNode({
     key,
-    options,
+    peek: myPeek,
     get: myGet,
     set: mySet,
+    invalidate,
+    dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+    persistence_UNSTABLE: options.persistence_UNSTABLE
+      ? {
+          type: options.persistence_UNSTABLE.type,
+          backButton: options.persistence_UNSTABLE.backButton,
+        }
+      : undefined,
+    shouldRestoreFromSnapshots: true,
   });
   return node;
 }
@@ -312,13 +383,17 @@ function atom<T>(options: AtomOptions<T>): RecoilState<T> {
     // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     ...restOptions
   } = options;
-  if (isRecoilValue(optionsDefault) || isPromise(optionsDefault)) {
+  if (isRecoilValue(optionsDefault)
+    // Continue to use atomWithFallback for promise defaults for scoped atoms
+    // for now, since scoped atoms don't support async defaults
+   // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
+  ) {
     return atomWithFallback<T>({
       ...restOptions,
       default: optionsDefault,
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     });
-  // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS) {
+  // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
     // @fb-only: return scopedAtom<T>({
       // @fb-only: ...restOptions,
       // @fb-only: default: optionsDefault,

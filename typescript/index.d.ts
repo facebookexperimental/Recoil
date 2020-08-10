@@ -22,7 +22,9 @@ type TreeState = Readonly<{
 }>;
 
 // node.d.ts
-export class DefaultValue {}
+export class DefaultValue {
+  private __tag: 'DefaultValue';
+}
 
 // recoilRoot.d.ts
 import * as React from 'react';
@@ -74,8 +76,14 @@ export interface ReadWriteSelectorOptions<T> extends ReadOnlySelectorOptions<T> 
 export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
 export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
 
-// hooks.d.ts
+// Snapshot.d.ts
+declare const SnapshotID_OPAQUE: unique symbol;
+export interface SnapshotID {
+  readonly [SnapshotID_OPAQUE]: true;
+}
+
 export class Snapshot {
+  getID(): SnapshotID;
   getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
   getPromise<T>(recoilValue: RecoilValue<T>): Promise<T>;
   map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
@@ -87,6 +95,7 @@ export class MutableSnapshot extends Snapshot {
   reset: ResetRecoilState;
 }
 
+// hooks.d.ts
 export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
 export type Resetter = () => void;
 export type CallbackInterface = Readonly<{

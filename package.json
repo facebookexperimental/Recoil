@@ -2,9 +2,14 @@
   "name": "recoil",
   "version": "0.0.10",
   "description": "Recoil - A state management library for React",
-  "main": "dist/index.js",
+  "main": "cjs/recoil.js",
+  "module": "es/recoil.js",
+  "unpkg": "umd/recoil.js",
   "files": [
-    "dist"
+    "umd",
+    "es",
+    "cjs",
+    "index.d.ts"
   ],
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
@@ -84,6 +89,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,md,json}": "prettier --write"
+    "*.{js,md,json}": "prettier --write",
+    "*.{js}": "eslint --fix"
   }
 }

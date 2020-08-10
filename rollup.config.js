@@ -4,57 +4,121 @@ import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
 
-const config = ({mode, target}) => ({
-  input: 'src/Recoil_index.js',
-  output: {
-    file:
-      target === 'web'
-        ? `dist/recoil.${mode}.js`
-        : `dist/recoil.${mode}.${target}.js`,
-    format: 'cjs',
-    exports: 'named',
+const inputFile = 'src/Recoil_index.js';
+const externalLibs = ['react', 'react-dom'];
+
+const commonPlugins = [
+  babel({
+    presets: ['@babel/preset-react', '@babel/preset-flow'],
+    plugins: [
+      'babel-preset-fbjs/plugins/dev-expression',
+      '@babel/plugin-proposal-class-properties',
+      '@babel/plugin-proposal-nullish-coalescing-operator',
+      '@babel/plugin-proposal-optional-chaining',
+      '@babel/transform-flow-strip-types',
+    ],
+    babelHelpers: 'bundled',
+  }),
+  {
+    resolveId: source => {
+      if (source === 'React') {
+        return {id: 'react', external: true};
+      }
+      if (source === 'ReactDOM') {
+        return {id: 'react-dom', external: true};
+      }
+      return null;
+    },
   },
-  external: ['react', 'react-dom', 'react-native'],
-  plugins: [
-    babel({
-      presets: ['@babel/preset-react', '@babel/preset-flow'],
-      plugins: [
-        'babel-preset-fbjs/plugins/dev-expression',
-        '@babel/plugin-proposal-class-properties',
-        '@babel/plugin-proposal-nullish-coalescing-operator',
-        '@babel/plugin-proposal-optional-chaining',
-        '@babel/transform-flow-strip-types',
-      ],
-      babelHelpers: 'bundled',
-    }),
-    {
-      resolveId: source => {
-        if (source === 'React') {
-          return {id: 'react', external: true};
-        }
-        if (source === 'ReactDOM') {
-          return {id: 'react-dom', external: true};
-        }
-        if (source === 'ReactNative') {
-          return {id: 'react-native', external: true};
-        }
-        return null;
+  nodeResolve(),
+  commonjs(),
+];
+
+const developmentPlugins = [
+  ...commonPlugins,
+  replace({
+    'process.env.NODE_ENV': JSON.stringify('development'),
+  }),
+];
+
+const productionPlugins = [
+  ...commonPlugins,
+  replace({
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  }),
+  terser({mangle: false}),
+];
+
+const configs = [
+  // CommonJS
+  {
+    input: inputFile,
+    output: {
+      file: `cjs/recoil.js`,
+      format: 'cjs',
+      exports: 'named',
+    },
+    external: externalLibs,
+    plugins: commonPlugins,
+  },
+
+  // ES
+  {
+    input: inputFile,
+    output: {
+      file: `es/recoil.js`,
+      format: 'es',
+      exports: 'named',
+    },
+    external: externalLibs,
+    plugins: commonPlugins,
+  },
+
+  // ES for Browsers
+  {
+    input: inputFile,
+    output: {
+      file: `es/recoil.mjs`,
+      format: 'es',
+      exports: 'named',
+    },
+    external: externalLibs,
+    plugins: productionPlugins,
+  },
+
+  // UMD Development
+  {
+    input: inputFile,
+    output: {
+      file: `umd/recoil.js`,
+      format: 'umd',
+      name: 'Recoil',
+      exports: 'named',
+      globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
       },
     },
-    nodeResolve({
-      extensions: target === 'native' ? ['.native.js', '.js'] : undefined,
-    }),
-    commonjs(),
-    replace({
-      'process.env.NODE_ENV': JSON.stringify(mode),
-    }),
-    mode === 'development' ? undefined : terser({mangle: false}),
-  ],
-});
+    external: externalLibs,
+    plugins: developmentPlugins,
+  },
 
-export default [
-  config({mode: 'development', target: 'web'}),
-  config({mode: 'production', target: 'web'}),
-  config({mode: 'development', target: 'native'}),
-  config({mode: 'production', target: 'native'}),
+  // UMD Production
+  {
+    input: inputFile,
+    output: {
+      file: `umd/recoil.min.js`,
+      format: 'umd',
+      name: 'Recoil',
+      exports: 'named',
+      globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
+    },
+    external: externalLibs,
+    plugins: productionPlugins,
+  },
 ];
+
+export default configs;

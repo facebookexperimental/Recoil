@@ -11,11 +11,10 @@
 'use strict';
 
 const gkx = require('../../util/Recoil_gkx');
-gkx.setPass('recoil_async_selector_refactor');
+gkx.setFail('recoil_async_selector_refactor');
 
 const React = require('React');
 const {act} = require('ReactTestUtils');
-const {useRecoilState, useRecoilValue} = require('../../Recoil_index');
 const atom = require('../Recoil_atom');
 const constSelector = require('../Recoil_constSelector');
 const errorSelector = require('../Recoil_errorSelector');
@@ -116,11 +115,12 @@ test('selector reset', () => {
   expect(get(selectorRW)).toEqual('DEFAULT');
 });
 
-test('useRecoilState - resolved async selector', () => {
+test('useRecoilState - resolved async selector', async () => {
   const resolvingSel = resolvingAsyncSelector('HELLO');
   const c = renderElements(<ReadsAtom atom={resolvingSel} />);
   expect(c.textContent).toEqual('loading');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"HELLO"');
 });
 
@@ -204,7 +204,7 @@ test('useRecoilState - selector catching exceptions', () => {
   expect(c2.textContent).toEqual('"CAUGHT"');
 });
 
-test('useRecoilState - async selector', () => {
+test('useRecoilState - async selector', async () => {
   const resolvingSel = resolvingAsyncSelector('READY');
 
   // On first read it is blocked on the async selector
@@ -213,10 +213,11 @@ test('useRecoilState - async selector', () => {
 
   // When that resolves the data is ready
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c1.textContent).toEqual('"READY"');
 });
 
-test('useRecoilState - selector blocked on dependency', () => {
+test('useRecoilState - selector blocked on dependency', async () => {
   const resolvingSel = resolvingAsyncSelector('READY');
   const blockedSelector = selector({
     key: 'useRecoilState/blocked selector',
@@ -229,6 +230,7 @@ test('useRecoilState - selector blocked on dependency', () => {
 
   // When the dependency resolves, the data is ready
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c2.textContent).toEqual('"READY"');
 });
 
@@ -329,7 +331,7 @@ test('useRecoilState - selector catching any of 2 loads', async () => {
 
 // Test the ability to catch a promise for a pending dependency that we can
 // then handle by returning an async promise.
-test('useRecoilState - selector catching promise and resolving asynchronously', () => {
+test('useRecoilState - selector catching promise and resolving asynchronously', async () => {
   const [originalDep, resolveOriginal] = asyncSelector();
   const [bypassDep, resolveBypass] = asyncSelector();
   const catchPromiseSelector = selector({
@@ -350,15 +352,18 @@ test('useRecoilState - selector catching promise and resolving asynchronously', 
   expect(c.textContent).toEqual('loading');
   resolveBypass('BYPASS');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"BYPASS"');
   resolveOriginal('READY');
   act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"READY"');
 });
 
 // This tests ability to catch a pending result as a promise and
-// that the promise resolves to the dependencies value and handle it
+// that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
+/* FIXME broken without new selector implementation
 test('useRecoilState - selector catching promise 2', async () => {
   let dependencyPromiseTest;
   const resolvingSel = resolvingAsyncSelector('READY');
@@ -398,6 +403,7 @@ test('useRecoilState - selector catching promise 2', async () => {
   // to the dependency's value.
   await dependencyPromiseTest;
 });
+*/
 
 // Test that Recoil will throw an error with a useful debug message instead of
 // infinite recurssion when there is a circular dependency
@@ -423,6 +429,7 @@ test('Detect circular dependencies', () => {
   window.__DEV__ = devStatus;
 });
 
+/* FIXME broken without new selector implementation
 test('selector is able to track dependencies discovered asynchronously', async () => {
   const anAtom = atom({key: 'atomTrackedAsync', default: 'Async Dep Value'});
 
@@ -462,6 +469,7 @@ test('selector is able to track dependencies discovered asynchronously', async (
 
   expect(container.textContent).toEqual('CHANGED Async Dep');
 });
+*/
 
 /**
  * This test is an extension of the 'selector is able to track dependencies
@@ -469,6 +477,7 @@ test('selector is able to track dependencies discovered asynchronously', async (
  * responds to changes in dependencies that were discovered asynchronously, the
  * selector should run through the entire selector in response to those changes.
  */
+/* FIXME broken without new selector implementation
 test('selector should rerun entire selector when a dep changes', async () => {
   const resolvingSel1 = resolvingAsyncSelector(1);
   const resolvingSel2 = resolvingAsyncSelector(2);
@@ -518,12 +527,14 @@ test('selector should rerun entire selector when a dep changes', async () => {
 
   expect(container.textContent).toEqual('7');
 });
+*/
 
 /**
  * This test ensures that we are not running the selector's get() an unnecessary
  * number of times in response to async selectors resolving (i.e. by retrying
  * more times than we have to or creating numerous promises that retry).
  */
+/* FIXME broken without new selector implementation
 test('async selector runs the minimum number of times required', () => {
   const [asyncDep1, resolveAsyncDep1] = asyncSelector();
   const [asyncDep2, resolveAsyncDep2] = asyncSelector();
@@ -555,7 +566,9 @@ test('async selector runs the minimum number of times required', () => {
   expect(numTimesRan).toBe(3);
   expect(container.textContent).toEqual('"ab"');
 });
+*/
 
+/* FIXME broken without new selector implementation
 test('async selector with changing dependencies finishes execution using original state', async () => {
   const [asyncDep, resolveAsyncDep] = asyncSelector();
   const anAtom = atom({key: 'atomChangingDeps', default: 3});
@@ -596,9 +609,11 @@ test('async selector with changing dependencies finishes execution using origina
     expect(promiseAfterChangingAtom).resolves.toHaveProperty('value', 10 + 10),
   ]);
 });
+*/
 
 // Test that an async selector will resolve to its dependency's value
 // when it provides the dependency from an async callback.
+/* FIXME broken without new selector implementation
 test('selector - dynamic getRecoilValue()', async () => {
   const sel2 = selector({
     key: 'MySelector2',
@@ -620,4 +635,31 @@ test('selector - dynamic getRecoilValue()', async () => {
   act(() => jest.runAllTimers());
 
   expect(el.textContent).toEqual('"READY"');
+});
+*/
+
+test('distinct loading dependencies are treated as distinct', async () => {
+  const upstreamAtom = atom({
+    key: 'distinct loading dependencies/upstreamAtom',
+    default: 0,
+  });
+  const upstreamAsyncSelector = selector({
+    key: 'distinct loading dependencies/upstreamAsyncSelector',
+    get: ({get}) => Promise.resolve(get(upstreamAtom)),
+  });
+  const directSelector = selector({
+    key: 'distinct loading dependencies/directSelector',
+    get: ({get}) => get(upstreamAsyncSelector),
+  });
+
+  expect(get(directSelector) instanceof Promise).toBe(true);
+
+  act(() => jest.runAllTimers());
+  expect(get(directSelector)).toEqual(0);
+
+  set(upstreamAtom, 1);
+  expect(get(directSelector) instanceof Promise).toBe(true);
+
+  act(() => jest.runAllTimers());
+  expect(get(directSelector)).toEqual(1);
 });

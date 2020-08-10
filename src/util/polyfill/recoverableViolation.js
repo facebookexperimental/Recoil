@@ -11,8 +11,15 @@
 
 'use strict';
 
-// @fb-only: const recoverableViolation = require('recoverableViolation');
-
-const recoverableViolation = require('./polyfill/recoverableViolation.js'); // @oss-only
+function recoverableViolation(
+  message: string,
+  projectName: 'recoil',
+  {error}: {|error?: Error|} = {},
+): null {
+  if (__DEV__) {
+    console.error(message, error);
+  }
+  return null;
+}
 
 module.exports = recoverableViolation;

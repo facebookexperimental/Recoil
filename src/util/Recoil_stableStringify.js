@@ -73,19 +73,12 @@ function stringify(x: mixed, opt: Options, key?: string): string {
   // For built-in Maps, sort the keys in a stable order instead of the
   // default insertion order.  Support non-string keys.
   if (x instanceof Map) {
-    return stringify(
-      // TODO Object.fromEntries(x) isn't supported in Babel yet (7/17/19)
-      Array.from(x).reduce(
-        (obj, [k, v]) => ({
-          ...obj,
-          // Stringify will escape any nested quotes
-          [((typeof k === 'string' ? k : stringify(k, opt)): string)]: v,
-        }),
-        {},
-      ),
-      opt,
-      key,
-    );
+    const obj = {};
+    for (const [k, v] of x) {
+      // Stringify will escape any nested quotes
+      obj[typeof k === 'string' ? k : stringify(k, opt)] = v;
+    }
+    return stringify(obj, opt, key);
   }
 
   // For built-in Sets, sort the keys in a stable order instead of the

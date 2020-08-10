@@ -25,6 +25,7 @@ import {
   useRecoilTransactionObserver_UNSTABLE,
   useGotoRecoilSnapshot,
   Snapshot,
+  SnapshotID,
   useRecoilSnapshot,
 } from 'recoil';
 
@@ -71,6 +72,8 @@ const writeableSelector = selector({
   set: ({ get, set, reset }) => {
     get(myAtom);
     set(myAtom, 5);
+    set(myAtom, 'hello'); // $ExpectError
+    set(myAtom, new DefaultValue());
     reset(myAtom);
 
     set(readOnlySelectorSel, 2); // $ExpectError
@@ -86,7 +89,9 @@ RecoilRoot({
     reset(myAtom);
 
     set(readOnlySelectorSel, 2); // $ExpectError
+    set(writeableSelector, 10); // $ExpectError
     setUnvalidatedAtomValues({}); // $ExpectError
+    set(writeableSelector, new DefaultValue());
   },
 });
 
@@ -139,6 +144,7 @@ useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
 
 useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
+  const id: SnapshotID = snapshot.getID();
   const val: number = await snapshot.getPromise(mySelector1);
   const loadable = snapshot.getLoadable(mySelector1);
 

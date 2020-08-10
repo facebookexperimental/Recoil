@@ -11,8 +11,16 @@
 
 'use strict';
 
-// @fb-only: const recoverableViolation = require('recoverableViolation');
+function unionSets<TValue>(
+  ...sets: $ReadOnlyArray<$ReadOnlySet<TValue>>
+): Set<TValue> {
+  const result = new Set();
+  for (const set of sets) {
+    for (const value of set) {
+      result.add(value);
+    }
+  }
+  return result;
+}
 
-const recoverableViolation = require('./polyfill/recoverableViolation.js'); // @oss-only
-
-module.exports = recoverableViolation;
+module.exports = unionSets;

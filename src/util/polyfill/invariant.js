@@ -11,8 +11,10 @@
 
 'use strict';
 
-// @fb-only: const recoverableViolation = require('recoverableViolation');
+function invariant(condition: boolean, message: string) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
 
-const recoverableViolation = require('./polyfill/recoverableViolation.js'); // @oss-only
-
-module.exports = recoverableViolation;
+module.exports = invariant;
