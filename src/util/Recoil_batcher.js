@@ -11,7 +11,7 @@
  * This is a stub for some integration into FB internal stuff
  */
 
-const {unstable_batchedUpdates} = require('./Recoil_ReactBatchedUpdates');
+const {unstable_batchedUpdates} = require('ReactDOM');
 
 let batcher = unstable_batchedUpdates;
 
