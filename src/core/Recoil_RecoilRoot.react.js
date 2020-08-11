@@ -16,6 +16,8 @@ import type {Store, StoreRef, StoreState} from '../core/Recoil_State';
 
 const React = require('React');
 const {useContext, useEffect, useRef, useState} = require('React');
+// @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
+// @fb-only: const URI = require('URI');
 
 const Queue = require('../adt/Recoil_Queue');
 const {
@@ -35,6 +37,7 @@ const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const nullthrows = require('../util/Recoil_nullthrows');
 const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
+// @fb-only: const gkx = require('gkx');
 
 type Props = {
   initializeState_DEPRECATED?: ({
@@ -235,6 +238,16 @@ function RecoilRoot({
   initializeState,
   children,
 }: Props): ReactElement {
+  // prettier-ignore
+  // @fb-only: useEffect(() => {
+    // @fb-only: if (gkx('recoil_usage_logging')) {
+      // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+        // @fb-only: type: 'RECOIL_ROOT_MOUNTED',
+        // @fb-only: path: URI.getRequestURI().getPath(),
+      // @fb-only: }));
+    // @fb-only: }
+  // @fb-only: }, []);
+
   let storeState; // eslint-disable-line prefer-const
 
   const getGraph = version => {
