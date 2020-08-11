@@ -39,7 +39,7 @@ function cloneGraph(graph: Graph): Graph {
 
 // Note that this overwrites the deps of existing nodes, rather than unioning
 // the new deps with the old deps.
-function mergeDepedencyMapIntoGraph(deps: DependencyMap, graph: Graph): void {
+function mergeDependencyMapIntoGraph(deps: DependencyMap, graph: Graph): void {
   const {nodeDeps, nodeToNodeSubscriptions} = graph;
 
   deps.forEach((upstreams, downstream) => {
@@ -86,7 +86,7 @@ function saveDependencyMapToStore(
   // Merge the dependencies discovered into the store's dependency map
   // for the version that was read:
   const graph = store.getGraph(version);
-  mergeDepedencyMapIntoGraph(dependencyMap, graph);
+  mergeDependencyMapIntoGraph(dependencyMap, graph);
 }
 
 function mergeDepsIntoDependencyMap(
