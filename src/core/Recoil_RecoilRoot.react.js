@@ -35,6 +35,7 @@ const {
 } = require('../core/Recoil_State');
 const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const nullthrows = require('../util/Recoil_nullthrows');
+// @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
 // @fb-only: const gkx = require('gkx');
@@ -241,10 +242,17 @@ function RecoilRoot({
   // prettier-ignore
   // @fb-only: useEffect(() => {
     // @fb-only: if (gkx('recoil_usage_logging')) {
-      // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
-        // @fb-only: type: 'RECOIL_ROOT_MOUNTED',
-        // @fb-only: path: URI.getRequestURI().getPath(),
-      // @fb-only: }));
+      // @fb-only: try {
+        // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+          // @fb-only: type: 'RECOIL_ROOT_MOUNTED',
+          // @fb-only: path: URI.getRequestURI().getPath(),
+        // @fb-only: }));
+      // @fb-only: } catch {
+        // @fb-only: recoverableViolation(
+          // @fb-only: 'Error when logging Recoil Usage event',
+          // @fb-only: 'recoil',
+        // @fb-only: );
+      // @fb-only: }
     // @fb-only: }
   // @fb-only: }, []);
 
