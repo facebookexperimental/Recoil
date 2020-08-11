@@ -74,7 +74,6 @@ class Snapshot {
       addTransactionMetadata: () => {
         throw new Error('Cannot subscribe to Snapshots');
       },
-      mutableSource: null,
     };
   }
 

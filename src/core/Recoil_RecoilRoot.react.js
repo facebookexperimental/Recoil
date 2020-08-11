@@ -15,7 +15,7 @@ import type {MutableSnapshot} from '../core/Recoil_Snapshot';
 import type {Store, StoreRef, StoreState} from '../core/Recoil_State';
 
 const React = require('React');
-const {useContext, useEffect, useRef, useState} = require('React');
+const {useContext, useEffect, useMemo, useRef, useState} = require('React');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
 
@@ -60,7 +60,6 @@ const defaultStore: Store = Object.freeze({
   getGraph: notInAContext,
   subscribeToTransactions: notInAContext,
   addTransactionMetadata: notInAContext,
-  mutableSource: null,
 });
 
 function startNextTreeIfNeeded(storeState: StoreState): void {
@@ -83,6 +82,9 @@ function startNextTreeIfNeeded(storeState: StoreState): void {
 
 const AppContext = React.createContext<StoreRef>({current: defaultStore});
 const useStoreRef = (): StoreRef => useContext(AppContext);
+
+const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
+const useRecoilMutableSource = (): mixed => useContext(MutableSourceContext);
 
 function sendEndOfBatchNotifications(store: Store) {
   const storeState = store.getState();
@@ -338,12 +340,6 @@ function RecoilRoot({
     getGraph,
     subscribeToTransactions,
     addTransactionMetadata,
-    mutableSource: createMutableSource
-      ? createMutableSource(
-          storeState,
-          () => storeState.current.currentTree.version,
-        )
-      : null,
   };
   const storeRef = useRef(store);
   storeState = useRef(
@@ -354,16 +350,30 @@ function RecoilRoot({
       : makeEmptyStoreState(),
   );
 
+  const mutableSource = useMemo(
+    () =>
+      createMutableSource
+        ? createMutableSource(
+            storeState,
+            () => storeState.current.currentTree.version,
+          )
+        : null,
+    [createMutableSource, storeState],
+  );
+
   return (
     <AppContext.Provider value={storeRef}>
-      <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
-      {children}
+      <MutableSourceContext.Provider value={mutableSource}>
+        <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
+        {children}
+      </MutableSourceContext.Provider>
     </AppContext.Provider>
   );
 }
 
 module.exports = {
   useStoreRef,
+  useRecoilMutableSource,
   RecoilRoot,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,
 };
