@@ -16,6 +16,7 @@ import type {Store, StoreRef, StoreState} from '../core/Recoil_State';
 
 const React = require('React');
 const {useContext, useEffect, useRef, useState} = require('React');
+// @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
 
@@ -244,7 +245,7 @@ function RecoilRoot({
     // @fb-only: if (gkx('recoil_usage_logging')) {
       // @fb-only: try {
         // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
-          // @fb-only: type: 'RECOIL_ROOT_MOUNTED',
+          // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
           // @fb-only: path: URI.getRequestURI().getPath(),
         // @fb-only: }));
       // @fb-only: } catch {
