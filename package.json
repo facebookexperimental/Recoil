@@ -15,7 +15,8 @@
   "license": "MIT",
   "scripts": {
     "prepare": "install-peers",
-    "build": "rollup -c && node scripts/postbuild.js",
+    "build:flow": "gen-flow-files src --out-dir lib && mv lib/Recoil_index.js.flow lib/recoil.js.flow",
+    "build": "rollup -c && node scripts/postbuild.js && yarn build:flow",
     "test": "jest src/*",
     "format": "prettier --write \"./**/*.{js,md,json}\"",
     "flow": "flow --show-all-errors",
@@ -52,6 +53,7 @@
     "eslint-plugin-jest": "^23.13.2",
     "eslint-plugin-react": "^7.20.0",
     "flow-bin": "^0.126.1",
+    "gen-flow-files": "^0.4.11",
     "husky": ">=4",
     "immutable": "^4.0.0-rc.12",
     "install-peers-cli": "^2.2.0",
