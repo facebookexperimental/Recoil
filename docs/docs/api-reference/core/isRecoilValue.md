@@ -5,6 +5,10 @@ sidebar_label: isRecoilValue()
 
 Returns `true` if `value` is either an atom or selector and `false` otherwise.
 
+```jsx
+function isRecoilValue(value: mixed): boolean
+```
+
 ---
 
 ### Example

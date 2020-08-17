@@ -43,20 +43,27 @@ module.exports = {
       {
         Core: [
           'api-reference/core/RecoilRoot',
-          'api-reference/core/atom',
-          'api-reference/core/selector',
-          'api-reference/core/isRecoilValue',
-          // 'api-reference/core/DefaultValue',
           {
-            Hooks: [
+            State: [
+              'api-reference/core/atom',
+              'api-reference/core/selector',
+              'api-reference/core/Loadable',
+              'api-reference/core/isRecoilValue',
+              // 'api-reference/core/DefaultValue',             
               'api-reference/core/useRecoilState',
               'api-reference/core/useRecoilValue',
               'api-reference/core/useSetRecoilState',
               'api-reference/core/useResetRecoilState',
               'api-reference/core/useRecoilValueLoadable',
-              'api-reference/core/useRecoilStateLoadable',
-              'api-reference/core/useRecoilCallback',
+              'api-reference/core/useRecoilStateLoadable',              
             ],
+            Snapshots: [
+              'api-reference/core/Snapshot',
+              'api-reference/core/useRecoilCallback',
+              'api-reference/core/useRecoilTransactionObserver',
+              'api-reference/core/useRecoilSnapshot',
+              'api-reference/core/useGotoRecoilSnapshot',              
+            ]
           },
         ],
       },
@@ -66,10 +73,10 @@ module.exports = {
           'api-reference/utils/selectorFamily',
           'api-reference/utils/constSelector',
           'api-reference/utils/errorSelector',
-          'api-reference/utils/noWait',
           'api-reference/utils/waitForAll',
           'api-reference/utils/waitForAny',
           'api-reference/utils/waitForNone',
+          'api-reference/utils/noWait',
         ],
       },
     ],

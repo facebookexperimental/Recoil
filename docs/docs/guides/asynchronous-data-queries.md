@@ -61,7 +61,7 @@ function CurrentUserInfo() {
 
 The interface of the selector is the same, so the component using this selector doesn't need to care if it was backed with synchronous atom state, derived selector state, or asynchronous queries!
 
-But, since React render functions are synchronous, what will it render before the promise resolves? Recoil is designed to work with [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) to handle pending data. Wrapping your component with a Suspense boundary will catch any descendents that are still pending and render a fallback UI:
+But, since React render functions are synchronous, what will it render before the promise resolves? Recoil is designed to work with [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) to handle pending data. Wrapping your component with a Suspense boundary will catch any descendants that are still pending and render a fallback UI:
 
 ```jsx
 function MyApp() {
@@ -179,12 +179,7 @@ const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
   get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
-    const friends = [];
-    for (const friendID of friendList) {
-      const friendInfo = get(userInfoQuery(friendID));
-      friends.push(friendInfo);
-    }
-    return friends;
+    return friendList.map(friendID => get(userInfoQuery(friendID)));
   },
 });
 
@@ -221,7 +216,7 @@ function MyApp() {
 
 ## Concurrent Requests
 
-If you notice in the above example, the `friendsInfoQuery` uses a query to get the info for each friend.  But, by doing this in a loop they are essentially serialized.  If the lookup is fast, maybe that's ok.  If it's expensive, you can use a concurrency helper such as [`waitForAll`](/docs/api-reference/utils/waitForAll), [`waitForNone`](/docs/api-reference/utils/waitForNone), or [`waitForAny`](/docs/api-reference/utils/waitForAny) to run them in parallel or handle partial results.  They accept both arrays and named objects of dependencies.
+If you notice in the above example, the `friendsInfoQuery` uses a query to get the info for each friend.  But, by doing this in a loop they are essentially serialized.  If the lookup is fast, maybe that's ok.  If it's expensive, you can use a concurrency helper such as [`waitForAll`](/docs/api-reference/utils/waitForAll) to run them in parallel.  This helper accepts both arrays and named objects of dependencies.
 
 ```jsx
 const friendsInfoQuery = selector({
@@ -234,6 +229,54 @@ const friendsInfoQuery = selector({
     return friends;
   },
 });
+```
+
+You can use [`waitForNone`](/docs/api-reference/utils/waitForNone) to handle incremental updates to the UI with partial data
+
+```jsx
+const friendsInfoQuery = selector({
+  key: 'FriendsInfoQuery',
+  get: ({get}) => {
+    const {friendList} = get(currentUserInfoQuery);
+    const friendLoadables = get(waitForNone(
+      friendList.map(friendID => userInfoQuery(friendID))
+    ));
+    return friendLoadables
+      .filter(({state}) => state === 'hasValue')
+      .map(({contents}) => contents);
+  },
+});
+```
+
+## Pre-Fetching
+
+For performance reasons you may wish to kick off fetching *before* rendering.  That way the query can be going while we start rendering.  The [React docs](https://reactjs.org/docs/concurrent-mode-suspense.html#start-fetching-early) give some examples.  This pattern works with Recoil as well.
+
+Let's change the above example to initiate a fetch for the next user info as soon as the user clicks the button to change users:
+
+```jsx
+function CurrentUserInfo() {
+  const currentUser = useRecoilValue(currentUserInfoQuery);
+  const friends = useRecoilValue(friendsInfoQuery);
+
+  const changeUser = useRecoilCallback(({snapshot, set}) => userID => {
+    snapshot.getLoadable(userInfoQuery(userID)); // pre-fetch user info
+    set(currentUserIDState, userID); // change current user to start new render
+  });
+
+  return (
+    <div>
+      <h1>{currentUser.name}</h1>
+      <ul>
+        {friends.map(friend =>
+          <li key={friend.id} onClick={() => changeUser(friend.id)}>
+            {friend.name}
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
 ```
 
 ## Without React Suspense
