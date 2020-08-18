@@ -3,13 +3,17 @@ title: isRecoilValue(value)
 sidebar_label: isRecoilValue()
 ---
 
-Returns `true` if `value` is either an atom or selector and `false` otherwise.
+`value`이 atom이나 selector일 경우 `true`를 반환하고 그렇지 않을 경우 `false`를 반환한다.
+
+```jsx
+function isRecoilValue(value: mixed): boolean
+```
 
 ---
 
 ### Example
 
-```javascript
+```jsx
 import {atom, isRecoilValue} from 'recoil';
 
 const counter = atom({
