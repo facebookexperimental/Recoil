@@ -32,7 +32,7 @@ function TimeTravelObserver() {
             Restore
           </button>
         </li>
-      )}
+      ))}
     </ol>
   );
 }
