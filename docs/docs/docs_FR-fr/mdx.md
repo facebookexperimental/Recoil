@@ -1,9 +1,9 @@
 ---
 id: mdx
-title: Powered by MDX
+title: Propulsé par MDX
 ---
 
-You can write JSX and use React components within your Markdown thanks to [MDX](https://mdxjs.com/).
+Vous pouvez écrire du JSX et utiliser des composants React dans votre Markdown grace à [MDX](https://mdxjs.com/).
 
 export const Highlight = ({children, color}) => ( <span style={{
       backgroundColor: color,
@@ -12,6 +12,6 @@ export const Highlight = ({children, color}) => ( <span style={{
       padding: '0.2rem',
     }}> {children} </span> );
 
-<Highlight color="#25c2a0">Docusaurus green</Highlight> and <Highlight color="#1877F2">Facebook blue</Highlight> are my favorite colors.
+<Highlight color="#25c2a0">Vert Docusaurus</Highlight> et <Highlight color="#1877F2">blue Facebook</Highlight> sont mes couleures favorites.
 
-I can write **Markdown** alongside my _JSX_!
+Je peux utiliser du **Markdown** dans mon _JSX_!
