@@ -20,13 +20,11 @@ const atom = require('../../recoil_values/Recoil_atom');
 const {
   componentThatReadsAndWritesAtom,
 } = require('../../testing/Recoil_TestingUtils');
-const useRecoilStore = require('../Recoil_useRecoilStore');
+const useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 
-test('useRecoilStore - create a context bridge', () => {
-  const container = document.createElement('div');
-
+test('useRecoilBridgeAcrossReactRoots - create a context bridge', () => {
   const myAtom = atom({
-    key: 'useRecoilStore - context bridge',
+    key: 'useRecoilBridgeAcrossReactRoots - context bridge',
     default: 'DEFAULT',
   });
 
@@ -40,22 +38,23 @@ test('useRecoilStore - create a context bridge', () => {
 
   function NestedReactRoot({children}) {
     const ref = useRef();
-    const store = useRecoilStore();
+    const RecoilBridge = useRecoilBridgeAcrossReactRoots();
 
     useEffect(
       () =>
         act(() => {
           ReactDOM.render(
-            <RecoilRoot store_UNSTABLE={store}>{children}</RecoilRoot>,
+            <RecoilBridge>{children}</RecoilBridge>,
             ref.current ?? document.createElement('div'),
           );
         }),
-      [children, store],
+      [children],
     );
 
     return <div ref={ref} />;
   }
 
+  const container = document.createElement('div');
   act(() => {
     ReactDOM.render(
       <RecoilRoot initializeState={initializeState}>

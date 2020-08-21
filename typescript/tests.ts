@@ -81,6 +81,20 @@ const writeableSelector = selector({
   },
 });
 
+// RecoilRoot
+RecoilRoot({});
+RecoilRoot({
+  initializeState: ({ set, reset }) => {
+    set(myAtom, 5);
+    reset(myAtom);
+
+    set(readOnlySelectorSel, 2); // $ExpectError
+    set(writeableSelector, 10); // $ExpectError
+    setUnvalidatedAtomValues({}); // $ExpectError
+    set(writeableSelector, new DefaultValue());
+  },
+});
+
 // Hooks
 const roAtom: RecoilValueReadOnly<string> = {} as any;
 const waAtom: RecoilState<string> = {} as any;
@@ -182,25 +196,11 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   useRecoilSnapshot(); // $ExpectType Snapshot
 }
 
-// useRecoilStore()
-const store: RecoilStore = useRecoilStore();
+// useRecoilBridgeAcrossReactRoots()
+const RecoilBridge: RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE();
+RecoilBridge({});
+RecoilBridge({initializeState: () => {}}); // $ExpectError
 
-// RecoilRoot
-RecoilRoot({});
-RecoilRoot({
-  initializeState: ({ set, reset }) => {
-    set(myAtom, 5);
-    reset(myAtom);
-
-    set(readOnlySelectorSel, 2); // $ExpectError
-    set(writeableSelector, 10); // $ExpectError
-    setUnvalidatedAtomValues({}); // $ExpectError
-    set(writeableSelector, new DefaultValue());
-  },
-});
-RecoilRoot({
-  store_UNTABLE: store,
-});
 
 // Other
 isRecoilValue(4);
