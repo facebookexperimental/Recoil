@@ -59,7 +59,6 @@ function makeStore(): Store {
     addTransactionMetadata: () => {
       throw new Error('not implemented');
     },
-    mutableSource: null,
   };
   return store;
 }

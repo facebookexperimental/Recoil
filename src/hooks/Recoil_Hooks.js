@@ -22,7 +22,10 @@ const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 const ReactDOM = require('ReactDOM');
 
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {
+  useRecoilMutableSource,
+  useStoreRef,
+} = require('../core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   AbstractRecoilValue,
@@ -283,7 +286,7 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   );
 
   const treeState = useMutableSource(
-    storeRef.current.mutableSource,
+    useRecoilMutableSource(),
     getTreeState,
     subscribe,
   );
