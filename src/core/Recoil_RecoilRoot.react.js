@@ -41,12 +41,15 @@ const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
 // @fb-only: const gkx = require('gkx');
 
+export type RecoilStore = Store;
+
 type Props = {
   initializeState_DEPRECATED?: ({
     set: <T>(RecoilValue<T>, T) => void,
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
   initializeState?: MutableSnapshot => void,
+  store_UNSTABLE?: RecoilStore,
   children: React.Node,
 };
 
@@ -240,6 +243,7 @@ let nextID = 0;
 function RecoilRoot({
   initializeState_DEPRECATED,
   initializeState,
+  store_UNSTABLE: storeProp, // For use with React "context bridging"
   children,
 }: Props): ReactElement {
   // prettier-ignore
@@ -343,13 +347,14 @@ function RecoilRoot({
     (React: any).createMutableSource ?? // flowlint-line unclear-type:off
     (React: any).unstable_createMutableSource; // flowlint-line unclear-type:off
 
-  const store: Store = {
+  const store: Store = storeProp ?? {
     getState: () => storeState.current,
     replaceState,
     getGraph,
     subscribeToTransactions,
     addTransactionMetadata,
   };
+
   const storeRef = useRef(store);
   storeState = useRef(
     initializeState_DEPRECATED != null
