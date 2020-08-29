@@ -7,7 +7,7 @@ function logErrors(err) {
   }
 }
 
-console.log('Copying index.d.ts for Typescript support...');
+console.log('Copying index.d.ts for TypeScript support...');
 fs.copyFile('./typescript/index.d.ts', './index.d.ts', logErrors);
 
 console.log('Generating Flow type files...');
