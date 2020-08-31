@@ -49,12 +49,12 @@ export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
 // selector.d.ts
 export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
 
-type SetRecoilState = <T>(
+export type SetRecoilState = <T>(
     recoilVal: RecoilState<T>,
     newVal: T | DefaultValue | ((prevValue: T) => T | DefaultValue),
 ) => void;
 
-type ResetRecoilState = (recoilVal: RecoilState<any>) => void;
+export type ResetRecoilState = (recoilVal: RecoilState<any>) => void;
 
 export interface ReadOnlySelectorOptions<T> {
     key: string;
