@@ -47,7 +47,7 @@ export interface AtomOptions<T> {
 export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
 
 // selector.d.ts
-type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
+export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
 
 type SetRecoilState = <T>(
     recoilVal: RecoilState<T>,
