@@ -59,7 +59,7 @@
 
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {DependencyMap} from '../core/Recoil_Graph';
+import type {DependencyMap} from '../core/Recoil_Dependencies';
 import type {PersistenceInfo} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';

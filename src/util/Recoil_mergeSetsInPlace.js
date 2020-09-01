@@ -11,16 +11,16 @@
 
 'use strict';
 
-function unionSets<TValue>(
-  ...sets: $ReadOnlyArray<$ReadOnlySet<TValue>>
-): Set<TValue> {
-  const result = new Set();
-  for (const set of sets) {
-    for (const value of set) {
-      result.add(value);
+function mergeSetsInPlace<TKey>(
+  destSet: Set<TKey>,
+  ...srcSets: $ReadOnlyArray<$ReadOnlySet<TKey>>
+): Set<TKey> {
+  for (const srcSet of srcSets) {
+    for (const key of srcSet) {
+      destSet.add(key);
     }
   }
-  return result;
+  return destSet;
 }
 
-module.exports = unionSets;
+module.exports = mergeSetsInPlace;

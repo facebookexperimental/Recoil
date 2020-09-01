@@ -11,11 +11,10 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {Graph} from './Recoil_GraphTypes';
 import type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
-const {graph} = require('./Recoil_Graph');
+const Graph = require('./Recoil_Graph');
 
 // flowlint-next-line unclear-type:off
 export type AtomValues = Map<NodeKey, Loadable<any>>;
@@ -146,7 +145,7 @@ function makeEmptyStoreState(): StoreState {
     nodeToComponentSubscriptions: new Map(),
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
-    graphsByVersion: new Map().set(currentTree.version, graph()),
+    graphsByVersion: new Map().set(currentTree.version, new Graph()),
     versionsUsedByComponent: new Map(),
   };
 }

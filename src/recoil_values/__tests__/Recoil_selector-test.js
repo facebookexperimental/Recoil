@@ -14,8 +14,10 @@ const gkx = require('../../util/Recoil_gkx');
 gkx.setFail('recoil_async_selector_refactor');
 
 const React = require('React');
+const {useEffect, useState} = require('React');
 const {act} = require('ReactTestUtils');
 const atom = require('../Recoil_atom');
+const {useRecoilValue, useSetRecoilState} = require('../../hooks/Recoil_Hooks');
 const constSelector = require('../Recoil_constSelector');
 const errorSelector = require('../Recoil_errorSelector');
 const {
@@ -358,6 +360,52 @@ test('useRecoilState - selector catching promise and resolving asynchronously', 
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"READY"');
+});
+
+test('Selector deps are saved when a component mounts due to a non-recoil change at the same time that a selector is first read', () => {
+  // Regression test for an issue where selector dependencies were not saved
+  // in this circumstance. In this situation dependencies are discovered for
+  // a selector when reading from a non-latest graph. This tests that these deps
+  // are carried forward instead of being forgotten.
+  let show, setShow, setAnotherAtom;
+  function Parent() {
+    [show, setShow] = useState(false);
+    setAnotherAtom = useSetRecoilState(anotherAtom);
+    if (show) {
+      return <SelectorUser />;
+    } else {
+      return null;
+    }
+  }
+
+  const anAtom = atom<number>({key: 'anAtom', default: 0});
+  const anotherAtom = atom<number>({key: 'anotherAtom', default: 0});
+
+  const aSelector = selector({
+    key: 'aSelector',
+    get: ({get}) => {
+      return get(anAtom);
+    },
+  });
+
+  function SelectorUser() {
+    const setter = useSetRecoilState(anAtom);
+    useEffect(() => {
+      setter(1);
+    });
+    return useRecoilValue(aSelector);
+  }
+
+  const c = renderElements(<Parent />);
+
+  expect(c.textContent).toEqual('');
+
+  act(() => {
+    setShow(true);
+    setAnotherAtom(1);
+  });
+
+  expect(c.textContent).toEqual('1');
 });
 
 // This tests ability to catch a pending result as a promise and

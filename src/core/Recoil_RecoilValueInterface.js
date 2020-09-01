@@ -23,12 +23,12 @@ const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
+const {saveDependencyMapToStore} = require('./Recoil_Dependencies');
 const {
   getNodeLoadable,
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('./Recoil_FunctionalCore');
-const {saveDependencyMapToStore} = require('./Recoil_Graph');
 const {DefaultValue, RecoilValueNotReady} = require('./Recoil_Node');
 const {
   AbstractRecoilValue,

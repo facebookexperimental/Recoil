@@ -18,7 +18,7 @@ const {useEffect} = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
-const {graph} = require('../core/Recoil_Graph');
+const Graph = require('../core/Recoil_Graph');
 const {
   RecoilRoot,
   sendEndOfBatchNotifications_FOR_TESTING,
@@ -49,7 +49,7 @@ function makeStore(): Store {
       if (graphs.has(version)) {
         return nullthrows(graphs.get(version));
       }
-      const newGraph = graph();
+      const newGraph = new Graph();
       graphs.set(version, newGraph);
       return newGraph;
     },

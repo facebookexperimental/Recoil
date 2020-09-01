@@ -12,10 +12,8 @@
  */
 'use strict';
 
-import type {Graph} from '../core/Recoil_Graph';
+import type Graph from '../core/Recoil_Graph';
 import type {NodeKey} from '../core/Recoil_State';
-
-type DepGraph = $PropertyType<Graph, 'nodeDeps'>;
 
 type VisitInfo = $ReadOnly<{
   key: NodeKey,
@@ -24,10 +22,10 @@ type VisitInfo = $ReadOnly<{
 
 type OnVisit = VisitInfo => ?StopTraversing;
 
-opaque type StopTraversing = string;
+opaque type StopTraversing = {};
 
 function traverseDepGraph(
-  depGraph: DepGraph,
+  depGraph: Graph,
   initialKeys: NodeKey[],
   onVisit: OnVisit,
 ): void {
@@ -36,7 +34,9 @@ function traverseDepGraph(
 
   while (stack.length) {
     const key = stack.pop();
-    const deps = depGraph.get(key) ?? new Set();
+    // NOTE: this code is currently unused awaiting selector_NEW. I updated this
+    // to use parentsOfNode but am only ASSUMING this is the desired behavior.
+    const deps = depGraph.parentsOfNode(key) ?? new Set();
 
     if (!visitedNodes.has(key)) {
       const res = onVisit({key, deps});
@@ -56,6 +56,6 @@ function traverseDepGraph(
   }
 }
 
-traverseDepGraph.STOP_TRAVERSING = ('__stopTraversing': StopTraversing);
+traverseDepGraph.STOP_TRAVERSING = (Object.freeze({}): StopTraversing);
 
 module.exports = traverseDepGraph;

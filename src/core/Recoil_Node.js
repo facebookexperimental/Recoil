@@ -11,7 +11,7 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {DependencyMap} from './Recoil_GraphTypes';
+import type {DependencyMap} from './Recoil_Dependencies';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
 
