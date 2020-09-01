@@ -15,8 +15,7 @@
   "license": "MIT",
   "scripts": {
     "prepare": "install-peers",
-    "build:flow": "gen-flow-files src --out-dir lib && mv lib/Recoil_index.js.flow lib/recoil.js.flow",
-    "build": "rollup -c && node scripts/postbuild.js && yarn build:flow",
+    "build": "rollup -c && node scripts/postbuild.js",
     "test": "jest src/*",
     "format": "prettier --write \"./**/*.{js,md,json}\"",
     "flow": "flow --show-all-errors",
