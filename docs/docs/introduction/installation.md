@@ -22,9 +22,9 @@ Recoil installed via NPM pairs nicely with module bundlers such as [Webpack](htt
 
 ### ES5 support
 
-Recoil builds are not transpiled to ES5. If you need to support browsers that does not provide ES6 features natively, please compile your code with [Babel](https://babeljs.io/) and use preset [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env).
+Recoil builds are not transpiled to ES5. If you need to support browsers that do not provide ES6 features natively, please compile your code with [Babel](https://babeljs.io/) and use preset [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env).
 
-Please note that [just like React](https://reactjs.org/docs/javascript-environment-requirements.html), Recoil depends on the collection types `Map` and `Set`. You might need to include polyfills in your application (see the instructions on the React website link) to support older browsers such as IE <= 11. The impact on performance of using polyfills is not yet studied.
+Please note that [just like React](https://reactjs.org/docs/javascript-environment-requirements.html), Recoil depends on the collection types `Map` and `Set` or other ES6 features. You may need to include polyfills in your application (see the instructions on the React website link) to support older browsers such as IE <= 11. The impact on performance of using polyfills is not yet studied.
 
 ## CDN
 
