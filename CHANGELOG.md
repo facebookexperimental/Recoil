@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.0.11 (2020-09-02)
+
+- Experimental React Concurrent Mode Support
+- Performance
+- Flow Types
+- ES, CommonJS, and UMD packages
+- Synchronization Across React Roots
+- Preliminary Developer Tools API
+- Test Infrastructure Fixes
+
 ## 0.0.10 (2020-06-18)
 
 ### Bug Fix
