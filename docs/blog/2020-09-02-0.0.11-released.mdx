@@ -5,15 +5,13 @@ title: Recoil 0.0.11
 
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
-# Recoil 0.0.11
-
 Today we are releasing Recoil 0.0.11. It contains bug fixes, new features, better performance, and experimental compatibility with Concurrent Mode. Thank you so much to everyone who contributed to this release!
 
 ## Experimental Concurrent Mode Support
 
 Recoil now supports [Concurrent Mode](https://reactjs.org/docs/concurrent-mode-intro.html) when used with the `experimental` release of React. Please try this out and report any problems! (@davidmccabe, @bvaughn)
 
-Concurrent Mode, which enables smoother, more consistent user experiences, is the future of React. But up until now it's been incompatible with any kind of external state. This is because, in Concurrent Mode, renders can be spread out over time: React can pause the rendering of components, then later pick up where it left off, starting from the partial component tree that is already built:
+Concurrent Mode, which enables smoother, more consistent user experiences, is the future of React. But up until now it's been incompatible with any kind of external state. This is because, in Concurrent Mode, renders can be spread out over time: React can pause the rendering of components, then later pick up where it left off, starting from the partial component tree that it already built:
 
 <img alt="React pauses while rendering a tree of components. Some components are rendered before the pause while others are rendered after the pause." src={useBaseUrl('img/blog/2020-09-02-0.0.11-released/concurrent2.png')} />
 
