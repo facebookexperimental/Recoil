@@ -1,3 +1,10 @@
+---
+id: 0.0.1-released
+title: Recoil 0.0.11
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Recoil 0.0.11
 
 Today we are releasing Recoil 0.0.11. It contains bug fixes, new features, better performance, and experimental compatibility with Concurrent Mode. Thank you so much to everyone who contributed to this release!
@@ -5,6 +12,20 @@ Today we are releasing Recoil 0.0.11. It contains bug fixes, new features, bette
 ## Experimental Concurrent Mode Support
 
 Recoil now supports [Concurrent Mode](https://reactjs.org/docs/concurrent-mode-intro.html) when used with the `experimental` release of React. Please try this out and report any problems! (@davidmccabe, @bvaughn)
+
+Concurrent Mode, which enables smoother, more consistent user experiences, is the future of React. But up until now it's been incompatible with any kind of external state. This is because, in Concurrent Mode, renders can be spread out over time: React can pause the rendering of components, then later pick up where it left off, starting from the partial component tree that is already built:
+
+<img alt="React pauses while rendering a tree of components. Some components are rendered before the pause while others are rendered after the pause." src={useBaseUrl('img/blog/2020-09-02-0.0.11-released/concurrent2.png')} />
+
+This presents a problem with external state. Since React now relinquishes control flow, anything could happen between when rendering starts and when it is completed. If the external state changes during this time, it will result in an inconsistent UI, as the earlier-rendered components will observe the older state, while the later-rendered components will observe the new state:
+
+<img alt="If components depend on some external state, and that state changes while rendering is paused, then components rendered before the pause will observe the old state, while components rendered after the pause will observe the new state." src={useBaseUrl('img/blog/2020-09-02-0.0.11-released/concurrent3.png')} />
+
+This inconsistency could cause problems up to crashing the app.
+
+Recoil now takes advantage of experimental APIs in React to handle this situation by restarting with a fresh tree when Recoil state has changed during a render. These APIs also make Recoil more efficient and remove the need to re-render components when they're first mounted.
+
+Avoid using React experimental releases in production, and, no matter what release of React or state management library you use, [avoid bugs by always keep side-effects in a `useEffect` hook, not render](https://gist.github.com/sebmarkbage/75f0838967cd003cd7f9ab938eb1958f)!
 
 ## Performance
 
