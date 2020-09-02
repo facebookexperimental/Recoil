@@ -49,7 +49,7 @@ The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component takes an `in
 
 ### Snapshot IDs
 
-Each committed state or mutated Snapshot has a unique opaque version ID that can be obtained via `getID()`.  This can be used from the hooks above to obtain snapshots to determine if we have gone back to a previous snapshot via `useGotoRecoilSnapshot()`.
+Each committed state or mutated Snapshot has a unique opaque version ID that can be obtained via `getID()`. This to detect that we have gone back to a previous snapshot via `useGotoRecoilSnapshot()`.
 
 ### Example
 

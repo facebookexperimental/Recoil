@@ -22,19 +22,19 @@ Recoil installed via NPM pairs nicely with module bundlers such as [Webpack](htt
 
 ### ES5 support
 
-Recoil builds are not transpiled to ES5. If you need to support browsers that do not provide ES6 features natively, please compile your code with [Babel](https://babeljs.io/) and use preset [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env).
+Recoil builds are not transpiled to ES5, and we do not support the use of Recoil with ES5. If you need to support browsers that do not provide ES6 features natively, you can do so by compiling your code with [Babel](https://babeljs.io/) and using preset [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env). However, we do not support this and you may run into problems.
 
-Please note that [just like React](https://reactjs.org/docs/javascript-environment-requirements.html), Recoil depends on the collection types `Map` and `Set` or other ES6 features. You may need to include polyfills in your application (see the instructions on the React website link) to support older browsers such as IE <= 11. The impact on performance of using polyfills is not yet studied.
+In particular, [just like React](https://reactjs.org/docs/javascript-environment-requirements.html), Recoil depends on the `Map` and `Set` types and other features of ES6. Emulation of these features using polyfills may result in far worse performance.
 
 ## CDN
 
-Since version 0.0.11, Recoil offers a UMD build that can be directly used in a `<script>` tag and expose variable `Recoil` to global namespace. We recommend linking to a specific version number and build to avoid unexpected breakage from newer versions:
+Since version 0.0.11, Recoil offers a UMD build that can be directly used in a `<script>` tag and exposes the symbol `Recoil` to the global namespace. We recommend linking to a specific version number and build to avoid unexpected breakage from newer versions:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/recoil@0.0.11/umd/recoil.production.js"></script>
 ```
 
-You can browse all Recoil files on CDN at [jsdelivr](https://www.jsdelivr.com/package/npm/recoil).
+You can browse all Recoil files on the CDN at [jsdelivr](https://www.jsdelivr.com/package/npm/recoil).
 
 ## ESLint
 
