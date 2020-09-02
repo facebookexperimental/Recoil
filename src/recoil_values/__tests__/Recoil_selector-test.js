@@ -264,8 +264,9 @@ test('useRecoilState - selector catching loads', async () => {
 });
 
 test('useRecoilState - selector catching all of 2 loads', async () => {
-  const resolvingSel1 = resolvingAsyncSelector('READY1');
-  const resolvingSel2 = resolvingAsyncSelector('READY2');
+  const [resolvingSel1, res1] = asyncSelector();
+  const [resolvingSel2, res2] = asyncSelector();
+
   const bypassSelector = selector({
     key: 'useRecoilState/bypassing selector all',
     get: ({get}) => {
@@ -291,10 +292,12 @@ test('useRecoilState - selector catching all of 2 loads', async () => {
   expect(c3.textContent).toEqual('0');
 
   // After the first resolution, we're still waiting on the second
+  res1('READY1');
   act(() => jest.runAllTimers());
   expect(c3.textContent).toEqual('1');
 
   // When both are available, we are done!
+  res2('READY2');
   act(() => jest.runAllTimers());
   expect(c3.textContent).toEqual('2');
 });
