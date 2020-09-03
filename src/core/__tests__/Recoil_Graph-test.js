@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const {Graph} = require('../Recoil_Graph');
+const Graph = require('../Recoil_Graph');
 
 test('setGraphNodeParents sets children correctly across versions', () => {
   const g0 = new Graph();

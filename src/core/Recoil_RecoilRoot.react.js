@@ -27,7 +27,7 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
-const {Graph} = require('../core/Recoil_Graph');
+const Graph = require('../core/Recoil_Graph');
 const {applyAtomValueWrites} = require('../core/Recoil_RecoilValueInterface');
 const {freshSnapshot} = require('../core/Recoil_Snapshot');
 const {

@@ -8,6 +8,7 @@
  * @flow strict
  * @format
  */
+
 'use strict';
 
 import type {NodeKey} from './Recoil_Keys';
@@ -143,4 +144,4 @@ class Graph {
   }
 }
 
-module.exports = {Graph};
+module.exports = Graph;

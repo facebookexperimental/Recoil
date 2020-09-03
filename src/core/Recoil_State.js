@@ -14,7 +14,7 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 import type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
-const {Graph} = require('./Recoil_Graph');
+const Graph = require('./Recoil_Graph');
 
 // flowlint-next-line unclear-type:off
 export type AtomValues = Map<NodeKey, Loadable<any>>;

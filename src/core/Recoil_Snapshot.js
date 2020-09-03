@@ -29,7 +29,7 @@ const {
   getDownstreamNodes,
   peekNodeLoadable,
 } = require('./Recoil_FunctionalCore');
-const {Graph} = require('./Recoil_Graph');
+const Graph = require('./Recoil_Graph');
 const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,

@@ -8,9 +8,10 @@
  * @flow strict
  * @format
  */
+
 'use strict';
 
-import type {Graph} from 'Recoil_Graph';
+import type Graph from 'Recoil_Graph';
 import type {NodeKey, Version} from './Recoil_Keys';
 import type {Store} from './Recoil_State';
 
