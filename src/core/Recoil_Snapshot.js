@@ -29,7 +29,7 @@ const {
   getDownstreamNodes,
   peekNodeLoadable,
 } = require('./Recoil_FunctionalCore');
-const Graph = require('./Recoil_Graph');
+const {graph} = require('./Recoil_Graph');
 const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
@@ -66,7 +66,7 @@ class Snapshot {
         if (graphs.has(version)) {
           return nullthrows(graphs.get(version));
         }
-        const newGraph = new Graph();
+        const newGraph = graph();
         graphs.set(version, newGraph);
         return newGraph;
       },
@@ -141,10 +141,9 @@ class Snapshot {
     recoilValue: RecoilValue<T>,
   ) => {
     this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
-    const graph = this._store.getGraph(
-      this._store.getState().currentTree.version,
-    );
-    const deps = graph.parentsOfNode(recoilValue.key);
+    const deps = this._store
+      .getGraph(this._store.getState().currentTree.version)
+      .nodeDeps.get(recoilValue.key);
     return recoilValuesForKeys(deps ?? []);
   };
 
@@ -200,7 +199,7 @@ class Snapshot {
         ? 'selector'
         : undefined,
       // Don't use this.getDeps() as it will evaluate the node and we are only peeking
-      deps: recoilValuesForKeys(graph.parentsOfNode(key) ?? []),
+      deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
       subscribers: this.getSubscribers_UNSTABLE(recoilValue),
     };
   };

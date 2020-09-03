@@ -16,7 +16,7 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {DependencyMap} from './Recoil_Dependencies';
+import type {DependencyMap} from './Recoil_Graph';
 import type {DefaultValue} from './Recoil_Node';
 import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
 
@@ -104,7 +104,7 @@ function getDownstreamNodes(
 
   for (let key = visitingNodes.pop(); key; key = visitingNodes.pop()) {
     visitedNodes.add(key);
-    const subscribedNodes = graph.childrenOfNode(key) ?? emptySet;
+    const subscribedNodes = graph.nodeToNodeSubscriptions.get(key) ?? emptySet;
     for (const downstreamNode of subscribedNodes) {
       if (!visitedNodes.has(downstreamNode)) {
         visitingNodes.push(downstreamNode);

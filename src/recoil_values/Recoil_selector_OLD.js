@@ -55,7 +55,7 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {CacheImplementation} from '../caches/Recoil_Cache';
-import type {DependencyMap} from '../core/Recoil_Dependencies';
+import type {DependencyMap} from '../core/Recoil_Graph';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
@@ -71,15 +71,15 @@ const {
 } = require('../adt/Recoil_Loadable');
 const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
 const {
-  addToDependencyMap,
-  mergeDepsIntoDependencyMap,
-  saveDependencyMapToStore,
-} = require('../core/Recoil_Dependencies');
-const {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
 } = require('../core/Recoil_FunctionalCore');
+const {
+  addToDependencyMap,
+  mergeDepsIntoDependencyMap,
+  saveDependencyMapToStore,
+} = require('../core/Recoil_Graph');
 const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
@@ -249,8 +249,8 @@ function selector<T>(
     const dependencyMap: DependencyMap = new Map();
 
     // First, get the current deps for this selector
-    const graph = store.getGraph(state.version);
-    const currentDeps = graph.parentsOfNode(key) ?? emptySet;
+    const currentDeps =
+      store.getGraph(state.version).nodeDeps.get(key) ?? emptySet;
 
     const depValues: DepValues = new Map(
       Array.from(currentDeps)
@@ -357,7 +357,6 @@ function selector<T>(
             .finally(endPerfBlock),
         );
       }
-
       return [dependencyMap, loadable, depValues];
     }
   }
@@ -379,8 +378,8 @@ function selector<T>(
 
   function myPeek(store: Store, state: TreeState): ?Loadable<T> {
     // First, get the current deps for this selector
-    const graph = store.getGraph(state.version);
-    const currentDeps = graph.parentsOfNode(key) ?? emptySet;
+    const currentDeps =
+      store.getGraph(state.version).nodeDeps.get(key) ?? emptySet;
     const depValues: Map<NodeKey, ?Loadable<mixed>> = new Map(
       Array.from(currentDeps)
         .sort()

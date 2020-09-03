@@ -21,13 +21,13 @@ const {useContext, useEffect, useMemo, useRef, useState} = require('React');
 // @fb-only: const URI = require('URI');
 
 const Queue = require('../adt/Recoil_Queue');
-const {saveDependencyMapToStore} = require('../core/Recoil_Dependencies');
 const {
   getDownstreamNodes,
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
-const Graph = require('../core/Recoil_Graph');
+const {graph, saveDependencyMapToStore} = require('../core/Recoil_Graph');
+const {cloneGraph} = require('../core/Recoil_Graph');
 const {applyAtomValueWrites} = require('../core/Recoil_RecoilValueInterface');
 const {freshSnapshot} = require('../core/Recoil_Snapshot');
 const {
@@ -76,11 +76,10 @@ function startNextTreeIfNeeded(storeState: StoreState): void {
       dirtyAtoms: new Set(),
       transactionMetadata: {},
     };
-    const nextGraph = new Graph(
-      nullthrows(storeState.graphsByVersion.get(version)),
+    storeState.graphsByVersion.set(
+      nextVersion,
+      cloneGraph(nullthrows(storeState.graphsByVersion.get(version))),
     );
-    storeState.graphsByVersion.set(nextVersion, nextGraph);
-    nextGraph.compactOlderGraphs();
   }
 }
 
@@ -115,6 +114,7 @@ function sendEndOfBatchNotifications(store: Store) {
 
     // Components that are subscribed to the dirty atom:
     const dependentNodes = getDownstreamNodes(store, treeState, dirtyAtoms);
+
     for (const key of dependentNodes) {
       const comps = storeState.nodeToComponentSubscriptions.get(key);
       if (comps) {
@@ -268,7 +268,7 @@ function RecoilRoot({
     if (graphs.has(version)) {
       return nullthrows(graphs.get(version));
     }
-    const newGraph = new Graph();
+    const newGraph = graph();
     graphs.set(version, newGraph);
     return newGraph;
   };
