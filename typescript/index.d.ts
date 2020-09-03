@@ -10,18 +10,6 @@ import * as React from 'react';
 
 // state.d.ts
 type NodeKey = string;
-type AtomValues = Map<NodeKey, Loadable<any>>;
-type ComponentCallback = (state: TreeState) => void;
-type TreeState = Readonly<{
-  isSnapshot: boolean;
-  transactionMetadata: object;
-  dirtyAtoms: Set<NodeKey>;
-  atomValues: AtomValues;
-  nonvalidatedAtoms: Map<NodeKey, unknown>;
-  nodeDeps: Map<NodeKey, Set<NodeKey>>;
-  nodeToNodeSubscriptions: Map<NodeKey, Set<NodeKey>>;
-  nodeToComponentSubscriptions: Map<NodeKey, Map<number, [string, ComponentCallback]>>;
-}>;
 
 // node.d.ts
 export class DefaultValue {
@@ -54,7 +42,7 @@ export type SetRecoilState = <T>(
     newVal: T | DefaultValue | ((prevValue: T) => T | DefaultValue),
 ) => void;
 
-export type ResetRecoilState = (recoilVal: RecoilState<any>) => void;
+export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export interface ReadOnlySelectorOptions<T> {
     key: string;
@@ -100,7 +88,7 @@ export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void
 export type Resetter = () => void;
 export type CallbackInterface = Readonly<{
   set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
-  reset: (recoilVal: RecoilState<any>) => void;
+  reset: (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   snapshot: Snapshot,
   gotoSnapshot: (snapshot: Snapshot) => void,
 }>;
@@ -142,7 +130,7 @@ export function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdat
 /**
  * Returns a function that will reset the given state to its default value.
  */
-export function useResetRecoilState(recoilState: RecoilState<any>): Resetter;
+export function useResetRecoilState(recoilState: RecoilState<any>): Resetter; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 /**
  * Returns a function that will run the callback that was passed when
@@ -166,8 +154,8 @@ export function useGotoRecoilSnapshot(): (snapshot: Snapshot) => void;
 export function useRecoilSnapshot(): Snapshot;
 
 // useRecoilBridgeAcrossReactRoots.d.ts
-export const RecoilBridge: React.FC<{}>;
-export function useRecoilBridgeAcrossReactRoots_UNSTABLE(): RecoilBridge;
+export const RecoilBridge: React.FC;
+export function useRecoilBridgeAcrossReactRoots_UNSTABLE(): typeof RecoilBridge;
 
 // loadable.d.ts
 type ResolvedLoadablePromiseInfo<T> = Readonly<{
@@ -210,7 +198,7 @@ export class RecoilState<T> extends AbstractRecoilValue<T> {}
 export class RecoilValueReadOnly<T> extends AbstractRecoilValueReadonly<T> {}
 export type RecoilValue<T> = RecoilValueReadOnly<T> | RecoilState<T>;
 
-export function isRecoilValue(val: unknown): val is RecoilValue<any>;
+export function isRecoilValue(val: unknown): val is RecoilValue<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 /** Utilities */
 
@@ -271,6 +259,8 @@ export function readOnlySelector<T>(atom: RecoilValue<T>): RecoilValueReadOnly<T
 
 export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T>>;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export type UnwrapRecoilValue<T> = T extends RecoilValue<infer R> ? R : never;
 
 export type UnwrapRecoilValueLoadables<T extends Array<RecoilValue<any>> | { [key: string]: RecoilValue<any> }> = {
@@ -300,3 +290,5 @@ export function waitForAll<RecoilValues extends Array<RecoilValue<any>> | [Recoi
 export function waitForAll<RecoilValues extends { [key: string]: RecoilValue<any> }>(
   param: RecoilValues,
 ): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

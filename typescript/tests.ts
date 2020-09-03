@@ -1,6 +1,7 @@
 import {
   DefaultValue,
   RecoilRoot,
+  RecoilBridge,
   RecoilValueReadOnly,
   atom,
   selector,
@@ -27,20 +28,23 @@ import {
   Snapshot,
   SnapshotID,
   useRecoilSnapshot,
+  useRecoilBridgeAcrossReactRoots_UNSTABLE,
 } from 'recoil';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // DefaultValue
 new DefaultValue();
 
 // atom
 const myAtom = atom({
-  key: 'asds',
+  key: 'MyAtom',
   default: 5,
 });
 
 // selector
 const mySelector1 = selector({
-  key: 'asdfasfds',
+  key: 'MySelector',
   get: () => 5,
 });
 
@@ -56,7 +60,7 @@ selector({
 }) as RecoilValueReadOnly<boolean>;
 
 const readOnlySelectorSel = selector({
-  key: 'asdfasf',
+  key: 'ReadOnlySelector',
   get: ({ get }) => {
       get(myAtom) + 10;
       get(mySelector1);
@@ -65,7 +69,7 @@ const readOnlySelectorSel = selector({
 });
 
 const writeableSelector = selector({
-  key: 'asdfsadfs',
+  key: 'WriteableSelector',
   get: ({ get }) => {
     get(mySelector1) + 10;
   },
@@ -144,19 +148,21 @@ useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
 
 useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
-  const id: SnapshotID = snapshot.getID();
-  const val: number = await snapshot.getPromise(mySelector1);
-  const loadable = snapshot.getLoadable(mySelector1);
+  snapshot; // $ExpectType Snapshot
+  snapshot.getID(); // $ExpectType SnapshotID
+  await snapshot.getPromise(mySelector1); // $ExpectType number
+  const loadable = snapshot.getLoadable(mySelector1); // $ExpectType Loadable
 
   gotoSnapshot(snapshot);
 
   gotoSnapshot(3); // $ExpectError
   gotoSnapshot(myAtom); // $ExpectError
 
-  loadable.contents;
-  loadable.state;
+  loadable.contents; // $ExpectType number | Error | LoadablePromise<number>
+  loadable.state; // $ExpectType 'hasValue' | 'hasError' | 'loading'
 
   set(myAtom, 5);
+  set(myAtom, 'hello'); // $ExpectError
   reset(myAtom);
 });
 
@@ -197,10 +203,10 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
 }
 
 // useRecoilBridgeAcrossReactRoots()
-const RecoilBridge: RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE();
-RecoilBridge({});
-RecoilBridge({initializeState: () => {}}); // $ExpectError
-
+const RecoilBridgeComponent: typeof RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE();
+RecoilBridgeComponent({});
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+RecoilBridgeComponent({initializeState: () => {}}); // $ExpectError
 
 // Other
 isRecoilValue(4);
@@ -255,7 +261,9 @@ isRecoilValue(mySelector1);
 
       return param;
     },
-    set: (param: number) => () => {},
+    set: (param: number) => () => {
+      param; // $ExpectType number
+    },
   });
 
   useRecoilState(mySelectorFamWritable(3))[0]; // $ExpectType number
@@ -360,3 +368,5 @@ isRecoilValue(mySelector1);
   useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
   useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
 }
+
+/* eslint-enable @typescript-eslint/no-explicit-any */
