@@ -18,7 +18,7 @@ const {useEffect} = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
-const Graph = require('../core/Recoil_Graph');
+const {Graph} = require('../core/Recoil_Graph');
 const {
   RecoilRoot,
   sendEndOfBatchNotifications_FOR_TESTING,

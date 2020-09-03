@@ -12,7 +12,7 @@
  */
 'use strict';
 
-import type Graph from '../core/Recoil_Graph';
+import type {Graph} from '../core/Recoil_Graph';
 import type {NodeKey} from '../core/Recoil_State';
 
 type VisitInfo = $ReadOnly<{
