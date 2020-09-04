@@ -13,18 +13,21 @@ Recoil allows you to persist application state using atoms.
 
 ## Saving State
 
-To save state, subscribe to atom changes and record the new state.  You could use React effects to subscribe to individual atoms (*See [Asynchronous State Sync](asynchronous-state-sync)*).  However, Recoil provides a hook to allow you to subscribe to state changes for all atoms using **`useTransactionObservation_UNSTABLE()`**.  (***NOTE***: *This API is currently under development*).
+To save state, subscribe to atom changes and record the new state.  You could use React effects to subscribe to individual atoms (*See [Asynchronous State Sync](asynchronous-state-sync)*).  However, Recoil provides a hook to allow you to subscribe to state changes for all atoms using [**`useRecoilTransactionObserver_UNSTABLE()`**](/docs/api-reference/core/useRecoilTransactionObserver).
 
 The subscription callback provides all of the atom state and tells you which atoms changed.  From this you can save the changes with the storage and serialization of your preference.  Here is an example of a basic implementation using JSON:
 
 ```jsx
 function PersistenceObserver() {
-  useTransactionObservation_UNSTABLE(({atomValues, atomInfo, modifiedAtoms}) => {
-    for (const modifiedAtom of modifiedAtoms) {
-      Storage.setItem(
-        modifiedAtom,
-        JSON.stringify({value: atomValues.get(modifiedAtom)}),
-      );
+  useRecoilTransactionObserver_UNSTABLE(({snapshot}) => {
+    for (const modifiedAtom of snapshot.getNodes_UNSTABLE({isModified: true})) {
+      const atomLoadable = snapshot.getLoadable(modifiedAtom);
+      if (atomLoadable.state === 'hasValue') {
+        Storage.setItem(
+          modifiedAtom.key,
+          JSON.stringify({value: atomLoadable.contents}),
+        );
+      }
     }
   });
 }
@@ -32,29 +35,20 @@ function PersistenceObserver() {
 
 *Storage* could be the browser URL history, [*LocalStorage*](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), *[AsyncStorage](https://github.com/react-native-community/react-native-async-storage)* or whichever storage you like.
 
-* *`atomValues`* - A Map of the atom keys and values.
-* *`modifiedAtoms`* - Gives you a map containing the modified atoms.
-* *`atomInfo`* - Atom metadata.
-
-You may not wish to persist all atoms, or some atoms may have different persistence behaviors.  You can read metadata (***NOTE***: *new API coming soon*) to get options from each atom.
-
-Note that the current hook was designed for persistence and only reports atoms with special option (property `persistence_UNSTABLE` which is an object with a non-null `type` property)
+You may not wish to persist all atoms, or some atoms may have different persistence behaviors.   *Consider the per-atom state synchronization API coming soon*.
 
 ## Restoring State
 
-After you ensure that you're saving your state to your storage, you need to recover it when loading the app.  This can be done using the **`initializeState`** prop on the **`<RecoilRoot>`** component. (***NOTE***: *API changes coming soon*).
+After you ensure that you're saving your state to your storage, you need to recover it when loading the app.  This can be done using the **`initializeState`** prop on the [**`<RecoilRoot>`**](/docs/api-reference/core/RecoilRoot) component.
 
-`initializeState` is a function that provides a **`set`** method to provide the initial atom value for an atom key.
-Pass the key for the atom and the stored value to this callback and it will initialize the atom to the restored state.
-
-Note that it is important to use this prop instead of just manually setting atom values in an effect.  Otherwise there will be an initial render without the restored state which can cause flicker or be invalid.
+`initializeState` is a function that provides a [`MutableSnapshot`](/docs/api-reference/core/Snapshot#transforming-snapshots) with a **`set()`** method to set the initial atom value.  This value will be used for the initial rendering.  If you manually set the atom value in a `useEffect()` hook, there will be an initial render with the default value first which can cause flicker or be invalid.
 
 Here is a basic example:
 
 ```jsx
 const initializeState = ({set}) => {
   for(const [key, value] of Storage.entries()) {
-    set(getAtomWithKey(key), JSON.parse(value).value);
+    set(myLookupOfAtomWithKey(key), JSON.parse(value).value);
   }
 }
 
@@ -65,6 +59,8 @@ return (
   </RecoilRoot>
 );
 ```
+
+***NOTE:*** *`myLookupOfAtomWithKey()` is pseudo-code for a lookup of the registered atom based on the key.  As some atoms may be defined dynamically or via atom families this may not be the best approach.  There is a new API coming soon to define per-atom synchronization effects which should be easier to use.*
 
 ## Syncing State
 
