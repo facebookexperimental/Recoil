@@ -17,6 +17,7 @@
     "prepare": "install-peers",
     "build": "rollup -c && node scripts/postbuild.js",
     "test": "jest src/*",
+    "test-ci": "CI=true npm run test",
     "format": "prettier --write \"./**/*.{js,md,json}\"",
     "flow": "flow --show-all-errors",
     "flow:restart": "flow stop && npm run flow",
@@ -66,21 +67,6 @@
     "rollup-plugin-includepaths": "^0.2.3",
     "rollup-plugin-terser": "^5.3.0",
     "typescript": "^3.9.5"
-  },
-  "jest": {
-    "timers": "fake",
-    "globals": {
-      "__DEV__": true
-    },
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "src/hooks/__tests__/Recoil_PublicHooks-test.js",
-      "src/hooks/__tests__/Recoil_useRecoilCallback-test.js",
-      "src/recoil_values/__tests__/Recoil_atomFamily-test.js"
-    ],
-    "setupFiles": [
-      "./setupJestMock.js"
-    ]
   },
   "husky": {
     "hooks": {
