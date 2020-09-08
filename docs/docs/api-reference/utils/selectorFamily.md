@@ -130,15 +130,17 @@ const formFieldState = selectorFamily({
 const Component1 = () => {
   const [value, onChange] = useRecoilState(formFieldState('field1'));
   return (
-    <input value={value} onChange={onChange} />
-    <Component2 />
-  )
+    <>
+      <input value={value} onChange={onChange} />
+      <Component2 />
+    </>
+  );
 }
 
 const Component2 = () => {
   const [value, onChange] = useRecoilState(formFieldState('field2'));
   return (
     <input value={value} onChange={onChange} />
-  )
+  );
 }
 ```
