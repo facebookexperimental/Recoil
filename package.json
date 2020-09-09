@@ -45,7 +45,6 @@
     "babel-jest": "^26.0.1",
     "babel-plugin-module-resolver": "^4.0.0",
     "babel-preset-fbjs": "^3.3.0",
-    "cross-env": "^7.0.2",
     "dtslint": "^3.6.11",
     "eslint": "^7.2.0",
     "eslint-plugin-fb-www": "^0.0.1",
