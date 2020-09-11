@@ -142,8 +142,8 @@ const friendColorState = selectorFamily({
   get: friendID => ({get}) => {
     const [status] = get(friendStatusState(friendID));
     return status === 'offline' ? 'red' : 'green';
-  }
-})
+  },
+});
 
 function FriendStatus({friendID}) {
   useFriendStatusSubscription(friendID);
@@ -159,7 +159,7 @@ function FriendStatus({friendID}) {
 }
 
 function CurrentUserInfo() {
-  const {name, friendList} = useRecoilValue(currentUserInfoQuery)
+  const {name, friendList} = useRecoilValue(currentUserInfoQuery);
   const setCurrentUserID = useSetRecoilState(currentUserIDState);
   return (
     <div>
