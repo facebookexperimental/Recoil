@@ -47,6 +47,7 @@ const mergeMaps = require('../util/Recoil_mergeMaps');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
+const useMemoAlways = require('../util/Recoil_useMemoAlways');
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -260,6 +261,10 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
   }, [recoilValuesUsed, storeRef]);
 }
 
+if (__DEV__) {
+  window.$recoilComponentGetRecoilValueCount_FOR_TESTING = 0;
+}
+
 function useRecoilValueLoadable_MUTABLESOURCE<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
@@ -291,7 +296,13 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
     subscribe,
   );
 
-  return getRecoilValueAsLoadable(storeRef.current, recoilValue, treeState);
+  const store = storeRef.current;
+  return useMemoAlways(() => {
+    if (__DEV__) {
+      window.$recoilComponentGetRecoilValueCount_FOR_TESTING++;
+    }
+    return getRecoilValueAsLoadable(store, recoilValue, treeState);
+  }, [store, recoilValue, treeState]);
 }
 
 function useRecoilValueLoadable_LEGACY<T>(
