@@ -47,7 +47,6 @@ const mergeMaps = require('../util/Recoil_mergeMaps');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
-const useMemoAlways = require('../util/Recoil_useMemoAlways');
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -273,9 +272,16 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   }
   const storeRef = useStoreRef();
 
-  const getTreeState = useCallback(() => {
-    return storeRef.current.getState().currentTree;
-  }, [storeRef]);
+  const getValue = useCallback(() => {
+    if (__DEV__) {
+      window.$recoilComponentGetRecoilValueCount_FOR_TESTING++;
+    }
+    return getRecoilValueAsLoadable(
+      storeRef.current,
+      recoilValue,
+      storeRef.current.getState().currentTree,
+    );
+  }, [storeRef, recoilValue]);
 
   const subscribe = useCallback(
     (_something, callback) => {
@@ -290,19 +296,7 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
     [recoilValue, storeRef],
   );
 
-  const treeState = useMutableSource(
-    useRecoilMutableSource(),
-    getTreeState,
-    subscribe,
-  );
-
-  const store = storeRef.current;
-  return useMemoAlways(() => {
-    if (__DEV__) {
-      window.$recoilComponentGetRecoilValueCount_FOR_TESTING++;
-    }
-    return getRecoilValueAsLoadable(store, recoilValue, treeState);
-  }, [store, recoilValue, treeState]);
+  return useMutableSource(useRecoilMutableSource(), getValue, subscribe);
 }
 
 function useRecoilValueLoadable_LEGACY<T>(
