@@ -182,6 +182,8 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
 
       sendEndOfBatchNotifications(storeRef.current);
 
+      const discardedVersion = nullthrows(storeState.previousTree).version;
+      storeState.graphsByVersion.delete(discardedVersion);
       storeState.previousTree = null;
     });
   });
