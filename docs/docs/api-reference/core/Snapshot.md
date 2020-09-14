@@ -3,7 +3,7 @@ title: class Snapshot
 sidebar_label: Snapshot
 ---
 
-A `Snapshot` object represents an immutable snapshot of the state of Recoil [atoms](/docs/api-reference/core/atom).  It is intended to standardize the API for observing, inspecting, and managing global Recoil state.  It is mostly useful for dev tools, global state synchronization, history navigation, &c.
+A `Snapshot` object represents an immutable snapshot of the state of Recoil [atoms](/docs/api-reference/core/atom).  It is intended to standardize the API for observing, inspecting, and managing global Recoil state.  It is mostly useful for dev tools, global state synchronization, history navigation, etc.
 
 ```jsx
 class Snapshot {
