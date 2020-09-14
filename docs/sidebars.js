@@ -8,7 +8,7 @@
  */
 
 module.exports = {
-  someSidebar: {
+  docs: {
     Introduction: [
       'introduction/motivation',
       'introduction/core-concepts',
