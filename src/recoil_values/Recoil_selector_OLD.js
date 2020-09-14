@@ -140,6 +140,8 @@ function cacheKeyFromDepValues(depValues: DepValues): CacheKey {
 
 const dependencyStack = []; // for detecting circular dependencies.
 
+const waitingStores: Map<Loadable<mixed>, Set<Store>> = new Map();
+
 /* eslint-disable no-redeclare */
 declare function selector<T>(
   options: ReadOnlySelectorOptions<T>,
@@ -161,11 +163,37 @@ function selector<T>(
     store.getState().knownSelectors.add(key);
   }
 
-  function putIntoCache(
+  function letStoreBeNotifiedWhenAsyncSettles(
     store: Store,
-    cacheKey: CacheKey,
     loadable: Loadable<T>,
-  ) {
+  ): void {
+    if (loadable.state === 'loading') {
+      let stores = waitingStores.get(loadable);
+      if (stores === undefined) {
+        waitingStores.set(loadable, (stores = new Set()));
+      }
+      stores.add(store);
+    }
+  }
+
+  function notifyStoresOfSettledAsync(
+    originalLoadable: Loadable<T>,
+    newLoadable: Loadable<T>,
+  ): void {
+    const stores = waitingStores.get(originalLoadable);
+    if (stores !== undefined) {
+      for (const store of stores) {
+        setRecoilValueLoadable(
+          store,
+          new AbstractRecoilValue(key),
+          newLoadable,
+        );
+      }
+      waitingStores.delete(originalLoadable);
+    }
+  }
+
+  function putIntoCache(cacheKey: CacheKey, loadable: Loadable<T>) {
     if (loadable.state !== 'loading') {
       // Synchronous result
       if (__DEV__) {
@@ -208,11 +236,7 @@ function selector<T>(
           // this was called.  That state likely doesn't have the subscriptions saved yet.
           // Note that we have to set the value for this key, not just notify
           // components, so that there will be a new version for useMutableSource.
-          setRecoilValueLoadable(
-            store,
-            new AbstractRecoilValue(key),
-            newLoadable,
-          );
+          notifyStoresOfSettledAsync(loadable, newLoadable);
           return result;
         })
         .catch(error => {
@@ -230,11 +254,7 @@ function selector<T>(
           // the error and fire subscriptions to re-render.
           const newLoadable = loadableWithError(error);
           cache = cache.set(cacheKey, newLoadable);
-          setRecoilValueLoadable(
-            store,
-            new AbstractRecoilValue(key),
-            newLoadable,
-          );
+          notifyStoresOfSettledAsync(loadable, newLoadable);
           return error;
         });
     }
@@ -270,6 +290,7 @@ function selector<T>(
     const cached: Loadable<T> | void = cache.get(cacheKey);
 
     if (cached != null) {
+      letStoreBeNotifiedWhenAsyncSettles(store, cached);
       return [dependencyMap, cached];
     }
 
@@ -284,7 +305,8 @@ function selector<T>(
 
     // Save result in cache
     const newCacheKey = cacheKeyFromDepValues(newDepValues);
-    putIntoCache(store, newCacheKey, loadable);
+    letStoreBeNotifiedWhenAsyncSettles(store, loadable);
+    putIntoCache(newCacheKey, loadable);
     return [dependencyMap, loadable];
   }
 

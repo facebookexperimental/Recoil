@@ -60,7 +60,7 @@
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DependencyMap} from '../core/Recoil_Graph';
-import type {PersistenceInfo} from '../core/Recoil_Node';
+import type {PersistenceInfo, ReadWriteNodeOptions} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
@@ -358,21 +358,23 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     return [new Map(), new Map().set(key, loadableWithValue(newValue))];
   }
 
-  const node = registerNode({
-    key,
-    peek: myPeek,
-    get: myGet,
-    set: mySet,
-    invalidate,
-    dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-    persistence_UNSTABLE: options.persistence_UNSTABLE
-      ? {
-          type: options.persistence_UNSTABLE.type,
-          backButton: options.persistence_UNSTABLE.backButton,
-        }
-      : undefined,
-    shouldRestoreFromSnapshots: true,
-  });
+  const node = registerNode(
+    ({
+      key,
+      peek: myPeek,
+      get: myGet,
+      set: mySet,
+      invalidate,
+      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+      persistence_UNSTABLE: options.persistence_UNSTABLE
+        ? {
+            type: options.persistence_UNSTABLE.type,
+            backButton: options.persistence_UNSTABLE.backButton,
+          }
+        : undefined,
+      shouldRestoreFromSnapshots: true,
+    }: ReadWriteNodeOptions<T>),
+  );
   return node;
 }
 
