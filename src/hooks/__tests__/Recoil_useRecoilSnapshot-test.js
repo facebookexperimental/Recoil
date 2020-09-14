@@ -188,8 +188,10 @@ test('getSubscriptions', async () => {
       <RecoilSnapshot />
     </>,
   );
-  await flushPromisesAndTimers();
-  await flushPromisesAndTimers();
+
+  // Wrap flush with act() to avoid warning that only shows up in OSS environment
+  await act(flushPromisesAndTimers);
+
   expect(c.textContent).toBe('"ATOMATOMATOM"');
 
   expect(
