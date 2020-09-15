@@ -47,6 +47,7 @@ const mergeMaps = require('../util/Recoil_mergeMaps');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
+const {mutableSourceIsExist} = require('../util/Recoil_mutableSource');
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -354,7 +355,7 @@ const useMutableSource =
   just undefined if not available for any reason, such as pending or error.
 */
 function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
-  if (useMutableSource && !window.disableRecoilValueMutableSource) {
+  if (mutableSourceIsExist(useMutableSource)) {
     // eslint-disable-next-line fb-www/react-hooks
     return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
   } else {

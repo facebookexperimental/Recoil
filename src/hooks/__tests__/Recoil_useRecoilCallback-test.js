@@ -178,6 +178,8 @@ describe('useRecoilCallback', () => {
     act(() => setter(345));
     act(() => void cb());
     await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+
     expect(seenValue).toBe(345);
 
     // But does not see an update flushed while the cb is in progress:
@@ -191,6 +193,7 @@ describe('useRecoilCallback', () => {
     act(() => void cb());
     act(() => setter(678));
     resumeCallback();
+    await flushPromisesAndTimers();
     await flushPromisesAndTimers();
     expect(seenValue).toBe(345);
   });

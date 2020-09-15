@@ -32,6 +32,7 @@ const {
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
 const stableStringify = require('../../util/Recoil_stableStringify');
+const {mutableSourceIsExist} = require('../../util/Recoil_mutableSource');
 const atom = require('../Recoil_atom');
 const atomFamily = require('../Recoil_atomFamily');
 const selectorFamily = require('../Recoil_selectorFamily');
@@ -178,96 +179,96 @@ test('Parameterized fallback with atom and async', async () => {
   expect(asyncCont.textContent).toEqual('"async"');
 });
 
-test('atomFamily with scope', () => {
-  const scopeForParamAtom = atom<string>({
-    key: 'scope atom for atomFamily',
-    default: 'foo',
-  });
-  const paramAtomWithScope = atomFamily<string, {k: string}>({
-    key: 'parameterized atom with scope',
-    default: 'default',
-    scopeRules_APPEND_ONLY_READ_THE_DOCS: [[scopeForParamAtom]],
-  });
-  expect(get(paramAtomWithScope({k: 'x'}))).toBe('default');
-  expect(get(paramAtomWithScope({k: 'y'}))).toBe('default');
-  set(paramAtomWithScope({k: 'x'}), 'xValue1');
-  expect(get(paramAtomWithScope({k: 'x'}))).toBe('xValue1');
-  expect(get(paramAtomWithScope({k: 'y'}))).toBe('default');
-  set(paramAtomWithScope({k: 'y'}), 'yValue1');
-  expect(get(paramAtomWithScope({k: 'x'}))).toBe('xValue1');
-  expect(get(paramAtomWithScope({k: 'y'}))).toBe('yValue1');
+// @fb-only: test('atomFamily with scope', () => {
+// @fb-only: const scopeForParamAtom = atom<string>({
+// @fb-only:     key: 'scope atom for atomFamily',
+// @fb-only:     default: 'foo',
+// @fb-only: });
+// @fb-only: const paramAtomWithScope = atomFamily<string, {k: string}>({
+// @fb-only:     key: 'parameterized atom with scope',
+// @fb-only:     default: 'default',
+// @fb-only:     scopeRules_APPEND_ONLY_READ_THE_DOCS: [[scopeForParamAtom]],
+// @fb-only: });
+// @fb-only: expect(get(paramAtomWithScope({k: 'x'}))).toBe('default');
+// @fb-only: expect(get(paramAtomWithScope({k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithScope({k: 'x'}), 'xValue1');
+// @fb-only: expect(get(paramAtomWithScope({k: 'x'}))).toBe('xValue1');
+// @fb-only: expect(get(paramAtomWithScope({k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithScope({k: 'y'}), 'yValue1');
+// @fb-only: expect(get(paramAtomWithScope({k: 'x'}))).toBe('xValue1');
+// @fb-only: expect(get(paramAtomWithScope({k: 'y'}))).toBe('yValue1');
 
-  set(scopeForParamAtom, 'bar');
+// @fb-only: set(scopeForParamAtom, 'bar');
 
-  expect(get(paramAtomWithScope({k: 'x'}))).toBe('default');
-  expect(get(paramAtomWithScope({k: 'y'}))).toBe('default');
-  set(paramAtomWithScope({k: 'x'}), 'xValue2');
-  expect(get(paramAtomWithScope({k: 'x'}))).toBe('xValue2');
-  expect(get(paramAtomWithScope({k: 'y'}))).toBe('default');
-  set(paramAtomWithScope({k: 'y'}), 'yValue2');
-  expect(get(paramAtomWithScope({k: 'x'}))).toBe('xValue2');
-  expect(get(paramAtomWithScope({k: 'y'}))).toBe('yValue2');
-});
+// @fb-only: expect(get(paramAtomWithScope({k: 'x'}))).toBe('default');
+// @fb-only: expect(get(paramAtomWithScope({k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithScope({k: 'x'}), 'xValue2');
+// @fb-only: expect(get(paramAtomWithScope({k: 'x'}))).toBe('xValue2');
+// @fb-only: expect(get(paramAtomWithScope({k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithScope({k: 'y'}), 'yValue2');
+// @fb-only: expect(get(paramAtomWithScope({k: 'x'}))).toBe('xValue2');
+// @fb-only: expect(get(paramAtomWithScope({k: 'y'}))).toBe('yValue2');
+// @fb-only: });
 
-test('atomFamily with parameterized scope', () => {
-  const paramScopeForParamAtom = atomFamily<string, {namespace: string}>({
-    key: 'scope atom for atomFamily with parameterized scope',
-    default: ({namespace}) => namespace,
-  });
-  const paramAtomWithParamScope = atomFamily<string, {k: string, n: string}>({
-    key: 'parameterized atom with parameterized scope',
-    default: 'default',
-    scopeRules_APPEND_ONLY_READ_THE_DOCS: [
-      [({n}) => paramScopeForParamAtom({namespace: n})],
-    ],
-  });
-
-  expect(get(paramScopeForParamAtom({namespace: 'foo'}))).toBe('foo');
-
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('default');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('default');
-  set(paramAtomWithParamScope({n: 'foo', k: 'x'}), 'xValue1');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('xValue1');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('default');
-  set(paramAtomWithParamScope({n: 'foo', k: 'y'}), 'yValue1');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('xValue1');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('yValue1');
-
-  set(paramScopeForParamAtom({namespace: 'foo'}), 'eggs');
-  expect(get(paramScopeForParamAtom({namespace: 'foo'}))).toBe('eggs');
-
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('default');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('default');
-  set(paramAtomWithParamScope({n: 'foo', k: 'x'}), 'xValue2');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('xValue2');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('default');
-  set(paramAtomWithParamScope({n: 'foo', k: 'y'}), 'yValue2');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('xValue2');
-  expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('yValue2');
-
-  expect(get(paramScopeForParamAtom({namespace: 'bar'}))).toBe('bar');
-
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('default');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('default');
-  set(paramAtomWithParamScope({n: 'bar', k: 'x'}), 'xValue3');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('xValue3');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('default');
-  set(paramAtomWithParamScope({n: 'bar', k: 'y'}), 'yValue3');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('xValue3');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('yValue3');
-
-  set(paramScopeForParamAtom({namespace: 'bar'}), 'spam');
-  expect(get(paramScopeForParamAtom({namespace: 'bar'}))).toBe('spam');
-
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('default');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('default');
-  set(paramAtomWithParamScope({n: 'bar', k: 'x'}), 'xValue4');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('xValue4');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('default');
-  set(paramAtomWithParamScope({n: 'bar', k: 'y'}), 'yValue4');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('xValue4');
-  expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('yValue4');
-});
+// @fb-only: test('atomFamily with parameterized scope', () => {
+// @fb-only: const paramScopeForParamAtom = atomFamily<string, {namespace: string}>({
+// @fb-only: key: 'scope atom for atomFamily with parameterized scope',
+// @fb-only: default: ({namespace}) => namespace,
+// @fb-only: });
+// @fb-only: const paramAtomWithParamScope = atomFamily<string, {k: string, n: string}>({
+// @fb-only: key: 'parameterized atom with parameterized scope',
+// @fb-only: default: 'default',
+// @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: [
+// @fb-only: [({n}) => paramScopeForParamAtom({namespace: n})],
+// @fb-only: ],
+// @fb-only: });
+// @fb-only:
+// @fb-only: expect(get(paramScopeForParamAtom({namespace: 'foo'}))).toBe('foo');
+// @fb-only:
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('default');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithParamScope({n: 'foo', k: 'x'}), 'xValue1');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('xValue1');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithParamScope({n: 'foo', k: 'y'}), 'yValue1');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('xValue1');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('yValue1');
+// @fb-only:
+// @fb-only: set(paramScopeForParamAtom({namespace: 'foo'}), 'eggs');
+// @fb-only: expect(get(paramScopeForParamAtom({namespace: 'foo'}))).toBe('eggs');
+// @fb-only:
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('default');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithParamScope({n: 'foo', k: 'x'}), 'xValue2');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('xValue2');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithParamScope({n: 'foo', k: 'y'}), 'yValue2');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'x'}))).toBe('xValue2');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'foo', k: 'y'}))).toBe('yValue2');
+// @fb-only:
+// @fb-only: expect(get(paramScopeForParamAtom({namespace: 'bar'}))).toBe('bar');
+// @fb-only:
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('default');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithParamScope({n: 'bar', k: 'x'}), 'xValue3');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('xValue3');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithParamScope({n: 'bar', k: 'y'}), 'yValue3');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('xValue3');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('yValue3');
+// @fb-only:
+// @fb-only: set(paramScopeForParamAtom({namespace: 'bar'}), 'spam');
+// @fb-only: expect(get(paramScopeForParamAtom({namespace: 'bar'}))).toBe('spam');
+// @fb-only:
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('default');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithParamScope({n: 'bar', k: 'x'}), 'xValue4');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('xValue4');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('default');
+// @fb-only: set(paramAtomWithParamScope({n: 'bar', k: 'y'}), 'yValue4');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'x'}))).toBe('xValue4');
+// @fb-only: expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('yValue4');
+// @fb-only: });
 
 test('Returns the fallback for parameterized atoms', () => {
   let theAtom = null;
@@ -425,22 +426,43 @@ test('Independent atom subscriptions', () => {
     </>,
   );
 
-  // Initial:
-  expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
-  expect(getNumUpdatesA()).toBe(1);
-  expect(getNumUpdatesB()).toBe(1);
+  if (mutableSourceIsExist()) {
+    // Initial:
+    expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
+    expect(getNumUpdatesA()).toBe(1);
+    expect(getNumUpdatesB()).toBe(1);
 
-  // After setting at parameter A, component A should update:
-  act(() => setValueA(1));
-  expect(container.textContent).toBe('1"DEFAULT"');
-  expect(getNumUpdatesA()).toBe(2);
-  expect(getNumUpdatesB()).toBe(1);
+    // After setting at parameter A, component A should update:
+    act(() => setValueA(1));
+    expect(container.textContent).toBe('1"DEFAULT"');
+    expect(getNumUpdatesA()).toBe(2);
+    expect(getNumUpdatesB()).toBe(1);
 
-  // After setting at parameter B, component B should update:
-  act(() => setValueB(2));
-  expect(container.textContent).toBe('12');
-  expect(getNumUpdatesA()).toBe(2);
-  expect(getNumUpdatesB()).toBe(2);
+    // After setting at parameter B, component B should update:
+    act(() => setValueB(2));
+    expect(container.textContent).toBe('12');
+    expect(getNumUpdatesA()).toBe(2);
+    expect(getNumUpdatesB()).toBe(2);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    // Initial:
+    expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
+    expect(getNumUpdatesA()).toBe(2);
+    expect(getNumUpdatesB()).toBe(2);
+
+    // After setting at parameter A, component A should update:
+    act(() => setValueA(1));
+    expect(container.textContent).toBe('1"DEFAULT"');
+    expect(getNumUpdatesA()).toBe(3);
+    expect(getNumUpdatesB()).toBe(2);
+
+    // After setting at parameter B, component B should update:
+    act(() => setValueB(2));
+    expect(container.textContent).toBe('12');
+    expect(getNumUpdatesA()).toBe(3);
+    expect(getNumUpdatesB()).toBe(3);
+  }
 });
 
 describe('Effects', () => {
