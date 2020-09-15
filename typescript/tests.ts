@@ -267,6 +267,14 @@ isRecoilValue(mySelector1);
   });
 
   useRecoilState(mySelectorFamWritable(3))[0]; // $ExpectType number
+
+  const mySelectorFamArray = selectorFamily({
+    key: 'myAtomFam1',
+    get: (param: ReadonlyArray<number>) => ({ get }) => {
+      return [...param, 9];
+    },
+  });
+  mySelectorFamArray([1, 2, 3]);
 }
 
 /**
