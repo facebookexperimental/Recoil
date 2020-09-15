@@ -140,6 +140,8 @@ function cacheKeyFromDepValues(depValues: DepValues): CacheKey {
 
 const dependencyStack = []; // for detecting circular dependencies.
 
+const waitingStores: Map<Loadable<mixed>, Set<Store>> = new Map();
+
 /* eslint-disable no-redeclare */
 declare function selector<T>(
   options: ReadOnlySelectorOptions<T>,
@@ -161,11 +163,37 @@ function selector<T>(
     store.getState().knownSelectors.add(key);
   }
 
-  function putIntoCache(
+  function letStoreBeNotifiedWhenAsyncSettles(
     store: Store,
-    cacheKey: CacheKey,
     loadable: Loadable<T>,
-  ) {
+  ): void {
+    if (loadable.state === 'loading') {
+      let stores = waitingStores.get(loadable);
+      if (stores === undefined) {
+        waitingStores.set(loadable, (stores = new Set()));
+      }
+      stores.add(store);
+    }
+  }
+
+  function notifyStoresOfSettledAsync(
+    originalLoadable: Loadable<T>,
+    newLoadable: Loadable<T>,
+  ): void {
+    const stores = waitingStores.get(originalLoadable);
+    if (stores !== undefined) {
+      for (const store of stores) {
+        setRecoilValueLoadable(
+          store,
+          new AbstractRecoilValue(key),
+          newLoadable,
+        );
+      }
+      waitingStores.delete(originalLoadable);
+    }
+  }
+
+  function putIntoCache(cacheKey: CacheKey, loadable: Loadable<T>) {
     if (loadable.state !== 'loading') {
       // Synchronous result
       if (__DEV__) {
@@ -208,11 +236,7 @@ function selector<T>(
           // this was called.  That state likely doesn't have the subscriptions saved yet.
           // Note that we have to set the value for this key, not just notify
           // components, so that there will be a new version for useMutableSource.
-          setRecoilValueLoadable(
-            store,
-            new AbstractRecoilValue(key),
-            newLoadable,
-          );
+          notifyStoresOfSettledAsync(loadable, newLoadable);
           return result;
         })
         .catch(error => {
@@ -230,11 +254,7 @@ function selector<T>(
           // the error and fire subscriptions to re-render.
           const newLoadable = loadableWithError(error);
           cache = cache.set(cacheKey, newLoadable);
-          setRecoilValueLoadable(
-            store,
-            new AbstractRecoilValue(key),
-            newLoadable,
-          );
+          notifyStoresOfSettledAsync(loadable, newLoadable);
           return error;
         });
     }
@@ -270,6 +290,7 @@ function selector<T>(
     const cached: Loadable<T> | void = cache.get(cacheKey);
 
     if (cached != null) {
+      letStoreBeNotifiedWhenAsyncSettles(store, cached);
       return [dependencyMap, cached];
     }
 
@@ -284,7 +305,8 @@ function selector<T>(
 
     // Save result in cache
     const newCacheKey = cacheKeyFromDepValues(newDepValues);
-    putIntoCache(store, newCacheKey, loadable);
+    letStoreBeNotifiedWhenAsyncSettles(store, loadable);
+    putIntoCache(newCacheKey, loadable);
     return [dependencyMap, loadable];
   }
 
@@ -314,39 +336,49 @@ function selector<T>(
       const output = get({get: getRecoilValue});
       // TODO Allow user to also return Loadables for improved composability
       const result = isRecoilValue(output) ? getRecoilValue(output) : output;
-      const loadable: Loadable<T> = !isPromise(result)
-        ? // The selector returned a simple synchronous value, so let's use it!
-          (endPerfBlock(), loadableWithValue<T>(result))
-        : // The user returned a promise for an asynchronous selector.  This will
-          // resolve to the proper value of the selector when available.
-          loadableWithPromise<T>((result: $FlowFixMe).finally(endPerfBlock));
+      let loadable: Loadable<T>;
+      if (!isPromise(result)) {
+        // The selector returned a simple synchronous value, so let's use it!
+        endPerfBlock();
+        loadable = loadableWithValue<T>(result);
+      } else {
+        // The user returned a promise for an asynchronous selector.  This will
+        // resolve to the proper value of the selector when available.
+        loadable = loadableWithPromise<T>(
+          (result: $FlowFixMe).finally(endPerfBlock),
+        );
+      }
       return [dependencyMap, loadable, depValues];
     } catch (errorOrDepPromise) {
+      // XXX why was this changed to not use isPromise?
       const isP = errorOrDepPromise.then !== undefined;
-      const loadable = !isP
-        ? // There was a synchronous error in the evaluation
-          (endPerfBlock(), loadableWithError(errorOrDepPromise))
-        : // If an asynchronous dependency was not ready, then return a promise that
-          // will resolve when we finally do have a real value or error for the selector.
-          loadableWithPromise(
-            errorOrDepPromise
-              .then(() => {
-                // Now that its deps are ready, re-evaluate the selector (and
-                // record any newly-discovered dependencies in the Store):
-                const loadable = getRecoilValueAsLoadable(
-                  store,
-                  new AbstractRecoilValue(key),
-                );
-                if (loadable.state === 'hasError') {
-                  throw loadable.contents;
-                }
-                // Either the re-try provided a value, which we will use, or it
-                // got blocked again.  In that case this is a promise and we'll try again.
-                return loadable.contents;
-              })
-              .finally(endPerfBlock),
-          );
-
+      let loadable: Loadable<T>;
+      if (!isP) {
+        // There was a synchronous error in the evaluation
+        endPerfBlock();
+        loadable = loadableWithError(errorOrDepPromise);
+      } else {
+        // If an asynchronous dependency was not ready, then return a promise that
+        // will resolve when we finally do have a real value or error for the selector.
+        loadable = loadableWithPromise(
+          errorOrDepPromise
+            .then(() => {
+              // Now that its deps are ready, re-evaluate the selector (and
+              // record any newly-discovered dependencies in the Store):
+              const loadable = getRecoilValueAsLoadable(
+                store,
+                new AbstractRecoilValue(key),
+              );
+              if (loadable.state === 'hasError') {
+                throw loadable.contents;
+              }
+              // Either the re-try provided a value, which we will use, or it
+              // got blocked again.  In that case this is a promise and we'll try again.
+              return loadable.contents;
+            })
+            .finally(endPerfBlock),
+        );
+      }
       return [dependencyMap, loadable, depValues];
     }
   }

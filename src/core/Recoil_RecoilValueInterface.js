@@ -42,6 +42,19 @@ function getRecoilValueAsLoadable<T>(
   {key}: AbstractRecoilValue<T>,
   treeState: TreeState = store.getState().currentTree,
 ): Loadable<T> {
+  // Reading from an older tree can cause bugs because the dependencies that we
+  // discover during the read are lost.
+  const storeState = store.getState();
+  if (
+    !(
+      treeState.version === storeState.currentTree.version ||
+      treeState.version === storeState.nextTree?.version ||
+      treeState.version === storeState.previousTree?.version
+    )
+  ) {
+    recoverableViolation('Tried to read from a discarded tree', 'recoil');
+  }
+
   const [dependencyMap, loadable] = getNodeLoadable(store, treeState, key);
   saveDependencyMapToStore(dependencyMap, store, treeState.version);
   return loadable;

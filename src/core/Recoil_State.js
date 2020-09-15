@@ -112,7 +112,6 @@ export type Store = $ReadOnly<{
   getGraph: Version => Graph,
   subscribeToTransactions: ((Store) => void, ?NodeKey) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
-  mutableSource: mixed, // FIXME T2710559282599660
 }>;
 
 export type StoreRef = {

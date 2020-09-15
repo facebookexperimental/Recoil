@@ -15,7 +15,10 @@ import type {MutableSnapshot} from '../core/Recoil_Snapshot';
 import type {Store, StoreRef, StoreState} from '../core/Recoil_State';
 
 const React = require('React');
-const {useContext, useEffect, useRef, useState} = require('React');
+const {useContext, useEffect, useMemo, useRef, useState} = require('React');
+// @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+// @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
+// @fb-only: const URI = require('URI');
 
 const Queue = require('../adt/Recoil_Queue');
 const {
@@ -33,8 +36,10 @@ const {
 } = require('../core/Recoil_State');
 const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const nullthrows = require('../util/Recoil_nullthrows');
+// @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
+// @fb-only: const gkx = require('gkx');
 
 type Props = {
   initializeState_DEPRECATED?: ({
@@ -42,6 +47,7 @@ type Props = {
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
   initializeState?: MutableSnapshot => void,
+  store_INTERNAL?: Store,
   children: React.Node,
 };
 
@@ -57,10 +63,16 @@ const defaultStore: Store = Object.freeze({
   getGraph: notInAContext,
   subscribeToTransactions: notInAContext,
   addTransactionMetadata: notInAContext,
-  mutableSource: null,
 });
 
+let stateReplacerIsBeingExecuted: boolean = false;
+
 function startNextTreeIfNeeded(storeState: StoreState): void {
+  if (stateReplacerIsBeingExecuted) {
+    throw new Error(
+      'An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.',
+    );
+  }
   if (storeState.nextTree === null) {
     const version = storeState.currentTree.version;
     const nextVersion = getNextTreeStateVersion();
@@ -80,6 +92,9 @@ function startNextTreeIfNeeded(storeState: StoreState): void {
 
 const AppContext = React.createContext<StoreRef>({current: defaultStore});
 const useStoreRef = (): StoreRef => useContext(AppContext);
+
+const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
+const useRecoilMutableSource = (): mixed => useContext(MutableSourceContext);
 
 function sendEndOfBatchNotifications(store: Store) {
   const storeState = store.getState();
@@ -174,6 +189,8 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
 
       sendEndOfBatchNotifications(storeRef.current);
 
+      const discardedVersion = nullthrows(storeState.previousTree).version;
+      storeState.graphsByVersion.delete(discardedVersion);
       storeState.previousTree = null;
     });
   });
@@ -233,8 +250,26 @@ let nextID = 0;
 function RecoilRoot({
   initializeState_DEPRECATED,
   initializeState,
+  store_INTERNAL: storeProp, // For use with React "context bridging"
   children,
 }: Props): ReactElement {
+  // prettier-ignore
+  // @fb-only: useEffect(() => {
+    // @fb-only: if (gkx('recoil_usage_logging')) {
+      // @fb-only: try {
+        // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+          // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
+          // @fb-only: path: URI.getRequestURI().getPath(),
+        // @fb-only: }));
+      // @fb-only: } catch {
+        // @fb-only: recoverableViolation(
+          // @fb-only: 'Error when logging Recoil Usage event',
+          // @fb-only: 'recoil',
+        // @fb-only: );
+      // @fb-only: }
+    // @fb-only: }
+  // @fb-only: }, []);
+
   let storeState; // eslint-disable-line prefer-const
 
   const getGraph = version => {
@@ -293,7 +328,13 @@ function RecoilRoot({
     startNextTreeIfNeeded(storeState);
     // Use replacer to get the next state:
     const nextTree = nullthrows(storeState.nextTree);
-    const replaced = replacer(nextTree);
+    let replaced;
+    try {
+      stateReplacerIsBeingExecuted = true;
+      replaced = replacer(nextTree);
+    } finally {
+      stateReplacerIsBeingExecuted = false;
+    }
     if (replaced === nextTree) {
       return;
     }
@@ -319,19 +360,14 @@ function RecoilRoot({
     (React: any).createMutableSource ?? // flowlint-line unclear-type:off
     (React: any).unstable_createMutableSource; // flowlint-line unclear-type:off
 
-  const store: Store = {
+  const store: Store = storeProp ?? {
     getState: () => storeState.current,
     replaceState,
     getGraph,
     subscribeToTransactions,
     addTransactionMetadata,
-    mutableSource: createMutableSource
-      ? createMutableSource(
-          storeState,
-          () => storeState.current.currentTree.version,
-        )
-      : null,
   };
+
   const storeRef = useRef(store);
   storeState = useRef(
     initializeState_DEPRECATED != null
@@ -341,16 +377,30 @@ function RecoilRoot({
       : makeEmptyStoreState(),
   );
 
+  const mutableSource = useMemo(
+    () =>
+      createMutableSource
+        ? createMutableSource(
+            storeState,
+            () => storeState.current.currentTree.version,
+          )
+        : null,
+    [createMutableSource, storeState],
+  );
+
   return (
     <AppContext.Provider value={storeRef}>
-      <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
-      {children}
+      <MutableSourceContext.Provider value={mutableSource}>
+        <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
+        {children}
+      </MutableSourceContext.Provider>
     </AppContext.Provider>
   );
 }
 
 module.exports = {
   useStoreRef,
+  useRecoilMutableSource,
   RecoilRoot,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,
 };

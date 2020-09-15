@@ -10,17 +10,6 @@
  */
 'use strict';
 
-export type {
-  AtomEffect,
-  PersistenceSettings,
-} from './recoil_values/Recoil_atom';
-export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
-export type {Loadable} from './adt/Recoil_Loadable';
-export type {
-  GetRecoilValue,
-  SetRecoilState,
-  ResetRecoilState,
-} from './recoil_values/Recoil_selector';
 export type {PersistenceType} from './core/Recoil_Node';
 export type {
   RecoilValue,
@@ -32,6 +21,18 @@ export type {
   Snapshot,
   SnapshotID,
 } from './core/Recoil_Snapshot';
+export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
+export type {RecoilBridge} from './hooks/Recoil_useRecoilBridgeAcrossReactRoots';
+export type {Loadable} from './adt/Recoil_Loadable';
+export type {
+  AtomEffect,
+  PersistenceSettings,
+} from './recoil_values/Recoil_atom';
+export type {
+  GetRecoilValue,
+  SetRecoilState,
+  ResetRecoilState,
+} from './recoil_values/Recoil_selector';
 export type {
   Parameter,
   SelectorFamilyOptions,
@@ -55,6 +56,7 @@ const {
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
 } = require('./hooks/Recoil_Hooks');
+const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
 const constSelector = require('./recoil_values/Recoil_constSelector');
@@ -75,6 +77,7 @@ module.exports = {
 
   // Components
   RecoilRoot,
+  useRecoilBridgeAcrossReactRoots_UNSTABLE: useRecoilBridgeAcrossReactRoots,
 
   // RecoilValues
   atom,

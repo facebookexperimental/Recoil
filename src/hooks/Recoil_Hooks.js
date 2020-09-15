@@ -21,7 +21,10 @@ const React = require('React');
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {
+  useRecoilMutableSource,
+  useStoreRef,
+} = require('../core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   AbstractRecoilValue,
@@ -257,6 +260,10 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
   }, [recoilValuesUsed, storeRef]);
 }
 
+if (__DEV__) {
+  window.$recoilComponentGetRecoilValueCount_FOR_TESTING = 0;
+}
+
 function useRecoilValueLoadable_MUTABLESOURCE<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
@@ -265,9 +272,16 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   }
   const storeRef = useStoreRef();
 
-  const getTreeState = useCallback(() => {
-    return storeRef.current.getState().currentTree;
-  }, [storeRef]);
+  const getValue = useCallback(() => {
+    if (__DEV__) {
+      window.$recoilComponentGetRecoilValueCount_FOR_TESTING++;
+    }
+    return getRecoilValueAsLoadable(
+      storeRef.current,
+      recoilValue,
+      storeRef.current.getState().currentTree,
+    );
+  }, [storeRef, recoilValue]);
 
   const subscribe = useCallback(
     (_something, callback) => {
@@ -282,13 +296,7 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
     [recoilValue, storeRef],
   );
 
-  const treeState = useMutableSource(
-    storeRef.current.mutableSource,
-    getTreeState,
-    subscribe,
-  );
-
-  return getRecoilValueAsLoadable(storeRef.current, recoilValue, treeState);
+  return useMutableSource(useRecoilMutableSource(), getValue, subscribe);
 }
 
 function useRecoilValueLoadable_LEGACY<T>(

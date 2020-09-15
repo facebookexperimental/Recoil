@@ -1,6 +1,6 @@
 {
   "name": "recoil",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Recoil - A state management library for React",
   "main": "cjs/recoil.js",
   "module": "es/recoil.js",
@@ -54,6 +54,7 @@
     "eslint-plugin-jest": "^23.13.2",
     "eslint-plugin-react": "^7.20.0",
     "flow-bin": "^0.126.1",
+    "gen-flow-files": "^0.4.11",
     "husky": ">=4",
     "immutable": "^4.0.0-rc.12",
     "install-peers-cli": "^2.2.0",
@@ -77,8 +78,7 @@
       "/node_modules/",
       "src/hooks/__tests__/Recoil_PublicHooks-test.js",
       "src/hooks/__tests__/Recoil_useRecoilCallback-test.js",
-      "src/recoil_values/__tests__/Recoil_atomFamily-test.js",
-      "src/recoil_values/__tests__/Recoil_selector-test.js"
+      "src/recoil_values/__tests__/Recoil_atomFamily-test.js"
     ],
     "setupFiles": [
       "./setupJestMock.js"

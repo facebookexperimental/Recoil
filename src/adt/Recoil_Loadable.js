@@ -29,7 +29,7 @@ type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
   upstreamState__INTERNAL_DO_NOT_USE?: TreeState,
 }>;
 
-export type LoadablePromise<T> = Promise<ResolvedLoadablePromiseInfo<T>>;
+export type LoadablePromise<+T> = Promise<ResolvedLoadablePromiseInfo<T>>;
 
 type Accessors<T> = $ReadOnly<{
   // Attempt to get the value.

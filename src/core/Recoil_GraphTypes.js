@@ -16,7 +16,10 @@ import type {NodeKey} from './Recoil_Keys';
 export type Graph = $ReadOnly<{
   // TODO rename these properties to be more descriptive and symetric.
   // Upstream Node dependencies
-  nodeDeps: Map<NodeKey, Set<NodeKey>>,
+  // NOTE: if you ever make the sets in nodeDeps mutable you must change the
+  // logic in mergeDependencyMapIntoGraph that relies on reference equality
+  // of these sets in avoiding overwriting newer deps with older ones.
+  nodeDeps: Map<NodeKey, $ReadOnlySet<NodeKey>>,
   // Downstream Node subscriptions
   nodeToNodeSubscriptions: Map<NodeKey, Set<NodeKey>>,
 }>;

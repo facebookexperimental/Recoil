@@ -14,8 +14,16 @@ const gkx = require('../../util/Recoil_gkx');
 gkx.setFail('recoil_async_selector_refactor');
 
 const React = require('React');
+const {useEffect, useState} = require('React');
 const {act} = require('ReactTestUtils');
 const atom = require('../Recoil_atom');
+const {
+  useRecoilCallback,
+  useRecoilState,
+  useRecoilValue,
+  useRecoilValueLoadable,
+  useSetRecoilState,
+} = require('../../hooks/Recoil_Hooks');
 const constSelector = require('../Recoil_constSelector');
 const errorSelector = require('../Recoil_errorSelector');
 const {
@@ -262,8 +270,9 @@ test('useRecoilState - selector catching loads', async () => {
 });
 
 test('useRecoilState - selector catching all of 2 loads', async () => {
-  const resolvingSel1 = resolvingAsyncSelector('READY1');
-  const resolvingSel2 = resolvingAsyncSelector('READY2');
+  const [resolvingSel1, res1] = asyncSelector();
+  const [resolvingSel2, res2] = asyncSelector();
+
   const bypassSelector = selector({
     key: 'useRecoilState/bypassing selector all',
     get: ({get}) => {
@@ -289,10 +298,12 @@ test('useRecoilState - selector catching all of 2 loads', async () => {
   expect(c3.textContent).toEqual('0');
 
   // After the first resolution, we're still waiting on the second
+  res1('READY1');
   act(() => jest.runAllTimers());
   expect(c3.textContent).toEqual('1');
 
   // When both are available, we are done!
+  res2('READY2');
   act(() => jest.runAllTimers());
   expect(c3.textContent).toEqual('2');
 });
@@ -662,4 +673,167 @@ test('distinct loading dependencies are treated as distinct', async () => {
 
   act(() => jest.runAllTimers());
   expect(get(directSelector)).toEqual(1);
+});
+
+test('Selector deps are saved when a component mounts due to a non-recoil change at the same time that a selector is first read', () => {
+  // Regression test for an issue where selector dependencies were not saved
+  // in this circumstance. In this situation dependencies are discovered for
+  // a selector when reading from a non-latest graph. This tests that these deps
+  // are carried forward instead of being forgotten.
+  let show, setShow, setAnotherAtom;
+  function Parent() {
+    [show, setShow] = useState(false);
+    setAnotherAtom = useSetRecoilState(anotherAtom);
+    if (show) {
+      return <SelectorUser />;
+    } else {
+      return null;
+    }
+  }
+
+  const anAtom = atom<number>({key: 'anAtom', default: 0});
+  const anotherAtom = atom<number>({key: 'anotherAtom', default: 0});
+
+  const aSelector = selector({
+    key: 'aSelector',
+    get: ({get}) => {
+      return get(anAtom);
+    },
+  });
+
+  function SelectorUser() {
+    const setter = useSetRecoilState(anAtom);
+    useEffect(() => {
+      setter(1);
+    });
+    return useRecoilValue(aSelector);
+  }
+
+  const c = renderElements(<Parent />);
+
+  expect(c.textContent).toEqual('');
+
+  act(() => {
+    setShow(true);
+    setAnotherAtom(1);
+  });
+
+  expect(c.textContent).toEqual('1');
+});
+
+describe('Async selector resolution notifies all stores that read pending', () => {
+  // Regression tests for #534: selectors used to only notify whichever store
+  // originally caused a promise to be returned, not any stores that also read
+  // the selector in that pending state.
+  test('Selectors read in a snapshot notify all stores', async () => {
+    // This version of the test uses the store inside of a Snapshot as its second store.
+    const switchAtom = atom({
+      key: 'notifiesAllStores/snapshots/switch',
+      default: false,
+    });
+    const selectorA = selector({
+      key: 'notifiesAllStores/snapshots/a',
+      get: () => 'foo',
+    });
+    let resolve = _ => {
+      throw new Error('error in test');
+    };
+    const selectorB = selector({
+      key: 'notifiesAllStores/snapshots/b',
+      get: async () =>
+        new Promise(r => {
+          resolve = r;
+        }),
+    });
+
+    let doIt;
+
+    function TestComponent() {
+      const shouldQuery = useRecoilValue(switchAtom);
+      const query = useRecoilValueLoadable(shouldQuery ? selectorB : selectorA);
+
+      doIt = useRecoilCallback(({snapshot, set}) => () => {
+        snapshot.getLoadable(selectorB); // cause query to be triggered in context of snapshot store
+        set(switchAtom, true); // cause us to then read from the pending selector
+      });
+
+      return query.state === 'hasValue' ? query.contents : 'loading';
+    }
+
+    const c = renderElements(<TestComponent />);
+    expect(c.textContent).toEqual('foo');
+
+    act(doIt);
+    expect(c.textContent).toEqual('loading');
+
+    act(() => resolve('bar'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('bar');
+  });
+
+  test('Selectors read in a another root notify all roots', async () => {
+    // This version of the test uses another RecoilRoot as its second store
+    const switchAtom = atom({
+      key: 'notifiesAllStores/twoRoots/switch',
+      default: false,
+    });
+    const selectorA = selector({
+      key: 'notifiesAllStores/twoRoots/a',
+      get: () => 'SELECTOR A',
+    });
+    let resolve = _ => {
+      throw new Error('error in test');
+    };
+    const selectorB = selector({
+      key: 'notifiesAllStores/twoRoots/b',
+      get: async () =>
+        new Promise(r => {
+          resolve = r;
+        }),
+    });
+
+    function TestComponent({
+      setSwitch,
+    }: {
+      setSwitch: ((boolean) => void) => void,
+    }) {
+      const [shouldQuery, setShouldQuery] = useRecoilState(switchAtom);
+      const query = useRecoilValueLoadable(shouldQuery ? selectorB : selectorA);
+      setSwitch(setShouldQuery);
+      return query.state === 'hasValue' ? query.contents : 'loading';
+    }
+
+    let setRootASelector;
+    const rootA = renderElements(
+      <TestComponent
+        setSwitch={setSelector => {
+          setRootASelector = setSelector;
+        }}
+      />,
+    );
+    let setRootBSelector;
+    const rootB = renderElements(
+      <TestComponent
+        setSwitch={setSelector => {
+          setRootBSelector = setSelector;
+        }}
+      />,
+    );
+
+    expect(rootA.textContent).toEqual('SELECTOR A');
+    expect(rootB.textContent).toEqual('SELECTOR A');
+
+    act(() => setRootASelector(true)); // cause rootA to read the selector
+    expect(rootA.textContent).toEqual('loading');
+    expect(rootB.textContent).toEqual('SELECTOR A');
+
+    act(() => setRootBSelector(true)); // cause rootB to read the selector
+    expect(rootA.textContent).toEqual('loading');
+    expect(rootB.textContent).toEqual('loading');
+
+    act(() => resolve('SELECTOR B'));
+    await flushPromisesAndTimers();
+    expect(rootA.textContent).toEqual('SELECTOR B');
+    expect(rootB.textContent).toEqual('SELECTOR B');
+  });
 });

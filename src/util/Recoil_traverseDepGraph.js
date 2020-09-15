@@ -19,7 +19,7 @@ type DepGraph = $PropertyType<Graph, 'nodeDeps'>;
 
 type VisitInfo = $ReadOnly<{
   key: NodeKey,
-  deps: Set<NodeKey>,
+  deps: $ReadOnlySet<NodeKey>,
 }>;
 
 type OnVisit = VisitInfo => ?StopTraversing;

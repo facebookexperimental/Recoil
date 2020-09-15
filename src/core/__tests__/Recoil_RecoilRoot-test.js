@@ -7,15 +7,22 @@
  */
 'use strict';
 
+import type {Store} from '../Recoil_State';
+
 const React = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
+const {useSetRecoilState} = require('../../hooks/Recoil_Hooks');
 const atom = require('../../recoil_values/Recoil_atom');
 const constSelector = require('../../recoil_values/Recoil_constSelector');
 const selector = require('../../recoil_values/Recoil_selector');
-const {ReadsAtom} = require('../../testing/Recoil_TestingUtils');
+const {
+  ReadsAtom,
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
 const {RecoilRoot} = require('../Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../Recoil_RecoilRoot.react');
 
 describe('initializeState', () => {
   test('initialize atom', () => {
@@ -79,4 +86,70 @@ describe('initializeState', () => {
 
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
   });
+
+  test('initialize with nested store', () => {
+    const GetStore = ({children}: {children: Store => React.Node}) => {
+      return children(useStoreRef().current);
+    };
+
+    const container = document.createElement('div');
+    act(() => {
+      ReactDOM.render(
+        <RecoilRoot>
+          <GetStore>
+            {storeA => (
+              <RecoilRoot store_INTERNAL={storeA}>
+                <GetStore>
+                  {storeB => {
+                    expect(storeA === storeB).toBe(true);
+                    return 'NESTED_ROOT/';
+                  }}
+                </GetStore>
+              </RecoilRoot>
+            )}
+          </GetStore>
+          ROOT
+        </RecoilRoot>,
+        container,
+      );
+    });
+
+    expect(container.textContent).toEqual('NESTED_ROOT/ROOT');
+  });
+});
+
+test('Impure state updater functions that trigger atom updates are detected', () => {
+  // This test ensures that we throw a clean error rather than mysterious breakage
+  // if the user supplies a state updater function that triggers another update
+  // within its execution. These state updater functions are supposed to be pure.
+  // We can't detect all forms of impurity but this one in particular will make
+  // Recoil break, so we detect it and throw an error.
+
+  const atomA = atom({
+    key: 'RecoilRoot/impureUpdater/a',
+    default: 0,
+  });
+  const atomB = atom({
+    key: 'RecoilRoot/impureUpdater/b',
+    default: 0,
+  });
+
+  let update;
+  function Component() {
+    const updateA = useSetRecoilState(atomA);
+    const updateB = useSetRecoilState(atomB);
+    update = () => {
+      updateA(() => {
+        updateB(1);
+        return 1;
+      });
+    };
+  }
+
+  renderElements(<Component />);
+  expect(() =>
+    act(() => {
+      update();
+    }),
+  ).toThrow('pure function');
 });
