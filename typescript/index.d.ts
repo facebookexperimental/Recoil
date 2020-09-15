@@ -205,7 +205,7 @@ export function isRecoilValue(val: unknown): val is RecoilValue<any>; // eslint-
 // bigint not supported yet
 type Primitive = undefined | null | boolean | number | symbol | string;
 
-export type SerializableParam = Primitive | ReadonlyArray<SerializableParam> | ReadOnly<{[key: string]: SerializableParam}>;
+export type SerializableParam = Primitive | ReadonlyArray<SerializableParam> | Readonly<{[key: string]: SerializableParam}>;
 
 export interface AtomFamilyOptions<T, P extends SerializableParam> {
   key: NodeKey;
