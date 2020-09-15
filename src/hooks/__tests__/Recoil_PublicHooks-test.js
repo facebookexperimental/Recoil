@@ -652,32 +652,34 @@ test('Component does not re-read atom when rendered due to another atom changing
 
   renderElements(<Parent />);
 
-  const initialCalls = window.$recoilComponentGetRecoilValueCount_FOR_TESTING;
-  expect(initialCalls).toBeGreaterThan(0);
+  if (mutableSourceIsExist()) {
+    const initialCalls = window.$recoilComponentGetRecoilValueCount_FOR_TESTING;
+    expect(initialCalls).toBeGreaterThan(0);
 
-  // No re-read when setting local state on the component:
-  act(() => {
-    setLocal(1);
-  });
-  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
-    initialCalls,
-  );
+    // No re-read when setting local state on the component:
+    act(() => {
+      setLocal(1);
+    });
+    expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+      initialCalls,
+    );
 
-  // No re-read when setting local state on its parent causing it to re-render:
-  act(() => {
-    setParentLocal(1);
-  });
-  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
-    initialCalls,
-  );
+    // No re-read when setting local state on its parent causing it to re-render:
+    act(() => {
+      setParentLocal(1);
+    });
+    expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+      initialCalls,
+    );
 
-  // Setting an atom causes a re-read for that atom only, not others:
-  act(() => {
-    setA(1);
-  });
-  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
-    initialCalls + 1,
-  );
+    // Setting an atom causes a re-read for that atom only, not others:
+    act(() => {
+      setA(1);
+    });
+    expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+      initialCalls + 1,
+    );
+  }
 });
 
 test('Can subscribe to and also change an atom in the same batch', () => {

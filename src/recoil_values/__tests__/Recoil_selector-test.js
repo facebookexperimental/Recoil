@@ -40,6 +40,7 @@ const {
   flushPromisesAndTimers,
 } = require('../../testing/Recoil_TestingUtils');
 const {DefaultValue} = require('../../core/Recoil_Node');
+const {mutableSourceIsExist} = require('../../util/Recoil_mutableSource');
 
 let store;
 beforeEach(() => {
@@ -768,6 +769,7 @@ describe('Async selector resolution notifies all stores that read pending', () =
 
     act(() => resolve('bar'));
     await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
     expect(c.textContent).toEqual('bar');
   });
 
@@ -804,22 +806,24 @@ describe('Async selector resolution notifies all stores that read pending', () =
     const rootA = renderElements(<TestComponent />);
     const rootB = renderElements(<TestComponent />);
 
-    expect(rootA.textContent).toEqual('foo');
-    expect(rootB.textContent).toEqual('foo');
+    if (mutableSourceIsExist()) {
+      expect(rootA.textContent).toEqual('foo');
+      expect(rootB.textContent).toEqual('foo');
 
-    expect(switches.length).toEqual(2);
+      expect(switches.length).toEqual(2);
 
-    act(() => switches[0](true)); // cause rootA to read the selector
-    expect(rootA.textContent).toEqual('loading');
-    expect(rootB.textContent).toEqual('foo');
+      act(() => switches[0](true)); // cause rootA to read the selector
+      expect(rootA.textContent).toEqual('loading');
+      expect(rootB.textContent).toEqual('foo');
 
-    act(() => switches[1](true)); // cause rootB to read the selector
-    expect(rootA.textContent).toEqual('loading');
-    expect(rootB.textContent).toEqual('loading');
+      act(() => switches[1](true)); // cause rootB to read the selector
+      expect(rootA.textContent).toEqual('loading');
+      expect(rootB.textContent).toEqual('loading');
 
-    act(() => resolve('bar'));
-    await flushPromisesAndTimers();
-    expect(rootA.textContent).toEqual('bar');
-    expect(rootB.textContent).toEqual('bar');
+      act(() => resolve('bar'));
+      await flushPromisesAndTimers();
+      expect(rootA.textContent).toEqual('bar');
+      expect(rootB.textContent).toEqual('bar');
+    }
   });
 });
