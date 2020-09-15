@@ -10,6 +10,7 @@
     "umd",
     "es",
     "cjs",
+    "native",
     "index.d.ts"
   ],
   "repository": "https://github.com/facebookexperimental/recoil.git",
