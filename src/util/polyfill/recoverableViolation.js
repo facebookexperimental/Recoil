@@ -17,7 +17,7 @@ function recoverableViolation(
   {error}: {|error?: Error|} = {},
 ): null {
   if (__DEV__) {
-    console.error(message, error);
+    console.warn(message, error);
   }
   return null;
 }
