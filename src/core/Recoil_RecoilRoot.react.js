@@ -65,7 +65,14 @@ const defaultStore: Store = Object.freeze({
   addTransactionMetadata: notInAContext,
 });
 
+let stateReplacerIsBeingExecuted: boolean = false;
+
 function startNextTreeIfNeeded(storeState: StoreState): void {
+  if (stateReplacerIsBeingExecuted) {
+    throw new Error(
+      'An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.',
+    );
+  }
   if (storeState.nextTree === null) {
     const version = storeState.currentTree.version;
     const nextVersion = getNextTreeStateVersion();
@@ -321,7 +328,13 @@ function RecoilRoot({
     startNextTreeIfNeeded(storeState);
     // Use replacer to get the next state:
     const nextTree = nullthrows(storeState.nextTree);
-    const replaced = replacer(nextTree);
+    let replaced;
+    try {
+      stateReplacerIsBeingExecuted = true;
+      replaced = replacer(nextTree);
+    } finally {
+      stateReplacerIsBeingExecuted = false;
+    }
     if (replaced === nextTree) {
       return;
     }
