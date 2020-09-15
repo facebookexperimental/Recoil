@@ -200,11 +200,14 @@ function componentThatReadsAndWritesAtom<T>(
 }
 
 function flushPromisesAndTimers(): Promise<mixed> {
-  return new Promise(resolve => {
-    // eslint-disable-next-line no-restricted-globals
-    setTimeout(resolve, 100);
-    act(() => jest.runAllTimers());
-  });
+  return act(
+    () =>
+      new Promise(resolve => {
+        // eslint-disable-next-line no-restricted-globals
+        setTimeout(resolve, 100);
+        jest.runAllTimers();
+      }),
+  );
 }
 
 module.exports = {
