@@ -554,6 +554,56 @@ test('Component is rendered just once when atom is changed twice', () => {
   expect(commit).toHaveBeenCalledTimes(2);
 });
 
+test('Component does not re-read atom when rendered due to another atom changing, parent re-render, or other state change', () => {
+  const atomA = counterAtom();
+  const atomB = counterAtom();
+
+  let _, setLocal;
+  let _a, setA;
+  let _b, _setB;
+  function Component() {
+    [_, setLocal] = useState(0);
+    [_a, setA] = useRecoilState(atomA);
+    [_b, _setB] = useRecoilState(atomB);
+    return null;
+  }
+
+  let __, setParentLocal;
+  function Parent() {
+    [__, setParentLocal] = useState(0);
+    return <Component />;
+  }
+
+  renderElements(<Parent />);
+
+  const initialCalls = window.$recoilComponentGetRecoilValueCount_FOR_TESTING;
+  expect(initialCalls).toBeGreaterThan(0);
+
+  // No re-read when setting local state on the component:
+  act(() => {
+    setLocal(1);
+  });
+  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+    initialCalls,
+  );
+
+  // No re-read when setting local state on its parent causing it to re-render:
+  act(() => {
+    setParentLocal(1);
+  });
+  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+    initialCalls,
+  );
+
+  // Setting an atom causes a re-read for that atom only, not others:
+  act(() => {
+    setA(1);
+  });
+  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+    initialCalls + 1,
+  );
+});
+
 test('Can subscribe to and also change an atom in the same batch', () => {
   const anAtom = counterAtom();
 

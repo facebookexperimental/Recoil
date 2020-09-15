@@ -205,7 +205,7 @@ export function isRecoilValue(val: unknown): val is RecoilValue<any>; // eslint-
 // bigint not supported yet
 type Primitive = undefined | null | boolean | number | symbol | string;
 
-export type SerializableParam = Primitive | SerializableParam[] | { [key: string]: SerializableParam };
+export type SerializableParam = Primitive | ReadonlyArray<SerializableParam> | ReadOnly<{[key: string]: SerializableParam}>;
 
 export interface AtomFamilyOptions<T, P extends SerializableParam> {
   key: NodeKey;
@@ -263,6 +263,9 @@ export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T
 
 export type UnwrapRecoilValue<T> = T extends RecoilValue<infer R> ? R : never;
 
+export type UnwrapRecoilValues<T extends Array<RecoilValue<any>> | { [key: string]: RecoilValue<any> }> = {
+  [P in keyof T]: UnwrapRecoilValue<T[P]>;
+};
 export type UnwrapRecoilValueLoadables<T extends Array<RecoilValue<any>> | { [key: string]: RecoilValue<any> }> = {
   [P in keyof T]: Loadable<UnwrapRecoilValue<T[P]>>;
 };
@@ -285,10 +288,10 @@ export function waitForAny<RecoilValues extends { [key: string]: RecoilValue<any
 
 export function waitForAll<RecoilValues extends Array<RecoilValue<any>> | [RecoilValue<any>]>(
   param: RecoilValues,
-): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+): RecoilValueReadOnly<UnwrapRecoilValues<RecoilValues>>;
 
 export function waitForAll<RecoilValues extends { [key: string]: RecoilValue<any> }>(
   param: RecoilValues,
-): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+): RecoilValueReadOnly<UnwrapRecoilValues<RecoilValues>>;
 
 /* eslint-enable @typescript-eslint/no-explicit-any */

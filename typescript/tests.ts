@@ -26,7 +26,7 @@ import {
   useRecoilTransactionObserver_UNSTABLE,
   useGotoRecoilSnapshot,
   Snapshot,
-  SnapshotID,
+  SnapshotID, // eslint-disable-line @typescript-eslint/no-unused-vars
   useRecoilSnapshot,
   useRecoilBridgeAcrossReactRoots_UNSTABLE,
 } from 'recoil';
@@ -44,18 +44,18 @@ const myAtom = atom({
 
 // selector
 const mySelector1 = selector({
-  key: 'MySelector',
+  key: 'MySelector1',
   get: () => 5,
 });
 
 const mySelector2 = selector({
-  key: 'asds',
+  key: 'MySelector2',
   get: () => '',
 });
 
 // $ExpectError
 selector({
-  key: 'asdfasfds',
+  key: 'ExpectedError',
   get: () => '',
 }) as RecoilValueReadOnly<boolean>;
 
@@ -151,7 +151,7 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   snapshot; // $ExpectType Snapshot
   snapshot.getID(); // $ExpectType SnapshotID
   await snapshot.getPromise(mySelector1); // $ExpectType number
-  const loadable = snapshot.getLoadable(mySelector1); // $ExpectType Loadable
+  const loadable = snapshot.getLoadable(mySelector1); // $ExpectType Loadable<number>
 
   gotoSnapshot(snapshot);
 
@@ -159,7 +159,7 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   gotoSnapshot(myAtom); // $ExpectError
 
   loadable.contents; // $ExpectType number | Error | LoadablePromise<number>
-  loadable.state; // $ExpectType 'hasValue' | 'hasError' | 'loading'
+  loadable.state; // $ExpectType "hasError" | "hasValue" | "loading"
 
   set(myAtom, 5);
   set(myAtom, 'hello'); // $ExpectError
@@ -258,7 +258,6 @@ isRecoilValue(mySelector1);
     key: 'myAtomFam1',
     get: (param: number) => ({ get }) => {
       get(mySelector1); // $ExpectType number
-
       return param;
     },
     set: (param: number) => () => {
@@ -267,6 +266,12 @@ isRecoilValue(mySelector1);
   });
 
   useRecoilState(mySelectorFamWritable(3))[0]; // $ExpectType number
+
+  const mySelectorFamArray = selectorFamily({
+    key: 'myAtomFam1',
+    get: (param: ReadonlyArray<number>) => () => [...param, 9],
+  });
+  mySelectorFamArray([1, 2, 3]);
 }
 
 /**
@@ -362,11 +367,11 @@ isRecoilValue(mySelector1);
   const mySel = waitForAll([numSel, strSel]);
   const mySel2 = waitForAll({ a: numSel, b: strSel });
 
-  useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
-  useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
+  useRecoilValue(mySel)[0]; // $ExpectType number
+  useRecoilValue(mySel)[1]; // $ExpectType string
 
-  useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
-  useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
+  useRecoilValue(mySel2).a; // $ExpectType number
+  useRecoilValue(mySel2).b; // $ExpectType string
 }
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
