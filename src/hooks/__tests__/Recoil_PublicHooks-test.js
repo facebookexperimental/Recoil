@@ -45,6 +45,7 @@ const {
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
 } = require('../Recoil_Hooks');
+const {mutableSourceIsExist} = require('../../util/Recoil_mutableSource');
 
 gkx.setFail('recoil_async_selector_refactor');
 
@@ -294,19 +295,36 @@ test('Async selectors can depend on async selectors', async () => {
       <ReadsAtom atom={selectorB} />
     </>,
   );
-  expect(container.textContent).toEqual('loading');
 
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('2');
+  if (mutableSourceIsExist()) {
+    expect(container.textContent).toEqual('loading');
 
-  act(() => updateValue(1));
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('loading');
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('2');
 
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('3');
+    act(() => updateValue(1));
+    expect(container.textContent).toEqual('loading');
+
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('3');
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    expect(container.textContent).toEqual('loading');
+
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('2');
+
+    act(() => updateValue(1));
+    expect(container.textContent).toEqual('loading');
+
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('3');
+  }
 });
 
 /* FIXME broken without new selector implementation
@@ -415,9 +433,18 @@ test('Component subscribed to atom is rendered just once', () => {
       <Component />
     </>,
   );
-  expect(Component).toHaveBeenCalledTimes(1);
-  act(() => updateValue(1));
-  expect(Component).toHaveBeenCalledTimes(2);
+
+  if (mutableSourceIsExist()) {
+    expect(Component).toHaveBeenCalledTimes(1);
+    act(() => updateValue(1));
+    expect(Component).toHaveBeenCalledTimes(2);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    expect(Component).toHaveBeenCalledTimes(2);
+    act(() => updateValue(1));
+    expect(Component).toHaveBeenCalledTimes(3);
+  }
 });
 
 test('Write-only components are not subscribed', () => {
@@ -444,9 +471,18 @@ test('Component that depends on atom in multiple ways is rendered just once', ()
       <ReadComp />
     </>,
   );
-  expect(ReadComp).toHaveBeenCalledTimes(1);
-  act(() => updateValue(1));
-  expect(ReadComp).toHaveBeenCalledTimes(2);
+
+  if (mutableSourceIsExist()) {
+    expect(ReadComp).toHaveBeenCalledTimes(1);
+    act(() => updateValue(1));
+    expect(ReadComp).toHaveBeenCalledTimes(2);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    expect(ReadComp).toHaveBeenCalledTimes(2);
+    act(() => updateValue(1));
+    expect(ReadComp).toHaveBeenCalledTimes(3);
+  }
 });
 
 test('Selector functions are evaluated just once', () => {
@@ -501,14 +537,28 @@ test('Component that depends on multiple atoms via selector is rendered just onc
       <ReadComp />
     </>,
   );
-  expect(commit).toHaveBeenCalledTimes(1);
-  act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
-      updateValueA(1);
-      updateValueB(1);
+
+  if (mutableSourceIsExist()) {
+    expect(commit).toHaveBeenCalledTimes(1);
+    act(() => {
+      ReactDOM.unstable_batchedUpdates(() => {
+        updateValueA(1);
+        updateValueB(1);
+      });
     });
-  });
-  expect(commit).toHaveBeenCalledTimes(2);
+    expect(commit).toHaveBeenCalledTimes(2);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    expect(commit).toHaveBeenCalledTimes(2);
+    act(() => {
+      ReactDOM.unstable_batchedUpdates(() => {
+        updateValueA(1);
+        updateValueB(1);
+      });
+    });
+    expect(commit).toHaveBeenCalledTimes(3);
+  }
 });
 
 test('Component that depends on multiple atoms directly is rendered just once', () => {
@@ -524,14 +574,27 @@ test('Component that depends on multiple atoms directly is rendered just once', 
       <ReadComp />
     </>,
   );
-  expect(ReadComp).toHaveBeenCalledTimes(1);
-  act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
-      updateValueA(1);
-      updateValueB(1);
+
+  if (mutableSourceIsExist()) {
+    expect(ReadComp).toHaveBeenCalledTimes(1);
+    act(() => {
+      ReactDOM.unstable_batchedUpdates(() => {
+        updateValueA(1);
+        updateValueB(1);
+      });
     });
-  });
-  expect(ReadComp).toHaveBeenCalledTimes(2);
+    expect(ReadComp).toHaveBeenCalledTimes(2);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+    expect(ReadComp).toHaveBeenCalledTimes(2);
+    act(() => {
+      ReactDOM.unstable_batchedUpdates(() => {
+        updateValueA(1);
+        updateValueB(1);
+      });
+    });
+    expect(ReadComp).toHaveBeenCalledTimes(3);
+  }
 });
 
 test('Component is rendered just once when atom is changed twice', () => {
@@ -544,14 +607,27 @@ test('Component is rendered just once when atom is changed twice', () => {
       <ReadComp />
     </>,
   );
-  expect(commit).toHaveBeenCalledTimes(1);
-  act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
-      updateValueA(1);
-      updateValueA(2);
+
+  if (mutableSourceIsExist()) {
+    expect(commit).toHaveBeenCalledTimes(1);
+    act(() => {
+      ReactDOM.unstable_batchedUpdates(() => {
+        updateValueA(1);
+        updateValueA(2);
+      });
     });
-  });
-  expect(commit).toHaveBeenCalledTimes(2);
+    expect(commit).toHaveBeenCalledTimes(2);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+    expect(commit).toHaveBeenCalledTimes(2);
+    act(() => {
+      ReactDOM.unstable_batchedUpdates(() => {
+        updateValueA(1);
+        updateValueA(2);
+      });
+    });
+    expect(commit).toHaveBeenCalledTimes(3);
+  }
 });
 
 test('Component does not re-read atom when rendered due to another atom changing, parent re-render, or other state change', () => {
@@ -688,26 +764,52 @@ test('Components unsubscribe from atoms when rendered without using them', () =>
       <WriteB />
     </>,
   );
-  expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(1);
 
-  act(() => updateValueA(1));
-  expect(container.textContent).toEqual('1');
-  expect(Component).toHaveBeenCalledTimes(2);
+  if (mutableSourceIsExist()) {
+    expect(container.textContent).toEqual('0');
+    expect(Component).toHaveBeenCalledTimes(1);
 
-  act(() => toggleSwitch());
-  expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(3);
+    act(() => updateValueA(1));
+    expect(container.textContent).toEqual('1');
+    expect(Component).toHaveBeenCalledTimes(2);
 
-  // Now update the atom that it used to be subscribed to but should be no longer:
-  act(() => updateValueA(2));
-  expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(3); // Important part: same as before
+    act(() => toggleSwitch());
+    expect(container.textContent).toEqual('0');
+    expect(Component).toHaveBeenCalledTimes(3);
 
-  // It is subscribed to the atom that it switched to:
-  act(() => updateValueB(3));
-  expect(container.textContent).toEqual('3');
-  expect(Component).toHaveBeenCalledTimes(4);
+    // Now update the atom that it used to be subscribed to but should be no longer:
+    act(() => updateValueA(2));
+    expect(container.textContent).toEqual('0');
+    expect(Component).toHaveBeenCalledTimes(3); // Important part: same as before
+
+    // It is subscribed to the atom that it switched to:
+    act(() => updateValueB(3));
+    expect(container.textContent).toEqual('3');
+    expect(Component).toHaveBeenCalledTimes(4);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    expect(container.textContent).toEqual('0');
+    expect(Component).toHaveBeenCalledTimes(2);
+
+    act(() => updateValueA(1));
+    expect(container.textContent).toEqual('1');
+    expect(Component).toHaveBeenCalledTimes(3);
+
+    act(() => toggleSwitch());
+    expect(container.textContent).toEqual('0');
+    expect(Component).toHaveBeenCalledTimes(5);
+
+    // Now update the atom that it used to be subscribed to but should be no longer:
+    act(() => updateValueA(2));
+    expect(container.textContent).toEqual('0');
+    expect(Component).toHaveBeenCalledTimes(5); // Important part: same as before
+
+    // It is subscribed to the atom that it switched to:
+    act(() => updateValueB(3));
+    expect(container.textContent).toEqual('3');
+    expect(Component).toHaveBeenCalledTimes(6);
+  }
 });
 
 test('Selectors unsubscribe from upstream when they have no subscribers', () => {
@@ -883,33 +985,66 @@ test('Selectors can gain and lose depnedencies', () => {
       <ComponentC />
     </>,
   );
-  expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(1);
 
-  // Input is not a dep yet, so this has no effect:
-  act(() => setInput(1));
-  expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(1);
+  if (mutableSourceIsExist()) {
+    expect(container.textContent).toEqual('Infinity');
+    expect(commit).toHaveBeenCalledTimes(1);
 
-  // Flip switch:
-  act(() => setSwitch(true));
-  expect(container.textContent).toEqual('1');
-  expect(commit).toHaveBeenCalledTimes(2);
+    // Input is not a dep yet, so this has no effect:
+    act(() => setInput(1));
+    expect(container.textContent).toEqual('Infinity');
+    expect(commit).toHaveBeenCalledTimes(1);
 
-  // Now changing input causes a re-render:
-  act(() => setInput(2));
-  expect(container.textContent).toEqual('2');
-  expect(commit).toHaveBeenCalledTimes(3);
+    // Flip switch:
+    act(() => setSwitch(true));
+    expect(container.textContent).toEqual('1');
+    expect(commit).toHaveBeenCalledTimes(2);
 
-  // Now that we've added the dep, we can remove it...
-  act(() => setSwitch(false));
-  expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(4);
+    // Now changing input causes a re-render:
+    act(() => setInput(2));
+    expect(container.textContent).toEqual('2');
+    expect(commit).toHaveBeenCalledTimes(3);
 
-  // ... and again changing input will not cause a re-render:
-  act(() => setInput(3));
-  expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(4);
+    // Now that we've added the dep, we can remove it...
+    act(() => setSwitch(false));
+    expect(container.textContent).toEqual('Infinity');
+    expect(commit).toHaveBeenCalledTimes(4);
+
+    // ... and again changing input will not cause a re-render:
+    act(() => setInput(3));
+    expect(container.textContent).toEqual('Infinity');
+    expect(commit).toHaveBeenCalledTimes(4);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    expect(container.textContent).toEqual('Infinity');
+    expect(commit).toHaveBeenCalledTimes(2);
+
+    // Input is not a dep yet, so this has no effect:
+    act(() => setInput(1));
+    expect(container.textContent).toEqual('Infinity');
+    expect(commit).toHaveBeenCalledTimes(2);
+
+    // Flip switch:
+    act(() => setSwitch(true));
+    expect(container.textContent).toEqual('1');
+    expect(commit).toHaveBeenCalledTimes(3);
+
+    // Now changing input causes a re-render:
+    act(() => setInput(2));
+    expect(container.textContent).toEqual('2');
+    expect(commit).toHaveBeenCalledTimes(4);
+
+    // Now that we've added the dep, we can remove it...
+    act(() => setSwitch(false));
+    expect(container.textContent).toEqual('Infinity');
+    expect(commit).toHaveBeenCalledTimes(5);
+
+    // ... and again changing input will not cause a re-render:
+    act(() => setInput(3));
+    expect(container.textContent).toEqual('Infinity');
+    expect(commit).toHaveBeenCalledTimes(5);
+  }
 });
 
 test('Selector depedencies are updated transactionally', () => {
@@ -1263,6 +1398,7 @@ test('Selector can alternate between synchronous and asynchronous', async () => 
   act(() => updateValue(5));
   expect(container.textContent).toEqual('loading');
   advanceTimersBy(101);
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('5');
 });
 
@@ -1385,22 +1521,44 @@ test('Resolution of suspense causes render just once', async () => {
       <ReadComp />
     </>,
   );
-  // Begins in loading state, then shows initial value:
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(1);
-  expect(commit).toHaveBeenCalledTimes(1);
-  // Changing dependency makes it go back to loading, then to show new value:
-  act(() => updateValue(1));
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(2);
-  expect(commit).toHaveBeenCalledTimes(2);
-  // Returning to a seen value does not cause the loading state:
-  act(() => updateValue(0));
-  await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(2);
-  expect(commit).toHaveBeenCalledTimes(3);
+
+  if (mutableSourceIsExist()) {
+    // Begins in loading state, then shows initial value:
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(1);
+    expect(commit).toHaveBeenCalledTimes(1);
+    // Changing dependency makes it go back to loading, then to show new value:
+    act(() => updateValue(1));
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(2);
+    expect(commit).toHaveBeenCalledTimes(2);
+    // Returning to a seen value does not cause the loading state:
+    act(() => updateValue(0));
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(2);
+    expect(commit).toHaveBeenCalledTimes(3);
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    // Begins in loading state, then shows initial value:
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(1);
+    expect(commit).toHaveBeenCalledTimes(2);
+    // Changing dependency makes it go back to loading, then to show new value:
+    act(() => updateValue(1));
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(2);
+    expect(commit).toHaveBeenCalledTimes(3);
+    // Returning to a seen value does not cause the loading state:
+    act(() => updateValue(0));
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(2);
+    expect(commit).toHaveBeenCalledTimes(4);
+  }
 });
 
 test('useTransactionObservation_DEPRECATED: Transaction dirty atoms are set', async () => {
