@@ -199,7 +199,8 @@ function componentThatReadsAndWritesAtom<T>(
   return [Component, (value: T) => setValue(value), () => resetValue()];
 }
 
-function flushPromisesAndTimers(): Promise<mixed> {
+function flushPromisesAndTimers(): Promise<void> {
+  // Wrap flush with act() to avoid warning that only shows up in OSS environment
   return act(
     () =>
       new Promise(resolve => {

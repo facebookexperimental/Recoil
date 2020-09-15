@@ -189,7 +189,6 @@ test('getSubscriptions', async () => {
     </>,
   );
 
-  // Wrap flush with act() to avoid warning that only shows up in OSS environment
   await flushPromisesAndTimers();
 
   expect(c.textContent).toBe('"ATOMATOMATOM"');
