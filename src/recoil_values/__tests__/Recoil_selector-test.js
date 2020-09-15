@@ -768,8 +768,8 @@ describe('Async selector resolution notifies all stores that read pending', () =
     expect(c.textContent).toEqual('loading');
 
     act(() => resolve('bar'));
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
+    await act(flushPromisesAndTimers);
+    await act(flushPromisesAndTimers);
     expect(c.textContent).toEqual('bar');
   });
 
