@@ -261,9 +261,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
   }, [recoilValuesUsed, storeRef]);
 }
 
-if (__DEV__) {
-  window.$recoilComponentGetRecoilValueCount_FOR_TESTING = 0;
-}
+const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
 
 function useRecoilValueLoadable_MUTABLESOURCE<T>(
   recoilValue: RecoilValue<T>,
@@ -275,7 +273,7 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
 
   const getValue = useCallback(() => {
     if (__DEV__) {
-      window.$recoilComponentGetRecoilValueCount_FOR_TESTING++;
+      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
     }
     return getRecoilValueAsLoadable(
       storeRef.current,
@@ -698,18 +696,19 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
 }
 
 module.exports = {
+  recoilComponentGetRecoilValueCount_FOR_TESTING,
+  useGotoRecoilSnapshot,
   useRecoilCallback,
-  useRecoilValue,
-  useRecoilValueLoadable,
+  useRecoilInterface: useRecoilInterface_DEPRECATED,
+  useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
-  useSetRecoilState,
-  useResetRecoilState,
-  useRecoilInterface: useRecoilInterface_DEPRECATED,
-  useTransactionSubscription_DEPRECATED: useTransactionSubscription,
-  useTransactionObservation_DEPRECATED,
   useRecoilTransactionObserver,
-  useRecoilSnapshot,
-  useGotoRecoilSnapshot,
+  useRecoilValue,
+  useRecoilValueLoadable,
+  useResetRecoilState,
+  useSetRecoilState,
   useSetUnvalidatedAtomValues,
+  useTransactionObservation_DEPRECATED,
+  useTransactionSubscription_DEPRECATED: useTransactionSubscription,
 };
