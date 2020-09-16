@@ -44,6 +44,7 @@ const {
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
+  recoilComponentGetRecoilValueCount_FOR_TESTING,
 } = require('../Recoil_Hooks');
 
 gkx.setFail('recoil_async_selector_refactor');
@@ -576,14 +577,14 @@ test('Component does not re-read atom when rendered due to another atom changing
 
   renderElements(<Parent />);
 
-  const initialCalls = window.$recoilComponentGetRecoilValueCount_FOR_TESTING;
+  const initialCalls = recoilComponentGetRecoilValueCount_FOR_TESTING.current;
   expect(initialCalls).toBeGreaterThan(0);
 
   // No re-read when setting local state on the component:
   act(() => {
     setLocal(1);
   });
-  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+  expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
     initialCalls,
   );
 
@@ -591,7 +592,7 @@ test('Component does not re-read atom when rendered due to another atom changing
   act(() => {
     setParentLocal(1);
   });
-  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+  expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
     initialCalls,
   );
 
@@ -599,7 +600,7 @@ test('Component does not re-read atom when rendered due to another atom changing
   act(() => {
     setA(1);
   });
-  expect(window.$recoilComponentGetRecoilValueCount_FOR_TESTING).toBe(
+  expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
     initialCalls + 1,
   );
 });
