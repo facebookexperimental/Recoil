@@ -86,6 +86,7 @@ typings/
 .nuxt
 cjs
 es
+native
 umd
 /index.d.ts
 

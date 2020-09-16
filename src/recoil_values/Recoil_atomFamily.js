@@ -93,13 +93,13 @@ function atomFamily<T, P: Parameter>(
   // @fb-only: if (
   // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
   // @fb-only: ) {
-    // @fb-only: legacyAtom = parameterizedScopedAtomLegacy<T | DefaultValue, P>({
-      // @fb-only: ...legacyAtomOptions,
-      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
-        // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    // @fb-only: });
+  // @fb-only: legacyAtom = parameterizedScopedAtomLegacy<T | DefaultValue, P>({
+  // @fb-only: ...legacyAtomOptions,
+  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
+  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+  // @fb-only: });
   // @fb-only: } else {
-    legacyAtom = atom<T | DefaultValue>(legacyAtomOptions);
+  legacyAtom = atom<T | DefaultValue>(legacyAtomOptions);
   // @fb-only: }
 
   // Selector to calculate the default value based on any persisted legacy atoms

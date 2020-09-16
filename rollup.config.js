@@ -7,6 +7,9 @@ import {terser} from 'rollup-plugin-terser';
 const inputFile = 'src/Recoil_index.js';
 const externalLibs = ['react', 'react-dom'];
 
+const defaultNodeResolveConfig = {};
+const nodeResolvePlugin = nodeResolve(defaultNodeResolveConfig);
+
 const commonPlugins = [
   babel({
     presets: ['@babel/preset-react', '@babel/preset-flow'],
@@ -27,10 +30,13 @@ const commonPlugins = [
       if (source === 'ReactDOM') {
         return {id: 'react-dom', external: true};
       }
+      if (source === 'ReactNative') {
+        return {id: 'react-native', external: true};
+      }
       return null;
     },
   },
-  nodeResolve(),
+  nodeResolvePlugin,
   commonjs(),
 ];
 
@@ -72,6 +78,28 @@ const configs = [
     },
     external: externalLibs,
     plugins: commonPlugins,
+  },
+
+  // React Native
+  {
+    input: inputFile,
+    output: {
+      file: `native/recoil.js`,
+      format: 'es',
+      exports: 'named',
+    },
+    external: [...externalLibs, 'react-native'],
+    plugins: commonPlugins.map(plugin => {
+      // Replace the default nodeResolve plugin
+      if (plugin === nodeResolvePlugin) {
+        return nodeResolve({
+          ...defaultNodeResolveConfig,
+          extensions: ['.native.js', '.js'],
+        });
+      }
+
+      return plugin;
+    }),
   },
 
   // ES for Browsers
