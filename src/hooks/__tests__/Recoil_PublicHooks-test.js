@@ -298,15 +298,12 @@ test('Async selectors can depend on async selectors', async () => {
   );
   expect(container.textContent).toEqual('loading');
 
-  act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('2');
 
   act(() => updateValue(1));
-  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('loading');
 
-  act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('3');
 });
