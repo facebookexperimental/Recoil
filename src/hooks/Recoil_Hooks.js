@@ -357,7 +357,7 @@ const useMutableSource =
   just undefined if not available for any reason, such as pending or error.
 */
 function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
-  if (useMutableSource && !window.disableRecoilValueMutableSource) {
+  if (useMutableSource) {
     // eslint-disable-next-line fb-www/react-hooks
     return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
   } else {
