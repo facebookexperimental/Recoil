@@ -55,6 +55,9 @@ const invariant = require('../../util/Recoil_invariant');
 // When not using mutable source there's usually an extra call/render.
 const BASE_CALLS = mutableSourceExists() ? 0 : 1;
 
+let fbOnlyTest = test.skip;
+// @fb-only: fbOnlyTest = test;
+
 jest.mock('../../util/Recoil_expectationViolation', () => (fmt, ...args) => {
   throw new Error(require('sprintf')(fmt, ...args));
 });
@@ -1407,7 +1410,10 @@ test('Can use an already-resolved promise', async () => {
   expect(container.textContent).toEqual('2');
 });
 
-test('Resolution of suspense causes render just once', async () => {
+// www and oss environments are different because of mutable source and
+// the counters are always off by a non-constant value. This test will
+// still run in WWW env (sandcastle)
+fbOnlyTest('Resolution of suspense causes render just once', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
