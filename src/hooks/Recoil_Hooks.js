@@ -44,6 +44,10 @@ const filterSet = require('../util/Recoil_filterSet');
 const invariant = require('../util/Recoil_invariant');
 const mapMap = require('../util/Recoil_mapMap');
 const mergeMaps = require('../util/Recoil_mergeMaps');
+const {
+  mutableSourceExists,
+  useMutableSource,
+} = require('../util/Recoil_mutableSource');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
@@ -348,22 +352,12 @@ function useRecoilValueLoadable_LEGACY<T>(
   return getRecoilValueAsLoadable(storeRef.current, recoilValue);
 }
 
-// FIXME T2710559282599660
-const useMutableSource =
-  (React: any).useMutableSource ?? (React: any).unstable_useMutableSource; // flowlint-line unclear-type:off
-
 /**
   Like useRecoilValue(), but either returns the value if available or
   just undefined if not available for any reason, such as pending or error.
 */
 function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
-  if (
-    useMutableSource &&
-    !(
-      typeof window !== 'undefined' &&
-      window.$disableRecoilValueMutableSource_TEMP_HACK_DO_NOT_USE
-    )
-  ) {
+  if (mutableSourceExists()) {
     // eslint-disable-next-line fb-www/react-hooks
     return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
   } else {

@@ -92,14 +92,14 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
     // TODO Need to figure out if there is a standard/open-source equivalent to see if hot module replacement is happening:
     // prettier-ignore
     // @fb-only: if (__DEV__) {
-      // @fb-only: const isAcceptingUpdate = require('__debug').isAcceptingUpdate;
-      // prettier-ignore
-      // @fb-only: if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
-        // @fb-only: expectationViolation(message, 'recoil');
-      // @fb-only: }
-      // prettier-ignore
+    // @fb-only: const isAcceptingUpdate = require('__debug').isAcceptingUpdate;
+    // prettier-ignore
+    // @fb-only: if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
+    // @fb-only: expectationViolation(message, 'recoil');
+    // @fb-only: }
+    // prettier-ignore
     // @fb-only: } else {
-      // @fb-only: recoverableViolation(message, 'recoil');
+    // @fb-only: recoverableViolation(message, 'recoil');
     // @fb-only: }
     console.warn(message); // @oss-only
   }

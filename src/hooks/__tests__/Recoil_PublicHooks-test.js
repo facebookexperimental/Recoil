@@ -20,7 +20,6 @@ import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 
 const React = require('React');
 const {useEffect, useState} = require('React');
-const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
 const Queue = require('../../adt/Recoil_Queue');
@@ -37,6 +36,7 @@ const {
 } = require('../../testing/Recoil_TestingUtils');
 const {batchUpdates} = require('../../util/Recoil_batcher');
 const gkx = require('../../util/Recoil_gkx');
+const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 const {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
   useRecoilState,
@@ -51,6 +51,9 @@ const {
 gkx.setFail('recoil_async_selector_refactor');
 
 const invariant = require('../../util/Recoil_invariant');
+
+// When not using mutable source there's usually an extra call/render.
+const BASE_CALLS = mutableSourceExists() ? 0 : 1;
 
 jest.mock('../../util/Recoil_expectationViolation', () => (fmt, ...args) => {
   throw new Error(require('sprintf')(fmt, ...args));
@@ -296,16 +299,32 @@ test('Async selectors can depend on async selectors', async () => {
       <ReadsAtom atom={selectorB} />
     </>,
   );
-  expect(container.textContent).toEqual('loading');
 
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('2');
+  if (mutableSourceExists()) {
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('2');
 
-  act(() => updateValue(1));
-  expect(container.textContent).toEqual('loading');
+    act(() => updateValue(1));
+    expect(container.textContent).toEqual('loading');
 
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('3');
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('3');
+  } else {
+    // we need to test the useRecoilValueLoadable_LEGACY method
+
+    expect(container.textContent).toEqual('loading');
+
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('2');
+
+    act(() => updateValue(1));
+    expect(container.textContent).toEqual('loading');
+
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('3');
+  }
 });
 
 /* FIXME broken without new selector implementation
@@ -414,9 +433,10 @@ test('Component subscribed to atom is rendered just once', () => {
       <Component />
     </>,
   );
-  expect(Component).toHaveBeenCalledTimes(1);
+
+  expect(Component).toHaveBeenCalledTimes(BASE_CALLS + 1);
   act(() => updateValue(1));
-  expect(Component).toHaveBeenCalledTimes(2);
+  expect(Component).toHaveBeenCalledTimes(BASE_CALLS + 2);
 });
 
 test('Write-only components are not subscribed', () => {
@@ -443,9 +463,10 @@ test('Component that depends on atom in multiple ways is rendered just once', ()
       <ReadComp />
     </>,
   );
-  expect(ReadComp).toHaveBeenCalledTimes(1);
+
+  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 1);
   act(() => updateValue(1));
-  expect(ReadComp).toHaveBeenCalledTimes(2);
+  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 2);
 });
 
 test('Selector functions are evaluated just once', () => {
@@ -500,14 +521,15 @@ test('Component that depends on multiple atoms via selector is rendered just onc
       <ReadComp />
     </>,
   );
-  expect(commit).toHaveBeenCalledTimes(1);
+
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
   act(() => {
     batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
   });
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
 });
 
 test('Component that depends on multiple atoms directly is rendered just once', () => {
@@ -523,14 +545,15 @@ test('Component that depends on multiple atoms directly is rendered just once', 
       <ReadComp />
     </>,
   );
-  expect(ReadComp).toHaveBeenCalledTimes(1);
+
+  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 1);
   act(() => {
     batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
   });
-  expect(ReadComp).toHaveBeenCalledTimes(2);
+  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 2);
 });
 
 test('Component is rendered just once when atom is changed twice', () => {
@@ -543,14 +566,15 @@ test('Component is rendered just once when atom is changed twice', () => {
       <ReadComp />
     </>,
   );
-  expect(commit).toHaveBeenCalledTimes(1);
+
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
   act(() => {
     batchUpdates(() => {
       updateValueA(1);
       updateValueA(2);
     });
   });
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
 });
 
 test('Component does not re-read atom when rendered due to another atom changing, parent re-render, or other state change', () => {
@@ -575,32 +599,34 @@ test('Component does not re-read atom when rendered due to another atom changing
 
   renderElements(<Parent />);
 
-  const initialCalls = recoilComponentGetRecoilValueCount_FOR_TESTING.current;
-  expect(initialCalls).toBeGreaterThan(0);
+  if (mutableSourceExists()) {
+    const initialCalls = recoilComponentGetRecoilValueCount_FOR_TESTING.current;
+    expect(initialCalls).toBeGreaterThan(0);
 
-  // No re-read when setting local state on the component:
-  act(() => {
-    setLocal(1);
-  });
-  expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
-    initialCalls,
-  );
+    // No re-read when setting local state on the component:
+    act(() => {
+      setLocal(1);
+    });
+    expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
+      initialCalls,
+    );
 
-  // No re-read when setting local state on its parent causing it to re-render:
-  act(() => {
-    setParentLocal(1);
-  });
-  expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
-    initialCalls,
-  );
+    // No re-read when setting local state on its parent causing it to re-render:
+    act(() => {
+      setParentLocal(1);
+    });
+    expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
+      initialCalls,
+    );
 
-  // Setting an atom causes a re-read for that atom only, not others:
-  act(() => {
-    setA(1);
-  });
-  expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
-    initialCalls + 1,
-  );
+    // Setting an atom causes a re-read for that atom only, not others:
+    act(() => {
+      setA(1);
+    });
+    expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
+      initialCalls + 1,
+    );
+  }
 });
 
 test('Can subscribe to and also change an atom in the same batch', () => {
@@ -687,26 +713,33 @@ test('Components unsubscribe from atoms when rendered without using them', () =>
       <WriteB />
     </>,
   );
+
+  let baseCalls = BASE_CALLS;
+
   expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(1);
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 1);
 
   act(() => updateValueA(1));
   expect(container.textContent).toEqual('1');
-  expect(Component).toHaveBeenCalledTimes(2);
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 2);
+
+  if (!mutableSourceExists()) {
+    baseCalls += 1;
+  }
 
   act(() => toggleSwitch());
   expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(3);
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 3);
 
   // Now update the atom that it used to be subscribed to but should be no longer:
   act(() => updateValueA(2));
   expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(3); // Important part: same as before
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 3); // Important part: same as before
 
   // It is subscribed to the atom that it switched to:
   act(() => updateValueB(3));
   expect(container.textContent).toEqual('3');
-  expect(Component).toHaveBeenCalledTimes(4);
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 4);
 });
 
 test('Selectors unsubscribe from upstream when they have no subscribers', () => {
@@ -762,8 +795,8 @@ test('Selectors unsubscribe from upstream when they have no subscribers', () => 
 
 test('Unsubscribes happen in case of unmounting of a suspended component', () => {
   const anAtom = counterAtom();
-  const [aSelector, selFn] = plusOneSelector(anAtom);
-  const [asyncSel, adjustTimeout] = plusOneAsyncSelector(aSelector);
+  const [aSelector, _selFn] = plusOneSelector(anAtom);
+  const [_asyncSel, _adjustTimeout] = plusOneAsyncSelector(aSelector);
   // FIXME to implement
 });
 
@@ -882,33 +915,34 @@ test('Selectors can gain and lose depnedencies', () => {
       <ComponentC />
     </>,
   );
+
   expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(1);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
 
   // Input is not a dep yet, so this has no effect:
   act(() => setInput(1));
   expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(1);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
 
   // Flip switch:
   act(() => setSwitch(true));
   expect(container.textContent).toEqual('1');
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
 
   // Now changing input causes a re-render:
   act(() => setInput(2));
   expect(container.textContent).toEqual('2');
-  expect(commit).toHaveBeenCalledTimes(3);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
 
   // Now that we've added the dep, we can remove it...
   act(() => setSwitch(false));
   expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(4);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 4);
 
   // ... and again changing input will not cause a re-render:
   act(() => setInput(3));
   expect(container.textContent).toEqual('Infinity');
-  expect(commit).toHaveBeenCalledTimes(4);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 4);
 });
 
 test('Selector depedencies are updated transactionally', () => {
@@ -1262,6 +1296,7 @@ test('Selector can alternate between synchronous and asynchronous', async () => 
   act(() => updateValue(5));
   expect(container.textContent).toEqual('loading');
   advanceTimersBy(101);
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('5');
 });
 
@@ -1384,22 +1419,23 @@ test('Resolution of suspense causes render just once', async () => {
       <ReadComp />
     </>,
   );
+
   // Begins in loading state, then shows initial value:
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(1);
-  expect(commit).toHaveBeenCalledTimes(1);
+  expect(suspense).toHaveBeenCalledTimes(BASE_CALLS + 1);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
   // Changing dependency makes it go back to loading, then to show new value:
   act(() => updateValue(1));
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(2);
-  expect(commit).toHaveBeenCalledTimes(2);
+  expect(suspense).toHaveBeenCalledTimes(BASE_CALLS + 2);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
   // Returning to a seen value does not cause the loading state:
   act(() => updateValue(0));
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(2);
-  expect(commit).toHaveBeenCalledTimes(3);
+  expect(suspense).toHaveBeenCalledTimes(BASE_CALLS + 2);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
 });
 
 test('useTransactionObservation_DEPRECATED: Transaction dirty atoms are set', async () => {

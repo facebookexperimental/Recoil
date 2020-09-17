@@ -31,10 +31,14 @@ const {
   makeStore,
   renderElements,
 } = require('../../testing/Recoil_TestingUtils');
+const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 const stableStringify = require('../../util/Recoil_stableStringify');
 const atom = require('../Recoil_atom');
 const atomFamily = require('../Recoil_atomFamily');
 const selectorFamily = require('../Recoil_selectorFamily');
+
+let fbOnlyTest = test.skip;
+// @fb-only: fbOnlyTest = test;
 
 let id = 0;
 
@@ -178,7 +182,7 @@ test('Parameterized fallback with atom and async', async () => {
   expect(asyncCont.textContent).toEqual('"async"');
 });
 
-test('atomFamily with scope', () => {
+fbOnlyTest('atomFamily with scope', () => {
   const scopeForParamAtom = atom<string>({
     key: 'scope atom for atomFamily',
     default: 'foo',
@@ -209,7 +213,7 @@ test('atomFamily with scope', () => {
   expect(get(paramAtomWithScope({k: 'y'}))).toBe('yValue2');
 });
 
-test('atomFamily with parameterized scope', () => {
+fbOnlyTest('atomFamily with parameterized scope', () => {
   const paramScopeForParamAtom = atomFamily<string, {namespace: string}>({
     key: 'scope atom for atomFamily with parameterized scope',
     default: ({namespace}) => namespace,
@@ -425,22 +429,23 @@ test('Independent atom subscriptions', () => {
     </>,
   );
 
+  const baseUpdates = mutableSourceExists() ? 0 : 1;
   // Initial:
   expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
-  expect(getNumUpdatesA()).toBe(1);
-  expect(getNumUpdatesB()).toBe(1);
+  expect(getNumUpdatesA()).toBe(baseUpdates + 1);
+  expect(getNumUpdatesB()).toBe(baseUpdates + 1);
 
   // After setting at parameter A, component A should update:
   act(() => setValueA(1));
   expect(container.textContent).toBe('1"DEFAULT"');
-  expect(getNumUpdatesA()).toBe(2);
-  expect(getNumUpdatesB()).toBe(1);
+  expect(getNumUpdatesA()).toBe(baseUpdates + 2);
+  expect(getNumUpdatesB()).toBe(baseUpdates + 1);
 
   // After setting at parameter B, component B should update:
   act(() => setValueB(2));
   expect(container.textContent).toBe('12');
-  expect(getNumUpdatesA()).toBe(2);
-  expect(getNumUpdatesB()).toBe(2);
+  expect(getNumUpdatesA()).toBe(baseUpdates + 2);
+  expect(getNumUpdatesB()).toBe(baseUpdates + 2);
 });
 
 describe('Effects', () => {
