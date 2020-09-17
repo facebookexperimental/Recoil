@@ -69,6 +69,7 @@ const {
   waitForAny,
   waitForNone,
 } = require('./recoil_values/Recoil_WaitFor');
+const {batchUpdates, setBatcher} = require('./util/Recoil_batcher');
 
 module.exports = {
   // Types
@@ -115,4 +116,8 @@ module.exports = {
 
   // Other functions
   isRecoilValue,
+
+  // Batching
+  batchUpdates,
+  setBatcher,
 };

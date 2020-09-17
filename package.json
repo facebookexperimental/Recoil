@@ -4,11 +4,13 @@
   "description": "Recoil - A state management library for React",
   "main": "cjs/recoil.js",
   "module": "es/recoil.js",
+  "react-native": "native/recoil.js",
   "unpkg": "umd/recoil.js",
   "files": [
     "umd",
     "es",
     "cjs",
+    "native",
     "index.d.ts"
   ],
   "repository": "https://github.com/facebookexperimental/recoil.git",
@@ -24,8 +26,15 @@
     "lint": "eslint ."
   },
   "peerDependencies": {
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react": "^16.13.1"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    },
+    "react-native": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",

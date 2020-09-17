@@ -19,7 +19,6 @@ import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const React = require('React');
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
-const ReactDOM = require('ReactDOM');
 
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
 const {
@@ -36,6 +35,7 @@ const {
   subscribeToRecoilValue,
 } = require('../core/Recoil_RecoilValueInterface');
 const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
+const {batchUpdates} = require('../util/Recoil_batcher');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const differenceSets = require('../util/Recoil_differenceSets');
 const expectationViolation = require('../util/Recoil_expectationViolation');
@@ -593,7 +593,7 @@ function useGotoRecoilSnapshot(): Snapshot => void {
       const storeState = storeRef.current.getState();
       const prev = storeState.nextTree ?? storeState.currentTree;
       const next = snapshot.getStore_INTERNAL().getState().currentTree;
-      ReactDOM.unstable_batchedUpdates(() => {
+      batchUpdates(() => {
         const keysToUpdate = new Set();
         for (const keys of [prev.atomValues.keys(), next.atomValues.keys()]) {
           for (const key of keys) {
@@ -633,7 +633,7 @@ function useSetUnvalidatedAtomValues(): (
 ) => void {
   const storeRef = useStoreRef();
   return (values: Map<NodeKey, mixed>, transactionMetadata: {...} = {}) => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       storeRef.current.addTransactionMetadata(transactionMetadata);
       values.forEach((value, key) =>
         setUnvalidatedRecoilValue(
@@ -680,13 +680,13 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       }
 
       let ret = SENTINEL;
-      ReactDOM.unstable_batchedUpdates(() => {
+      batchUpdates(() => {
         // flowlint-next-line unclear-type:off
         ret = (fn: any)({set, reset, snapshot, gotoSnapshot})(...args);
       });
       invariant(
         !(ret instanceof Sentinel),
-        'unstable_batchedUpdates should return immediately',
+        'batchUpdates should return immediately',
       );
       return (ret: Return);
     },

@@ -8,6 +8,7 @@
         "alias": {
           "React": "react",
           "ReactDOM": "react-dom",
+          "ReactNative": "react-native",
           "ReactTestUtils": "react-dom/test-utils"
         }
       }

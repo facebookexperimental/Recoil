@@ -35,8 +35,10 @@ const {
   renderElements,
   renderElementsWithSuspenseCount,
 } = require('../../testing/Recoil_TestingUtils');
+const {batchUpdates} = require('../../util/Recoil_batcher');
 const gkx = require('../../util/Recoil_gkx');
 const {
+  recoilComponentGetRecoilValueCount_FOR_TESTING,
   useRecoilState,
   useRecoilStateLoadable,
   useRecoilValue,
@@ -44,7 +46,6 @@ const {
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
-  recoilComponentGetRecoilValueCount_FOR_TESTING,
 } = require('../Recoil_Hooks');
 const {mutableSourceIsExist} = require('../../util/Recoil_mutableSource');
 
@@ -298,16 +299,12 @@ test('Async selectors can depend on async selectors', async () => {
   );
 
   if (mutableSourceIsExist()) {
-    expect(container.textContent).toEqual('loading');
-
-    act(() => jest.runAllTimers());
     await flushPromisesAndTimers();
     expect(container.textContent).toEqual('2');
 
     act(() => updateValue(1));
     expect(container.textContent).toEqual('loading');
 
-    act(() => jest.runAllTimers());
     await flushPromisesAndTimers();
     expect(container.textContent).toEqual('3');
   } else {
@@ -516,7 +513,7 @@ test('Selector functions are evaluated just once even if multiple upstreams chan
   );
   expect(selectorFn).toHaveBeenCalledTimes(1);
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
@@ -542,7 +539,7 @@ test('Component that depends on multiple atoms via selector is rendered just onc
   if (mutableSourceIsExist()) {
     expect(commit).toHaveBeenCalledTimes(1);
     act(() => {
-      ReactDOM.unstable_batchedUpdates(() => {
+      batchUpdates(() => {
         updateValueA(1);
         updateValueB(1);
       });
@@ -579,7 +576,7 @@ test('Component that depends on multiple atoms directly is rendered just once', 
   if (mutableSourceIsExist()) {
     expect(ReadComp).toHaveBeenCalledTimes(1);
     act(() => {
-      ReactDOM.unstable_batchedUpdates(() => {
+      batchUpdates(() => {
         updateValueA(1);
         updateValueB(1);
       });
@@ -612,7 +609,7 @@ test('Component is rendered just once when atom is changed twice', () => {
   if (mutableSourceIsExist()) {
     expect(commit).toHaveBeenCalledTimes(1);
     act(() => {
-      ReactDOM.unstable_batchedUpdates(() => {
+      batchUpdates(() => {
         updateValueA(1);
         updateValueA(2);
       });
@@ -706,7 +703,7 @@ test('Can subscribe to and also change an atom in the same batch', () => {
   expect(container.textContent).toEqual('');
 
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       setVisible(true);
       updateValue(1337);
     });
@@ -1081,7 +1078,7 @@ test('Selector depedencies are updated transactionally', () => {
   );
 
   act(() => {
-    ReactDOM.unstable_batchedUpdates(() => {
+    batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
