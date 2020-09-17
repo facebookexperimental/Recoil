@@ -47,7 +47,10 @@ const mergeMaps = require('../util/Recoil_mergeMaps');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
-const {mutableSourceIsExist} = require('../util/Recoil_mutableSource');
+const {
+  mutableSourceIsExist,
+  useMutableSource,
+} = require('../util/Recoil_mutableSource');
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -349,16 +352,12 @@ function useRecoilValueLoadable_LEGACY<T>(
   return getRecoilValueAsLoadable(storeRef.current, recoilValue);
 }
 
-// FIXME T2710559282599660
-const useMutableSource =
-  (React: any).useMutableSource ?? (React: any).unstable_useMutableSource; // flowlint-line unclear-type:off
-
 /**
   Like useRecoilValue(), but either returns the value if available or
   just undefined if not available for any reason, such as pending or error.
 */
 function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
-  if (mutableSourceIsExist(useMutableSource)) {
+  if (mutableSourceIsExist()) {
     // eslint-disable-next-line fb-www/react-hooks
     return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
   } else {
