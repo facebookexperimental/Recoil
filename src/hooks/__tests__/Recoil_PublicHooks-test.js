@@ -1410,10 +1410,7 @@ test('Can use an already-resolved promise', async () => {
   expect(container.textContent).toEqual('2');
 });
 
-// www and oss environments are different because of mutable source and
-// the counters are always off by a non-constant value. This test will
-// still run in WWW env (sandcastle)
-fbOnlyTest('Resolution of suspense causes render just once', async () => {
+test('Resolution of suspense causes render just once', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
@@ -1429,18 +1426,18 @@ fbOnlyTest('Resolution of suspense causes render just once', async () => {
   // Begins in loading state, then shows initial value:
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(BASE_CALLS + 1);
+  expect(suspense).toHaveBeenCalledTimes(1);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
   // Changing dependency makes it go back to loading, then to show new value:
   act(() => updateValue(1));
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(BASE_CALLS + 2);
+  expect(suspense).toHaveBeenCalledTimes(2);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
   // Returning to a seen value does not cause the loading state:
   act(() => updateValue(0));
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(BASE_CALLS + 2);
+  expect(suspense).toHaveBeenCalledTimes(2);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
 });
 
