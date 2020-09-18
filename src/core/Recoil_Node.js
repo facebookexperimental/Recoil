@@ -45,6 +45,9 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   // Returns the discovered deps and the loadable value of the node
   get: (Store, TreeState) => [DependencyMap, Loadable<T>],
 
+  // Cleanup the node when it is removed from a <RecoilRoot>
+  cleanup: Store => void,
+
   // Informs the node to invalidate any caches it has within its own closure,
   // in cases other than when `set` is called (when this will not be)
   invalidate?: () => void,

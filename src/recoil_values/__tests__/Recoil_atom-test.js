@@ -10,10 +10,12 @@
 import type {Store} from 'Recoil_State';
 
 const React = require('React');
-const {useEffect} = require('React');
+const {useEffect, useState} = require('React');
+const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
 const {DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node');
+const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -685,6 +687,78 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"SET_A""DEFAULT_B"');
     act(() => history.pop()());
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
+  });
+
+  test('Cleanup Handlers - when root unmounted', () => {
+    const refCounts = [0, 0];
+
+    const atomA = atom({
+      key: 'atom effect cleanup - A',
+      default: 'A',
+      effects_UNSTABLE: [
+        () => {
+          refCounts[0]++;
+          return () => {
+            refCounts[0]--;
+          };
+        },
+      ],
+    });
+
+    const atomB = atom({
+      key: 'atom effect cleanup - B',
+      default: 'B',
+      effects_UNSTABLE: [
+        () => {
+          refCounts[1]++;
+          return () => {
+            refCounts[1]--;
+          };
+        },
+      ],
+    });
+
+    let setNumRoots;
+    function App() {
+      const [numRoots, _setNumRoots] = useState(0);
+      setNumRoots = _setNumRoots;
+      return (
+        <div>
+          {Array(numRoots)
+            .fill(null)
+            .map((_, idx) => (
+              <RecoilRoot key={idx}>
+                <ReadsAtom atom={atomA} />
+                <ReadsAtom atom={atomB} />
+              </RecoilRoot>
+            ))}
+        </div>
+      );
+    }
+
+    const c = document.createElement('div');
+    act(() => {
+      ReactDOM.render(<App />, c);
+    });
+
+    expect(c.textContent).toBe('');
+    expect(refCounts).toEqual([0, 0]);
+
+    act(() => setNumRoots(1));
+    expect(c.textContent).toBe('"A""B"');
+    expect(refCounts).toEqual([1, 1]);
+
+    act(() => setNumRoots(2));
+    expect(c.textContent).toBe('"A""B""A""B"');
+    expect(refCounts).toEqual([2, 2]);
+
+    act(() => setNumRoots(1));
+    expect(c.textContent).toBe('"A""B"');
+    expect(refCounts).toEqual([1, 1]);
+
+    act(() => setNumRoots(0));
+    expect(c.textContent).toBe('');
+    expect(refCounts).toEqual([0, 0]);
   });
 });
 

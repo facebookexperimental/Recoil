@@ -492,6 +492,7 @@ function selector<T>(
       peek: myPeek,
       get: myGet,
       set: mySet,
+      cleanup: () => {},
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
     });
@@ -500,6 +501,7 @@ function selector<T>(
       key,
       peek: myPeek,
       get: myGet,
+      cleanup: () => {},
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
     });
