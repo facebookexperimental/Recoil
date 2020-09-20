@@ -1,5 +1,5 @@
 ---
-title: Demo (Todo List)
+title: Demo (Lista de afazeres)
 ---
 
-You can write JSX and use React components within your Markdown thanks to [MDX](https://mdxjs.com/).
+Você pode escrever JSX e usar componentes React em seu Markdown graças a [MDX](https://mdxjs.com/).

@@ -4,7 +4,7 @@ title: Instalação
 
 ## NPM
 
-o pacote Recoil está disponível em <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a>. Para instalar a versão estável mais recente, execute o seguinte comando:
+O pacote Recoil está disponível em <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a>. Para instalar a versão estável mais recente, execute o seguinte comando:
 
 ```shell
 npm install recoil

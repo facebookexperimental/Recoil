@@ -1,5 +1,5 @@
 ---
-title: Intro
+title: Introdução
 ---
 
 This section assumes you have installed Recoil and React. See the [Getting Started](/docs/introduction/getting-started) page for how to get started with Recoil and React from scratch. Components in the following sections are assumed to have a `<RecoilRoot />` in the parent tree.
