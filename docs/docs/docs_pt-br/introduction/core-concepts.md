@@ -1,16 +1,16 @@
 ---
-title: Core Concepts
+title: Conceitos Principais
 ---
 
-## Overview
+## Visão Geral
 
-Recoil lets you create a data-flow graph that flows from _atoms_ (shared state) through _selectors_ (pure functions) and down into your React components. Atoms are units of state that components can subscribe to. Selectors transform this state either synchronously or asynchronously.
+Recoil permite criar um gráfico de fluxo de dados que flui de _átomos_ (estado comparilhado) por meio de _seletores_ (funções puras) e alcançando os componentes React. Os átomos são unidades de estado que os componentes podem assinar. Os seletores transformam este estado de forma síncrona ou assíncrona.
 
-## Atoms
+## Átomos
 
-Atoms are units of state. They're updateable and subscribable: when an atom is updated, each subscribed component is re-rendered with the new value. They can be created at runtime, too. Atoms can be used in place of React local component state. If the same atom is used from multiple components, all those components share their state.
+Os átomos são unidades de estado. Eles são atualizáveis e assináveis: quando um átomo é atualizado, cada componente inscrito é renderizado novamente com o novo valor. Eles também podem ser criados em tempo de execução. Os átomos podem ser usados no lugar do estado do componente local React. Se o mesmo átomo é usado por vários componentes, todos esses componentes compartilham seu estado.
 
-Atoms are created using the `atom` function:
+Os átomos são criados usando a função `atom`:
 
 ```javascript
 const fontSizeState = atom({
@@ -19,9 +19,9 @@ const fontSizeState = atom({
 });
 ```
 
-Atoms need a unique key, which is used for debugging, persistence, and for certain advanced APIs that let you see a map of all atoms. It is an error for two atoms to have the same key, so make sure they're globally unique. Like React component state, they also have a default value.
+Os átomos precisam de uma chave exclusiva, que é usada para depuração, persistência e para certas APIs avançadas que permitem ver um mapa de todos os átomos. É um erro dois átomos terem a mesma chave, então certifique-se de que eles sejam globalmente únicos. Assim como o estado do componente React, eles também têm um valor padrão.
 
-To read and write an atom from a component, we use a hook called `useRecoilState`. It's just like React's `useState`, but now the state can be shared between components:
+Para ler e escrever um átomo de um componente, usamos um hook chamado `useRecoilState`. É como o `useState` do React, mas agora o estado pode ser compartilhado entre os componentes:
 
 ```jsx
 function FontButton() {
@@ -34,7 +34,7 @@ function FontButton() {
 }
 ```
 
-Clicking on the button will increase the font size of the button by one. But now some other component can also use the same font size:
+Clicar no botão aumentará o tamanho da fonte do botão em um. Mas agora algum outro componente também pode usar o mesmo tamanho de fonte:
 
 ```jsx
 function Text() {
@@ -43,15 +43,15 @@ function Text() {
 }
 ```
 
-## Selectors
+## Seletores
 
-A **selector** is a pure function that accepts atoms or other selectors as input. When these upstream atoms or selectors are updated, the selector function will be re-evaluated. Components can subscribe to selectors just like atoms, and will then be re-rendered when the selectors change.
+Um **seletor** é uma função pura que aceita átomos ou outros seletores como entrada. Quando esses átomos ou seletores são atualizados, a função do seletor é reavaliada. Os componentes podem se inscrever em seletores exatamente como átomos e, então, serão renderizados novamente quando os seletores forem alterados.
 
-Selectors are used to calculate derived data that is based on state. This lets us avoid redundant state, usually obviating the need for reducers to keep state in sync and valid. Instead, a minimal set of state is stored in atoms, while everything else is efficiently computed as a function of that minimal state. Since selectors keep track of what components need them and what state they depend on, they make this functional approach more efficient.
+Os seletores são usados para calcular dados derivados com base no estado. Isso nos permite evitar o estado redundante, geralmente eliminando a necessidade de redutores para manter o estado em sincronia e válido. Em vez disso, um conjunto mínimo de estados são armazenado em átomos, enquanto todo o resto é calculado de forma eficiente como uma função desse estado mínimo. Uma vez que os seletores controlam quais componentes precisam deles e de que estado dependente, tornam essa abordagem funcional mais eficiente. em átomos
 
-From the point of view of components, selectors and atoms have the same interface and can therefore be substituted for one another.
+Do ponto de vista dos componentes, os seletores e os átomos têm a mesma interface e podem, portanto, ser substituídos.
 
-Selectors are defined using the `selector` function:
+Os seletores são definidos usando a função `selector`:
 
 ```javascript
 const fontSizeLabelState = selector({
@@ -65,11 +65,11 @@ const fontSizeLabelState = selector({
 });
 ```
 
-The `get` property is the function that is to be computed. It can access the value of atoms and other selectors using the `get` argument passed to it. Whenever it accesses another atom or selector, a dependency relationship is created such that updating the other atom or selector will cause this one to be recomputed.
+A propriedade `get` é a função que deve ser calculada. Ele pode acessar o valor de átomos e outros seletores usando o argumento `get` passado a ele. Sempre que ele acessa outro átomo ou seletor, um relacionamento de dependência é criado de forma que a atualização do outro átomo ou seletor fará com que este seja recalculado.
 
-In this `fontSizeLabelState` example, the selector has one dependency: the `fontSizeState` atom. Conceptually, the `fontSizeLabelState` selector behaves like a pure function that takes a `fontSizeState` as input and returns a formatted font size label as output.
+Neste exemplo `fontSizeLabelState`, o seletor tem uma dependência: o átomo` fontSizeState`. Conceitualmente, o seletor `fontSizeLabelState` se comporta como uma função pura que recebe um` fontSizeState` como entrada e retorna um rótulo de tamanho de fonte formatado como saída.
 
-Selectors can be read using `useRecoilValue()`, which takes an atom or selector as an argument and returns the corresponding value. We don't use the `useRecoilState()` as the `fontSizeLabelState` selector is not writeable (see the [selector API reference](/docs/api-reference/core/selector) for more information on writeable selectors):
+Os seletores podem ser lidos usando `useRecoilValue ()`, que recebe um átomo ou seletor como argumento e retorna o valor correspondente. Não usamos `useRecoilState ()` porque o seletor `fontSizeLabelState` não é gravável (veja a [referência da API do seletor](/docs/api-reference/core/selector) para obter mais informações sobre seletores graváveis):
 
 ```jsx
 function FontButton() {
@@ -88,4 +88,4 @@ function FontButton() {
 }
 ```
 
-Clicking on the button now does two things: it increases the font size of the button while also updating the font size label to reflect the current font size.
+Clicar no botão agora faz duas coisas: aumenta o tamanho da fonte do botão enquanto também atualiza o rótulo do tamanho da fonte para refletir o tamanho da fonte atual.
