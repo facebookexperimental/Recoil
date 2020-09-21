@@ -16,6 +16,7 @@
 
 const isNode = require('./Recoil_isNode');
 const isPromise = require('./Recoil_isPromise');
+const isArrayBufferView = require('./Recoil_isArrayBufferView');
 
 function shouldNotBeFrozen(value: mixed): boolean {
   // Primitives and functions:
@@ -48,6 +49,10 @@ function shouldNotBeFrozen(value: mixed): boolean {
   }
 
   if (isPromise(value)) {
+    return true;
+  }
+
+  if (isArrayBufferView(value)) {
     return true;
   }
 
