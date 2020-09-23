@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.13 (2020-09-16)
+
+- Fix for bug affecting SSR
+
 ## 0.0.12 (2020-09-15)
 
 - Fix for bug affecting SSR on development builds
