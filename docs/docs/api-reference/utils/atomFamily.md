@@ -18,7 +18,7 @@ function atomFamily<T, Parameter>({
     | (Parameter => T | RecoilValue<T> | Promise<T>),
 
   dangerouslyAllowMutability?: boolean,
-}): RecoilState<T>
+}): Parameter => RecoilState<T>
 ```
 
 - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
