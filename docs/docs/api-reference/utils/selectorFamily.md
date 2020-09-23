@@ -16,7 +16,7 @@ function selectorFamily<T, Parameter>({
   get: Parameter => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
 
   dangerouslyAllowMutability?: boolean,
-}): RecoilValueReadOnly<T>
+}): Parameter => RecoilValueReadOnly<T>
 ```
 
 ```jsx
@@ -35,7 +35,7 @@ function selectorFamily<T, Parameter>({
   ) => void,
 
   dangerouslyAllowMutability?: boolean,
-}): RecoilState<T>
+}): Parameter => RecoilState<T>
 ```
 
 Where
