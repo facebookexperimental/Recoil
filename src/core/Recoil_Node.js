@@ -11,8 +11,9 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
+import type {DependencyMap} from './Recoil_GraphTypes';
 import type {RecoilValue} from './Recoil_RecoilValue';
-import type {NodeKey, Store, TreeState} from './Recoil_State';
+import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
@@ -29,27 +30,42 @@ class RecoilValueNotReady extends Error {
   }
 }
 
+export type PersistenceType = 'none' | 'url';
+export type PersistenceInfo = $ReadOnly<{
+  type: PersistenceType,
+  backButton?: boolean,
+}>;
+
 export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   key: NodeKey,
 
-  // Returns the updated state and the loadable value of the node
-  get: (Store, TreeState) => [TreeState, Loadable<T>],
+  // Returns the current value without evaluating or modifying state
+  peek: (Store, TreeState) => ?Loadable<T>,
 
-  // Store the options for the observation hooks
-  // TODO Use proper Flow typing
-  // flowlint-next-line unclear-type:off
-  options: Object,
+  // Returns the discovered deps and the loadable value of the node
+  get: (Store, TreeState) => [DependencyMap, Loadable<T>],
+
+  // Informs the node to invalidate any caches it has within its own closure,
+  // in cases other than when `set` is called (when this will not be)
+  invalidate?: () => void,
+
+  shouldRestoreFromSnapshots: boolean,
+
+  dangerouslyAllowMutability?: boolean,
+  persistence_UNSTABLE?: PersistenceInfo,
 }>;
 
 export type ReadWriteNodeOptions<T> = $ReadOnly<{
   ...ReadOnlyNodeOptions<T>,
 
-  // Returns the updated state and the set of nodes actually written
+  // Returns the discovered deps and the set of key-value pairs to be written.
+  // (Deps may be discovered since selectors get an updater function which has
+  //  the ability to read other atoms, which may have deps.)
   set: (
     store: Store,
     state: TreeState,
     newValue: T | DefaultValue,
-  ) => [TreeState, $ReadOnlySet<NodeKey>],
+  ) => [DependencyMap, AtomValues],
 }>;
 
 type Node<T> = ReadOnlyNodeOptions<T> | ReadWriteNodeOptions<T>;
@@ -76,15 +92,16 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
     // TODO Need to figure out if there is a standard/open-source equivalent to see if hot module replacement is happening:
     // prettier-ignore
     // @fb-only: if (__DEV__) {
-      // @fb-only: const isAcceptingUpdate = require('__debug').isAcceptingUpdate;
-      // prettier-ignore
-      // @fb-only: if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
-        // @fb-only: expectationViolation(message, 'recoil');
-      // @fb-only: }
+    // @fb-only: const isAcceptingUpdate = require('__debug').isAcceptingUpdate;
+    // prettier-ignore
+    // @fb-only: if (typeof isAcceptingUpdate !== 'function' || !isAcceptingUpdate()) {
+    // @fb-only: expectationViolation(message, 'recoil');
+    // @fb-only: }
     // prettier-ignore
     // @fb-only: } else {
-      recoverableViolation(message, 'recoil');
+    // @fb-only: recoverableViolation(message, 'recoil');
     // @fb-only: }
+    console.warn(message); // @oss-only
   }
   nodes.set(node.key, node);
 
@@ -109,11 +126,17 @@ function getNode(key: NodeKey): Node<any> {
   return node;
 }
 
+// flowlint-next-line unclear-type:off
+function getNodeMaybe(key: NodeKey): void | Node<any> {
+  return nodes.get(key);
+}
+
 module.exports = {
   nodes,
   recoilValues,
   registerNode,
   getNode,
+  getNodeMaybe,
   NodeMissingError,
   DefaultValue,
   DEFAULT_VALUE,

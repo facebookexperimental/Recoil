@@ -68,6 +68,7 @@ test('Goto mapped snapshot', async () => {
   await expect(updatedSnapshot.getPromise(myAtom)).resolves.toEqual(
     'SET IN SNAPSHOT',
   );
+
   act(() => gotoRecoilSnapshot(updatedSnapshot));
   expect(c.textContent).toEqual('"SET IN SNAPSHOT""SET IN SNAPSHOT"');
 
@@ -153,9 +154,11 @@ test('Goto snapshot with dependent async selector', async () => {
 
   expect(c.textContent).toEqual('loading');
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"DEFAULT""DEFAULT"');
 
   act(() => setAtom('SET IN CURRENT'));
+
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"SET IN CURRENT""SET IN CURRENT"');
 
@@ -188,6 +191,7 @@ test('Goto snapshot with async selector', async () => {
   expect(c.textContent).toEqual('loading');
 
   act(() => resolve('RESOLVE'));
+  await flushPromisesAndTimers();
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"RESOLVE"');
 

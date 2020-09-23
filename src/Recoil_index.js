@@ -4,31 +4,35 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * See https://our.intern.facebook.com/intern/wiki/Recoil/
- *
  * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
 
-export type {
-  PersistenceSettings,
-  PersistenceType,
-} from './recoil_values/Recoil_atom';
-export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
-export type {Loadable} from './adt/Recoil_Loadable';
-export type {
-  GetRecoilValue,
-  SetRecoilState,
-  ResetRecoilState,
-} from './recoil_values/Recoil_selector';
+export type {PersistenceType} from './core/Recoil_Node';
 export type {
   RecoilValue,
   RecoilState,
   RecoilValueReadOnly,
 } from './core/Recoil_RecoilValue';
-
+export type {
+  MutableSnapshot,
+  Snapshot,
+  SnapshotID,
+} from './core/Recoil_Snapshot';
+export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
+export type {RecoilBridge} from './hooks/Recoil_useRecoilBridgeAcrossReactRoots';
+export type {Loadable} from './adt/Recoil_Loadable';
+export type {
+  AtomEffect,
+  PersistenceSettings,
+} from './recoil_values/Recoil_atom';
+export type {
+  GetRecoilValue,
+  SetRecoilState,
+  ResetRecoilState,
+} from './recoil_values/Recoil_selector';
 export type {
   Parameter,
   SelectorFamilyOptions,
@@ -51,6 +55,7 @@ const {
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
 } = require('./hooks/Recoil_Hooks');
+const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
 const constSelector = require('./recoil_values/Recoil_constSelector');
@@ -64,6 +69,7 @@ const {
   waitForAny,
   waitForNone,
 } = require('./recoil_values/Recoil_WaitFor');
+const {batchUpdates, setBatcher} = require('./util/Recoil_batcher');
 
 module.exports = {
   // Types
@@ -71,6 +77,7 @@ module.exports = {
 
   // Components
   RecoilRoot,
+  useRecoilBridgeAcrossReactRoots_UNSTABLE: useRecoilBridgeAcrossReactRoots,
 
   // RecoilValues
   atom,
@@ -109,4 +116,8 @@ module.exports = {
 
   // Other functions
   isRecoilValue,
+
+  // Batching
+  batchUpdates,
+  setBatcher,
 };

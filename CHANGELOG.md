@@ -1,5 +1,19 @@
 # Change Log
 
+## 0.0.12 (2020-09-15)
+
+- Fix for bug affecting SSR on development builds
+
+## 0.0.11 (2020-09-15)
+
+- Experimental React Concurrent Mode Support
+- Performance
+- Flow Types
+- ES, CommonJS, and UMD packages
+- Synchronization Across React Roots
+- Preliminary Developer Tools API
+- Test Infrastructure Fixes
+
 ## 0.0.10 (2020-06-18)
 
 ### Bug Fix

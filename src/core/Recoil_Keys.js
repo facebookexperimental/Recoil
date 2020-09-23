@@ -11,8 +11,9 @@
 
 'use strict';
 
-// @fb-only: const recoverableViolation = require('recoverableViolation');
+export type NodeKey = string;
+export type ComponentID = number;
+export type Version = number;
+export type StateID = number;
 
-const recoverableViolation = require('./polyfill/recoverableViolation.js'); // @oss-only
-
-module.exports = recoverableViolation;
+module.exports = ({}: {...});

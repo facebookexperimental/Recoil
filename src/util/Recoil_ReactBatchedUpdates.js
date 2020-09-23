@@ -5,14 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+recoil
+ * @flow strict
  * @format
+ *
+ * This is to export esstiential functions from react-dom
+ * for our web build
  */
-/* eslint-disable */
 
-'use strict';
-
-if (process.env.NODE_ENV === 'production') {
-  module.exports = require('./recoil.production.js');
-} else {
-  module.exports = require('./recoil.development.js');
-}
+const {unstable_batchedUpdates} = require('ReactDOM');
+module.exports = {unstable_batchedUpdates};

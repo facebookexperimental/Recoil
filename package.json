@@ -1,12 +1,17 @@
 {
   "name": "recoil",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "description": "Recoil - A state management library for React",
-  "main": "dist/index.js",
-  "module": "esm/index.js",
+  "main": "cjs/recoil.js",
+  "module": "es/recoil.js",
+  "react-native": "native/recoil.js",
+  "unpkg": "umd/recoil.js",
   "files": [
-    "dist",
-    "esm"
+    "umd",
+    "es",
+    "cjs",
+    "native",
+    "index.d.ts"
   ],
   "repository": "https://github.com/facebookexperimental/recoil.git",
   "license": "MIT",
@@ -21,8 +26,15 @@
     "lint": "eslint ."
   },
   "peerDependencies": {
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react": "^16.13.1"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    },
+    "react-native": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
@@ -49,6 +61,7 @@
     "eslint-plugin-jest": "^23.13.2",
     "eslint-plugin-react": "^7.20.0",
     "flow-bin": "^0.129.0",
+    "gen-flow-files": "^0.4.11",
     "husky": ">=4",
     "immutable": "^4.0.0-rc.12",
     "install-peers-cli": "^2.2.0",
@@ -63,28 +76,13 @@
     "rollup-plugin-terser": "^5.3.0",
     "typescript": "^3.9.5"
   },
-  "jest": {
-    "timers": "fake",
-    "globals": {
-      "__DEV__": true
-    },
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "src/hooks/__tests__/Recoil_PublicHooks-test.js",
-      "src/hooks/__tests__/Recoil_useRecoilCallback-test.js",
-      "src/recoil_values/__tests__/Recoil_atomFamily-test.js",
-      "src/recoil_values/__tests__/Recoil_selector-test.js"
-    ],
-    "setupFiles": [
-      "./setupJestMock.js"
-    ]
-  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {
-    "*.{js,md,json}": "prettier --write"
+    "*.{js,md,json}": "prettier --write",
+    "*.{js}": "eslint --fix"
   }
 }

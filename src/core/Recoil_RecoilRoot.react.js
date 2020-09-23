@@ -12,20 +12,34 @@
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
 import type {MutableSnapshot} from '../core/Recoil_Snapshot';
-import type {NodeKey, Store, StoreRef, StoreState} from '../core/Recoil_State';
+import type {Store, StoreRef, StoreState} from '../core/Recoil_State';
 
 const React = require('React');
-const {useContext, useEffect, useRef, useState} = require('React');
+const {useContext, useEffect, useMemo, useRef, useState} = require('React');
+// @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+// @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
+// @fb-only: const URI = require('URI');
 
 const Queue = require('../adt/Recoil_Queue');
 const {
-  fireNodeSubscriptions,
+  getDownstreamNodes,
   setNodeValue,
   setUnvalidatedAtomValue,
 } = require('../core/Recoil_FunctionalCore');
+const {graph, saveDependencyMapToStore} = require('../core/Recoil_Graph');
+const {cloneGraph} = require('../core/Recoil_Graph');
+const {applyAtomValueWrites} = require('../core/Recoil_RecoilValueInterface');
 const {freshSnapshot} = require('../core/Recoil_Snapshot');
-const {makeEmptyStoreState, makeStoreState} = require('../core/Recoil_State');
+const {
+  getNextTreeStateVersion,
+  makeEmptyStoreState,
+} = require('../core/Recoil_State');
+const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const nullthrows = require('../util/Recoil_nullthrows');
+// @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const Tracing = require('../util/Recoil_Tracing');
+const unionSets = require('../util/Recoil_unionSets');
+// @fb-only: const gkx = require('gkx');
 
 type Props = {
   initializeState_DEPRECATED?: ({
@@ -33,6 +47,7 @@ type Props = {
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
   initializeState?: MutableSnapshot => void,
+  store_INTERNAL?: Store,
   children: React.Node,
 };
 
@@ -45,23 +60,100 @@ function notInAContext() {
 const defaultStore: Store = Object.freeze({
   getState: notInAContext,
   replaceState: notInAContext,
+  getGraph: notInAContext,
   subscribeToTransactions: notInAContext,
   addTransactionMetadata: notInAContext,
-  fireNodeSubscriptions: notInAContext,
 });
 
+let stateReplacerIsBeingExecuted: boolean = false;
+
 function startNextTreeIfNeeded(storeState: StoreState): void {
+  if (stateReplacerIsBeingExecuted) {
+    throw new Error(
+      'An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.',
+    );
+  }
   if (storeState.nextTree === null) {
+    const version = storeState.currentTree.version;
+    const nextVersion = getNextTreeStateVersion();
     storeState.nextTree = {
       ...storeState.currentTree,
+      version: nextVersion,
+      stateID: nextVersion,
       dirtyAtoms: new Set(),
       transactionMetadata: {},
     };
+    storeState.graphsByVersion.set(
+      nextVersion,
+      cloneGraph(nullthrows(storeState.graphsByVersion.get(version))),
+    );
   }
 }
 
 const AppContext = React.createContext<StoreRef>({current: defaultStore});
 const useStoreRef = (): StoreRef => useContext(AppContext);
+
+const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
+const useRecoilMutableSource = (): mixed => useContext(MutableSourceContext);
+
+function sendEndOfBatchNotifications(store: Store) {
+  const storeState = store.getState();
+  const treeState = storeState.currentTree;
+
+  // Inform transaction subscribers of the transaction:
+  const dirtyAtoms = treeState.dirtyAtoms;
+  if (dirtyAtoms.size) {
+    // Execute Node-specific subscribers before global subscribers
+    for (const [
+      key,
+      subscriptions,
+    ] of storeState.nodeTransactionSubscriptions) {
+      if (dirtyAtoms.has(key)) {
+        for (const [_, subscription] of subscriptions) {
+          subscription(store);
+        }
+      }
+    }
+
+    for (const [_, subscription] of storeState.transactionSubscriptions) {
+      subscription(store);
+    }
+
+    // Components that are subscribed to the dirty atom:
+    const dependentNodes = getDownstreamNodes(store, treeState, dirtyAtoms);
+
+    for (const key of dependentNodes) {
+      const comps = storeState.nodeToComponentSubscriptions.get(key);
+      if (comps) {
+        for (const [_subID, [_debugName, callback]] of comps) {
+          callback(treeState);
+        }
+      }
+    }
+
+    // Wake all suspended components so the right one(s) can try to re-render.
+    // We need to wake up components not just when some asynchronous selector
+    // resolved, but also when changing synchronous values because this may cause
+    // a selector to change from asynchronous to synchronous, in which case there
+    // would be no follow-up asynchronous resolution to wake us up.
+    // TODO OPTIMIZATION Only wake up related downstream components
+    let nodeNames = '[available in dev build]';
+    if (__DEV__) {
+      nodeNames = Array.from(dirtyAtoms).join(', ');
+    }
+    storeState.suspendedComponentResolvers.forEach(cb =>
+      Tracing.trace('value became available, waking components', nodeNames, cb),
+    );
+  }
+
+  // Special behavior ONLY invoked by useInterface.
+  // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
+  storeState.queuedComponentCallbacks_DEPRECATED.forEach(cb => cb(treeState));
+  storeState.queuedComponentCallbacks_DEPRECATED.splice(
+    0,
+    storeState.queuedComponentCallbacks_DEPRECATED.length,
+  );
+}
 
 /*
  * The purpose of the Batcher is to observe when React batches end so that
@@ -89,37 +181,17 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
         return;
       }
 
-      // Inform transaction subscribers of the transaction:
-      const dirtyAtoms = nextTree.dirtyAtoms;
-      if (dirtyAtoms.size) {
-        // Execute Node-specific subscribers before global subscribers
-        for (const [
-          key,
-          subscriptions,
-        ] of storeState.nodeTransactionSubscriptions) {
-          if (dirtyAtoms.has(key)) {
-            for (const subscription of subscriptions) {
-              subscription(storeRef.current);
-            }
-          }
-        }
-        for (const [_, subscription] of storeState.transactionSubscriptions) {
-          subscription(storeRef.current);
-        }
-      }
-
-      // Inform components that depend on dirty atoms of the transaction:
-      // FIXME why is this StoreState but dirtyAtoms is TreeState? Seems like they should be the same.
-      storeState.queuedComponentCallbacks.forEach(cb => cb(nextTree));
-      storeState.queuedComponentCallbacks.splice(
-        0,
-        storeState.queuedComponentCallbacks.length,
-      );
-
       // nextTree is now committed -- note that copying and reset occurs when
       // a transaction begins, in startNextTreeIfNeeded:
+      storeState.previousTree = storeState.currentTree;
       storeState.currentTree = nextTree;
       storeState.nextTree = null;
+
+      sendEndOfBatchNotifications(storeRef.current);
+
+      const discardedVersion = nullthrows(storeState.previousTree).version;
+      storeState.graphsByVersion.delete(discardedVersion);
+      storeState.previousTree = null;
     });
   });
 
@@ -132,16 +204,29 @@ if (__DEV__) {
   }
 }
 
+// When removing this deprecated function, remove stateBySettingRecoilValue
+// which will no longer be needed.
 function initialStoreState_DEPRECATED(store, initializeState): StoreState {
   const initial: StoreState = makeEmptyStoreState();
   initializeState({
     set: (atom, value) => {
-      initial.currentTree = setNodeValue(
-        store,
-        initial.currentTree,
-        atom.key,
-        value,
-      )[0];
+      const state = initial.currentTree;
+      const [depMap, writes] = setNodeValue(store, state, atom.key, value);
+      const writtenNodes = new Set(writes.keys());
+
+      saveDependencyMapToStore(depMap, store, state.version);
+
+      const nonvalidatedAtoms = mapByDeletingMultipleFromMap(
+        state.nonvalidatedAtoms,
+        writtenNodes,
+      );
+
+      initial.currentTree = {
+        ...state,
+        dirtyAtoms: unionSets(state.dirtyAtoms, writtenNodes),
+        atomValues: applyAtomValueWrites(state.atomValues, writes), // NB: PLEASE un-export applyAtomValueWrites when deleting this code
+        nonvalidatedAtoms,
+      };
     },
     setUnvalidatedAtomValues: atomValues => {
       atomValues.forEach((v, k) => {
@@ -158,16 +243,44 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
 
 function initialStoreState(initializeState): StoreState {
   const snapshot = freshSnapshot().map(initializeState);
-  return makeStoreState(snapshot.getStore_INTERNAL().getState().currentTree);
+  return snapshot.getStore_INTERNAL().getState();
 }
 
 let nextID = 0;
 function RecoilRoot({
   initializeState_DEPRECATED,
   initializeState,
+  store_INTERNAL: storeProp, // For use with React "context bridging"
   children,
 }: Props): ReactElement {
+  // prettier-ignore
+  // @fb-only: useEffect(() => {
+  // @fb-only: if (gkx('recoil_usage_logging')) {
+  // @fb-only: try {
+  // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+  // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
+  // @fb-only: path: URI.getRequestURI().getPath(),
+  // @fb-only: }));
+  // @fb-only: } catch {
+  // @fb-only: recoverableViolation(
+  // @fb-only: 'Error when logging Recoil Usage event',
+  // @fb-only: 'recoil',
+  // @fb-only: );
+  // @fb-only: }
+  // @fb-only: }
+  // @fb-only: }, []);
+
   let storeState; // eslint-disable-line prefer-const
+
+  const getGraph = version => {
+    const graphs = storeState.current.graphsByVersion;
+    if (graphs.has(version)) {
+      return nullthrows(graphs.get(version));
+    }
+    const newGraph = graph();
+    graphs.set(version, newGraph);
+    return newGraph;
+  };
 
   const subscribeToTransactions = (callback, key) => {
     if (key == null) {
@@ -181,14 +294,24 @@ function RecoilRoot({
         },
       };
     } else {
-      // Node-specific transaction subscriptions from onSet() effect
+      // Node-specific transaction subscriptions:
       const {nodeTransactionSubscriptions} = storeRef.current.getState();
       if (!nodeTransactionSubscriptions.has(key)) {
-        nodeTransactionSubscriptions.set(key, []);
+        nodeTransactionSubscriptions.set(key, new Map());
       }
-      nullthrows(nodeTransactionSubscriptions.get(key)).push(callback);
-      // We don't currently support canceling onSet() handlers, but can if needed
-      return {release: () => {}};
+      const id = nextID++;
+      nullthrows(nodeTransactionSubscriptions.get(key)).set(id, callback);
+      return {
+        release: () => {
+          const subs = nodeTransactionSubscriptions.get(key);
+          if (subs) {
+            subs.delete(id);
+            if (subs.size === 0) {
+              nodeTransactionSubscriptions.delete(key);
+            }
+          }
+        },
+      };
     }
   };
 
@@ -200,19 +323,18 @@ function RecoilRoot({
     }
   };
 
-  function fireNodeSubscriptionsForStore(
-    updatedNodes: $ReadOnlySet<NodeKey>,
-    when: 'enqueue' | 'now',
-  ) {
-    fireNodeSubscriptions(storeRef.current, updatedNodes, when);
-  }
-
   const replaceState = replacer => {
     const storeState = storeRef.current.getState();
     startNextTreeIfNeeded(storeState);
     // Use replacer to get the next state:
     const nextTree = nullthrows(storeState.nextTree);
-    const replaced = replacer(nextTree);
+    let replaced;
+    try {
+      stateReplacerIsBeingExecuted = true;
+      replaced = replacer(nextTree);
+    } finally {
+      stateReplacerIsBeingExecuted = false;
+    }
     if (replaced === nextTree) {
       return;
     }
@@ -233,13 +355,19 @@ function RecoilRoot({
     notifyBatcherOfChange.current = x;
   }
 
-  const store: Store = {
+  // FIXME T2710559282599660
+  const createMutableSource =
+    (React: any).createMutableSource ?? // flowlint-line unclear-type:off
+    (React: any).unstable_createMutableSource; // flowlint-line unclear-type:off
+
+  const store: Store = storeProp ?? {
     getState: () => storeState.current,
     replaceState,
+    getGraph,
     subscribeToTransactions,
     addTransactionMetadata,
-    fireNodeSubscriptions: fireNodeSubscriptionsForStore,
   };
+
   const storeRef = useRef(store);
   storeState = useRef(
     initializeState_DEPRECATED != null
@@ -249,15 +377,30 @@ function RecoilRoot({
       : makeEmptyStoreState(),
   );
 
+  const mutableSource = useMemo(
+    () =>
+      createMutableSource
+        ? createMutableSource(
+            storeState,
+            () => storeState.current.currentTree.version,
+          )
+        : null,
+    [createMutableSource, storeState],
+  );
+
   return (
     <AppContext.Provider value={storeRef}>
-      <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
-      {children}
+      <MutableSourceContext.Provider value={mutableSource}>
+        <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
+        {children}
+      </MutableSourceContext.Provider>
     </AppContext.Provider>
   );
 }
 
 module.exports = {
   useStoreRef,
+  useRecoilMutableSource,
   RecoilRoot,
+  sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,
 };

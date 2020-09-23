@@ -29,7 +29,7 @@ type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
   upstreamState__INTERNAL_DO_NOT_USE?: TreeState,
 }>;
 
-export type LoadablePromise<T> = Promise<ResolvedLoadablePromiseInfo<T>>;
+export type LoadablePromise<+T> = Promise<ResolvedLoadablePromiseInfo<T>>;
 
 type Accessors<T> = $ReadOnly<{
   // Attempt to get the value.
@@ -183,7 +183,7 @@ function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
     ? loadableWithValue(inputs.map(i => i.contents))
     : inputs.some(i => i.state === 'hasError')
     ? loadableWithError(
-        // $FlowIssue #44070740 Array.find should refine parameter
+        // $FlowIssue[incompatible-call] #44070740 Array.find should refine parameter
         nullthrows(
           inputs.find(i => i.state === 'hasError'),
           'Invalid loadable passed to loadableAll',

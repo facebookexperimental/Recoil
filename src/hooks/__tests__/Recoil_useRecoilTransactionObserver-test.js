@@ -63,46 +63,50 @@ test('getNodes', () => {
   expect(c.textContent).toEqual('"A""B""A-SELECTOR"');
 
   expect(
-    Array.from(snapshot.getNodes_UNSTABLE()).length,
-  ).toBeGreaterThanOrEqual(2);
+    Array.from(snapshot.getNodes_UNSTABLE({isInitialized: true})).length,
+  ).toEqual(0);
   act(() => setAtomA('A'));
   // Greater than 3 because we expect at least nodes for atom's A and B from
   // the family and selectorA.  In reality we currenlty get 8 due to internal
   // helper selectors and default fallback atoms.
-  expect(Array.from(snapshot.getNodes_UNSTABLE()).length).toBeGreaterThan(3);
-  const nodes = Array.from(snapshot.getNodes_UNSTABLE());
+  expect(
+    Array.from(snapshot.getNodes_UNSTABLE({isInitialized: true})).length,
+  ).toBeGreaterThan(3);
+  const nodes = Array.from(snapshot.getNodes_UNSTABLE({isInitialized: true}));
   expect(nodes).toEqual(
     expect.arrayContaining([atoms('A'), atoms('B'), selectorA]),
   );
 
   // Test atom A is set
-  const aDirty = Array.from(snapshot.getNodes_UNSTABLE({dirty: true}));
+  const aDirty = Array.from(snapshot.getNodes_UNSTABLE({isModified: true}));
   expect(aDirty.length).toEqual(1);
   expect(snapshot.getLoadable(aDirty[0]).contents).toEqual('A');
 
   // Test atom B is set
   act(() => setAtomB('B'));
-  const bDirty = Array.from(snapshot.getNodes_UNSTABLE({dirty: true}));
+  const bDirty = Array.from(snapshot.getNodes_UNSTABLE({isModified: true}));
   expect(bDirty.length).toEqual(1);
   expect(snapshot.getLoadable(bDirty[0]).contents).toEqual('B');
 
-  // // Test atoms
-  // const atomNodes = Array.from(snapshot.getNodes_UNSTABLE({types: ['atom']}));
-  // expect(atomNodes.map(atom => snapshot.getLoadable(atom).contents)).toEqual(
-  //   expect.arrayContaining(['A', 'B']),
-  // );
+  // Test atoms
+  const atomNodes = Array.from(
+    snapshot.getNodes_UNSTABLE({isInitialized: true}),
+  );
+  expect(atomNodes.map(atom => snapshot.getLoadable(atom).contents)).toEqual(
+    expect.arrayContaining(['A', 'B']),
+  );
 
-  // // Test selector
-  // const selectorNodes = Array.from(
-  //   snapshot.getNodes_UNSTABLE({types: ['selector']}),
-  // );
-  // expect(
-  //   selectorNodes.map(atom => snapshot.getLoadable(atom).contents),
-  // ).toEqual(expect.arrayContaining(['A-SELECTOR']));
+  // Test selector
+  const selectorNodes = Array.from(
+    snapshot.getNodes_UNSTABLE({isInitialized: true}),
+  );
+  expect(
+    selectorNodes.map(atom => snapshot.getLoadable(atom).contents),
+  ).toEqual(expect.arrayContaining(['A-SELECTOR']));
 
   // Test Reset
   act(resetAtomA);
-  const resetDirty = Array.from(snapshot.getNodes_UNSTABLE({dirty: true}));
+  const resetDirty = Array.from(snapshot.getNodes_UNSTABLE({isModified: true}));
   expect(resetDirty.length).toEqual(1);
   expect(resetDirty[0]).toBe(aDirty[0]);
 
