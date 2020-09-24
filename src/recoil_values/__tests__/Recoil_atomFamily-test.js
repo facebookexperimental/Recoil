@@ -12,8 +12,10 @@
 
 const React = require('React');
 const {useEffect, useState} = require('React');
+const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
+const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -488,6 +490,65 @@ describe('Effects', () => {
 
     expect(get(myFamily(1))).toEqual(1);
     expect(get(myFamily(2))).toEqual(2);
+  });
+
+  test('Cleanup Handlers - when root unmounted', () => {
+    const refCounts: {[string]: number} = {A: 0, B: 0};
+
+    const atoms = atomFamily({
+      key: 'atomFamily effect cleanup',
+      default: p => p,
+      effects_UNSTABLE: p => [
+        () => {
+          refCounts[p]++;
+          return () => {
+            refCounts[p]--;
+          };
+        },
+      ],
+    });
+
+    let setNumRoots;
+    function App() {
+      const [numRoots, _setNumRoots] = useState(0);
+      setNumRoots = _setNumRoots;
+      return (
+        <div>
+          {Array(numRoots)
+            .fill(null)
+            .map((_, idx) => (
+              <RecoilRoot key={idx}>
+                <ReadsAtom atom={atoms('A')} />
+                <ReadsAtom atom={atoms('B')} />
+              </RecoilRoot>
+            ))}
+        </div>
+      );
+    }
+
+    const c = document.createElement('div');
+    act(() => {
+      ReactDOM.render(<App />, c);
+    });
+
+    expect(c.textContent).toBe('');
+    expect(refCounts).toEqual({A: 0, B: 0});
+
+    act(() => setNumRoots(1));
+    expect(c.textContent).toBe('"A""B"');
+    expect(refCounts).toEqual({A: 1, B: 1});
+
+    act(() => setNumRoots(2));
+    expect(c.textContent).toBe('"A""B""A""B"');
+    expect(refCounts).toEqual({A: 2, B: 2});
+
+    act(() => setNumRoots(1));
+    expect(c.textContent).toBe('"A""B"');
+    expect(refCounts).toEqual({A: 1, B: 1});
+
+    act(() => setNumRoots(0));
+    expect(c.textContent).toBe('');
+    expect(refCounts).toEqual({A: 0, B: 0});
   });
 });
 

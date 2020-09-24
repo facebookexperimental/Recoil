@@ -120,7 +120,7 @@ export type AtomEffect<T> = ({
   onSet: (
     (newValue: T | DefaultValue, oldValue: T | DefaultValue) => void,
   ) => void,
-}) => void; // TODO Allow returning a cleanup function
+}) => void | (() => void);
 
 export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
@@ -157,6 +157,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   let cachedAnswerForUnvalidatedValue:
     | void
     | [DependencyMap, Loadable<T>] = undefined;
+
+  // Cleanup handlers for this atom
+  // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
+  const cleanupEffectsByStore: Map<Store, () => void> = new Map();
 
   function wrapPendingPromise(
     store: Store,
@@ -235,6 +239,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
       function onSet(handler: (T | DefaultValue, T | DefaultValue) => void) {
         store.subscribeToTransactions(currentStore => {
+          // eslint-disable-next-line prefer-const
           let {currentTree, previousTree} = currentStore.getState();
           if (!previousTree) {
             recoverableViolation(
@@ -259,7 +264,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       }
 
       for (const effect of options.effects_UNSTABLE ?? []) {
-        effect({node, trigger, setSelf, resetSelf, onSet});
+        const cleanup = effect({node, trigger, setSelf, resetSelf, onSet});
+        if (cleanup != null) {
+          cleanupEffectsByStore.set(store, cleanup);
+        }
       }
 
       duringInit = false;
@@ -323,6 +331,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     }
   }
 
+  function myCleanup(store: Store) {
+    cleanupEffectsByStore.get(store)?.();
+    cleanupEffectsByStore.delete(store);
+  }
+
   function invalidate() {
     cachedAnswerForUnvalidatedValue = undefined;
   }
@@ -364,6 +377,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       peek: myPeek,
       get: myGet,
       set: mySet,
+      cleanUp: myCleanup,
       invalidate,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       persistence_UNSTABLE: options.persistence_UNSTABLE

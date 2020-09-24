@@ -22,6 +22,7 @@ const {useContext, useEffect, useMemo, useRef, useState} = require('React');
 
 const Queue = require('../adt/Recoil_Queue');
 const {
+  cleanUpNode,
   getDownstreamNodes,
   setNodeValue,
   setUnvalidatedAtomValue,
@@ -386,6 +387,16 @@ function RecoilRoot({
           )
         : null,
     [createMutableSource, storeState],
+  );
+
+  // Cleanup when the <RecoilRoot> is unmounted
+  useEffect(
+    () => () => {
+      for (const atomKey of storeRef.current.getState().knownAtoms) {
+        cleanUpNode(storeRef.current, atomKey);
+      }
+    },
+    [],
   );
 
   return (

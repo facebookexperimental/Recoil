@@ -92,6 +92,11 @@ function setNodeValue<T>(
   return node.set(store, state, newValue);
 }
 
+function cleanUpNode(store: Store, key: NodeKey) {
+  const node = getNode(key);
+  node.cleanUp(store);
+}
+
 // Find all of the recursively dependent nodes
 function getDownstreamNodes(
   store: Store,
@@ -119,5 +124,6 @@ module.exports = {
   peekNodeLoadable,
   setNodeValue,
   setUnvalidatedAtomValue,
+  cleanUpNode,
   getDownstreamNodes,
 };
