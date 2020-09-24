@@ -17,7 +17,6 @@ import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-const React = require('React');
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
@@ -51,6 +50,7 @@ const {
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
+const useComponentName = require('../util/Recoil_useComponentName');
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -111,6 +111,8 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     [storeRef, subscriptions],
   );
 
+  const componentName = useComponentName();
+
   useEffect(() => {
     const store = storeRef.current;
 
@@ -138,6 +140,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
             updateState(state, key);
           });
         },
+        componentName,
       );
       subscriptions.current.set(key, sub);
 
@@ -285,17 +288,28 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
     );
   }, [storeRef, recoilValue]);
 
+  const componentName = useComponentName();
+
   const subscribe = useCallback(
     (_something, callback) => {
       const store = storeRef.current;
-      const sub = subscribeToRecoilValue(store, recoilValue, () => {
-        Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
-          callback();
-        });
-      });
+      const sub = subscribeToRecoilValue(
+        store,
+        recoilValue,
+        () => {
+          Tracing.trace(
+            'RecoilValue subscription fired',
+            recoilValue.key,
+            () => {
+              callback();
+            },
+          );
+        },
+        componentName,
+      );
       return () => sub.release(store);
     },
-    [recoilValue, storeRef],
+    [recoilValue, storeRef, componentName],
   );
 
   return useMutableSource(useRecoilMutableSource(), getValue, subscribe);
@@ -310,13 +324,20 @@ function useRecoilValueLoadable_LEGACY<T>(
   const storeRef = useStoreRef();
   const [_, forceUpdate] = useState([]);
 
+  const componentName = useComponentName();
+
   useEffect(() => {
     const store = storeRef.current;
-    const sub = subscribeToRecoilValue(store, recoilValue, _state => {
-      Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
-        forceUpdate([]);
-      });
-    });
+    const sub = subscribeToRecoilValue(
+      store,
+      recoilValue,
+      _state => {
+        Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
+          forceUpdate([]);
+        });
+      },
+      componentName,
+    );
     Tracing.trace('initial update on subscribing', recoilValue.key, () => {
       /**
        * Since we're subscribing in an effect we need to update to the latest

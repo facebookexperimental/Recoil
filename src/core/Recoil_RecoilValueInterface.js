@@ -197,6 +197,7 @@ function subscribeToRecoilValue<T>(
   store: Store,
   {key}: AbstractRecoilValue<T>,
   callback: TreeState => void,
+  componentDebugName: ?string = null,
 ): ComponentSubscription {
   const subID = subscriptionID++;
   const storeState = store.getState();
@@ -204,7 +205,7 @@ function subscribeToRecoilValue<T>(
     storeState.nodeToComponentSubscriptions.set(key, new Map());
   }
   nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [
-    'TODO debug name',
+    componentDebugName ?? '<not captured>',
     callback,
   ]);
 
