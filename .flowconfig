@@ -15,10 +15,6 @@ esproposal.nullish_coalescing=enable
 suppress_type=$FlowIssue
 suppress_type=$FlowFixMe
 suppress_type=$FlowOSSFixMe
-suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
-suppress_comment= \\(.\\|\n\\)*\\$FlowOSSFixMe
-suppress_comment= \\(.\\|\n\\)*\\$FlowIssue
-suppress_comment=\\(.\\|\n\\)*\\$FlowExpectedError
 
 module.name_mapper='React' -> '<PROJECT_ROOT>/node_modules/react'
 module.name_mapper='ReactDOM' -> '<PROJECT_ROOT>/node_modules/react-dom'
@@ -51,4 +47,4 @@ unsafe-getters-setters
 all=warn
 
 [version]
-^0.126.0
+^0.129.0
