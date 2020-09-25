@@ -1,0 +1,106 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+obviz
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { Loadable } from '../adt/Recoil_Loadable';
+import type { ResetRecoilState, SetRecoilState, ValueOrUpdater } from '../recoil_values/Recoil_selector';
+import type { NodeKey } from './Recoil_Keys';
+import type { RecoilState, RecoilValue } from './Recoil_RecoilValue';
+import type { StateID, Store, StoreState, TreeState } from './Recoil_State';
+
+const concatIterables = require('../util/Recoil_concatIterables');
+
+const filterIterable = require('../util/Recoil_filterIterable');
+
+const gkx = require('../util/Recoil_gkx');
+
+const mapIterable = require('../util/Recoil_mapIterable');
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
+const {
+  getDownstreamNodes,
+  peekNodeLoadable
+} = require('./Recoil_FunctionalCore');
+
+const {
+  graph
+} = require('./Recoil_Graph');
+
+const {
+  DEFAULT_VALUE,
+  recoilValues
+} = require('./Recoil_Node');
+
+const {
+  getRecoilValueAsLoadable,
+  setRecoilValue
+} = require('./Recoil_RecoilValueInterface');
+
+const {
+  getNextTreeStateVersion,
+  makeEmptyStoreState
+} = require('./Recoil_State'); // Opaque at this surface because it's part of the public API from here.
+
+
+export opaque type SnapshotID = StateID;
+declare function recoilValuesForKeys(keys: Iterable<NodeKey>): Iterable<RecoilValue<mixed>>; // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
+// However, the data-flow-graph and selector values may evolve as selector
+// evaluation functions are executed and async selectors resolve.
+
+declare class Snapshot {
+  _store: Store,
+  constructor(storeState: StoreState): any,
+  getStore_INTERNAL(): Store,
+  getID(): SnapshotID,
+  getID_INTERNAL(): StateID,
+  getLoadable: <T>(RecoilValue<T>) => Loadable<T>,
+  getPromise: <T>(RecoilValue<T>) => Promise<T>,
+  getNodes_UNSTABLE: ({
+    isModified?: boolean,
+    isInitialized?: boolean,
+  } | void) => Iterable<RecoilValue<mixed>>,
+  getDeps_UNSTABLE: <T>(RecoilValue<T>) => Iterable<RecoilValue<mixed>>,
+  getSubscribers_UNSTABLE: <T>(RecoilValue<T>) => {
+    nodes: Iterable<RecoilValue<mixed>>
+  },
+  getInfo_UNSTABLE: <T>(RecoilValue<T>) => {
+    loadable: ?Loadable<T>,
+    isActive: boolean,
+    isSet: boolean,
+    isModified: boolean,
+    // TODO report modified selectors
+    type: 'atom' | 'selector' | void,
+    // void until initialized for now
+    deps: Iterable<RecoilValue<mixed>>,
+    subscribers: {
+      nodes: Iterable<RecoilValue<mixed>>
+    },
+  },
+  map: ((MutableSnapshot) => void) => Snapshot,
+  asyncMap: ((MutableSnapshot) => Promise<void>) => Promise<Snapshot>,
+}
+declare function cloneStoreState(store: Store, treeState: TreeState, bumpVersion: boolean): StoreState; // Factory to build a fresh snapshot
+
+declare function freshSnapshot(): Snapshot; // Factory to clone a snapahot state
+
+declare function cloneSnapshot(store: Store, version: 'current' | 'previous'): Snapshot;
+declare class MutableSnapshot extends Snapshot {
+  constructor(snapshot: Snapshot): any,
+  set: SetRecoilState,
+  reset: ResetRecoilState,
+}
+module.exports = {
+  Snapshot,
+  MutableSnapshot,
+  freshSnapshot,
+  cloneSnapshot
+};

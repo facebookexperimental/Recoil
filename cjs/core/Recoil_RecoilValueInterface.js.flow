@@ -1,0 +1,79 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { Loadable } from '../adt/Recoil_Loadable';
+import type { ValueOrUpdater } from '../recoil_values/Recoil_selector';
+import type { AtomValues, Store, TreeState } from './Recoil_State';
+
+const {
+  mapByDeletingFromMap,
+  mapByDeletingMultipleFromMap
+} = require('../util/Recoil_CopyOnWrite');
+
+const mapMap = require('../util/Recoil_mapMap');
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
+
+const Tracing = require('../util/Recoil_Tracing');
+
+const unionSets = require('../util/Recoil_unionSets');
+
+const {
+  getNodeLoadable,
+  setNodeValue,
+  setUnvalidatedAtomValue
+} = require('./Recoil_FunctionalCore');
+
+const {
+  saveDependencyMapToStore
+} = require('./Recoil_Graph');
+
+const {
+  DefaultValue,
+  RecoilValueNotReady
+} = require('./Recoil_Node');
+
+const {
+  AbstractRecoilValue,
+  RecoilState,
+  RecoilValueReadOnly,
+  isRecoilValue
+} = require('./Recoil_RecoilValue');
+
+declare function getRecoilValueAsLoadable<T>(store: Store, arg1: AbstractRecoilValue<T>, treeState: TreeState): Loadable<T>;
+declare function applyAtomValueWrites(atomValues: AtomValues, writes: AtomValues): AtomValues;
+declare function valueFromValueOrUpdater<T>(store: Store, arg1: AbstractRecoilValue<T>, valueOrUpdater: ValueOrUpdater<T>): T | DefaultValue;
+declare function setRecoilValue<T>(store: Store, recoilValue: AbstractRecoilValue<T>, valueOrUpdater: T | DefaultValue | ((T) => T | DefaultValue)): void;
+declare function setRecoilValueLoadable<T>(store: Store, recoilValue: AbstractRecoilValue<T>, loadable: DefaultValue | Loadable<T>): void;
+declare function markRecoilValueModified<T>(store: Store, arg1: AbstractRecoilValue<T>): void;
+declare function setUnvalidatedRecoilValue<T>(store: Store, arg1: AbstractRecoilValue<T>, newValue: T): void;
+export type ComponentSubscription = {
+  release: (Store) => void
+};
+let subscriptionID = 0;
+declare function subscribeToRecoilValue<T>(store: Store, arg1: AbstractRecoilValue<T>, callback: (TreeState) => void): ComponentSubscription;
+module.exports = {
+  RecoilValueReadOnly,
+  AbstractRecoilValue,
+  RecoilState,
+  getRecoilValueAsLoadable,
+  setRecoilValue,
+  setRecoilValueLoadable,
+  markRecoilValueModified,
+  setUnvalidatedRecoilValue,
+  subscribeToRecoilValue,
+  isRecoilValue,
+  applyAtomValueWrites // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
+
+};

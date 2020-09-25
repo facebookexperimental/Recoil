@@ -1,0 +1,206 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+const React = require('React');
+
+const {
+  useRef,
+  useState
+} = require('React');
+
+const {
+  act
+} = require('ReactTestUtils');
+
+const {
+  atom,
+  selector,
+  useRecoilCallback,
+  useSetRecoilState
+} = require('../../Recoil_index');
+
+const {
+  ReadsAtom,
+  flushPromisesAndTimers,
+  renderElements
+} = require('../../testing/Recoil_TestingUtils');
+
+const invariant = require('../../util/Recoil_invariant');
+
+describe('useRecoilCallback', () => {
+  it('Reads Recoil values', async () => {
+    const anAtom = atom({
+      key: 'atom1',
+      default: 'DEFAULT'
+    });
+    let pTest = Promise.reject(new Error("Callback didn't resolve"));
+    let cb;
+    declare function Component(): any;
+    renderElements(<Component />);
+    act(() => void cb());
+    await pTest;
+  });
+  it('Can read Recoil values without throwing', async () => {
+    const anAtom = atom({
+      key: 'atom2',
+      default: 123
+    });
+    const asyncSelector = selector({
+      key: 'sel',
+      get: () => {
+        return new Promise(() => undefined);
+      }
+    });
+    let didRun = false;
+    let cb;
+    declare function Component(): any;
+    renderElements(<Component />);
+    act(() => void cb());
+    expect(didRun).toBe(true);
+  });
+  it('Sets Recoil values (by queueing them)', async () => {
+    const anAtom = atom({
+      key: 'atom3',
+      default: 'DEFAULT'
+    });
+    let cb;
+    let pTest = Promise.reject(new Error("Callback didn't resolve"));
+    declare function Component(): any;
+    const container = renderElements(<>
+        <Component />
+        <ReadsAtom atom={anAtom} />
+      </>);
+    expect(container.textContent).toBe('"DEFAULT"');
+    act(() => void cb(123));
+    expect(container.textContent).toBe('123');
+    await pTest;
+  });
+  it('Reset Recoil values', async () => {
+    const anAtom = atom({
+      key: 'atomReset',
+      default: 'DEFAULT'
+    });
+    let setCB, resetCB;
+    declare function Component(): any;
+    const container = renderElements(<>
+        <Component />
+        <ReadsAtom atom={anAtom} />
+      </>);
+    expect(container.textContent).toBe('"DEFAULT"');
+    act(() => void setCB(123));
+    expect(container.textContent).toBe('123');
+    act(() => void resetCB());
+    expect(container.textContent).toBe('"DEFAULT"');
+  });
+  it('Sets Recoil values from async callback', async () => {
+    const anAtom = atom({
+      key: 'set async callback',
+      default: 'DEFAULT'
+    });
+    let cb;
+    const pTest = [];
+    declare function Component(): any;
+    const container = renderElements([<Component />, <ReadsAtom atom={anAtom} />]);
+    expect(container.textContent).toBe('"DEFAULT"');
+    act(() => void cb(123));
+    expect(container.textContent).toBe('123');
+    act(() => void cb(456));
+    expect(container.textContent).toBe('456');
+
+    for (const aTest of pTest) {
+      await aTest;
+    }
+  });
+  it('Reads from a snapshot created at callback call time', async () => {
+    const anAtom = atom({
+      key: 'atom4',
+      default: 123
+    });
+    let cb;
+    let setter;
+    let seenValue = null;
+    declare var delay: () => any; // no delay initially
+
+    declare function Component(): any; // It sees an update flushed after the cb is created:
+
+    renderElements(<Component />);
+    act(() => setter(345));
+    act(() => void cb());
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(seenValue).toBe(345); // But does not see an update flushed while the cb is in progress:
+
+    seenValue = null;
+    declare var resumeCallback: () => any;
+
+    delay = () => {
+      return new Promise(resolve => {
+        resumeCallback = resolve;
+      });
+    };
+
+    act(() => void cb());
+    act(() => setter(678));
+    resumeCallback();
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(seenValue).toBe(345);
+  });
+  it('Setter updater sees current state', () => {
+    const myAtom = atom({
+      key: 'useRecoilCallback updater',
+      default: 'DEFAULT'
+    });
+    let setAtom;
+    let cb;
+    declare function Component(): any;
+    const c = renderElements(<>
+        <ReadsAtom atom={myAtom} />
+        <Component />
+      </>);
+    expect(c.textContent).toEqual('"DEFAULT"'); // Set then callback in the same transaction
+
+    act(() => {
+      setAtom('SET');
+      cb('SET');
+      cb('UPDATE AGAIN');
+    });
+    expect(c.textContent).toEqual('"UPDATE AGAIN"');
+  });
+  it('goes to snapshot', async () => {
+    const myAtom = atom({
+      key: 'Goto Snapshot From Callback',
+      default: 'DEFAULT'
+    });
+    let cb;
+    declare function RecoilCallback(): any;
+    const c = renderElements(<>
+        <ReadsAtom atom={myAtom} />
+        <RecoilCallback />
+      </>);
+    expect(c.textContent).toEqual('"DEFAULT"');
+    act(() => void cb());
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"SET IN SNAPSHOT"');
+  });
+}); // Test that we always get a consistent instance of the callback function
+// from useRecoilCallback() when it is memoizaed
+
+test('Consistent callback function', () => {
+  let setIteration;
+  declare var Component: () => any;
+  const out = renderElements(<Component />);
+  expect(out.textContent).toBe('0');
+  act(() => setIteration(1)); // Force a re-render of the Component
+
+  expect(out.textContent).toBe('1');
+});

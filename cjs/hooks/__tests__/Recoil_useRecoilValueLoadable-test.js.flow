@@ -1,0 +1,74 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+const React = require('React');
+
+const {
+  act
+} = require('ReactTestUtils');
+
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+
+const errorSelector = require('../../recoil_values/Recoil_errorSelector');
+
+const {
+  asyncSelector,
+  renderElements
+} = require('../../testing/Recoil_TestingUtils');
+
+const gkx = require('../../util/Recoil_gkx');
+
+const {
+  useRecoilValueLoadable
+} = require('../Recoil_Hooks');
+
+gkx.setFail('recoil_async_selector_refactor'); // These tests should cover the Loadable interface returned by useRecoilValueLoadable.
+// It is also used by useRecoilStateNoThrow, waitForNone, and waitForAny
+
+test('useRecoilValueLoadable - loadable with value', async () => {
+  const valueSel = constSelector('VALUE');
+  let promise;
+  declare function ReadLoadable(): any;
+  const c = renderElements(<ReadLoadable />);
+  expect(c.textContent).toEqual('VALUE');
+  await promise;
+});
+test('useRecoilValueLoadable - loadable with error', async () => {
+  const valueSel = errorSelector('ERROR');
+  let promise;
+  declare function ReadLoadable(): any;
+  const c = renderElements(<ReadLoadable />);
+  expect(c.textContent).toEqual('VALUE');
+  await promise;
+});
+test('useRecoilValueLoadable - loading loadable', async () => {
+  const [valueSel, resolve] = asyncSelector();
+  let resolved = false;
+  const promises = [];
+  declare function ReadLoadable(): any;
+  const c = renderElements(<ReadLoadable />);
+  expect(c.textContent).toEqual('LOADING');
+  resolve('VALUE');
+  resolved = true;
+  act(() => jest.runAllTimers());
+  expect(c.textContent).toEqual('VALUE');
+  await Promise.all(promises.map(async promise => {
+    if (!(promise instanceof Promise)) {
+      // for flow
+      throw new Error('Expected a promise');
+    }
+
+    const res = await promise;
+    const val = typeof res === 'string' ? res : res.value;
+    expect(val).toBe('VALUE');
+  }));
+});

@@ -1,0 +1,23 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Interface for `scheduler/tracing` to aid in profiling Recoil and Recoil apps.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { RecoilValue } from '../core/Recoil_RecoilValue'; // flowlint-next-line untyped-import:off
+// @fb-only: const SchedulerTracing = require('SchedulerTracing');
+
+declare function trace<TResult>(message: string, node: string | RecoilValue<mixed>, fn: () => TResult): TResult;
+declare function wrap<TFunction>(fn: TFunction): TFunction;
+module.exports = {
+  trace,
+  wrap
+};

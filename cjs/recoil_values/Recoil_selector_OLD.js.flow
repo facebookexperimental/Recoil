@@ -1,0 +1,144 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Return an atom whose state cannot vary independently but is derived from that
+ * of other atoms. Whenever its dependency atoms change, it will re-evaluate
+ * a function and pass along the result to any components or further selectors:
+ *
+ *    const exampleSelector = selector({
+ *      key: 'example',
+ *      get: ({get}) => {
+ *        const a = get(atomA);
+ *        const b = get(atomB);
+ *        return a + b;
+ *      },
+ *    });
+ *
+ * In this example, the value of exampleSelector will be the sum of atomA and atomB.
+ * This sum will be updated whenever either atomA or atomB changes. The value
+ * returned by the function will be deeply frozen.
+ *
+ * The function is only reevaluated if the dependencies change and the selector
+ * has a component subscribed to it (either directly or indirectly via other
+ * selectors). By default, function results are cached, so if the same values
+ * of the dependencies are seen again, the cached value will be returned instead
+ * of the function being reevaluated. The caching behavior can be overridden
+ * by providing the `cacheImplementation` option; this can be used to discard
+ * old values or to provide different equality semantics.
+ *
+ * If the provided function returns a Promise, it will cause the value of the
+ * atom to become unavailable until the promise resolves. This means that any
+ * components subscribed to the selector will suspend. If the promise is rejected,
+ * any subscribed components will throw the rejecting error during rendering.
+ *
+ * You can provide the `set` option to allow writing to the selector. This
+ * should be used sparingly; maintain a conceptual separation between independent
+ * state and derived values. The `set` function receives a function to set
+ * upstream RecoilValues which can accept a value or an updater function.
+ * The updater function provides parameters with the old value of the RecoilValue
+ * as well as a get() function to read other RecoilValues.
+ *
+ *   const multiplierSelector = selector({
+ *     key: 'multiplier',
+ *     get: ({get}) => get(atomA) * 100,
+ *     set: ({set, reset, get}, newValue) => set(atomA, newValue / 100),
+ *   });
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { Loadable } from '../adt/Recoil_Loadable';
+import type { CacheImplementation } from '../caches/Recoil_Cache';
+import type { DependencyMap } from '../core/Recoil_Graph';
+import type { DefaultValue } from '../core/Recoil_Node';
+import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
+import type { AtomValues, NodeKey, Store, TreeState } from '../core/Recoil_State';
+
+const {
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue
+} = require('../adt/Recoil_Loadable');
+
+const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
+
+const {
+  getNodeLoadable,
+  peekNodeLoadable,
+  setNodeValue
+} = require('../core/Recoil_FunctionalCore');
+
+const {
+  addToDependencyMap,
+  mergeDepsIntoDependencyMap,
+  saveDependencyMapToStore
+} = require('../core/Recoil_Graph');
+
+const {
+  DEFAULT_VALUE,
+  RecoilValueNotReady,
+  registerNode
+} = require('../core/Recoil_Node');
+
+const {
+  AbstractRecoilValue
+} = require('../core/Recoil_RecoilValue');
+
+const {
+  getRecoilValueAsLoadable,
+  isRecoilValue,
+  setRecoilValueLoadable
+} = require('../core/Recoil_RecoilValueInterface');
+
+const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+
+const isPromise = require('../util/Recoil_isPromise');
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
+const {
+  startPerfBlock
+} = require('../util/Recoil_PerformanceTimings');
+
+export type ValueOrUpdater<T> = T | DefaultValue | ((prevValue: T) => T | DefaultValue);
+export type GetRecoilValue = <T>(RecoilValue<T>) => T;
+export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
+export type ResetRecoilState = <T>(RecoilState<T>) => void;
+type ReadOnlySelectorOptions<T> = $ReadOnly<{
+  key: string,
+  get: ({
+    get: GetRecoilValue
+  }) => Promise<T> | RecoilValue<T> | T,
+  cacheImplementation_UNSTABLE?: CacheImplementation<Loadable<T>>,
+  dangerouslyAllowMutability?: boolean,
+}>;
+type ReadWriteSelectorOptions<T> = $ReadOnly<{ ...ReadOnlySelectorOptions<T>,
+  set: ({
+    set: SetRecoilState,
+    get: GetRecoilValue,
+    reset: ResetRecoilState,
+  }, newValue: T | DefaultValue) => void,
+}>; // Array of interlaced node keys and values
+
+type CacheKey = $ReadOnlyArray<mixed>;
+type DepValues = Map<NodeKey, Loadable<mixed>>; // flowlint-next-line unclear-type:off
+
+const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());
+declare function cacheKeyFromDepValues(depValues: DepValues): CacheKey;
+const dependencyStack = []; // for detecting circular dependencies.
+
+const waitingStores: Map<Loadable<mixed>, Set<Store>> = new Map();
+/* eslint-disable no-redeclare */
+
+declare function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
+declare function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
+declare function selector<T>(options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>): RecoilValue<T>;
+/* eslint-enable no-redeclare */
+
+module.exports = selector;

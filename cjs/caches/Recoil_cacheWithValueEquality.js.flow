@@ -1,0 +1,34 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Cache implementation with value equality for keys
+ *
+ * @emails oncall+recoil
+ * @flow strict
+ * @format
+ */
+'use strict';
+
+import type { CacheImplementation } from './Recoil_Cache';
+
+const stableStringify = require('../util/Recoil_stableStringify'); // If we do profile and find the key equality check is expensive,
+// we could always try to optimize..  Something that comes to mind is having
+// each check assign an incrementing index to each reference that maps to the
+// value equivalency.  Then, if an object already has an index, the comparison
+// check/lookup would be trivial and the string serialization would only need
+// to be done once per object instance.  Just a thought..
+// Cache implementation to use value equality for keys instead of the default
+// reference equality.  This allows different instances of dependency values to
+// be used.  Normally this is not needed, as dependent atoms/selectors will
+// themselves be cached and always return the same instance.  However, if
+// different params or upstream values for those dependencies could produce
+// equivalent values or they have a custom cache implementation, then this
+// implementation may be needed.  The downside with this approach is that it
+// takes longer to compute the value equivalence vs simple reference equality.
+
+
+declare function cacheWithValueEquality<T>(): CacheImplementation<T>;
+module.exports = cacheWithValueEquality;

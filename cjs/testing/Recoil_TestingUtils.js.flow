@@ -1,0 +1,103 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { RecoilState, RecoilValue } from 'Recoil_RecoilValue';
+import type { Store } from 'Recoil_State';
+
+const React = require('React');
+
+const {
+  useEffect
+} = require('React');
+
+const ReactDOM = require('ReactDOM');
+
+const {
+  act
+} = require('ReactTestUtils');
+
+const {
+  graph
+} = require('../core/Recoil_Graph');
+
+const {
+  RecoilRoot,
+  sendEndOfBatchNotifications_FOR_TESTING
+} = require('../core/Recoil_RecoilRoot.react');
+
+const {
+  makeEmptyStoreState
+} = require('../core/Recoil_State');
+
+const {
+  useRecoilValue,
+  useResetRecoilState,
+  useSetRecoilState
+} = require('../hooks/Recoil_Hooks');
+
+const selector = require('../recoil_values/Recoil_selector');
+
+const invariant = require('../util/Recoil_invariant');
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
+const stableStringify = require('../util/Recoil_stableStringify'); // TODO Use Snapshot for testing instead of this thunk?
+
+
+declare function makeStore(): Store;
+declare class ErrorBoundary extends React.Component<{
+  children: React.Node | null,
+  ...
+}, {
+  hasError: boolean,
+  ...
+}> {
+  state: any,
+  static getDerivedStateFromError(_error: any): any,
+  render(): any,
+}
+declare function createReactRoot(container: any, contents: any): any;
+declare function renderElements(elements: ?React.Node): HTMLDivElement;
+declare function renderElementsWithSuspenseCount(elements: ?React.Node): [HTMLDivElement, JestMockFn<[], void>]; ////////////////////////////////////////
+// Useful RecoilValue nodes for testing
+////////////////////////////////////////
+
+let id = 0;
+declare var errorThrowingAsyncSelector: <T, S>(msg: any, dep: ?RecoilValue<S>) => any;
+declare var resolvingAsyncSelector: <T>(value: T) => any;
+declare var loadingAsyncSelector: () => any;
+declare function asyncSelector<T, S>(dep?: RecoilValue<S>): [RecoilValue<T>, (T) => void, (Error) => void]; //////////////////////////////////
+// Useful Components for testing
+//////////////////////////////////
+
+declare function ReadsAtom<T>(arg0: {
+  atom: RecoilValue<T>
+}): React.Node; // Returns a tuple: [
+//   Component,
+//   setValue(T),
+//   resetValue()
+// ]
+
+declare function componentThatReadsAndWritesAtom<T>(atom: RecoilState<T>): [() => React.Node, (T) => void, () => void];
+declare function flushPromisesAndTimers(): Promise<void>;
+module.exports = {
+  makeStore,
+  renderElements,
+  renderElementsWithSuspenseCount,
+  ReadsAtom,
+  componentThatReadsAndWritesAtom,
+  errorThrowingAsyncSelector,
+  resolvingAsyncSelector,
+  loadingAsyncSelector,
+  asyncSelector,
+  flushPromisesAndTimers
+};

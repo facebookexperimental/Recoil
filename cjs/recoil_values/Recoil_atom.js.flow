@@ -1,0 +1,135 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Returns an atom, the basic unit of state in Recoil. An atom is a reference to
+ * value that can be read, written, and subscribed to. It has a `key` that is
+ * stable across time so that it can be persisted.
+ *
+ * There are two required options for creating an atom:
+ *
+ *    key. This is a string that uniquely identifies the atom. It should be
+ *         stable across time so that persisted states remain valid.
+ *
+ *    default
+ *          If `default` is provided, the atom is initialized to that value.
+ *          Or, it may be set to another RecoilValue to use as a fallback.
+ *          In that case, the value of the atom will be equal to that of the
+ *          fallback, and will remain so until the first time the atom is written
+ *          to, at which point it will stop tracking the fallback RecoilValue.
+ *
+ * The `persistence` option specifies that the atom should be saved to storage.
+ * It is an object with two properties: `type` specifies where the atom should
+ * be persisted; its only allowed value is "url"; `backButton` specifies whether
+ * changes to the atom should result in pushes to the browser history stack; if
+ * true, changing the atom and then hitting the Back button will cause the atom's
+ * previous value to be restored. Applications are responsible for implementing
+ * persistence by using the `useTransactionObservation` hook.
+ *
+ * Scoped atoms (DEPRECATED):
+ * ===================================================================================
+ *
+ * The scopeRules_APPEND_ONLY_READ_THE_DOCS option causes the atom be be "scoped".
+ * A scoped atom's value depends on other parts of the application state.
+ * A separate value of the atom is stored for every value of the state that it
+ * depends on. The dependencies may be changed without breaking existing URLs --
+ * it uses whatever rule was current when the URL was written. Values written
+ * under the newer rules are overlaid atop the previously-written values just for
+ * those states in which the write occurred, with reads falling back to the older
+ * values in other states, and eventually to the default or fallback.
+ *
+ * The scopedRules_APPEND_ONLY_READ_THE_DOCS parameter is a list of rules;
+ * it should start with a single entry. This list must only be appended to:
+ * existing entries must never be deleted or modified. Each rule is an atom
+ * or selector whose value is some arbitrary key. A different value of the
+ * scoped atom will be stored for each key. To change the scope rule, simply add
+ * a new function to the list. Each rule is either an array of atoms of primitives,
+ * or an atom of an array of primitives.
+ *
+ * Ordinary atoms may be upgraded to scoped atoms. To un-scope an atom, add a new
+ * scope rule consisting of a constant.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict'; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
+
+import type { Loadable } from '../adt/Recoil_Loadable';
+import type { DependencyMap } from '../core/Recoil_Graph';
+import type { PersistenceInfo, ReadWriteNodeOptions } from '../core/Recoil_Node';
+import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
+import type { AtomValues, NodeKey, Store, TreeState } from '../core/Recoil_State'; // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
+
+const {
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue
+} = require('../adt/Recoil_Loadable');
+
+const {
+  DEFAULT_VALUE,
+  DefaultValue,
+  registerNode
+} = require('../core/Recoil_Node');
+
+const {
+  isRecoilValue
+} = require('../core/Recoil_RecoilValue');
+
+const {
+  markRecoilValueModified,
+  setRecoilValue,
+  setRecoilValueLoadable
+} = require('../core/Recoil_RecoilValueInterface');
+
+const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+
+const expectationViolation = require('../util/Recoil_expectationViolation');
+
+const isPromise = require('../util/Recoil_isPromise');
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
+
+const selector = require('./Recoil_selector');
+
+export type PersistenceSettings<Stored> = $ReadOnly<{ ...PersistenceInfo,
+  validator: (mixed, DefaultValue) => Stored | DefaultValue,
+}>;
+type NewValue<T> = T | DefaultValue | Promise<T | DefaultValue>;
+type NewValueOrUpdater<T> = T | DefaultValue | Promise<T | DefaultValue> | ((T | DefaultValue) => T | DefaultValue); // Effect is called the first time a node is used with a <RecoilRoot>
+
+export type AtomEffect<T> = ({
+  node: RecoilState<T>,
+  trigger: 'set' | 'get',
+  // Call synchronously to initialize value or async to change it later
+  setSelf: (T | DefaultValue | Promise<T | DefaultValue> | ((T | DefaultValue) => T | DefaultValue)) => void,
+  resetSelf: () => void,
+  // Subscribe callbacks to events.
+  // Atom effect observers are called before global transaction observers
+  onSet: ((newValue: T | DefaultValue, oldValue: T | DefaultValue) => void) => void,
+}) => void; // TODO Allow returning a cleanup function
+
+export type AtomOptions<T> = $ReadOnly<{
+  key: NodeKey,
+  default: RecoilValue<T> | Promise<T> | T,
+  effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>>,
+  persistence_UNSTABLE?: PersistenceSettings<T>,
+  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
+  dangerouslyAllowMutability?: boolean,
+}>;
+type BaseAtomOptions<T> = $ReadOnly<{ ...AtomOptions<T>,
+  default: T | Promise<T>,
+}>;
+declare function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T>; // prettier-ignore
+
+declare function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+type AtomWithFallbackOptions<T> = $ReadOnly<{ ...AtomOptions<T>,
+  default: RecoilValue<T> | Promise<T>,
+}>;
+declare function atomWithFallback<T>(options: AtomWithFallbackOptions<T>): RecoilState<T>;
+module.exports = atom;

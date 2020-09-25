@@ -1,0 +1,61 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict'; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
+
+import type { CacheImplementation } from '../caches/Recoil_Cache';
+import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
+import type { AtomEffect, AtomOptions } from './Recoil_atom'; // @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
+
+const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
+
+const {
+  DEFAULT_VALUE,
+  DefaultValue
+} = require('../core/Recoil_Node');
+
+const stableStringify = require('../util/Recoil_stableStringify');
+
+const atom = require('./Recoil_atom');
+
+const selectorFamily = require('./Recoil_selectorFamily');
+
+type Primitive = void | null | boolean | number | string;
+export type Parameter = Primitive | $ReadOnlyArray<Parameter> | $ReadOnly<{
+  [string]: Parameter,
+  ...
+}>; // flowlint unclear-type:off
+
+export type ParameterizedScopeRules<P> = $ReadOnlyArray<RecoilValue<$ReadOnlyArray<any>> | $ReadOnlyArray<RecoilValue<any> | ((P) => RecoilValue<any>)>>; // flowlint unclear-type:error
+
+export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{ ...AtomOptions<T>,
+  default: RecoilValue<T> | Promise<T> | T | ((P) => T | RecoilValue<T> | Promise<T>),
+  effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>> | ((P) => $ReadOnlyArray<AtomEffect<T>>),
+}>; // Process scopeRules to handle any entries which are functions taking parameters
+
+declare function mapScopeRules<P>(scopeRules?: ParameterizedScopeRules<P>, param: P): ScopeRules | void;
+/*
+A function which returns an atom based on the input parameter.
+
+Each unique parameter returns a unique atom. E.g.,
+
+  const f = atomFamily(...);
+  f({a: 1}) => an atom
+  f({a: 2}) => a different atom
+
+This allows components to persist local, private state using atoms.  Each
+instance of the component may have a different key, which it uses as the
+parameter for a family of atoms; in this way, each component will have
+its own atom not shared by other instances.  These state keys may be composed
+into children's state keys as well.
+*/
+
+declare function atomFamily<T, P: Parameter>(options: AtomFamilyOptions<T, P>): (P) => RecoilState<T>;
+module.exports = atomFamily;

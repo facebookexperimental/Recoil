@@ -1,0 +1,26 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Utility for traversing the dependency graph starting at some key.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { Graph } from '../core/Recoil_Graph';
+import type { NodeKey } from '../core/Recoil_State';
+type DepGraph = $PropertyType<Graph, 'nodeDeps'>;
+type VisitInfo = $ReadOnly<{
+  key: NodeKey,
+  deps: $ReadOnlySet<NodeKey>,
+}>;
+type OnVisit = (VisitInfo) => ?StopTraversing;
+opaque type StopTraversing = string;
+declare function traverseDepGraph(depGraph: DepGraph, initialKeys: NodeKey[], onVisit: OnVisit): void;
+traverseDepGraph.STOP_TRAVERSING = ('__stopTraversing': StopTraversing);
+module.exports = traverseDepGraph;

@@ -1,0 +1,28 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { NodeKey } from './Recoil_State'; // eslint-disable-next-line no-unused-vars
+
+declare class AbstractRecoilValue<+T> {
+  key: NodeKey,
+  constructor(newKey: NodeKey): any,
+}
+declare class RecoilState<T> extends AbstractRecoilValue<T> {}
+declare class RecoilValueReadOnly<+T> extends AbstractRecoilValue<T> {}
+export type RecoilValue<T> = RecoilValueReadOnly<T> | RecoilState<T>;
+declare function isRecoilValue(x: mixed): boolean;
+module.exports = {
+  AbstractRecoilValue,
+  RecoilState,
+  RecoilValueReadOnly,
+  isRecoilValue
+};

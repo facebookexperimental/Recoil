@@ -1,0 +1,192 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { Loadable } from '../adt/Recoil_Loadable';
+import type { RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
+
+const {
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue
+} = require('../adt/Recoil_Loadable');
+
+const gkx = require('../util/Recoil_gkx');
+
+const isPromise = require('../util/Recoil_isPromise');
+
+const selectorFamily = require('./Recoil_selectorFamily'); /////////////////
+//  TRUTH TABLE
+/////////////////
+// Dependencies        waitForNone         waitForAny        waitForAll
+//  [loading, loading]  [Promise, Promise]  Promise           Promise
+//  [value, loading]    [value, Promise]    [value, Promise]  Promise
+//  [value, value]      [value, value]      [value, value]    [value, value]
+//
+//  [error, loading]    [Error, Promise]    Promise           Error
+//  [error, error]      [Error, Error]      Error             Error
+//  [value, error]      [value, Error]      [value, Error]    Error
+// Issue parallel requests for all dependencies and return the current
+// status if they have results, have some error, or are still pending.
+
+
+declare function concurrentRequests(getRecoilValue: any, deps: any): any;
+declare function isError(exp: any): any;
+declare function unwrapDependencies(dependencies: any): $ReadOnlyArray<RecoilValue<mixed>>;
+declare function getValueFromLoadablePromiseResult(result: any): any;
+declare function wrapResults(dependencies: any, results: any): any;
+declare function wrapLoadables(dependencies: any, results: any, exceptions: any): any; // Selector that requests all dependencies in parallel and immediately returns
+// current results without waiting.
+
+const waitForNone: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $ReadOnly<{
+  [string]: RecoilValueReadOnly<mixed>,
+  ...
+}>>(RecoilValues) => RecoilValueReadOnly<$ReadOnlyArray<Loadable<mixed>> | $ReadOnly<{
+  [string]: Loadable<mixed>,
+  ...
+}>> = selectorFamily({
+  key: '__waitForNone',
+  get: dependencies => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // Always return the current status of the results; never block.
+
+    return wrapLoadables(dependencies, results, exceptions);
+  }
+}); // Selector that requests all dependencies in parallel and waits for at least
+// one to be available before returning results.  It will only error if all
+// dependencies have errors.
+
+const waitForAny: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $ReadOnly<{
+  [string]: RecoilValueReadOnly<mixed>,
+  ...
+}>>(RecoilValues) => RecoilValueReadOnly<$ReadOnlyArray<mixed> | $ReadOnly<{
+  [string]: mixed,
+  ...
+}>> = selectorFamily({
+  key: '__waitForAny',
+  get: dependencies => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    // Exceptions can either be Promises of pending results or real errors
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // If any results are available, return the current status
+
+    if (exceptions.some(exp => exp == null)) {
+      return wrapLoadables(dependencies, results, exceptions);
+    } // Since we are waiting for any results, only throw an error if all
+    // dependencies have an error.  Then, throw the first one.
+
+
+    if (exceptions.every(isError)) {
+      throw exceptions.find(isError);
+    }
+
+    if (gkx('recoil_async_selector_refactor')) {
+      // Otherwise, return a promise that will resolve when the next result is
+      // available, whichever one happens to be next.  But, if all pending
+      // dependencies end up with errors, then reject the promise.
+      return new Promise((resolve, reject) => {
+        for (const [i, exp] of exceptions.entries()) {
+          if (isPromise(exp)) {
+            exp.then(result => {
+              results[i] = getValueFromLoadablePromiseResult(result);
+              exceptions[i] = null;
+              resolve(wrapLoadables(dependencies, results, exceptions));
+            }).catch(error => {
+              exceptions[i] = error;
+
+              if (exceptions.every(isError)) {
+                reject(exceptions[0]);
+              }
+            });
+          }
+        }
+      });
+    } else {
+      throw new Promise((resolve, reject) => {
+        for (const [i, exp] of exceptions.entries()) {
+          if (isPromise(exp)) {
+            exp.then(result => {
+              results[i] = result;
+              exceptions[i] = null;
+              resolve(wrapLoadables(dependencies, results, exceptions));
+            }).catch(error => {
+              exceptions[i] = error;
+
+              if (exceptions.every(isError)) {
+                reject(exceptions[0]);
+              }
+            });
+          }
+        }
+      });
+    }
+  }
+}); // Selector that requests all dependencies in parallel and waits for all to be
+// available before returning a value.  It will error if any dependencies error.
+
+const waitForAll: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $ReadOnly<{
+  [string]: RecoilValueReadOnly<mixed>,
+  ...
+}>>(RecoilValues) => RecoilValueReadOnly<$ReadOnlyArray<mixed> | $ReadOnly<{
+  [string]: mixed,
+  ...
+}>> = selectorFamily({
+  key: '__waitForAll',
+  get: dependencies => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    // Exceptions can either be Promises of pending results or real errors
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // If all results are available, return the results
+
+    if (exceptions.every(exp => exp == null)) {
+      return wrapResults(dependencies, results);
+    } // If we have any errors, throw the first error
+
+
+    const error = exceptions.find(isError);
+
+    if (error != null) {
+      throw error;
+    }
+
+    if (gkx('recoil_async_selector_refactor')) {
+      // Otherwise, return a promise that will resolve when all results are available
+      return Promise.all(exceptions).then(results => wrapResults(dependencies, results.map(getValueFromLoadablePromiseResult)));
+    } else {
+      throw Promise.all(exceptions).then(results => wrapResults(dependencies, results));
+    }
+  }
+});
+const noWait: (RecoilValue<mixed>) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
+  key: '__noWait',
+  get: dependency => ({
+    get
+  }) => {
+    try {
+      return loadableWithValue(get(dependency));
+    } catch (exception) {
+      return isPromise(exception) ? loadableWithPromise(exception) : loadableWithError(exception);
+    }
+  }
+});
+module.exports = {
+  waitForNone,
+  waitForAny,
+  waitForAll,
+  noWait
+};

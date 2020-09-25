@@ -1,0 +1,17 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Wraps another recoil value and prevents writing to it.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { RecoilValue, RecoilValueReadOnly } from 'Recoil_RecoilValue';
+declare function readOnlySelector<T>(atom: RecoilValue<T>): RecoilValueReadOnly<T>;
+module.exports = readOnlySelector;

@@ -1,0 +1,80 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { Loadable } from '../adt/Recoil_Loadable';
+import type { DependencyMap } from './Recoil_GraphTypes';
+import type { RecoilValue } from './Recoil_RecoilValue';
+import type { AtomValues, NodeKey, Store, TreeState } from './Recoil_State';
+
+const expectationViolation = require('../util/Recoil_expectationViolation');
+
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
+
+const RecoilValueClasses = require('./Recoil_RecoilValue');
+
+declare class DefaultValue {}
+const DEFAULT_VALUE: DefaultValue = new DefaultValue();
+declare class RecoilValueNotReady extends Error {
+  constructor(key: string): any
+}
+export type PersistenceType = 'none' | 'url';
+export type PersistenceInfo = $ReadOnly<{
+  type: PersistenceType,
+  backButton?: boolean,
+}>;
+export type ReadOnlyNodeOptions<T> = $ReadOnly<{
+  key: NodeKey,
+  // Returns the current value without evaluating or modifying state
+  peek: (Store, TreeState) => ?Loadable<T>,
+  // Returns the discovered deps and the loadable value of the node
+  get: (Store, TreeState) => [DependencyMap, Loadable<T>],
+  // Informs the node to invalidate any caches it has within its own closure,
+  // in cases other than when `set` is called (when this will not be)
+  invalidate?: () => void,
+  shouldRestoreFromSnapshots: boolean,
+  dangerouslyAllowMutability?: boolean,
+  persistence_UNSTABLE?: PersistenceInfo,
+}>;
+export type ReadWriteNodeOptions<T> = $ReadOnly<{ ...ReadOnlyNodeOptions<T>,
+  // Returns the discovered deps and the set of key-value pairs to be written.
+  // (Deps may be discovered since selectors get an updater function which has
+  //  the ability to read other atoms, which may have deps.)
+  set: (store: Store, state: TreeState, newValue: T | DefaultValue) => [DependencyMap, AtomValues],
+}>;
+type Node<T> = ReadOnlyNodeOptions<T> | ReadWriteNodeOptions<T>; // flowlint-next-line unclear-type:off
+
+const nodes: Map<string, Node<any>> = new Map(); // flowlint-next-line unclear-type:off
+
+const recoilValues: Map<string, RecoilValue<any>> = new Map();
+/* eslint-disable no-redeclare */
+
+declare function registerNode<T>(node: ReadWriteNodeOptions<T>): RecoilValueClasses.RecoilState<T>;
+declare function registerNode<T>(node: ReadOnlyNodeOptions<T>): RecoilValueClasses.RecoilValueReadOnly<T>;
+declare function registerNode<T>(node: Node<T>): RecoilValue<T>;
+/* eslint-enable no-redeclare */
+
+declare class NodeMissingError extends Error {} // flowlint-next-line unclear-type:off
+
+declare function getNode(key: NodeKey): Node<any>; // flowlint-next-line unclear-type:off
+
+declare function getNodeMaybe(key: NodeKey): void | Node<any>;
+module.exports = {
+  nodes,
+  recoilValues,
+  registerNode,
+  getNode,
+  getNodeMaybe,
+  NodeMissingError,
+  DefaultValue,
+  DEFAULT_VALUE,
+  RecoilValueNotReady
+};

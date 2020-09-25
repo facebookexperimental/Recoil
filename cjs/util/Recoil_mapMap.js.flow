@@ -1,0 +1,18 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict
+ * @format
+ */
+'use strict';
+/**
+ * Returns a new Map object with the same keys as the original, but with the
+ * values replaced with the output of the given callback function.
+ */
+
+declare function mapMap<TKey, TValue, TValueOut>(map: $ReadOnlyMap<TKey, TValue>, callback: (value: TValue, key: TKey) => TValueOut): Map<TKey, TValueOut>;
+module.exports = mapMap;

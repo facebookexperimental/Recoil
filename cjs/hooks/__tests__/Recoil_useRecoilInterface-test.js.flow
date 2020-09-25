@@ -1,0 +1,84 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+const React = require('React');
+
+const {
+  useRef,
+  useState
+} = require('React');
+
+const {
+  act
+} = require('ReactTestUtils');
+
+const atom = require('../../recoil_values/Recoil_atom');
+
+const {
+  renderElements
+} = require('../../testing/Recoil_TestingUtils');
+
+const {
+  useRecoilInterface
+} = require('../Recoil_Hooks');
+
+const counterAtom = atom({
+  key: `counterAtom`,
+  default: 0
+});
+test('Interface for non-react code - useRecoilState', () => {
+  declare function nonReactCode(recoilInterface: any): any;
+  let updateValue;
+  declare var Component: () => any;
+  const container = renderElements(<Component />);
+  expect(container.textContent).toEqual('0');
+  act(() => updateValue(1));
+  expect(container.textContent).toEqual('1');
+});
+test('Interface for non-react code - useRecoilStateNoThrow', () => {
+  declare function nonReactCode(recoilInterface: any): any;
+  let updateValue;
+  declare var Component: () => any;
+  const container = renderElements(<Component />);
+  expect(container.textContent).toEqual('0');
+  act(() => updateValue(1));
+  expect(container.textContent).toEqual('1');
+});
+test('Interface for non-react code - useRecoilValue, useSetRecoilState', () => {
+  declare function nonReactCode(recoilInterface: any): any;
+  let updateValue;
+  declare var Component: () => any;
+  const container = renderElements(<Component />);
+  expect(container.textContent).toEqual('0');
+  act(() => updateValue(1));
+  expect(container.textContent).toEqual('1');
+});
+test('Interface for non-react code - useRecoilValueNoThrow', () => {
+  declare function nonReactCode(recoilInterface: any): any;
+  let updateValue;
+  declare var Component: () => any;
+  const container = renderElements(<Component />);
+  expect(container.textContent).toEqual('0');
+  act(() => updateValue(1));
+  expect(container.textContent).toEqual('1');
+}); // Test that we always get a consistent instance of the interface object and
+// hooks from useRecoilInterface() (at least for a given <AppRoot> store)
+
+test('Consistent interface object', () => {
+  let setValue;
+  declare var Component: () => any;
+  const out = renderElements(<Component />);
+  expect(out.textContent).toBe('0');
+  act(() => setValue(1)); // Force a re-render of the Component
+
+  expect(out.textContent).toBe('1');
+});

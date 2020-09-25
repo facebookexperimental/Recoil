@@ -1,0 +1,28 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Implements (a subset of) the interface of built-in Map but supports arrays as
+ * keys. Two keys are equal if corresponding elements are equal according to the
+ * equality semantics of built-in Map. Operations are at worst O(n*b) where n is
+ * the array length and b is the complexity of the built-in operation.
+ *
+ * @emails oncall+recoil
+ * @flow
+ * @format
+ */
+'use strict'; // eslint-disable-next-line fb-www/no-symbol
+
+const LEAF = Symbol('ArrayKeyedMap');
+const emptyMap = new Map();
+declare class ArrayKeyedMap<V> {
+  constructor(existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>): ArrayKeyedMap<V>,
+  get(key: mixed): V | void,
+  set(key: mixed, value: V): any,
+  delete(key: mixed): any,
+  entries(): Iterator<[$ReadOnlyArray<mixed>, V]>,
+  toBuiltInMap(): Map<$ReadOnlyArray<mixed>, V>,
+}
+module.exports = ArrayKeyedMap;
