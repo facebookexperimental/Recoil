@@ -23,7 +23,8 @@
     "flow": "flow --show-all-errors",
     "flow:restart": "flow stop && npm run flow",
     "test:typescript": "dtslint typescript",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "deploy-nightly": "yarn build && node scripts/deploy_nightly_build.js"
   },
   "peerDependencies": {
     "react": "^16.13.1"
