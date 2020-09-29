@@ -54,7 +54,7 @@ function peekNodeLoadable<T>(
 
 // Write value directly to state bypassing the Node interface as the node
 // definitions may not have been loaded yet when processing the initial snapshot.
-function setUnvalidatedAtomValue<T>(
+function setUnvalidatedAtomValue_DEPRECATED<T>(
   state: TreeState,
   key: NodeKey,
   newValue: T,
@@ -123,7 +123,7 @@ module.exports = {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
-  setUnvalidatedAtomValue,
   cleanUpNode,
+  setUnvalidatedAtomValue_DEPRECATED,
   getDownstreamNodes,
 };

@@ -25,7 +25,7 @@ const {
   cleanUpNode,
   getDownstreamNodes,
   setNodeValue,
-  setUnvalidatedAtomValue,
+  setUnvalidatedAtomValue_DEPRECATED,
 } = require('../core/Recoil_FunctionalCore');
 const {graph, saveDependencyMapToStore} = require('../core/Recoil_Graph');
 const {cloneGraph} = require('../core/Recoil_Graph');
@@ -230,8 +230,9 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
       };
     },
     setUnvalidatedAtomValues: atomValues => {
+      // FIXME replace this with a mutative loop
       atomValues.forEach((v, k) => {
-        initial.currentTree = setUnvalidatedAtomValue(
+        initial.currentTree = setUnvalidatedAtomValue_DEPRECATED(
           initial.currentTree,
           k,
           v,
