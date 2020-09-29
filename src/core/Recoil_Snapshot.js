@@ -187,19 +187,18 @@ class Snapshot {
     const {key} = recoilValue;
     const state = this._store.getState().currentTree;
     const graph = this._store.getGraph(state.version);
-    const type = this._store.getState().knownAtoms.has(key)
-      ? 'atom'
-      : this._store.getState().knownSelectors.has(key)
-      ? 'selector'
-      : undefined;
     return {
       loadable: peekNodeLoadable(this._store, state, key),
       isActive:
         this._store.getState().knownAtoms.has(key) ||
         this._store.getState().knownSelectors.has(key),
-      isSet: type === 'selector' ? false : state.atomValues.has(key),
+      isSet: state.atomValues.has(key),
       isModified: state.dirtyAtoms.has(key),
-      type,
+      type: this._store.getState().knownAtoms.has(key)
+        ? 'atom'
+        : this._store.getState().knownSelectors.has(key)
+        ? 'selector'
+        : undefined,
       // Don't use this.getDeps() as it will evaluate the node and we are only peeking
       deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
       subscribers: this.getSubscribers_UNSTABLE(recoilValue),

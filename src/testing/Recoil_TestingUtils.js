@@ -23,9 +23,6 @@ const {
   RecoilRoot,
   sendEndOfBatchNotifications_FOR_TESTING,
 } = require('../core/Recoil_RecoilRoot.react');
-const {
-  invalidateDownstreams_FOR_TESTING,
-} = require('../core/Recoil_RecoilValueInterface');
 const {makeEmptyStoreState} = require('../core/Recoil_State');
 const {
   useRecoilValue,
@@ -45,7 +42,6 @@ function makeStore(): Store {
     replaceState: replacer => {
       const storeState = store.getState();
       storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
-      invalidateDownstreams_FOR_TESTING(store, storeState.currentTree);
       sendEndOfBatchNotifications_FOR_TESTING(store);
     },
     getGraph: version => {

@@ -48,9 +48,9 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   // Clean up the node when it is removed from a <RecoilRoot>
   cleanUp: Store => void,
 
-  // Informs the node to invalidate any caches as needed in case either it is
-  // set or it has an upstream dependency that was set. (Called at batch end.)
-  invalidate?: TreeState => void,
+  // Informs the node to invalidate any caches it has within its own closure,
+  // in cases other than when `set` is called (when this will not be)
+  invalidate?: () => void,
 
   shouldRestoreFromSnapshots: boolean,
 

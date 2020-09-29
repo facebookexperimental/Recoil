@@ -19,7 +19,6 @@ import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
 
-const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
 const {
   useRecoilMutableSource,
@@ -35,6 +34,7 @@ const {
   subscribeToRecoilValue,
 } = require('../core/Recoil_RecoilValueInterface');
 const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
+const {batchUpdates} = require('../core/Recoil_Batching');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const differenceSets = require('../util/Recoil_differenceSets');
 const expectationViolation = require('../util/Recoil_expectationViolation');

@@ -193,11 +193,7 @@ function selector<T>(
     }
   }
 
-  function putIntoCache(
-    state: TreeState,
-    cacheKey: CacheKey,
-    loadable: Loadable<T>,
-  ) {
+  function putIntoCache(cacheKey: CacheKey, loadable: Loadable<T>) {
     if (loadable.state !== 'loading') {
       // Synchronous result
       if (__DEV__) {
@@ -264,9 +260,6 @@ function selector<T>(
     }
 
     cache = cache.set(cacheKey, loadable);
-    if (loadable.state !== 'loading') {
-      state.atomValues.set(key, loadable);
-    }
   }
 
   function getFromCacheOrEvaluate(
@@ -313,7 +306,7 @@ function selector<T>(
     // Save result in cache
     const newCacheKey = cacheKeyFromDepValues(newDepValues);
     letStoreBeNotifiedWhenAsyncSettles(store, loadable);
-    putIntoCache(state, newCacheKey, loadable);
+    putIntoCache(newCacheKey, loadable);
     return [dependencyMap, loadable];
   }
 
@@ -429,22 +422,11 @@ function selector<T>(
     return cache.get(cacheKey);
   }
 
-  function invalidate(state: TreeState) {
-    state.atomValues.delete(key);
-  }
-
   function myGet(store: Store, state: TreeState): [DependencyMap, Loadable<T>] {
     initSelector(store);
-
-    // First-level cache: Have we already evaluated the selector since being
-    // invalidated due to a dependency changing?
-    const cached = state.atomValues.get(key);
-    if (cached !== undefined) {
-      return [new Map(), cached];
-    }
-
-    // Second-level cache based on looking up current dependencies in a map
-    // and evaluating selector if missing.
+    // TODO memoize a value if no deps have changed to avoid a cache lookup
+    // Lookup the node value in the cache.  If not there, then compute
+    // the value and update the state with any changed node subscriptions.
     if (__DEV__) {
       return detectCircularDependencies(() =>
         getFromCacheOrEvaluate(store, state),
@@ -510,7 +492,6 @@ function selector<T>(
       peek: myPeek,
       get: myGet,
       set: mySet,
-      invalidate,
       cleanUp: () => {},
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
@@ -520,7 +501,6 @@ function selector<T>(
       key,
       peek: myPeek,
       get: myGet,
-      invalidate,
       cleanUp: () => {},
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
