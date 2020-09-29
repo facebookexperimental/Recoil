@@ -4,11 +4,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * Logic for reading, writing, and subscribing to atoms within the context of
- * a particular React render tree. EVERYTHING IN THIS MODULE SHOULD BE PURE
- * FUNCTIONS BETWEEN IMMUTABLE TreeState VALUES. It is permissible to call
- * `getAtomDef` because atom definitions are constant.
- *
  * @emails oncall+recoil
  * @flow strict-local
  * @format
@@ -60,7 +55,7 @@ function setUnvalidatedAtomValue_DEPRECATED<T>(
   newValue: T,
 ): TreeState {
   const node = getNodeMaybe(key);
-  node?.invalidate?.();
+  node?.invalidate?.(state);
 
   return {
     ...state,

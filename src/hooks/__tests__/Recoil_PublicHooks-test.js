@@ -23,6 +23,7 @@ const {useEffect, useState} = require('React');
 const {act} = require('ReactTestUtils');
 
 const Queue = require('../../adt/Recoil_Queue');
+const {batchUpdates} = require('../../core/Recoil_Batching');
 const atom = require('../../recoil_values/Recoil_atom');
 const errorSelector = require('../../recoil_values/Recoil_errorSelector');
 const selector = require('../../recoil_values/Recoil_selector');
@@ -34,7 +35,6 @@ const {
   renderElements,
   renderElementsWithSuspenseCount,
 } = require('../../testing/Recoil_TestingUtils');
-const {batchUpdates} = require('../../core/Recoil_Batching');
 const gkx = require('../../util/Recoil_gkx');
 const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 const {
