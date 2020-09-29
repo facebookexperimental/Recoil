@@ -18,7 +18,11 @@ const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
-const {getNodeLoadable, setNodeValue} = require('./Recoil_FunctionalCore');
+const {
+  getDownstreamNodes,
+  getNodeLoadable,
+  setNodeValue,
+} = require('./Recoil_FunctionalCore');
 const {saveDependencyMapToStore} = require('./Recoil_Graph');
 const {getNodeMaybe} = require('./Recoil_Node');
 const {DefaultValue, RecoilValueNotReady} = require('./Recoil_Node');
@@ -147,7 +151,7 @@ function applyAction(store: Store, state: TreeState, action: Action<mixed>) {
       unvalidatedValue,
     } = action;
     const node = getNodeMaybe(key);
-    node?.invalidate?.();
+    node?.invalidate?.(state);
     state.atomValues.delete(key);
     state.nonvalidatedAtoms.set(key, unvalidatedValue);
     state.dirtyAtoms.add(key);
@@ -173,6 +177,17 @@ function writeLoadableToTreeState(
   state.nonvalidatedAtoms.delete(key);
 }
 
+function applyActionsToStore(store, actions) {
+  store.replaceState(state => {
+    const newState = copyTreeState(state);
+    for (const action of actions) {
+      applyAction(store, newState, action);
+    }
+    invalidateDownstreams(store, newState);
+    return newState;
+  });
+}
+
 function queueOrPerformStateUpdate(
   store: Store,
   action: Action<mixed>,
@@ -187,13 +202,7 @@ function queueOrPerformStateUpdate(
     }
     actions.push(action);
   } else {
-    Tracing.trace(message, key, () =>
-      store.replaceState(state => {
-        const newState = copyTreeState(state);
-        applyAction(store, newState, action);
-        return newState;
-      }),
-    );
+    Tracing.trace(message, key, () => applyActionsToStore(store, [action]));
   }
 }
 
@@ -204,13 +213,7 @@ function batchStart(): () => void {
   return () => {
     for (const [store, actions] of actionsByStore) {
       Tracing.trace('Recoil batched updates', '-', () =>
-        store.replaceState(state => {
-          const newState = copyTreeState(state);
-          for (const action of actions) {
-            applyAction(store, newState, action);
-          }
-          return newState;
-        }),
+        applyActionsToStore(store, actions),
       );
     }
     const popped = batchStack.pop();
@@ -227,6 +230,15 @@ function copyTreeState(state) {
     nonvalidatedAtoms: new Map(state.nonvalidatedAtoms),
     dirtyAtoms: new Set(state.dirtyAtoms),
   };
+}
+
+function invalidateDownstreams(store: Store, state: TreeState): void {
+  // Inform any nodes that were changed or downstream of changes so that they
+  // can clear out any caches as needed due to the update:
+  const downstreams = getDownstreamNodes(store, state, state.dirtyAtoms);
+  for (const key of downstreams) {
+    getNodeMaybe(key)?.invalidate?.(state);
+  }
 }
 
 function setRecoilValue<T>(
@@ -348,4 +360,5 @@ module.exports = {
   isRecoilValue,
   applyAtomValueWrites, // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
   batchStart,
+  invalidateDownstreams_FOR_TESTING: invalidateDownstreams,
 };

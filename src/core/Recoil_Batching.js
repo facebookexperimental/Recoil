@@ -18,8 +18,6 @@ let batcher = unstable_batchedUpdates;
 type Callback = () => any;
 type Batcher = (callback: Callback) => void;
 
-const batchHandlers = [];
-
 /**
  * Sets the provided batcher function as the batcher function used by Recoil.
  *
@@ -51,13 +49,8 @@ const batchUpdates: Callback => void = (callback: Callback) => {
   });
 };
 
-function registerBatchHandler(handler: () => void | (() => void)): void {
-  batchHandlers.push(handler);
-}
-
 module.exports = {
   getBatcher,
   setBatcher,
   batchUpdates,
-  registerBatchHandler,
 };
