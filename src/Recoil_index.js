@@ -38,6 +38,7 @@ export type {
   SelectorFamilyOptions,
 } from './recoil_values/Recoil_selectorFamily';
 
+const {batchUpdates, setBatcher} = require('./core/Recoil_Batching');
 const {DefaultValue} = require('./core/Recoil_Node');
 const {RecoilRoot} = require('./core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
@@ -69,7 +70,6 @@ const {
   waitForAny,
   waitForNone,
 } = require('./recoil_values/Recoil_WaitFor');
-const {batchUpdates, setBatcher} = require('./util/Recoil_batcher');
 
 module.exports = {
   // Types
