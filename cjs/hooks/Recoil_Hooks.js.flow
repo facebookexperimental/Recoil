@@ -17,8 +17,6 @@ import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
 import type { ComponentSubscription } from '../core/Recoil_RecoilValueInterface';
 import type { NodeKey, Store, TreeState } from '../core/Recoil_State';
 
-const React = require('React');
-
 const {
   useCallback,
   useEffect,
@@ -88,6 +86,8 @@ const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 const Tracing = require('../util/Recoil_Tracing');
+
+const useComponentName = require('../util/Recoil_useComponentName');
 
 declare function handleLoadable<T>(loadable: Loadable<T>, atom: any, storeRef: any): T;
 declare function validateRecoilValue(recoilValue: any, hookName: any): any;

@@ -61,7 +61,7 @@
     "eslint-plugin-flowtype": "^5.1.3",
     "eslint-plugin-jest": "^23.13.2",
     "eslint-plugin-react": "^7.20.0",
-    "flow-bin": "^0.126.1",
+    "flow-bin": "^0.129.0",
     "gen-flow-files": "^0.4.11",
     "husky": ">=4",
     "immutable": "^4.0.0-rc.12",

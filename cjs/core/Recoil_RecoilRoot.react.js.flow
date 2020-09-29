@@ -30,6 +30,7 @@ const {
 const Queue = require('../adt/Recoil_Queue');
 
 const {
+  cleanUpNode,
   getDownstreamNodes,
   setNodeValue,
   setUnvalidatedAtomValue

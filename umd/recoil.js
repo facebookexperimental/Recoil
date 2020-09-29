@@ -4,7 +4,7 @@
   (global = global || self, factory(global.Recoil = {}, global.React, global.ReactDOM));
 }(this, (function (exports, react, reactDom) { 'use strict';
 
-  react = react && Object.prototype.hasOwnProperty.call(react, 'default') ? react['default'] : react;
+  var react__default = 'default' in react ? react['default'] : react;
   reactDom = reactDom && Object.prototype.hasOwnProperty.call(reactDom, 'default') ? reactDom['default'] : reactDom;
 
   /**
@@ -338,6 +338,11 @@
     }
 
     return node.set(store, state, newValue);
+  }
+
+  function cleanUpNode(store, key) {
+    const node = getNode$1(key);
+    node.cleanUp(store);
   } // Find all of the recursively dependent nodes
 
 
@@ -367,6 +372,7 @@
     peekNodeLoadable,
     setNodeValue,
     setUnvalidatedAtomValue,
+    cleanUpNode,
     getDownstreamNodes
   };
 
@@ -813,7 +819,7 @@
 
   function subscribeToRecoilValue(store, {
     key
-  }, callback) {
+  }, callback, componentDebugName = null) {
     const subID = subscriptionID++;
     const storeState = store.getState();
 
@@ -821,7 +827,7 @@
       storeState.nodeToComponentSubscriptions.set(key, new Map());
     }
 
-    Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, ['TODO debug name', callback]);
+    Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]);
     return {
       release: () => {
         const storeState = store.getState();
@@ -1257,7 +1263,7 @@
     useMemo,
     useRef,
     useState
-  } = react; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+  } = react__default; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
   // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
   // @fb-only: const URI = require('URI');
 
@@ -1265,6 +1271,7 @@
 
 
   const {
+    cleanUpNode: cleanUpNode$1,
     getDownstreamNodes: getDownstreamNodes$2,
     setNodeValue: setNodeValue$2,
     setUnvalidatedAtomValue: setUnvalidatedAtomValue$2
@@ -1335,13 +1342,13 @@
     }
   }
 
-  const AppContext = react.createContext({
+  const AppContext = react__default.createContext({
     current: defaultStore
   });
 
   const useStoreRef = () => useContext(AppContext);
 
-  const MutableSourceContext = react.createContext(null); // TODO T2710559282599660
+  const MutableSourceContext = react__default.createContext(null); // TODO T2710559282599660
 
   const useRecoilMutableSource = () => useContext(MutableSourceContext);
 
@@ -1603,8 +1610,8 @@
     } // FIXME T2710559282599660
 
 
-    const createMutableSource = (_createMutableSource = react.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : // flowlint-line unclear-type:off
-    react.unstable_createMutableSource; // flowlint-line unclear-type:off
+    const createMutableSource = (_createMutableSource = react__default.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : // flowlint-line unclear-type:off
+    react__default.unstable_createMutableSource; // flowlint-line unclear-type:off
 
     const store = storeProp !== null && storeProp !== void 0 ? storeProp : {
       getState: () => storeState.current,
@@ -1615,12 +1622,18 @@
     };
     const storeRef = useRef(store);
     storeState = useRef(initializeState_DEPRECATED != null ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED) : initializeState != null ? initialStoreState(initializeState) : makeEmptyStoreState$2());
-    const mutableSource = useMemo(() => createMutableSource ? createMutableSource(storeState, () => storeState.current.currentTree.version) : null, [createMutableSource, storeState]);
-    return /*#__PURE__*/react.createElement(AppContext.Provider, {
+    const mutableSource = useMemo(() => createMutableSource ? createMutableSource(storeState, () => storeState.current.currentTree.version) : null, [createMutableSource, storeState]); // Cleanup when the <RecoilRoot> is unmounted
+
+    useEffect(() => () => {
+      for (const atomKey of storeRef.current.getState().knownAtoms) {
+        cleanUpNode$1(storeRef.current, atomKey);
+      }
+    }, []);
+    return /*#__PURE__*/react__default.createElement(AppContext.Provider, {
       value: storeRef
-    }, /*#__PURE__*/react.createElement(MutableSourceContext.Provider, {
+    }, /*#__PURE__*/react__default.createElement(MutableSourceContext.Provider, {
       value: mutableSource
-    }, /*#__PURE__*/react.createElement(Batcher, {
+    }, /*#__PURE__*/react__default.createElement(Batcher, {
       setNotifyBatcherOfChange: setNotifyBatcherOfChange
     }), children));
   }
@@ -1821,7 +1834,7 @@
 
 
   const useMutableSource = // flowlint-line unclear-type:off
-  (_useMutableSource = react.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react.unstable_useMutableSource; // flowlint-line unclear-type:off
+  (_useMutableSource = react__default.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react__default.unstable_useMutableSource; // flowlint-line unclear-type:off
 
   function mutableSourceExists() {
     return useMutableSource && !(typeof window !== 'undefined' && window.$disableRecoilValueMutableSource_TEMP_HACK_DO_NOT_USE);
@@ -1832,13 +1845,222 @@
     useMutableSource
   };
 
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * MIT License
+   *
+   * Copyright (c) 2014-2019 Georg Tavonius
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+
+  const UNKNOWN_FUNCTION = '<unknown>';
+  /**
+   * This parses the different stack traces and puts them into one format
+   * This borrows heavily from TraceKit (https://github.com/csnover/TraceKit)
+   */
+
+  function stackTraceParser(stackString) {
+    const lines = stackString.split('\n');
+    return lines.reduce((stack, line) => {
+      const parseResult = parseChrome(line) || parseWinjs(line) || parseGecko(line) || parseNode(line) || parseJSC(line);
+
+      if (parseResult) {
+        stack.push(parseResult);
+      }
+
+      return stack;
+    }, []);
+  }
+  const chromeRe = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+  const chromeEvalRe = /\((\S*)(?::(\d+))(?::(\d+))\)/;
+
+  function parseChrome(line) {
+    const parts = chromeRe.exec(line);
+
+    if (!parts) {
+      return null;
+    }
+
+    const isNative = parts[2] && parts[2].indexOf('native') === 0; // start of line
+
+    const isEval = parts[2] && parts[2].indexOf('eval') === 0; // start of line
+
+    const submatch = chromeEvalRe.exec(parts[2]);
+
+    if (isEval && submatch != null) {
+      // throw out eval line/column and use top-most line/column number
+      parts[2] = submatch[1]; // url
+
+      parts[3] = submatch[2]; // line
+
+      parts[4] = submatch[3]; // column
+    }
+
+    return {
+      file: !isNative ? parts[2] : null,
+      methodName: parts[1] || UNKNOWN_FUNCTION,
+      arguments: isNative ? [parts[2]] : [],
+      lineNumber: parts[3] ? +parts[3] : null,
+      column: parts[4] ? +parts[4] : null
+    };
+  }
+
+  const winjsRe = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:file|ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i;
+
+  function parseWinjs(line) {
+    const parts = winjsRe.exec(line);
+
+    if (!parts) {
+      return null;
+    }
+
+    return {
+      file: parts[2],
+      methodName: parts[1] || UNKNOWN_FUNCTION,
+      arguments: [],
+      lineNumber: +parts[3],
+      column: parts[4] ? +parts[4] : null
+    };
+  }
+
+  const geckoRe = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i;
+  const geckoEvalRe = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
+
+  function parseGecko(line) {
+    const parts = geckoRe.exec(line);
+
+    if (!parts) {
+      return null;
+    }
+
+    const isEval = parts[3] && parts[3].indexOf(' > eval') > -1;
+    const submatch = geckoEvalRe.exec(parts[3]);
+
+    if (isEval && submatch != null) {
+      // throw out eval line/column and use top-most line number
+      parts[3] = submatch[1];
+      parts[4] = submatch[2];
+      parts[5] = null; // no column when eval
+    }
+
+    return {
+      file: parts[3],
+      methodName: parts[1] || UNKNOWN_FUNCTION,
+      arguments: parts[2] ? parts[2].split(',') : [],
+      lineNumber: parts[4] ? +parts[4] : null,
+      column: parts[5] ? +parts[5] : null
+    };
+  }
+
+  const javaScriptCoreRe = /^\s*(?:([^@]*)(?:\((.*?)\))?@)?(\S.*?):(\d+)(?::(\d+))?\s*$/i;
+
+  function parseJSC(line) {
+    const parts = javaScriptCoreRe.exec(line);
+
+    if (!parts) {
+      return null;
+    }
+
+    return {
+      file: parts[3],
+      methodName: parts[1] || UNKNOWN_FUNCTION,
+      arguments: [],
+      lineNumber: +parts[4],
+      column: parts[5] ? +parts[5] : null
+    };
+  }
+
+  const nodeRe = /^\s*at (?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
+
+  function parseNode(line) {
+    const parts = nodeRe.exec(line);
+
+    if (!parts) {
+      return null;
+    }
+
+    return {
+      file: parts[2],
+      methodName: parts[1] || UNKNOWN_FUNCTION,
+      arguments: [],
+      lineNumber: +parts[3],
+      column: parts[4] ? +parts[4] : null
+    };
+  }
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+  function useComponentName() {
+    const nameRef = react.useRef();
+
+    {
+      var _nameRef$current;
+
+      if (nameRef.current === undefined) {
+        // There is no blessed way to determine the calling React component from
+        // within a hook. This hack uses the fact that hooks must start with 'use'
+        // and that hooks are either called by React Components or other hooks. It
+        // follows therefore, that to find the calling component, you simply need
+        // to look down the stack and find the first function which doesn't start
+        // with 'use'. We are only enabling this in dev for now, since once the
+        // codebase is minified, the naming assumptions no longer hold true.
+        // eslint-disable-next-line fb-www/no-new-error
+        const frames = stackTraceParser(new Error().stack);
+
+        for (const {
+          methodName
+        } of frames) {
+          // I observed cases where the frame was of the form 'Object.useXXX'
+          // hence why I'm searching for hooks following a word boundary
+          if (!methodName.match(/\buse[^\b]+$/)) {
+            return nameRef.current = methodName;
+          }
+        }
+
+        nameRef.current = null;
+      }
+
+      return (_nameRef$current = nameRef.current) !== null && _nameRef$current !== void 0 ? _nameRef$current : '<unable to determine component name>';
+    }
+  }
+
   const {
     useCallback,
     useEffect: useEffect$1,
     useMemo: useMemo$1,
     useRef: useRef$1,
     useState: useState$1
-  } = react;
+  } = react__default;
 
   const {
     DEFAULT_VALUE: DEFAULT_VALUE$2,
@@ -1902,6 +2124,8 @@
 
 
 
+
+
   function handleLoadable(loadable, atom, storeRef) {
     // We can't just throw the promise we are waiting on to Suspense.  If the
     // upstream dependencies change it may produce a state in which the component
@@ -1942,6 +2166,7 @@
         subscriptions.current.delete(key);
       }
     }, [storeRef, subscriptions]);
+    const componentName = useComponentName();
     useEffect$1(() => {
       const store = storeRef.current;
 
@@ -1963,7 +2188,7 @@
           Recoil_Tracing.trace('RecoilValue subscription fired', key, () => {
             updateState(state, key);
           });
-        });
+        }, componentName);
         subscriptions.current.set(key, sub);
         Recoil_Tracing.trace('initial update on subscribing', key, () => {
           /**
@@ -2088,15 +2313,16 @@
 
       return getRecoilValueAsLoadable$2(storeRef.current, recoilValue, storeRef.current.getState().currentTree);
     }, [storeRef, recoilValue]);
+    const componentName = useComponentName();
     const subscribe = useCallback((_something, callback) => {
       const store = storeRef.current;
       const sub = subscribeToRecoilValue$1(store, recoilValue, () => {
         Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
           callback();
         });
-      });
+      }, componentName);
       return () => sub.release(store);
-    }, [recoilValue, storeRef]);
+    }, [recoilValue, storeRef, componentName]);
     return useMutableSource$1(useRecoilMutableSource$1(), getValue, subscribe);
   }
 
@@ -2107,13 +2333,14 @@
 
     const storeRef = useStoreRef$1();
     const [_, forceUpdate] = useState$1([]);
+    const componentName = useComponentName();
     useEffect$1(() => {
       const store = storeRef.current;
       const sub = subscribeToRecoilValue$1(store, recoilValue, _state => {
         Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
           forceUpdate([]);
         });
-      });
+      }, componentName);
       Recoil_Tracing.trace('initial update on subscribing', recoilValue.key, () => {
         /**
          * Since we're subscribing in an effect we need to update to the latest
@@ -2434,7 +2661,7 @@
 
   const {
     useMemo: useMemo$2
-  } = react;
+  } = react__default;
 
   const {
     RecoilRoot: RecoilRoot$1,
@@ -2447,7 +2674,7 @@
       function RecoilBridge({
         children
       }) {
-        return /*#__PURE__*/react.createElement(RecoilRoot$1, {
+        return /*#__PURE__*/react__default.createElement(RecoilRoot$1, {
           store_INTERNAL: store
         }, children);
       }
@@ -2746,7 +2973,6 @@
   class ArrayKeyedMap {
     // @fb-only: _base: Map<any, any> = new Map();
     constructor(existing) {
-      // $FlowOSSFixMe
       this._base = new Map(); // @oss-only
 
       if (existing instanceof ArrayKeyedMap) {
@@ -2763,8 +2989,7 @@
     }
 
     get(key) {
-      const ks = Array.isArray(key) ? key : [key]; // $FlowOSSFixMe
-
+      const ks = Array.isArray(key) ? key : [key];
       let map = this._base;
       ks.forEach(k => {
         var _map$get;
@@ -2775,8 +3000,7 @@
     }
 
     set(key, value) {
-      const ks = Array.isArray(key) ? key : [key]; // $FlowOSSFixMe
-
+      const ks = Array.isArray(key) ? key : [key];
       let map = this._base;
       let next = map;
       ks.forEach(k => {
@@ -2794,8 +3018,7 @@
     }
 
     delete(key) {
-      const ks = Array.isArray(key) ? key : [key]; // $FlowOSSFixMe
-
+      const ks = Array.isArray(key) ? key : [key];
       let map = this._base;
       let next = map;
       ks.forEach(k => {
@@ -2824,8 +3047,7 @@
             recurse(v, prefix.concat(k));
           }
         });
-      } // $FlowOSSFixMe
-
+      }
 
       recurse(this._base, []);
       return answer.values();
@@ -3237,6 +3459,7 @@
         peek: myPeek,
         get: myGet,
         set: mySet,
+        cleanUp: () => {},
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
         shouldRestoreFromSnapshots: false
       });
@@ -3245,6 +3468,7 @@
         key,
         peek: myPeek,
         get: myGet,
+        cleanUp: () => {},
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
         shouldRestoreFromSnapshots: false
       });
@@ -3313,7 +3537,10 @@
       defaultLoadable = loadableWithError$2(error);
       throw error;
     })) : loadableWithValue$2(options.default);
-    let cachedAnswerForUnvalidatedValue = undefined;
+    let cachedAnswerForUnvalidatedValue = undefined; // Cleanup handlers for this atom
+    // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
+
+    const cleanupEffectsByStore = new Map();
 
     function wrapPendingPromise(store, promise) {
       const wrappedPromise = promise.then(value => {
@@ -3386,6 +3613,7 @@
 
         function onSet(handler) {
           store.subscribeToTransactions(currentStore => {
+            // eslint-disable-next-line prefer-const
             let {
               currentTree,
               previousTree
@@ -3413,13 +3641,17 @@
         for (const effect of (_options$effects_UNST = options.effects_UNSTABLE) !== null && _options$effects_UNST !== void 0 ? _options$effects_UNST : []) {
           var _options$effects_UNST;
 
-          effect({
+          const cleanup = effect({
             node,
             trigger,
             setSelf,
             resetSelf,
             onSet
           });
+
+          if (cleanup != null) {
+            cleanupEffectsByStore.set(store, cleanup);
+          }
         }
 
         duringInit = false;
@@ -3467,6 +3699,13 @@
       }
     }
 
+    function myCleanup(store) {
+      var _cleanupEffectsByStor;
+
+      (_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor === void 0 ? void 0 : _cleanupEffectsByStor();
+      cleanupEffectsByStore.delete(store);
+    }
+
     function invalidate() {
       cachedAnswerForUnvalidatedValue = undefined;
     }
@@ -3501,6 +3740,7 @@
       peek: myPeek,
       get: myGet,
       set: mySet,
+      cleanUp: myCleanup,
       invalidate,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       persistence_UNSTABLE: options.persistence_UNSTABLE ? {

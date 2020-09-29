@@ -46,7 +46,8 @@ declare function setUnvalidatedAtomValue<T>(state: TreeState, key: NodeKey, newV
 // a node value. (Multiple values may be written due to selectors getting to
 // set upstreams; deps may be discovered because of reads in updater functions.)
 
-declare function setNodeValue<T>(store: Store, state: TreeState, key: NodeKey, newValue: T | DefaultValue): [DependencyMap, AtomValues]; // Find all of the recursively dependent nodes
+declare function setNodeValue<T>(store: Store, state: TreeState, key: NodeKey, newValue: T | DefaultValue): [DependencyMap, AtomValues];
+declare function cleanUpNode(store: Store, key: NodeKey): any; // Find all of the recursively dependent nodes
 
 declare function getDownstreamNodes(store: Store, state: TreeState, keys: $ReadOnlySet<NodeKey>): $ReadOnlySet<NodeKey>;
 module.exports = {
@@ -54,5 +55,6 @@ module.exports = {
   peekNodeLoadable,
   setNodeValue,
   setUnvalidatedAtomValue,
+  cleanUpNode,
   getDownstreamNodes
 };
