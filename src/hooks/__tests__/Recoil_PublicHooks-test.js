@@ -34,7 +34,7 @@ const {
   renderElements,
   renderElementsWithSuspenseCount,
 } = require('../../testing/Recoil_TestingUtils');
-const {batchUpdates} = require('../../core/Recoil_Batching');
+const {batchUpdates} = require('../../util/Recoil_batcher');
 const gkx = require('../../util/Recoil_gkx');
 const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 const {

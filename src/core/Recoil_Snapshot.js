@@ -20,12 +20,12 @@ import type {NodeKey} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
+const {batchUpdates} = require('../util/Recoil_batcher');
 const concatIterables = require('../util/Recoil_concatIterables');
 const filterIterable = require('../util/Recoil_filterIterable');
 const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
 const nullthrows = require('../util/Recoil_nullthrows');
-const {batchUpdates} = require('./Recoil_Batching');
 const {
   getDownstreamNodes,
   peekNodeLoadable,

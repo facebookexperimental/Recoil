@@ -12,7 +12,7 @@
 
 const {unstable_batchedUpdates} = require('ReactDOM');
 
-const {batchUpdates, getBatcher, setBatcher} = require('../Recoil_Batching');
+const {batchUpdates, getBatcher, setBatcher} = require('../Recoil_batcher');
 
 /**
  * Cleanup function that will reset the batcher back
