@@ -10,7 +10,7 @@
  */
 
 const {batchStart} = require('../core/Recoil_RecoilValueInterface');
-const {unstable_batchedUpdates} = require('./Recoil_ReactBatchedUpdates');
+const {unstable_batchedUpdates} = require('../util/Recoil_ReactBatchedUpdates');
 
 let batcher = unstable_batchedUpdates;
 
