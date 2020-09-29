@@ -14,10 +14,8 @@ const React = require('React');
 const {useRef, useState} = require('React');
 const {act} = require('ReactTestUtils');
 
-const {useStoreRef} = require('../../core/Recoil_RecoilRoot.react');
 const {
   atom,
-  atomFamily,
   selector,
   useRecoilCallback,
   useSetRecoilState,
@@ -274,44 +272,6 @@ describe('useRecoilCallback', () => {
     act(() => void cb());
     await flushPromisesAndTimers();
     expect(c.textContent).toEqual('"SET IN SNAPSHOT"');
-  });
-
-  test('Updates are batched', () => {
-    const family = atomFamily({
-      key: 'useRecoilCallback/batching/family',
-      default: 0,
-    });
-
-    let cb;
-    function RecoilCallback() {
-      cb = useRecoilCallback(({set}) => () => {
-        for (let i = 0; i < 100; i++) {
-          set(family(i), 1);
-        }
-      });
-    }
-
-    let store: any; // flowlint-line unclear-type:off
-    function GetStore() {
-      store = useStoreRef().current;
-    }
-
-    renderElements(
-      <>
-        <RecoilCallback />
-        <GetStore />
-      </>,
-    );
-
-    invariant(store, 'store should be initialized');
-    const originalReplaceState = store.replaceState;
-    store.replaceState = jest.fn(originalReplaceState);
-
-    expect(store.replaceState).toHaveBeenCalledTimes(0);
-    act(() => cb());
-    expect(store.replaceState).toHaveBeenCalledTimes(1);
-
-    store.replaceState = originalReplaceState;
   });
 });
 

@@ -5,11 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+recoil
- * @flow strict-local
+ * @flow strict
  * @format
+ *
+ * This is a stub for some integration into FB internal stuff
  */
 
-const {batchStart} = require('../core/Recoil_RecoilValueInterface');
 const {unstable_batchedUpdates} = require('./Recoil_ReactBatchedUpdates');
 
 let batcher = unstable_batchedUpdates;
@@ -17,8 +18,6 @@ let batcher = unstable_batchedUpdates;
 // flowlint-next-line unclear-type:off
 type Callback = () => any;
 type Batcher = (callback: Callback) => void;
-
-const batchHandlers = [];
 
 /**
  * Sets the provided batcher function as the batcher function used by Recoil.
@@ -39,25 +38,11 @@ const getBatcher: () => Batcher = () => batcher;
  * Calls the current batcher function and passes the
  * provided callback function.
  */
-const batchUpdates: Callback => void = (callback: Callback) => {
-  batcher(() => {
-    let batchEnd = () => undefined;
-    try {
-      batchEnd = batchStart();
-      callback();
-    } finally {
-      batchEnd();
-    }
-  });
-};
-
-function registerBatchHandler(handler: () => void | (() => void)): void {
-  batchHandlers.push(handler);
-}
+const batchUpdates: Callback => void = (callback: Callback) =>
+  batcher(callback);
 
 module.exports = {
   getBatcher,
   setBatcher,
   batchUpdates,
-  registerBatchHandler,
 };

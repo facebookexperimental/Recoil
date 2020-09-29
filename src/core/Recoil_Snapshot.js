@@ -20,7 +20,6 @@ import type {NodeKey} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
-const {batchUpdates} = require('../util/Recoil_batcher');
 const concatIterables = require('../util/Recoil_concatIterables');
 const filterIterable = require('../util/Recoil_filterIterable');
 const gkx = require('../util/Recoil_gkx');
@@ -208,7 +207,7 @@ class Snapshot {
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
     const mutableSnapshot = new MutableSnapshot(this);
-    mapper(mutableSnapshot); // if removing batchUpdates from `set` add it here
+    mapper(mutableSnapshot);
     return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
   };
 
@@ -244,8 +243,8 @@ function cloneStoreState(
       : treeState,
     nextTree: null,
     previousTree: null,
-    knownAtoms: new Set(storeState.knownAtoms), // FIXME here's a copy
-    knownSelectors: new Set(storeState.knownSelectors), // FIXME here's a copy
+    knownAtoms: new Set(storeState.knownAtoms),
+    knownSelectors: new Set(storeState.knownSelectors),
     transactionSubscriptions: new Map(),
     nodeTransactionSubscriptions: new Map(),
     nodeToComponentSubscriptions: new Map(),
@@ -292,20 +291,11 @@ class MutableSnapshot extends Snapshot {
     newValueOrUpdater: ValueOrUpdater<T>,
   ) => {
     const store = this.getStore_INTERNAL();
-    // This batchUpdates ensures this `set` is applied immediately and you can
-    // read the written value after calling `set`. I would like to remove this
-    // behavior and only batch in `Snapshot.map`, but this would be a breaking
-    // change potentially.
-    batchUpdates(() => {
-      setRecoilValue(store, recoilState, newValueOrUpdater);
-    });
+    setRecoilValue(store, recoilState, newValueOrUpdater);
   };
 
   reset: ResetRecoilState = recoilState =>
-    // See note at `set` about batched updates.
-    batchUpdates(() =>
-      setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE),
-    );
+    setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE);
 }
 
 module.exports = {
