@@ -1,13 +1,13 @@
-const package = require('../package.json');
+const packageJson = require('../package.json');
 const {execSync} = require('child_process');
 
 const DEST_FOLDER = 'nightly-build-files/';
 const DEST_BRANCH = 'nightly';
 
-const COMMIT_MSG = `Publishing a nightly build as ${package.version}`;
+const COMMIT_MSG = `Publishing a nightly build as ${packageJson.version}`;
 
 const SOURCES = ['CHANGELOG.md', 'LICENSE', 'README.md', 'package.json'].concat(
-  package.files,
+  packageJson.files,
 );
 
 const cwd = process.cwd();
@@ -18,7 +18,7 @@ execSync(`rm -rf ${DEST_FOLDER}`, {cwd});
 
 console.log(`Cloning the repository to "${DEST_FOLDER}" folder...`);
 execSync(
-  `git clone -b ${DEST_BRANCH} ${package.repository} ${DEST_FOLDER} --depth 1`,
+  `git clone -b ${DEST_BRANCH} ${packageJson.repository} ${DEST_FOLDER} --depth 1`,
   {cwd},
 );
 
@@ -31,7 +31,7 @@ execSync(
     `cd ${DEST_FOLDER}`,
     'git add .',
     `git commit --allow-empty -m "${COMMIT_MSG}"`,
-    `git push --tags ${package.repository} ${DEST_BRANCH}`,
+    `git push --tags ${packageJson.repository} ${DEST_BRANCH}`,
   ].join('&&'),
   {cwd},
 );
