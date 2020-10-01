@@ -44,7 +44,7 @@ function get(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue).contents;
 }
 
-function set(recoilValue, value) {
+function set(recoilValue, value: mixed) {
   setRecoilValue(store, recoilValue, value);
 }
 

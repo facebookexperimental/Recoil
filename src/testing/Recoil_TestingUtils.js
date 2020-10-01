@@ -9,7 +9,7 @@
  * @format
  */
 'use strict';
-
+import type {RecoilValueReadOnly} from 'Recoil_RecoilValue';
 import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
 import type {Store} from 'Recoil_State';
 
@@ -133,7 +133,10 @@ let id = 0;
 const errorThrowingAsyncSelector: <T, S>(
   string,
   ?RecoilValue<S>,
-) => RecoilValue<T> = <T, S>(msg, dep: ?RecoilValue<S>) =>
+) => RecoilValue<T> = <T, S>(
+  msg,
+  dep: ?RecoilValue<S>,
+): RecoilValueReadOnly<T> =>
   selector<T>({
     key: `AsyncErrorThrowingSelector${id++}`,
     get: ({get}) => {
@@ -144,7 +147,9 @@ const errorThrowingAsyncSelector: <T, S>(
     },
   });
 
-const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(value: T) =>
+const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
+  value: T,
+): RecoilValueReadOnly<T> | RecoilValueReadOnly<mixed> =>
   selector({
     key: `ResolvingSelector${id++}`,
     get: () => Promise.resolve(value),

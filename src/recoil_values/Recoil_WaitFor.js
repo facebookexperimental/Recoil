@@ -57,7 +57,11 @@ function isError(exp) {
   return exp != null && !isPromise(exp);
 }
 
-function unwrapDependencies(dependencies): $ReadOnlyArray<RecoilValue<mixed>> {
+function unwrapDependencies(
+  dependencies:
+    | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
+    | {+[string]: RecoilValueReadOnly<mixed>},
+): $ReadOnlyArray<RecoilValue<mixed>> {
   return Array.isArray(dependencies)
     ? dependencies
     : Object.getOwnPropertyNames(dependencies).map(key => dependencies[key]);
@@ -71,7 +75,12 @@ function getValueFromLoadablePromiseResult(result) {
   return result;
 }
 
-function wrapResults(dependencies, results) {
+function wrapResults(
+  dependencies:
+    | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
+    | {+[string]: RecoilValueReadOnly<mixed>},
+  results,
+) {
   return Array.isArray(dependencies)
     ? results
     : // Object.getOwnPropertyNames() has consistent key ordering with ES6
@@ -81,7 +90,13 @@ function wrapResults(dependencies, results) {
       );
 }
 
-function wrapLoadables(dependencies, results, exceptions) {
+function wrapLoadables(
+  dependencies:
+    | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
+    | {+[string]: RecoilValueReadOnly<mixed>},
+  results,
+  exceptions,
+) {
   const output = exceptions.map((exception, idx) =>
     exception == null
       ? loadableWithValue(results[idx])
@@ -104,7 +119,11 @@ const waitForNone: <
   $ReadOnlyArray<Loadable<mixed>> | $ReadOnly<{[string]: Loadable<mixed>, ...}>,
 > = selectorFamily({
   key: '__waitForNone',
-  get: dependencies => ({get}) => {
+  get: (
+    dependencies:
+      | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
+      | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
+  ) => ({get}) => {
     // Issue requests for all dependencies in parallel.
     const deps = unwrapDependencies(dependencies);
     const [results, exceptions] = concurrentRequests(get, deps);
@@ -127,7 +146,11 @@ const waitForAny: <
   $ReadOnlyArray<mixed> | $ReadOnly<{[string]: mixed, ...}>,
 > = selectorFamily({
   key: '__waitForAny',
-  get: dependencies => ({get}) => {
+  get: (
+    dependencies:
+      | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
+      | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
+  ) => ({get}) => {
     // Issue requests for all dependencies in parallel.
     // Exceptions can either be Promises of pending results or real errors
     const deps = unwrapDependencies(dependencies);
@@ -201,7 +224,11 @@ const waitForAll: <
   $ReadOnlyArray<mixed> | $ReadOnly<{[string]: mixed, ...}>,
 > = selectorFamily({
   key: '__waitForAll',
-  get: dependencies => ({get}) => {
+  get: (
+    dependencies:
+      | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
+      | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
+  ) => ({get}) => {
     // Issue requests for all dependencies in parallel.
     // Exceptions can either be Promises of pending results or real errors
     const deps = unwrapDependencies(dependencies);
