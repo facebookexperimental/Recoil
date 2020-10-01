@@ -58,10 +58,6 @@ const BASE_CALLS = mutableSourceExists() ? 0 : 1;
 let fbOnlyTest = test.skip;
 // @fb-only: fbOnlyTest = test;
 
-jest.mock('../../util/Recoil_expectationViolation', () => (fmt, ...args) => {
-  throw new Error(require('sprintf')(fmt, ...args));
-});
-
 let nextID = 0;
 
 function counterAtom(persistence?: PersistenceSettings<number>) {
