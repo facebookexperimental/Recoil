@@ -15,7 +15,7 @@
  */
 'use strict';
 
-import type {TreeState} from '../core/Recoil_State';
+import type {NodeKey} from '../core/Recoil_Keys';
 
 const gkx = require('../util/Recoil_gkx');
 const isPromise = require('../util/Recoil_isPromise');
@@ -24,9 +24,9 @@ const nullthrows = require('../util/Recoil_nullthrows');
 // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()
 
-type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
-  value: T,
-  upstreamState__INTERNAL_DO_NOT_USE?: TreeState,
+export type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
+  __value: T,
+  __key?: NodeKey,
 }>;
 
 export type LoadablePromise<+T> = Promise<ResolvedLoadablePromiseInfo<T>>;
@@ -37,7 +37,7 @@ type Accessors<T> = $ReadOnly<{
   // This is useful for composing with React Suspense or in a Recoil Selector.
   getValue: () => T,
 
-  toPromise: () => LoadablePromise<T>,
+  toPromise: () => Promise<T>,
 
   // Convenience accessors
   valueMaybe: () => T | void,
@@ -62,49 +62,72 @@ export type Loadable<+T> =
 type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
 
 const loadableAccessors = {
+  /**
+   * if loadable has a value (state === 'hasValue'), return that value.
+   * Otherwise, throw the (unwrapped) promise or the error.
+   */
   getValue() {
-    if (this.state !== 'hasValue') {
-      throw this.contents; // Throw Error, or Promise for the loading state
+    if (this.state === 'loading' && gkx('recoil_async_selector_refactor')) {
+      throw (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value);
     }
+
+    if (this.state !== 'hasValue') {
+      throw this.contents;
+    }
+
     return this.contents;
   },
 
-  toPromise() {
+  toPromise(): Promise<$FlowFixMe> {
     return this.state === 'hasValue'
       ? Promise.resolve(this.contents)
       : this.state === 'hasError'
       ? Promise.reject(this.contents)
+      : gkx('recoil_async_selector_refactor')
+      ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
       : this.contents;
   },
 
   valueMaybe() {
     return this.state === 'hasValue' ? this.contents : undefined;
   },
+
   valueOrThrow() {
     if (this.state !== 'hasValue') {
       throw new Error(`Loadable expected value, but in "${this.state}" state`);
     }
     return this.contents;
   },
+
   errorMaybe() {
     return this.state === 'hasError' ? this.contents : undefined;
   },
+
   errorOrThrow() {
     if (this.state !== 'hasError') {
       throw new Error(`Loadable expected error, but in "${this.state}" state`);
     }
     return this.contents;
   },
-  promiseMaybe() {
-    return this.state === 'loading' ? this.contents : undefined;
+
+  promiseMaybe(): void | Promise<$FlowFixMe> {
+    return this.state === 'loading'
+      ? gkx('recoil_async_selector_refactor')
+        ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
+        : this.contents
+      : undefined;
   },
-  promiseOrThrow() {
+
+  promiseOrThrow(): Promise<$FlowFixMe> {
     if (this.state !== 'loading') {
       throw new Error(
         `Loadable expected promise, but in "${this.state}" state`,
       );
     }
-    return this.contents;
+
+    return gkx('recoil_async_selector_refactor')
+      ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
+      : (this.contents: Promise<$FlowFixMe>);
   },
 
   // TODO Unit tests
@@ -192,7 +215,7 @@ function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
     : loadableWithPromise(
         gkx('recoil_async_selector_refactor')
           ? Promise.all(inputs.map(i => i.contents)).then(value => ({
-              value,
+              __value: value,
             }))
           : (Promise.all(inputs.map(i => i.contents)): $FlowFixMe),
       );

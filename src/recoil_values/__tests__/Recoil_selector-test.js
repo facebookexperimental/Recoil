@@ -375,7 +375,6 @@ test('useRecoilState - selector catching promise and resolving asynchronously', 
 // This tests ability to catch a pending result as a promise and
 // that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
-/* FIXME broken without new selector implementation
 test('useRecoilState - selector catching promise 2', async () => {
   let dependencyPromiseTest;
   const resolvingSel = resolvingAsyncSelector('READY');
@@ -386,12 +385,11 @@ test('useRecoilState - selector catching promise 2', async () => {
         return get(resolvingSel);
       } catch (promise) {
         expect(promise instanceof Promise).toBe(true);
-        dependencyPromiseTest = expect(promise).resolves.toHaveProperty(
-          'value',
-          'READY',
-        );
+        // eslint-disable-next-line jest/valid-expect
+        dependencyPromiseTest = expect(promise).resolves.toBe('READY');
+
         return promise.then(result => {
-          expect(result).toHaveProperty('value', 'READY');
+          expect(result).toBe('READY');
           return result.value + ' NOW';
         });
       }
@@ -400,7 +398,9 @@ test('useRecoilState - selector catching promise 2', async () => {
   const c = renderElements(<ReadsAtom atom={catchPromiseSelector} />);
 
   expect(c.textContent).toEqual('loading');
-  act(() => jest.runAllTimers());
+
+  await flushPromisesAndTimers();
+
   // NOTE!!!
   // The output here may be "READY NOW" if we optimize the selector to
   // cache the result of the async evaluation when the dependency is available
@@ -415,7 +415,6 @@ test('useRecoilState - selector catching promise 2', async () => {
   // to the dependency's value.
   await dependencyPromiseTest;
 });
-*/
 
 // Test that Recoil will throw an error with a useful debug message instead of
 // infinite recurssion when there is a circular dependency
@@ -441,7 +440,8 @@ test('Detect circular dependencies', () => {
   window.__DEV__ = devStatus;
 });
 
-/* FIXME broken without new selector implementation
+/**
+ * FIXME: fixed in new selector implementation
 test('selector is able to track dependencies discovered asynchronously', async () => {
   const anAtom = atom({key: 'atomTrackedAsync', default: 'Async Dep Value'});
 
@@ -467,7 +467,6 @@ test('selector is able to track dependencies discovered asynchronously', async (
 
   expect(container.textContent).toEqual('loading');
 
-  await act(() => get(selectorWithAsyncDeps));
   await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('Async Dep Value');
@@ -476,7 +475,6 @@ test('selector is able to track dependencies discovered asynchronously', async (
 
   expect(container.textContent).toEqual('loading');
 
-  await act(() => get(selectorWithAsyncDeps));
   await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('CHANGED Async Dep');
@@ -489,7 +487,8 @@ test('selector is able to track dependencies discovered asynchronously', async (
  * responds to changes in dependencies that were discovered asynchronously, the
  * selector should run through the entire selector in response to those changes.
  */
-/* FIXME broken without new selector implementation
+/**
+ * FIXME: fixed in new selector implementation
 test('selector should rerun entire selector when a dep changes', async () => {
   const resolvingSel1 = resolvingAsyncSelector(1);
   const resolvingSel2 = resolvingAsyncSelector(2);
@@ -525,8 +524,7 @@ test('selector should rerun entire selector when a dep changes', async () => {
 
   expect(container.textContent).toEqual('loading');
 
-  await act(() => get(selectorWithAsyncDeps));
-  act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('6');
 
@@ -534,8 +532,7 @@ test('selector should rerun entire selector when a dep changes', async () => {
 
   expect(container.textContent).toEqual('loading');
 
-  await act(() => get(selectorWithAsyncDeps));
-  act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
 
   expect(container.textContent).toEqual('7');
 });
@@ -546,7 +543,8 @@ test('selector should rerun entire selector when a dep changes', async () => {
  * number of times in response to async selectors resolving (i.e. by retrying
  * more times than we have to or creating numerous promises that retry).
  */
-/* FIXME broken without new selector implementation
+/**
+ * FIXME: fixed in new selector implementation
 test('async selector runs the minimum number of times required', () => {
   const [asyncDep1, resolveAsyncDep1] = asyncSelector();
   const [asyncDep2, resolveAsyncDep2] = asyncSelector();
@@ -580,7 +578,8 @@ test('async selector runs the minimum number of times required', () => {
 });
 */
 
-/* FIXME broken without new selector implementation
+/**
+ * FIXME: fixed in new selector implementation
 test('async selector with changing dependencies finishes execution using original state', async () => {
   const [asyncDep, resolveAsyncDep] = asyncSelector();
   const anAtom = atom({key: 'atomChangingDeps', default: 3});
@@ -600,32 +599,53 @@ test('async selector with changing dependencies finishes execution using origina
     },
   });
 
-  const promiseBeforeChangingAnything = get(anAsyncSelector);
+  let loadableSoFar;
+  let setAtom;
 
-  expect(promiseBeforeChangingAnything).toBeInstanceOf(Promise);
+  const MyComponent = () => {
+    const setAtomLocal = useSetRecoilState(anAtom);
+    const asyncSelLoadable = useRecoilValueLoadable(anAsyncSelector);
 
-  set(anAtom, 10);
+    setAtom = setAtomLocal;
+    loadableSoFar = asyncSelLoadable;
 
-  const promiseAfterChangingAtom = get(anAsyncSelector);
+    return asyncSelLoadable.state;
+  };
 
-  expect(promiseAfterChangingAtom).toBeInstanceOf(Promise);
-  expect(promiseAfterChangingAtom).not.toBe(promiseBeforeChangingAnything);
+  renderElements(<MyComponent />);
 
-  resolveAsyncDep('');
+  // const promiseBeforeChangingAnything = nullthrows(loadableSoFar).contents;
+  const loadableBeforeChangingAnything = nullthrows(loadableSoFar);
+
+  expect(loadableBeforeChangingAnything.contents).toBeInstanceOf(Promise);
+
+  act(() => setAtom(10));
+
+  // const promiseAfterChangingAtom = nullthrows(loadableSoFar).contents;
+  const loadableAfterChangingAtom = nullthrows(loadableSoFar);
+
+  expect(loadableAfterChangingAtom.contents).toBeInstanceOf(Promise);
+  expect(loadableBeforeChangingAnything.contents).not.toBe(loadableAfterChangingAtom.contents);
+
+  act(() => resolveAsyncDep(''));
+
+  await flushPromisesAndTimers();
 
   await Promise.all([
-    expect(promiseBeforeChangingAnything).resolves.toHaveProperty(
-      'value',
+    expect(loadableBeforeChangingAnything.toPromise()).resolves.toBe(
       3 + 3,
     ),
-    expect(promiseAfterChangingAtom).resolves.toHaveProperty('value', 10 + 10),
+    expect(loadableAfterChangingAtom.toPromise()).resolves.toBe(
+      10 + 10,
+    ),
   ]);
 });
 */
 
 // Test that an async selector will resolve to its dependency's value
 // when it provides the dependency from an async callback.
-/* FIXME broken without new selector implementation
+/**
+ * FIXME: fixed in new selector implementation
 test('selector - dynamic getRecoilValue()', async () => {
   const sel2 = selector({
     key: 'MySelector2',
@@ -841,3 +861,56 @@ describe('Async selector resolution notifies all stores that read pending', () =
     }
   });
 });
+
+/**
+ * FIXME: fixed in new selector implementation
+test('selector - kite pattern runs only necessary selectors', () => {
+  const aNode = atom({
+    key: 'aNode',
+    default: true,
+  });
+
+  let bNodeRunCount = 0;
+  const bNode = selector({
+    key: 'bNode',
+    get: ({get}) => {
+      bNodeRunCount++;
+      const a = get(aNode);
+      return String(a);
+    },
+  });
+
+  let cNodeRunCount = 0;
+  const cNode = selector({
+    key: 'cNode',
+    get: ({get}) => {
+      cNodeRunCount++;
+      const a = get(aNode);
+      return String(Number(a));
+    },
+  });
+
+  let dNodeRunCount = 0;
+  const dNode = selector({
+    key: 'dNode',
+    get: ({get}) => {
+      dNodeRunCount++;
+      const value = get(aNode) ? get(bNode) : get(cNode);
+      return value.toUpperCase();
+    },
+  });
+
+  let dNodeValue = get(dNode);
+  expect(dNodeValue).toEqual('TRUE');
+  expect(bNodeRunCount).toEqual(1);
+  expect(cNodeRunCount).toEqual(0);
+  expect(dNodeRunCount).toEqual(1);
+
+  set(aNode, false);
+  dNodeValue = get(dNode);
+  expect(dNodeValue).toEqual('0');
+  expect(bNodeRunCount).toEqual(1);
+  expect(cNodeRunCount).toEqual(1);
+  expect(dNodeRunCount).toEqual(2);
+});
+*/

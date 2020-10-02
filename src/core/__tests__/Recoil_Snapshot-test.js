@@ -10,6 +10,9 @@
  */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+gkx.setPass('recoil_async_selector_refactor');
+
 const React = require('React');
 const {act} = require('ReactTestUtils');
 

@@ -44,6 +44,7 @@ function makeStore(): Store {
     getState: () => storeState,
     replaceState: replacer => {
       const storeState = store.getState();
+      // FIXME: does not increment state version number
       storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
       invalidateDownstreams_FOR_TESTING(store, storeState.currentTree);
       sendEndOfBatchNotifications_FOR_TESTING(store);

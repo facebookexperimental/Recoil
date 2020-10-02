@@ -68,8 +68,8 @@ function unwrapDependencies(
 }
 
 function getValueFromLoadablePromiseResult(result) {
-  if (result.hasOwnProperty('value')) {
-    return result.value;
+  if (result.hasOwnProperty('__value')) {
+    return result.__value;
   }
 
   return result;

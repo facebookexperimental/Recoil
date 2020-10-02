@@ -11,6 +11,9 @@
 /* eslint-disable fb-www/react-no-useless-fragment */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
+
 import type {
   RecoilState,
   RecoilValue,
@@ -35,7 +38,6 @@ const {
   renderElements,
   renderElementsWithSuspenseCount,
 } = require('../../testing/Recoil_TestingUtils');
-const gkx = require('../../util/Recoil_gkx');
 const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 const {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
@@ -47,8 +49,6 @@ const {
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
 } = require('../Recoil_Hooks');
-
-gkx.setFail('recoil_async_selector_refactor');
 
 const invariant = require('../../util/Recoil_invariant');
 
@@ -330,8 +330,8 @@ test('Async selectors can depend on async selectors', async () => {
   }
 });
 
-/* FIXME broken without new selector implementation
-(Although this one definitely worked without it originally)
+/**
+ * FIXME: fixed in new selector implementation
 test('Dep of upstream selector can change while pending', async () => {
   const anAtom = counterAtom();
   const [

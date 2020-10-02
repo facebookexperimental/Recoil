@@ -96,12 +96,7 @@ class Snapshot {
 
   getPromise: <T>(RecoilValue<T>) => Promise<T> = <T>(
     recoilValue: RecoilValue<T>,
-  ) =>
-    gkx('recoil_async_selector_refactor')
-      ? this.getLoadable(recoilValue)
-          .toPromise()
-          .then(({value}) => value)
-      : (this.getLoadable(recoilValue).toPromise(): $FlowFixMe);
+  ) => this.getLoadable(recoilValue).toPromise();
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer

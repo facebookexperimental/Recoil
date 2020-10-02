@@ -126,7 +126,7 @@ test('useRecoilValueLoadable - loading loadable', async () => {
       }
 
       const res = await promise;
-      const val = typeof res === 'string' ? res : res.value;
+      const val = typeof res === 'string' ? res : res.__value;
 
       expect(val).toBe('VALUE');
     }),

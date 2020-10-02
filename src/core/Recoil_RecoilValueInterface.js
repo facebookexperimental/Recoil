@@ -32,6 +32,7 @@ const {
   RecoilValueReadOnly,
   isRecoilValue,
 } = require('./Recoil_RecoilValue');
+const gkx = require('gkx');
 
 function getRecoilValueAsLoadable<T>(
   store: Store,
@@ -52,7 +53,14 @@ function getRecoilValueAsLoadable<T>(
   }
 
   const [dependencyMap, loadable] = getNodeLoadable(store, treeState, key);
-  saveDependencyMapToStore(dependencyMap, store, treeState.version);
+
+  if (!gkx('recoil_async_selector_refactor')) {
+    /**
+     * In selector_NEW, we take care of updating state deps within the selector
+     */
+    saveDependencyMapToStore(dependencyMap, store, treeState.version);
+  }
+
   return loadable;
 }
 

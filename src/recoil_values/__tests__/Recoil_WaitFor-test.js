@@ -10,11 +10,12 @@
  */
 'use strict';
 
-import type {LoadablePromise} from 'Recoil_Loadable';
-import type {RecoilValue} from 'Recoil_RecoilValue';
-
 const gkx = require('../../util/Recoil_gkx');
 gkx.setFail('recoil_async_selector_refactor');
+
+import type {RecoilValue} from 'Recoil_RecoilValue';
+
+const {loadableWithError, loadableWithValue} = require('Recoil_Loadable');
 
 const {act} = require('ReactTestUtils');
 const {
@@ -47,21 +48,18 @@ function getValue<T>(recoilValue: RecoilValue<T>): T {
   return loadable.contents;
 }
 
-function getPromise<T>(recoilValue: RecoilValue<T>): LoadablePromise<T> {
+function getPromise<T>(recoilValue: RecoilValue<T>): Promise<T> {
   const loadable = getRecoilValueAsLoadable(store, recoilValue);
   if (loadable.state !== 'loading') {
     throw new Error(`expected atom "${recoilValue.key}" to be a promise`);
   }
-  return loadable.contents;
+  return loadable.toPromise();
 }
 
-/* FIXME broken without new selector implementation
 test('noWait - resolve', async () => {
   const [dep, resolve] = asyncSelector();
 
-  const pTest = expect(
-    getValue(noWait(dep)).toPromise(),
-  ).resolves.toHaveProperty('value', 42);
+  const pTest = expect(getValue(noWait(dep)).toPromise()).resolves.toBe(42);
 
   expect(getValue(noWait(dep)).contents).toBeInstanceOf(Promise);
   resolve(42);
@@ -69,7 +67,6 @@ test('noWait - resolve', async () => {
   expect(getValue(noWait(dep)).contents).toBe(42);
   await pTest;
 });
-*/
 
 test('noWait - reject', async () => {
   const [dep, _resolve, reject] = asyncSelector();
@@ -90,7 +87,6 @@ test('noWait - reject', async () => {
 // [loading, loading]  [Promise, Promise]  Promise           Promise
 // [value, loading]    [value, Promise]    [value, Promise]  Promise
 // [value, value]      [value, value]      [value, value]    [value, value]
-/* FIXME broken without new selector implementation
 test('waitFor - resolve to values', async () => {
   const [depA, resolveA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
@@ -103,37 +99,34 @@ test('waitFor - resolve to values', async () => {
   );
   const depTest0 = expect(
     getValue(waitForNone(deps))[0].promiseMaybe(),
-  ).resolves.toHaveProperty('value', 0);
+  ).resolves.toBe(0);
   const depTest1 = expect(
     getValue(waitForNone(deps))[1].promiseMaybe(),
-  ).resolves.toHaveProperty('value', 1);
+  ).resolves.toBe(1);
   // waitForAny returns a promise that resolves to the state with the next
   // resolved value.  So, that includes the first value and a promise for the second.
   expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
 
   const anyTest0 = expect(
-    getPromise(waitForAny(deps)).then(r => {
-      const {value} = r;
-
+    getPromise(waitForAny(deps)).then(value => {
       expect(value[0].valueMaybe()).toEqual(0);
       return value[0].valueMaybe();
     }),
   ).resolves.toEqual(0);
 
   const anyTest1 = expect(
-    getPromise(waitForAny(deps)).then(r => {
-      const {value} = r;
-
+    getPromise(waitForAny(deps)).then(value => {
       expect(value[1].promiseMaybe()).toBeInstanceOf(Promise);
       return value[1].promiseMaybe();
     }),
-  ).resolves.toHaveProperty('value', 1);
+  ).resolves.toBe(1);
 
   // waitForAll returns a promise that resolves to the actual values
   expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
-  const allTest0 = expect(
-    get(waitForAll(deps)),
-  ).resolves.toHaveProperty('value', [0, 1]);
+  const allTest0 = expect(getPromise(waitForAll(deps))).resolves.toEqual([
+    0,
+    1,
+  ]);
 
   // Resolve the first dep
   resolveA(0);
@@ -144,9 +137,10 @@ test('waitFor - resolve to values', async () => {
   expect(getValue(waitForAny(deps))[1].contents).toBeInstanceOf(Promise);
   expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
 
-  const allTest1 = expect(
-    get(waitForAll(deps)),
-  ).resolves.toHaveProperty('value', [0, 1]);
+  const allTest1 = expect(getPromise(waitForAll(deps))).resolves.toEqual([
+    0,
+    1,
+  ]);
 
   // Resolve the second dep
   resolveB(1);
@@ -165,7 +159,6 @@ test('waitFor - resolve to values', async () => {
   await allTest0;
   await allTest1;
 });
-*/
 
 // TRUTH TABLE
 //  Dependencies      waitForNone         waitForAny   waitForAll
@@ -254,7 +247,6 @@ test('waitFor - resolve then reject', async () => {
 // [loading, loading]  [Promise, Promise]  Promise         Promise
 // [error, loading]    [Error, Promise]    Promise         Error
 // [error, value]      [Error, value]      [Error, value]  Error
-/* FIXME broken without new selector implementation
 test('waitFor - reject then resolve', async () => {
   const [depA, _resolveA, rejectA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
@@ -263,9 +255,7 @@ test('waitFor - reject then resolve', async () => {
 
   class Error1 extends Error {}
 
-  const anyTest0 = expect(
-    get(waitForAny(deps)),
-  ).resolves.toHaveProperty('value', [
+  const anyTest0 = expect(get(waitForAny(deps))).resolves.toEqual([
     loadableWithError(new Error1()),
     loadableWithValue(1),
   ]);
@@ -277,9 +267,7 @@ test('waitFor - reject then resolve', async () => {
   rejectA(new Error1());
   expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
 
-  const anyTest1 = expect(
-    get(waitForAny(deps)),
-  ).resolves.toHaveProperty('value', [
+  const anyTest1 = expect(get(waitForAny(deps))).resolves.toEqual([
     loadableWithError(new Error1()),
     loadableWithValue(1),
   ]);
@@ -299,11 +287,8 @@ test('waitFor - reject then resolve', async () => {
   await anyTest1;
   await allTest;
 });
-*/
 
 // Similar as the first test that resolves both dependencies, but with named dependencies.
-/*
-FIXME broken without new selector implementation
 test('waitFor - named dependency version', async () => {
   const [depA, resolveA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
@@ -314,18 +299,16 @@ test('waitFor - named dependency version', async () => {
 
   const depTest0 = expect(
     getValue(waitForNone(deps)).a.promiseMaybe(),
-  ).resolves.toHaveProperty('value', 0);
+  ).resolves.toBe(0);
 
   const depTest1 = expect(
     getValue(waitForNone(deps)).b.promiseMaybe(),
-  ).resolves.toHaveProperty('value', 1);
+  ).resolves.toBe(1);
 
   expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
 
   const anyTest0 = expect(
-    getPromise(waitForAny(deps)).then(r => {
-      const {value} = r;
-
+    getPromise(waitForAny(deps)).then(value => {
       expect(value.a.valueMaybe()).toEqual(0);
 
       return value.a.valueMaybe();
@@ -333,20 +316,18 @@ test('waitFor - named dependency version', async () => {
   ).resolves.toEqual(0);
 
   const anyTest1 = expect(
-    getPromise(waitForAny(deps)).then(r => {
-      const {value} = r;
-
+    getPromise(waitForAny(deps)).then(value => {
       expect(value.b.promiseMaybe()).toBeInstanceOf(Promise);
-
       return value.b.promiseMaybe();
     }),
-  ).resolves.toHaveProperty('value', 1);
+  ).resolves.toBe(1);
 
   expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
 
-  const allTest0 = expect(
-    get(waitForAll(deps)),
-  ).resolves.toHaveProperty('value', {a: 0, b: 1});
+  const allTest0 = expect(getPromise(waitForAll(deps))).resolves.toEqual({
+    a: 0,
+    b: 1,
+  });
 
   resolveA(0);
   act(() => jest.runAllTimers());
@@ -356,9 +337,10 @@ test('waitFor - named dependency version', async () => {
   expect(getValue(waitForAny(deps)).b.contents).toBeInstanceOf(Promise);
   expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
 
-  const allTest1 = expect(
-    get(waitForAll(deps)),
-  ).resolves.toHaveProperty('value', {a: 0, b: 1});
+  const allTest1 = expect(getPromise(waitForAll(deps))).resolves.toEqual({
+    a: 0,
+    b: 1,
+  });
 
   resolveB(1);
   act(() => jest.runAllTimers());
@@ -376,5 +358,4 @@ test('waitFor - named dependency version', async () => {
   await allTest0;
   await allTest1;
 });
-*/
 /* eslint-enable jest/valid-expect */

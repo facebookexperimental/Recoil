@@ -58,7 +58,11 @@
 'use strict';
 
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
-import type {Loadable} from '../adt/Recoil_Loadable';
+import type {
+  Loadable,
+  LoadablePromise,
+  ResolvedLoadablePromiseInfo,
+} from '../adt/Recoil_Loadable';
 import type {DependencyMap} from '../core/Recoil_Graph';
 import type {PersistenceInfo, ReadWriteNodeOptions} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
@@ -145,7 +149,13 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           .then(value => {
             defaultLoadable = loadableWithValue(value);
             // TODO Temporary disable Flow due to pending selector_NEW refactor
-            return (value: $FlowFixMe);
+
+            const promiseInfo: ResolvedLoadablePromiseInfo<T> = {
+              __key: key,
+              __value: value,
+            };
+
+            return promiseInfo;
           })
           .catch(error => {
             defaultLoadable = loadableWithError(error);
@@ -165,14 +175,19 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   function wrapPendingPromise(
     store: Store,
     promise: Promise<T | DefaultValue>,
-  ): Promise<T | DefaultValue> {
+  ): LoadablePromise<T | DefaultValue> {
     const wrappedPromise = promise
       .then(value => {
         const state = store.getState().nextTree ?? store.getState().currentTree;
+
         if (state.atomValues.get(key)?.contents === wrappedPromise) {
           setRecoilValue(store, node, value);
         }
-        return value;
+
+        return {
+          __key: key,
+          __value: value,
+        };
       })
       .catch(error => {
         const state = store.getState().nextTree ?? store.getState().currentTree;
@@ -181,6 +196,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         }
         throw error;
       });
+
     return wrappedPromise;
   }
 
@@ -279,10 +295,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       initState.atomValues.set(
         key,
         isPromise(initValue)
-          ? // TODO Temp disable Flow due to pending selector_NEW refactor using LoadablePromise
-            loadableWithPromise(
-              (wrapPendingPromise(store, initValue): $FlowFixMe),
-            )
+          ? loadableWithPromise(wrapPendingPromise(store, initValue))
           : loadableWithValue(initValue),
       );
     }

@@ -7,6 +7,9 @@
  */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
+
 const React = require('React');
 const {useEffect} = require('React');
 const {act} = require('ReactTestUtils');

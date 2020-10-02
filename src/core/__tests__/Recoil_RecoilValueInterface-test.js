@@ -10,6 +10,9 @@
  */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
+
 const {act} = require('ReactTestUtils');
 
 const atom = require('../../recoil_values/Recoil_atom');
@@ -22,24 +25,35 @@ const {
   subscribeToRecoilValue,
 } = require('../Recoil_RecoilValueInterface');
 
-const a = atom<number>({key: 'a', default: 0});
-const dependsOnAFn = jest.fn(x => x + 1);
-const dependsOnA = selector({
-  key: 'dependsOnA',
-  get: ({get}) => dependsOnAFn(get(a)),
-});
-const dependsOnDependsOnA = selector({
-  key: 'dependsOnDependsOnA',
-  get: ({get}) => get(dependsOnA) + 1,
-});
+let a;
+let dependsOnAFn;
+let dependsOnA;
+let dependsOnDependsOnA;
+let b;
 
-const b = atom<number>({
-  key: 'b',
-  default: 0,
-  persistence_UNSTABLE: {
-    type: 'url',
-    validator: x => parseInt(x, 10),
-  },
+beforeEach(() => {
+  a = atom<number>({key: 'a', default: 0});
+
+  dependsOnAFn = jest.fn(x => x + 1);
+
+  dependsOnA = selector({
+    key: 'dependsOnA',
+    get: ({get}) => dependsOnAFn(get(a)),
+  });
+
+  dependsOnDependsOnA = selector({
+    key: 'dependsOnDependsOnA',
+    get: ({get}) => get(dependsOnA) + 1,
+  });
+
+  b = atom<number>({
+    key: 'b',
+    default: 0,
+    persistence_UNSTABLE: {
+      type: 'url',
+      validator: x => parseInt(x, 10),
+    },
+  });
 });
 
 test('read default value', () => {
