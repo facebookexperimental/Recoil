@@ -28,5 +28,8 @@ describe('deepFreezeValue', () => {
       deepFreezeValue({test: new DataView(new ArrayBuffer(16), 0)}),
     ).not.toThrow();
   });
+  test('check no error: object with Window property', () => {
+    expect(() => deepFreezeValue({test: window})).not.toThrow();
+  });
   // TODO add test of other pattern
 });

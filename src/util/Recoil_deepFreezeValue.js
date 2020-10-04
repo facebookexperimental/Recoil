@@ -56,6 +56,10 @@ function shouldNotBeFrozen(value: mixed): boolean {
     return true;
   }
 
+  if (!!value && value === value.window) {
+    return true;
+  }
+
   return false;
 }
 
