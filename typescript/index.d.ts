@@ -4,7 +4,7 @@
  * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
  */
 
-export { };
+export {};
 
 import * as React from 'react';
 
@@ -217,8 +217,8 @@ declare class AbstractRecoilValueReadonly<T> {
   constructor(newKey: NodeKey);
 }
 
-export class RecoilState<T> extends AbstractRecoilValue<T> { }
-export class RecoilValueReadOnly<T> extends AbstractRecoilValueReadonly<T> { }
+export class RecoilState<T> extends AbstractRecoilValue<T> {}
+export class RecoilValueReadOnly<T> extends AbstractRecoilValueReadonly<T> {}
 export type RecoilValue<T> = RecoilValueReadOnly<T> | RecoilState<T>;
 
 export function isRecoilValue(val: unknown): val is RecoilValue<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -228,7 +228,7 @@ export function isRecoilValue(val: unknown): val is RecoilValue<any>; // eslint-
 // bigint not supported yet
 type Primitive = undefined | null | boolean | number | symbol | string;
 
-export type SerializableParam = Primitive | ReadonlyArray<SerializableParam> | Readonly<{ [key: string]: SerializableParam }>;
+export type SerializableParam = Primitive | ReadonlyArray<SerializableParam> | Readonly<{[key: string]: SerializableParam}>;
 
 export interface AtomFamilyOptions<T, P extends SerializableParam> {
   key: NodeKey;
