@@ -57,25 +57,30 @@ function LinkToRecoilSnapshot({
   ...anchorProps
 }: LinkToSnapshotProps): React.Node {
   const gotoSnapshot = useGotoRecoilSnapshot();
+  const {onClick, target} = anchorProps;
 
-  const onClick = useCallback(
+  const onClickWrapper = useCallback(
     event => {
-      anchorProps.onClick?.(event);
+      onClick?.(event);
       if (
         !event.defaultPrevented &&
         event.button === 0 && // left-click
         !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) &&
-        (!anchorProps.target || anchorProps.target === '_self')
+        (!target || target === '_self')
       ) {
         event.preventDefault();
         gotoSnapshot(snapshot);
       }
     },
-    [gotoSnapshot, anchorProps.onClick, anchorProps.target, snapshot],
+    [target, onClick, gotoSnapshot, snapshot],
   );
 
   return (
-    <a {...anchorProps} href={uriFromSnapshot(snapshot)} onClick={onClick} />
+    <a
+      {...anchorProps}
+      href={uriFromSnapshot(snapshot)}
+      onClick={onClickWrapper}
+    />
   );
 }
 
