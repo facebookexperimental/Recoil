@@ -311,10 +311,7 @@ function selector<T>(
         maybeFreezeValue(value);
         setCache(state, depValuesToDepRoute(depValues), loadable);
 
-        if (isLatestExecution(executionId)) {
-          setLoadableInStoreToNotifyDeps(loadable, executionId);
-          setExecutionInfo(loadable);
-        }
+        setLoadableInStoreToNotifyDeps(loadable, executionId);
 
         return {__value: value, __key: key};
       })
@@ -338,10 +335,7 @@ function selector<T>(
         maybeFreezeValue(errorOrPromise);
         setCache(state, depValuesToDepRoute(depValues), loadable);
 
-        if (isLatestExecution(executionId)) {
-          setLoadableInStoreToNotifyDeps(loadable, executionId);
-          setExecutionInfo(loadable);
-        }
+        setLoadableInStoreToNotifyDeps(loadable, executionId);
 
         throw errorOrPromise;
       });
@@ -413,11 +407,7 @@ function selector<T>(
 
         if (loadable.state !== 'loading') {
           setCache(state, depValuesToDepRoute(depValues), loadable);
-        }
-
-        if (loadable.state !== 'loading' && isLatestExecution(executionId)) {
           setLoadableInStoreToNotifyDeps(loadable, executionId);
-          setExecutionInfo(loadable);
         }
 
         if (loadable.state === 'hasError') {
@@ -445,10 +435,7 @@ function selector<T>(
           loadableWithError(error),
         );
 
-        if (isLatestExecution(executionId)) {
-          setLoadableInStoreToNotifyDeps(loadable, executionId);
-          setExecutionInfo(loadable);
-        }
+        setLoadableInStoreToNotifyDeps(loadable, executionId);
 
         throw error;
       });
@@ -459,6 +446,7 @@ function selector<T>(
     executionId: ExecutionId,
   ): void {
     if (isLatestExecution(executionId)) {
+      setExecutionInfo(loadable);
       notifyStoresOfSettledAsync(loadable, executionId);
     }
   }
