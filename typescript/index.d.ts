@@ -61,16 +61,16 @@ export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
 export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
 
 export type SetRecoilState = <T>(
-  recoilVal: RecoilState<T>,
-  newVal: T | DefaultValue | ((prevValue: T) => T | DefaultValue),
+    recoilVal: RecoilState<T>,
+    newVal: T | DefaultValue | ((prevValue: T) => T | DefaultValue),
 ) => void;
 
 export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export interface ReadOnlySelectorOptions<T> {
-  key: string;
-  get: (opts: { get: GetRecoilValue }) => Promise<T> | RecoilValue<T> | T;
-  dangerouslyAllowMutability?: boolean;
+    key: string;
+    get: (opts: { get: GetRecoilValue }) => Promise<T> | RecoilValue<T> | T;
+    dangerouslyAllowMutability?: boolean;
 }
 
 export interface ReadWriteSelectorOptions<T> extends ReadOnlySelectorOptions<T> {
@@ -189,16 +189,16 @@ export type LoadablePromise<T> = Promise<ResolvedLoadablePromiseInfo<T>>;
 
 export type Loadable<T> =
   | Readonly<{
-    state: 'hasValue';
-    contents: T;
+      state: 'hasValue';
+      contents: T;
   }>
   | Readonly<{
-    state: 'hasError';
-    contents: Error;
+      state: 'hasError';
+      contents: Error;
   }>
   | Readonly<{
-    state: 'loading';
-    contents: LoadablePromise<T>;
+      state: 'loading';
+      contents: LoadablePromise<T>;
   }>;
 
 // recoilValue.d.ts
@@ -255,11 +255,11 @@ export interface ReadWriteSelectorFamilyOptions<T, P extends SerializableParam> 
   key: string;
   get: (param: P) => (opts: { get: GetRecoilValue }) => Promise<T> | RecoilValue<T> | T;
   set: (
-    param: P,
+      param: P,
   ) => (
       opts: { set: SetRecoilState; get: GetRecoilValue; reset: ResetRecoilState },
       newValue: T | DefaultValue,
-    ) => void;
+  ) => void;
   // cacheImplementation_UNSTABLE?: () => CacheImplementation<Loadable<T>>,
   // cacheImplementationForParams_UNSTABLE?: () => CacheImplementation<
   //   RecoilValue<T>,
@@ -307,7 +307,7 @@ export function waitForAny<RecoilValues extends Array<RecoilValue<any>> | [Recoi
 ): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
 
 export function waitForAny<RecoilValues extends { [key: string]: RecoilValue<any> }>(
-  param: RecoilValues,
+    param: RecoilValues,
 ): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
 
 export function waitForAll<RecoilValues extends Array<RecoilValue<any>> | [RecoilValue<any>]>(
