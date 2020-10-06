@@ -56,7 +56,7 @@ function shouldNotBeFrozen(value: mixed): boolean {
     return true;
   }
 
-  if (!!value && value === value.window) {
+  if (typeof window !== 'undefined' && value instanceof window) {
     return true;
   }
 

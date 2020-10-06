@@ -29,6 +29,9 @@ describe('deepFreezeValue', () => {
     ).not.toThrow();
   });
   test('check no error: object with Window property', () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
     expect(() => deepFreezeValue({test: window})).not.toThrow();
   });
   // TODO add test of other pattern
