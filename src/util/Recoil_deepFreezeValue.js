@@ -18,6 +18,8 @@ const isArrayBufferView = require('./Recoil_isArrayBufferView');
 const isNode = require('./Recoil_isNode');
 const isPromise = require('./Recoil_isPromise');
 
+const isSSR = typeof window === 'undefined';
+
 function shouldNotBeFrozen(value: mixed): boolean {
   // Primitives and functions:
   if (value === null || typeof value !== 'object') {
@@ -53,6 +55,11 @@ function shouldNotBeFrozen(value: mixed): boolean {
   }
 
   if (isArrayBufferView(value)) {
+    return true;
+  }
+
+  // Some environments, just as Jest, don't work with the instanceof check
+  if (!isSSR && (value === window || value instanceof Window)) {
     return true;
   }
 
