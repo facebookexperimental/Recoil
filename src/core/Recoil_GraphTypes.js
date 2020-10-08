@@ -26,4 +26,4 @@ export type Graph = $ReadOnly<{
 
 export type DependencyMap = Map<NodeKey, Set<NodeKey>>;
 
-module.exports = ({}: {...});
+export default ({}: {...});

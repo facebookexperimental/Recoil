@@ -17,40 +17,40 @@ import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
+import {useCallback, useEffect, useMemo, useRef, useState} from 'React';
 
-const {batchUpdates} = require('../core/Recoil_Batching');
-const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
-const {
+import {batchUpdates} from '../core/Recoil_Batching';
+import {DEFAULT_VALUE, getNode, nodes} from '../core/Recoil_Node';
+import {
   useRecoilMutableSource,
   useStoreRef,
-} = require('../core/Recoil_RecoilRoot.react');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {
+} from '../core/Recoil_RecoilRoot.react';
+import {isRecoilValue} from '../core/Recoil_RecoilValue';
+import {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
   setRecoilValue,
   setRecoilValueLoadable,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
-} = require('../core/Recoil_RecoilValueInterface');
-const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
-const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
-const differenceSets = require('../util/Recoil_differenceSets');
-const expectationViolation = require('../util/Recoil_expectationViolation');
-const filterMap = require('../util/Recoil_filterMap');
-const filterSet = require('../util/Recoil_filterSet');
-const invariant = require('../util/Recoil_invariant');
-const mapMap = require('../util/Recoil_mapMap');
-const mergeMaps = require('../util/Recoil_mergeMaps');
-const {
+} from '../core/Recoil_RecoilValueInterface';
+import {Snapshot, cloneSnapshot} from '../core/Recoil_Snapshot';
+import {setByAddingToSet} from '../util/Recoil_CopyOnWrite';
+import differenceSets from '../util/Recoil_differenceSets';
+import expectationViolation from '../util/Recoil_expectationViolation';
+import filterMap from '../util/Recoil_filterMap';
+import filterSet from '../util/Recoil_filterSet';
+import invariant from '../util/Recoil_invariant';
+import mapMap from '../util/Recoil_mapMap';
+import mergeMaps from '../util/Recoil_mergeMaps';
+import {
   mutableSourceExists,
   useMutableSource,
-} = require('../util/Recoil_mutableSource');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const Tracing = require('../util/Recoil_Tracing');
-const useComponentName = require('../util/Recoil_useComponentName');
+} from '../util/Recoil_mutableSource';
+import nullthrows from '../util/Recoil_nullthrows';
+import recoverableViolation from '../util/Recoil_recoverableViolation';
+import * as Tracing from '../util/Recoil_Tracing';
+import useComponentName from '../util/Recoil_useComponentName';
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -91,7 +91,7 @@ export type RecoilInterface = {
   getResetRecoilState: <T>(RecoilState<T>) => Resetter,
 };
 
-function useRecoilInterface_DEPRECATED(): RecoilInterface {
+export function useRecoilInterface(): RecoilInterface {
   const storeRef = useStoreRef();
   const [_, forceUpdate] = useState([]);
 
@@ -267,7 +267,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
   }, [recoilValuesUsed, storeRef]);
 }
 
-const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
+export const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
 
 function useRecoilValueLoadable_MUTABLESOURCE<T>(
   recoilValue: RecoilValue<T>,
@@ -377,7 +377,9 @@ function useRecoilValueLoadable_LEGACY<T>(
   Like useRecoilValue(), but either returns the value if available or
   just undefined if not available for any reason, such as pending or error.
 */
-function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
+export function useRecoilValueLoadable<T>(
+  recoilValue: RecoilValue<T>,
+): Loadable<T> {
   if (mutableSourceExists()) {
     // eslint-disable-next-line fb-www/react-hooks
     return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
@@ -393,7 +395,7 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   if the value is an error it will throw it for the nearest React error boundary.
   This will also subscribe the component for any updates in the value.
   */
-function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
+export function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
   if (__DEV__) {
     validateRecoilValue(recoilValue, 'useRecoilValue');
   }
@@ -406,7 +408,9 @@ function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
   Returns a function that allows the value of a RecoilState to be updated, but does
   not subscribe the component to changes to that RecoilState.
 */
-function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
+export function useSetRecoilState<T>(
+  recoilState: RecoilState<T>,
+): SetterOrUpdater<T> {
   if (__DEV__) {
     validateRecoilValue(recoilState, 'useSetRecoilState');
   }
@@ -422,7 +426,7 @@ function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
 /**
   Returns a function that will reset the value of a RecoilState to its default
 */
-function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
+export function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
   if (__DEV__) {
     validateRecoilValue(recoilState, 'useResetRecoilState');
   }
@@ -439,7 +443,7 @@ function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
   retrieval of the value. If evaluating the RecoilState resulted in an error, this will
   throw the error so that the nearest React error boundary can catch it.
 */
-function useRecoilState<T>(
+export function useRecoilState<T>(
   recoilState: RecoilState<T>,
 ): [T, SetterOrUpdater<T>] {
   if (__DEV__) {
@@ -453,7 +457,7 @@ function useRecoilState<T>(
   an object that indicates whether the RecoilState is available, pending, or
   unavailable due to an error.
 */
-function useRecoilStateLoadable<T>(
+export function useRecoilStateLoadable<T>(
   recoilState: RecoilState<T>,
 ): [Loadable<T>, SetterOrUpdater<T>] {
   if (__DEV__) {
@@ -462,7 +466,7 @@ function useRecoilStateLoadable<T>(
   return [useRecoilValueLoadable(recoilState), useSetRecoilState(recoilState)];
 }
 
-function useTransactionSubscription(callback: Store => void) {
+export function useTransactionSubscription_DEPRECATED(callback: Store => void) {
   const storeRef = useStoreRef();
   useEffect(() => {
     const sub = storeRef.current.subscribeToTransactions(callback);
@@ -524,7 +528,7 @@ type ExternallyVisibleAtomInfo = {
           useSetUnvalidatedAtomValues hook. Useful for ignoring the useSetUnvalidatedAtomValues
           transaction, to avoid loops.
 */
-function useTransactionObservation_DEPRECATED(
+export function useTransactionObservation_DEPRECATED(
   callback: ({
     atomValues: Map<NodeKey, mixed>,
     previousAtomValues: Map<NodeKey, mixed>,
@@ -533,7 +537,7 @@ function useTransactionObservation_DEPRECATED(
     transactionMetadata: {[NodeKey]: mixed, ...},
   }) => void,
 ) {
-  useTransactionSubscription(
+  useTransactionSubscription_DEPRECATED(
     useCallback(
       store => {
         let previousTree = store.getState().previousTree;
@@ -576,13 +580,13 @@ function useTransactionObservation_DEPRECATED(
   );
 }
 
-function useRecoilTransactionObserver(
+export function useRecoilTransactionObserver(
   callback: ({
     snapshot: Snapshot,
     previousSnapshot: Snapshot,
   }) => void,
 ) {
-  useTransactionSubscription(
+  useTransactionSubscription_DEPRECATED(
     useCallback(
       store => {
         callback({
@@ -596,18 +600,18 @@ function useRecoilTransactionObserver(
 }
 
 // Return a snapshot of the current state and subscribe to all state changes
-function useRecoilSnapshot(): Snapshot {
+export function useRecoilSnapshot(): Snapshot {
   const storeRef = useStoreRef();
   const [snapshot, setSnapshot] = useState(() =>
     cloneSnapshot(storeRef.current),
   );
-  useTransactionSubscription(
+  useTransactionSubscription_DEPRECATED(
     useCallback(store => setSnapshot(cloneSnapshot(store)), []),
   );
   return snapshot;
 }
 
-function useGotoRecoilSnapshot(): Snapshot => void {
+export function useGotoRecoilSnapshot(): Snapshot => void {
   const storeRef = useStoreRef();
   return useCallback(
     (snapshot: Snapshot) => {
@@ -648,7 +652,7 @@ function useGotoRecoilSnapshot(): Snapshot => void {
   );
 }
 
-function useSetUnvalidatedAtomValues(): (
+export function useSetUnvalidatedAtomValues(): (
   values: Map<NodeKey, mixed>,
   transactionMetadata?: {...},
 ) => void {
@@ -677,7 +681,7 @@ type CallbackInterface = $ReadOnly<{
 class Sentinel {}
 const SENTINEL = new Sentinel();
 
-function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
+export function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
   fn: CallbackInterface => (...Args) => Return,
   deps?: $ReadOnlyArray<mixed>,
 ): (...Args) => Return {
@@ -714,21 +718,3 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
     deps != null ? [...deps, storeRef] : undefined, // eslint-disable-line fb-www/react-hooks-deps
   );
 }
-
-module.exports = {
-  recoilComponentGetRecoilValueCount_FOR_TESTING,
-  useGotoRecoilSnapshot,
-  useRecoilCallback,
-  useRecoilInterface: useRecoilInterface_DEPRECATED,
-  useRecoilSnapshot,
-  useRecoilState,
-  useRecoilStateLoadable,
-  useRecoilTransactionObserver,
-  useRecoilValue,
-  useRecoilValueLoadable,
-  useResetRecoilState,
-  useSetRecoilState,
-  useSetUnvalidatedAtomValues,
-  useTransactionObservation_DEPRECATED,
-  useTransactionSubscription_DEPRECATED: useTransactionSubscription,
-};

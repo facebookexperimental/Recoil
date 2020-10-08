@@ -10,20 +10,21 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
+import gkx from '../../util/Recoil_gkx';
 gkx.setFail('recoil_async_selector_refactor');
 
-const {act} = require('ReactTestUtils');
+import ReactTestUtils from 'ReactTestUtils';
 
-const atom = require('../../recoil_values/Recoil_atom');
-const selector = require('../../recoil_values/Recoil_selector');
-const {makeStore} = require('../../testing/Recoil_TestingUtils');
-const {
+const {act} = ReactTestUtils;
+import atom from '../../recoil_values/Recoil_atom';
+import selector from '../../recoil_values/Recoil_selector';
+import {makeStore} from '../../testing/Recoil_TestingUtils';
+import {
   getRecoilValueAsLoadable,
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
-} = require('../Recoil_RecoilValueInterface');
+} from '../Recoil_RecoilValueInterface';
 
 let a;
 let dependsOnAFn;

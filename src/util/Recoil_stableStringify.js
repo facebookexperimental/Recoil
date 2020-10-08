@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const isPromise = require('./Recoil_isPromise');
+import isPromise from './Recoil_isPromise';
 
 const TIME_WARNING_THRESHOLD_MS = 15;
 
@@ -118,7 +118,7 @@ function stringify(x: mixed, opt: Options, key?: string): string {
 // * Support Symbols (though don't guarantee uniqueness)
 // * We could support BigInt, but Flow doesn't seem to like it.
 // See Recoil_stableStringify-test.js for examples
-function stableStringify(
+export default function stableStringify(
   x: mixed,
   opt: Options = {allowFunctions: false},
 ): string {
@@ -146,5 +146,3 @@ function stableStringify(
 
   return stringify(x, opt);
 }
-
-module.exports = stableStringify;

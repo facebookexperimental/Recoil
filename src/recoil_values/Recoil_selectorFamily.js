@@ -24,9 +24,9 @@ import type {
   SetRecoilState,
 } from './Recoil_selector';
 
-const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
-const stableStringify = require('../util/Recoil_stableStringify');
-const selector = require('./Recoil_selector');
+import cacheWithValueEquality from '../caches/Recoil_cacheWithValueEquality';
+import stableStringify from '../util/Recoil_stableStringify';
+import selector from './Recoil_selector';
 
 // Keep in mind the parameter needs to be serializable as a cahche key
 // using Recoil_stableStringify
@@ -71,10 +71,9 @@ declare function selectorFamily<T, Params: Parameter>(
 ): Params => RecoilValueReadOnly<T>;
 declare function selectorFamily<T, Params: Parameter>(
   options: ReadWriteSelectorFamilyOptions<T, Params>,
-): Params => RecoilState<T>;
+): Params => RecoilState<T>; // Return a function that returns members of a family of selectors of the same type
 
-// Return a function that returns members of a family of selectors of the same type
-// E.g.,
+/* eslint-enable no-redeclare */ // E.g.,
 //
 // const s = selectorFamily(...);
 // s({a: 1}) => a selector
@@ -85,7 +84,7 @@ declare function selectorFamily<T, Params: Parameter>(
 // object literals or other equivalent objects at callsites to not create
 // duplicate cache entries.  This behavior may be overridden with the
 // cacheImplementationForParams option.
-function selectorFamily<T, Params: Parameter>(
+export default function selectorFamily<T, Params: Parameter>(
   options:
     | ReadOnlySelectorFamilyOptions<T, Params>
     | ReadWriteSelectorFamilyOptions<T, Params>,
@@ -131,6 +130,3 @@ function selectorFamily<T, Params: Parameter>(
     return newSelector;
   };
 }
-/* eslint-enable no-redeclare */
-
-module.exports = selectorFamily;

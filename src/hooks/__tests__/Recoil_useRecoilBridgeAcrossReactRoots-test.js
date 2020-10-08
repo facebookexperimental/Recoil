@@ -10,17 +10,17 @@
  */
 'use strict';
 
-const React = require('React');
-const {useEffect, useRef} = require('React');
-const ReactDOM = require('ReactDOM');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import {useEffect, useRef} from 'React';
+import * as ReactDOM from 'ReactDOM';
+import ReactTestUtils from 'ReactTestUtils';
 
-const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
-const atom = require('../../recoil_values/Recoil_atom');
-const {
-  componentThatReadsAndWritesAtom,
-} = require('../../testing/Recoil_TestingUtils');
-const useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
+const {act} = ReactTestUtils;
+
+import {RecoilRoot} from '../../core/Recoil_RecoilRoot.react';
+import atom from '../../recoil_values/Recoil_atom';
+import {componentThatReadsAndWritesAtom} from '../../testing/Recoil_TestingUtils';
+import useRecoilBridgeAcrossReactRoots from '../Recoil_useRecoilBridgeAcrossReactRoots';
 
 test('useRecoilBridgeAcrossReactRoots - create a context bridge', () => {
   const myAtom = atom({

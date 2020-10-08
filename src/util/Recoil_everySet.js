@@ -15,7 +15,7 @@
  * The everySet() method tests whether all elements in the given Set pass the
  * test implemented by the provided function.
  */
-function everySet<T>(
+export default function everySet<T>(
   set: $ReadOnlySet<T>,
   callback: (value: T, key: T, set: $ReadOnlySet<T>) => boolean,
   context?: mixed,
@@ -31,5 +31,3 @@ function everySet<T>(
   }
   return true;
 }
-
-module.exports = everySet;

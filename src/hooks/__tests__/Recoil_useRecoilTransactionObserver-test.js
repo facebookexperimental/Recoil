@@ -10,23 +10,24 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
+import gkx from '../../util/Recoil_gkx';
 gkx.setFail('recoil_async_selector_refactor');
 
-const React = require('React');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import ReactTestUtils from 'ReactTestUtils';
 
-const {freshSnapshot} = require('../../core/Recoil_Snapshot');
-const atom = require('../../recoil_values/Recoil_atom');
-const atomFamily = require('../../recoil_values/Recoil_atomFamily');
-const selector = require('../../recoil_values/Recoil_selector');
-const {
+const {act} = ReactTestUtils;
+import {freshSnapshot} from '../../core/Recoil_Snapshot';
+import atom from '../../recoil_values/Recoil_atom';
+import atomFamily from '../../recoil_values/Recoil_atomFamily';
+import selector from '../../recoil_values/Recoil_selector';
+import {
   ReadsAtom,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
-} = require('../../testing/Recoil_TestingUtils');
-const {useRecoilTransactionObserver} = require('../Recoil_Hooks');
+} from '../../testing/Recoil_TestingUtils';
+import {useRecoilTransactionObserver} from '../Recoil_Hooks';
 
 function TransactionObserver({callback}) {
   useRecoilTransactionObserver(callback);

@@ -10,24 +10,19 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
+import gkx from '../../util/Recoil_gkx';
 gkx.setFail('recoil_async_selector_refactor');
 
 import type {RecoilValue} from 'Recoil_RecoilValue';
 
-const {loadableWithError, loadableWithValue} = require('Recoil_Loadable');
+import {loadableWithError, loadableWithValue} from 'Recoil_Loadable';
 
-const {act} = require('ReactTestUtils');
-const {
-  getRecoilValueAsLoadable,
-} = require('../../core/Recoil_RecoilValueInterface');
-const {asyncSelector, makeStore} = require('../../testing/Recoil_TestingUtils');
-const {
-  noWait,
-  waitForAll,
-  waitForAny,
-  waitForNone,
-} = require('../Recoil_WaitFor');
+import ReactTestUtils from 'ReactTestUtils';
+const {act} = ReactTestUtils;
+import {getRecoilValueAsLoadable} from '../../core/Recoil_RecoilValueInterface';
+import {asyncSelector, makeStore} from '../../testing/Recoil_TestingUtils';
+import Recoil_WaitFor from '../Recoil_WaitFor';
+const {noWait, waitForAll, waitForAny, waitForNone} = Recoil_WaitFor;
 
 /* eslint-disable jest/valid-expect */
 

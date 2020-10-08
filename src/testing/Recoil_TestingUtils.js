@@ -13,32 +13,32 @@ import type {RecoilValueReadOnly} from 'Recoil_RecoilValue';
 import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
 import type {Store} from 'Recoil_State';
 
-const React = require('React');
-const {useEffect} = require('React');
-const ReactDOM = require('ReactDOM');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import {useEffect} from 'React';
+import * as ReactDOM from 'ReactDOM';
+import ReactTestUtils from 'ReactTestUtils';
 
-const {graph} = require('../core/Recoil_Graph');
-const {
+const {act} = ReactTestUtils;
+
+import {graph} from '../core/Recoil_Graph';
+import {
   RecoilRoot,
   sendEndOfBatchNotifications_FOR_TESTING,
-} = require('../core/Recoil_RecoilRoot.react');
-const {
-  invalidateDownstreams_FOR_TESTING,
-} = require('../core/Recoil_RecoilValueInterface');
-const {makeEmptyStoreState} = require('../core/Recoil_State');
-const {
+} from '../core/Recoil_RecoilRoot.react';
+import {invalidateDownstreams_FOR_TESTING} from '../core/Recoil_RecoilValueInterface';
+import {makeEmptyStoreState} from '../core/Recoil_State';
+import {
   useRecoilValue,
   useResetRecoilState,
   useSetRecoilState,
-} = require('../hooks/Recoil_Hooks');
-const selector = require('../recoil_values/Recoil_selector');
-const invariant = require('../util/Recoil_invariant');
-const nullthrows = require('../util/Recoil_nullthrows');
-const stableStringify = require('../util/Recoil_stableStringify');
+} from '../hooks/Recoil_Hooks';
+import selector from '../recoil_values/Recoil_selector';
+import invariant from '../util/Recoil_invariant';
+import nullthrows from '../util/Recoil_nullthrows';
+import stableStringify from '../util/Recoil_stableStringify';
 
 // TODO Use Snapshot for testing instead of this thunk?
-function makeStore(): Store {
+export function makeStore(): Store {
   const storeState = makeEmptyStoreState();
   const store = {
     getState: () => storeState,
@@ -89,7 +89,7 @@ function createReactRoot(container, contents) {
   ReactDOM.render(contents, container);
 }
 
-function renderElements(elements: ?React.Node): HTMLDivElement {
+export function renderElements(elements: ?React.Node): HTMLDivElement {
   const container = document.createElement('div');
   act(() => {
     createReactRoot(
@@ -104,7 +104,7 @@ function renderElements(elements: ?React.Node): HTMLDivElement {
   return container;
 }
 
-function renderElementsWithSuspenseCount(
+export function renderElementsWithSuspenseCount(
   elements: ?React.Node,
 ): [HTMLDivElement, JestMockFn<[], void>] {
   const container = document.createElement('div');
@@ -131,7 +131,7 @@ function renderElementsWithSuspenseCount(
 ////////////////////////////////////////
 let id = 0;
 
-const errorThrowingAsyncSelector: <T, S>(
+export const errorThrowingAsyncSelector: <T, S>(
   string,
   ?RecoilValue<S>,
 ) => RecoilValue<T> = <T, S>(
@@ -148,7 +148,7 @@ const errorThrowingAsyncSelector: <T, S>(
     },
   });
 
-const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
+export const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
   value: T,
 ): RecoilValueReadOnly<T> | RecoilValueReadOnly<mixed> =>
   selector({
@@ -156,13 +156,13 @@ const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
     get: () => Promise.resolve(value),
   });
 
-const loadingAsyncSelector: () => RecoilValue<void> = () =>
+export const loadingAsyncSelector: () => RecoilValue<void> = () =>
   selector({
     key: `LoadingSelector${id++}`,
     get: () => new Promise(() => {}),
   });
 
-function asyncSelector<T, S>(
+export function asyncSelector<T, S>(
   dep?: RecoilValue<S>,
 ): [RecoilValue<T>, (T) => void, (Error) => void] {
   let resolve = () => invariant(false, 'bug in test code'); // make flow happy with initialization
@@ -187,7 +187,7 @@ function asyncSelector<T, S>(
 // Useful Components for testing
 //////////////////////////////////
 
-function ReadsAtom<T>({atom}: {atom: RecoilValue<T>}): React.Node {
+export function ReadsAtom<T>({atom}: {atom: RecoilValue<T>}): React.Node {
   return stableStringify(useRecoilValue(atom));
 }
 
@@ -196,7 +196,7 @@ function ReadsAtom<T>({atom}: {atom: RecoilValue<T>}): React.Node {
 //   setValue(T),
 //   resetValue()
 // ]
-function componentThatReadsAndWritesAtom<T>(
+export function componentThatReadsAndWritesAtom<T>(
   atom: RecoilState<T>,
 ): [() => React.Node, (T) => void, () => void] {
   let setValue;
@@ -209,7 +209,7 @@ function componentThatReadsAndWritesAtom<T>(
   return [Component, (value: T) => setValue(value), () => resetValue()];
 }
 
-function flushPromisesAndTimers(): Promise<void> {
+export function flushPromisesAndTimers(): Promise<void> {
   // Wrap flush with act() to avoid warning that only shows up in OSS environment
   return act(
     () =>
@@ -220,16 +220,3 @@ function flushPromisesAndTimers(): Promise<void> {
       }),
   );
 }
-
-module.exports = {
-  makeStore,
-  renderElements,
-  renderElementsWithSuspenseCount,
-  ReadsAtom,
-  componentThatReadsAndWritesAtom,
-  errorThrowingAsyncSelector,
-  resolvingAsyncSelector,
-  loadingAsyncSelector,
-  asyncSelector,
-  flushPromisesAndTimers,
-};

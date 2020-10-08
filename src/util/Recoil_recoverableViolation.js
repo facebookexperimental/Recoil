@@ -11,8 +11,8 @@
 
 'use strict';
 
-// @fb-only: const recoverableViolation = require('recoverableViolation');
+// @fb-only: import recoverableViolation from 'recoverableViolation';
 
 const recoverableViolation = require('./polyfill/recoverableViolation.js'); // @oss-only
 
-module.exports = recoverableViolation;
+export default recoverableViolation;

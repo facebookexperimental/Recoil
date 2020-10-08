@@ -10,10 +10,10 @@
 
 import type {NodeCache} from './Recoil_NodeCache';
 
-const stableStringify = require('../util/Recoil_stableStringify');
-const {getFromTreeCache, setInTreeCache} = require('./Recoil_TreeNodeCache');
+import stableStringify from '../util/Recoil_stableStringify';
+import {getFromTreeCache, setInTreeCache} from './Recoil_TreeNodeCache';
 
-function treeCacheValueEquality<T>(): NodeCache<T> {
+export default function treeCacheValueEquality<T>(): NodeCache<T> {
   let treeRoot;
   return {
     get: (getNodeValue, handlers) =>
@@ -35,5 +35,3 @@ function treeCacheValueEquality<T>(): NodeCache<T> {
     getRoot: () => treeRoot,
   };
 }
-
-module.exports = treeCacheValueEquality;

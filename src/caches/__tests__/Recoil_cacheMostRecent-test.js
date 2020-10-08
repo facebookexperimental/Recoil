@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const cacheMostRecent = require('../Recoil_cacheMostRecent');
+import cacheMostRecent from '../Recoil_cacheMostRecent';
 
 test('cacheMostRecent', () => {
   const cache = cacheMostRecent();

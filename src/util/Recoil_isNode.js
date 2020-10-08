@@ -11,7 +11,7 @@
 
 'use strict';
 
-function isNode(object: mixed): boolean {
+export default function isNode(object: mixed): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
@@ -28,5 +28,3 @@ function isNode(object: mixed): boolean {
         typeof object.nodeName === 'string')
   );
 }
-
-module.exports = isNode;

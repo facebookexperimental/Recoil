@@ -65,35 +65,35 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-const {
+import {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const cacheMostRecent = require('../caches/Recoil_cacheMostRecent');
-const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
-const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
-const nodeCacheMostRecent = require('../caches/Recoil_nodeCacheMostRecent');
-const treeCacheReferenceEquality = require('../caches/Recoil_treeCacheReferenceEquality');
-const treeCacheValueEquality = require('../caches/Recoil_treeCacheValueEquality');
-const {
+} from '../adt/Recoil_Loadable';
+import cacheMostRecent from '../caches/Recoil_cacheMostRecent';
+import cacheWithReferenceEquality from '../caches/Recoil_cacheWithReferenceEquality';
+import cacheWithValueEquality from '../caches/Recoil_cacheWithValueEquality';
+import nodeCacheMostRecent from '../caches/Recoil_nodeCacheMostRecent';
+import treeCacheReferenceEquality from '../caches/Recoil_treeCacheReferenceEquality';
+import treeCacheValueEquality from '../caches/Recoil_treeCacheValueEquality';
+import {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
-} = require('../core/Recoil_FunctionalCore');
-const {saveDependencyMapToStore} = require('../core/Recoil_Graph');
-const {
+} from '../core/Recoil_FunctionalCore';
+import {saveDependencyMapToStore} from '../core/Recoil_Graph';
+import {
   DEFAULT_VALUE,
   RecoilValueNotReady,
   registerNode,
-} = require('../core/Recoil_Node');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
-const {setRecoilValueLoadable} = require('../core/Recoil_RecoilValueInterface');
-const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
-const isPromise = require('../util/Recoil_isPromise');
-const nullthrows = require('../util/Recoil_nullthrows');
-const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
+} from '../core/Recoil_Node';
+import {isRecoilValue} from '../core/Recoil_RecoilValue';
+import {AbstractRecoilValue} from '../core/Recoil_RecoilValue';
+import {setRecoilValueLoadable} from '../core/Recoil_RecoilValueInterface';
+import deepFreezeValue from '../util/Recoil_deepFreezeValue';
+import isPromise from '../util/Recoil_isPromise';
+import nullthrows from '../util/Recoil_nullthrows';
+import {startPerfBlock} from '../util/Recoil_PerformanceTimings';
 
 export type ValueOrUpdater<T> =
   | T
@@ -186,7 +186,7 @@ function getInitialExecutionInfo<T>(): ExecutionInfo<T> {
   };
 }
 
-function selector<T>(
+/* eslint-enable no-redeclare */ export default function selector<T>(
   options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>,
 ): RecoilValue<T> {
   const {key, get, cacheImplementation_UNSTABLE: cacheImplementation} = options;
@@ -950,7 +950,3 @@ function selector<T>(
     });
   }
 }
-
-/* eslint-enable no-redeclare */
-
-module.exports = selector;

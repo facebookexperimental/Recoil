@@ -16,4 +16,4 @@ export type CacheImplementation<T> = {
   ...
 };
 
-module.exports = ({}: {...});
+export default ({}: {...});

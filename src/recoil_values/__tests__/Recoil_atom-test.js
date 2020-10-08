@@ -9,31 +9,33 @@
 
 import type {Store} from 'Recoil_State';
 
-const React = require('React');
-const {useEffect, useState} = require('React');
-const ReactDOM = require('ReactDOM');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import {useEffect, useState} from 'React';
+import * as ReactDOM from 'ReactDOM';
+import ReactTestUtils from 'ReactTestUtils';
 
-const {DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node');
-const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
-const {
+const {act} = ReactTestUtils;
+
+import {DEFAULT_VALUE, DefaultValue} from '../../core/Recoil_Node';
+import {RecoilRoot} from '../../core/Recoil_RecoilRoot.react';
+import {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../../core/Recoil_RecoilValueInterface');
-const {
+} from '../../core/Recoil_RecoilValueInterface';
+import {
   useRecoilState,
   useRecoilTransactionObserver,
   useResetRecoilState,
-} = require('../../hooks/Recoil_Hooks');
-const {
+} from '../../hooks/Recoil_Hooks';
+import {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   makeStore,
   renderElements,
-} = require('../../testing/Recoil_TestingUtils');
-const atom = require('../Recoil_atom');
-const immutable = require('immutable');
+} from '../../testing/Recoil_TestingUtils';
+import atom from '../Recoil_atom';
+import immutable from 'immutable';
 
 let store: Store;
 beforeEach(() => {

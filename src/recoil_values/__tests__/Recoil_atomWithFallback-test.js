@@ -13,26 +13,28 @@
 import type {RecoilValue} from 'Recoil_RecoilValue';
 import type {Store} from 'Recoil_State';
 
-const React = require('React');
-const {useState} = require('React');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import {useState} from 'React';
+import ReactTestUtils from 'ReactTestUtils';
 
-const {
+const {act} = ReactTestUtils;
+
+import {
   getRecoilValueAsLoadable,
   setRecoilValue,
   subscribeToRecoilValue,
-} = require('../../core/Recoil_RecoilValueInterface');
-const {
+} from '../../core/Recoil_RecoilValueInterface';
+import {
   useRecoilState,
   useSetUnvalidatedAtomValues,
-} = require('../../hooks/Recoil_Hooks');
-const {
+} from '../../hooks/Recoil_Hooks';
+import {
   componentThatReadsAndWritesAtom,
   makeStore,
   renderElements,
-} = require('../../testing/Recoil_TestingUtils');
-const atom = require('../Recoil_atom');
-const constSelector = require('../Recoil_constSelector');
+} from '../../testing/Recoil_TestingUtils';
+import atom from '../Recoil_atom';
+import constSelector from '../Recoil_constSelector';
 
 let fallback: RecoilValue<number>,
   hasFallback: RecoilValue<number>,

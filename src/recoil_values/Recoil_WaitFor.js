@@ -16,14 +16,14 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 
-const {
+import {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const gkx = require('../util/Recoil_gkx');
-const isPromise = require('../util/Recoil_isPromise');
-const selectorFamily = require('./Recoil_selectorFamily');
+} from '../adt/Recoil_Loadable';
+import gkx from '../util/Recoil_gkx';
+import isPromise from '../util/Recoil_isPromise';
+import selectorFamily from './Recoil_selectorFamily';
 
 /////////////////
 //  TRUTH TABLE
@@ -109,7 +109,8 @@ function wrapLoadables(
 
 // Selector that requests all dependencies in parallel and immediately returns
 // current results without waiting.
-const waitForNone: <
+
+export const waitForNone: <
   RecoilValues:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>, ...}>,
@@ -136,7 +137,8 @@ const waitForNone: <
 // Selector that requests all dependencies in parallel and waits for at least
 // one to be available before returning results.  It will only error if all
 // dependencies have errors.
-const waitForAny: <
+
+export const waitForAny: <
   RecoilValues:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>, ...}>,
@@ -214,7 +216,8 @@ const waitForAny: <
 
 // Selector that requests all dependencies in parallel and waits for all to be
 // available before returning a value.  It will error if any dependencies error.
-const waitForAll: <
+
+export const waitForAll: <
   RecoilValues:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>, ...}>,
@@ -261,7 +264,7 @@ const waitForAll: <
   },
 });
 
-const noWait: (
+export const noWait: (
   RecoilValue<mixed>,
 ) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
   key: '__noWait',
@@ -275,10 +278,3 @@ const noWait: (
     }
   },
 });
-
-module.exports = {
-  waitForNone,
-  waitForAny,
-  waitForAll,
-  noWait,
-};

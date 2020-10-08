@@ -10,37 +10,38 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
+import gkx from '../../util/Recoil_gkx';
 gkx.setFail('recoil_async_selector_refactor');
 
-const React = require('React');
-const {useEffect, useState} = require('React');
-const {act} = require('ReactTestUtils');
-const atom = require('../Recoil_atom');
-const {
+import * as React from 'React';
+import {useEffect, useState} from 'React';
+import ReactTestUtils from 'ReactTestUtils';
+const {act} = ReactTestUtils;
+import atom from '../Recoil_atom';
+import {
   useRecoilCallback,
   useRecoilState,
   useRecoilValue,
   useRecoilValueLoadable,
   useSetRecoilState,
-} = require('../../hooks/Recoil_Hooks');
-const constSelector = require('../Recoil_constSelector');
-const errorSelector = require('../Recoil_errorSelector');
-const {
+} from '../../hooks/Recoil_Hooks';
+import constSelector from '../Recoil_constSelector';
+import errorSelector from '../Recoil_errorSelector';
+import {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../../core/Recoil_RecoilValueInterface');
-const selector = require('../Recoil_selector');
-const {
+} from '../../core/Recoil_RecoilValueInterface';
+import selector from '../Recoil_selector';
+import {
   asyncSelector,
   makeStore,
   ReadsAtom,
   renderElements,
   resolvingAsyncSelector,
   flushPromisesAndTimers,
-} = require('../../testing/Recoil_TestingUtils');
-const {DefaultValue} = require('../../core/Recoil_Node');
-const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
+} from '../../testing/Recoil_TestingUtils';
+import {DefaultValue} from '../../core/Recoil_Node';
+import {mutableSourceExists} from '../../util/Recoil_mutableSource';
 
 let store;
 beforeEach(() => {

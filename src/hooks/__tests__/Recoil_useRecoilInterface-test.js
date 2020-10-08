@@ -10,13 +10,15 @@
  */
 'use strict';
 
-const React = require('React');
-const {useRef, useState} = require('React');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import {useRef, useState} from 'React';
+import ReactTestUtils from 'ReactTestUtils';
 
-const atom = require('../../recoil_values/Recoil_atom');
-const {renderElements} = require('../../testing/Recoil_TestingUtils');
-const {useRecoilInterface} = require('../Recoil_Hooks');
+const {act} = ReactTestUtils;
+
+import atom from '../../recoil_values/Recoil_atom';
+import {renderElements} from '../../testing/Recoil_TestingUtils';
+import {useRecoilInterface} from '../Recoil_Hooks';
 
 const counterAtom = atom({
   key: `counterAtom`,

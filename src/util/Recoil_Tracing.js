@@ -15,59 +15,71 @@
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
 // flowlint-next-line untyped-import:off
-// @fb-only: const SchedulerTracing = require('SchedulerTracing');
+// @fb-only: import SchedulerTracing from 'SchedulerTracing';
 
-function trace<TResult>(
+export function trace<TResult>(
   message: string,
   node: string | RecoilValue<mixed>,
   fn: () => TResult,
 ): TResult {
   // prettier-ignore
-  // @fb-only: if (__DEV__) {
-  // prettier-ignore
-    // @fb-only: if (
-  // prettier-ignore
+  if (__DEV__) {
+    // @fb-only
+    // prettier-ignore
+    if (
+      // @fb-only
+      // prettier-ignore
       // @fb-only: SchedulerTracing.unstable_trace !== undefined &&
-  // prettier-ignore
-      // @fb-only: window.performance !== undefined
-  // prettier-ignore
-    // @fb-only: ) {
-  // prettier-ignore
-      // @fb-only: return SchedulerTracing.unstable_trace(
-  // prettier-ignore
-        // @fb-only: `Recoil: ${message} for node: ${
-  // prettier-ignore
-          // @fb-only: typeof node === 'string' ? node : node.key
-  // prettier-ignore
-        // @fb-only: }`,
-  // prettier-ignore
-        // @fb-only: window.performance.now(),
-  // prettier-ignore
-        // @fb-only: fn,
-  // prettier-ignore
+        // prettier-ignore
+        // @fb-only: window.performance !== undefined
+        // prettier-ignore
+        
+    ) {
+      // @fb-only
+      // prettier-ignore
+      return SchedulerTracing.unstable_trace(
+        // @fb-only
+        // prettier-ignore
+        `Recoil: ${message} for node: ${// @fb-only
+        // prettier-ignore
+        typeof node === 'string'
+          ? node
+          // @fb-only: : node.key
+          // prettier-ignore
+          // @fb-only: }`
+        ,
+        // prettier-ignore
+        // @fb-only: window.performance.now()
+        ,
+        // prettier-ignore
+        // @fb-only: fn
+        ,
+        // prettier-ignore
+        
       // @fb-only: );
-  // prettier-ignore
+      // prettier-ignore
+      
     // @fb-only: }
-  // prettier-ignore
+    // prettier-ignore
+    
   // @fb-only: }
   return fn();
 }
 
-function wrap<TFunction>(fn: TFunction): TFunction {
+export function wrap<TFunction>(fn: TFunction): TFunction {
   // prettier-ignore
-  // @fb-only: if (__DEV__) {
-  // prettier-ignore
-    // @fb-only: if (SchedulerTracing.unstable_wrap !== undefined) {
-  // prettier-ignore
+  if (__DEV__) {
+    // @fb-only
+    // prettier-ignore
+    if (SchedulerTracing.unstable_wrap !== undefined) {
+      // @fb-only
+      // prettier-ignore
       // @fb-only: return SchedulerTracing.unstable_wrap(fn);
-  // prettier-ignore
+      // prettier-ignore
+      
     // @fb-only: }
-  // prettier-ignore
+    // prettier-ignore
+    
   // @fb-only: }
   return fn;
 }
-
-module.exports = {
-  trace,
-  wrap,
-};

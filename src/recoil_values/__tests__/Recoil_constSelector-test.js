@@ -12,11 +12,9 @@
 
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 
-const {
-  getRecoilValueAsLoadable,
-} = require('../../core/Recoil_RecoilValueInterface');
-const {makeStore} = require('../../testing/Recoil_TestingUtils');
-const constSelector = require('../Recoil_constSelector');
+import {getRecoilValueAsLoadable} from '../../core/Recoil_RecoilValueInterface';
+import {makeStore} from '../../testing/Recoil_TestingUtils';
+import constSelector from '../Recoil_constSelector';
 
 let store;
 beforeEach(() => {

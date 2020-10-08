@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const cacheWithReferenceEquality = require('../Recoil_cacheWithReferenceEquality');
+import cacheWithReferenceEquality from '../Recoil_cacheWithReferenceEquality';
 
 test('cacheWithReferenceEquality - set string', () => {
   const cache = cacheWithReferenceEquality();

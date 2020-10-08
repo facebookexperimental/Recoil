@@ -7,25 +7,26 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
+import gkx from '../../util/Recoil_gkx';
 gkx.setFail('recoil_async_selector_refactor');
 
-const React = require('React');
-const {useEffect} = require('React');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import {useEffect} from 'React';
+import ReactTestUtils from 'ReactTestUtils';
 
-const {freshSnapshot} = require('../../core/Recoil_Snapshot');
-const atom = require('../../recoil_values/Recoil_atom');
-const constSelector = require('../../recoil_values/Recoil_constSelector');
-const selector = require('../../recoil_values/Recoil_selector');
-const {
+const {act} = ReactTestUtils;
+import {freshSnapshot} from '../../core/Recoil_Snapshot';
+import atom from '../../recoil_values/Recoil_atom';
+import constSelector from '../../recoil_values/Recoil_constSelector';
+import selector from '../../recoil_values/Recoil_selector';
+import {
   ReadsAtom,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
-} = require('../../testing/Recoil_TestingUtils');
-const {useGotoRecoilSnapshot, useRecoilSnapshot} = require('../Recoil_Hooks');
+} from '../../testing/Recoil_TestingUtils';
+import {useGotoRecoilSnapshot, useRecoilSnapshot} from '../Recoil_Hooks';
 
 test('useRecoilSnapshot - subscribe to updates', () => {
   const myAtom = atom({

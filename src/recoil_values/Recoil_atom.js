@@ -68,30 +68,26 @@ import type {PersistenceInfo, ReadWriteNodeOptions} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-// @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
+// @fb-only: import {scopedAtom} from 'Recoil_ScopedAtom';
 
-const {
+import {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const {
-  DEFAULT_VALUE,
-  DefaultValue,
-  registerNode,
-} = require('../core/Recoil_Node');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {
+} from '../adt/Recoil_Loadable';
+import {DEFAULT_VALUE, DefaultValue, registerNode} from '../core/Recoil_Node';
+import {isRecoilValue} from '../core/Recoil_RecoilValue';
+import {
   markRecoilValueModified,
   setRecoilValue,
   setRecoilValueLoadable,
-} = require('../core/Recoil_RecoilValueInterface');
-const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
-const expectationViolation = require('../util/Recoil_expectationViolation');
-const isPromise = require('../util/Recoil_isPromise');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const selector = require('./Recoil_selector');
+} from '../core/Recoil_RecoilValueInterface';
+import deepFreezeValue from '../util/Recoil_deepFreezeValue';
+import expectationViolation from '../util/Recoil_expectationViolation';
+import isPromise from '../util/Recoil_isPromise';
+import nullthrows from '../util/Recoil_nullthrows';
+import recoverableViolation from '../util/Recoil_recoverableViolation';
+import selector from './Recoil_selector';
 
 export type PersistenceSettings<Stored> = $ReadOnly<{
   ...PersistenceInfo,
@@ -406,28 +402,43 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 }
 
 // prettier-ignore
-function atom<T>(options: AtomOptions<T>): RecoilState<T> {
+export default function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   const {
     default: optionsDefault,
-    // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS
+    ,
     ...restOptions
   } = options;
-  if (isRecoilValue(optionsDefault)
+  if (
+    isRecoilValue(optionsDefault)
     // Continue to use atomWithFallback for promise defaults for scoped atoms
     // for now, since scoped atoms don't support async defaults
-   // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
+     ||
+      // @fb-only: isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS
+      
   ) {
-    return atomWithFallback<T>({
-      ...restOptions,
-      default: optionsDefault,
-      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    });
-  // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
-    // @fb-only: return scopedAtom<T>({
-      // @fb-only: ...restOptions,
-      // @fb-only: default: optionsDefault,
-      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    // @fb-only: });
+    return atomWithFallback<T>(
+      {
+        ...restOptions,
+        default: optionsDefault,
+        // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS
+        ,
+      },
+    );
+  } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
+    // @fb-only
+    return scopedAtom<T>(
+      {
+        // @fb-only
+        // @fb-only: ...restOptions
+        ,
+        // @fb-only: default: optionsDefault
+        ,
+        // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS
+        ,
+      },
+    // @fb-only: );
+    
   } else {
     return baseAtom<T>({...restOptions, default: optionsDefault});
   }
@@ -472,5 +483,3 @@ function atomWithFallback<T>(
     dangerouslyAllowMutability: options.dangerouslyAllowMutability,
   });
 }
-
-module.exports = atom;

@@ -11,7 +11,7 @@
 
 'use strict';
 
-function unionSets<TValue>(
+export default function unionSets<TValue>(
   ...sets: $ReadOnlyArray<$ReadOnlySet<TValue>>
 ): Set<TValue> {
   const result = new Set();
@@ -22,5 +22,3 @@ function unionSets<TValue>(
   }
   return result;
 }
-
-module.exports = unionSets;

@@ -10,8 +10,8 @@
  */
 'use strict';
 
-// @fb-only: const expectationViolation = require('expectationViolation');
+// @fb-only: import expectationViolation from 'expectationViolation';
 
 const expectationViolation = require('./polyfill/expectationViolation.js'); // @oss-only
 
-module.exports = expectationViolation;
+export default expectationViolation;

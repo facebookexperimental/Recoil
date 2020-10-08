@@ -11,7 +11,7 @@
 
 'use strict';
 
-function mergeMaps<TKey, TValue>(
+export default function mergeMaps<TKey, TValue>(
   ...maps: $ReadOnlyArray<$ReadOnlyMap<TKey, TValue>>
 ): Map<TKey, TValue> {
   const result = new Map();
@@ -28,5 +28,3 @@ function mergeMaps<TKey, TValue>(
    * delete this comment and run Flow. */
   return result;
 }
-
-module.exports = mergeMaps;

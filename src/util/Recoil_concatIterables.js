@@ -21,7 +21,7 @@
  * r == ['a', 'b', 'c', 'd', 'e', 'f'];
  * ```
  */
-function* concatIterables<TValue>(
+export default function* concatIterables<TValue>(
   iters: Iterable<Iterable<TValue>>,
 ): Iterable<TValue> {
   for (const iter of iters) {
@@ -30,5 +30,3 @@ function* concatIterables<TValue>(
     }
   }
 }
-
-module.exports = concatIterables;

@@ -10,29 +10,30 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
+import gkx from '../../util/Recoil_gkx';
 gkx.setFail('recoil_async_selector_refactor');
 
-const React = require('React');
-const {useState} = require('React');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import {useState} from 'React';
+import ReactTestUtils from 'ReactTestUtils';
 
-const {freshSnapshot} = require('../../core/Recoil_Snapshot');
-const {
+const {act} = ReactTestUtils;
+import {freshSnapshot} from '../../core/Recoil_Snapshot';
+import {
   useGotoRecoilSnapshot,
   useRecoilCallback,
   useRecoilValue,
-} = require('../../hooks/Recoil_Hooks');
-const atom = require('../../recoil_values/Recoil_atom');
-const constSelector = require('../../recoil_values/Recoil_constSelector');
-const selector = require('../../recoil_values/Recoil_selector');
-const {
+} from '../../hooks/Recoil_Hooks';
+import atom from '../../recoil_values/Recoil_atom';
+import constSelector from '../../recoil_values/Recoil_constSelector';
+import selector from '../../recoil_values/Recoil_selector';
+import {
   ReadsAtom,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
-} = require('../../testing/Recoil_TestingUtils');
+} from '../../testing/Recoil_TestingUtils';
 
 test('Goto mapped snapshot', async () => {
   const snapshot = freshSnapshot();

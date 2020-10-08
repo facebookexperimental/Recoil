@@ -11,8 +11,6 @@
  * This is a stub for some integration into FB internal stuff
  */
 
-function startPerfBlock(_id: mixed): () => null {
+export function startPerfBlock(_id: mixed): () => null {
   return () => null;
 }
-
-module.exports = {startPerfBlock};

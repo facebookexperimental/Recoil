@@ -18,7 +18,7 @@
  * Note: this is written procedurally (i.e., without filterSet) for performant
  * use in tight loops.
  */
-function differenceSets<TValue>(
+export default function differenceSets<TValue>(
   set: $ReadOnlySet<TValue>,
   ...setsWithValuesToRemove: $ReadOnlyArray<$ReadOnlySet<TValue>>
 ): Set<TValue> {
@@ -33,5 +33,3 @@ function differenceSets<TValue>(
   }
   return ret;
 }
-
-module.exports = differenceSets;

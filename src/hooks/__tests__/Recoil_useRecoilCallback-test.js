@@ -10,27 +10,28 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
+import gkx from '../../util/Recoil_gkx';
 gkx.setFail('recoil_async_selector_refactor');
 
-const React = require('React');
-const {useRef, useState} = require('React');
-const {act} = require('ReactTestUtils');
+import * as React from 'React';
+import {useRef, useState} from 'React';
+import ReactTestUtils from 'ReactTestUtils';
 
-const {useStoreRef} = require('../../core/Recoil_RecoilRoot.react');
-const {
+const {act} = ReactTestUtils;
+import {useStoreRef} from '../../core/Recoil_RecoilRoot.react';
+import {
   atom,
   atomFamily,
   selector,
   useRecoilCallback,
   useSetRecoilState,
-} = require('../../Recoil_index');
-const {
+} from '../../Recoil_index';
+import {
   ReadsAtom,
   flushPromisesAndTimers,
   renderElements,
-} = require('../../testing/Recoil_TestingUtils');
-const invariant = require('../../util/Recoil_invariant');
+} from '../../testing/Recoil_TestingUtils';
+import invariant from '../../util/Recoil_invariant';
 
 describe('useRecoilCallback', () => {
   it('Reads Recoil values', async () => {

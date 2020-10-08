@@ -25,7 +25,7 @@ export type TreeCacheBranch<T> = {
   branches: Map<mixed, TreeCacheNode<T>>,
 };
 
-function setInTreeCache<T>(
+export function setInTreeCache<T>(
   root: ?TreeCacheNode<T>,
   route: NodeCacheRoute,
   result: Loadable<T>,
@@ -84,7 +84,7 @@ function setInTreeCache<T>(
   }
 }
 
-function getFromTreeCache<T>(
+export function getFromTreeCache<T>(
   root: ?TreeCacheNode<T>,
   getNodeValue: GetNodeValue,
   handlers: Handlers,
@@ -103,5 +103,3 @@ function getFromTreeCache<T>(
 
   return getFromTreeCache(root.branches.get(nodeValue), getNodeValue, handlers);
 }
-
-module.exports = {setInTreeCache, getFromTreeCache};

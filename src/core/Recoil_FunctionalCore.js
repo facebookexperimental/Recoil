@@ -15,12 +15,12 @@ import type {DependencyMap} from './Recoil_Graph';
 import type {DefaultValue} from './Recoil_Node';
 import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
 
-const {
+import {
   mapByDeletingFromMap,
   mapBySettingInMap,
   setByAddingToSet,
-} = require('../util/Recoil_CopyOnWrite');
-const {getNode, getNodeMaybe} = require('./Recoil_Node');
+} from '../util/Recoil_CopyOnWrite';
+import {getNode, getNodeMaybe} from './Recoil_Node';
 
 // flowlint-next-line unclear-type:off
 const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());
@@ -30,7 +30,7 @@ class ReadOnlyRecoilValueError extends Error {}
 // Get the current value loadable of a node and update the state.
 // Update dependencies and subscriptions for selectors.
 // Update saved value validation for atoms.
-function getNodeLoadable<T>(
+export function getNodeLoadable<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
@@ -39,7 +39,7 @@ function getNodeLoadable<T>(
 }
 
 // Peek at the current value loadable for a node without any evaluation or state change
-function peekNodeLoadable<T>(
+export function peekNodeLoadable<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
@@ -49,7 +49,7 @@ function peekNodeLoadable<T>(
 
 // Write value directly to state bypassing the Node interface as the node
 // definitions may not have been loaded yet when processing the initial snapshot.
-function setUnvalidatedAtomValue_DEPRECATED<T>(
+export function setUnvalidatedAtomValue_DEPRECATED<T>(
   state: TreeState,
   key: NodeKey,
   newValue: T,
@@ -72,7 +72,7 @@ function setUnvalidatedAtomValue_DEPRECATED<T>(
 // Return the discovered dependencies and values to be written by setting
 // a node value. (Multiple values may be written due to selectors getting to
 // set upstreams; deps may be discovered because of reads in updater functions.)
-function setNodeValue<T>(
+export function setNodeValue<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
@@ -87,13 +87,13 @@ function setNodeValue<T>(
   return node.set(store, state, newValue);
 }
 
-function cleanUpNode(store: Store, key: NodeKey) {
+export function cleanUpNode(store: Store, key: NodeKey) {
   const node = getNode(key);
   node.cleanUp(store);
 }
 
 // Find all of the recursively dependent nodes
-function getDownstreamNodes(
+export function getDownstreamNodes(
   store: Store,
   state: TreeState,
   keys: $ReadOnlySet<NodeKey>,
@@ -113,12 +113,3 @@ function getDownstreamNodes(
   }
   return visitedNodes;
 }
-
-module.exports = {
-  getNodeLoadable,
-  peekNodeLoadable,
-  setNodeValue,
-  cleanUpNode,
-  setUnvalidatedAtomValue_DEPRECATED,
-  getDownstreamNodes,
-};

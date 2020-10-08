@@ -15,7 +15,7 @@
  * Returns a set containing all of the values from the original set where
  * the given callback returned true.
  */
-function filterSet<TValue>(
+export default function filterSet<TValue>(
   set: $ReadOnlySet<TValue>,
   callback: (value: TValue) => boolean,
 ): Set<TValue> {
@@ -28,5 +28,3 @@ function filterSet<TValue>(
 
   return result;
 }
-
-module.exports = filterSet;

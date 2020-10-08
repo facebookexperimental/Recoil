@@ -15,7 +15,7 @@
  * Returns a new Map object with the same keys as the original, but with the
  * values replaced with the output of the given callback function.
  */
-function mapMap<TKey, TValue, TValueOut>(
+export default function mapMap<TKey, TValue, TValueOut>(
   map: $ReadOnlyMap<TKey, TValue>,
   callback: (value: TValue, key: TKey) => TValueOut,
 ): Map<TKey, TValueOut> {
@@ -26,5 +26,3 @@ function mapMap<TKey, TValue, TValueOut>(
 
   return result;
 }
-
-module.exports = mapMap;
