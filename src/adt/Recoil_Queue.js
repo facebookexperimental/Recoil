@@ -11,6 +11,10 @@
 
 'use strict';
 
-export function enqueueExecution(s: string, f: () => mixed) {
+function enqueueExecution(s: string, f: () => mixed) {
   f();
 }
+
+module.exports = {
+  enqueueExecution,
+};

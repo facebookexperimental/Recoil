@@ -10,9 +10,9 @@
 
 import type {NodeCache} from './Recoil_NodeCache';
 
-import {getFromTreeCache, setInTreeCache} from './Recoil_TreeNodeCache';
+const {getFromTreeCache, setInTreeCache} = require('./Recoil_TreeNodeCache');
 
-export default function treeCacheReferenceEquality<T>(): NodeCache<T> {
+function treeCacheReferenceEquality<T>(): NodeCache<T> {
   let treeRoot;
   return {
     get: (getNodeValue, handlers) =>
@@ -23,3 +23,5 @@ export default function treeCacheReferenceEquality<T>(): NodeCache<T> {
     getRoot: () => treeRoot,
   };
 }
+
+module.exports = treeCacheReferenceEquality;

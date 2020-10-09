@@ -10,27 +10,26 @@
  */
 'use strict';
 
-import gkx from '../../util/Recoil_gkx';
+const gkx = require('../../util/Recoil_gkx');
 gkx.setPass('recoil_async_selector_refactor');
 
-import * as React from 'React';
-import ReactTestUtils from 'ReactTestUtils';
+const React = require('React');
+const {act} = require('ReactTestUtils');
 
-const {act} = ReactTestUtils;
-import {
+const {
   useGotoRecoilSnapshot,
   useRecoilTransactionObserver,
-} from '../../hooks/Recoil_Hooks';
-import atom from '../../recoil_values/Recoil_atom';
-import constSelector from '../../recoil_values/Recoil_constSelector';
-import selector from '../../recoil_values/Recoil_selector';
-import {
+} = require('../../hooks/Recoil_Hooks');
+const atom = require('../../recoil_values/Recoil_atom');
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+const selector = require('../../recoil_values/Recoil_selector');
+const {
   ReadsAtom,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
-} from '../../testing/Recoil_TestingUtils';
-import {Snapshot, freshSnapshot} from '../Recoil_Snapshot';
+} = require('../../testing/Recoil_TestingUtils');
+const {Snapshot, freshSnapshot} = require('../Recoil_Snapshot');
 
 // Test first since we are testing all registered nodes
 test('getNodes', () => {

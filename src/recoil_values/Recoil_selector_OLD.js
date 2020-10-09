@@ -64,37 +64,37 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-import {
+const {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} from '../adt/Recoil_Loadable';
-import cacheWithReferenceEquality from '../caches/Recoil_cacheWithReferenceEquality';
-import {
+} = require('../adt/Recoil_Loadable');
+const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
+const {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
-} from '../core/Recoil_FunctionalCore';
-import {
+} = require('../core/Recoil_FunctionalCore');
+const {
   addToDependencyMap,
   mergeDepsIntoDependencyMap,
   saveDependencyMapToStore,
-} from '../core/Recoil_Graph';
-import {
+} = require('../core/Recoil_Graph');
+const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
   registerNode,
-} from '../core/Recoil_Node';
-import {AbstractRecoilValue} from '../core/Recoil_RecoilValue';
-import {
+} = require('../core/Recoil_Node');
+const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
+const {
   getRecoilValueAsLoadable,
   isRecoilValue,
   setRecoilValueLoadable,
-} from '../core/Recoil_RecoilValueInterface';
-import deepFreezeValue from '../util/Recoil_deepFreezeValue';
-import isPromise from '../util/Recoil_isPromise';
-import nullthrows from '../util/Recoil_nullthrows';
-import {startPerfBlock} from '../util/Recoil_PerformanceTimings';
+} = require('../core/Recoil_RecoilValueInterface');
+const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+const isPromise = require('../util/Recoil_isPromise');
+const nullthrows = require('../util/Recoil_nullthrows');
+const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
 
 export type ValueOrUpdater<T> =
   | T
@@ -150,7 +150,7 @@ declare function selector<T>(
   options: ReadWriteSelectorOptions<T>,
 ): RecoilState<T>;
 
-/* eslint-enable no-redeclare */ export default function selector<T>(
+function selector<T>(
   options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>,
 ): RecoilValue<T> {
   const {key, get, cacheImplementation_UNSTABLE: cacheImplementation} = options;
@@ -527,3 +527,6 @@ declare function selector<T>(
     });
   }
 }
+/* eslint-enable no-redeclare */
+
+module.exports = selector;

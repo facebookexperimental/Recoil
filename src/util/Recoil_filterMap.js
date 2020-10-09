@@ -15,7 +15,7 @@
  * Returns a map containing all of the keys + values from the original map where
  * the given callback returned true.
  */
-export default function filterMap<TKey, TValue>(
+function filterMap<TKey, TValue>(
   map: $ReadOnlyMap<TKey, TValue>,
   callback: (value: TValue, key: TKey) => boolean,
 ): Map<TKey, TValue> {
@@ -28,3 +28,5 @@ export default function filterMap<TKey, TValue>(
 
   return result;
 }
+
+module.exports = filterMap;

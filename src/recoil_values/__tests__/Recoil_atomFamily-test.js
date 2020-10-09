@@ -10,36 +10,34 @@
  */
 'use strict';
 
-import * as React from 'React';
-import {useEffect, useState} from 'React';
-import * as ReactDOM from 'ReactDOM';
-import ReactTestUtils from 'ReactTestUtils';
+const React = require('React');
+const {useEffect, useState} = require('React');
+const ReactDOM = require('ReactDOM');
+const {act} = require('ReactTestUtils');
 
-const {act} = ReactTestUtils;
-
-import {RecoilRoot} from '../../core/Recoil_RecoilRoot.react';
-import {
+const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
+const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} from '../../core/Recoil_RecoilValueInterface';
-import {
+} = require('../../core/Recoil_RecoilValueInterface');
+const {
   useRecoilState,
   useRecoilValue,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
-} from '../../hooks/Recoil_Hooks';
-import {
+} = require('../../hooks/Recoil_Hooks');
+const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   makeStore,
   renderElements,
-} from '../../testing/Recoil_TestingUtils';
-import {mutableSourceExists} from '../../util/Recoil_mutableSource';
-import stableStringify from '../../util/Recoil_stableStringify';
-import atom from '../Recoil_atom';
-import atomFamily from '../Recoil_atomFamily';
-import selectorFamily from '../Recoil_selectorFamily';
+} = require('../../testing/Recoil_TestingUtils');
+const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
+const stableStringify = require('../../util/Recoil_stableStringify');
+const atom = require('../Recoil_atom');
+const atomFamily = require('../Recoil_atomFamily');
+const selectorFamily = require('../Recoil_selectorFamily');
 
 let fbOnlyTest = test.skip;
 // @fb-only: fbOnlyTest = test;

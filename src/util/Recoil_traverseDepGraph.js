@@ -26,9 +26,9 @@ type OnVisit = VisitInfo => ?StopTraversing;
 
 opaque type StopTraversing = string;
 
-export default function traverseDepGraph(
+function traverseDepGraph(
   depGraph: DepGraph,
-  initialKeys: Array<NodeKey>,
+  initialKeys: NodeKey[],
   onVisit: OnVisit,
 ): void {
   const visitedNodes = new Set();
@@ -57,3 +57,5 @@ export default function traverseDepGraph(
 }
 
 traverseDepGraph.STOP_TRAVERSING = ('__stopTraversing': StopTraversing);
+
+module.exports = traverseDepGraph;

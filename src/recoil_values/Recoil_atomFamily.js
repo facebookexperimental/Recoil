@@ -15,13 +15,13 @@ import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {AtomEffect, AtomOptions} from './Recoil_atom';
 
-// @fb-only: import {parameterizedScopedAtomLegacy} from 'Recoil_ScopedAtom';
+// @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
 
-import cacheWithValueEquality from '../caches/Recoil_cacheWithValueEquality';
-import {DEFAULT_VALUE, DefaultValue} from '../core/Recoil_Node';
-import stableStringify from '../util/Recoil_stableStringify';
-import atom from './Recoil_atom';
-import selectorFamily from './Recoil_selectorFamily';
+const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
+const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
+const stableStringify = require('../util/Recoil_stableStringify');
+const atom = require('./Recoil_atom');
+const selectorFamily = require('./Recoil_selectorFamily');
 
 type Primitive = void | null | boolean | number | string;
 export type Parameter =
@@ -77,7 +77,7 @@ parameter for a family of atoms; in this way, each component will have
 its own atom not shared by other instances.  These state keys may be composed
 into children's state keys as well.
 */
-export default function atomFamily<T, P: Parameter>(
+function atomFamily<T, P: Parameter>(
   options: AtomFamilyOptions<T, P>,
 ): P => RecoilState<T> {
   let atomCache: CacheImplementation<RecoilState<T>> = cacheWithValueEquality();
@@ -90,26 +90,16 @@ export default function atomFamily<T, P: Parameter>(
   };
   let legacyAtom;
   // prettier-ignore
-  if (
-    // @fb-only
-    // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
-    
-  ) {
-    // @fb-only
-    legacyAtom = parameterizedScopedAtomLegacy<T | DefaultValue, P>(
-      {
-        // @fb-only
-        // @fb-only: ...legacyAtomOptions
-        ,
-        // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
-        // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
-        ,
-      },
-    // @fb-only: );
-    
-  } else {
-    // @fb-only
-    legacyAtom = atom<T | DefaultValue>(legacyAtomOptions);
+  // @fb-only: if (
+  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
+  // @fb-only: ) {
+  // @fb-only: legacyAtom = parameterizedScopedAtomLegacy<T | DefaultValue, P>({
+  // @fb-only: ...legacyAtomOptions,
+  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
+  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+  // @fb-only: });
+  // @fb-only: } else {
+  legacyAtom = atom<T | DefaultValue>(legacyAtomOptions);
   // @fb-only: }
 
   // Selector to calculate the default value based on any persisted legacy atoms
@@ -156,16 +146,15 @@ export default function atomFamily<T, P: Parameter>(
           : options.effects_UNSTABLE,
 
       // prettier-ignore
-      scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
-          // @fb-only
-          // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
-          ,
-          // @fb-only: params
-          ,
-        // @fb-only: )
+      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
+      // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+      // @fb-only: params,
+      // @fb-only: )
     });
 
     atomCache = atomCache.set(params, newAtom);
     return newAtom;
   };
 }
+
+module.exports = atomFamily;

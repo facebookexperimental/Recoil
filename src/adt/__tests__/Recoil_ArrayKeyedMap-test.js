@@ -11,7 +11,7 @@
 
 'use strict';
 
-import ArrayKeyedMap from '../Recoil_ArrayKeyedMap';
+const ArrayKeyedMap = require('../Recoil_ArrayKeyedMap');
 
 test('basic operation', () => {
   const m = new ArrayKeyedMap();

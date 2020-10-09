@@ -14,9 +14,9 @@
  */
 'use strict';
 
-import isArrayBufferView from './Recoil_isArrayBufferView';
-import isNode from './Recoil_isNode';
-import isPromise from './Recoil_isPromise';
+const isArrayBufferView = require('./Recoil_isArrayBufferView');
+const isNode = require('./Recoil_isNode');
+const isPromise = require('./Recoil_isPromise');
 
 const isSSR = typeof window === 'undefined';
 
@@ -69,7 +69,7 @@ function shouldNotBeFrozen(value: mixed): boolean {
 // Recursively freeze a value to enforce it is read-only.
 // This may also have minimal performance improvements for enumerating
 // objects (based on browser implementations, of course)
-export default function deepFreezeValue(value: mixed) {
+function deepFreezeValue(value: mixed) {
   if (typeof value !== 'object' || shouldNotBeFrozen(value)) {
     return;
   }
@@ -86,3 +86,5 @@ export default function deepFreezeValue(value: mixed) {
   }
   Object.seal(value); // This also makes existing properties non-configurable.
 }
+
+module.exports = deepFreezeValue;

@@ -10,16 +10,17 @@
  */
 'use strict';
 
-import * as React from 'React';
-import ReactTestUtils from 'ReactTestUtils';
+const React = require('React');
+const {act} = require('ReactTestUtils');
 
-const {act} = ReactTestUtils;
-
-import constSelector from '../../recoil_values/Recoil_constSelector';
-import errorSelector from '../../recoil_values/Recoil_errorSelector';
-import {asyncSelector, renderElements} from '../../testing/Recoil_TestingUtils';
-import gkx from '../../util/Recoil_gkx';
-import {useRecoilValueLoadable} from '../Recoil_Hooks';
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+const errorSelector = require('../../recoil_values/Recoil_errorSelector');
+const {
+  asyncSelector,
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
+const gkx = require('../../util/Recoil_gkx');
+const {useRecoilValueLoadable} = require('../Recoil_Hooks');
 
 gkx.setFail('recoil_async_selector_refactor');
 

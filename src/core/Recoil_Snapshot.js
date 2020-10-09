@@ -20,20 +20,26 @@ import type {NodeKey} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
-import concatIterables from '../util/Recoil_concatIterables';
-import filterIterable from '../util/Recoil_filterIterable';
-import gkx from '../util/Recoil_gkx';
-import mapIterable from '../util/Recoil_mapIterable';
-import nullthrows from '../util/Recoil_nullthrows';
-import {batchUpdates} from './Recoil_Batching';
-import {getDownstreamNodes, peekNodeLoadable} from './Recoil_FunctionalCore';
-import {graph} from './Recoil_Graph';
-import {DEFAULT_VALUE, recoilValues} from './Recoil_Node';
-import {
+const concatIterables = require('../util/Recoil_concatIterables');
+const filterIterable = require('../util/Recoil_filterIterable');
+const gkx = require('../util/Recoil_gkx');
+const mapIterable = require('../util/Recoil_mapIterable');
+const nullthrows = require('../util/Recoil_nullthrows');
+const {batchUpdates} = require('./Recoil_Batching');
+const {
+  getDownstreamNodes,
+  peekNodeLoadable,
+} = require('./Recoil_FunctionalCore');
+const {graph} = require('./Recoil_Graph');
+const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
+const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} from './Recoil_RecoilValueInterface';
-import {getNextTreeStateVersion, makeEmptyStoreState} from './Recoil_State';
+} = require('./Recoil_RecoilValueInterface');
+const {
+  getNextTreeStateVersion,
+  makeEmptyStoreState,
+} = require('./Recoil_State');
 
 // Opaque at this surface because it's part of the public API from here.
 export opaque type SnapshotID = StateID;
@@ -47,7 +53,7 @@ function recoilValuesForKeys(
 // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
 // evaluation functions are executed and async selectors resolve.
-export class Snapshot {
+class Snapshot {
   _store: Store;
 
   constructor(storeState: StoreState) {
@@ -247,12 +253,12 @@ function cloneStoreState(
 }
 
 // Factory to build a fresh snapshot
-export function freshSnapshot(): Snapshot {
+function freshSnapshot(): Snapshot {
   return new Snapshot(makeEmptyStoreState());
 }
 
 // Factory to clone a snapahot state
-export function cloneSnapshot(
+function cloneSnapshot(
   store: Store,
   version: 'current' | 'previous' = 'current',
 ): Snapshot {
@@ -264,7 +270,7 @@ export function cloneSnapshot(
   return new Snapshot(cloneStoreState(store, treeState));
 }
 
-export class MutableSnapshot extends Snapshot {
+class MutableSnapshot extends Snapshot {
   constructor(snapshot: Snapshot) {
     super(
       cloneStoreState(
@@ -297,3 +303,10 @@ export class MutableSnapshot extends Snapshot {
       setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE),
     );
 }
+
+module.exports = {
+  Snapshot,
+  MutableSnapshot,
+  freshSnapshot,
+  cloneSnapshot,
+};

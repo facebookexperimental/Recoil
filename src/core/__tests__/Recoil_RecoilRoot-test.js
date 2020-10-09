@@ -7,23 +7,25 @@
  */
 'use strict';
 
-import gkx from '../../util/Recoil_gkx';
+const gkx = require('../../util/Recoil_gkx');
 gkx.setFail('recoil_async_selector_refactor');
 
 import type {Store} from '../Recoil_State';
 
-import * as React from 'React';
-import * as ReactDOM from 'ReactDOM';
-import ReactTestUtils from 'ReactTestUtils';
+const React = require('React');
+const ReactDOM = require('ReactDOM');
+const {act} = require('ReactTestUtils');
 
-const {act} = ReactTestUtils;
-import {useSetRecoilState} from '../../hooks/Recoil_Hooks';
-import atom from '../../recoil_values/Recoil_atom';
-import constSelector from '../../recoil_values/Recoil_constSelector';
-import selector from '../../recoil_values/Recoil_selector';
-import {ReadsAtom, renderElements} from '../../testing/Recoil_TestingUtils';
-import {RecoilRoot} from '../Recoil_RecoilRoot.react';
-import {useStoreRef} from '../Recoil_RecoilRoot.react';
+const {useSetRecoilState} = require('../../hooks/Recoil_Hooks');
+const atom = require('../../recoil_values/Recoil_atom');
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+const selector = require('../../recoil_values/Recoil_selector');
+const {
+  ReadsAtom,
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
+const {RecoilRoot} = require('../Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../Recoil_RecoilRoot.react');
 
 describe('initializeState', () => {
   test('initialize atom', () => {

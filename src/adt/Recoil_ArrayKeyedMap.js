@@ -20,7 +20,7 @@ const LEAF = Symbol('ArrayKeyedMap');
 
 const emptyMap = new Map();
 
-export default class ArrayKeyedMap<V> {
+class ArrayKeyedMap<V> {
   // @fb-only: _base: Map<any, any> = new Map();
 
   constructor(
@@ -101,3 +101,5 @@ export default class ArrayKeyedMap<V> {
     return new Map(this.entries());
   }
 }
+
+module.exports = ArrayKeyedMap;

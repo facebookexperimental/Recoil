@@ -13,8 +13,8 @@
 import type {RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
 import type {Parameter} from './Recoil_selectorFamily';
 
-import cacheWithReferenceEquality from '../caches/Recoil_cacheWithReferenceEquality';
-import selectorFamily from './Recoil_selectorFamily';
+const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
+const selectorFamily = require('./Recoil_selectorFamily');
 
 // flowlint-next-line unclear-type:off
 const constantSelector = selectorFamily<any, any>({
@@ -27,8 +27,8 @@ const constantSelector = selectorFamily<any, any>({
 // same constant value.  It may be called multiple times with the
 // same value, based on reference equality, and will provide the
 // same selector.
-export default function constSelector<T: Parameter>(
-  constant: T,
-): RecoilValueReadOnly<T> {
+function constSelector<T: Parameter>(constant: T): RecoilValueReadOnly<T> {
   return constantSelector(constant);
 }
+
+module.exports = constSelector;

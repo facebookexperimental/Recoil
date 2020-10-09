@@ -12,11 +12,10 @@
 
 import type {RecoilState} from 'Recoil_RecoilValue';
 
-import {useRecoilValue} from '../../hooks/Recoil_Hooks';
-import atom from '../Recoil_atom';
-import readOnlySelector from '../Recoil_readOnlySelector';
-import Recoil_WaitFor from '../Recoil_WaitFor';
-const {noWait, waitForAll, waitForNone} = Recoil_WaitFor;
+const {useRecoilValue} = require('../../hooks/Recoil_Hooks');
+const atom = require('../Recoil_atom');
+const readOnlySelector = require('../Recoil_readOnlySelector');
+const {noWait, waitForAll, waitForNone} = require('../Recoil_WaitFor');
 
 const numberAtom: RecoilState<number> = atom({key: 'number', default: 0});
 const stringAtom: RecoilState<string> = atom({key: 'string', default: ''});

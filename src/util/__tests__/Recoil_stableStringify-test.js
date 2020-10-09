@@ -10,8 +10,8 @@
  */
 'use strict';
 
-import stableStringify from '../Recoil_stableStringify';
-import immutable from 'immutable';
+const stableStringify = require('../Recoil_stableStringify');
+const immutable = require('immutable');
 
 describe('stableStringify', () => {
   // undefined

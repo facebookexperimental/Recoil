@@ -14,7 +14,7 @@
 
 import type {CacheImplementation} from './Recoil_Cache';
 
-import stableStringify from '../util/Recoil_stableStringify';
+const stableStringify = require('../util/Recoil_stableStringify');
 
 // If we do profile and find the key equality check is expensive,
 // we could always try to optimize..  Something that comes to mind is having
@@ -31,7 +31,7 @@ import stableStringify from '../util/Recoil_stableStringify';
 // equivalent values or they have a custom cache implementation, then this
 // implementation may be needed.  The downside with this approach is that it
 // takes longer to compute the value equivalence vs simple reference equality.
-export default function cacheWithValueEquality<T>(): CacheImplementation<T> {
+function cacheWithValueEquality<T>(): CacheImplementation<T> {
   const map: Map<mixed, T> = new Map();
   const cache = {
     get: key => map.get(stableStringify(key)),
@@ -43,3 +43,5 @@ export default function cacheWithValueEquality<T>(): CacheImplementation<T> {
   };
   return cache;
 }
+
+module.exports = cacheWithValueEquality;

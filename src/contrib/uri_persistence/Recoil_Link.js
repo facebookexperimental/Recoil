@@ -12,13 +12,13 @@
 
 import type {MutableSnapshot, Snapshot} from '../../core/Recoil_Snapshot';
 
-import * as React from 'React';
-import {useCallback} from 'React';
+const React = require('React');
+const {useCallback} = require('React');
 
-import {
+const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-} from '../../hooks/Recoil_Hooks';
+} = require('../../hooks/Recoil_Hooks');
 
 type AnchorProps = {
   download?: true | string,
@@ -51,7 +51,7 @@ type LinkToSnapshotProps = {
 //
 // If an `onClick` handler is provided, it is called before the state transition
 // and may call preventDefault on the event to stop the state transition.
-export function LinkToRecoilSnapshot({
+function LinkToRecoilSnapshot({
   uriFromSnapshot,
   snapshot,
   ...anchorProps
@@ -108,7 +108,7 @@ type LinkToStateChangeProps = {
 // Note that, because the link renders the href based on the current state
 // snapshot, it is re-rendered whenever any state change is made.  Keep the
 // performance implications of this in mind.
-export function LinkToRecoilStateChange({
+function LinkToRecoilStateChange({
   stateChange,
   ...linkProps
 }: LinkToStateChangeProps): React.Node {
@@ -116,3 +116,8 @@ export function LinkToRecoilStateChange({
   const snapshot = currentSnapshot.map(stateChange);
   return <LinkToRecoilSnapshot {...linkProps} snapshot={snapshot} />;
 }
+
+module.exports = {
+  LinkToRecoilSnapshot,
+  LinkToRecoilStateChange,
+};

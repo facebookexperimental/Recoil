@@ -1103,7 +1103,6 @@ test('Can set atom during post-atom-setting effect regardless of effect order', 
     let seen = false;
     const original = Queue.enqueueExecution;
     try {
-      // $FlowFixMe property is not writable.
       Queue.enqueueExecution = (s, f) => {
         if (s === order[0] || seen) {
           seen = true;
@@ -1144,7 +1143,6 @@ test('Can set atom during post-atom-setting effect regardless of effect order', 
 
       expect(container.textContent).toEqual('1');
     } finally {
-      // $FlowFixMe property is not writable.
       Queue.enqueueExecution = original;
     }
   }

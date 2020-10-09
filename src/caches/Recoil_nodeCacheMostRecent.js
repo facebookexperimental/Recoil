@@ -10,7 +10,7 @@
 
 import type {NodeCache} from './Recoil_NodeCache';
 
-export default function nodeCacheMostRecent<T>(): NodeCache<T> {
+function nodeCacheMostRecent<T>(): NodeCache<T> {
   let mostRecent;
   return {
     get: (getNodeValue, handlers) => {
@@ -34,3 +34,5 @@ export default function nodeCacheMostRecent<T>(): NodeCache<T> {
     getRoot: () => mostRecent,
   };
 }
+
+module.exports = nodeCacheMostRecent;

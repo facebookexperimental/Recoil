@@ -10,9 +10,9 @@
  */
 'use strict';
 
-import {unstable_batchedUpdates} from 'ReactDOM';
+const {unstable_batchedUpdates} = require('ReactDOM');
 
-import {batchUpdates, getBatcher, setBatcher} from '../Recoil_Batching';
+const {batchUpdates, getBatcher, setBatcher} = require('../Recoil_Batching');
 
 /**
  * Cleanup function that will reset the batcher back

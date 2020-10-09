@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import isArrayBufferView from '../Recoil_isArrayBufferView';
+const isArrayBufferView = require('../Recoil_isArrayBufferView');
 
 describe('isArrayBufferView', () => {
   test('Int8Array is instance of ArrayBufferView', () => {

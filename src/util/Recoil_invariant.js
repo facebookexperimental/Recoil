@@ -11,8 +11,8 @@
 
 'use strict';
 
-// @fb-only: import invariant from 'invariant';
+// @fb-only: const invariant = require('invariant');
 
 const invariant = require('./polyfill/invariant.js'); // @oss-only
 
-export default invariant;
+module.exports = invariant;

@@ -10,22 +10,21 @@
  */
 'use strict';
 
-import gkx from '../../util/Recoil_gkx';
+const gkx = require('../../util/Recoil_gkx');
 gkx.setFail('recoil_async_selector_refactor');
 
-import * as React from 'React';
-import ReactTestUtils from 'ReactTestUtils';
+const React = require('React');
+const {act} = require('ReactTestUtils');
 
-const {act} = ReactTestUtils;
-import atom from '../../recoil_values/Recoil_atom';
-import atomFamily from '../../recoil_values/Recoil_atomFamily';
-import selector from '../../recoil_values/Recoil_selector';
-import selectorFamily from '../../recoil_values/Recoil_selectorFamily';
-import {
+const atom = require('../../recoil_values/Recoil_atom');
+const atomFamily = require('../../recoil_values/Recoil_atomFamily');
+const selector = require('../../recoil_values/Recoil_selector');
+const selectorFamily = require('../../recoil_values/Recoil_selectorFamily');
+const {
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
-} from '../../testing/Recoil_TestingUtils';
+} = require('../../testing/Recoil_TestingUtils');
 
 test('useRecoilValueReset - value default', () => {
   const myAtom = atom({

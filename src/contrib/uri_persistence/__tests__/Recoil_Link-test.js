@@ -7,19 +7,20 @@
  */
 'use strict';
 
-import * as React from 'React';
-import ReactTestUtils from 'ReactTestUtils';
+const React = require('React');
+const {Simulate, act} = require('ReactTestUtils');
 
-const {Simulate, act} = ReactTestUtils;
-
-import {freshSnapshot} from '../../../core/Recoil_Snapshot';
-import atom from '../../../recoil_values/Recoil_atom';
-import {
+const {freshSnapshot} = require('../../../core/Recoil_Snapshot');
+const atom = require('../../../recoil_values/Recoil_atom');
+const {
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
-} from '../../../testing/Recoil_TestingUtils';
-import {LinkToRecoilSnapshot, LinkToRecoilStateChange} from '../Recoil_Link';
+} = require('../../../testing/Recoil_TestingUtils');
+const {
+  LinkToRecoilSnapshot,
+  LinkToRecoilStateChange,
+} = require('../Recoil_Link');
 
 const myAtom = atom<string>({key: 'Link Snapshot', default: 'DEFAULT'});
 const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);

@@ -15,20 +15,20 @@ import type {DependencyMap, Graph} from './Recoil_GraphTypes';
 import type {NodeKey, Version} from './Recoil_Keys';
 import type {Store} from './Recoil_State';
 
-import differenceSets from '../util/Recoil_differenceSets';
-import mapMap from '../util/Recoil_mapMap';
-import nullthrows from '../util/Recoil_nullthrows';
-import recoverableViolation from '../util/Recoil_recoverableViolation';
+const differenceSets = require('../util/Recoil_differenceSets');
+const mapMap = require('../util/Recoil_mapMap');
+const nullthrows = require('../util/Recoil_nullthrows');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 export type {DependencyMap, Graph} from './Recoil_GraphTypes';
 
-export function graph(): Graph {
+function graph(): Graph {
   return {
     nodeDeps: new Map(),
     nodeToNodeSubscriptions: new Map(),
   };
 }
 
-export function cloneGraph(graph: Graph): Graph {
+function cloneGraph(graph: Graph): Graph {
   return {
     nodeDeps: mapMap(graph.nodeDeps, s => new Set(s)),
     nodeToNodeSubscriptions: mapMap(
@@ -93,7 +93,7 @@ function mergeDependencyMapIntoGraph(
   });
 }
 
-export function saveDependencyMapToStore(
+function saveDependencyMapToStore(
   dependencyMap: DependencyMap,
   store: Store,
   version: Version,
@@ -135,7 +135,7 @@ export function saveDependencyMapToStore(
   }
 }
 
-export function mergeDepsIntoDependencyMap(
+function mergeDepsIntoDependencyMap(
   from: DependencyMap,
   into: DependencyMap,
 ): void {
@@ -148,7 +148,7 @@ export function mergeDepsIntoDependencyMap(
   });
 }
 
-export function addToDependencyMap(
+function addToDependencyMap(
   downstream: NodeKey,
   upstream: NodeKey,
   dependencyMap: DependencyMap,
@@ -158,3 +158,11 @@ export function addToDependencyMap(
   }
   nullthrows(dependencyMap.get(downstream)).add(upstream);
 }
+
+module.exports = {
+  addToDependencyMap,
+  cloneGraph,
+  graph,
+  mergeDepsIntoDependencyMap,
+  saveDependencyMapToStore,
+};

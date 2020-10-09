@@ -10,10 +10,10 @@
  */
 'use strict';
 
-import atom from '../../recoil_values/Recoil_atom';
-import {makeStore} from '../../testing/Recoil_TestingUtils';
-import nullthrows from '../../util/Recoil_nullthrows';
-import {getNodeLoadable, setNodeValue} from '../Recoil_FunctionalCore';
+const atom = require('../../recoil_values/Recoil_atom');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
+const nullthrows = require('../../util/Recoil_nullthrows');
+const {getNodeLoadable, setNodeValue} = require('../Recoil_FunctionalCore');
 
 const a = atom<number>({key: 'a', default: 0}).key;
 

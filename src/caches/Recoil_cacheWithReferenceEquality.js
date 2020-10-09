@@ -14,10 +14,10 @@
 
 import type {CacheImplementation} from './Recoil_Cache';
 
-import ArrayKeyedMap from '../adt/Recoil_ArrayKeyedMap';
+const ArrayKeyedMap = require('../adt/Recoil_ArrayKeyedMap');
 
-export default function cacheWithReferenceEquality<
-  T,
->(): CacheImplementation<T> {
+function cacheWithReferenceEquality<T>(): CacheImplementation<T> {
   return new ArrayKeyedMap();
 }
+
+module.exports = cacheWithReferenceEquality;

@@ -25,5 +25,6 @@ Recoil_gkx.setFail = (gk: string): void => {
   gks.set(gk, false);
 };
 
-import gkx from 'gkx';
-export default gkx;
+module.exports = Recoil_gkx; // @oss-only
+
+// @fb-only: module.exports = require('gkx');

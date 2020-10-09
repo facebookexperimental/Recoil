@@ -23,7 +23,7 @@ const ARRAY_BUFFER_VIEW_TYPES = [
   DataView,
 ];
 
-export default function isArrayBufferView(value: mixed): boolean {
+function isArrayBufferView(value: mixed): boolean {
   for (const type of ARRAY_BUFFER_VIEW_TYPES) {
     if (value instanceof type) {
       return true;
@@ -31,3 +31,5 @@ export default function isArrayBufferView(value: mixed): boolean {
   }
   return false;
 }
+
+module.exports = isArrayBufferView;

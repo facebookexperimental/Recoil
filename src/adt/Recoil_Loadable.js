@@ -17,9 +17,9 @@
 
 import type {NodeKey} from '../core/Recoil_Keys';
 
-import gkx from '../util/Recoil_gkx';
-import isPromise from '../util/Recoil_isPromise';
-import nullthrows from '../util/Recoil_nullthrows';
+const gkx = require('../util/Recoil_gkx');
+const isPromise = require('../util/Recoil_isPromise');
+const nullthrows = require('../util/Recoil_nullthrows');
 
 // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()
@@ -170,7 +170,7 @@ const loadableAccessors = {
   },
 };
 
-export function loadableWithValue<T>(value: T): Loadable<T> {
+function loadableWithValue<T>(value: T): Loadable<T> {
   // Build objects this way since Flow doesn't support disjoint unions for class properties
   return Object.freeze({
     state: 'hasValue',
@@ -179,7 +179,7 @@ export function loadableWithValue<T>(value: T): Loadable<T> {
   });
 }
 
-export function loadableWithError<T>(error: Error): Loadable<T> {
+function loadableWithError<T>(error: Error): Loadable<T> {
   return Object.freeze({
     state: 'hasError',
     contents: error,
@@ -187,9 +187,7 @@ export function loadableWithError<T>(error: Error): Loadable<T> {
   });
 }
 
-export function loadableWithPromise<T>(
-  promise: LoadablePromise<T>,
-): Loadable<T> {
+function loadableWithPromise<T>(promise: LoadablePromise<T>): Loadable<T> {
   return Object.freeze({
     state: 'loading',
     contents: promise,
@@ -197,11 +195,11 @@ export function loadableWithPromise<T>(
   });
 }
 
-export function loadableLoading<T>(): Loadable<T> {
+function loadableLoading<T>(): Loadable<T> {
   return loadableWithPromise(new Promise(() => {}));
 }
 
-export function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
+function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
   inputs: Inputs,
 ): Loadable<UnwrapLoadables<Inputs>> {
   return inputs.every(i => i.state === 'hasValue')
@@ -222,3 +220,11 @@ export function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
           : (Promise.all(inputs.map(i => i.contents)): $FlowFixMe),
       );
 }
+
+module.exports = {
+  loadableWithValue,
+  loadableWithError,
+  loadableWithPromise,
+  loadableLoading,
+  loadableAll,
+};

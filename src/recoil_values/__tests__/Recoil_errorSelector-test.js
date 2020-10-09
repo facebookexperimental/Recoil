@@ -10,9 +10,11 @@
  */
 'use strict';
 
-import {getRecoilValueAsLoadable} from '../../core/Recoil_RecoilValueInterface';
-import {makeStore} from '../../testing/Recoil_TestingUtils';
-import errorSelector from '../Recoil_errorSelector';
+const {
+  getRecoilValueAsLoadable,
+} = require('../../core/Recoil_RecoilValueInterface');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
+const errorSelector = require('../Recoil_errorSelector');
 
 let store;
 beforeEach(() => {

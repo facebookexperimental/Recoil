@@ -14,7 +14,7 @@ import type {CacheImplementation} from 'Recoil_Cache';
 
 // cache implementation that only stores the most recent entry
 // based on key reference equality
-export default function cacheMostRecent<T>(): CacheImplementation<T> {
+function cacheMostRecent<T>(): CacheImplementation<T> {
   let mostRecentKey;
   let mostRecentValue;
   const cache = {
@@ -27,3 +27,5 @@ export default function cacheMostRecent<T>(): CacheImplementation<T> {
   };
   return cache;
 }
+
+module.exports = cacheMostRecent;

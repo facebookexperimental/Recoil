@@ -15,7 +15,7 @@ import type {Graph} from './Recoil_GraphTypes';
 import type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
-import {graph} from './Recoil_Graph';
+const {graph} = require('./Recoil_Graph');
 
 // flowlint-next-line unclear-type:off
 export type AtomValues = Map<NodeKey, Loadable<any>>;
@@ -119,9 +119,9 @@ export type StoreRef = {
 };
 
 let nextTreeStateVersion = 0;
-export const getNextTreeStateVersion = (): Version => nextTreeStateVersion++;
+const getNextTreeStateVersion = (): Version => nextTreeStateVersion++;
 
-export function makeEmptyTreeState(): TreeState {
+function makeEmptyTreeState(): TreeState {
   const version = getNextTreeStateVersion();
   return {
     version,
@@ -133,7 +133,7 @@ export function makeEmptyTreeState(): TreeState {
   };
 }
 
-export function makeEmptyStoreState(): StoreState {
+function makeEmptyStoreState(): StoreState {
   const currentTree = makeEmptyTreeState();
   return {
     currentTree,
@@ -150,3 +150,9 @@ export function makeEmptyStoreState(): StoreState {
     versionsUsedByComponent: new Map(),
   };
 }
+
+module.exports = {
+  makeEmptyTreeState,
+  makeEmptyStoreState,
+  getNextTreeStateVersion,
+};

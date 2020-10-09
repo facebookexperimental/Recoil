@@ -11,17 +11,16 @@
 
 'use strict';
 
-import everySet from './Recoil_everySet';
+const everySet = require('./Recoil_everySet');
 
 /**
  * Checks if two sets are equal
  */
-export default function equalsSet<T>(
-  one: $ReadOnlySet<T>,
-  two: $ReadOnlySet<T>,
-): boolean {
+function equalsSet<T>(one: $ReadOnlySet<T>, two: $ReadOnlySet<T>): boolean {
   if (one.size !== two.size) {
     return false;
   }
   return everySet(one, value => two.has(value));
 }
+
+module.exports = equalsSet;

@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import deepFreezeValue from '../Recoil_deepFreezeValue';
+const deepFreezeValue = require('../Recoil_deepFreezeValue');
 
 describe('deepFreezeValue', () => {
   test('check no error: object with ArrayBufferView property', () => {

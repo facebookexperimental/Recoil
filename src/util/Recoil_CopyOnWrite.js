@@ -13,19 +13,19 @@
 
 'use strict';
 
-export function setByAddingToSet<V>(set: $ReadOnlySet<V>, v: V): Set<V> {
+function setByAddingToSet<V>(set: $ReadOnlySet<V>, v: V): Set<V> {
   const next = new Set(set);
   next.add(v);
   return next;
 }
 
-export function setByDeletingFromSet<V>(set: $ReadOnlySet<V>, v: V): Set<V> {
+function setByDeletingFromSet<V>(set: $ReadOnlySet<V>, v: V): Set<V> {
   const next = new Set(set);
   next.delete(v);
   return next;
 }
 
-export function mapBySettingInMap<K, V>(
+function mapBySettingInMap<K, V>(
   map: $ReadOnlyMap<K, V>,
   k: K,
   v: V,
@@ -35,7 +35,7 @@ export function mapBySettingInMap<K, V>(
   return next;
 }
 
-export function mapByUpdatingInMap<K, V>(
+function mapByUpdatingInMap<K, V>(
   map: $ReadOnlyMap<K, V>,
   k: K,
   updater: (V | void) => V,
@@ -45,16 +45,13 @@ export function mapByUpdatingInMap<K, V>(
   return next;
 }
 
-export function mapByDeletingFromMap<K, V>(
-  map: $ReadOnlyMap<K, V>,
-  k: K,
-): Map<K, V> {
+function mapByDeletingFromMap<K, V>(map: $ReadOnlyMap<K, V>, k: K): Map<K, V> {
   const next = new Map(map);
   next.delete(k);
   return next;
 }
 
-export function mapByDeletingMultipleFromMap<K, V>(
+function mapByDeletingMultipleFromMap<K, V>(
   map: $ReadOnlyMap<K, V>,
   ks: Set<K>,
 ): Map<K, V> {
@@ -62,3 +59,12 @@ export function mapByDeletingMultipleFromMap<K, V>(
   ks.forEach(k => next.delete(k));
   return next;
 }
+
+module.exports = {
+  setByAddingToSet,
+  setByDeletingFromSet,
+  mapBySettingInMap,
+  mapByUpdatingInMap,
+  mapByDeletingFromMap,
+  mapByDeletingMultipleFromMap,
+};

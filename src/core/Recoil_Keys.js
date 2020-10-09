@@ -16,4 +16,4 @@ export type ComponentID = number;
 export type Version = number;
 export type StateID = number;
 
-export default ({}: {...});
+module.exports = ({}: {...});

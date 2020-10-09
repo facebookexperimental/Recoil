@@ -10,9 +10,8 @@
  */
 'use strict';
 
-import cacheWithValueEquality from '../Recoil_cacheWithValueEquality';
-import immutable from 'immutable';
-const {List} = immutable;
+const cacheWithValueEquality = require('../Recoil_cacheWithValueEquality');
+const {List} = require('immutable');
 
 test('cacheWithValueEquality - set string', () => {
   const cache = cacheWithValueEquality();

@@ -11,9 +11,11 @@
 
 'use strict';
 
-export default function nullthrows<T>(x: ?T, message: ?string): T {
+function nullthrows<T>(x: ?T, message: ?string): T {
   if (x != null) {
     return x;
   }
   throw new Error(message ?? 'Got unexpected null or undefined');
 }
+
+module.exports = nullthrows;
