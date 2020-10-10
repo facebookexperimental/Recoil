@@ -14,11 +14,15 @@
 const React = require('React');
 
 const {useEffect, useRef} = require('react');
+// $FlowFixMe recoil-oss only used within Recoil DevTools
 const {Snapshot} = require('recoil-oss/core/Recoil_Snapshot');
+
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
+  // $FlowFixMe recoil-oss only used within Recoil DevTools
 } = require('recoil-oss/hooks/Recoil_Hooks');
+// $FlowFixMe useEffectOnce only used within Recoil DevTools
 const useEffectOnce = require('useEffectOnce');
 type Props = $ReadOnly<{
   name?: string,

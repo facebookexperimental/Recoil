@@ -1,5 +1,6 @@
 [ignore]
 .*/__tests__.*
+.*/cjs.*
 
 [include]
 
@@ -27,6 +28,7 @@ module.name_mapper='Recoil_Graph' -> '<PROJECT_ROOT>/src/core/Recoil_Graph.js'
 module.name_mapper='gkx' -> '<PROJECT_ROOT>/src/util/Recoil_gkx.js'
 module.name_mapper='Recoil_atom' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_atom.js'
 module.name_mapper='Recoil_atomFamily' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_atomFamily.js'
+module.name_mapper='Recoil_NodeCache' -> '<PROJECT_ROOT>/src/caches/Recoil_NodeCache.js'
 module.name_mapper='Recoil_WaitFor' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_WaitFor.js'
 module.name_mapper='Recoil_Hooks' -> '<PROJECT_ROOT>/src/hooks/Recoil_Hooks.js'
 module.name_mapper='Recoil_Loadable' -> '<PROJECT_ROOT>/src/adt/Recoil_Loadable.js'

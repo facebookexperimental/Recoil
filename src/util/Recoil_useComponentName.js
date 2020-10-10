@@ -15,7 +15,7 @@ import {useRef} from 'React';
 
 import stackTraceParser from '../util/Recoil_stackTraceParser';
 
-export default function useComponentName(): string {
+module.exports = function useComponentName(): string {
   const nameRef = useRef();
   if (__DEV__) {
     if (nameRef.current === undefined) {
@@ -41,4 +41,4 @@ export default function useComponentName(): string {
     return nameRef.current ?? '<unable to determine component name>';
   }
   return '<component name available only in dev mode>';
-}
+};

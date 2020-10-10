@@ -59,6 +59,7 @@ function shouldNotBeFrozen(value: mixed): boolean {
   }
 
   // Some environments, just as Jest, don't work with the instanceof check
+  // $FlowFixMe Window does not have a FlowType definition
   if (!isSSR && (value === window || value instanceof Window)) {
     return true;
   }
