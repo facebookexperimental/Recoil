@@ -15,7 +15,10 @@ gkx.setFail('recoil_async_selector_refactor');
 
 import type {RecoilValue} from 'Recoil_RecoilValue';
 
-const {loadableWithError, loadableWithValue} = require('Recoil_Loadable');
+const {
+  loadableWithError,
+  loadableWithValue,
+} = require('../../adt/Recoil_Loadable');
 
 const {act} = require('ReactTestUtils');
 const {
