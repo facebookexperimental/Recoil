@@ -35,6 +35,7 @@ module.exports = {
       'guides/asynchronous-data-queries',
       'guides/asynchronous-state-sync',
       'guides/persistence',
+      'guides/testing',
       //   'guides/writing-test',
       //   'guides/code-splitting',
     ],
