@@ -38,7 +38,7 @@ Recoil provides the following hooks for obtaining snapshots based on the current
 
 ### Building a Snapshot
 
-You can also build a fresh snapshot using the `snapshot_UNSTABLE()` factory, which accepts an optional initializer function.  This can be used for [testing](/docs/guides/testing) or evaluating selectors outside of
+You can also build a fresh snapshot using the `snapshot_UNSTABLE()` factory, which accepts an optional initializer function.  This can be used for [testing](/docs/guides/testing) or evaluating selectors outside of a React context.
 
 ## Reading Snapshots
 
