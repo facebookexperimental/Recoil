@@ -28,7 +28,7 @@ opaque type StopTraversing = string;
 
 function traverseDepGraph(
   depGraph: DepGraph,
-  initialKeys: NodeKey[],
+  initialKeys: Array<NodeKey>,
   onVisit: OnVisit,
 ): void {
   const visitedNodes = new Set();
