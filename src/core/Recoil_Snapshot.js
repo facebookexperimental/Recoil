@@ -92,10 +92,12 @@ class Snapshot {
 
   getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
     recoilValue: RecoilValue<T>,
+    // $FlowFixMe[escaped-generic]
   ) => getRecoilValueAsLoadable(this._store, recoilValue);
 
   getPromise: <T>(RecoilValue<T>) => Promise<T> = <T>(
     recoilValue: RecoilValue<T>,
+    // $FlowFixMe[escaped-generic]
   ) => this.getLoadable(recoilValue).toPromise();
 
   // We want to allow the methods to be destructured and used as accessors
@@ -297,6 +299,7 @@ class MutableSnapshot extends Snapshot {
     });
   };
 
+  // $FlowFixMe[escaped-generic]
   reset: ResetRecoilState = recoilState =>
     // See note at `set` about batched updates.
     batchUpdates(() =>

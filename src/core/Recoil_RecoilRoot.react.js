@@ -210,6 +210,7 @@ if (__DEV__) {
 function initialStoreState_DEPRECATED(store, initializeState): StoreState {
   const initial: StoreState = makeEmptyStoreState();
   initializeState({
+    // $FlowFixMe[escaped-generic]
     set: (atom, value) => {
       const state = initial.currentTree;
       const [depMap, writes] = setNodeValue(store, state, atom.key, value);
