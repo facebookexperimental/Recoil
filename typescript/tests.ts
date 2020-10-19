@@ -374,4 +374,54 @@ isRecoilValue(mySelector1);
   useRecoilValue(mySel2).b; // $ExpectType string
 }
 
+/**
+ * effects_UNSTABLE on atom()
+ */
+{
+  atom({
+    key: 'thisismyrandomkey',
+    default: 0,
+    effects_UNSTABLE: [
+      ({setSelf, onSet, resetSelf}) => {
+        setSelf(1);
+        setSelf('a'); // $ExpectError
+
+        onSet(val => {
+          val; // $ExpectType number | DefaultValue
+        });
+        onSet('a'); // $ExpectError
+
+        resetSelf();
+        resetSelf('a'); // $ExpectError
+      },
+    ],
+  });
+}
+
+/**
+ * effects_UNSTABLE on atomFamily()
+ */
+{
+  atomFamily({
+    key: 'myrandomatomfamilykey',
+    default: (param: number) => param,
+    effects_UNSTABLE: (param) => [
+      ({setSelf, onSet, resetSelf}) => {
+        param; // $ExpectType number
+
+        setSelf(1);
+        setSelf('a'); // $ExpectError
+
+        onSet(val => {
+          val; // $ExpectType number | DefaultValue
+        });
+        onSet('a'); // $ExpectError
+
+        resetSelf();
+        resetSelf('a'); // $ExpectError
+      },
+    ],
+  });
+}
+
 /* eslint-enable @typescript-eslint/no-explicit-any */
