@@ -13,7 +13,7 @@ Recoil allows you to persist application state using atoms.
 
 ## Saving State
 
-To save state, subscribe to atom changes and record the new state.  You could use React effects to subscribe to individual atoms (*See [Asynchronous State Sync](asynchronous-state-sync)*).  However, Recoil provides a hook to allow you to subscribe to state changes for all atoms using [**`useRecoilTransactionObserver_UNSTABLE()`**](/docs/api-reference/core/useRecoilTransactionObserver).
+To save state, subscribe to atom changes and record the new state.  You could use React effects to subscribe to individual atoms (*See [Asynchronous State Sync](/docs/guides/asynchronous-state-sync)*).  However, Recoil provides a hook to allow you to subscribe to state changes for all atoms using [**`useRecoilTransactionObserver_UNSTABLE()`**](/docs/api-reference/core/useRecoilTransactionObserver).
 
 The subscription callback provides all of the atom state and tells you which atoms changed.  From this you can save the changes with the storage and serialization of your preference.  Here is an example of a basic implementation using JSON:
 
