@@ -1,0 +1,30 @@
+/**
+ * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { Handlers } from 'Recoil_NodeCache';
+import type { Loadable } from '../adt/Recoil_Loadable';
+import type { NodeKey } from '../core/Recoil_State';
+import type { GetNodeValue, NodeCacheRoute } from './Recoil_NodeCache';
+import invariant from '../util/Recoil_invariant';
+export type TreeCacheNode<T> = TreeCacheResult<T> | TreeCacheBranch<T>;
+export type TreeCacheResult<T> = {
+  type: 'result',
+  result: Loadable<T>,
+};
+export type TreeCacheBranch<T> = {
+  type: 'branch',
+  nodeKey: NodeKey,
+  branches: Map<mixed, TreeCacheNode<T>>,
+};
+declare function setInTreeCache<T>(root: ?TreeCacheNode<T>, route: NodeCacheRoute, result: Loadable<T>): TreeCacheNode<T>;
+declare function getFromTreeCache<T>(root: ?TreeCacheNode<T>, getNodeValue: GetNodeValue, handlers: Handlers): Loadable<T> | void;
+module.exports = {
+  setInTreeCache,
+  getFromTreeCache
+};

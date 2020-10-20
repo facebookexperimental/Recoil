@@ -4,11 +4,6 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * Logic for reading, writing, and subscribing to atoms within the context of
- * a particular React render tree. EVERYTHING IN THIS MODULE SHOULD BE PURE
- * FUNCTIONS BETWEEN IMMUTABLE TreeState VALUES. It is permissible to call
- * `getAtomDef` because atom definitions are constant.
- *
  * @emails oncall+recoil
  * @flow strict-local
  * @format
@@ -42,7 +37,7 @@ declare function getNodeLoadable<T>(store: Store, state: TreeState, key: NodeKey
 declare function peekNodeLoadable<T>(store: Store, state: TreeState, key: NodeKey): ?Loadable<T>; // Write value directly to state bypassing the Node interface as the node
 // definitions may not have been loaded yet when processing the initial snapshot.
 
-declare function setUnvalidatedAtomValue<T>(state: TreeState, key: NodeKey, newValue: T): TreeState; // Return the discovered dependencies and values to be written by setting
+declare function setUnvalidatedAtomValue_DEPRECATED<T>(state: TreeState, key: NodeKey, newValue: T): TreeState; // Return the discovered dependencies and values to be written by setting
 // a node value. (Multiple values may be written due to selectors getting to
 // set upstreams; deps may be discovered because of reads in updater functions.)
 
@@ -54,7 +49,7 @@ module.exports = {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
-  setUnvalidatedAtomValue,
   cleanUpNode,
+  setUnvalidatedAtomValue_DEPRECATED,
   getDownstreamNodes
 };

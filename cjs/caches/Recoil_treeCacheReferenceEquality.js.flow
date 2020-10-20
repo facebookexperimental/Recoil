@@ -1,0 +1,18 @@
+/**
+ * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { NodeCache } from './Recoil_NodeCache';
+
+const {
+  getFromTreeCache,
+  setInTreeCache
+} = require('./Recoil_TreeNodeCache');
+
+declare function treeCacheReferenceEquality<T>(): NodeCache<T>;
+module.exports = treeCacheReferenceEquality;

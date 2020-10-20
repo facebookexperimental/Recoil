@@ -26,6 +26,10 @@ const {
 } = require('React');
 
 const {
+  batchUpdates
+} = require('../core/Recoil_Batching');
+
+const {
   DEFAULT_VALUE,
   getNode,
   nodes
@@ -53,10 +57,6 @@ const {
   Snapshot,
   cloneSnapshot
 } = require('../core/Recoil_Snapshot');
-
-const {
-  batchUpdates
-} = require('../util/Recoil_batcher');
 
 const {
   setByAddingToSet

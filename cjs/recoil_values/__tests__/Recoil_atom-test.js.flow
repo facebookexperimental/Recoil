@@ -59,7 +59,7 @@ beforeEach(() => {
   store = makeStore();
 });
 declare function get(recoilValue: any): any;
-declare function set(recoilValue: any, value: any): any;
+declare function set(recoilValue: any, value: mixed): any;
 declare function reset(recoilValue: any): any;
 test('atom can read and write value', () => {
   const myAtom = atom<string>({

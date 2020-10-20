@@ -12,12 +12,7 @@
 
 import type { Loadable } from '../adt/Recoil_Loadable';
 import type { ValueOrUpdater } from '../recoil_values/Recoil_selector';
-import type { AtomValues, Store, TreeState } from './Recoil_State';
-
-const {
-  mapByDeletingFromMap,
-  mapByDeletingMultipleFromMap
-} = require('../util/Recoil_CopyOnWrite');
+import type { AtomValues, NodeKey, Store, TreeState } from './Recoil_State';
 
 const mapMap = require('../util/Recoil_mapMap');
 
@@ -27,17 +22,19 @@ const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 const Tracing = require('../util/Recoil_Tracing');
 
-const unionSets = require('../util/Recoil_unionSets');
-
 const {
+  getDownstreamNodes,
   getNodeLoadable,
-  setNodeValue,
-  setUnvalidatedAtomValue
+  setNodeValue
 } = require('./Recoil_FunctionalCore');
 
 const {
   saveDependencyMapToStore
 } = require('./Recoil_Graph');
+
+const {
+  getNodeMaybe
+} = require('./Recoil_Node');
 
 const {
   DefaultValue,
@@ -51,13 +48,39 @@ const {
   isRecoilValue
 } = require('./Recoil_RecoilValue');
 
+const gkx = require('gkx');
+
 declare function getRecoilValueAsLoadable<T>(store: Store, arg1: AbstractRecoilValue<T>, treeState: TreeState): Loadable<T>;
 declare function applyAtomValueWrites(atomValues: AtomValues, writes: AtomValues): AtomValues;
-declare function valueFromValueOrUpdater<T>(store: Store, arg1: AbstractRecoilValue<T>, valueOrUpdater: ValueOrUpdater<T>): T | DefaultValue;
+declare function valueFromValueOrUpdater<T>(store: Store, state: TreeState, arg2: AbstractRecoilValue<T>, valueOrUpdater: ValueOrUpdater<T>): T | DefaultValue;
+type Action<T> = {
+  type: 'set',
+  recoilValue: AbstractRecoilValue<T>,
+  valueOrUpdater: T | DefaultValue | ((T) => T | DefaultValue),
+} | {
+  type: 'setLoadable',
+  recoilValue: AbstractRecoilValue<T>,
+  loadable: Loadable<T>,
+} | {
+  type: 'setUnvalidated',
+  recoilValue: AbstractRecoilValue<T>,
+  unvalidatedValue: mixed,
+} | {
+  type: 'markModified',
+  recoilValue: AbstractRecoilValue<T>,
+};
+declare function applyAction(store: Store, state: TreeState, action: Action<mixed>): any;
+declare function writeLoadableToTreeState(state: TreeState, key: NodeKey, loadable: Loadable<mixed>): void;
+declare function applyActionsToStore(store: any, actions: any): any;
+declare function queueOrPerformStateUpdate(store: Store, action: Action<mixed>, key: NodeKey, message: string): void;
+const batchStack: Array<Map<Store, Array<Action<mixed>>>> = [];
+declare function batchStart(): () => void;
+declare function copyTreeState(state: any): any;
+declare function invalidateDownstreams(store: Store, state: TreeState): void;
 declare function setRecoilValue<T>(store: Store, recoilValue: AbstractRecoilValue<T>, valueOrUpdater: T | DefaultValue | ((T) => T | DefaultValue)): void;
 declare function setRecoilValueLoadable<T>(store: Store, recoilValue: AbstractRecoilValue<T>, loadable: DefaultValue | Loadable<T>): void;
-declare function markRecoilValueModified<T>(store: Store, arg1: AbstractRecoilValue<T>): void;
-declare function setUnvalidatedRecoilValue<T>(store: Store, arg1: AbstractRecoilValue<T>, newValue: T): void;
+declare function markRecoilValueModified<T>(store: Store, recoilValue: AbstractRecoilValue<T>): void;
+declare function setUnvalidatedRecoilValue<T>(store: Store, recoilValue: AbstractRecoilValue<T>, unvalidatedValue: T): void;
 export type ComponentSubscription = {
   release: (Store) => void
 };
@@ -74,6 +97,8 @@ module.exports = {
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
   isRecoilValue,
-  applyAtomValueWrites // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
-
+  applyAtomValueWrites,
+  // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
+  batchStart,
+  invalidateDownstreams_FOR_TESTING: invalidateDownstreams
 };

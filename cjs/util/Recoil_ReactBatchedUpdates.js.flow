@@ -13,7 +13,9 @@
  */
 const {
   unstable_batchedUpdates
-} = require('ReactDOM');
+} = require('ReactDOM'); // @oss-only
+// @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
+
 
 module.exports = {
   unstable_batchedUpdates

@@ -1,0 +1,12 @@
+/**
+ * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { NodeCache } from './Recoil_NodeCache';
+declare function nodeCacheMostRecent<T>(): NodeCache<T>;
+module.exports = nodeCacheMostRecent;

@@ -10,6 +10,7 @@
  */
 'use strict';
 
+import type { RecoilValueReadOnly } from 'Recoil_RecoilValue';
 import type { RecoilState, RecoilValue } from 'Recoil_RecoilValue';
 import type { Store } from 'Recoil_State';
 
@@ -33,6 +34,10 @@ const {
   RecoilRoot,
   sendEndOfBatchNotifications_FOR_TESTING
 } = require('../core/Recoil_RecoilRoot.react');
+
+const {
+  invalidateDownstreams_FOR_TESTING
+} = require('../core/Recoil_RecoilValueInterface');
 
 const {
   makeEmptyStoreState
@@ -72,8 +77,8 @@ declare function renderElementsWithSuspenseCount(elements: ?React.Node): [HTMLDi
 ////////////////////////////////////////
 
 let id = 0;
-declare var errorThrowingAsyncSelector: <T, S>(msg: any, dep: ?RecoilValue<S>) => any;
-declare var resolvingAsyncSelector: <T>(value: T) => any;
+declare var errorThrowingAsyncSelector: <T, S>(msg: any, dep: ?RecoilValue<S>) => RecoilValueReadOnly<T>;
+declare var resolvingAsyncSelector: <T>(value: T) => RecoilValueReadOnly<T> | RecoilValueReadOnly<mixed>;
 declare var loadingAsyncSelector: () => any;
 declare function asyncSelector<T, S>(dep?: RecoilValue<S>): [RecoilValue<T>, (T) => void, (Error) => void]; //////////////////////////////////
 // Useful Components for testing

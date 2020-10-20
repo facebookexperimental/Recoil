@@ -20,6 +20,7 @@ const isNode = require('./Recoil_isNode');
 
 const isPromise = require('./Recoil_isPromise');
 
+const isSSR = typeof window === 'undefined';
 declare function shouldNotBeFrozen(value: mixed): boolean; // Recursively freeze a value to enforce it is read-only.
 // This may also have minimal performance improvements for enumerating
 // objects (based on browser implementations, of course)

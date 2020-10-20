@@ -51,14 +51,15 @@
  * @flow strict-local
  * @format
  */
-'use strict'; // const gkx = require('../util/Recoil_gkx');
-// const newSelector = require('./Recoil_selector_NEW');
+'use strict';
+
+const gkx = require('../util/Recoil_gkx');
+
+const newSelector = require('./Recoil_selector_NEW');
 
 const oldSelector = require('./Recoil_selector_OLD');
 
-export type * from './Recoil_selector_OLD'; // type Selector = typeof newSelector;
-// const selector: Selector = gkx('recoil_async_selector_refactor')
-//   ? newSelector
-//   : oldSelector;
-
-module.exports = oldSelector;
+export type * from './Recoil_selector_NEW';
+type Selector = typeof newSelector;
+const selector: Selector = gkx('recoil_async_selector_refactor') ? newSelector : oldSelector;
+module.exports = selector;

@@ -1,0 +1,51 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+const React = require('React');
+
+const {
+  useEffect,
+  useRef
+} = require('react');
+
+const {
+  Snapshot
+} = require('recoil-oss/core/Recoil_Snapshot');
+
+const {
+  useGotoRecoilSnapshot,
+  useRecoilSnapshot
+} = require('recoil-oss/hooks/Recoil_Hooks');
+
+const useEffectOnce = require('useEffectOnce');
+
+type Props = $ReadOnly<{
+  name?: string,
+  persistenceLimit?: number,
+  initialSnapshot?: ?Snapshot,
+  devMode?: ?boolean,
+}>;
+type ConnectProps = $ReadOnly<{ ...Props,
+  goToSnapshot: (Snapshot) => void,
+}>;
+declare function connect(props: ConnectProps): ?{
+  track: (transactionId: number, snapshot: Snapshot) => void,
+  disconnect: () => void,
+};
+let CONNECTION_INDEX = 0;
+/**
+ * @explorer-desc
+ * Recoil Dev Tools Connector
+ */
+
+declare function Connector(arg0: Props): React.Node;
+module.exports = Connector;

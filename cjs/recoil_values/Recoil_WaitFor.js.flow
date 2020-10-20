@@ -40,10 +40,16 @@ const selectorFamily = require('./Recoil_selectorFamily'); /////////////////
 
 declare function concurrentRequests(getRecoilValue: any, deps: any): any;
 declare function isError(exp: any): any;
-declare function unwrapDependencies(dependencies: any): $ReadOnlyArray<RecoilValue<mixed>>;
+declare function unwrapDependencies(dependencies: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | {
+  +[string]: RecoilValueReadOnly<mixed>
+}): $ReadOnlyArray<RecoilValue<mixed>>;
 declare function getValueFromLoadablePromiseResult(result: any): any;
-declare function wrapResults(dependencies: any, results: any): any;
-declare function wrapLoadables(dependencies: any, results: any, exceptions: any): any; // Selector that requests all dependencies in parallel and immediately returns
+declare function wrapResults(dependencies: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | {
+  +[string]: RecoilValueReadOnly<mixed>
+}, results: any): any;
+declare function wrapLoadables(dependencies: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | {
+  +[string]: RecoilValueReadOnly<mixed>
+}, results: any, exceptions: any): any; // Selector that requests all dependencies in parallel and immediately returns
 // current results without waiting.
 
 const waitForNone: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $ReadOnly<{
@@ -54,7 +60,9 @@ const waitForNone: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $
   ...
 }>> = selectorFamily({
   key: '__waitForNone',
-  get: dependencies => ({
+  get: (dependencies: $ReadOnly<{
+    [string]: RecoilValueReadOnly<mixed>
+  }> | $ReadOnlyArray<RecoilValueReadOnly<mixed>>) => ({
     get
   }) => {
     // Issue requests for all dependencies in parallel.
@@ -75,7 +83,9 @@ const waitForAny: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $R
   ...
 }>> = selectorFamily({
   key: '__waitForAny',
-  get: dependencies => ({
+  get: (dependencies: $ReadOnly<{
+    [string]: RecoilValueReadOnly<mixed>
+  }> | $ReadOnlyArray<RecoilValueReadOnly<mixed>>) => ({
     get
   }) => {
     // Issue requests for all dependencies in parallel.
@@ -145,7 +155,9 @@ const waitForAll: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $R
   ...
 }>> = selectorFamily({
   key: '__waitForAll',
-  get: dependencies => ({
+  get: (dependencies: $ReadOnly<{
+    [string]: RecoilValueReadOnly<mixed>
+  }> | $ReadOnlyArray<RecoilValueReadOnly<mixed>>) => ({
     get
   }) => {
     // Issue requests for all dependencies in parallel.

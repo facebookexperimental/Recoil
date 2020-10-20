@@ -7,6 +7,9 @@
  */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+
+gkx.setFail('recoil_async_selector_refactor');
 import type { Store } from '../Recoil_State';
 
 const React = require('React');

@@ -33,7 +33,7 @@ const {
   cleanUpNode,
   getDownstreamNodes,
   setNodeValue,
-  setUnvalidatedAtomValue
+  setUnvalidatedAtomValue_DEPRECATED
 } = require('../core/Recoil_FunctionalCore');
 
 const {

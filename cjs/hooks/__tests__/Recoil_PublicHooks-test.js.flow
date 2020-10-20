@@ -12,6 +12,9 @@
 /* eslint-disable fb-www/react-no-useless-fragment */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+
+gkx.setFail('recoil_async_selector_refactor');
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../../core/Recoil_RecoilValue';
 import type { PersistenceSettings } from '../../recoil_values/Recoil_atom';
 
@@ -27,6 +30,10 @@ const {
 } = require('ReactTestUtils');
 
 const Queue = require('../../adt/Recoil_Queue');
+
+const {
+  batchUpdates
+} = require('../../core/Recoil_Batching');
 
 const atom = require('../../recoil_values/Recoil_atom');
 
@@ -44,12 +51,6 @@ const {
 } = require('../../testing/Recoil_TestingUtils');
 
 const {
-  batchUpdates
-} = require('../../util/Recoil_batcher');
-
-const gkx = require('../../util/Recoil_gkx');
-
-const {
   mutableSourceExists
 } = require('../../util/Recoil_mutableSource');
 
@@ -64,17 +65,12 @@ const {
   useTransactionObservation_DEPRECATED
 } = require('../Recoil_Hooks');
 
-gkx.setFail('recoil_async_selector_refactor');
-
 const invariant = require('../../util/Recoil_invariant'); // When not using mutable source there's usually an extra call/render.
 
 
 const BASE_CALLS = mutableSourceExists() ? 0 : 1;
 let fbOnlyTest = test.skip; // @fb-only: fbOnlyTest = test;
 
-jest.mock('../../util/Recoil_expectationViolation', () => (fmt, ...args) => {
-  throw new Error(require('sprintf')(fmt, ...args));
-});
 let nextID = 0;
 declare function counterAtom(persistence?: PersistenceSettings<number>): any;
 declare function booleanAtom(persistence?: PersistenceSettings<boolean>): any;
@@ -178,8 +174,8 @@ test('Async selectors can depend on async selectors', async () => {
     expect(container.textContent).toEqual('3');
   }
 });
-/* FIXME broken without new selector implementation
-(Although this one definitely worked without it originally)
+/**
+ * FIXME: fixed in new selector implementation
 test('Dep of upstream selector can change while pending', async () => {
   const anAtom = counterAtom();
   const [
