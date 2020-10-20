@@ -12,9 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     # config GIT so it can do git push
-    - uses: fregante/setup-git-token@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+    - uses: fregante/setup-git-user@v1
     - name: Use Node.js 12.x
       uses: actions/setup-node@v1
       with:
