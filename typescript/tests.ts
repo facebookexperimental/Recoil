@@ -177,6 +177,13 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
 
       previousSnapshot.getLoadable(myAtom);
       previousSnapshot.getPromise(mySelector2);
+
+      for (const node of snapshot.getNodes_UNSTABLE({isModified: true})){
+        const theAtom = snapshot.getLoadable(node)
+        if (theAtom.state === 'hasValue') {
+          // Do something here, but what?
+        }
+      }
     },
   );
 }

@@ -97,6 +97,18 @@ export class Snapshot {
   getID(): SnapshotID;
   getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
   getPromise<T>(recoilValue: RecoilValue<T>): Promise<T>;
+  getNodes_UNSTABLE(opts?: { isModified?: boolean }): Iterable<RecoilValue<unknown>>;
+  getInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): {
+    loadable?: Loadable<T>,
+    isActive: boolean,
+    isSet: boolean,
+    isModified: boolean, // TODO report modified selectors
+    type: 'atom' | 'selector' | void, // void until initialized for now
+    deps: Iterable<RecoilValue<T>>,
+    subscribers: {
+      nodes: Iterable<RecoilValue<T>>,
+    },
+  };
   map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
   asyncMap(cb: (mutableSnapshot: MutableSnapshot) => Promise<void>): Promise<Snapshot>;
 }
