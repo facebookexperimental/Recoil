@@ -1,4 +1,4 @@
-  ---
+---
 title: Installation
 ---
 
@@ -83,9 +83,8 @@ npm install https://github.com/facebookexperimental/Recoil.git#nightly
  or `yarn`:
  ```shell
  yarn add https://github.com/facebookexperimental/Recoil.git#nightly
-
  ```
-  or edit dependency in `package.json` and run `npm install` or `yarn`:
+  or add a dependency in `package.json` and run `npm install` or `yarn`:
 ```js
   "recoil": "facebookexperimental/Recoil.git#nightly",
 ```
