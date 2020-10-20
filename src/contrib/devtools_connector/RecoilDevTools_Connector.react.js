@@ -22,7 +22,7 @@ const {
 const useEffectOnce = require('useEffectOnce');
 type Props = $ReadOnly<{
   name?: string,
-  persitenceLimit?: number,
+  persistenceLimit?: number,
   initialSnapshot?: ?Snapshot,
   devMode?: ?boolean,
 }>;
@@ -57,7 +57,7 @@ let CONNECTION_INDEX = 0;
  */
 function Connector({
   name = `Recoil Connection ${CONNECTION_INDEX++}`,
-  persitenceLimit = 50,
+  persistenceLimit = 50,
   devMode = true,
 }: Props): React.Node {
   const transactionIdRef = useRef(0);
@@ -68,7 +68,7 @@ function Connector({
   useEffectOnce(() => {
     connectionRef.current = connect({
       name,
-      persitenceLimit,
+      persistenceLimit,
       devMode,
       goToSnapshot,
       initialSnapshot: snapshot,
