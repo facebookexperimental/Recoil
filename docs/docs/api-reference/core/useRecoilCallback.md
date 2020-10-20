@@ -37,7 +37,9 @@ Callback Interface:
 * **`set`** - Enqueue setting the value of an atom or selector.  Like elsewhere, you may either provide the new value directly or an updater function that returns the new value and takes the current value as a parameter.  The current value represents all other enqueued state changes to date in the current transaction.
 * **`reset`** - Reset the value of an atom or selector to its default.
 
-### Example
+### Lazy Read Example
+
+This example uses **`useRecoilCallback()`** to lazily read state without subscribing a component to re-render when the state changes.
 
 ```jsx
 import {atom, useRecoilCallback} from 'recoil';
