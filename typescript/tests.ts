@@ -29,6 +29,7 @@ import {
   SnapshotID, // eslint-disable-line @typescript-eslint/no-unused-vars
   useRecoilSnapshot,
   useRecoilBridgeAcrossReactRoots_UNSTABLE,
+  snapshot_UNSTABLE,
 } from 'recoil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -158,8 +159,8 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   gotoSnapshot(3); // $ExpectError
   gotoSnapshot(myAtom); // $ExpectError
 
-  loadable.contents; // $ExpectType number | Error | LoadablePromise<number>
-  loadable.state; // $ExpectType "hasError" | "hasValue" | "loading"
+  loadable.contents; // $ExpectType number | LoadablePromise<number> | Error
+  loadable.state; // $ExpectType "hasValue" | "loading" | "error"
 
   set(myAtom, 5);
   set(myAtom, 'hello'); // $ExpectError
@@ -429,6 +430,25 @@ isRecoilValue(mySelector1);
       },
     ],
   });
+}
+
+/**
+ * snapshot_UNSTABLE()
+ */
+{
+  snapshot_UNSTABLE(
+    mutableSnapshot => mutableSnapshot.set(myAtom, 1)
+  )
+  .getLoadable(mySelector1)
+  .valueOrThrow();
+}
+
+{
+  snapshot_UNSTABLE(
+    mutableSnapshot => mutableSnapshot.set(myAtom, '1') // $ExpectError
+  )
+  .getLoadable(mySelector1)
+  .valueOrThrow();
 }
 
 /* eslint-enable @typescript-eslint/no-explicit-any */

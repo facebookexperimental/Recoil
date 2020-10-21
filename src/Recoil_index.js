@@ -42,6 +42,7 @@ const {batchUpdates, setBatcher} = require('./core/Recoil_Batching');
 const {DefaultValue} = require('./core/Recoil_Node');
 const {RecoilRoot} = require('./core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
+const {freshSnapshot} = require('./core/Recoil_Snapshot');
 const {
   useGotoRecoilSnapshot,
   useRecoilCallback,
@@ -120,4 +121,7 @@ module.exports = {
   // Batching
   batchUpdates,
   setBatcher,
+
+  // Snapshot Utils
+  snapshot_UNSTABLE: freshSnapshot,
 };
