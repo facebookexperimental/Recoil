@@ -38,6 +38,10 @@ const {
 } = require('./core/Recoil_RecoilValue');
 
 const {
+  freshSnapshot
+} = require('./core/Recoil_Snapshot');
+
+const {
   useGotoRecoilSnapshot,
   useRecoilCallback,
   useRecoilSnapshot,
@@ -114,5 +118,7 @@ module.exports = {
   isRecoilValue,
   // Batching
   batchUpdates,
-  setBatcher
+  setBatcher,
+  // Snapshot Utils
+  snapshot_UNSTABLE: freshSnapshot
 };

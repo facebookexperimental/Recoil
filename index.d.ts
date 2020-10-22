@@ -199,19 +199,37 @@ type ResolvedLoadablePromiseInfo<T> = Readonly<{
 
 export type LoadablePromise<T> = Promise<ResolvedLoadablePromiseInfo<T>>;
 
-export type Loadable<T> =
-  | Readonly<{
-      state: 'hasValue';
-      contents: T;
-  }>
-  | Readonly<{
-      state: 'hasError';
-      contents: Error;
-  }>
-  | Readonly<{
-      state: 'loading';
-      contents: LoadablePromise<T>;
-  }>;
+interface BaseLoadable<T> {
+  getValue: () => T;
+  toPromise: () => Promise<T>;
+  valueMaybe: () => T | void;
+  valueOrThrow: () => T;
+  errorMaybe: () => Error | void;
+  errorOrThrow: () => Error;
+  promiseMaybe: () => Promise<T> | void;
+  promiseOrThrow: () => Promise<T>;
+  map: <S>(map: (from: T) => Promise<S> | S) => Loadable<S>;
+}
+
+interface ValueLoadable<T> extends BaseLoadable<T> {
+  state: 'hasValue';
+  contents: T;
+}
+
+interface LoadingLoadable<T> extends BaseLoadable<T> {
+  state: 'loading';
+  contents: LoadablePromise<T>;
+}
+
+interface ErrorLoadable<T> extends BaseLoadable<T> {
+  state: 'error';
+  contents: Error;
+}
+
+type Loadable<T> =
+  | ValueLoadable<T>
+  | LoadingLoadable<T>
+  | ErrorLoadable<T>;
 
 // recoilValue.d.ts
 declare class AbstractRecoilValue<T> {
@@ -331,3 +349,5 @@ export function waitForAll<RecoilValues extends { [key: string]: RecoilValue<any
 ): RecoilValueReadOnly<UnwrapRecoilValues<RecoilValues>>;
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+export function snapshot_UNSTABLE(initializeState?: (shapshot: MutableSnapshot) => void): Snapshot;

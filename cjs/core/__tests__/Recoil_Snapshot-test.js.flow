@@ -10,41 +10,36 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
-
-gkx.setPass('recoil_async_selector_refactor');
-
-const React = require('React');
-
 const {
-  act
-} = require('ReactTestUtils');
+  getRecoilTestFn
+} = require('Recoil_TestingUtils');
 
-const {
-  useGotoRecoilSnapshot,
-  useRecoilTransactionObserver
-} = require('../../hooks/Recoil_Hooks');
+let React, act, useGotoRecoilSnapshot, useRecoilTransactionObserver, atom, constSelector, selector, ReadsAtom, asyncSelector, componentThatReadsAndWritesAtom, renderElements, Snapshot, freshSnapshot;
+const testRecoil = getRecoilTestFn(() => {
+  React = require('React');
+  ({
+    act
+  } = require('ReactTestUtils'));
+  ({
+    useGotoRecoilSnapshot,
+    useRecoilTransactionObserver
+  } = require('../../hooks/Recoil_Hooks'));
+  atom = require('../../recoil_values/Recoil_atom');
+  constSelector = require('../../recoil_values/Recoil_constSelector');
+  selector = require('../../recoil_values/Recoil_selector');
+  ({
+    ReadsAtom,
+    asyncSelector,
+    componentThatReadsAndWritesAtom,
+    renderElements
+  } = require('../../testing/Recoil_TestingUtils'));
+  ({
+    Snapshot,
+    freshSnapshot
+  } = require('../Recoil_Snapshot'));
+}); // Test first since we are testing all registered nodes
 
-const atom = require('../../recoil_values/Recoil_atom');
-
-const constSelector = require('../../recoil_values/Recoil_constSelector');
-
-const selector = require('../../recoil_values/Recoil_selector');
-
-const {
-  ReadsAtom,
-  asyncSelector,
-  componentThatReadsAndWritesAtom,
-  renderElements
-} = require('../../testing/Recoil_TestingUtils');
-
-const {
-  Snapshot,
-  freshSnapshot
-} = require('../Recoil_Snapshot'); // Test first since we are testing all registered nodes
-
-
-test('getNodes', () => {
+testRecoil('getNodes', () => {
   const snapshot = freshSnapshot();
   const {
     getNodes_UNSTABLE
@@ -124,7 +119,7 @@ test('getNodes', () => {
   // ).toEqual(0);
   // TODO Test dirty selectors
 });
-test('State ID after going to snapshot matches the ID of the snapshot', () => {
+testRecoil('State ID after going to snapshot matches the ID of the snapshot', () => {
   const seenIDs = new Set();
   const snapshots = [];
   let expectedSnapshotID = null;
@@ -140,11 +135,11 @@ test('State ID after going to snapshot matches the ID of the snapshot', () => {
   declare function GotoSnapshot(): any;
   const [WriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
   const c = renderElements(<>
-      <TransactionObserver />
-      <GotoSnapshot />
-      <WriteAtom />
-      <ReadsAtom atom={mySelector} />
-    </>);
+        <TransactionObserver />
+        <GotoSnapshot />
+        <WriteAtom />
+        <ReadsAtom atom={mySelector} />
+      </>);
   expect(c.textContent).toBe('00'); // Test changing state produces a new state version
 
   act(() => setAtom(1));
@@ -172,7 +167,7 @@ test('State ID after going to snapshot matches the ID of the snapshot', () => {
 
   expect(c.textContent).toBe('44');
 });
-test('Read default loadable from snapshot', () => {
+testRecoil('Read default loadable from snapshot', () => {
   const snapshot: Snapshot = freshSnapshot();
   const myAtom = atom({
     key: 'Snapshot Atom Default',
@@ -186,7 +181,7 @@ test('Read default loadable from snapshot', () => {
   expect(selectorLoadable.state).toEqual('hasValue');
   expect(selectorLoadable.contents).toEqual('DEFAULT');
 });
-test('Read async selector from snapshot', async () => {
+testRecoil('Read async selector from snapshot', async () => {
   const snapshot = freshSnapshot();
   const otherA = freshSnapshot();
   const otherB = freshSnapshot();
@@ -207,7 +202,7 @@ test('Read async selector from snapshot', async () => {
   await expect(otherB.getPromise(nestSel)).resolves.toEqual('SET VALUE');
   await expect(otherC.getPromise(nestSel)).resolves.toEqual('SET VALUE');
 });
-test('Sync map of snapshot', () => {
+testRecoil('Sync map of snapshot', () => {
   const snapshot = freshSnapshot();
   const myAtom = atom({
     key: 'Snapshot Map Sync',
@@ -243,7 +238,7 @@ test('Sync map of snapshot', () => {
   expect(resetSelectorLoadable.state).toEqual('hasValue');
   expect(resetSelectorLoadable.contents).toEqual('DEFAULT');
 });
-test('Async map of snapshot', async () => {
+testRecoil('Async map of snapshot', async () => {
   const snapshot = freshSnapshot();
   const myAtom = atom({
     key: 'Snapshot Map Async',
@@ -263,7 +258,7 @@ test('Async map of snapshot', async () => {
   const value = await newSnapshot.getPromise(myAtom);
   expect(value).toEqual('VALUE');
 });
-test('getDeps', () => {
+testRecoil('getDeps', () => {
   const snapshot = freshSnapshot();
   const myAtom = atom<string>({
     key: 'snapshot getDeps atom',
@@ -297,7 +292,7 @@ test('getDeps', () => {
   expect(Array.from(snapshot.getDeps_UNSTABLE(selectorC))).toEqual(expect.arrayContaining([selectorA, selectorB]));
 });
 describe('getSubscriptions', () => {
-  test('nodes', () => {
+  testRecoil('nodes', () => {
     const snapshot = freshSnapshot();
     const myAtom = atom<string>({
       key: 'snapshot getSubscriptions atom',
@@ -336,7 +331,7 @@ describe('getSubscriptions', () => {
     expect(Array.from(snapshot.getSubscribers_UNSTABLE(selectorC).nodes)).toEqual([]);
   });
 });
-test('getInfo', () => {
+testRecoil('getInfo', () => {
   const snapshot = freshSnapshot();
   const myAtom = atom<string>({
     key: 'snapshot getInfo atom',

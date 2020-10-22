@@ -10,31 +10,29 @@
  */
 'use strict';
 
-const React = require('React');
-
 const {
-  act
-} = require('ReactTestUtils');
-
-const constSelector = require('../../recoil_values/Recoil_constSelector');
-
-const errorSelector = require('../../recoil_values/Recoil_errorSelector');
-
-const {
-  asyncSelector,
-  renderElements
+  getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-const gkx = require('../../util/Recoil_gkx');
-
-const {
-  useRecoilValueLoadable
-} = require('../Recoil_Hooks');
-
-gkx.setFail('recoil_async_selector_refactor'); // These tests should cover the Loadable interface returned by useRecoilValueLoadable.
+let React, act, constSelector, errorSelector, asyncSelector, renderElements, useRecoilValueLoadable;
+const testRecoil = getRecoilTestFn(() => {
+  React = require('React');
+  ({
+    act
+  } = require('ReactTestUtils'));
+  constSelector = require('../../recoil_values/Recoil_constSelector');
+  errorSelector = require('../../recoil_values/Recoil_errorSelector');
+  ({
+    asyncSelector,
+    renderElements
+  } = require('../../testing/Recoil_TestingUtils'));
+  ({
+    useRecoilValueLoadable
+  } = require('../Recoil_Hooks'));
+}); // These tests should cover the Loadable interface returned by useRecoilValueLoadable.
 // It is also used by useRecoilStateNoThrow, waitForNone, and waitForAny
 
-test('useRecoilValueLoadable - loadable with value', async () => {
+testRecoil('useRecoilValueLoadable - loadable with value', async () => {
   const valueSel = constSelector('VALUE');
   let promise;
   declare function ReadLoadable(): any;
@@ -42,7 +40,7 @@ test('useRecoilValueLoadable - loadable with value', async () => {
   expect(c.textContent).toEqual('VALUE');
   await promise;
 });
-test('useRecoilValueLoadable - loadable with error', async () => {
+testRecoil('useRecoilValueLoadable - loadable with error', async () => {
   const valueSel = errorSelector('ERROR');
   let promise;
   declare function ReadLoadable(): any;
@@ -50,7 +48,7 @@ test('useRecoilValueLoadable - loadable with error', async () => {
   expect(c.textContent).toEqual('VALUE');
   await promise;
 });
-test('useRecoilValueLoadable - loading loadable', async () => {
+testRecoil('useRecoilValueLoadable - loading loadable', async () => {
   const [valueSel, resolve] = asyncSelector();
   let resolved = false;
   const promises = [];

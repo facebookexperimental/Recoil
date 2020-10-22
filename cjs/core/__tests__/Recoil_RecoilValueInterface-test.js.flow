@@ -10,35 +10,27 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
-
-gkx.setFail('recoil_async_selector_refactor');
-
 const {
-  act
-} = require('ReactTestUtils');
-
-const atom = require('../../recoil_values/Recoil_atom');
-
-const selector = require('../../recoil_values/Recoil_selector');
-
-const {
-  makeStore
+  getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-const {
-  getRecoilValueAsLoadable,
-  setRecoilValue,
-  setUnvalidatedRecoilValue,
-  subscribeToRecoilValue
-} = require('../Recoil_RecoilValueInterface');
+let act, atom, selector, getRecoilValueAsLoadable, setRecoilValue, setUnvalidatedRecoilValue, subscribeToRecoilValue, a, dependsOnAFn, dependsOnA, dependsOnDependsOnA, b, store;
+const testRecoil = getRecoilTestFn(() => {
+  const {
+    makeStore
+  } = require('../../testing/Recoil_TestingUtils');
 
-let a;
-let dependsOnAFn;
-let dependsOnA;
-let dependsOnDependsOnA;
-let b;
-beforeEach(() => {
+  ({
+    act
+  } = require('ReactTestUtils'));
+  atom = require('../../recoil_values/Recoil_atom');
+  selector = require('../../recoil_values/Recoil_selector');
+  ({
+    getRecoilValueAsLoadable,
+    setRecoilValue,
+    setUnvalidatedRecoilValue,
+    subscribeToRecoilValue
+  } = require('../Recoil_RecoilValueInterface'));
   a = atom<number>({
     key: 'a',
     default: 0
@@ -64,33 +56,29 @@ beforeEach(() => {
       validator: x => parseInt(x, 10)
     }
   });
+  store = makeStore();
 });
-test('read default value', () => {
-  const store = makeStore();
+testRecoil('read default value', () => {
   expect(getRecoilValueAsLoadable(store, a)).toMatchObject({
     state: 'hasValue',
     contents: 0
   });
 });
-test('read written value, visited contains written value', () => {
-  const store = makeStore();
+testRecoil('read written value, visited contains written value', () => {
   setRecoilValue(store, a, 1);
   expect(getRecoilValueAsLoadable(store, a)).toMatchObject({
     state: 'hasValue',
     contents: 1
   });
 });
-test('read selector based on default upstream', () => {
-  const store = makeStore();
+testRecoil('read selector based on default upstream', () => {
   expect(getRecoilValueAsLoadable(store, dependsOnA).contents).toEqual(1);
 });
-test('read selector based on written upstream', () => {
-  const store = makeStore();
+testRecoil('read selector based on written upstream', () => {
   setRecoilValue(store, a, 1);
   expect(getRecoilValueAsLoadable(store, dependsOnA).contents).toEqual(2);
 });
-test('selector subscriber is called when upstream changes', () => {
-  const store = makeStore();
+testRecoil('selector subscriber is called when upstream changes', () => {
   const callback = jest.fn();
   const {
     release
@@ -103,8 +91,7 @@ test('selector subscriber is called when upstream changes', () => {
   setRecoilValue(store, a, 2);
   expect(callback).toHaveBeenCalledTimes(1);
 });
-test('selector is recursively visited when subscribed and upstream changes', () => {
-  const store = makeStore();
+testRecoil('selector is recursively visited when subscribed and upstream changes', () => {
   const callback = jest.fn();
   const {
     release
@@ -117,9 +104,8 @@ test('selector is recursively visited when subscribed and upstream changes', () 
   setRecoilValue(store, a, 2);
   expect(callback).toHaveBeenCalledTimes(1);
 });
-test('selector function is evaluated only on first read', () => {
+testRecoil('selector function is evaluated only on first read', () => {
   dependsOnAFn.mockClear();
-  const store = makeStore();
   const callback = jest.fn();
   subscribeToRecoilValue(store, dependsOnA, callback);
   getRecoilValueAsLoadable(store, dependsOnA);
@@ -133,8 +119,7 @@ test('selector function is evaluated only on first read', () => {
   getRecoilValueAsLoadable(store, dependsOnA);
   expect(dependsOnAFn).toHaveBeenCalledTimes(2); // not called on subsequent read with no upstream change
 });
-test('atom can go from unvalidated to normal value', () => {
-  const store = makeStore();
+testRecoil('atom can go from unvalidated to normal value', () => {
   setUnvalidatedRecoilValue(store, b, '1');
   expect(getRecoilValueAsLoadable(store, b)).toMatchObject({
     state: 'hasValue',
@@ -146,8 +131,7 @@ test('atom can go from unvalidated to normal value', () => {
     contents: 2
   });
 });
-test('atom can go from normal to unvalidated value', () => {
-  const store = makeStore();
+testRecoil('atom can go from normal to unvalidated value', () => {
   setRecoilValue(store, b, 1);
   expect(getRecoilValueAsLoadable(store, b)).toMatchObject({
     state: 'hasValue',
@@ -159,10 +143,9 @@ test('atom can go from normal to unvalidated value', () => {
     contents: 2
   });
 });
-test('atom can go from unvalidated to unvalidated value', () => {
+testRecoil('atom can go from unvalidated to unvalidated value', () => {
   // Regression test for an issue where setting an unvalidated value when
   // already in a has-unvalidated-value state would result in a stale value:
-  const store = makeStore();
   setUnvalidatedRecoilValue(store, b, '1');
   expect(getRecoilValueAsLoadable(store, b)).toMatchObject({
     state: 'hasValue',

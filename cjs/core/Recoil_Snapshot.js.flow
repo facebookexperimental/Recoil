@@ -20,8 +20,6 @@ const concatIterables = require('../util/Recoil_concatIterables');
 
 const filterIterable = require('../util/Recoil_filterIterable');
 
-const gkx = require('../util/Recoil_gkx');
-
 const mapIterable = require('../util/Recoil_mapIterable');
 
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -94,7 +92,7 @@ declare class Snapshot {
 }
 declare function cloneStoreState(store: Store, treeState: TreeState, bumpVersion: boolean): StoreState; // Factory to build a fresh snapshot
 
-declare function freshSnapshot(): Snapshot; // Factory to clone a snapahot state
+declare function freshSnapshot(initializeState?: (MutableSnapshot) => void): Snapshot; // Factory to clone a snapahot state
 
 declare function cloneSnapshot(store: Store, version: 'current' | 'previous'): Snapshot;
 declare class MutableSnapshot extends Snapshot {

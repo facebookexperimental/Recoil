@@ -14,6 +14,8 @@ import type { Loadable } from '../adt/Recoil_Loadable';
 import type { ValueOrUpdater } from '../recoil_values/Recoil_selector';
 import type { AtomValues, NodeKey, Store, TreeState } from './Recoil_State';
 
+const gkx = require('../util/Recoil_gkx');
+
 const mapMap = require('../util/Recoil_mapMap');
 
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -47,8 +49,6 @@ const {
   RecoilValueReadOnly,
   isRecoilValue
 } = require('./Recoil_RecoilValue');
-
-const gkx = require('gkx');
 
 declare function getRecoilValueAsLoadable<T>(store: Store, arg1: AbstractRecoilValue<T>, treeState: TreeState): Loadable<T>;
 declare function applyAtomValueWrites(atomValues: AtomValues, writes: AtomValues): AtomValues;
