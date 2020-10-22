@@ -10,40 +10,65 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
-gkx.setFail('recoil_async_selector_refactor');
+const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
-const React = require('React');
-const {useEffect, useState} = require('React');
-const {act} = require('ReactTestUtils');
-const atom = require('../Recoil_atom');
-const {
+let React,
+  store,
+  atom,
+  nullthrows,
+  useEffect,
+  useState,
+  act,
   useRecoilCallback,
   useRecoilState,
   useRecoilValue,
   useRecoilValueLoadable,
   useSetRecoilState,
-} = require('../../hooks/Recoil_Hooks');
-const constSelector = require('../Recoil_constSelector');
-const errorSelector = require('../Recoil_errorSelector');
-const {
+  constSelector,
+  errorSelector,
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../../core/Recoil_RecoilValueInterface');
-const selector = require('../Recoil_selector');
-const {
+  selector,
   asyncSelector,
-  makeStore,
   ReadsAtom,
   renderElements,
   resolvingAsyncSelector,
   flushPromisesAndTimers,
-} = require('../../testing/Recoil_TestingUtils');
-const {DefaultValue} = require('../../core/Recoil_Node');
-const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
+  DefaultValue,
+  mutableSourceExists;
 
-let store;
-beforeEach(() => {
+const testRecoil = getRecoilTestFn(() => {
+  const {makeStore} = require('../../testing/Recoil_TestingUtils');
+
+  React = require('React');
+  nullthrows = require('nullthrows');
+  ({useEffect, useState} = require('React'));
+  ({act} = require('ReactTestUtils'));
+  atom = require('../Recoil_atom');
+  ({
+    useRecoilCallback,
+    useRecoilState,
+    useRecoilValue,
+    useRecoilValueLoadable,
+    useSetRecoilState,
+  } = require('../../hooks/Recoil_Hooks'));
+  constSelector = require('../Recoil_constSelector');
+  errorSelector = require('../Recoil_errorSelector');
+  ({
+    getRecoilValueAsLoadable,
+    setRecoilValue,
+  } = require('../../core/Recoil_RecoilValueInterface'));
+  selector = require('../Recoil_selector');
+  ({
+    asyncSelector,
+    ReadsAtom,
+    renderElements,
+    resolvingAsyncSelector,
+    flushPromisesAndTimers,
+  } = require('../../testing/Recoil_TestingUtils'));
+  ({DefaultValue} = require('../../core/Recoil_Node'));
+  ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
+
   store = makeStore();
 });
 
@@ -63,13 +88,13 @@ function reset(recoilState) {
   setRecoilValue(store, recoilState, new DefaultValue());
 }
 
-test('useRecoilState - static selector', () => {
+testRecoil('useRecoilState - static selector', () => {
   const staticSel = constSelector('HELLO');
   const c = renderElements(<ReadsAtom atom={staticSel} />);
   expect(c.textContent).toEqual('"HELLO"');
 });
 
-test('selector get', () => {
+testRecoil('selector get', () => {
   const staticSel = constSelector('HELLO');
 
   const selectorRO = selector({
@@ -80,7 +105,7 @@ test('selector get', () => {
   expect(get(selectorRO)).toEqual('HELLO');
 });
 
-test('selector set', () => {
+testRecoil('selector set', () => {
   const myAtom = atom({
     key: 'selector/set/atom',
     default: 'DEFAULT',
@@ -105,7 +130,7 @@ test('selector set', () => {
   expect(get(selectorRW)).toEqual('DEFAULT');
 });
 
-test('selector reset', () => {
+testRecoil('selector reset', () => {
   const myAtom = atom({
     key: 'selector/reset/atom',
     default: 'DEFAULT',
@@ -124,7 +149,7 @@ test('selector reset', () => {
   expect(get(selectorRW)).toEqual('DEFAULT');
 });
 
-test('useRecoilState - resolved async selector', async () => {
+testRecoil('useRecoilState - resolved async selector', async () => {
   const resolvingSel = resolvingAsyncSelector('HELLO');
   const c = renderElements(<ReadsAtom atom={resolvingSel} />);
   expect(c.textContent).toEqual('loading');
@@ -133,7 +158,7 @@ test('useRecoilState - resolved async selector', async () => {
   expect(c.textContent).toEqual('"HELLO"');
 });
 
-test('selector - evaluate to RecoilValue', () => {
+testRecoil('selector - evaluate to RecoilValue', () => {
   const atomA = atom({key: 'selector/const atom A', default: 'A'});
   const atomB = atom({key: 'selector/const atom B', default: 'B'});
   const inputAtom = atom({key: 'selector/input', default: 'a'});
@@ -147,7 +172,7 @@ test('selector - evaluate to RecoilValue', () => {
   expect(get(mySelector)).toEqual('B');
 });
 
-test('selector - catching exceptions', () => {
+testRecoil('selector - catching exceptions', () => {
   const throwingSel = errorSelector('MY ERROR');
   expect(get(throwingSel)).toBeInstanceOf(Error);
 
@@ -166,7 +191,7 @@ test('selector - catching exceptions', () => {
   expect(get(catchingSelector)).toEqual('CAUGHT');
 });
 
-test('selector - catching loads', () => {
+testRecoil('selector - catching loads', () => {
   const loadingSel = resolvingAsyncSelector('READY');
   expect(get(loadingSel) instanceof Promise).toBe(true);
 
@@ -192,7 +217,7 @@ test('selector - catching loads', () => {
   expect(get(bypassSelector)).toEqual('READY');
 });
 
-test('useRecoilState - selector catching exceptions', () => {
+testRecoil('useRecoilState - selector catching exceptions', () => {
   const throwingSel = errorSelector('MY ERROR');
   const c1 = renderElements(<ReadsAtom atom={throwingSel} />);
   expect(c1.textContent).toEqual('error');
@@ -213,7 +238,7 @@ test('useRecoilState - selector catching exceptions', () => {
   expect(c2.textContent).toEqual('"CAUGHT"');
 });
 
-test('useRecoilState - async selector', async () => {
+testRecoil('useRecoilState - async selector', async () => {
   const resolvingSel = resolvingAsyncSelector('READY');
 
   // On first read it is blocked on the async selector
@@ -226,7 +251,7 @@ test('useRecoilState - async selector', async () => {
   expect(c1.textContent).toEqual('"READY"');
 });
 
-test('useRecoilState - selector blocked on dependency', async () => {
+testRecoil('useRecoilState - selector blocked on dependency', async () => {
   const resolvingSel = resolvingAsyncSelector('READY');
   const blockedSelector = selector({
     key: 'useRecoilState/blocked selector',
@@ -243,7 +268,7 @@ test('useRecoilState - selector blocked on dependency', async () => {
   expect(c2.textContent).toEqual('"READY"');
 });
 
-test('useRecoilState - selector catching loads', async () => {
+testRecoil('useRecoilState - selector catching loads', async () => {
   const resolvingSel = resolvingAsyncSelector('READY');
   const bypassSelector = selector({
     key: 'useRecoilState/bypassing selector',
@@ -270,7 +295,7 @@ test('useRecoilState - selector catching loads', async () => {
   expect(c3.textContent).toEqual('"READY"');
 });
 
-test('useRecoilState - selector catching all of 2 loads', async () => {
+testRecoil('useRecoilState - selector catching all of 2 loads', async () => {
   const [resolvingSel1, res1] = asyncSelector();
   const [resolvingSel2, res2] = asyncSelector();
 
@@ -309,7 +334,7 @@ test('useRecoilState - selector catching all of 2 loads', async () => {
   expect(c3.textContent).toEqual('2');
 });
 
-test('useRecoilState - selector catching any of 2 loads', async () => {
+testRecoil('useRecoilState - selector catching any of 2 loads', async () => {
   const resolvingSel1 = resolvingAsyncSelector('READY');
   const resolvingSel2 = resolvingAsyncSelector('READY');
   const bypassSelector = selector({
@@ -343,82 +368,96 @@ test('useRecoilState - selector catching any of 2 loads', async () => {
 
 // Test the ability to catch a promise for a pending dependency that we can
 // then handle by returning an async promise.
-test('useRecoilState - selector catching promise and resolving asynchronously', async () => {
-  const [originalDep, resolveOriginal] = asyncSelector();
-  const [bypassDep, resolveBypass] = asyncSelector();
-  const catchPromiseSelector = selector({
-    key: 'useRecoilState/catch then async',
-    get: ({get}) => {
-      try {
-        return get(originalDep);
-      } catch (promise) {
-        expect(promise instanceof Promise).toBe(true);
-        return bypassDep;
-      }
-    },
-  });
-  const c = renderElements(<ReadsAtom atom={catchPromiseSelector} />);
+testRecoil(
+  'useRecoilState - selector catching promise and resolving asynchronously',
+  async () => {
+    const [originalDep, resolveOriginal] = asyncSelector();
+    const [bypassDep, resolveBypass] = asyncSelector();
+    const catchPromiseSelector = selector({
+      key: 'useRecoilState/catch then async',
+      get: ({get}) => {
+        try {
+          return get(originalDep);
+        } catch (promise) {
+          expect(promise instanceof Promise).toBe(true);
+          return bypassDep;
+        }
+      },
+    });
+    const c = renderElements(<ReadsAtom atom={catchPromiseSelector} />);
 
-  expect(c.textContent).toEqual('loading');
-  act(() => jest.runAllTimers());
-  expect(c.textContent).toEqual('loading');
-  resolveBypass('BYPASS');
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(c.textContent).toEqual('"BYPASS"');
-  resolveOriginal('READY');
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(c.textContent).toEqual('"READY"');
-});
+    expect(c.textContent).toEqual('loading');
+    act(() => jest.runAllTimers());
+    expect(c.textContent).toEqual('loading');
+    resolveBypass('BYPASS');
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"BYPASS"');
+    resolveOriginal('READY');
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"READY"');
+  },
+);
 
 // This tests ability to catch a pending result as a promise and
 // that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
-test('useRecoilState - selector catching promise 2', async () => {
-  let dependencyPromiseTest;
-  const resolvingSel = resolvingAsyncSelector('READY');
-  const catchPromiseSelector = selector({
-    key: 'useRecoilState/catch then async 2',
-    get: ({get}) => {
-      try {
-        return get(resolvingSel);
-      } catch (promise) {
-        expect(promise instanceof Promise).toBe(true);
-        // eslint-disable-next-line jest/valid-expect
-        dependencyPromiseTest = expect(promise).resolves.toBe('READY');
+testRecoil(
+  'useRecoilState - selector catching promise 2',
+  async isSelectorGkPassing => {
+    let dependencyPromiseTest;
+    const resolvingSel = resolvingAsyncSelector('READY');
+    const catchPromiseSelector = selector({
+      key: 'useRecoilState/catch then async 2',
+      get: ({get}) => {
+        try {
+          return get(resolvingSel);
+        } catch (promise) {
+          expect(promise instanceof Promise).toBe(true);
+          if (isSelectorGkPassing) {
+            // eslint-disable-next-line jest/valid-expect
+            dependencyPromiseTest = expect(promise).resolves.toHaveProperty(
+              '__value',
+              'READY',
+            );
+          } else {
+            // eslint-disable-next-line jest/valid-expect
+            dependencyPromiseTest = expect(promise).resolves.toBe('READY');
+          }
 
-        return promise.then(result => {
-          expect(result).toBe('READY');
-          return result.value + ' NOW';
-        });
-      }
-    },
-  });
-  const c = renderElements(<ReadsAtom atom={catchPromiseSelector} />);
+          return promise.then(result => {
+            expect(result).toBe('READY');
+            return result.value + ' NOW';
+          });
+        }
+      },
+    });
+    const c = renderElements(<ReadsAtom atom={catchPromiseSelector} />);
 
-  expect(c.textContent).toEqual('loading');
+    expect(c.textContent).toEqual('loading');
 
-  await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
 
-  // NOTE!!!
-  // The output here may be "READY NOW" if we optimize the selector to
-  // cache the result of the async evaluation when the dependency is available
-  // in the cache key with the dependency being available.  Currently it does not
-  // So, when the dependency is ready and the component re-renders it will
-  // re-evaluate.  At that point the dependency is now READY and thus we only
-  // get READY and not READY NOW.
-  // expect(c.textContent).toEqual('"READY NOW"');
-  expect(c.textContent).toEqual('"READY"');
+    // NOTE!!!
+    // The output here may be "READY NOW" if we optimize the selector to
+    // cache the result of the async evaluation when the dependency is available
+    // in the cache key with the dependency being available.  Currently it does not
+    // So, when the dependency is ready and the component re-renders it will
+    // re-evaluate.  At that point the dependency is now READY and thus we only
+    // get READY and not READY NOW.
+    // expect(c.textContent).toEqual('"READY NOW"');
+    expect(c.textContent).toEqual('"READY"');
 
-  // Test that the promise for the dependency that we got actually resolved
-  // to the dependency's value.
-  await dependencyPromiseTest;
-});
+    // Test that the promise for the dependency that we got actually resolved
+    // to the dependency's value.
+    await dependencyPromiseTest;
+  },
+);
 
 // Test that Recoil will throw an error with a useful debug message instead of
 // infinite recurssion when there is a circular dependency
-test('Detect circular dependencies', () => {
+testRecoil('Detect circular dependencies', () => {
   const selectorA = selector({
     key: 'circular/A',
     get: ({get}) => get(selectorC),
@@ -440,46 +479,50 @@ test('Detect circular dependencies', () => {
   window.__DEV__ = devStatus;
 });
 
-/**
- * FIXME: fixed in new selector implementation
-test('selector is able to track dependencies discovered asynchronously', async () => {
-  const anAtom = atom({key: 'atomTrackedAsync', default: 'Async Dep Value'});
+testRecoil(
+  'selector is able to track dependencies discovered asynchronously',
+  async isSelectorGkPassing => {
+    if (!isSelectorGkPassing) {
+      return;
+    }
 
-  const selectorWithAsyncDeps = selector({
-    key: 'selectorTrackDepsIncrementally',
-    get: async ({get}) => {
-      await Promise.resolve(); // needed to simulate discovering a dependency asynchronously
+    const anAtom = atom({key: 'atomTrackedAsync', default: 'Async Dep Value'});
 
-      return get(anAtom);
-    },
-  });
+    const selectorWithAsyncDeps = selector({
+      key: 'selectorTrackDepsIncrementally',
+      get: async ({get}) => {
+        await Promise.resolve(); // needed to simulate discovering a dependency asynchronously
 
-  let setAtom;
+        return get(anAtom);
+      },
+    });
 
-  function Component() {
-    [, setAtom] = useRecoilState(anAtom);
-    const selVal = useRecoilValue(selectorWithAsyncDeps);
+    let setAtom;
 
-    return selVal;
-  }
+    function Component() {
+      [, setAtom] = useRecoilState(anAtom);
+      const selVal = useRecoilValue(selectorWithAsyncDeps);
 
-  const container = renderElements(<Component />);
+      return selVal;
+    }
 
-  expect(container.textContent).toEqual('loading');
+    const container = renderElements(<Component />);
 
-  await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('loading');
 
-  expect(container.textContent).toEqual('Async Dep Value');
+    await flushPromisesAndTimers();
 
-  act(() => setAtom('CHANGED Async Dep'));
+    expect(container.textContent).toEqual('Async Dep Value');
 
-  expect(container.textContent).toEqual('loading');
+    act(() => setAtom('CHANGED Async Dep'));
 
-  await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('loading');
 
-  expect(container.textContent).toEqual('CHANGED Async Dep');
-});
-*/
+    await flushPromisesAndTimers();
+
+    expect(container.textContent).toEqual('CHANGED Async Dep');
+  },
+);
 
 /**
  * This test is an extension of the 'selector is able to track dependencies
@@ -487,166 +530,178 @@ test('selector is able to track dependencies discovered asynchronously', async (
  * responds to changes in dependencies that were discovered asynchronously, the
  * selector should run through the entire selector in response to those changes.
  */
-/**
- * FIXME: fixed in new selector implementation
-test('selector should rerun entire selector when a dep changes', async () => {
-  const resolvingSel1 = resolvingAsyncSelector(1);
-  const resolvingSel2 = resolvingAsyncSelector(2);
-  const anAtom3 = atom({key: 'atomTrackedAsync3', default: 3});
+testRecoil(
+  'selector should rerun entire selector when a dep changes',
+  async isSelectorGkPassing => {
+    if (!isSelectorGkPassing) {
+      return;
+    }
 
-  const selectorWithAsyncDeps = selector({
-    key: 'selectorNotCacheIncDeps',
-    get: async ({get}) => {
-      const val1 = get(resolvingSel1);
+    const resolvingSel1 = resolvingAsyncSelector(1);
+    const resolvingSel2 = resolvingAsyncSelector(2);
+    const anAtom3 = atom({key: 'atomTrackedAsync3', default: 3});
 
-      await Promise.resolve();
+    const selectorWithAsyncDeps = selector({
+      key: 'selectorNotCacheIncDeps',
+      get: async ({get}) => {
+        const val1 = get(resolvingSel1);
 
-      const val2 = get(resolvingSel2);
+        await Promise.resolve();
 
-      await Promise.resolve();
+        const val2 = get(resolvingSel2);
 
-      const val3 = get(anAtom3);
+        await Promise.resolve();
 
-      return val1 + val2 + val3;
-    },
-  });
+        const val3 = get(anAtom3);
 
-  let setAtom;
+        return val1 + val2 + val3;
+      },
+    });
 
-  function Component() {
-    [, setAtom] = useRecoilState(anAtom3);
-    const selVal = useRecoilValue(selectorWithAsyncDeps);
+    let setAtom;
 
-    return selVal;
-  }
+    function Component() {
+      [, setAtom] = useRecoilState(anAtom3);
+      const selVal = useRecoilValue(selectorWithAsyncDeps);
 
-  const container = renderElements(<Component />);
+      return selVal;
+    }
 
-  expect(container.textContent).toEqual('loading');
+    const container = renderElements(<Component />);
 
-  await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('loading');
 
-  expect(container.textContent).toEqual('6');
+    await flushPromisesAndTimers();
 
-  act(() => setAtom(4));
+    expect(container.textContent).toEqual('6');
 
-  expect(container.textContent).toEqual('loading');
+    act(() => setAtom(4));
 
-  await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('loading');
 
-  expect(container.textContent).toEqual('7');
-});
-*/
+    await flushPromisesAndTimers();
+
+    expect(container.textContent).toEqual('7');
+  },
+);
 
 /**
  * This test ensures that we are not running the selector's get() an unnecessary
  * number of times in response to async selectors resolving (i.e. by retrying
  * more times than we have to or creating numerous promises that retry).
  */
-/**
- * FIXME: fixed in new selector implementation
-test('async selector runs the minimum number of times required', () => {
-  const [asyncDep1, resolveAsyncDep1] = asyncSelector();
-  const [asyncDep2, resolveAsyncDep2] = asyncSelector();
+testRecoil(
+  'async selector runs the minimum number of times required',
+  isSelectorGkPassing => {
+    if (!isSelectorGkPassing) {
+      return;
+    }
 
-  let numTimesRan = 0;
+    const [asyncDep1, resolveAsyncDep1] = asyncSelector();
+    const [asyncDep2, resolveAsyncDep2] = asyncSelector();
 
-  const selectorWithAsyncDeps = selector({
-    key: 'selectorRunsMinTimes',
-    get: async ({get}) => {
-      numTimesRan++;
-      return get(asyncDep1) + get(asyncDep2);
-    },
-  });
+    let numTimesRan = 0;
 
-  const container = renderElements(<ReadsAtom atom={selectorWithAsyncDeps} />);
+    const selectorWithAsyncDeps = selector({
+      key: 'selectorRunsMinTimes',
+      get: async ({get}) => {
+        numTimesRan++;
+        return get(asyncDep1) + get(asyncDep2);
+      },
+    });
 
-  expect(numTimesRan).toBe(1);
+    const container = renderElements(
+      <ReadsAtom atom={selectorWithAsyncDeps} />,
+    );
 
-  resolveAsyncDep1('a');
+    expect(numTimesRan).toBe(1);
 
-  act(() => jest.runAllTimers());
+    resolveAsyncDep1('a');
 
-  expect(numTimesRan).toBe(2);
+    act(() => jest.runAllTimers());
 
-  resolveAsyncDep2('b');
+    expect(numTimesRan).toBe(2);
 
-  act(() => jest.runAllTimers());
+    resolveAsyncDep2('b');
 
-  expect(numTimesRan).toBe(3);
-  expect(container.textContent).toEqual('"ab"');
-});
-*/
+    act(() => jest.runAllTimers());
 
-/**
- * FIXME: fixed in new selector implementation
-test('async selector with changing dependencies finishes execution using original state', async () => {
-  const [asyncDep, resolveAsyncDep] = asyncSelector();
-  const anAtom = atom({key: 'atomChangingDeps', default: 3});
+    expect(numTimesRan).toBe(3);
+    expect(container.textContent).toEqual('"ab"');
+  },
+);
 
-  const anAsyncSelector = selector({
-    key: 'selectorWithChangingDeps',
-    get: ({get}) => {
-      const atomValueBefore = get(anAtom);
+testRecoil(
+  'async selector with changing dependencies finishes execution using original state',
+  async isSelectorGkPassing => {
+    if (!isSelectorGkPassing) {
+      return;
+    }
 
-      get(asyncDep);
+    const [asyncDep, resolveAsyncDep] = asyncSelector();
+    const anAtom = atom({key: 'atomChangingDeps', default: 3});
 
-      const atomValueAfter = get(anAtom);
+    const anAsyncSelector = selector({
+      key: 'selectorWithChangingDeps',
+      get: ({get}) => {
+        const atomValueBefore = get(anAtom);
 
-      expect(atomValueBefore).toBe(atomValueAfter);
+        get(asyncDep);
 
-      return atomValueBefore + atomValueAfter;
-    },
-  });
+        const atomValueAfter = get(anAtom);
 
-  let loadableSoFar;
-  let setAtom;
+        expect(atomValueBefore).toBe(atomValueAfter);
 
-  const MyComponent = () => {
-    const setAtomLocal = useSetRecoilState(anAtom);
-    const asyncSelLoadable = useRecoilValueLoadable(anAsyncSelector);
+        return atomValueBefore + atomValueAfter;
+      },
+    });
 
-    setAtom = setAtomLocal;
-    loadableSoFar = asyncSelLoadable;
+    let loadableSoFar;
+    let setAtom;
 
-    return asyncSelLoadable.state;
-  };
+    const MyComponent = () => {
+      const setAtomLocal = useSetRecoilState(anAtom);
+      const asyncSelLoadable = useRecoilValueLoadable(anAsyncSelector);
 
-  renderElements(<MyComponent />);
+      setAtom = setAtomLocal;
+      loadableSoFar = asyncSelLoadable;
 
-  // const promiseBeforeChangingAnything = nullthrows(loadableSoFar).contents;
-  const loadableBeforeChangingAnything = nullthrows(loadableSoFar);
+      return asyncSelLoadable.state;
+    };
 
-  expect(loadableBeforeChangingAnything.contents).toBeInstanceOf(Promise);
+    renderElements(<MyComponent />);
 
-  act(() => setAtom(10));
+    // const promiseBeforeChangingAnything = nullthrows(loadableSoFar).contents;
+    const loadableBeforeChangingAnything = nullthrows(loadableSoFar);
 
-  // const promiseAfterChangingAtom = nullthrows(loadableSoFar).contents;
-  const loadableAfterChangingAtom = nullthrows(loadableSoFar);
+    expect(loadableBeforeChangingAnything.contents).toBeInstanceOf(Promise);
 
-  expect(loadableAfterChangingAtom.contents).toBeInstanceOf(Promise);
-  expect(loadableBeforeChangingAnything.contents).not.toBe(loadableAfterChangingAtom.contents);
+    act(() => setAtom(10));
 
-  act(() => resolveAsyncDep(''));
+    // const promiseAfterChangingAtom = nullthrows(loadableSoFar).contents;
+    const loadableAfterChangingAtom = nullthrows(loadableSoFar);
 
-  await flushPromisesAndTimers();
+    expect(loadableAfterChangingAtom.contents).toBeInstanceOf(Promise);
+    expect(loadableBeforeChangingAnything.contents).not.toBe(
+      loadableAfterChangingAtom.contents,
+    );
 
-  await Promise.all([
-    expect(loadableBeforeChangingAnything.toPromise()).resolves.toBe(
-      3 + 3,
-    ),
-    expect(loadableAfterChangingAtom.toPromise()).resolves.toBe(
-      10 + 10,
-    ),
-  ]);
-});
-*/
+    act(() => resolveAsyncDep(''));
 
-// Test that an async selector will resolve to its dependency's value
-// when it provides the dependency from an async callback.
-/**
- * FIXME: fixed in new selector implementation
-test('selector - dynamic getRecoilValue()', async () => {
+    await flushPromisesAndTimers();
+
+    await Promise.all([
+      expect(loadableBeforeChangingAnything.toPromise()).resolves.toBe(3 + 3),
+      expect(loadableAfterChangingAtom.toPromise()).resolves.toBe(10 + 10),
+    ]);
+  },
+);
+
+testRecoil('selector - dynamic getRecoilValue()', async isSelectorGkPassing => {
+  if (!isSelectorGkPassing) {
+    return;
+  }
+
   const sel2 = selector({
     key: 'MySelector2',
     get: async () => 'READY',
@@ -668,85 +723,90 @@ test('selector - dynamic getRecoilValue()', async () => {
 
   expect(el.textContent).toEqual('"READY"');
 });
-*/
 
-test('distinct loading dependencies are treated as distinct', async () => {
-  const upstreamAtom = atom({
-    key: 'distinct loading dependencies/upstreamAtom',
-    default: 0,
-  });
-  const upstreamAsyncSelector = selector({
-    key: 'distinct loading dependencies/upstreamAsyncSelector',
-    get: ({get}) => Promise.resolve(get(upstreamAtom)),
-  });
-  const directSelector = selector({
-    key: 'distinct loading dependencies/directSelector',
-    get: ({get}) => get(upstreamAsyncSelector),
-  });
-
-  expect(get(directSelector) instanceof Promise).toBe(true);
-
-  act(() => jest.runAllTimers());
-  expect(get(directSelector)).toEqual(0);
-
-  set(upstreamAtom, 1);
-  expect(get(directSelector) instanceof Promise).toBe(true);
-
-  act(() => jest.runAllTimers());
-  expect(get(directSelector)).toEqual(1);
-});
-
-test('Selector deps are saved when a component mounts due to a non-recoil change at the same time that a selector is first read', () => {
-  // Regression test for an issue where selector dependencies were not saved
-  // in this circumstance. In this situation dependencies are discovered for
-  // a selector when reading from a non-latest graph. This tests that these deps
-  // are carried forward instead of being forgotten.
-  let show, setShow, setAnotherAtom;
-  function Parent() {
-    [show, setShow] = useState(false);
-    setAnotherAtom = useSetRecoilState(anotherAtom);
-    if (show) {
-      return <SelectorUser />;
-    } else {
-      return null;
-    }
-  }
-
-  const anAtom = atom<number>({key: 'anAtom', default: 0});
-  const anotherAtom = atom<number>({key: 'anotherAtom', default: 0});
-
-  const aSelector = selector({
-    key: 'aSelector',
-    get: ({get}) => {
-      return get(anAtom);
-    },
-  });
-
-  function SelectorUser() {
-    const setter = useSetRecoilState(anAtom);
-    useEffect(() => {
-      setter(1);
+testRecoil(
+  'distinct loading dependencies are treated as distinct',
+  async () => {
+    const upstreamAtom = atom({
+      key: 'distinct loading dependencies/upstreamAtom',
+      default: 0,
     });
-    return useRecoilValue(aSelector);
-  }
+    const upstreamAsyncSelector = selector({
+      key: 'distinct loading dependencies/upstreamAsyncSelector',
+      get: ({get}) => Promise.resolve(get(upstreamAtom)),
+    });
+    const directSelector = selector({
+      key: 'distinct loading dependencies/directSelector',
+      get: ({get}) => get(upstreamAsyncSelector),
+    });
 
-  const c = renderElements(<Parent />);
+    expect(get(directSelector) instanceof Promise).toBe(true);
 
-  expect(c.textContent).toEqual('');
+    act(() => jest.runAllTimers());
+    expect(get(directSelector)).toEqual(0);
 
-  act(() => {
-    setShow(true);
-    setAnotherAtom(1);
-  });
+    set(upstreamAtom, 1);
+    expect(get(directSelector) instanceof Promise).toBe(true);
 
-  expect(c.textContent).toEqual('1');
-});
+    act(() => jest.runAllTimers());
+    expect(get(directSelector)).toEqual(1);
+  },
+);
+
+testRecoil(
+  'Selector deps are saved when a component mounts due to a non-recoil change at the same time that a selector is first read',
+  () => {
+    // Regression test for an issue where selector dependencies were not saved
+    // in this circumstance. In this situation dependencies are discovered for
+    // a selector when reading from a non-latest graph. This tests that these deps
+    // are carried forward instead of being forgotten.
+    let show, setShow, setAnotherAtom;
+    function Parent() {
+      [show, setShow] = useState(false);
+      setAnotherAtom = useSetRecoilState(anotherAtom);
+      if (show) {
+        return <SelectorUser />;
+      } else {
+        return null;
+      }
+    }
+
+    const anAtom = atom<number>({key: 'anAtom', default: 0});
+    const anotherAtom = atom<number>({key: 'anotherAtom', default: 0});
+
+    const aSelector = selector({
+      key: 'aSelector',
+      get: ({get}) => {
+        return get(anAtom);
+      },
+    });
+
+    function SelectorUser() {
+      const setter = useSetRecoilState(anAtom);
+      useEffect(() => {
+        setter(1);
+      });
+      return useRecoilValue(aSelector);
+    }
+
+    const c = renderElements(<Parent />);
+
+    expect(c.textContent).toEqual('');
+
+    act(() => {
+      setShow(true);
+      setAnotherAtom(1);
+    });
+
+    expect(c.textContent).toEqual('1');
+  },
+);
 
 describe('Async selector resolution notifies all stores that read pending', () => {
   // Regression tests for #534: selectors used to only notify whichever store
   // originally caused a promise to be returned, not any stores that also read
   // the selector in that pending state.
-  test('Selectors read in a snapshot notify all stores', async () => {
+  testRecoil('Selectors read in a snapshot notify all stores', async () => {
     // This version of the test uses the store inside of a Snapshot as its second store.
     const switchAtom = atom({
       key: 'notifiesAllStores/snapshots/switch',
@@ -793,7 +853,7 @@ describe('Async selector resolution notifies all stores that read pending', () =
     expect(c.textContent).toEqual('bar');
   });
 
-  test('Selectors read in a another root notify all roots', async () => {
+  testRecoil('Selectors read in a another root notify all roots', async () => {
     // This version of the test uses another RecoilRoot as its second store
     const switchAtom = atom({
       key: 'notifiesAllStores/twoRoots/switch',
@@ -862,55 +922,59 @@ describe('Async selector resolution notifies all stores that read pending', () =
   });
 });
 
-/**
- * FIXME: fixed in new selector implementation
-test('selector - kite pattern runs only necessary selectors', () => {
-  const aNode = atom({
-    key: 'aNode',
-    default: true,
-  });
+testRecoil(
+  'selector - kite pattern runs only necessary selectors',
+  isSelectorGkPassing => {
+    if (!isSelectorGkPassing) {
+      return;
+    }
 
-  let bNodeRunCount = 0;
-  const bNode = selector({
-    key: 'bNode',
-    get: ({get}) => {
-      bNodeRunCount++;
-      const a = get(aNode);
-      return String(a);
-    },
-  });
+    const aNode = atom({
+      key: 'aNode',
+      default: true,
+    });
 
-  let cNodeRunCount = 0;
-  const cNode = selector({
-    key: 'cNode',
-    get: ({get}) => {
-      cNodeRunCount++;
-      const a = get(aNode);
-      return String(Number(a));
-    },
-  });
+    let bNodeRunCount = 0;
+    const bNode = selector({
+      key: 'bNode',
+      get: ({get}) => {
+        bNodeRunCount++;
+        const a = get(aNode);
+        return String(a);
+      },
+    });
 
-  let dNodeRunCount = 0;
-  const dNode = selector({
-    key: 'dNode',
-    get: ({get}) => {
-      dNodeRunCount++;
-      const value = get(aNode) ? get(bNode) : get(cNode);
-      return value.toUpperCase();
-    },
-  });
+    let cNodeRunCount = 0;
+    const cNode = selector({
+      key: 'cNode',
+      get: ({get}) => {
+        cNodeRunCount++;
+        const a = get(aNode);
+        return String(Number(a));
+      },
+    });
 
-  let dNodeValue = get(dNode);
-  expect(dNodeValue).toEqual('TRUE');
-  expect(bNodeRunCount).toEqual(1);
-  expect(cNodeRunCount).toEqual(0);
-  expect(dNodeRunCount).toEqual(1);
+    let dNodeRunCount = 0;
+    const dNode = selector({
+      key: 'dNode',
+      get: ({get}) => {
+        dNodeRunCount++;
+        const value = get(aNode) ? get(bNode) : get(cNode);
+        return value.toUpperCase();
+      },
+    });
 
-  set(aNode, false);
-  dNodeValue = get(dNode);
-  expect(dNodeValue).toEqual('0');
-  expect(bNodeRunCount).toEqual(1);
-  expect(cNodeRunCount).toEqual(1);
-  expect(dNodeRunCount).toEqual(2);
-});
-*/
+    let dNodeValue = get(dNode);
+    expect(dNodeValue).toEqual('TRUE');
+    expect(bNodeRunCount).toEqual(1);
+    expect(cNodeRunCount).toEqual(0);
+    expect(dNodeRunCount).toEqual(1);
+
+    set(aNode, false);
+    dNodeValue = get(dNode);
+    expect(dNodeValue).toEqual('0');
+    expect(bNodeRunCount).toEqual(1);
+    expect(cNodeRunCount).toEqual(1);
+    expect(dNodeRunCount).toEqual(2);
+  },
+);

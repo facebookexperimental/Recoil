@@ -10,30 +10,46 @@
  */
 'use strict';
 
-const gkx = require('../../util/Recoil_gkx');
-gkx.setFail('recoil_async_selector_refactor');
+const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
-const React = require('React');
-const {useRef, useState} = require('React');
-const {act} = require('ReactTestUtils');
-
-const {useStoreRef} = require('../../core/Recoil_RecoilRoot.react');
-const {
+let React,
+  useRef,
+  useState,
+  act,
+  useStoreRef,
   atom,
   atomFamily,
   selector,
   useRecoilCallback,
   useSetRecoilState,
-} = require('../../Recoil_index');
-const {
   ReadsAtom,
   flushPromisesAndTimers,
   renderElements,
-} = require('../../testing/Recoil_TestingUtils');
-const invariant = require('../../util/Recoil_invariant');
+  invariant;
+
+const testRecoil = getRecoilTestFn(() => {
+  React = require('React');
+  ({useRef, useState} = require('React'));
+  ({act} = require('ReactTestUtils'));
+
+  ({useStoreRef} = require('../../core/Recoil_RecoilRoot.react'));
+  ({
+    atom,
+    atomFamily,
+    selector,
+    useRecoilCallback,
+    useSetRecoilState,
+  } = require('../../Recoil_index'));
+  ({
+    ReadsAtom,
+    flushPromisesAndTimers,
+    renderElements,
+  } = require('../../testing/Recoil_TestingUtils'));
+  invariant = require('../../util/Recoil_invariant');
+});
 
 describe('useRecoilCallback', () => {
-  it('Reads Recoil values', async () => {
+  testRecoil('Reads Recoil values', async () => {
     const anAtom = atom({key: 'atom1', default: 'DEFAULT'});
     let pTest = Promise.reject(new Error("Callback didn't resolve"));
     let cb;
@@ -50,7 +66,7 @@ describe('useRecoilCallback', () => {
     await pTest;
   });
 
-  it('Can read Recoil values without throwing', async () => {
+  testRecoil('Can read Recoil values without throwing', async () => {
     const anAtom = atom({key: 'atom2', default: 123});
     const asyncSelector = selector({
       key: 'sel',
@@ -79,7 +95,7 @@ describe('useRecoilCallback', () => {
     expect(didRun).toBe(true);
   });
 
-  it('Sets Recoil values (by queueing them)', async () => {
+  testRecoil('Sets Recoil values (by queueing them)', async () => {
     const anAtom = atom({key: 'atom3', default: 'DEFAULT'});
     let cb;
     let pTest = Promise.reject(new Error("Callback didn't resolve"));
@@ -105,7 +121,7 @@ describe('useRecoilCallback', () => {
     await pTest;
   });
 
-  it('Reset Recoil values', async () => {
+  testRecoil('Reset Recoil values', async () => {
     const anAtom = atom({key: 'atomReset', default: 'DEFAULT'});
     let setCB, resetCB;
 
@@ -128,7 +144,7 @@ describe('useRecoilCallback', () => {
     expect(container.textContent).toBe('"DEFAULT"');
   });
 
-  it('Sets Recoil values from async callback', async () => {
+  testRecoil('Sets Recoil values from async callback', async () => {
     const anAtom = atom({key: 'set async callback', default: 'DEFAULT'});
     let cb;
     const pTest = [];
@@ -161,49 +177,52 @@ describe('useRecoilCallback', () => {
     }
   });
 
-  it('Reads from a snapshot created at callback call time', async () => {
-    const anAtom = atom({key: 'atom4', default: 123});
-    let cb;
-    let setter;
-    let seenValue = null;
+  testRecoil(
+    'Reads from a snapshot created at callback call time',
+    async () => {
+      const anAtom = atom({key: 'atom4', default: 123});
+      let cb;
+      let setter;
+      let seenValue = null;
 
-    let delay = () => new Promise(r => r()); // no delay initially
+      let delay = () => new Promise(r => r()); // no delay initially
 
-    function Component() {
-      setter = useSetRecoilState(anAtom);
-      cb = useRecoilCallback(({snapshot}) => async () => {
-        await delay();
-        seenValue = await snapshot.getPromise(anAtom);
-      });
-      return null;
-    }
+      function Component() {
+        setter = useSetRecoilState(anAtom);
+        cb = useRecoilCallback(({snapshot}) => async () => {
+          await delay();
+          seenValue = await snapshot.getPromise(anAtom);
+        });
+        return null;
+      }
 
-    // It sees an update flushed after the cb is created:
-    renderElements(<Component />);
-    act(() => setter(345));
-    act(() => void cb());
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
+      // It sees an update flushed after the cb is created:
+      renderElements(<Component />);
+      act(() => setter(345));
+      act(() => void cb());
+      await flushPromisesAndTimers();
+      await flushPromisesAndTimers();
 
-    expect(seenValue).toBe(345);
+      expect(seenValue).toBe(345);
 
-    // But does not see an update flushed while the cb is in progress:
-    seenValue = null;
-    let resumeCallback = () => invariant(false, 'must be initialized');
-    delay = () => {
-      return new Promise(resolve => {
-        resumeCallback = resolve;
-      });
-    };
-    act(() => void cb());
-    act(() => setter(678));
-    resumeCallback();
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
-    expect(seenValue).toBe(345);
-  });
+      // But does not see an update flushed while the cb is in progress:
+      seenValue = null;
+      let resumeCallback = () => invariant(false, 'must be initialized');
+      delay = () => {
+        return new Promise(resolve => {
+          resumeCallback = resolve;
+        });
+      };
+      act(() => void cb());
+      act(() => setter(678));
+      resumeCallback();
+      await flushPromisesAndTimers();
+      await flushPromisesAndTimers();
+      expect(seenValue).toBe(345);
+    },
+  );
 
-  it('Setter updater sees current state', () => {
+  testRecoil('Setter updater sees current state', () => {
     const myAtom = atom({key: 'useRecoilCallback updater', default: 'DEFAULT'});
 
     let setAtom;
@@ -245,7 +264,7 @@ describe('useRecoilCallback', () => {
     expect(c.textContent).toEqual('"UPDATE AGAIN"');
   });
 
-  it('goes to snapshot', async () => {
+  testRecoil('goes to snapshot', async () => {
     const myAtom = atom({
       key: 'Goto Snapshot From Callback',
       default: 'DEFAULT',
@@ -279,7 +298,7 @@ describe('useRecoilCallback', () => {
     expect(c.textContent).toEqual('"SET IN SNAPSHOT"');
   });
 
-  test('Updates are batched', () => {
+  testRecoil('Updates are batched', () => {
     const family = atomFamily({
       key: 'useRecoilCallback/batching/family',
       default: 0,
@@ -320,7 +339,7 @@ describe('useRecoilCallback', () => {
 
 // Test that we always get a consistent instance of the callback function
 // from useRecoilCallback() when it is memoizaed
-test('Consistent callback function', () => {
+testRecoil('Consistent callback function', () => {
   let setIteration;
   const Component = () => {
     const [iteration, _setIteration] = useState(0);

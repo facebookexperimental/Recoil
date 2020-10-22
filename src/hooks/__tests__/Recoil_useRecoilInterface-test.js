@@ -10,20 +10,33 @@
  */
 'use strict';
 
-const React = require('React');
-const {useRef, useState} = require('React');
-const {act} = require('ReactTestUtils');
+const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
-const atom = require('../../recoil_values/Recoil_atom');
-const {renderElements} = require('../../testing/Recoil_TestingUtils');
-const {useRecoilInterface} = require('../Recoil_Hooks');
+let React,
+  useRef,
+  useState,
+  act,
+  atom,
+  counterAtom,
+  renderElements,
+  useRecoilInterface;
 
-const counterAtom = atom({
-  key: `counterAtom`,
-  default: 0,
+const testRecoil = getRecoilTestFn(() => {
+  React = require('React');
+  ({useRef, useState} = require('React'));
+  ({act} = require('ReactTestUtils'));
+
+  atom = require('../../recoil_values/Recoil_atom');
+  ({renderElements} = require('../../testing/Recoil_TestingUtils'));
+  ({useRecoilInterface} = require('../Recoil_Hooks'));
+
+  counterAtom = atom({
+    key: `counterAtom`,
+    default: 0,
+  });
 });
 
-test('Interface for non-react code - useRecoilState', () => {
+testRecoil('Interface for non-react code - useRecoilState', () => {
   function nonReactCode(recoilInterface) {
     return recoilInterface.getRecoilState(counterAtom);
   }
@@ -42,7 +55,7 @@ test('Interface for non-react code - useRecoilState', () => {
   expect(container.textContent).toEqual('1');
 });
 
-test('Interface for non-react code - useRecoilStateNoThrow', () => {
+testRecoil('Interface for non-react code - useRecoilStateNoThrow', () => {
   function nonReactCode(recoilInterface) {
     const [loadable, setValue] = recoilInterface.getRecoilStateLoadable(
       counterAtom,
@@ -65,29 +78,32 @@ test('Interface for non-react code - useRecoilStateNoThrow', () => {
   expect(container.textContent).toEqual('1');
 });
 
-test('Interface for non-react code - useRecoilValue, useSetRecoilState', () => {
-  function nonReactCode(recoilInterface) {
-    return [
-      recoilInterface.getRecoilValue(counterAtom),
-      recoilInterface.getSetRecoilState(counterAtom),
-    ];
-  }
+testRecoil(
+  'Interface for non-react code - useRecoilValue, useSetRecoilState',
+  () => {
+    function nonReactCode(recoilInterface) {
+      return [
+        recoilInterface.getRecoilValue(counterAtom),
+        recoilInterface.getSetRecoilState(counterAtom),
+      ];
+    }
 
-  let updateValue;
-  const Component = () => {
-    const recoilInterface = useRecoilInterface();
-    const [value, _updateValue] = nonReactCode(recoilInterface);
-    updateValue = _updateValue;
-    return value;
-  };
+    let updateValue;
+    const Component = () => {
+      const recoilInterface = useRecoilInterface();
+      const [value, _updateValue] = nonReactCode(recoilInterface);
+      updateValue = _updateValue;
+      return value;
+    };
 
-  const container = renderElements(<Component />);
-  expect(container.textContent).toEqual('0');
-  act(() => updateValue(1));
-  expect(container.textContent).toEqual('1');
-});
+    const container = renderElements(<Component />);
+    expect(container.textContent).toEqual('0');
+    act(() => updateValue(1));
+    expect(container.textContent).toEqual('1');
+  },
+);
 
-test('Interface for non-react code - useRecoilValueNoThrow', () => {
+testRecoil('Interface for non-react code - useRecoilValueNoThrow', () => {
   function nonReactCode(recoilInterface) {
     const value = recoilInterface
       .getRecoilValueLoadable(counterAtom)
@@ -112,7 +128,7 @@ test('Interface for non-react code - useRecoilValueNoThrow', () => {
 
 // Test that we always get a consistent instance of the interface object and
 // hooks from useRecoilInterface() (at least for a given <AppRoot> store)
-test('Consistent interface object', () => {
+testRecoil('Consistent interface object', () => {
   let setValue;
   const Component = () => {
     const [value, _setValue] = useState(0);

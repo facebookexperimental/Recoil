@@ -221,6 +221,33 @@ function flushPromisesAndTimers(): Promise<void> {
   );
 }
 
+type ReloadImports = (isGkPassing: boolean) => void;
+type AssertionsFn = (isGkPassing: boolean) => ?Promise<mixed>;
+type TestFn = (string, AssertionsFn) => void;
+
+const getTestThatTestsFeatureFlag = (
+  featureFlag: string,
+  reloadImports: ReloadImports,
+): TestFn => (testDescription: string, assertionsFn: AssertionsFn) => {
+  test.each([[true], [false]])(
+    `${testDescription} (GK ${featureFlag} set to %p)`,
+    isGkPassing => {
+      jest.resetModules();
+
+      const gkx = require('../util/Recoil_gkx');
+      const setGk = isGkPassing ? gkx.setPass : gkx.setFail;
+
+      setGk(featureFlag);
+      reloadImports(isGkPassing);
+
+      return assertionsFn(isGkPassing);
+    },
+  );
+};
+
+const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
+  getTestThatTestsFeatureFlag('recoil_async_selector_refactor', reloadImports);
+
 module.exports = {
   makeStore,
   renderElements,
@@ -232,4 +259,5 @@ module.exports = {
   loadingAsyncSelector,
   asyncSelector,
   flushPromisesAndTimers,
+  getRecoilTestFn,
 };
