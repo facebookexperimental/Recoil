@@ -20,6 +20,7 @@ const {
   useRecoilSnapshot,
 } = require('recoil-oss/hooks/Recoil_Hooks');
 const useEffectOnce = require('useEffectOnce');
+
 type Props = $ReadOnly<{
   name?: string,
   persistenceLimit?: number,
@@ -42,11 +43,7 @@ function connect(
     return null;
   }
 
-  const devTools =
-    window.__RECOIL_DEVTOOLS_EXTENSION__ &&
-    window.__RECOIL_DEVTOOLS_EXTENSION__.connect &&
-    window.__RECOIL_DEVTOOLS_EXTENSION__.connect(props);
-  return devTools ?? null;
+  return window.__RECOIL_DEVTOOLS_EXTENSION__?.connect?.(props);
 }
 
 let CONNECTION_INDEX = 0;
@@ -74,16 +71,12 @@ function Connector({
       initialSnapshot: snapshot,
     });
 
-    if (connectionRef.current?.disconnect != null) {
-      return connectionRef.current?.disconnect;
-    }
+    return connectionRef.current?.disconnect;
   });
 
   useEffect(() => {
     const transactionID = transactionIdRef.current++;
-    if (connectionRef.current?.track != null) {
-      connectionRef.current.track(transactionID, snapshot);
-    }
+    connectionRef.current?.track?.(transactionID, snapshot);
   }, [snapshot]);
 
   return null;
