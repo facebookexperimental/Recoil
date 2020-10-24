@@ -3057,6 +3057,7 @@ function isNode(object) {
 var Recoil_isNode = isNode;
 
 const isSSR = typeof window === 'undefined';
+const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
 function shouldNotBeFrozen(value) {
   // Primitives and functions:
@@ -3092,7 +3093,7 @@ function shouldNotBeFrozen(value) {
   } // Some environments, just as Jest, don't work with the instanceof check
 
 
-  if (!isSSR && (value === window || value instanceof Window)) {
+  if (!isSSR && !isReactNative && (value === window || value instanceof Window)) {
     return true;
   }
 
