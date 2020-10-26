@@ -40,7 +40,7 @@ To create new todo items, we need to access a setter function that will update t
 ```jsx
 function TodoItemCreator() {
   const [inputValue, setInputValue] = useState('');
-  const setTodoList = useSetRecoilState(todoListState);
+  const [todoList, setTodoList] = useRecoilState(todoListState);
 
   const addItem = () => {
     setTodoList((oldTodoList) => [
