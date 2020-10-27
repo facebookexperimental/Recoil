@@ -306,8 +306,8 @@ const userInfoQuery = selectorFamily({
   },
 });
 
-function useRefreshUserInfo() {
-  setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState);
+function useRefreshUserInfo(userID) {
+  setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
   return () => {
     setUserInfoQueryRequestID(requestID => requestID++);
   };
@@ -316,7 +316,7 @@ function useRefreshUserInfo() {
 function CurrentUserInfo() {
   const currentUserID = useRecoilValue(currentUserIDState);
   const currentUserInfo = userRecoilValue(userInfoQuery(currentUserID));
-  const refreshUserInfo = useRefreshUserInfo();
+  const refreshUserInfo = useRefreshUserInfo(currentUserID);
 
   return (
     <div>
