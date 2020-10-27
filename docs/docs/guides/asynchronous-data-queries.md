@@ -285,7 +285,7 @@ When using selectors to model data queries, it's important to remember that sele
 
 There are a few patterns you can use for working with queries of mutable data:
 
-### Use a request ID
+### Use a Request ID
 Selector evaluation should provided a consistent value for a given state based on input parameters or dependent state.  So, you could add a request ID as either a parameter or dependency to your query.  For example:
 
 ```jsx
@@ -296,7 +296,7 @@ const userInfoQueryRequestIDState = atomFamily({
 
 const userInfoQuery = selectorFamily({
   key: 'UserInfoQuery',
-  get: userID => async () => {
+  get: userID => async ({get}) => {
     get(userInfoQueryRequestIDState(userID)); // Add request ID as a dependency
     const response = await myDBQuery({userID});
     if (response.error) {
@@ -339,7 +339,7 @@ const userInfoState = atomFamily({
 // React component to refresh query
 function RefreshUserInfo({userID}) {
   const refreshUserInfo = useRecoilCallback(({set}) => async id => {
-    const userInfo = await fetch(userInfoURL(userID));
+    const userInfo = await myDBQuery({userID});
     set(userInfoState(userID), userInfo);
   }, [userID]);
 
