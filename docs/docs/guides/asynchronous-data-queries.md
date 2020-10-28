@@ -5,7 +5,7 @@ sidebar_label: Asynchronous Data Queries
 
 Recoil provides a way to map state and derived state to React components via a data-flow graph. What's really powerful is that the functions in the graph can also be asynchronous. This makes it easy to use asynchronous functions in synchronous React component render functions. Recoil allows you to seamlessly mix synchronous and asynchronous functions in your data-flow graph of selectors. Simply return a Promise to a value instead of the value itself from a selector `get` callback, the interface remains exactly the same. Because these are just selectors, other selectors can also depend on them to further transform the data.
 
-Selectors can be used as one way to incorporate asynchronous data into the Recoil data-flow graph.  Please keep in mind that selectors represent pure functions: For a given set of inputs they should always produce the same results (at least for the lifetime of the application).  This is important as selector evaluations may execute one or more times, may be restarted, and may be cached.  Because of this, selectors are a good way to model read-only DB queries where repeating a query provides consistent data.  If you are looking to synchronize local and server state, then please see [Asynchronous State Sync](/docs/guides/asynchronous-state-sync) or [State Persistence](/docs/guides/persistence).
+Selectors can be used as one way to incorporate asynchronous data into the Recoil data-flow graph.  Please keep in mind that selectors represent pure functions: For a given set of inputs they should always produce the same results (at least for the lifetime of the application).  This is important as selector evaluations may execute one or more times, may be restarted, and may be cached.  Because of this, selectors are a good way to model read-only DB queries where repeating a query provides consistent data.  For mutable data check out [Query Refresh](#query-refresh), or if you are looking to synchronize local and server state, then please see [Asynchronous State Sync](/docs/guides/asynchronous-state-sync) or [State Persistence](/docs/guides/persistence).
 
 ## Synchronous Example
 
@@ -279,7 +279,83 @@ function CurrentUserInfo() {
 }
 ```
 
-## Without React Suspense
+## Query Refresh
+
+When using selectors to model data queries, it's important to remember that selector evaluation should always provide a consistent value for a given state.  Selectors represent state derived from other atom and selector states.  Thus, selector evaluation functions should be idempotent for a given input, as it may be cached or executed multiple times.  Practically, that means a single selector should not be used for a query where you expect the results to vary during the application's lifetime.
+
+There are a few patterns you can use for working with mutable data:
+
+### Use a Request ID
+Selector evaluation should provide a consistent value for a given state based on input (dependent state or family parameters).  So, you could add a request ID as either a family parameter or a dependency to your query.  For example:
+
+```jsx
+const userInfoQueryRequestIDState = atomFamily({
+  key: 'UserInfoQueryRequestID',
+  default: 0,
+});
+
+const userInfoQuery = selectorFamily({
+  key: 'UserInfoQuery',
+  get: userID => async ({get}) => {
+    get(userInfoQueryRequestIDState(userID)); // Add request ID as a dependency
+    const response = await myDBQuery({userID});
+    if (response.error) {
+      throw response.error;
+    }
+    return response;
+  },
+});
+
+function useRefreshUserInfo(userID) {
+  setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
+  return () => {
+    setUserInfoQueryRequestID(requestID => requestID++);
+  };
+}
+
+function CurrentUserInfo() {
+  const currentUserID = useRecoilValue(currentUserIDState);
+  const currentUserInfo = userRecoilValue(userInfoQuery(currentUserID));
+  const refreshUserInfo = useRefreshUserInfo(currentUserID);
+
+  return (
+    <div>
+      <h1>{currentUser.name}</h1>
+      <button onClick={refreshUserInfo}>Refresh</button>
+    </div>
+  );
+}
+```
+
+### Use an Atom
+Another option is to use an atom, instead of a selector, to model the query results.  You can imperatively update the atom state with the new query results based on your refresh policy.
+
+```jsx
+const userInfoState = atomFamily({
+  key: 'UserInfo',
+  default: userID => fetch(userInfoURL(userID)),
+});
+
+// React component to refresh query
+function RefreshUserInfo({userID}) {
+  const refreshUserInfo = useRecoilCallback(({set}) => async id => {
+    const userInfo = await myDBQuery({userID});
+    set(userInfoState(userID), userInfo);
+  }, [userID]);
+
+  // Refresh user info every second
+  useEffect(() => {
+    const intervalID = setInterval(refreshUserInfo, 1000);
+    return () => clearInterval(intervalID);
+  }, [refreshUserInfo]);
+
+  return null;
+}
+```
+
+One downside to this approach is that atoms do not *currently* support accepting a `Promise` as the new value in order to automatically take advantage of React Suspense while the query refresh is pending, if that is your desired behavior.  However, you could store an object which manually encodes the loading status as well as the results if desired.
+
+## Async Queries Without React Suspense
 
 It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the status during rendering:
 
