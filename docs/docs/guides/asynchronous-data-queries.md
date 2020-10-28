@@ -281,12 +281,12 @@ function CurrentUserInfo() {
 
 ## Query Refresh
 
-When using selectors to model data queries, it's important to remember that selector evaluation should always provide a consistent value for a given state.  Selectors represent state derived from other atom and selector states.  Thus, selector evaluations functions should be idempotent for its dependencies as it may be cached or executed multiple times.  Practically, that means a single selector should not be used directly for a query where you expect the results to vary during the application's lifetime.
+When using selectors to model data queries, it's important to remember that selector evaluation should always provide a consistent value for a given state.  Selectors represent state derived from other atom and selector states.  Thus, selector evaluation functions should be idempotent for a given input, as it may be cached or executed multiple times.  Practically, that means a single selector should not be used for a query where you expect the results to vary during the application's lifetime.
 
-There are a few patterns you can use for working with queries of mutable data:
+There are a few patterns you can use for working with mutable data:
 
 ### Use a Request ID
-Selector evaluation should provided a consistent value for a given state based on input parameters or dependent state.  So, you could add a request ID as either a parameter or dependency to your query.  For example:
+Selector evaluation should provide a consistent value for a given state based on input (dependent state or family parameters).  So, you could add a request ID as either a family parameter or a dependency to your query.  For example:
 
 ```jsx
 const userInfoQueryRequestIDState = atomFamily({
@@ -328,7 +328,7 @@ function CurrentUserInfo() {
 ```
 
 ### Use an Atom
-Another option is to use an atom instead of a selector to model the query results.  You can imperatively update the atom state with the new query results based on your refresh policy.
+Another option is to use an atom, instead of a selector, to model the query results.  You can imperatively update the atom state with the new query results based on your refresh policy.
 
 ```jsx
 const userInfoState = atomFamily({
@@ -355,7 +355,7 @@ function RefreshUserInfo({userID}) {
 
 One downside to this approach is that atoms do not *currently* support accepting a `Promise` as the new value in order to automatically take advantage of React Suspense while the query refresh is pending, if that is your desired behavior.  However, you could store an object which manually encodes the loading status as well as the results if desired.
 
-## Without React Suspense
+## Async Queries Without React Suspense
 
 It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the status during rendering:
 
