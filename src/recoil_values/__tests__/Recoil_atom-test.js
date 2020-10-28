@@ -655,14 +655,8 @@ describe('Effects', () => {
     const history: Array<() => void> = []; // Array of undo functions
 
     function historyEffect({setSelf, onSet}) {
-      let ignore = false;
       onSet((_, oldValue) => {
-        if (ignore) {
-          ignore = false;
-          return;
-        }
         history.push(() => {
-          ignore = true;
           setSelf(oldValue);
         });
       });
