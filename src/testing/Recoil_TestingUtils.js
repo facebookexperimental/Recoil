@@ -221,32 +221,37 @@ function flushPromisesAndTimers(): Promise<void> {
   );
 }
 
-type ReloadImports = (isGkPassing: boolean) => void;
-type AssertionsFn = (isGkPassing: boolean) => ?Promise<mixed>;
+type ReloadImports = () => void;
+type AssertionsFn = () => ?Promise<mixed>;
 type TestFn = (string, AssertionsFn) => void;
 
-const getTestThatTestsFeatureFlag = (
-  featureFlag: string,
-  reloadImports: ReloadImports,
-): TestFn => (testDescription: string, assertionsFn: AssertionsFn) => {
-  test.each([[true], [false]])(
-    `${testDescription} (GK ${featureFlag} set to %p)`,
-    isGkPassing => {
-      jest.resetModules();
+const testGKs = (gks: Array<string>, reloadImports: ReloadImports): TestFn => (
+  testDescription: string,
+  assertionsFn: AssertionsFn,
+) => {
+  const gkx = require('../util/Recoil_gkx');
+  test.each([
+    [testDescription, null],
+    ...gks.map(gk => [`${testDescription} (${gk})`, gk]),
+  ])('%s', (_title, gk) => {
+    jest.resetModules();
 
-      const gkx = require('../util/Recoil_gkx');
-      const setGk = isGkPassing ? gkx.setPass : gkx.setFail;
+    if (gk) {
+      gkx.setPass(gk);
+    }
 
-      setGk(featureFlag);
-      reloadImports(isGkPassing);
+    reloadImports();
+    assertionsFn();
 
-      return assertionsFn(isGkPassing);
-    },
-  );
+    if (gk) {
+      gkx.setFail(gk);
+    }
+  });
 };
 
 const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
-  getTestThatTestsFeatureFlag('recoil_async_selector_refactor', reloadImports);
+  // @fb-only: testGKs(['recoil_async_selector_refactor'], reloadImports);
+ testGKs([], reloadImports); // @oss-only
 
 module.exports = {
   makeStore,
