@@ -9,7 +9,7 @@
 
 import type {Store} from '../Recoil_State';
 
-const {getRecoilTestFn} = require('Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
 let React,
   ReactDOM,

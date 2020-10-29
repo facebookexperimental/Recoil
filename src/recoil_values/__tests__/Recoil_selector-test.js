@@ -41,7 +41,6 @@ const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
   React = require('React');
-  nullthrows = require('nullthrows');
   ({useEffect, useState} = require('React'));
   ({act} = require('ReactTestUtils'));
   atom = require('../Recoil_atom');
@@ -54,6 +53,7 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('../../hooks/Recoil_Hooks'));
   constSelector = require('../Recoil_constSelector');
   errorSelector = require('../Recoil_errorSelector');
+  nullthrows = require('../../util/Recoil_nullthrows');
   ({
     getRecoilValueAsLoadable,
     setRecoilValue,
