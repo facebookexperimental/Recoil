@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
 let a, atom, store, nullthrows, getNodeLoadable, setNodeValue;
 
