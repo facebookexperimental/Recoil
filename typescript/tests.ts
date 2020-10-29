@@ -1,35 +1,21 @@
 import {
-  DefaultValue,
-  RecoilRoot,
-  RecoilBridge,
-  RecoilValueReadOnly,
   atom,
-  selector,
-  useRecoilValue,
-  useRecoilValueLoadable,
-  useRecoilState,
-  useRecoilStateLoadable,
-  useSetRecoilState,
-  useResetRecoilState,
-  useRecoilCallback,
-  isRecoilValue,
-  RecoilState,
   atomFamily,
+  constSelector, DefaultValue,
+  errorSelector, isRecoilValue,
+  noWait, readOnlySelector, RecoilBridge, RecoilRoot,
+  RecoilState, RecoilValueReadOnly,
+  selector,
   selectorFamily,
-  constSelector,
-  errorSelector,
-  readOnlySelector,
-  noWait,
-  waitForNone,
-  waitForAny,
-  waitForAll,
-  useRecoilTransactionObserver_UNSTABLE,
-  useGotoRecoilSnapshot,
   Snapshot,
-  SnapshotID, // eslint-disable-line @typescript-eslint/no-unused-vars
-  useRecoilSnapshot,
-  useRecoilBridgeAcrossReactRoots_UNSTABLE,
-  snapshot_UNSTABLE,
+  snapshot_UNSTABLE, useGotoRecoilSnapshot,
+  useRecoilBridgeAcrossReactRoots_UNSTABLE, useRecoilCallback,
+  useRecoilSnapshot, useRecoilState,
+  useRecoilStateLoadable,
+  useRecoilTransactionObserver_UNSTABLE, useRecoilValue,
+  useRecoilValueLoadable,
+  useResetRecoilState, useSetRecoilState,
+  waitForAll, waitForAny, waitForNone
 } from 'recoil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -173,17 +159,17 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
 {
   useRecoilTransactionObserver_UNSTABLE(
     ({snapshot, previousSnapshot}) => {
-      snapshot.getLoadable(myAtom);
-      snapshot.getPromise(mySelector1);
+      snapshot.getLoadable(myAtom); // $ExpectType Loadable<number>
+      snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
+      snapshot.getPromise(mySelector2); // $ExpectType Promise<string>
 
-      previousSnapshot.getLoadable(myAtom);
-      previousSnapshot.getPromise(mySelector2);
+      previousSnapshot.getLoadable(myAtom); // $ExpectType Loadable<number>
+      previousSnapshot.getPromise(mySelector1); // $ExpectType Promise<number>
+      previousSnapshot.getPromise(mySelector2); // $ExpectType Promise<string>
 
-      for (const node of snapshot.getNodes_UNSTABLE({isModified: true})){
-        const theAtom = snapshot.getLoadable(node)
-        if (theAtom.state === 'hasValue') {
-          // Do something here, but what?
-        }
+      for (const node of Array.from(snapshot.getNodes_UNSTABLE({isModified: true}))) {
+        const loadable = snapshot.getLoadable(node); // $ExpectType Loadable<unknown>
+        loadable.state; // $ExpectType "hasValue" | "loading" | "error"
       }
     },
   );

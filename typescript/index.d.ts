@@ -4,9 +4,9 @@
  * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
  */
 
-export {};
+export { };
 
-import * as React from 'react';
+  import * as React from 'react';
 
 // state.d.ts
 type NodeKey = string;
@@ -103,7 +103,7 @@ export class Snapshot {
     isActive: boolean,
     isSet: boolean,
     isModified: boolean, // TODO report modified selectors
-    type: 'atom' | 'selector' | void, // void until initialized for now
+    type: 'atom' | 'selector' | undefined, // undefined until initialized for now
     deps: Iterable<RecoilValue<T>>,
     subscribers: {
       nodes: Iterable<RecoilValue<T>>,
