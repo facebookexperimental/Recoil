@@ -5,7 +5,7 @@
 }(this, (function (exports, reactDom, react) { 'use strict';
 
   reactDom = reactDom && Object.prototype.hasOwnProperty.call(reactDom, 'default') ? reactDom['default'] : reactDom;
-  var react__default = 'default' in react ? react['default'] : react;
+  react = react && Object.prototype.hasOwnProperty.call(react, 'default') ? react['default'] : react;
 
   /**
    * Copyright (c) Facebook, Inc. and its affiliates.
@@ -1465,7 +1465,7 @@
     useMemo,
     useRef,
     useState
-  } = react__default; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+  } = react; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
   // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
   // @fb-only: const URI = require('URI');
 
@@ -1544,13 +1544,13 @@
     }
   }
 
-  const AppContext = react__default.createContext({
+  const AppContext = react.createContext({
     current: defaultStore
   });
 
   const useStoreRef = () => useContext(AppContext);
 
-  const MutableSourceContext = react__default.createContext(null); // TODO T2710559282599660
+  const MutableSourceContext = react.createContext(null); // TODO T2710559282599660
 
   const useRecoilMutableSource = () => useContext(MutableSourceContext);
 
@@ -1814,8 +1814,8 @@
     } // FIXME T2710559282599660
 
 
-    const createMutableSource = (_createMutableSource = react__default.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : // flowlint-line unclear-type:off
-    react__default.unstable_createMutableSource; // flowlint-line unclear-type:off
+    const createMutableSource = (_createMutableSource = react.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : // flowlint-line unclear-type:off
+    react.unstable_createMutableSource; // flowlint-line unclear-type:off
 
     const store = storeProp !== null && storeProp !== void 0 ? storeProp : {
       getState: () => storeState.current,
@@ -1833,11 +1833,11 @@
         cleanUpNode$1(storeRef.current, atomKey);
       }
     }, []);
-    return /*#__PURE__*/react__default.createElement(AppContext.Provider, {
+    return /*#__PURE__*/react.createElement(AppContext.Provider, {
       value: storeRef
-    }, /*#__PURE__*/react__default.createElement(MutableSourceContext.Provider, {
+    }, /*#__PURE__*/react.createElement(MutableSourceContext.Provider, {
       value: mutableSource
-    }, /*#__PURE__*/react__default.createElement(Batcher, {
+    }, /*#__PURE__*/react.createElement(Batcher, {
       setNotifyBatcherOfChange: setNotifyBatcherOfChange
     }), children));
   }
@@ -1970,7 +1970,7 @@
 
 
   const useMutableSource = // flowlint-line unclear-type:off
-  (_useMutableSource = react__default.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react__default.unstable_useMutableSource; // flowlint-line unclear-type:off
+  (_useMutableSource = react.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react.unstable_useMutableSource; // flowlint-line unclear-type:off
 
   function mutableSourceExists() {
     return useMutableSource && !(typeof window !== 'undefined' && window.$disableRecoilValueMutableSource_TEMP_HACK_DO_NOT_USE);
@@ -2029,6 +2029,7 @@
       return stack;
     }, []);
   }
+
   const chromeRe = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
   const chromeEvalRe = /\((\S*)(?::(\d+))(?::(\d+))\)/;
 
@@ -2146,18 +2147,18 @@
     };
   }
 
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
+  var Recoil_stackTraceParser = stackTraceParser;
+
+  const {
+    useRef: useRef$1
+  } = react;
+
+
+
+
+
   function useComponentName() {
-    const nameRef = react.useRef();
+    const nameRef = useRef$1();
 
     {
       if (Recoil_gkx_1('recoil_infer_component_names')) {
@@ -2172,7 +2173,7 @@
           // with 'use'. We are only enabling this in dev for now, since once the
           // codebase is minified, the naming assumptions no longer hold true.
           // eslint-disable-next-line fb-www/no-new-error
-          const frames = stackTraceParser(new Error().stack);
+          const frames = Recoil_stackTraceParser(new Error().stack);
 
           for (const {
             methodName
@@ -2195,13 +2196,15 @@
     return "<component name not available>"; // @oss-only
   }
 
+  var Recoil_useComponentName = useComponentName;
+
   const {
     useCallback,
     useEffect: useEffect$1,
     useMemo: useMemo$1,
-    useRef: useRef$1,
+    useRef: useRef$2,
     useState: useState$1
-  } = react__default;
+  } = react;
 
   const {
     batchUpdates: batchUpdates$2
@@ -2294,11 +2297,11 @@
   function useRecoilInterface_DEPRECATED() {
     const storeRef = useStoreRef$1();
     const [_, forceUpdate] = useState$1([]);
-    const recoilValuesUsed = useRef$1(new Set());
+    const recoilValuesUsed = useRef$2(new Set());
     recoilValuesUsed.current = new Set(); // Track the RecoilValues used just during this render
 
-    const previousSubscriptions = useRef$1(new Set());
-    const subscriptions = useRef$1(new Map());
+    const previousSubscriptions = useRef$2(new Set());
+    const subscriptions = useRef$2(new Map());
     const unsubscribeFrom = useCallback(key => {
       const sub = subscriptions.current.get(key);
 
@@ -2307,7 +2310,7 @@
         subscriptions.current.delete(key);
       }
     }, [storeRef, subscriptions]);
-    const componentName = useComponentName();
+    const componentName = Recoil_useComponentName();
     useEffect$1(() => {
       const store = storeRef.current;
 
@@ -2462,7 +2465,7 @@
 
       return getRecoilValueAsLoadable$2(storeRef.current, recoilValue, storeRef.current.getState().currentTree);
     }, [storeRef, recoilValue]);
-    const componentName = useComponentName();
+    const componentName = Recoil_useComponentName();
     const subscribe = useCallback((_something, callback) => {
       const store = storeRef.current;
       const sub = subscribeToRecoilValue$1(store, recoilValue, () => {
@@ -2483,7 +2486,7 @@
 
     const storeRef = useStoreRef$1();
     const [_, forceUpdate] = useState$1([]);
-    const componentName = useComponentName();
+    const componentName = Recoil_useComponentName();
     useEffect$1(() => {
       const store = storeRef.current;
       const sub = subscribeToRecoilValue$1(store, recoilValue, _state => {
@@ -2817,7 +2820,7 @@
 
   const {
     useMemo: useMemo$2
-  } = react__default;
+  } = react;
 
   const {
     RecoilRoot: RecoilRoot$1,
@@ -2830,7 +2833,7 @@
       function RecoilBridge({
         children
       }) {
-        return /*#__PURE__*/react__default.createElement(RecoilRoot$1, {
+        return /*#__PURE__*/react.createElement(RecoilRoot$1, {
           store_INTERNAL: store
         }, children);
       }
@@ -3479,14 +3482,6 @@
 
   var Recoil_nodeCacheMostRecent = nodeCacheMostRecent;
 
-  /**
-   * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
   function setInTreeCache(root, route, result) {
     if (root == null) {
       if (route.length === 0) {
@@ -3551,19 +3546,10 @@
     getFromTreeCache
   };
 
-  var Recoil_TreeNodeCache_1 = Recoil_TreeNodeCache.setInTreeCache;
-  var Recoil_TreeNodeCache_2 = Recoil_TreeNodeCache.getFromTreeCache;
-
-  var Recoil_TreeNodeCache$1 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    setInTreeCache: Recoil_TreeNodeCache_1,
-    getFromTreeCache: Recoil_TreeNodeCache_2
-  });
-
   const {
     getFromTreeCache: getFromTreeCache$1,
     setInTreeCache: setInTreeCache$1
-  } = Recoil_TreeNodeCache$1;
+  } = Recoil_TreeNodeCache;
 
   function treeCacheReferenceEquality() {
     let treeRoot;
@@ -3581,7 +3567,7 @@
   const {
     getFromTreeCache: getFromTreeCache$2,
     setInTreeCache: setInTreeCache$2
-  } = Recoil_TreeNodeCache$1;
+  } = Recoil_TreeNodeCache;
 
   function treeCacheValueEquality() {
     let treeRoot;
@@ -4803,32 +4789,52 @@
 
         defaultLoadable.contents.then(notifyDefaultSubscribers).catch(notifyDefaultSubscribers);
       } // Run Atom Effects
+      // This state is scoped by Store, since this is in the initAtom() closure
 
 
       let initValue = DEFAULT_VALUE$5;
+      let pendingSetSelf = null;
 
       if (options.effects_UNSTABLE != null) {
         let duringInit = true;
 
-        function setSelf(valueOrUpdater) {
+        const setSelf = effect => valueOrUpdater => {
           if (duringInit) {
             const currentValue = initValue instanceof DefaultValue$2 || Recoil_isPromise(initValue) ? defaultLoadable.state === 'hasValue' ? defaultLoadable.contents : DEFAULT_VALUE$5 : initValue;
-            initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type from being a function itself without losing support for opaque types
-            // flowlint-next-line unclear-type:off
-            valueOrUpdater(currentValue) : valueOrUpdater;
+            initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict T from being a function without losing support for opaque types
+            valueOrUpdater(currentValue) // flowlint-line unclear-type:off
+            : valueOrUpdater;
           } else {
             if (Recoil_isPromise(valueOrUpdater)) {
               throw new Error('Setting atoms to async values is not implemented.');
             }
 
-            setRecoilValue$3(store, node, valueOrUpdater);
+            if (typeof valueOrUpdater !== 'function') {
+              pendingSetSelf = {
+                effect,
+                value: valueOrUpdater
+              };
+            }
+
+            setRecoilValue$3(store, node, typeof valueOrUpdater === 'function' ? currentValue => {
+              const newValue = // cast to any because we can't restrict T from being a function without losing support for opaque types
+              valueOrUpdater(currentValue); // flowlint-line unclear-type:off
+
+              pendingSetSelf = {
+                effect,
+                value: newValue
+              };
+              return newValue;
+            } : valueOrUpdater);
           }
-        }
+        };
 
-        const resetSelf = () => setSelf(DEFAULT_VALUE$5);
+        const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE$5);
 
-        function onSet(handler) {
+        const onSet = effect => handler => {
           store.subscribeToTransactions(currentStore => {
+            var _pendingSetSelf3;
+
             // eslint-disable-next-line prefer-const
             let {
               currentTree,
@@ -4843,16 +4849,29 @@
             const newLoadable = currentTree.atomValues.get(key);
 
             if (newLoadable == null || newLoadable.state === 'hasValue') {
-              var _previousTree$atomVal;
+              var _previousTree$atomVal, _pendingSetSelf, _pendingSetSelf2;
 
               const newValue = newLoadable != null ? newLoadable.contents : DEFAULT_VALUE$5;
               const oldLoadable = (_previousTree$atomVal = previousTree.atomValues.get(key)) !== null && _previousTree$atomVal !== void 0 ? _previousTree$atomVal : defaultLoadable;
               const oldValue = oldLoadable.state === 'hasValue' ? oldLoadable.contents : DEFAULT_VALUE$5; // TODO This isn't actually valid, use as a placeholder for now.
+              // Ignore atom value changes that were set via setSelf() in the same effect.
+              // We will still properly call the handler if there was a subsequent
+              // set from something other than an atom effect which was batched
+              // with the `setSelf()` call.  However, we may incorrectly ignore
+              // the handler if the subsequent batched call happens to set the
+              // atom to the exact same value as the `setSelf()`.   But, in that
+              // case, it was kind of a noop, so the semantics are debatable..
 
-              handler(newValue, oldValue);
+              if (((_pendingSetSelf = pendingSetSelf) === null || _pendingSetSelf === void 0 ? void 0 : _pendingSetSelf.effect) !== effect || ((_pendingSetSelf2 = pendingSetSelf) === null || _pendingSetSelf2 === void 0 ? void 0 : _pendingSetSelf2.value) !== newValue) {
+                handler(newValue, oldValue);
+              }
+            }
+
+            if (((_pendingSetSelf3 = pendingSetSelf) === null || _pendingSetSelf3 === void 0 ? void 0 : _pendingSetSelf3.effect) === effect) {
+              pendingSetSelf = null;
             }
           }, key);
-        }
+        };
 
         for (const effect of (_options$effects_UNST = options.effects_UNSTABLE) !== null && _options$effects_UNST !== void 0 ? _options$effects_UNST : []) {
           var _options$effects_UNST;
@@ -4860,9 +4879,9 @@
           const cleanup = effect({
             node,
             trigger,
-            setSelf,
-            resetSelf,
-            onSet
+            setSelf: setSelf(effect),
+            resetSelf: resetSelf(effect),
+            onSet: onSet(effect)
           });
 
           if (cleanup != null) {

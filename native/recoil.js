@@ -1,5 +1,5 @@
 import reactNative from 'react-native';
-import react, { useRef as useRef$2 } from 'react';
+import react from 'react';
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -2023,6 +2023,7 @@ function stackTraceParser(stackString) {
     return stack;
   }, []);
 }
+
 const chromeRe = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 const chromeEvalRe = /\((\S*)(?::(\d+))(?::(\d+))\)/;
 
@@ -2140,18 +2141,18 @@ function parseNode(line) {
   };
 }
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
+var Recoil_stackTraceParser = stackTraceParser;
+
+const {
+  useRef: useRef$1
+} = react;
+
+
+
+
+
 function useComponentName() {
-  const nameRef = useRef$2();
+  const nameRef = useRef$1();
 
   if (process.env.NODE_ENV !== "production") {
     if (Recoil_gkx_1('recoil_infer_component_names')) {
@@ -2166,7 +2167,7 @@ function useComponentName() {
         // with 'use'. We are only enabling this in dev for now, since once the
         // codebase is minified, the naming assumptions no longer hold true.
         // eslint-disable-next-line fb-www/no-new-error
-        const frames = stackTraceParser(new Error().stack);
+        const frames = Recoil_stackTraceParser(new Error().stack);
 
         for (const {
           methodName
@@ -2189,11 +2190,13 @@ function useComponentName() {
   return "<component name not available>"; // @oss-only
 }
 
+var Recoil_useComponentName = useComponentName;
+
 const {
   useCallback,
   useEffect: useEffect$1,
   useMemo: useMemo$1,
-  useRef: useRef$1,
+  useRef: useRef$2,
   useState: useState$1
 } = react;
 
@@ -2288,11 +2291,11 @@ function validateRecoilValue(recoilValue, hookName) {
 function useRecoilInterface_DEPRECATED() {
   const storeRef = useStoreRef$1();
   const [_, forceUpdate] = useState$1([]);
-  const recoilValuesUsed = useRef$1(new Set());
+  const recoilValuesUsed = useRef$2(new Set());
   recoilValuesUsed.current = new Set(); // Track the RecoilValues used just during this render
 
-  const previousSubscriptions = useRef$1(new Set());
-  const subscriptions = useRef$1(new Map());
+  const previousSubscriptions = useRef$2(new Set());
+  const subscriptions = useRef$2(new Map());
   const unsubscribeFrom = useCallback(key => {
     const sub = subscriptions.current.get(key);
 
@@ -2301,7 +2304,7 @@ function useRecoilInterface_DEPRECATED() {
       subscriptions.current.delete(key);
     }
   }, [storeRef, subscriptions]);
-  const componentName = useComponentName();
+  const componentName = Recoil_useComponentName();
   useEffect$1(() => {
     const store = storeRef.current;
 
@@ -2456,7 +2459,7 @@ function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
 
     return getRecoilValueAsLoadable$2(storeRef.current, recoilValue, storeRef.current.getState().currentTree);
   }, [storeRef, recoilValue]);
-  const componentName = useComponentName();
+  const componentName = Recoil_useComponentName();
   const subscribe = useCallback((_something, callback) => {
     const store = storeRef.current;
     const sub = subscribeToRecoilValue$1(store, recoilValue, () => {
@@ -2477,7 +2480,7 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
 
   const storeRef = useStoreRef$1();
   const [_, forceUpdate] = useState$1([]);
-  const componentName = useComponentName();
+  const componentName = Recoil_useComponentName();
   useEffect$1(() => {
     const store = storeRef.current;
     const sub = subscribeToRecoilValue$1(store, recoilValue, _state => {
@@ -3473,14 +3476,6 @@ function nodeCacheMostRecent() {
 
 var Recoil_nodeCacheMostRecent = nodeCacheMostRecent;
 
-/**
- * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
 function setInTreeCache(root, route, result) {
   if (root == null) {
     if (route.length === 0) {
@@ -3545,19 +3540,10 @@ var Recoil_TreeNodeCache = {
   getFromTreeCache
 };
 
-var Recoil_TreeNodeCache_1 = Recoil_TreeNodeCache.setInTreeCache;
-var Recoil_TreeNodeCache_2 = Recoil_TreeNodeCache.getFromTreeCache;
-
-var Recoil_TreeNodeCache$1 = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  setInTreeCache: Recoil_TreeNodeCache_1,
-  getFromTreeCache: Recoil_TreeNodeCache_2
-});
-
 const {
   getFromTreeCache: getFromTreeCache$1,
   setInTreeCache: setInTreeCache$1
-} = Recoil_TreeNodeCache$1;
+} = Recoil_TreeNodeCache;
 
 function treeCacheReferenceEquality() {
   let treeRoot;
@@ -3575,7 +3561,7 @@ var Recoil_treeCacheReferenceEquality = treeCacheReferenceEquality;
 const {
   getFromTreeCache: getFromTreeCache$2,
   setInTreeCache: setInTreeCache$2
-} = Recoil_TreeNodeCache$1;
+} = Recoil_TreeNodeCache;
 
 function treeCacheValueEquality() {
   let treeRoot;
@@ -4799,32 +4785,52 @@ function baseAtom(options) {
 
       defaultLoadable.contents.then(notifyDefaultSubscribers).catch(notifyDefaultSubscribers);
     } // Run Atom Effects
+    // This state is scoped by Store, since this is in the initAtom() closure
 
 
     let initValue = DEFAULT_VALUE$5;
+    let pendingSetSelf = null;
 
     if (options.effects_UNSTABLE != null) {
       let duringInit = true;
 
-      function setSelf(valueOrUpdater) {
+      const setSelf = effect => valueOrUpdater => {
         if (duringInit) {
           const currentValue = initValue instanceof DefaultValue$2 || Recoil_isPromise(initValue) ? defaultLoadable.state === 'hasValue' ? defaultLoadable.contents : DEFAULT_VALUE$5 : initValue;
-          initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type from being a function itself without losing support for opaque types
-          // flowlint-next-line unclear-type:off
-          valueOrUpdater(currentValue) : valueOrUpdater;
+          initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict T from being a function without losing support for opaque types
+          valueOrUpdater(currentValue) // flowlint-line unclear-type:off
+          : valueOrUpdater;
         } else {
           if (Recoil_isPromise(valueOrUpdater)) {
             throw new Error('Setting atoms to async values is not implemented.');
           }
 
-          setRecoilValue$3(store, node, valueOrUpdater);
+          if (typeof valueOrUpdater !== 'function') {
+            pendingSetSelf = {
+              effect,
+              value: valueOrUpdater
+            };
+          }
+
+          setRecoilValue$3(store, node, typeof valueOrUpdater === 'function' ? currentValue => {
+            const newValue = // cast to any because we can't restrict T from being a function without losing support for opaque types
+            valueOrUpdater(currentValue); // flowlint-line unclear-type:off
+
+            pendingSetSelf = {
+              effect,
+              value: newValue
+            };
+            return newValue;
+          } : valueOrUpdater);
         }
-      }
+      };
 
-      const resetSelf = () => setSelf(DEFAULT_VALUE$5);
+      const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE$5);
 
-      function onSet(handler) {
+      const onSet = effect => handler => {
         store.subscribeToTransactions(currentStore => {
+          var _pendingSetSelf3;
+
           // eslint-disable-next-line prefer-const
           let {
             currentTree,
@@ -4839,16 +4845,29 @@ function baseAtom(options) {
           const newLoadable = currentTree.atomValues.get(key);
 
           if (newLoadable == null || newLoadable.state === 'hasValue') {
-            var _previousTree$atomVal;
+            var _previousTree$atomVal, _pendingSetSelf, _pendingSetSelf2;
 
             const newValue = newLoadable != null ? newLoadable.contents : DEFAULT_VALUE$5;
             const oldLoadable = (_previousTree$atomVal = previousTree.atomValues.get(key)) !== null && _previousTree$atomVal !== void 0 ? _previousTree$atomVal : defaultLoadable;
             const oldValue = oldLoadable.state === 'hasValue' ? oldLoadable.contents : DEFAULT_VALUE$5; // TODO This isn't actually valid, use as a placeholder for now.
+            // Ignore atom value changes that were set via setSelf() in the same effect.
+            // We will still properly call the handler if there was a subsequent
+            // set from something other than an atom effect which was batched
+            // with the `setSelf()` call.  However, we may incorrectly ignore
+            // the handler if the subsequent batched call happens to set the
+            // atom to the exact same value as the `setSelf()`.   But, in that
+            // case, it was kind of a noop, so the semantics are debatable..
 
-            handler(newValue, oldValue);
+            if (((_pendingSetSelf = pendingSetSelf) === null || _pendingSetSelf === void 0 ? void 0 : _pendingSetSelf.effect) !== effect || ((_pendingSetSelf2 = pendingSetSelf) === null || _pendingSetSelf2 === void 0 ? void 0 : _pendingSetSelf2.value) !== newValue) {
+              handler(newValue, oldValue);
+            }
+          }
+
+          if (((_pendingSetSelf3 = pendingSetSelf) === null || _pendingSetSelf3 === void 0 ? void 0 : _pendingSetSelf3.effect) === effect) {
+            pendingSetSelf = null;
           }
         }, key);
-      }
+      };
 
       for (const effect of (_options$effects_UNST = options.effects_UNSTABLE) !== null && _options$effects_UNST !== void 0 ? _options$effects_UNST : []) {
         var _options$effects_UNST;
@@ -4856,9 +4875,9 @@ function baseAtom(options) {
         const cleanup = effect({
           node,
           trigger,
-          setSelf,
-          resetSelf,
-          onSet
+          setSelf: setSelf(effect),
+          resetSelf: resetSelf(effect),
+          onSet: onSet(effect)
         });
 
         if (cleanup != null) {

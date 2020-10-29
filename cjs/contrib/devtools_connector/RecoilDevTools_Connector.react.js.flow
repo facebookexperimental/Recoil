@@ -33,6 +33,8 @@ type Props = $ReadOnly<{
   persistenceLimit?: number,
   initialSnapshot?: ?Snapshot,
   devMode?: ?boolean,
+  maxDepth?: number,
+  maxItems?: number,
 }>;
 type ConnectProps = $ReadOnly<{ ...Props,
   goToSnapshot: (Snapshot) => void,

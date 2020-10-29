@@ -43,7 +43,7 @@ const UNKNOWN_FUNCTION = '<unknown>';
  * This borrows heavily from TraceKit (https://github.com/csnover/TraceKit)
  */
 
-declare export default function stackTraceParser(stackString: string): Array<Frame>;
+declare function stackTraceParser(stackString: string): Array<Frame>;
 const chromeRe = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 const chromeEvalRe = /\((\S*)(?::(\d+))(?::(\d+))\)/;
 declare function parseChrome(line: string): ?Frame;
@@ -56,3 +56,4 @@ const javaScriptCoreRe = /^\s*(?:([^@]*)(?:\((.*?)\))?@)?(\S.*?):(\d+)(?::(\d+))
 declare function parseJSC(line: any): ?Frame;
 const nodeRe = /^\s*at (?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
 declare function parseNode(line: any): ?Frame;
+module.exports = stackTraceParser;

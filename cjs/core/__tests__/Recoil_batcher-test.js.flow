@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('Recoil_TestingUtils');
+} = require('../../testing/Recoil_TestingUtils');
 
 let unstable_batchedUpdates, batchUpdates, getBatcher, setBatcher;
 const testRecoil = getRecoilTestFn(() => {

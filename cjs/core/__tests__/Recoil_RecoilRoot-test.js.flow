@@ -11,7 +11,7 @@ import type { Store } from '../Recoil_State';
 
 const {
   getRecoilTestFn
-} = require('Recoil_TestingUtils');
+} = require('../../testing/Recoil_TestingUtils');
 
 let React, ReactDOM, act, useSetRecoilState, atom, constSelector, selector, ReadsAtom, renderElements, RecoilRoot, useStoreRef;
 const testRecoil = getRecoilTestFn(() => {

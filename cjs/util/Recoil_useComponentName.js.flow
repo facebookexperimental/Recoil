@@ -10,7 +10,13 @@
  */
 'use strict';
 
-import { useRef } from 'React';
-import gkx from '../util/Recoil_gkx';
-import stackTraceParser from '../util/Recoil_stackTraceParser';
-declare export default function useComponentName(): string;
+const {
+  useRef
+} = require('React');
+
+const gkx = require('../util/Recoil_gkx');
+
+const stackTraceParser = require('../util/Recoil_stackTraceParser');
+
+declare function useComponentName(): string;
+module.exports = useComponentName;
