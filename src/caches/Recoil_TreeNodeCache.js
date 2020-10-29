@@ -5,7 +5,6 @@
  * @flow strict-local
  * @format
  */
-
 'use strict';
 
 import type {Handlers} from 'Recoil_NodeCache';
@@ -13,7 +12,7 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 import type {NodeKey} from '../core/Recoil_State';
 import type {GetNodeValue, NodeCacheRoute} from './Recoil_NodeCache';
 
-import invariant from '../util/Recoil_invariant';
+const invariant = require('../util/Recoil_invariant');
 
 export type TreeCacheNode<T> = TreeCacheResult<T> | TreeCacheBranch<T>;
 
