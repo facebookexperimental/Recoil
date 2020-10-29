@@ -26,6 +26,8 @@ type Props = $ReadOnly<{
   persistenceLimit?: number,
   initialSnapshot?: ?Snapshot,
   devMode?: ?boolean,
+  maxDepth?: number,
+  maxItems?: number,
 }>;
 
 type ConnectProps = $ReadOnly<{
@@ -55,6 +57,8 @@ let CONNECTION_INDEX = 0;
 function Connector({
   name = `Recoil Connection ${CONNECTION_INDEX++}`,
   persistenceLimit = 50,
+  maxDepth,
+  maxItems,
   devMode = true,
 }: Props): React.Node {
   const transactionIdRef = useRef(0);
@@ -68,6 +72,8 @@ function Connector({
       persistenceLimit,
       devMode,
       goToSnapshot,
+      maxDepth,
+      maxItems,
       initialSnapshot: snapshot,
     });
 
