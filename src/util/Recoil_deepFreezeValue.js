@@ -20,7 +20,7 @@ const isPromise = require('./Recoil_isPromise');
 
 const isSSR = typeof window === 'undefined';
 const isReactNative =
-  typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
+  typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
 
 function shouldNotBeFrozen(value: mixed): boolean {
   // Primitives and functions:

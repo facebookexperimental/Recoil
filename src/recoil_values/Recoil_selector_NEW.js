@@ -840,7 +840,6 @@ function selector<T>(
       const message = `Recoil selector has circular dependencies: ${dependencyStack
         .slice(dependencyStack.indexOf(key))
         .join(' \u2192 ')}`;
-      // eslint-disable-next-line fb-www/no-new-error
       return loadableWithError(new Error(message));
     }
     dependencyStack.push(key);
