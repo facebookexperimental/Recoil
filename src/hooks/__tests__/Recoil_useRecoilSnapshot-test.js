@@ -7,43 +7,27 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
 
-let React,
-  useEffect,
-  act,
-  freshSnapshot,
-  atom,
-  constSelector,
-  selector,
+const React = require('React');
+const {useEffect} = require('React');
+const {act} = require('ReactTestUtils');
+
+const {freshSnapshot} = require('../../core/Recoil_Snapshot');
+const atom = require('../../recoil_values/Recoil_atom');
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+const selector = require('../../recoil_values/Recoil_selector');
+const {
   ReadsAtom,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
-  useGotoRecoilSnapshot,
-  useRecoilSnapshot;
+} = require('../../testing/Recoil_TestingUtils');
+const {useGotoRecoilSnapshot, useRecoilSnapshot} = require('../Recoil_Hooks');
 
-const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useEffect} = require('React'));
-  ({act} = require('ReactTestUtils'));
-
-  ({freshSnapshot} = require('../../core/Recoil_Snapshot'));
-  atom = require('../../recoil_values/Recoil_atom');
-  constSelector = require('../../recoil_values/Recoil_constSelector');
-  selector = require('../../recoil_values/Recoil_selector');
-  ({
-    ReadsAtom,
-    asyncSelector,
-    componentThatReadsAndWritesAtom,
-    flushPromisesAndTimers,
-    renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
-  ({useGotoRecoilSnapshot, useRecoilSnapshot} = require('../Recoil_Hooks'));
-});
-
-testRecoil('useRecoilSnapshot - subscribe to updates', () => {
+test('useRecoilSnapshot - subscribe to updates', () => {
   const myAtom = atom({
     key: 'useRecoilSnapshot - subscribe',
     default: 'DEFAULT',
@@ -88,7 +72,7 @@ testRecoil('useRecoilSnapshot - subscribe to updates', () => {
   expect(snapshots[2].getLoadable(myAtom).contents).toEqual('DEFAULT');
 });
 
-testRecoil('useRecoilSnapshot - goto snapshots', () => {
+test('useRecoilSnapshot - goto snapshots', () => {
   const atomA = atom({
     key: 'useRecoilSnapshot - goto A',
     default: 'DEFAULT',
@@ -142,7 +126,7 @@ testRecoil('useRecoilSnapshot - goto snapshots', () => {
   expect(c.textContent).toEqual('13');
 });
 
-testRecoil('useRecoilSnapshot - async selectors', async () => {
+test('useRecoilSnapshot - async selectors', async () => {
   const [mySelector, resolve] = asyncSelector();
 
   const snapshots = [];
@@ -174,7 +158,7 @@ testRecoil('useRecoilSnapshot - async selectors', async () => {
   expect(snapshots[0].getLoadable(mySelector).contents).toEqual('RESOLVE');
 });
 
-testRecoil('getSubscriptions', async () => {
+test('getSubscriptions', async () => {
   const myAtom = atom<string>({
     key: 'useRecoilSnapshot getSubscriptions atom',
     default: 'ATOM',

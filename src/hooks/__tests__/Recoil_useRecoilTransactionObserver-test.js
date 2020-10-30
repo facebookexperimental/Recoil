@@ -10,36 +10,23 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
 
-let React,
-  act,
-  freshSnapshot,
-  atom,
-  atomFamily,
-  selector,
+const React = require('React');
+const {act} = require('ReactTestUtils');
+
+const {freshSnapshot} = require('../../core/Recoil_Snapshot');
+const atom = require('../../recoil_values/Recoil_atom');
+const atomFamily = require('../../recoil_values/Recoil_atomFamily');
+const selector = require('../../recoil_values/Recoil_selector');
+const {
   ReadsAtom,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
-  useRecoilTransactionObserver;
-
-const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({act} = require('ReactTestUtils'));
-
-  ({freshSnapshot} = require('../../core/Recoil_Snapshot'));
-  atom = require('../../recoil_values/Recoil_atom');
-  atomFamily = require('../../recoil_values/Recoil_atomFamily');
-  selector = require('../../recoil_values/Recoil_selector');
-  ({
-    ReadsAtom,
-    asyncSelector,
-    componentThatReadsAndWritesAtom,
-    renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
-  ({useRecoilTransactionObserver} = require('../Recoil_Hooks'));
-});
+} = require('../../testing/Recoil_TestingUtils');
+const {useRecoilTransactionObserver} = require('../Recoil_Hooks');
 
 function TransactionObserver({callback}) {
   useRecoilTransactionObserver(callback);
@@ -47,7 +34,7 @@ function TransactionObserver({callback}) {
 }
 
 // Run test first since it deals with all registered atoms
-testRecoil('getNodes', () => {
+test('getNodes', () => {
   let snapshot = freshSnapshot();
   function UseRecoilTransactionObserver() {
     useRecoilTransactionObserver(p => {
@@ -129,7 +116,7 @@ testRecoil('getNodes', () => {
   // TODO Test dirty selectors
 });
 
-testRecoil('Can observe atom value', async () => {
+test('Can observe atom value', async () => {
   const atomA = atom({
     key: 'Observe Atom A',
     default: 'DEFAULT A',
@@ -205,7 +192,7 @@ testRecoil('Can observe atom value', async () => {
   ).resolves.toEqual('SET B');
 });
 
-testRecoil('Can observe selector value', async () => {
+test('Can observe selector value', async () => {
   const atomA = atom({
     key: 'Observe Atom for Selector',
     default: 'DEFAULT',
@@ -247,7 +234,7 @@ testRecoil('Can observe selector value', async () => {
   ).resolves.toEqual('SELECTOR DEFAULT');
 });
 
-testRecoil('Can observe async selector value', async () => {
+test('Can observe async selector value', async () => {
   const atomA = atom({
     key: 'Observe Atom for Async Selector',
     default: 'DEFAULT',

@@ -7,57 +7,36 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+import type {Store} from 'Recoil_State';
 
-let React,
-  useEffect,
-  useState,
-  ReactDOM,
-  act,
-  DEFAULT_VALUE,
-  DefaultValue,
-  RecoilRoot,
+const React = require('React');
+const {useEffect, useState} = require('React');
+const ReactDOM = require('ReactDOM');
+const {act} = require('ReactTestUtils');
+
+const {DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node');
+const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
+const {
   getRecoilValueAsLoadable,
   setRecoilValue,
+} = require('../../core/Recoil_RecoilValueInterface');
+const {
   useRecoilState,
   useRecoilTransactionObserver,
   useResetRecoilState,
+} = require('../../hooks/Recoil_Hooks');
+const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
+  makeStore,
   renderElements,
-  atom,
-  immutable,
-  store;
+} = require('../../testing/Recoil_TestingUtils');
+const atom = require('../Recoil_atom');
+const immutable = require('immutable');
 
-const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
-
-  React = require('React');
-  ({useEffect, useState} = require('React'));
-  ReactDOM = require('ReactDOM');
-  ({act} = require('ReactTestUtils'));
-
-  ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
-  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot.react'));
-  ({
-    getRecoilValueAsLoadable,
-    setRecoilValue,
-  } = require('../../core/Recoil_RecoilValueInterface'));
-  ({
-    useRecoilState,
-    useRecoilTransactionObserver,
-    useResetRecoilState,
-  } = require('../../hooks/Recoil_Hooks'));
-  ({
-    ReadsAtom,
-    componentThatReadsAndWritesAtom,
-    flushPromisesAndTimers,
-    renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
-  atom = require('../Recoil_atom');
-  immutable = require('immutable');
-
+let store: Store;
+beforeEach(() => {
   store = makeStore();
 });
 
@@ -73,7 +52,7 @@ function reset(recoilValue) {
   setRecoilValue(store, recoilValue, DEFAULT_VALUE);
 }
 
-testRecoil('atom can read and write value', () => {
+test('atom can read and write value', () => {
   const myAtom = atom<string>({
     key: 'atom with default',
     default: 'DEFAULT',
@@ -84,7 +63,7 @@ testRecoil('atom can read and write value', () => {
 });
 
 describe('Valid values', () => {
-  testRecoil('atom can store null and undefined', () => {
+  test('atom can store null and undefined', () => {
     const myAtom = atom<?string>({
       key: 'atom with default for null and undefined',
       default: 'DEFAULT',
@@ -100,7 +79,7 @@ describe('Valid values', () => {
     expect(get(myAtom)).toBe('VALUE');
   });
 
-  testRecoil('atom can store a circular reference object', () => {
+  test('atom can store a circular reference object', () => {
     class Circular {
       self: Circular;
 
@@ -120,7 +99,7 @@ describe('Valid values', () => {
 });
 
 describe('Async Defaults', () => {
-  testRecoil('default promise', async () => {
+  test('default promise', async () => {
     const myAtom = atom<string>({
       key: 'atom async default',
       default: Promise.resolve('RESOLVE'),
@@ -133,7 +112,7 @@ describe('Async Defaults', () => {
     expect(container.textContent).toEqual('"RESOLVE"');
   });
 
-  testRecoil('default promise overwritten before resolution', () => {
+  test('default promise overwritten before resolution', () => {
     let resolveAtom;
     const myAtom = atom<string>({
       key: 'atom async default overwritten',
@@ -164,7 +143,7 @@ describe('Async Defaults', () => {
   });
 
   // NOTE: This test intentionally throws an error
-  testRecoil('default promise rejection', async () => {
+  test('default promise rejection', async () => {
     const myAtom = atom<string>({
       key: 'atom async default',
       default: Promise.reject('REJECT'),
@@ -178,7 +157,7 @@ describe('Async Defaults', () => {
   });
 });
 
-testRecoil("Updating with same value doesn't rerender", () => {
+test("Updating with same value doesn't rerender", () => {
   const myAtom = atom({key: 'atom same value rerender', default: 'DEFAULT'});
 
   let setAtom;
@@ -226,7 +205,7 @@ testRecoil("Updating with same value doesn't rerender", () => {
 });
 
 describe('Effects', () => {
-  testRecoil('initialization', () => {
+  test('initialization', () => {
     let inited = false;
     const myAtom = atom({
       key: 'atom effect',
@@ -244,7 +223,7 @@ describe('Effects', () => {
     expect(inited).toEqual(true);
   });
 
-  testRecoil('async default', () => {
+  test('async default', () => {
     let inited = false;
     const myAtom = atom<string>({
       key: 'atom effect async default',
@@ -274,7 +253,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"RESOLVE"');
   });
 
-  testRecoil('order of effects', () => {
+  test('order of effects', () => {
     const myAtom = atom({
       key: 'atom effect order',
       default: 'DEFAULT',
@@ -301,7 +280,7 @@ describe('Effects', () => {
     expect(get(myAtom)).toEqual('EFFECT 2');
   });
 
-  testRecoil('reset during init', () => {
+  test('reset during init', () => {
     const myAtom = atom({
       key: 'atom effect reset',
       default: 'DEFAULT',
@@ -313,7 +292,7 @@ describe('Effects', () => {
     expect(get(myAtom)).toEqual('DEFAULT');
   });
 
-  testRecoil('init to undefined', () => {
+  test('init to undefined', () => {
     const myAtom = atom({
       key: 'atom effect init undefined',
       default: 'DEFAULT',
@@ -325,7 +304,7 @@ describe('Effects', () => {
     expect(get(myAtom)).toEqual(undefined);
   });
 
-  testRecoil('init on set', () => {
+  test('init on set', () => {
     let inited = 0;
     const myAtom = atom({
       key: 'atom effect - init on set',
@@ -346,7 +325,7 @@ describe('Effects', () => {
     expect(inited).toEqual(1);
   });
 
-  testRecoil('async set', () => {
+  test('async set', () => {
     let setAtom, resetAtom;
 
     const myAtom = atom({
@@ -400,7 +379,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('');
   });
 
-  testRecoil('set promise', async () => {
+  test('set promise', async () => {
     let resolveAtom;
     let validated;
     const myAtom = atom({
@@ -432,7 +411,7 @@ describe('Effects', () => {
   });
 
   // NOTE: This test throws an expected error
-  testRecoil('reject promise', async () => {
+  test('reject promise', async () => {
     let rejectAtom;
     let validated = false;
     const myAtom = atom({
@@ -462,7 +441,7 @@ describe('Effects', () => {
     expect(validated).toEqual(false);
   });
 
-  testRecoil('overwrite promise', async () => {
+  test('overwrite promise', async () => {
     let resolveAtom;
     let validated;
     const myAtom = atom({
@@ -498,7 +477,7 @@ describe('Effects', () => {
     expect(validated).toEqual(true);
   });
 
-  testRecoil('abort promise init', async () => {
+  test('abort promise init', async () => {
     let resolveAtom;
     let validated;
     const myAtom = atom({
@@ -529,7 +508,7 @@ describe('Effects', () => {
     expect(validated).toEqual(true);
   });
 
-  testRecoil('once per root', () => {
+  test('once per root', () => {
     let inited = 0;
     const myAtom = atom({
       key: 'atom effect once per root',
@@ -559,7 +538,7 @@ describe('Effects', () => {
     expect(inited).toEqual(2);
   });
 
-  testRecoil('onSet', () => {
+  test('onSet', () => {
     const sets = {a: 0, b: 0};
     const observer = key => (newValue, oldValue) => {
       expect(oldValue).toEqual(sets[key]);
@@ -601,7 +580,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('21');
   });
 
-  testRecoil('onSet ordering', () => {
+  test('onSet ordering', () => {
     let set1 = false;
     let set2 = false;
     let globalObserver = false;
@@ -651,12 +630,18 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('1');
   });
 
-  testRecoil('onSet History', () => {
+  test('onSet History', () => {
     const history: Array<() => void> = []; // Array of undo functions
 
     function historyEffect({setSelf, onSet}) {
+      let ignore = false;
       onSet((_, oldValue) => {
+        if (ignore) {
+          ignore = false;
+          return;
+        }
         history.push(() => {
+          ignore = true;
           setSelf(oldValue);
         });
       });
@@ -704,7 +689,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
 
-  testRecoil('Cleanup Handlers - when root unmounted', () => {
+  test('Cleanup Handlers - when root unmounted', () => {
     const refCounts = [0, 0];
 
     const atomA = atom({
@@ -777,7 +762,7 @@ describe('Effects', () => {
   });
 });
 
-testRecoil('object is frozen when stored in atom', () => {
+test('object is frozen when stored in atom', () => {
   const anAtom = atom<{x: mixed, ...}>({key: 'anAtom', default: {x: 0}});
 
   function valueAfterSettingInAtom<T>(value: T): T {

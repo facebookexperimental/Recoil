@@ -10,14 +10,9 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {unstable_batchedUpdates} = require('ReactDOM');
 
-let unstable_batchedUpdates, batchUpdates, getBatcher, setBatcher;
-
-const testRecoil = getRecoilTestFn(() => {
-  ({unstable_batchedUpdates} = require('ReactDOM'));
-  ({batchUpdates, getBatcher, setBatcher} = require('../Recoil_Batching'));
-});
+const {batchUpdates, getBatcher, setBatcher} = require('../Recoil_Batching');
 
 /**
  * Cleanup function that will reset the batcher back
@@ -31,11 +26,11 @@ const resetBatcherToDefault = () => {
 };
 
 describe('batcher', () => {
-  testRecoil('default batcher is ReactDOM unstable_batchedUpdates', () => {
+  test('default batcher is ReactDOM unstable_batchedUpdates', () => {
     expect(getBatcher()).toEqual(unstable_batchedUpdates);
   });
 
-  testRecoil('setBatcher sets the batcher function', () => {
+  test('setBatcher sets the batcher function', () => {
     const batcherFn = jest.fn();
     setBatcher(batcherFn);
 
@@ -44,7 +39,7 @@ describe('batcher', () => {
     resetBatcherToDefault();
   });
 
-  testRecoil('batchUpdates calls the batcher', () => {
+  test('batchUpdates calls the batcher', () => {
     const batcherFn = jest.fn();
     setBatcher(batcherFn);
 

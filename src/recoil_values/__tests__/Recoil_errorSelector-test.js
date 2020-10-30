@@ -10,18 +10,14 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {
+  getRecoilValueAsLoadable,
+} = require('../../core/Recoil_RecoilValueInterface');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
+const errorSelector = require('../Recoil_errorSelector');
 
-let store, getRecoilValueAsLoadable, errorSelector;
-
-const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
-
-  ({
-    getRecoilValueAsLoadable,
-  } = require('../../core/Recoil_RecoilValueInterface'));
-  errorSelector = require('../Recoil_errorSelector');
-
+let store;
+beforeEach(() => {
   store = makeStore();
 });
 
@@ -29,7 +25,7 @@ function getError(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue).errorOrThrow();
 }
 
-testRecoil('errorSelector - string', () => {
+test('errorSelector - string', () => {
   const mySelector = errorSelector('My Error');
   expect(getError(mySelector).message).toEqual(
     expect.stringContaining('My Error'),

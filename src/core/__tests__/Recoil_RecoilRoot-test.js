@@ -7,38 +7,28 @@
  */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
+
 import type {Store} from '../Recoil_State';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const React = require('React');
+const ReactDOM = require('ReactDOM');
+const {act} = require('ReactTestUtils');
 
-let React,
-  ReactDOM,
-  act,
-  useSetRecoilState,
-  atom,
-  constSelector,
-  selector,
+const {useSetRecoilState} = require('../../hooks/Recoil_Hooks');
+const atom = require('../../recoil_values/Recoil_atom');
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+const selector = require('../../recoil_values/Recoil_selector');
+const {
   ReadsAtom,
   renderElements,
-  RecoilRoot,
-  useStoreRef;
-
-const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ReactDOM = require('ReactDOM');
-  ({act} = require('ReactTestUtils'));
-
-  ({useSetRecoilState} = require('../../hooks/Recoil_Hooks'));
-  atom = require('../../recoil_values/Recoil_atom');
-  constSelector = require('../../recoil_values/Recoil_constSelector');
-  selector = require('../../recoil_values/Recoil_selector');
-  ({ReadsAtom, renderElements} = require('../../testing/Recoil_TestingUtils'));
-  ({RecoilRoot} = require('../Recoil_RecoilRoot.react'));
-  ({useStoreRef} = require('../Recoil_RecoilRoot.react'));
-});
+} = require('../../testing/Recoil_TestingUtils');
+const {RecoilRoot} = require('../Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../Recoil_RecoilRoot.react');
 
 describe('initializeState', () => {
-  testRecoil('initialize atom', () => {
+  test('initialize atom', () => {
     const myAtom = atom({
       key: 'RecoilRoot - initializeState - atom',
       default: 'DEFAULT',
@@ -67,7 +57,7 @@ describe('initializeState', () => {
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
   });
 
-  testRecoil('initialize selector', () => {
+  test('initialize selector', () => {
     const myAtom = atom({
       key: 'RecoilRoot - initializeState - selector',
       default: 'DEFAULT',
@@ -100,7 +90,7 @@ describe('initializeState', () => {
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
   });
 
-  testRecoil('initialize with nested store', () => {
+  test('initialize with nested store', () => {
     const GetStore = ({children}: {children: Store => React.Node}) => {
       return children(useStoreRef().current);
     };
@@ -131,41 +121,38 @@ describe('initializeState', () => {
   });
 });
 
-testRecoil(
-  'Impure state updater functions that trigger atom updates are detected',
-  () => {
-    // This test ensures that we throw a clean error rather than mysterious breakage
-    // if the user supplies a state updater function that triggers another update
-    // within its execution. These state updater functions are supposed to be pure.
-    // We can't detect all forms of impurity but this one in particular will make
-    // Recoil break, so we detect it and throw an error.
+test('Impure state updater functions that trigger atom updates are detected', () => {
+  // This test ensures that we throw a clean error rather than mysterious breakage
+  // if the user supplies a state updater function that triggers another update
+  // within its execution. These state updater functions are supposed to be pure.
+  // We can't detect all forms of impurity but this one in particular will make
+  // Recoil break, so we detect it and throw an error.
 
-    const atomA = atom({
-      key: 'RecoilRoot/impureUpdater/a',
-      default: 0,
-    });
-    const atomB = atom({
-      key: 'RecoilRoot/impureUpdater/b',
-      default: 0,
-    });
+  const atomA = atom({
+    key: 'RecoilRoot/impureUpdater/a',
+    default: 0,
+  });
+  const atomB = atom({
+    key: 'RecoilRoot/impureUpdater/b',
+    default: 0,
+  });
 
-    let update;
-    function Component() {
-      const updateA = useSetRecoilState(atomA);
-      const updateB = useSetRecoilState(atomB);
-      update = () => {
-        updateA(() => {
-          updateB(1);
-          return 1;
-        });
-      };
-    }
+  let update;
+  function Component() {
+    const updateA = useSetRecoilState(atomA);
+    const updateB = useSetRecoilState(atomB);
+    update = () => {
+      updateA(() => {
+        updateB(1);
+        return 1;
+      });
+    };
+  }
 
-    renderElements(<Component />);
-    expect(() =>
-      act(() => {
-        update();
-      }),
-    ).toThrow('pure function');
-  },
-);
+  renderElements(<Component />);
+  expect(() =>
+    act(() => {
+      update();
+    }),
+  ).toThrow('pure function');
+});

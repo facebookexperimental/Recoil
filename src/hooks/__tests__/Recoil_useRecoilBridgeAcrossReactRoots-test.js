@@ -10,33 +10,19 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const React = require('React');
+const {useEffect, useRef} = require('React');
+const ReactDOM = require('ReactDOM');
+const {act} = require('ReactTestUtils');
 
-let React,
-  useEffect,
-  useRef,
-  ReactDOM,
-  act,
-  RecoilRoot,
-  atom,
+const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
+const atom = require('../../recoil_values/Recoil_atom');
+const {
   componentThatReadsAndWritesAtom,
-  useRecoilBridgeAcrossReactRoots;
+} = require('../../testing/Recoil_TestingUtils');
+const useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 
-const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useEffect, useRef} = require('React'));
-  ReactDOM = require('ReactDOM');
-  ({act} = require('ReactTestUtils'));
-
-  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot.react'));
-  atom = require('../../recoil_values/Recoil_atom');
-  ({
-    componentThatReadsAndWritesAtom,
-  } = require('../../testing/Recoil_TestingUtils'));
-  useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
-});
-
-testRecoil('useRecoilBridgeAcrossReactRoots - create a context bridge', () => {
+test('useRecoilBridgeAcrossReactRoots - create a context bridge', () => {
   const myAtom = atom({
     key: 'useRecoilBridgeAcrossReactRoots - context bridge',
     default: 'DEFAULT',

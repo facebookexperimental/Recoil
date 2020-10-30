@@ -8,14 +8,15 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
-const {useRef} = require('React');
+import {useRef} from 'React';
 
-const gkx = require('../util/Recoil_gkx');
-const stackTraceParser = require('../util/Recoil_stackTraceParser');
+import gkx from '../util/Recoil_gkx';
+import stackTraceParser from '../util/Recoil_stackTraceParser';
 
-function useComponentName(): string {
+module.exports = function useComponentName(): string {
   const nameRef = useRef();
   if (__DEV__) {
     if (gkx('recoil_infer_component_names')) {
@@ -42,7 +43,5 @@ function useComponentName(): string {
     }
   }
   // @fb-only: return "<component name only available when both in dev mode and when passing GK 'recoil_infer_component_names'>";
-  return '<component name not available>'; // @oss-only
+  return "<component name not available>"; // @oss-only
 }
-
-module.exports = useComponentName;

@@ -10,23 +10,15 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const atom = require('../../recoil_values/Recoil_atom');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
+const nullthrows = require('../../util/Recoil_nullthrows');
+const {getNodeLoadable, setNodeValue} = require('../Recoil_FunctionalCore');
 
-let a, atom, store, nullthrows, getNodeLoadable, setNodeValue;
+const a = atom<number>({key: 'a', default: 0}).key;
 
-const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
-
-  atom = require('../../recoil_values/Recoil_atom');
-  nullthrows = require('../../util/Recoil_nullthrows');
-  ({getNodeLoadable, setNodeValue} = require('../Recoil_FunctionalCore'));
-
-  a = atom<number>({key: 'a', default: 0}).key;
-
-  store = makeStore();
-});
-
-testRecoil('read default value', () => {
+test('read default value', () => {
+  const store = makeStore();
   expect(
     getNodeLoadable(store, store.getState().currentTree, a)[1],
   ).toMatchObject({
@@ -35,16 +27,14 @@ testRecoil('read default value', () => {
   });
 });
 
-testRecoil(
-  'setNodeValue returns empty deps and written value when writing atom',
-  () => {
-    const [depMap, writes] = setNodeValue(
-      store,
-      store.getState().currentTree,
-      a,
-      1,
-    );
-    expect(depMap.size).toBe(0);
-    expect(nullthrows(writes.get(a)).contents).toBe(1);
-  },
-);
+test('setNodeValue returns empty deps and written value when writing atom', () => {
+  const store = makeStore();
+  const [depMap, writes] = setNodeValue(
+    store,
+    store.getState().currentTree,
+    a,
+    1,
+  );
+  expect(depMap.size).toBe(0);
+  expect(nullthrows(writes.get(a)).contents).toBe(1);
+});

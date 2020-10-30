@@ -1,12 +1,5 @@
 # Change Log
 
-## 0.1.0 (2020-10-29)
-
-- Performance Improvements
-- Experimental React Native support
-- Experimental Atom Effects
-- Experimental Snapshot construction
-
 ## 0.0.13 (2020-09-16)
 
 - Fix for bug affecting SSR

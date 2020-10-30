@@ -11,21 +11,24 @@
 
 'use strict';
 
-const {Snapshot} = require('../../core/Recoil_Snapshot');
+const React = require('React');
+
+const {useEffect, useRef} = require('react');
+// $FlowFixMe recoil-oss only used within Recoil DevTools
+const {Snapshot} = require('recoil-oss/core/Recoil_Snapshot');
+
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-} = require('../../hooks/Recoil_Hooks');
-const React = require('react');
-const {useEffect, useRef} = require('react');
-
+  // $FlowFixMe recoil-oss only used within Recoil DevTools
+} = require('recoil-oss/hooks/Recoil_Hooks');
+// $FlowFixMe useEffectOnce only used within Recoil DevTools
+const useEffectOnce = require('useEffectOnce');
 type Props = $ReadOnly<{
   name?: string,
-  persistenceLimit?: number,
+  persitenceLimit?: number,
   initialSnapshot?: ?Snapshot,
   devMode?: ?boolean,
-  maxDepth?: number,
-  maxItems?: number,
 }>;
 
 type ConnectProps = $ReadOnly<{
@@ -43,7 +46,11 @@ function connect(
     return null;
   }
 
-  return window.__RECOIL_DEVTOOLS_EXTENSION__?.connect?.(props);
+  const devTools =
+    window.__RECOIL_DEVTOOLS_EXTENSION__ &&
+    window.__RECOIL_DEVTOOLS_EXTENSION__.connect &&
+    window.__RECOIL_DEVTOOLS_EXTENSION__.connect(props);
+  return devTools ?? null;
 }
 
 let CONNECTION_INDEX = 0;
@@ -54,9 +61,7 @@ let CONNECTION_INDEX = 0;
  */
 function Connector({
   name = `Recoil Connection ${CONNECTION_INDEX++}`,
-  persistenceLimit = 50,
-  maxDepth,
-  maxItems,
+  persitenceLimit = 50,
   devMode = true,
 }: Props): React.Node {
   const transactionIdRef = useRef(0);
@@ -64,23 +69,25 @@ function Connector({
   const goToSnapshot = useGotoRecoilSnapshot();
   const snapshot = useRecoilSnapshot();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     connectionRef.current = connect({
       name,
-      persistenceLimit,
+      persitenceLimit,
       devMode,
       goToSnapshot,
-      maxDepth,
-      maxItems,
       initialSnapshot: snapshot,
     });
 
-    return connectionRef.current?.disconnect;
-  }, []);
+    if (connectionRef.current?.disconnect != null) {
+      return connectionRef.current?.disconnect;
+    }
+  });
 
   useEffect(() => {
     const transactionID = transactionIdRef.current++;
-    connectionRef.current?.track?.(transactionID, snapshot);
+    if (connectionRef.current?.track != null) {
+      connectionRef.current.track(transactionID, snapshot);
+    }
   }, [snapshot]);
 
   return null;

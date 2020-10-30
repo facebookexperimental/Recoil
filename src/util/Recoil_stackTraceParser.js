@@ -46,7 +46,7 @@ const UNKNOWN_FUNCTION = '<unknown>';
  * This parses the different stack traces and puts them into one format
  * This borrows heavily from TraceKit (https://github.com/csnover/TraceKit)
  */
-function stackTraceParser(stackString: string): Array<Frame> {
+export default function stackTraceParser(stackString: string): Array<Frame> {
   const lines = stackString.split('\n');
 
   return lines.reduce((stack, line) => {
@@ -177,5 +177,3 @@ function parseNode(line): ?Frame {
     column: parts[4] ? +parts[4] : null,
   };
 }
-
-module.exports = stackTraceParser;

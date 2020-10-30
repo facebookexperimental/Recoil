@@ -10,44 +10,29 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const gkx = require('../../util/Recoil_gkx');
+gkx.setPass('recoil_async_selector_refactor');
 
-let React,
-  act,
+const React = require('React');
+const {act} = require('ReactTestUtils');
+
+const {
   useGotoRecoilSnapshot,
   useRecoilTransactionObserver,
-  atom,
-  constSelector,
-  selector,
+} = require('../../hooks/Recoil_Hooks');
+const atom = require('../../recoil_values/Recoil_atom');
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+const selector = require('../../recoil_values/Recoil_selector');
+const {
   ReadsAtom,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
-  Snapshot,
-  freshSnapshot;
-
-const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({act} = require('ReactTestUtils'));
-
-  ({
-    useGotoRecoilSnapshot,
-    useRecoilTransactionObserver,
-  } = require('../../hooks/Recoil_Hooks'));
-  atom = require('../../recoil_values/Recoil_atom');
-  constSelector = require('../../recoil_values/Recoil_constSelector');
-  selector = require('../../recoil_values/Recoil_selector');
-  ({
-    ReadsAtom,
-    asyncSelector,
-    componentThatReadsAndWritesAtom,
-    renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
-  ({Snapshot, freshSnapshot} = require('../Recoil_Snapshot'));
-});
+} = require('../../testing/Recoil_TestingUtils');
+const {Snapshot, freshSnapshot} = require('../Recoil_Snapshot');
 
 // Test first since we are testing all registered nodes
-testRecoil('getNodes', () => {
+test('getNodes', () => {
   const snapshot = freshSnapshot();
   const {getNodes_UNSTABLE} = snapshot;
   expect(Array.from(getNodes_UNSTABLE()).length).toEqual(0);
@@ -123,81 +108,78 @@ testRecoil('getNodes', () => {
   // TODO Test dirty selectors
 });
 
-testRecoil(
-  'State ID after going to snapshot matches the ID of the snapshot',
-  () => {
-    const seenIDs = new Set();
-    const snapshots = [];
-    let expectedSnapshotID = null;
+test('State ID after going to snapshot matches the ID of the snapshot', () => {
+  const seenIDs = new Set();
+  const snapshots = [];
+  let expectedSnapshotID = null;
 
-    const myAtom = atom({key: 'Snapshot ID atom', default: 0});
-    const mySelector = constSelector(myAtom); // For read-only testing below
+  const myAtom = atom({key: 'Snapshot ID atom', default: 0});
+  const mySelector = constSelector(myAtom); // For read-only testing below
 
-    const transactionObserver = ({snapshot}) => {
-      const snapshotID = snapshot.getID();
-      if (expectedSnapshotID != null) {
-        expect(seenIDs.has(snapshotID)).toBe(true);
-        expect(snapshotID).toBe(expectedSnapshotID);
-      } else {
-        expect(seenIDs.has(snapshotID)).toBe(false);
-      }
-      seenIDs.add(snapshotID);
-      snapshots.push({snapshotID, snapshot});
-    };
-    function TransactionObserver() {
-      useRecoilTransactionObserver(transactionObserver);
-      return null;
+  const transactionObserver = ({snapshot}) => {
+    const snapshotID = snapshot.getID();
+    if (expectedSnapshotID != null) {
+      expect(seenIDs.has(snapshotID)).toBe(true);
+      expect(snapshotID).toBe(expectedSnapshotID);
+    } else {
+      expect(seenIDs.has(snapshotID)).toBe(false);
     }
+    seenIDs.add(snapshotID);
+    snapshots.push({snapshotID, snapshot});
+  };
+  function TransactionObserver() {
+    useRecoilTransactionObserver(transactionObserver);
+    return null;
+  }
 
-    let gotoSnapshot;
-    function GotoSnapshot() {
-      gotoSnapshot = useGotoRecoilSnapshot();
-      return null;
-    }
+  let gotoSnapshot;
+  function GotoSnapshot() {
+    gotoSnapshot = useGotoRecoilSnapshot();
+    return null;
+  }
 
-    const [WriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
-    const c = renderElements(
-      <>
-        <TransactionObserver />
-        <GotoSnapshot />
-        <WriteAtom />
-        <ReadsAtom atom={mySelector} />
-      </>,
-    );
-    expect(c.textContent).toBe('00');
+  const [WriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+  const c = renderElements(
+    <>
+      <TransactionObserver />
+      <GotoSnapshot />
+      <WriteAtom />
+      <ReadsAtom atom={mySelector} />
+    </>,
+  );
+  expect(c.textContent).toBe('00');
 
-    // Test changing state produces a new state version
-    act(() => setAtom(1));
-    act(() => setAtom(2));
-    expect(snapshots.length).toBe(2);
-    expect(seenIDs.size).toBe(2);
+  // Test changing state produces a new state version
+  act(() => setAtom(1));
+  act(() => setAtom(2));
+  expect(snapshots.length).toBe(2);
+  expect(seenIDs.size).toBe(2);
 
-    // Test going to a previous snapshot re-uses the state ID
-    expectedSnapshotID = snapshots[0].snapshotID;
-    act(() => gotoSnapshot(snapshots[0].snapshot));
+  // Test going to a previous snapshot re-uses the state ID
+  expectedSnapshotID = snapshots[0].snapshotID;
+  act(() => gotoSnapshot(snapshots[0].snapshot));
 
-    // Test changing state after going to a previous snapshot uses a new version
-    expectedSnapshotID = null;
-    act(() => setAtom(3));
+  // Test changing state after going to a previous snapshot uses a new version
+  expectedSnapshotID = null;
+  act(() => setAtom(3));
 
-    // Test mutating a snapshot creates a new version
-    const transactionSnapshot = snapshots[0].snapshot.map(({set}) => {
-      set(myAtom, 4);
-    });
-    act(() => gotoSnapshot(transactionSnapshot));
+  // Test mutating a snapshot creates a new version
+  const transactionSnapshot = snapshots[0].snapshot.map(({set}) => {
+    set(myAtom, 4);
+  });
+  act(() => gotoSnapshot(transactionSnapshot));
 
-    expect(seenIDs.size).toBe(4);
-    expect(snapshots.length).toBe(5);
+  expect(seenIDs.size).toBe(4);
+  expect(snapshots.length).toBe(5);
 
-    // Test that added read-only selector doesn't cause an issue getting the
-    // current version to see the current deps of the selector since we mutated a
-    // state after going to a snapshot, so that version may not be known by the store.
-    // If there was a problem, then the component may throw an error when evaluating the selector.
-    expect(c.textContent).toBe('44');
-  },
-);
+  // Test that added read-only selector doesn't cause an issue getting the
+  // current version to see the current deps of the selector since we mutated a
+  // state after going to a snapshot, so that version may not be known by the store.
+  // If there was a problem, then the component may throw an error when evaluating the selector.
+  expect(c.textContent).toBe('44');
+});
 
-testRecoil('Read default loadable from snapshot', () => {
+test('Read default loadable from snapshot', () => {
   const snapshot: Snapshot = freshSnapshot();
 
   const myAtom = atom({
@@ -215,7 +197,7 @@ testRecoil('Read default loadable from snapshot', () => {
   expect(selectorLoadable.contents).toEqual('DEFAULT');
 });
 
-testRecoil('Read async selector from snapshot', async () => {
+test('Read async selector from snapshot', async () => {
   const snapshot = freshSnapshot();
   const otherA = freshSnapshot();
   const otherB = freshSnapshot();
@@ -243,7 +225,7 @@ testRecoil('Read async selector from snapshot', async () => {
   await expect(otherC.getPromise(nestSel)).resolves.toEqual('SET VALUE');
 });
 
-testRecoil('Sync map of snapshot', () => {
+test('Sync map of snapshot', () => {
   const snapshot = freshSnapshot();
 
   const myAtom = atom({
@@ -280,7 +262,7 @@ testRecoil('Sync map of snapshot', () => {
   expect(resetSelectorLoadable.contents).toEqual('DEFAULT');
 });
 
-testRecoil('Async map of snapshot', async () => {
+test('Async map of snapshot', async () => {
   const snapshot = freshSnapshot();
 
   const myAtom = atom({
@@ -302,7 +284,7 @@ testRecoil('Async map of snapshot', async () => {
   expect(value).toEqual('VALUE');
 });
 
-testRecoil('getDeps', () => {
+test('getDeps', () => {
   const snapshot = freshSnapshot();
 
   const myAtom = atom<string>({key: 'snapshot getDeps atom', default: 'ATOM'});
@@ -336,7 +318,7 @@ testRecoil('getDeps', () => {
 });
 
 describe('getSubscriptions', () => {
-  testRecoil('nodes', () => {
+  test('nodes', () => {
     const snapshot = freshSnapshot();
 
     const myAtom = atom<string>({
@@ -385,7 +367,7 @@ describe('getSubscriptions', () => {
   });
 });
 
-testRecoil('getInfo', () => {
+test('getInfo', () => {
   const snapshot = freshSnapshot();
 
   const myAtom = atom<string>({

@@ -10,77 +10,49 @@
  */
 'use strict';
 
-import type {Store} from 'Recoil_State';
+const React = require('React');
+const {useEffect, useState} = require('React');
+const ReactDOM = require('ReactDOM');
+const {act} = require('ReactTestUtils');
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
-
-let store: Store,
-  React,
-  useEffect,
-  useState,
-  ReactDOM,
-  act,
-  RecoilRoot,
+const {RecoilRoot} = require('../../core/Recoil_RecoilRoot.react');
+const {
   getRecoilValueAsLoadable,
   setRecoilValue,
+} = require('../../core/Recoil_RecoilValueInterface');
+const {
   useRecoilState,
   useRecoilValue,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
+} = require('../../hooks/Recoil_Hooks');
+const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
+  makeStore,
   renderElements,
-  mutableSourceExists,
-  stableStringify,
-  atom,
-  atomFamily,
-  selectorFamily,
-  pAtom;
-
-const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
-
-  React = require('React');
-  ({useEffect, useState} = require('React'));
-  ReactDOM = require('ReactDOM');
-  ({act} = require('ReactTestUtils'));
-
-  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot.react'));
-  ({
-    getRecoilValueAsLoadable,
-    setRecoilValue,
-  } = require('../../core/Recoil_RecoilValueInterface'));
-  ({
-    useRecoilState,
-    useRecoilValue,
-    useSetRecoilState,
-    useSetUnvalidatedAtomValues,
-  } = require('../../hooks/Recoil_Hooks'));
-  ({
-    ReadsAtom,
-    componentThatReadsAndWritesAtom,
-    flushPromisesAndTimers,
-    renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
-  ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
-  stableStringify = require('../../util/Recoil_stableStringify');
-  atom = require('../Recoil_atom');
-  atomFamily = require('../Recoil_atomFamily');
-  selectorFamily = require('../Recoil_selectorFamily');
-
-  store = makeStore();
-
-  pAtom = atomFamily({
-    key: 'pAtom',
-    default: 'fallback',
-  });
-});
+} = require('../../testing/Recoil_TestingUtils');
+const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
+const stableStringify = require('../../util/Recoil_stableStringify');
+const atom = require('../Recoil_atom');
+const atomFamily = require('../Recoil_atomFamily');
+const selectorFamily = require('../Recoil_selectorFamily');
 
 let fbOnlyTest = test.skip;
-// @fb-only: fbOnlyTest = testRecoil;
+// @fb-only: fbOnlyTest = test;
 
 let id = 0;
+
+const pAtom = atomFamily({
+  key: 'pAtom',
+  default: 'fallback',
+});
+
+let store;
+beforeEach(() => {
+  store = makeStore();
+});
 
 function get(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue).contents;
@@ -90,11 +62,11 @@ function set(recoilValue, value) {
   setRecoilValue(store, recoilValue, value);
 }
 
-testRecoil('Read fallback by default', () => {
+test('Read fallback by default', () => {
   expect(get(pAtom({k: 'x'}))).toBe('fallback');
 });
 
-testRecoil('Uses value for parameter', () => {
+test('Uses value for parameter', () => {
   set(pAtom({k: 'x'}), 'xValue');
   set(pAtom({k: 'y'}), 'yValue');
   expect(get(pAtom({k: 'x'}))).toBe('xValue');
@@ -102,14 +74,14 @@ testRecoil('Uses value for parameter', () => {
   expect(get(pAtom({k: 'z'}))).toBe('fallback');
 });
 
-testRecoil('Works with non-overlapping sets', () => {
+test('Works with non-overlapping sets', () => {
   set(pAtom({x: 'x'}), 'xValue');
   set(pAtom({y: 'y'}), 'yValue');
   expect(get(pAtom({x: 'x'}))).toBe('xValue');
   expect(get(pAtom({y: 'y'}))).toBe('yValue');
 });
 
-testRecoil('Upgrades non-parameterized atoms', () => {
+test('Upgrades non-parameterized atoms', () => {
   let upgrade = atom({
     key: 'upgrade',
     default: 'default',
@@ -122,7 +94,7 @@ testRecoil('Upgrades non-parameterized atoms', () => {
   expect(get(upgrade({x: 'x'}))).toBe('123');
 });
 
-testRecoil('Works with atom default', () => {
+test('Works with atom default', () => {
   const fallbackAtom = atom({key: 'fallback', default: 0});
   const hasFallback = atomFamily({
     key: 'hasFallback',
@@ -136,7 +108,7 @@ testRecoil('Works with atom default', () => {
   expect(get(hasFallback({k: 'y'}))).toBe(1);
 });
 
-testRecoil('Works with parameterized default', () => {
+test('Works with parameterized default', () => {
   const paramDefaultAtom = atomFamily({
     key: 'parameterized default',
     default: ({num}) => num,
@@ -148,7 +120,7 @@ testRecoil('Works with parameterized default', () => {
   expect(get(paramDefaultAtom({num: 2}))).toBe(2);
 });
 
-testRecoil('Works with parameterized fallback', () => {
+test('Works with parameterized fallback', () => {
   const fallbackAtom = atomFamily({
     key: 'parameterized fallback default',
     default: ({num}) => num * 10,
@@ -169,7 +141,7 @@ testRecoil('Works with parameterized fallback', () => {
   expect(get(paramFallbackAtom({num: 2}))).toBe(200);
 });
 
-testRecoil('atomFamily async fallback', async () => {
+test('atomFamily async fallback', async () => {
   const paramFallback = atomFamily({
     key: 'paramaterizedAtom async Fallback',
     default: Promise.resolve(42),
@@ -182,7 +154,7 @@ testRecoil('atomFamily async fallback', async () => {
   expect(container.textContent).toEqual('42');
 });
 
-testRecoil('Parameterized fallback with atom and async', async () => {
+test('Parameterized fallback with atom and async', async () => {
   const paramFallback = atomFamily({
     key: 'parameterized async Fallback',
     default: ({param}) =>
@@ -303,7 +275,7 @@ fbOnlyTest('atomFamily with parameterized scope', () => {
   expect(get(paramAtomWithParamScope({n: 'bar', k: 'y'}))).toBe('yValue4');
 });
 
-testRecoil('Returns the fallback for parameterized atoms', () => {
+test('Returns the fallback for parameterized atoms', () => {
   let theAtom = null;
   let setUnvalidatedAtomValues;
   let setAtomParam;
@@ -366,73 +338,70 @@ testRecoil('Returns the fallback for parameterized atoms', () => {
   expect(container.textContent).toBe('222');
 });
 
-testRecoil(
-  'Returns the fallback for parameterized atoms with a selector as the fallback',
-  () => {
-    let theAtom = null;
-    let setUnvalidatedAtomValues;
-    let setAtomParam;
-    let setAtomValue;
-    function SetsUnvalidatedAtomValues() {
-      setUnvalidatedAtomValues = useSetUnvalidatedAtomValues();
-      return null;
-    }
-    let setVisible;
-    function Switch({children}) {
-      const [visible, mySetVisible] = useState(false);
-      setVisible = mySetVisible;
-      return visible ? children : null;
-    }
-    function MyReadsAtom({getAtom}) {
-      const [param, setParam] = useState({num: 10});
-      setAtomParam = setParam;
-      // flowlint-next-line unclear-type:off
-      const atom: any = getAtom();
-      const [value, setValue] = useRecoilState(atom(param));
-      setAtomValue = setValue;
-      return value;
-    }
-    const container = renderElements(
-      <>
-        <SetsUnvalidatedAtomValues />
-        <Switch>
-          <MyReadsAtom getAtom={() => theAtom} />
-        </Switch>
-      </>,
+test('Returns the fallback for parameterized atoms with a selector as the fallback', () => {
+  let theAtom = null;
+  let setUnvalidatedAtomValues;
+  let setAtomParam;
+  let setAtomValue;
+  function SetsUnvalidatedAtomValues() {
+    setUnvalidatedAtomValues = useSetUnvalidatedAtomValues();
+    return null;
+  }
+  let setVisible;
+  function Switch({children}) {
+    const [visible, mySetVisible] = useState(false);
+    setVisible = mySetVisible;
+    return visible ? children : null;
+  }
+  function MyReadsAtom({getAtom}) {
+    const [param, setParam] = useState({num: 10});
+    setAtomParam = setParam;
+    // flowlint-next-line unclear-type:off
+    const atom: any = getAtom();
+    const [value, setValue] = useRecoilState(atom(param));
+    setAtomValue = setValue;
+    return value;
+  }
+  const container = renderElements(
+    <>
+      <SetsUnvalidatedAtomValues />
+      <Switch>
+        <MyReadsAtom getAtom={() => theAtom} />
+      </Switch>
+    </>,
+  );
+  act(() => {
+    setUnvalidatedAtomValues(
+      new Map().set('notDefinedYetAtomFamilyFallbackSel', 123),
     );
-    act(() => {
-      setUnvalidatedAtomValues(
-        new Map().set('notDefinedYetAtomFamilyFallbackSel', 123),
-      );
-    });
+  });
 
-    theAtom = atomFamily({
-      key: 'notDefinedYetAtomFamilyFallbackSel',
-      default: selectorFamily({
-        key: 'notDefinedYetAtomFamilyFallbackSelFallback',
-        get: ({num}) => () => (num === 1 ? 456 : 789),
-      }),
-      persistence_UNSTABLE: {
-        type: 'url',
-        validator: (_, notValid) => notValid,
-      },
-    });
-    act(() => {
-      setVisible(true);
-    });
-    expect(container.textContent).toBe('789');
-    act(() => {
-      setAtomValue(111);
-    });
-    expect(container.textContent).toBe('111');
-    act(() => {
-      setAtomParam({num: 1});
-    });
-    expect(container.textContent).toBe('456');
-  },
-);
+  theAtom = atomFamily({
+    key: 'notDefinedYetAtomFamilyFallbackSel',
+    default: selectorFamily({
+      key: 'notDefinedYetAtomFamilyFallbackSelFallback',
+      get: ({num}) => () => (num === 1 ? 456 : 789),
+    }),
+    persistence_UNSTABLE: {
+      type: 'url',
+      validator: (_, notValid) => notValid,
+    },
+  });
+  act(() => {
+    setVisible(true);
+  });
+  expect(container.textContent).toBe('789');
+  act(() => {
+    setAtomValue(111);
+  });
+  expect(container.textContent).toBe('111');
+  act(() => {
+    setAtomParam({num: 1});
+  });
+  expect(container.textContent).toBe('456');
+});
 
-testRecoil('Independent atom subscriptions', () => {
+test('Independent atom subscriptions', () => {
   const myAtom = atomFamily({
     key: 'atomFamily/independent subscriptions',
     default: 'DEFAULT',
@@ -482,7 +451,7 @@ testRecoil('Independent atom subscriptions', () => {
 });
 
 describe('Effects', () => {
-  testRecoil('Initialization', () => {
+  test('Initialization', () => {
     let inited = 0;
     const myFamily = atomFamily<string, number>({
       key: 'atomFamily effect init',
@@ -512,7 +481,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"DEFAULT"');
   });
 
-  testRecoil('Parameterized Initialization', () => {
+  test('Parameterized Initialization', () => {
     const myFamily = atomFamily({
       key: 'atomFamily effect parameterized init',
       default: 'DEFAULT',
@@ -523,7 +492,7 @@ describe('Effects', () => {
     expect(get(myFamily(2))).toEqual(2);
   });
 
-  testRecoil('Cleanup Handlers - when root unmounted', () => {
+  test('Cleanup Handlers - when root unmounted', () => {
     const refCounts: {[string]: number} = {A: 0, B: 0};
 
     const atoms = atomFamily({

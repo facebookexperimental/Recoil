@@ -11,6 +11,9 @@
 /* eslint-disable fb-www/react-no-useless-fragment */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
+
 import type {
   RecoilState,
   RecoilValue,
@@ -18,23 +21,25 @@ import type {
 } from '../../core/Recoil_RecoilValue';
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const React = require('React');
+const {useEffect, useState} = require('React');
+const {act} = require('ReactTestUtils');
 
-let React,
-  useEffect,
-  useState,
-  act,
-  Queue,
-  batchUpdates,
-  atom,
-  errorSelector,
-  selector,
+const Queue = require('../../adt/Recoil_Queue');
+const {batchUpdates} = require('../../core/Recoil_Batching');
+const atom = require('../../recoil_values/Recoil_atom');
+const errorSelector = require('../../recoil_values/Recoil_errorSelector');
+const selector = require('../../recoil_values/Recoil_selector');
+const {
   ReadsAtom,
   asyncSelector,
   errorThrowingAsyncSelector,
   flushPromisesAndTimers,
   renderElements,
   renderElementsWithSuspenseCount,
+} = require('../../testing/Recoil_TestingUtils');
+const {mutableSourceExists} = require('../../util/Recoil_mutableSource');
+const {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
   useRecoilState,
   useRecoilStateLoadable,
@@ -43,42 +48,9 @@ let React,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
-  invariant;
+} = require('../Recoil_Hooks');
 
-let {mutableSourceExists} = require('../../util/Recoil_mutableSource');
-
-const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useEffect, useState} = require('React'));
-  ({act} = require('ReactTestUtils'));
-
-  Queue = require('../../adt/Recoil_Queue');
-  ({batchUpdates} = require('../../core/Recoil_Batching'));
-  atom = require('../../recoil_values/Recoil_atom');
-  errorSelector = require('../../recoil_values/Recoil_errorSelector');
-  selector = require('../../recoil_values/Recoil_selector');
-  ({
-    ReadsAtom,
-    asyncSelector,
-    errorThrowingAsyncSelector,
-    flushPromisesAndTimers,
-    renderElements,
-    renderElementsWithSuspenseCount,
-  } = require('../../testing/Recoil_TestingUtils'));
-  ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
-  ({
-    recoilComponentGetRecoilValueCount_FOR_TESTING,
-    useRecoilState,
-    useRecoilStateLoadable,
-    useRecoilValue,
-    useRecoilValueLoadable,
-    useSetRecoilState,
-    useSetUnvalidatedAtomValues,
-    useTransactionObservation_DEPRECATED,
-  } = require('../Recoil_Hooks'));
-
-  invariant = require('../../util/Recoil_invariant');
-});
+const invariant = require('../../util/Recoil_invariant');
 
 // When not using mutable source there's usually an extra call/render.
 const BASE_CALLS = mutableSourceExists() ? 0 : 1;
@@ -231,7 +203,7 @@ function advanceTimersBy(ms) {
   });
 }
 
-testRecoil('Component throws error when passing invalid node', async () => {
+test('Component throws error when passing invalid node', async () => {
   function Component() {
     try {
       // $FlowExpectedError[incompatible-call]
@@ -247,7 +219,7 @@ testRecoil('Component throws error when passing invalid node', async () => {
   expect(container.textContent).toEqual('CAUGHT');
 });
 
-testRecoil('Components are re-rendered when atoms change', async () => {
+test('Components are re-rendered when atoms change', async () => {
   const anAtom = counterAtom();
   const [Component, updateValue] = componentThatReadsAndWritesAtom(anAtom);
   const container = renderElements(<Component />);
@@ -256,7 +228,7 @@ testRecoil('Components are re-rendered when atoms change', async () => {
   expect(container.textContent).toEqual('1');
 });
 
-testRecoil('Selectors are updated when upstream atoms change', () => {
+test('Selectors are updated when upstream atoms change', () => {
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneSelector(anAtom);
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
@@ -271,7 +243,7 @@ testRecoil('Selectors are updated when upstream atoms change', () => {
   expect(container.textContent).toEqual('2');
 });
 
-testRecoil('Selectors can depend on other selectors', () => {
+test('Selectors can depend on other selectors', () => {
   const anAtom = counterAtom();
   const [selectorA, _] = plusOneSelector(anAtom);
   const [selectorB, __] = plusOneSelector(selectorA);
@@ -287,7 +259,7 @@ testRecoil('Selectors can depend on other selectors', () => {
   expect(container.textContent).toEqual('3');
 });
 
-testRecoil('Selectors can depend on async selectors', async () => {
+test('Selectors can depend on async selectors', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [selectorA, _] = plusOneAsyncSelector(anAtom);
@@ -314,7 +286,7 @@ testRecoil('Selectors can depend on async selectors', async () => {
   expect(container.textContent).toEqual('3');
 });
 
-testRecoil('Async selectors can depend on async selectors', async () => {
+test('Async selectors can depend on async selectors', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [selectorA, _] = plusOneAsyncSelector(anAtom);
@@ -354,65 +326,63 @@ testRecoil('Async selectors can depend on async selectors', async () => {
   }
 });
 
-testRecoil(
-  'Dep of upstream selector can change while pending',
-  async isSelectorGkPassing => {
-    if (isSelectorGkPassing) {
-      const anAtom = counterAtom();
-      const [
-        upstreamSel,
-        upstreamResolvers,
-      ] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
-      const [
-        downstreamSel,
-        downstreamResolvers,
-      ] = asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
+/**
+ * FIXME: fixed in new selector implementation
+test('Dep of upstream selector can change while pending', async () => {
+  const anAtom = counterAtom();
+  const [
+    upstreamSel,
+    upstreamResolvers,
+  ] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
+  const [
+    downstreamSel,
+    downstreamResolvers,
+  ] = asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
 
-      const [Component, updateValue] = componentThatWritesAtom(anAtom);
-      const container = renderElements(
-        <>
-          <Component />
-          <ReadsAtom atom={downstreamSel} />
-        </>,
-      );
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  const container = renderElements(
+    <>
+      <Component />
+      <ReadsAtom atom={downstreamSel} />
+    </>,
+  );
 
-      // Initially, upstream has returned a promise so there is one upstream resolver.
-      // Downstream is waiting on upstream so it hasn't returned anything yet.
-      expect(container.textContent).toEqual('loading');
-      expect(upstreamResolvers.length).toEqual(1);
-      expect(downstreamResolvers.length).toEqual(0);
+  // Initially, upstream has returned a promise so there is one upstream resolver.
+  // Downstream is waiting on upstream so it hasn't returned anything yet.
+  expect(container.textContent).toEqual('loading');
+  expect(upstreamResolvers.length).toEqual(1);
+  expect(downstreamResolvers.length).toEqual(0);
 
-      // Resolve upstream; downstream should now have returned a new promise:
-      upstreamResolvers[0][0](123);
-      await flushPromisesAndTimers();
-      expect(downstreamResolvers.length).toEqual(1);
+  // Resolve upstream; downstream should now have returned a new promise:
+  upstreamResolvers[0][0](123);
+  await flushPromisesAndTimers();
+  expect(downstreamResolvers.length).toEqual(1);
 
-      // Update atom to a new value while downstream is pending:
-      act(() => updateValue(1));
-      await flushPromisesAndTimers();
+  // Update atom to a new value while downstream is pending:
+  act(() => updateValue(1));
+  await flushPromisesAndTimers();
 
-      // Upstream returns a new promise for the new atom value.
-      // Downstream is once again waiting on upstream so it hasn't returned a new
-      // promise for the new value.
-      expect(upstreamResolvers.length).toEqual(2);
-      expect(downstreamResolvers.length).toEqual(1);
+  // Upstream returns a new promise for the new atom value.
+  // Downstream is once again waiting on upstream so it hasn't returned a new
+  // promise for the new value.
+  expect(upstreamResolvers.length).toEqual(2);
+  expect(downstreamResolvers.length).toEqual(1);
 
-      // Resolve the new upstream promise:
-      upstreamResolvers[1][0](123);
-      await flushPromisesAndTimers();
+  // Resolve the new upstream promise:
+  upstreamResolvers[1][0](123);
+  await flushPromisesAndTimers();
 
-      // Downstream can now return its new promise:
-      expect(downstreamResolvers.length).toEqual(2);
+  // Downstream can now return its new promise:
+  expect(downstreamResolvers.length).toEqual(2);
 
-      // If we resolve downstream's new promise we should see the result:
-      downstreamResolvers[1][0](123);
-      await flushPromisesAndTimers();
-      expect(container.textContent).toEqual('123');
-    }
-  },
-);
+  // If we resolve downstream's new promise we should see the result:
+  downstreamResolvers[1][0](123);
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('123');
+});
+*/
 
-testRecoil('Errors are propogated through selectors', () => {
+test('Errors are propogated through selectors', () => {
   const errorThrower = errorSelector('ERROR');
   const [downstreamSelector] = plusOneSelector(errorThrower);
   const container = renderElements(
@@ -423,44 +393,38 @@ testRecoil('Errors are propogated through selectors', () => {
   expect(container.textContent).toEqual('error');
 });
 
-testRecoil(
-  'Rejected promises are propogated through selectors (immediate rejection)',
-  async () => {
-    const anAtom = counterAtom();
-    const errorThrower = errorThrowingAsyncSelector('ERROR', anAtom);
-    const [downstreamSelector] = plusOneAsyncSelector(errorThrower);
-    const container = renderElements(
-      <>
-        <ReadsAtom atom={downstreamSelector} />
-      </>,
-    );
-    expect(container.textContent).toEqual('loading');
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
-    expect(container.textContent).toEqual('error');
-  },
-);
+test('Rejected promises are propogated through selectors (immediate rejection)', async () => {
+  const anAtom = counterAtom();
+  const errorThrower = errorThrowingAsyncSelector('ERROR', anAtom);
+  const [downstreamSelector] = plusOneAsyncSelector(errorThrower);
+  const container = renderElements(
+    <>
+      <ReadsAtom atom={downstreamSelector} />
+    </>,
+  );
+  expect(container.textContent).toEqual('loading');
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('error');
+});
 
-testRecoil(
-  'Rejected promises are propogated through selectors (later rejection)',
-  async () => {
-    const anAtom = counterAtom();
-    const [errorThrower, _resolve, reject] = asyncSelector(anAtom);
-    const [downstreamSelector] = plusOneAsyncSelector(errorThrower);
-    const container = renderElements(
-      <>
-        <ReadsAtom atom={downstreamSelector} />
-      </>,
-    );
-    expect(container.textContent).toEqual('loading');
-    act(() => reject(new Error()));
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
-    expect(container.textContent).toEqual('error');
-  },
-);
+test('Rejected promises are propogated through selectors (later rejection)', async () => {
+  const anAtom = counterAtom();
+  const [errorThrower, _resolve, reject] = asyncSelector(anAtom);
+  const [downstreamSelector] = plusOneAsyncSelector(errorThrower);
+  const container = renderElements(
+    <>
+      <ReadsAtom atom={downstreamSelector} />
+    </>,
+  );
+  expect(container.textContent).toEqual('loading');
+  act(() => reject(new Error()));
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('error');
+});
 
-testRecoil('Component subscribed to atom is rendered just once', () => {
+test('Component subscribed to atom is rendered just once', () => {
   const anAtom = counterAtom();
   const [Component, updateValue] = componentThatReadsAndWritesAtom(anAtom);
   renderElements(
@@ -474,7 +438,7 @@ testRecoil('Component subscribed to atom is rendered just once', () => {
   expect(Component).toHaveBeenCalledTimes(BASE_CALLS + 2);
 });
 
-testRecoil('Write-only components are not subscribed', () => {
+test('Write-only components are not subscribed', () => {
   const anAtom = counterAtom();
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
   renderElements(
@@ -487,27 +451,24 @@ testRecoil('Write-only components are not subscribed', () => {
   expect(Component).toHaveBeenCalledTimes(1);
 });
 
-testRecoil(
-  'Component that depends on atom in multiple ways is rendered just once',
-  () => {
-    const anAtom = counterAtom();
-    const [aSelector, _] = plusOneSelector(anAtom);
-    const [WriteComp, updateValue] = componentThatWritesAtom(anAtom);
-    const ReadComp = componentThatReadsTwoAtoms(anAtom, aSelector);
-    renderElements(
-      <>
-        <WriteComp />
-        <ReadComp />
-      </>,
-    );
+test('Component that depends on atom in multiple ways is rendered just once', () => {
+  const anAtom = counterAtom();
+  const [aSelector, _] = plusOneSelector(anAtom);
+  const [WriteComp, updateValue] = componentThatWritesAtom(anAtom);
+  const ReadComp = componentThatReadsTwoAtoms(anAtom, aSelector);
+  renderElements(
+    <>
+      <WriteComp />
+      <ReadComp />
+    </>,
+  );
 
-    expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 1);
-    act(() => updateValue(1));
-    expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 2);
-  },
-);
+  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 1);
+  act(() => updateValue(1));
+  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 2);
+});
 
-testRecoil('Selector functions are evaluated just once', () => {
+test('Selector functions are evaluated just once', () => {
   const anAtom = counterAtom();
   const [aSelector, selectorFn] = plusOneSelector(anAtom);
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
@@ -522,88 +483,79 @@ testRecoil('Selector functions are evaluated just once', () => {
   expect(selectorFn).toHaveBeenCalledTimes(2);
 });
 
-testRecoil(
-  'Selector functions are evaluated just once even if multiple upstreams change',
-  () => {
-    const atomA = counterAtom();
-    const atomB = counterAtom();
-    const [aSelector, selectorFn] = additionSelector(atomA, atomB);
-    const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
-    const [ComponentB, updateValueB] = componentThatWritesAtom(atomB);
-    renderElements(
-      <>
-        <ComponentA />
-        <ComponentB />
-        <ReadsAtom atom={aSelector} />
-      </>,
-    );
-    expect(selectorFn).toHaveBeenCalledTimes(1);
-    act(() => {
-      batchUpdates(() => {
-        updateValueA(1);
-        updateValueB(1);
-      });
+test('Selector functions are evaluated just once even if multiple upstreams change', () => {
+  const atomA = counterAtom();
+  const atomB = counterAtom();
+  const [aSelector, selectorFn] = additionSelector(atomA, atomB);
+  const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
+  const [ComponentB, updateValueB] = componentThatWritesAtom(atomB);
+  renderElements(
+    <>
+      <ComponentA />
+      <ComponentB />
+      <ReadsAtom atom={aSelector} />
+    </>,
+  );
+  expect(selectorFn).toHaveBeenCalledTimes(1);
+  act(() => {
+    batchUpdates(() => {
+      updateValueA(1);
+      updateValueB(1);
     });
-    expect(selectorFn).toHaveBeenCalledTimes(2);
-  },
-);
+  });
+  expect(selectorFn).toHaveBeenCalledTimes(2);
+});
 
-testRecoil(
-  'Component that depends on multiple atoms via selector is rendered just once',
-  () => {
-    const atomA = counterAtom();
-    const atomB = counterAtom();
-    const [aSelector, _] = additionSelector(atomA, atomB);
-    const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
-    const [ComponentB, updateValueB] = componentThatWritesAtom(atomB);
-    const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(aSelector);
-    renderElements(
-      <>
-        <ComponentA />
-        <ComponentB />
-        <ReadComp />
-      </>,
-    );
+test('Component that depends on multiple atoms via selector is rendered just once', () => {
+  const atomA = counterAtom();
+  const atomB = counterAtom();
+  const [aSelector, _] = additionSelector(atomA, atomB);
+  const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
+  const [ComponentB, updateValueB] = componentThatWritesAtom(atomB);
+  const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(aSelector);
+  renderElements(
+    <>
+      <ComponentA />
+      <ComponentB />
+      <ReadComp />
+    </>,
+  );
 
-    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
-    act(() => {
-      batchUpdates(() => {
-        updateValueA(1);
-        updateValueB(1);
-      });
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
+  act(() => {
+    batchUpdates(() => {
+      updateValueA(1);
+      updateValueB(1);
     });
-    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
-  },
-);
+  });
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
+});
 
-testRecoil(
-  'Component that depends on multiple atoms directly is rendered just once',
-  () => {
-    const atomA = counterAtom();
-    const atomB = counterAtom();
-    const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
-    const [ComponentB, updateValueB] = componentThatWritesAtom(atomB);
-    const ReadComp = componentThatReadsTwoAtoms(atomA, atomB);
-    renderElements(
-      <>
-        <ComponentA />
-        <ComponentB />
-        <ReadComp />
-      </>,
-    );
+test('Component that depends on multiple atoms directly is rendered just once', () => {
+  const atomA = counterAtom();
+  const atomB = counterAtom();
+  const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
+  const [ComponentB, updateValueB] = componentThatWritesAtom(atomB);
+  const ReadComp = componentThatReadsTwoAtoms(atomA, atomB);
+  renderElements(
+    <>
+      <ComponentA />
+      <ComponentB />
+      <ReadComp />
+    </>,
+  );
 
-    expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 1);
-    act(() => {
-      batchUpdates(() => {
-        updateValueA(1);
-        updateValueB(1);
-      });
+  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 1);
+  act(() => {
+    batchUpdates(() => {
+      updateValueA(1);
+      updateValueB(1);
     });
-    expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 2);
-  },
-);
+  });
+  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 2);
+});
 
-testRecoil('Component is rendered just once when atom is changed twice', () => {
+test('Component is rendered just once when atom is changed twice', () => {
   const atomA = counterAtom();
   const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
   const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(atomA);
@@ -624,63 +576,59 @@ testRecoil('Component is rendered just once when atom is changed twice', () => {
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
 });
 
-testRecoil(
-  'Component does not re-read atom when rendered due to another atom changing, parent re-render, or other state change',
-  () => {
-    const atomA = counterAtom();
-    const atomB = counterAtom();
+test('Component does not re-read atom when rendered due to another atom changing, parent re-render, or other state change', () => {
+  const atomA = counterAtom();
+  const atomB = counterAtom();
 
-    let _, setLocal;
-    let _a, setA;
-    let _b, _setB;
-    function Component() {
-      [_, setLocal] = useState(0);
-      [_a, setA] = useRecoilState(atomA);
-      [_b, _setB] = useRecoilState(atomB);
-      return null;
-    }
+  let _, setLocal;
+  let _a, setA;
+  let _b, _setB;
+  function Component() {
+    [_, setLocal] = useState(0);
+    [_a, setA] = useRecoilState(atomA);
+    [_b, _setB] = useRecoilState(atomB);
+    return null;
+  }
 
-    let __, setParentLocal;
-    function Parent() {
-      [__, setParentLocal] = useState(0);
-      return <Component />;
-    }
+  let __, setParentLocal;
+  function Parent() {
+    [__, setParentLocal] = useState(0);
+    return <Component />;
+  }
 
-    renderElements(<Parent />);
+  renderElements(<Parent />);
 
-    if (mutableSourceExists()) {
-      const initialCalls =
-        recoilComponentGetRecoilValueCount_FOR_TESTING.current;
-      expect(initialCalls).toBeGreaterThan(0);
+  if (mutableSourceExists()) {
+    const initialCalls = recoilComponentGetRecoilValueCount_FOR_TESTING.current;
+    expect(initialCalls).toBeGreaterThan(0);
 
-      // No re-read when setting local state on the component:
-      act(() => {
-        setLocal(1);
-      });
-      expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
-        initialCalls,
-      );
+    // No re-read when setting local state on the component:
+    act(() => {
+      setLocal(1);
+    });
+    expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
+      initialCalls,
+    );
 
-      // No re-read when setting local state on its parent causing it to re-render:
-      act(() => {
-        setParentLocal(1);
-      });
-      expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
-        initialCalls,
-      );
+    // No re-read when setting local state on its parent causing it to re-render:
+    act(() => {
+      setParentLocal(1);
+    });
+    expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
+      initialCalls,
+    );
 
-      // Setting an atom causes a re-read for that atom only, not others:
-      act(() => {
-        setA(1);
-      });
-      expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
-        initialCalls + 1,
-      );
-    }
-  },
-);
+    // Setting an atom causes a re-read for that atom only, not others:
+    act(() => {
+      setA(1);
+    });
+    expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(
+      initialCalls + 1,
+    );
+  }
+});
 
-testRecoil('Can subscribe to and also change an atom in the same batch', () => {
+test('Can subscribe to and also change an atom in the same batch', () => {
   const anAtom = counterAtom();
 
   let setVisible;
@@ -711,7 +659,7 @@ testRecoil('Can subscribe to and also change an atom in the same batch', () => {
   expect(container.textContent).toEqual('1337');
 });
 
-testRecoil('Atom values are retained when atom has no subscribers', () => {
+test('Atom values are retained when atom has no subscribers', () => {
   const anAtom = counterAtom();
 
   let setVisible;
@@ -739,162 +687,150 @@ testRecoil('Atom values are retained when atom has no subscribers', () => {
   expect(container.textContent).toEqual('1337');
 });
 
-testRecoil(
-  'Components unsubscribe from atoms when rendered without using them',
-  () => {
-    const atomA = counterAtom();
-    const atomB = counterAtom();
-    const [WriteA, updateValueA] = componentThatWritesAtom(atomA);
-    const [WriteB, updateValueB] = componentThatWritesAtom(atomB);
+test('Components unsubscribe from atoms when rendered without using them', () => {
+  const atomA = counterAtom();
+  const atomB = counterAtom();
+  const [WriteA, updateValueA] = componentThatWritesAtom(atomA);
+  const [WriteB, updateValueB] = componentThatWritesAtom(atomB);
 
-    const Component = (jest.fn(function Read({atom}) {
-      const [value] = useRecoilState(atom);
-      return value;
-    }): any);
+  const Component = (jest.fn(function Read({atom}) {
+    const [value] = useRecoilState(atom);
+    return value;
+  }): any);
 
-    let toggleSwitch;
-    const Switch = () => {
-      const [value, setValue] = useState(false);
-      toggleSwitch = () => setValue(true);
-      return value ? <Component atom={atomB} /> : <Component atom={atomA} />;
-    };
+  let toggleSwitch;
+  const Switch = () => {
+    const [value, setValue] = useState(false);
+    toggleSwitch = () => setValue(true);
+    return value ? <Component atom={atomB} /> : <Component atom={atomA} />;
+  };
 
-    const container = renderElements(
-      <>
-        <Switch />
-        <WriteA />
-        <WriteB />
-      </>,
-    );
+  const container = renderElements(
+    <>
+      <Switch />
+      <WriteA />
+      <WriteB />
+    </>,
+  );
 
-    let baseCalls = BASE_CALLS;
+  let baseCalls = BASE_CALLS;
 
-    expect(container.textContent).toEqual('0');
-    expect(Component).toHaveBeenCalledTimes(baseCalls + 1);
+  expect(container.textContent).toEqual('0');
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 1);
 
-    act(() => updateValueA(1));
-    expect(container.textContent).toEqual('1');
-    expect(Component).toHaveBeenCalledTimes(baseCalls + 2);
+  act(() => updateValueA(1));
+  expect(container.textContent).toEqual('1');
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 2);
 
-    if (!mutableSourceExists()) {
-      baseCalls += 1;
-    }
+  if (!mutableSourceExists()) {
+    baseCalls += 1;
+  }
 
-    act(() => toggleSwitch());
-    expect(container.textContent).toEqual('0');
-    expect(Component).toHaveBeenCalledTimes(baseCalls + 3);
+  act(() => toggleSwitch());
+  expect(container.textContent).toEqual('0');
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 3);
 
-    // Now update the atom that it used to be subscribed to but should be no longer:
-    act(() => updateValueA(2));
-    expect(container.textContent).toEqual('0');
-    expect(Component).toHaveBeenCalledTimes(baseCalls + 3); // Important part: same as before
+  // Now update the atom that it used to be subscribed to but should be no longer:
+  act(() => updateValueA(2));
+  expect(container.textContent).toEqual('0');
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 3); // Important part: same as before
 
-    // It is subscribed to the atom that it switched to:
-    act(() => updateValueB(3));
-    expect(container.textContent).toEqual('3');
-    expect(Component).toHaveBeenCalledTimes(baseCalls + 4);
-  },
-);
+  // It is subscribed to the atom that it switched to:
+  act(() => updateValueB(3));
+  expect(container.textContent).toEqual('3');
+  expect(Component).toHaveBeenCalledTimes(baseCalls + 4);
+});
 
-testRecoil(
-  'Selectors unsubscribe from upstream when they have no subscribers',
-  () => {
-    const atomA = counterAtom();
-    const atomB = counterAtom();
-    const [WriteA, updateValueA] = componentThatWritesAtom(atomA);
+test('Selectors unsubscribe from upstream when they have no subscribers', () => {
+  const atomA = counterAtom();
+  const atomB = counterAtom();
+  const [WriteA, updateValueA] = componentThatWritesAtom(atomA);
 
-    // Do two layers of selectors to test that the unsubscribing is recursive:
-    const selectorMapFn1 = jest.fn(x => x);
-    const sel1 = selector({
-      key: 'selUpstream',
-      get: ({get}) => selectorMapFn1(get(atomA)),
-    });
+  // Do two layers of selectors to test that the unsubscribing is recursive:
+  const selectorMapFn1 = jest.fn(x => x);
+  const sel1 = selector({
+    key: 'selUpstream',
+    get: ({get}) => selectorMapFn1(get(atomA)),
+  });
 
-    const selectorMapFn2 = jest.fn(x => x);
-    const sel2 = selector({
-      key: 'selDownstream',
-      get: ({get}) => selectorMapFn2(get(sel1)),
-    });
+  const selectorMapFn2 = jest.fn(x => x);
+  const sel2 = selector({
+    key: 'selDownstream',
+    get: ({get}) => selectorMapFn2(get(sel1)),
+  });
 
-    let toggleSwitch;
-    const Switch = () => {
-      const [value, setValue] = useState(false);
-      toggleSwitch = () => setValue(true);
-      return value ? <ReadsAtom atom={atomB} /> : <ReadsAtom atom={sel2} />;
-    };
+  let toggleSwitch;
+  const Switch = () => {
+    const [value, setValue] = useState(false);
+    toggleSwitch = () => setValue(true);
+    return value ? <ReadsAtom atom={atomB} /> : <ReadsAtom atom={sel2} />;
+  };
 
-    const container = renderElements(
-      <>
-        <Switch />
-        <WriteA />
-      </>,
-    );
-    expect(container.textContent).toEqual('0');
-    expect(selectorMapFn1).toHaveBeenCalledTimes(1);
-    expect(selectorMapFn2).toHaveBeenCalledTimes(1);
+  const container = renderElements(
+    <>
+      <Switch />
+      <WriteA />
+    </>,
+  );
+  expect(container.textContent).toEqual('0');
+  expect(selectorMapFn1).toHaveBeenCalledTimes(1);
+  expect(selectorMapFn2).toHaveBeenCalledTimes(1);
 
-    act(() => updateValueA(1));
-    expect(container.textContent).toEqual('1');
-    expect(selectorMapFn1).toHaveBeenCalledTimes(2);
-    expect(selectorMapFn2).toHaveBeenCalledTimes(2);
+  act(() => updateValueA(1));
+  expect(container.textContent).toEqual('1');
+  expect(selectorMapFn1).toHaveBeenCalledTimes(2);
+  expect(selectorMapFn2).toHaveBeenCalledTimes(2);
 
-    act(() => toggleSwitch());
-    expect(container.textContent).toEqual('0');
-    expect(selectorMapFn1).toHaveBeenCalledTimes(2);
-    expect(selectorMapFn2).toHaveBeenCalledTimes(2);
+  act(() => toggleSwitch());
+  expect(container.textContent).toEqual('0');
+  expect(selectorMapFn1).toHaveBeenCalledTimes(2);
+  expect(selectorMapFn2).toHaveBeenCalledTimes(2);
 
-    act(() => updateValueA(2));
-    expect(container.textContent).toEqual('0');
-    expect(selectorMapFn1).toHaveBeenCalledTimes(2);
-    expect(selectorMapFn2).toHaveBeenCalledTimes(2);
-  },
-);
+  act(() => updateValueA(2));
+  expect(container.textContent).toEqual('0');
+  expect(selectorMapFn1).toHaveBeenCalledTimes(2);
+  expect(selectorMapFn2).toHaveBeenCalledTimes(2);
+});
 
-testRecoil(
-  'Unsubscribes happen in case of unmounting of a suspended component',
-  () => {
-    const anAtom = counterAtom();
-    const [aSelector, _selFn] = plusOneSelector(anAtom);
-    const [_asyncSel, _adjustTimeout] = plusOneAsyncSelector(aSelector);
-    // FIXME to implement
-  },
-);
+test('Unsubscribes happen in case of unmounting of a suspended component', () => {
+  const anAtom = counterAtom();
+  const [aSelector, _selFn] = plusOneSelector(anAtom);
+  const [_asyncSel, _adjustTimeout] = plusOneAsyncSelector(aSelector);
+  // FIXME to implement
+});
 
-testRecoil(
-  'Selectors stay up to date if deps are changed while they have no subscribers',
-  () => {
-    const anAtom = counterAtom();
-    const [aSelector, _] = plusOneSelector(anAtom);
+test('Selectors stay up to date if deps are changed while they have no subscribers', () => {
+  const anAtom = counterAtom();
+  const [aSelector, _] = plusOneSelector(anAtom);
 
-    let setVisible;
-    function Switch({children}) {
-      const [visible, mySetVisible] = useState(true);
-      setVisible = mySetVisible;
-      return visible ? children : null;
-    }
+  let setVisible;
+  function Switch({children}) {
+    const [visible, mySetVisible] = useState(true);
+    setVisible = mySetVisible;
+    return visible ? children : null;
+  }
 
-    const [Component, updateValue] = componentThatWritesAtom(anAtom);
-    const container = renderElements(
-      <>
-        <Component />
-        <Switch>
-          <ReadsAtom atom={aSelector} />
-        </Switch>
-      </>,
-    );
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  const container = renderElements(
+    <>
+      <Component />
+      <Switch>
+        <ReadsAtom atom={aSelector} />
+      </Switch>
+    </>,
+  );
 
-    act(() => updateValue(1));
-    expect(container.textContent).toEqual('2');
-    act(() => setVisible(false));
-    expect(container.textContent).toEqual('');
-    act(() => updateValue(2));
-    expect(container.textContent).toEqual('');
-    act(() => setVisible(true));
-    expect(container.textContent).toEqual('3');
-  },
-);
+  act(() => updateValue(1));
+  expect(container.textContent).toEqual('2');
+  act(() => setVisible(false));
+  expect(container.textContent).toEqual('');
+  act(() => updateValue(2));
+  expect(container.textContent).toEqual('');
+  act(() => setVisible(true));
+  expect(container.textContent).toEqual('3');
+});
 
-testRecoil('Selectors can be invertible', () => {
+test('Selectors can be invertible', () => {
   const anAtom = counterAtom();
   const aSelector = selector({
     key: 'invertible1',
@@ -915,7 +851,7 @@ testRecoil('Selectors can be invertible', () => {
   expect(container.textContent).toEqual('1');
 });
 
-testRecoil('Selector dependencies can change over time', () => {
+test('Selector dependencies can change over time', () => {
   const atomA = counterAtom();
   const atomB = counterAtom();
   const aSelector = selector({
@@ -952,7 +888,7 @@ testRecoil('Selector dependencies can change over time', () => {
   expect(container.textContent).toEqual('2');
 });
 
-testRecoil('Selectors can gain and lose depnedencies', () => {
+test('Selectors can gain and lose depnedencies', () => {
   const switchAtom = booleanAtom();
   const inputAtom = counterAtom();
 
@@ -1008,7 +944,7 @@ testRecoil('Selectors can gain and lose depnedencies', () => {
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 4);
 });
 
-testRecoil('Selector depedencies are updated transactionally', () => {
+test('Selector depedencies are updated transactionally', () => {
   const atomA = counterAtom();
   const atomB = counterAtom();
   const atomC = counterAtom();
@@ -1055,7 +991,7 @@ testRecoil('Selector depedencies are updated transactionally', () => {
   expect(selectorFn).toHaveBeenCalledTimes(0);
 });
 
-testRecoil('Can set an atom during rendering', () => {
+test('Can set an atom during rendering', () => {
   const anAtom = counterAtom();
 
   function SetsDuringRendering() {
@@ -1076,7 +1012,7 @@ testRecoil('Can set an atom during rendering', () => {
   expect(container.textContent).toEqual('1');
 });
 
-testRecoil('Does not re-create "setter" function after setting a value', () => {
+test('Does not re-create "setter" function after setting a value', () => {
   const anAtom = counterAtom();
   const anotherAtom = counterAtom();
   let useRecoilStateCounter = 0;
@@ -1125,103 +1061,97 @@ testRecoil('Does not re-create "setter" function after setting a value', () => {
   expect(useTwoAtomsCounter).toBe(2);
 });
 
-testRecoil(
-  'Can set atom during post-atom-setting effect (NOT during initial render)',
-  async () => {
+test('Can set atom during post-atom-setting effect (NOT during initial render)', async () => {
+  const anAtom = counterAtom();
+
+  let done = false;
+  function SetsDuringEffect() {
+    const setValue = useSetRecoilState(anAtom);
+    useEffect(() => {
+      Queue.enqueueExecution('SetsDuringEffect', () => {
+        if (!done) {
+          setValue(1);
+          done = true;
+        }
+      });
+    });
+    return null;
+  }
+
+  const [Comp] = componentThatWritesAtom(anAtom);
+
+  const container = renderElements(
+    <>
+      <SetsDuringEffect />
+      <ReadsAtom atom={anAtom} />
+      <Comp />
+    </>,
+  );
+  act(() => undefined);
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+
+  expect(container.textContent).toEqual('1');
+});
+
+test('Can set atom during post-atom-setting effect regardless of effect order', async () => {
+  function testWithOrder(order) {
     const anAtom = counterAtom();
 
-    let done = false;
-    function SetsDuringEffect() {
-      const setValue = useSetRecoilState(anAtom);
-      useEffect(() => {
-        Queue.enqueueExecution('SetsDuringEffect', () => {
-          if (!done) {
-            setValue(1);
-            done = true;
-          }
-        });
-      });
-      return null;
-    }
-
-    const [Comp] = componentThatWritesAtom(anAtom);
-
-    const container = renderElements(
-      <>
-        <SetsDuringEffect />
-        <ReadsAtom atom={anAtom} />
-        <Comp />
-      </>,
-    );
-    act(() => undefined);
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
-
-    expect(container.textContent).toEqual('1');
-  },
-);
-
-testRecoil(
-  'Can set atom during post-atom-setting effect regardless of effect order',
-  async () => {
-    function testWithOrder(order) {
-      const anAtom = counterAtom();
-
-      let q = [];
-      let seen = false;
-      const original = Queue.enqueueExecution;
-      try {
-        Queue.enqueueExecution = (s, f) => {
-          if (s === order[0] || seen) {
-            seen = true;
-            f();
-            q.forEach(([_, g]) => g());
-          } else {
-            q.push([s, f]);
-          }
-        };
-
-        function SetsDuringEffect() {
-          const [value, setValue] = useRecoilState(anAtom);
-          useEffect(() => {
-            Queue.enqueueExecution('SetsDuringEffect', () => {
-              if (value !== 1) {
-                setValue(1);
-              }
-            });
-          });
-          return null;
+    let q = [];
+    let seen = false;
+    const original = Queue.enqueueExecution;
+    try {
+      Queue.enqueueExecution = (s, f) => {
+        if (s === order[0] || seen) {
+          seen = true;
+          f();
+          q.forEach(([_, g]) => g());
+        } else {
+          q.push([s, f]);
         }
+      };
 
-        const [Comp, updateValue] = componentThatWritesAtom(anAtom);
-        const container = renderElements(
-          <>
-            <SetsDuringEffect />
-            <ReadsAtom atom={anAtom} />
-            <Comp />
-          </>,
-        );
-        q = [];
-        seen = false;
-
-        // Thus it appears that it only breaks on the initial render.
-        act(() => {
-          updateValue(0);
+      function SetsDuringEffect() {
+        const [value, setValue] = useRecoilState(anAtom);
+        useEffect(() => {
+          Queue.enqueueExecution('SetsDuringEffect', () => {
+            if (value !== 1) {
+              setValue(1);
+            }
+          });
         });
-
-        expect(container.textContent).toEqual('1');
-      } finally {
-        Queue.enqueueExecution = original;
+        return null;
       }
+
+      const [Comp, updateValue] = componentThatWritesAtom(anAtom);
+      const container = renderElements(
+        <>
+          <SetsDuringEffect />
+          <ReadsAtom atom={anAtom} />
+          <Comp />
+        </>,
+      );
+      q = [];
+      seen = false;
+
+      // Thus it appears that it only breaks on the initial render.
+      act(() => {
+        updateValue(0);
+      });
+
+      expect(container.textContent).toEqual('1');
+    } finally {
+      Queue.enqueueExecution = original;
     }
+  }
 
-    testWithOrder(['SetsDuringEffect', 'Batcher']);
-    testWithOrder(['Batcher', 'SetsDuringEffect']);
-  },
-);
+  testWithOrder(['SetsDuringEffect', 'Batcher']);
+  testWithOrder(['Batcher', 'SetsDuringEffect']);
+});
 
-testRecoil('Basic async selector test', async () => {
+test('Basic async selector test', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
@@ -1247,7 +1177,7 @@ testRecoil('Basic async selector test', async () => {
   expect(container.textContent).toEqual('1');
 });
 
-testRecoil('Ability to not use Suspense', () => {
+test('Ability to not use Suspense', () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
@@ -1284,165 +1214,147 @@ testRecoil('Ability to not use Suspense', () => {
   expect(container.textContent).toEqual('1');
 });
 
-testRecoil(
-  'Ability to not use Suspense - with value instead of loadable',
-  () => {
-    jest.useFakeTimers();
-    const anAtom = counterAtom();
-    const [aSelector, _] = plusOneAsyncSelector(anAtom);
-    const [Component, updateValue] = componentThatWritesAtom(anAtom);
+test('Ability to not use Suspense - with value instead of loadable', () => {
+  jest.useFakeTimers();
+  const anAtom = counterAtom();
+  const [aSelector, _] = plusOneAsyncSelector(anAtom);
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
 
-    function ReadsAtomWithoutSuspense({atom}) {
-      return (
-        useRecoilValueLoadable(atom).valueMaybe() ?? 'loading not with suspense'
-      );
-    }
-
-    const container = renderElements(
-      <>
-        <Component />
-        <ReadsAtomWithoutSuspense atom={aSelector} />
-      </>,
+  function ReadsAtomWithoutSuspense({atom}) {
+    return (
+      useRecoilValueLoadable(atom).valueMaybe() ?? 'loading not with suspense'
     );
-    // Begins in loading state, then shows initial value:
-    expect(container.textContent).toEqual('loading not with suspense');
-    act(() => jest.runAllTimers());
-    expect(container.textContent).toEqual('1');
-    // Changing dependency makes it go back to loading, then to show new value:
-    act(() => updateValue(1));
-    expect(container.textContent).toEqual('loading not with suspense');
-    act(() => jest.runAllTimers());
-    expect(container.textContent).toEqual('2');
-    // Returning to a seen value does not cause the loading state:
-    act(() => updateValue(0));
-    expect(container.textContent).toEqual('1');
-  },
-);
+  }
 
-testRecoil(
-  'Selector can alternate between synchronous and asynchronous',
-  async () => {
-    jest.useFakeTimers();
-    const anAtom = counterAtom();
-    const aSelector = selector({
-      key: 'alternatingSelector',
-      get: ({get}) => {
-        const x = get(anAtom);
-        if (x === 1337) {
-          return new Promise(() => {});
-        }
-        if (x % 2 === 0) {
-          return x;
-        } else {
-          return new Promise(resolve => {
-            setTimeout(() => resolve(x), 100);
-          });
-        }
-      },
-    });
-    const [Component, updateValue] = componentThatWritesAtom(anAtom);
-    const container = renderElements(
-      <>
-        <Component />
-        <ReadsAtom atom={aSelector} />
-      </>,
-    );
+  const container = renderElements(
+    <>
+      <Component />
+      <ReadsAtomWithoutSuspense atom={aSelector} />
+    </>,
+  );
+  // Begins in loading state, then shows initial value:
+  expect(container.textContent).toEqual('loading not with suspense');
+  act(() => jest.runAllTimers());
+  expect(container.textContent).toEqual('1');
+  // Changing dependency makes it go back to loading, then to show new value:
+  act(() => updateValue(1));
+  expect(container.textContent).toEqual('loading not with suspense');
+  act(() => jest.runAllTimers());
+  expect(container.textContent).toEqual('2');
+  // Returning to a seen value does not cause the loading state:
+  act(() => updateValue(0));
+  expect(container.textContent).toEqual('1');
+});
 
-    // Transition from sync to async:
-    expect(container.textContent).toEqual('0');
-    act(() => updateValue(1));
-    expect(container.textContent).toEqual('loading');
-    advanceTimersBy(101);
-    expect(container.textContent).toEqual('1');
+test('Selector can alternate between synchronous and asynchronous', async () => {
+  jest.useFakeTimers();
+  const anAtom = counterAtom();
+  const aSelector = selector({
+    key: 'alternatingSelector',
+    get: ({get}) => {
+      const x = get(anAtom);
+      if (x === 1337) {
+        return new Promise(() => {});
+      }
+      if (x % 2 === 0) {
+        return x;
+      } else {
+        return new Promise(resolve => {
+          setTimeout(() => resolve(x), 100);
+        });
+      }
+    },
+  });
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  const container = renderElements(
+    <>
+      <Component />
+      <ReadsAtom atom={aSelector} />
+    </>,
+  );
 
-    // Transition from async to sync (with async being in hasValue state):
-    act(() => updateValue(2));
-    expect(container.textContent).toEqual('2');
+  // Transition from sync to async:
+  expect(container.textContent).toEqual('0');
+  act(() => updateValue(1));
+  expect(container.textContent).toEqual('loading');
+  advanceTimersBy(101);
+  expect(container.textContent).toEqual('1');
 
-    // Transition from async to sync (with async being in loading state):
-    act(() => updateValue(1337));
-    expect(container.textContent).toEqual('loading');
-    act(() => updateValue(4));
-    await flushPromisesAndTimers();
-    expect(container.textContent).toEqual('4');
+  // Transition from async to sync (with async being in hasValue state):
+  act(() => updateValue(2));
+  expect(container.textContent).toEqual('2');
 
-    // Transition from sync to async with still unresolved promise from before:
-    act(() => updateValue(5));
-    expect(container.textContent).toEqual('loading');
-    advanceTimersBy(101);
-    await flushPromisesAndTimers();
-    expect(container.textContent).toEqual('5');
-  },
-);
+  // Transition from async to sync (with async being in loading state):
+  act(() => updateValue(1337));
+  expect(container.textContent).toEqual('loading');
+  act(() => updateValue(4));
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('4');
 
-testRecoil(
-  'Async selectors do not re-query when re-subscribed from having no subscribers',
-  async () => {
-    const anAtom = counterAtom();
-    const [sel, resolvers] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
-    const [Component, updateValue] = componentThatWritesAtom(anAtom);
-    const [Toggle, toggle] = componentThatToggles(
-      <ReadsAtom atom={sel} />,
-      null,
-    );
-    const container = renderElements(
-      <>
-        <Component />
-        <Toggle />
-      </>,
-    );
-    expect(container.textContent).toEqual('loading');
-    expect(resolvers.length).toBe(1);
-    act(() => updateValue(2));
-    await flushPromisesAndTimers();
-    expect(resolvers.length).toBe(2);
-    resolvers[1][0]('hello');
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
-    expect(container.textContent).toEqual('"hello"');
+  // Transition from sync to async with still unresolved promise from before:
+  act(() => updateValue(5));
+  expect(container.textContent).toEqual('loading');
+  advanceTimersBy(101);
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('5');
+});
 
-    // Cause sel to have no subscribers:
-    act(() => toggle.current());
-    expect(container.textContent).toEqual('');
+test('Async selectors do not re-query when re-subscribed from having no subscribers', async () => {
+  const anAtom = counterAtom();
+  const [sel, resolvers] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  const [Toggle, toggle] = componentThatToggles(<ReadsAtom atom={sel} />, null);
+  const container = renderElements(
+    <>
+      <Component />
+      <Toggle />
+    </>,
+  );
+  expect(container.textContent).toEqual('loading');
+  expect(resolvers.length).toBe(1);
+  act(() => updateValue(2));
+  await flushPromisesAndTimers();
+  expect(resolvers.length).toBe(2);
+  resolvers[1][0]('hello');
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('"hello"');
 
-    // Once it's used again, it should not issue another request:
-    act(() => toggle.current());
-    expect(resolvers.length).toBe(2);
-    expect(container.textContent).toEqual('"hello"');
-  },
-);
+  // Cause sel to have no subscribers:
+  act(() => toggle.current());
+  expect(container.textContent).toEqual('');
 
-testRecoil(
-  'Selector subscriptions are correct when a selector is unsubscribed the second time',
-  async () => {
-    // This regression test would fail by an exception being thrown because subscription refcounts
-    // would would fall below zero.
-    const anAtom = counterAtom();
-    const [sel, _] = plusOneSelector(anAtom);
-    const [Toggle, toggle] = componentThatToggles(
-      <ReadsAtom atom={sel} />,
-      null,
-    );
-    const container = renderElements(
-      <>
-        <Toggle />
-      </>,
-    );
+  // Once it's used again, it should not issue another request:
+  act(() => toggle.current());
+  expect(resolvers.length).toBe(2);
+  expect(container.textContent).toEqual('"hello"');
+});
 
-    expect(container.textContent).toEqual('1');
+test('Selector subscriptions are correct when a selector is unsubscribed the second time', async () => {
+  // This regression test would fail by an exception being thrown because subscription refcounts
+  // would would fall below zero.
+  const anAtom = counterAtom();
+  const [sel, _] = plusOneSelector(anAtom);
+  const [Toggle, toggle] = componentThatToggles(<ReadsAtom atom={sel} />, null);
+  const container = renderElements(
+    <>
+      <Toggle />
+    </>,
+  );
 
-    act(() => toggle.current());
-    expect(container.textContent).toEqual('');
+  expect(container.textContent).toEqual('1');
 
-    act(() => toggle.current());
-    expect(container.textContent).toEqual('1');
+  act(() => toggle.current());
+  expect(container.textContent).toEqual('');
 
-    act(() => toggle.current());
-    expect(container.textContent).toEqual('');
-  },
-);
+  act(() => toggle.current());
+  expect(container.textContent).toEqual('1');
 
-testRecoil('Can move out of suspense by changing deps', async () => {
+  act(() => toggle.current());
+  expect(container.textContent).toEqual('');
+});
+
+test('Can move out of suspense by changing deps', async () => {
   const anAtom = counterAtom();
   const [aSelector, resolvers] = asyncSelectorThatPushesPromisesOntoArray(
     anAtom,
@@ -1468,7 +1380,7 @@ testRecoil('Can move out of suspense by changing deps', async () => {
   expect(container.textContent).toEqual('"hello"');
 });
 
-testRecoil('Can use an already-resolved promise', async () => {
+test('Can use an already-resolved promise', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
@@ -1494,7 +1406,7 @@ testRecoil('Can use an already-resolved promise', async () => {
   expect(container.textContent).toEqual('2');
 });
 
-testRecoil('Resolution of suspense causes render just once', async () => {
+test('Resolution of suspense causes render just once', async () => {
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
@@ -1525,127 +1437,118 @@ testRecoil('Resolution of suspense causes render just once', async () => {
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
 });
 
-testRecoil(
-  'useTransactionObservation_DEPRECATED: Transaction dirty atoms are set',
-  async () => {
-    const anAtom = counterAtom({
+test('useTransactionObservation_DEPRECATED: Transaction dirty atoms are set', async () => {
+  const anAtom = counterAtom({
+    type: 'url',
+    validator: x => (x: any),
+  });
+  const [aSelector, _] = plusOneSelector(anAtom);
+  const [anAsyncSelector, __] = plusOneAsyncSelector(aSelector);
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  const modifiedAtomsList = [];
+  renderElements(
+    <>
+      <Component />
+      <ReadsAtom atom={aSelector} />
+      <React.Suspense fallback="loading">
+        <ReadsAtom atom={anAsyncSelector} />
+      </React.Suspense>
+      <ObservesTransactions
+        fn={({modifiedAtoms}) => {
+          modifiedAtomsList.push(modifiedAtoms);
+        }}
+      />
+    </>,
+  );
+
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  act(() => updateValue(1));
+  await flushPromisesAndTimers();
+  expect(modifiedAtomsList.length).toBe(3);
+  expect(modifiedAtomsList[1].size).toBe(1);
+  expect(modifiedAtomsList[1].has(anAtom.key)).toBe(true);
+  for (const modifiedAtoms of modifiedAtomsList) {
+    expect(modifiedAtoms.has(aSelector.key)).toBe(false);
+    expect(modifiedAtoms.has(anAsyncSelector.key)).toBe(false);
+  }
+});
+
+test('Can restore persisted values before atom def code is loaded', () => {
+  let theAtom = null;
+  let setUnvalidatedAtomValues;
+  function SetsUnvalidatedAtomValues() {
+    setUnvalidatedAtomValues = useSetUnvalidatedAtomValues();
+    return null;
+  }
+  let setVisible;
+  function Switch({children}) {
+    const [visible, mySetVisible] = useState(false);
+    setVisible = mySetVisible;
+    return visible ? children : null;
+  }
+  function MyReadsAtom({getAtom}) {
+    const [value] = useRecoilState((getAtom(): any));
+    return value;
+  }
+  const container = renderElements(
+    <>
+      <SetsUnvalidatedAtomValues />
+      <Switch>
+        <MyReadsAtom getAtom={() => theAtom} />
+      </Switch>
+    </>,
+  );
+  act(() => {
+    setUnvalidatedAtomValues(new Map().set('notDefinedYetAtom', 123));
+  });
+  const validator = jest.fn(() => 789);
+  theAtom = atom({
+    key: 'notDefinedYetAtom',
+    default: 456,
+    persistence_UNSTABLE: {
       type: 'url',
-      validator: x => (x: any),
-    });
-    const [aSelector, _] = plusOneSelector(anAtom);
-    const [anAsyncSelector, __] = plusOneAsyncSelector(aSelector);
-    const [Component, updateValue] = componentThatWritesAtom(anAtom);
-    const modifiedAtomsList = [];
-    renderElements(
-      <>
-        <Component />
-        <ReadsAtom atom={aSelector} />
-        <React.Suspense fallback="loading">
-          <ReadsAtom atom={anAsyncSelector} />
-        </React.Suspense>
-        <ObservesTransactions
-          fn={({modifiedAtoms}) => {
-            modifiedAtomsList.push(modifiedAtoms);
-          }}
-        />
-      </>,
-    );
+      validator,
+    },
+  });
+  act(() => {
+    setVisible(true);
+  });
+  expect(validator.mock.calls[0][0]).toBe(123);
+  expect(container.textContent).toBe('789');
+});
 
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
-    act(() => updateValue(1));
-    await flushPromisesAndTimers();
-    expect(modifiedAtomsList.length).toBe(3);
-    expect(modifiedAtomsList[1].size).toBe(1);
-    expect(modifiedAtomsList[1].has(anAtom.key)).toBe(true);
-    for (const modifiedAtoms of modifiedAtomsList) {
-      expect(modifiedAtoms.has(aSelector.key)).toBe(false);
-      expect(modifiedAtoms.has(anAsyncSelector.key)).toBe(false);
-    }
-  },
-);
+test('useTransactionObservation_DEPRECATED: Nonvalidated atoms are included in transaction observation', () => {
+  const anAtom = counterAtom({
+    type: 'url',
+    validator: x => (x: any),
+  });
 
-testRecoil(
-  'Can restore persisted values before atom def code is loaded',
-  () => {
-    let theAtom = null;
-    let setUnvalidatedAtomValues;
-    function SetsUnvalidatedAtomValues() {
-      setUnvalidatedAtomValues = useSetUnvalidatedAtomValues();
-      return null;
-    }
-    let setVisible;
-    function Switch({children}) {
-      const [visible, mySetVisible] = useState(false);
-      setVisible = mySetVisible;
-      return visible ? children : null;
-    }
-    function MyReadsAtom({getAtom}) {
-      const [value] = useRecoilState((getAtom(): any));
-      return value;
-    }
-    const container = renderElements(
-      <>
-        <SetsUnvalidatedAtomValues />
-        <Switch>
-          <MyReadsAtom getAtom={() => theAtom} />
-        </Switch>
-      </>,
-    );
-    act(() => {
-      setUnvalidatedAtomValues(new Map().set('notDefinedYetAtom', 123));
-    });
-    const validator = jest.fn(() => 789);
-    theAtom = atom({
-      key: 'notDefinedYetAtom',
-      default: 456,
-      persistence_UNSTABLE: {
-        type: 'url',
-        validator,
-      },
-    });
-    act(() => {
-      setVisible(true);
-    });
-    expect(validator.mock.calls[0][0]).toBe(123);
-    expect(container.textContent).toBe('789');
-  },
-);
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
 
-testRecoil(
-  'useTransactionObservation_DEPRECATED: Nonvalidated atoms are included in transaction observation',
-  () => {
-    const anAtom = counterAtom({
-      type: 'url',
-      validator: x => (x: any),
-    });
+  let setUnvalidatedAtomValues;
+  function SetsUnvalidatedAtomValues() {
+    setUnvalidatedAtomValues = useSetUnvalidatedAtomValues();
+    return null;
+  }
 
-    const [Component, updateValue] = componentThatWritesAtom(anAtom);
-
-    let setUnvalidatedAtomValues;
-    function SetsUnvalidatedAtomValues() {
-      setUnvalidatedAtomValues = useSetUnvalidatedAtomValues();
-      return null;
-    }
-
-    let values = new Map();
-    renderElements(
-      <>
-        <Component />
-        <SetsUnvalidatedAtomValues />
-        <ObservesTransactions
-          fn={({atomValues}) => {
-            values = atomValues;
-          }}
-        />
-      </>,
-    );
-    act(() => {
-      setUnvalidatedAtomValues(new Map().set('someNonvalidatedAtom', 123));
-    });
-    values = new Map();
-    act(() => updateValue(1));
-    expect(values.size).toBe(2);
-    expect(values.get('someNonvalidatedAtom')).toBe(123);
-  },
-);
+  let values = new Map();
+  renderElements(
+    <>
+      <Component />
+      <SetsUnvalidatedAtomValues />
+      <ObservesTransactions
+        fn={({atomValues}) => {
+          values = atomValues;
+        }}
+      />
+    </>,
+  );
+  act(() => {
+    setUnvalidatedAtomValues(new Map().set('someNonvalidatedAtom', 123));
+  });
+  values = new Map();
+  act(() => updateValue(1));
+  expect(values.size).toBe(2);
+  expect(values.get('someNonvalidatedAtom')).toBe(123);
+});

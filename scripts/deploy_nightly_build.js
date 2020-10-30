@@ -28,7 +28,6 @@ console.log('Committing and pushing...');
 execSync(
   [
     `cd ${DEST_FOLDER}`,
-    'git config --local include.path "$PWD/../.git/config"', // include orginal git config
     'git add .',
     `git commit --allow-empty -m "${COMMIT_MSG}"`,
     `git push --tags ${repository} ${DEST_BRANCH}`,

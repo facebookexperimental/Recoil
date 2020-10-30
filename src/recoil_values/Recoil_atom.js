@@ -224,20 +224,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     }
 
     // Run Atom Effects
-
-    // This state is scoped by Store, since this is in the initAtom() closure
     let initValue: NewValue<T> = DEFAULT_VALUE;
-    let pendingSetSelf: ?{
-      effect: AtomEffect<T>,
-      value: T | DefaultValue,
-    } = null;
-
     if (options.effects_UNSTABLE != null) {
       let duringInit = true;
 
-      const setSelf = (effect: AtomEffect<T>) => (
-        valueOrUpdater: NewValueOrUpdater<T>,
-      ) => {
+      function setSelf(valueOrUpdater: NewValueOrUpdater<T>) {
         if (duringInit) {
           const currentValue: T | DefaultValue =
             initValue instanceof DefaultValue || isPromise(initValue)
@@ -247,8 +238,9 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               : initValue;
           initValue =
             typeof valueOrUpdater === 'function'
-              ? // cast to any because we can't restrict T from being a function without losing support for opaque types
-                (valueOrUpdater: any)(currentValue) // flowlint-line unclear-type:off
+              ? // cast to any because we can't restrict type from being a function itself without losing support for opaque types
+                // flowlint-next-line unclear-type:off
+                (valueOrUpdater: any)(currentValue)
               : valueOrUpdater;
         } else {
           if (isPromise(valueOrUpdater)) {
@@ -256,31 +248,12 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               'Setting atoms to async values is not implemented.',
             );
           }
-
-          if (typeof valueOrUpdater !== 'function') {
-            pendingSetSelf = {effect, value: valueOrUpdater};
-          }
-
-          setRecoilValue(
-            store,
-            node,
-            typeof valueOrUpdater === 'function'
-              ? currentValue => {
-                  const newValue =
-                    // cast to any because we can't restrict T from being a function without losing support for opaque types
-                    (valueOrUpdater: any)(currentValue); // flowlint-line unclear-type:off
-                  pendingSetSelf = {effect, value: newValue};
-                  return newValue;
-                }
-              : valueOrUpdater,
-          );
+          setRecoilValue(store, node, valueOrUpdater);
         }
-      };
-      const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE);
+      }
+      const resetSelf = () => setSelf(DEFAULT_VALUE);
 
-      const onSet = effect => (
-        handler: (T | DefaultValue, T | DefaultValue) => void,
-      ) => {
+      function onSet(handler: (T | DefaultValue, T | DefaultValue) => void) {
         store.subscribeToTransactions(currentStore => {
           // eslint-disable-next-line prefer-const
           let {currentTree, previousTree} = currentStore.getState();
@@ -301,35 +274,13 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               oldLoadable.state === 'hasValue'
                 ? oldLoadable.contents
                 : DEFAULT_VALUE; // TODO This isn't actually valid, use as a placeholder for now.
-
-            // Ignore atom value changes that were set via setSelf() in the same effect.
-            // We will still properly call the handler if there was a subsequent
-            // set from something other than an atom effect which was batched
-            // with the `setSelf()` call.  However, we may incorrectly ignore
-            // the handler if the subsequent batched call happens to set the
-            // atom to the exact same value as the `setSelf()`.   But, in that
-            // case, it was kind of a noop, so the semantics are debatable..
-            if (
-              pendingSetSelf?.effect !== effect ||
-              pendingSetSelf?.value !== newValue
-            ) {
-              handler(newValue, oldValue);
-            }
-          }
-          if (pendingSetSelf?.effect === effect) {
-            pendingSetSelf = null;
+            handler(newValue, oldValue);
           }
         }, key);
-      };
+      }
 
       for (const effect of options.effects_UNSTABLE ?? []) {
-        const cleanup = effect({
-          node,
-          trigger,
-          setSelf: setSelf(effect),
-          resetSelf: resetSelf(effect),
-          onSet: onSet(effect),
-        });
+        const cleanup = effect({node, trigger, setSelf, resetSelf, onSet});
         if (cleanup != null) {
           cleanupEffectsByStore.set(store, cleanup);
         }

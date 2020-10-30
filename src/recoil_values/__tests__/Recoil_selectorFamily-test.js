@@ -13,37 +13,23 @@
 import type {LoadablePromise} from 'Recoil_Loadable';
 import type {RecoilValue} from 'Recoil_RecoilValue';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
 
-let atom,
-  cacheMostRecent,
-  cacheWithReferenceEquality,
-  DefaultValue,
-  selectorFamily,
+const atom = require('../Recoil_atom');
+const cacheMostRecent = require('../../caches/Recoil_cacheMostRecent');
+const cacheWithReferenceEquality = require('../../caches/Recoil_cacheWithReferenceEquality');
+const {DefaultValue} = require('../../core/Recoil_Node');
+const selectorFamily = require('../Recoil_selectorFamily');
+const {
   getRecoilValueAsLoadable,
   setRecoilValue,
-  store,
-  myAtom;
+} = require('../../core/Recoil_RecoilValueInterface');
+const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
-const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
-
-  atom = require('../Recoil_atom');
-  cacheMostRecent = require('../../caches/Recoil_cacheMostRecent');
-  cacheWithReferenceEquality = require('../../caches/Recoil_cacheWithReferenceEquality');
-  ({DefaultValue} = require('../../core/Recoil_Node'));
-  selectorFamily = require('../Recoil_selectorFamily');
-  ({
-    getRecoilValueAsLoadable,
-    setRecoilValue,
-  } = require('../../core/Recoil_RecoilValueInterface'));
-
+let store;
+beforeEach(() => {
   store = makeStore();
-
-  myAtom = atom({
-    key: 'atom',
-    default: 0,
-  });
 });
 
 function get<T>(recoilValue: RecoilValue<T>): T | LoadablePromise<T> | Error {
@@ -54,7 +40,12 @@ function set(recoilValue, value) {
   setRecoilValue(store, recoilValue, value);
 }
 
-testRecoil('selectorFamily - number parameter', () => {
+const myAtom = atom({
+  key: 'atom',
+  default: 0,
+});
+
+test('selectorFamily - number parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/number',
     get: multiplier => ({get}) => get(myAtom) * multiplier,
@@ -68,7 +59,7 @@ testRecoil('selectorFamily - number parameter', () => {
   expect(get(mySelector(100))).toBe(200);
 });
 
-testRecoil('selectorFamily - array parameter', () => {
+test('selectorFamily - array parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/array',
     get: numbers => () => numbers.reduce((x, y) => x + y, 0),
@@ -79,7 +70,7 @@ testRecoil('selectorFamily - array parameter', () => {
   expect(get(mySelector([0, 1, 1, 2, 3, 5]))).toBe(12);
 });
 
-testRecoil('selectorFamily - object parameter', () => {
+test('selectorFamily - object parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/object',
     get: ({multiplier}) => ({get}) => get(myAtom) * multiplier,
@@ -93,7 +84,7 @@ testRecoil('selectorFamily - object parameter', () => {
   expect(get(mySelector({multiplier: 100}))).toBe(200);
 });
 
-testRecoil('Works with supersets', () => {
+test('Works with supersets', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/supersets',
     get: ({multiplier}) => ({get}) => get(myAtom) * multiplier,
@@ -104,7 +95,7 @@ testRecoil('Works with supersets', () => {
   expect(get(mySelector({multiplier: 100, extra: 'foo'}))).toBe(100);
 });
 
-testRecoil('selectorFamily - writable', () => {
+test('selectorFamily - writable', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/writable',
     get: ({multiplier}) => ({get}) => get(myAtom) * multiplier,
@@ -122,7 +113,7 @@ testRecoil('selectorFamily - writable', () => {
   expect(get(myAtom)).toBe(4);
 });
 
-testRecoil('selectorFamily - value caching', () => {
+test('selectorFamily - value caching', () => {
   let evals = 0;
   const mySelector = selectorFamily({
     key: 'selectorFamily/value caching',
@@ -157,7 +148,7 @@ testRecoil('selectorFamily - value caching', () => {
   expect(evals).toBe(4);
 });
 
-testRecoil('selectorFamily - reference caching', () => {
+test('selectorFamily - reference caching', () => {
   let evals = 0;
   const mySelector = selectorFamily({
     key: 'selectorFamily/reference caching',
@@ -218,7 +209,7 @@ testRecoil('selectorFamily - reference caching', () => {
   expect(evals).toBe(13);
 });
 
-testRecoil('selectorFamily - most recent caching', () => {
+test('selectorFamily - most recent caching', () => {
   let evals = 0;
   const mySelector = selectorFamily({
     key: 'selectorFamily/most recent caching',
@@ -251,7 +242,7 @@ testRecoil('selectorFamily - most recent caching', () => {
 
 // Parameterized selector results should be frozen unless
 // dangerouslyAllowMutability is set
-testRecoil('selectorFamily - mutability', () => {
+test('selectorFamily - mutability', () => {
   const myImmutableSelector = selectorFamily({
     key: 'selectorFamily/immutable',
     get: ({key}) => ({get}) => ({[key]: get(myAtom)}),
@@ -279,7 +270,7 @@ testRecoil('selectorFamily - mutability', () => {
   expect(mutableResult).toEqual({foo: 2600});
 });
 
-testRecoil('selectorFamily - evaluate to RecoilValue', () => {
+test('selectorFamily - evaluate to RecoilValue', () => {
   const atomA = atom({key: 'selectorFamily/const atom A', default: 'A'});
   const atomB = atom({key: 'selectorFamily/const atom B', default: 'B'});
   const mySelector = selectorFamily<string, string>({

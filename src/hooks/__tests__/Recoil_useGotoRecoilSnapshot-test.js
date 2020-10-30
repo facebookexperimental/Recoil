@@ -10,48 +10,31 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
 
-let React,
-  useState,
-  act,
-  freshSnapshot,
+const React = require('React');
+const {useState} = require('React');
+const {act} = require('ReactTestUtils');
+
+const {freshSnapshot} = require('../../core/Recoil_Snapshot');
+const {
   useGotoRecoilSnapshot,
   useRecoilCallback,
   useRecoilValue,
-  atom,
-  constSelector,
-  selector,
+} = require('../../hooks/Recoil_Hooks');
+const atom = require('../../recoil_values/Recoil_atom');
+const constSelector = require('../../recoil_values/Recoil_constSelector');
+const selector = require('../../recoil_values/Recoil_selector');
+const {
   ReadsAtom,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
-  renderElements;
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
 
-const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useState} = require('React'));
-  ({act} = require('ReactTestUtils'));
-
-  ({freshSnapshot} = require('../../core/Recoil_Snapshot'));
-  ({
-    useGotoRecoilSnapshot,
-    useRecoilCallback,
-    useRecoilValue,
-  } = require('../../hooks/Recoil_Hooks'));
-  atom = require('../../recoil_values/Recoil_atom');
-  constSelector = require('../../recoil_values/Recoil_constSelector');
-  selector = require('../../recoil_values/Recoil_selector');
-  ({
-    ReadsAtom,
-    asyncSelector,
-    componentThatReadsAndWritesAtom,
-    flushPromisesAndTimers,
-    renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
-});
-
-testRecoil('Goto mapped snapshot', async () => {
+test('Goto mapped snapshot', async () => {
   const snapshot = freshSnapshot();
 
   const myAtom = atom({
@@ -100,7 +83,7 @@ testRecoil('Goto mapped snapshot', async () => {
   expect(c.textContent).toEqual('"DEFAULT""DEFAULT"');
 });
 
-testRecoil('Goto callback snapshot', () => {
+test('Goto callback snapshot', () => {
   const myAtom = atom({
     key: 'Goto Snapshot From Callback',
     default: 'DEFAULT',
@@ -138,7 +121,7 @@ testRecoil('Goto callback snapshot', () => {
   expect(c.textContent).toEqual('"SET IN SNAPSHOT""SET IN SNAPSHOT"');
 });
 
-testRecoil('Goto snapshot with dependent async selector', async () => {
+test('Goto snapshot with dependent async selector', async () => {
   const snapshot = freshSnapshot();
 
   const myAtom = atom({
@@ -190,7 +173,7 @@ testRecoil('Goto snapshot with dependent async selector', async () => {
   expect(c.textContent).toEqual('"SET IN SNAPSHOT""SET IN SNAPSHOT"');
 });
 
-testRecoil('Goto snapshot with async selector', async () => {
+test('Goto snapshot with async selector', async () => {
   const snapshot = freshSnapshot();
 
   const [mySelector, resolve] = asyncSelector();
@@ -221,7 +204,7 @@ testRecoil('Goto snapshot with async selector', async () => {
 
 // Test that going to a snapshot where an atom was not yet initialized will
 // not cause the atom to be re-initialized when used again.
-testRecoil('Effects going to previous snapshot', () => {
+test('Effects going to previous snapshot', () => {
   let init = 0;
   const myAtom = atom({
     key: 'gotoSnapshot effect',

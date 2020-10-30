@@ -10,34 +10,23 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
 
-let React,
-  act,
-  atom,
-  atomFamily,
-  selector,
-  selectorFamily,
+const React = require('React');
+const {act} = require('ReactTestUtils');
+
+const atom = require('../../recoil_values/Recoil_atom');
+const atomFamily = require('../../recoil_values/Recoil_atomFamily');
+const selector = require('../../recoil_values/Recoil_selector');
+const selectorFamily = require('../../recoil_values/Recoil_selectorFamily');
+const {
   asyncSelector,
   componentThatReadsAndWritesAtom,
-  renderElements;
+  renderElements,
+} = require('../../testing/Recoil_TestingUtils');
 
-const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({act} = require('ReactTestUtils'));
-
-  atom = require('../../recoil_values/Recoil_atom');
-  atomFamily = require('../../recoil_values/Recoil_atomFamily');
-  selector = require('../../recoil_values/Recoil_selector');
-  selectorFamily = require('../../recoil_values/Recoil_selectorFamily');
-  ({
-    asyncSelector,
-    componentThatReadsAndWritesAtom,
-    renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
-});
-
-testRecoil('useRecoilValueReset - value default', () => {
+test('useRecoilValueReset - value default', () => {
   const myAtom = atom({
     key: 'useResetRecoilState/atom',
     default: 'default',
@@ -54,7 +43,7 @@ testRecoil('useRecoilValueReset - value default', () => {
   expect(container.textContent).toBe('"default"');
 });
 
-testRecoil('useResetRecoilState - sync selector default', () => {
+test('useResetRecoilState - sync selector default', () => {
   const mySelector = selector({
     key: 'useResetRecoilState/sync_selector/default',
     get: () => 'fallback',
@@ -76,7 +65,7 @@ testRecoil('useResetRecoilState - sync selector default', () => {
 });
 
 // Test resetting an atom to a fallback selector with a pending async value
-testRecoil('useResetRecoilState - async selector default', () => {
+test('useResetRecoilState - async selector default', () => {
   const [mySelector, resolve] = asyncSelector();
   const myAtom = atom({
     key: 'useResetRecoilState/async_selector',
@@ -99,7 +88,7 @@ testRecoil('useResetRecoilState - async selector default', () => {
 });
 
 // Test resetting an atom to a fallback selector with a pending async value
-testRecoil('useResetRecoilState - scoped atom', () => {
+test('useResetRecoilState - scoped atom', () => {
   return; // @oss-only
   const myAtom = atom({
     key: 'useResetRecoilState/scoped_atom',
@@ -122,7 +111,7 @@ testRecoil('useResetRecoilState - scoped atom', () => {
 });
 
 // Test resetting an atom to a fallback selector with a pending async value
-testRecoil('useResetRecoilState - atom family', () => {
+test('useResetRecoilState - atom family', () => {
   const myAtom = atomFamily({
     key: 'useResetRecoilState/atomFamily',
     default: ({default: def}) => def,
@@ -154,7 +143,7 @@ testRecoil('useResetRecoilState - atom family', () => {
   expect(container.textContent).toBe('"set value A""default"');
 });
 
-testRecoil('useResetRecoilState - selector', () => {
+test('useResetRecoilState - selector', () => {
   const myAtom = atom({
     key: 'useResetRecoilState/selector/atom',
     default: 'default',
@@ -176,7 +165,7 @@ testRecoil('useResetRecoilState - selector', () => {
   expect(container.textContent).toBe('"default"');
 });
 
-testRecoil('useResetRecoilState - parameterized selector', () => {
+test('useResetRecoilState - parameterized selector', () => {
   const myAtom = atom({
     key: 'useResetRecoilState/parameterized_selector/atom',
     default: 'default',

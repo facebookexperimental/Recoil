@@ -10,44 +10,32 @@
  */
 'use strict';
 
+const gkx = require('../../util/Recoil_gkx');
+gkx.setFail('recoil_async_selector_refactor');
+
 import type {RecoilValue} from 'Recoil_RecoilValue';
 
 const {
-  flushPromisesAndTimers,
-  getRecoilTestFn,
-} = require('../../testing/Recoil_TestingUtils');
-
-let loadableWithError,
+  loadableWithError,
   loadableWithValue,
+} = require('../../adt/Recoil_Loadable');
+
+const {act} = require('ReactTestUtils');
+const {
   getRecoilValueAsLoadable,
+} = require('../../core/Recoil_RecoilValueInterface');
+const {asyncSelector, makeStore} = require('../../testing/Recoil_TestingUtils');
+const {
   noWait,
   waitForAll,
   waitForAny,
   waitForNone,
-  store,
-  selector,
-  invariant;
+} = require('../Recoil_WaitFor');
 
-const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
+/* eslint-disable jest/valid-expect */
 
-  invariant = require('../../util/Recoil_invariant');
-  ({
-    loadableWithError,
-    loadableWithValue,
-  } = require('../../adt/Recoil_Loadable'));
-
-  ({
-    getRecoilValueAsLoadable,
-  } = require('../../core/Recoil_RecoilValueInterface'));
-  selector = require('../Recoil_selector');
-  ({
-    noWait,
-    waitForAll,
-    waitForAny,
-    waitForNone,
-  } = require('../Recoil_WaitFor'));
-
+let store;
+beforeEach(() => {
   store = makeStore();
 });
 
@@ -71,45 +59,19 @@ function getPromise<T>(recoilValue: RecoilValue<T>): Promise<T> {
   return loadable.toPromise();
 }
 
-let id = 0;
-function asyncSelector<T, S>(
-  dep?: RecoilValue<S>,
-): [RecoilValue<T>, (T) => void, (Error) => void, () => boolean] {
-  let resolve = () => invariant(false, 'bug in test code'); // make flow happy with initialization
-  let reject = () => invariant(false, 'bug in test code');
-  let evaluated = false;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  const sel = selector({
-    key: `AsyncSelector${id++}`,
-    get: ({get}) => {
-      evaluated = true;
-      if (dep != null) {
-        get(dep);
-      }
-      return promise;
-    },
-  });
-  return [sel, resolve, reject, () => evaluated];
-}
-
-/* eslint-disable jest/valid-expect */
-
-testRecoil('noWait - resolve', async () => {
+test('noWait - resolve', async () => {
   const [dep, resolve] = asyncSelector();
 
   const pTest = expect(getValue(noWait(dep)).toPromise()).resolves.toBe(42);
 
   expect(getValue(noWait(dep)).contents).toBeInstanceOf(Promise);
   resolve(42);
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(noWait(dep)).contents).toBe(42);
   await pTest;
 });
 
-testRecoil('noWait - reject', async () => {
+test('noWait - reject', async () => {
   const [dep, _resolve, reject] = asyncSelector();
   class MyError extends Error {}
 
@@ -118,7 +80,7 @@ testRecoil('noWait - reject', async () => {
   ).rejects.toBeInstanceOf(MyError);
   expect(getValue(noWait(dep)).contents).toBeInstanceOf(Promise);
   reject(new MyError());
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(noWait(dep)).contents).toBeInstanceOf(MyError);
   await pTest;
 });
@@ -128,7 +90,7 @@ testRecoil('noWait - reject', async () => {
 // [loading, loading]  [Promise, Promise]  Promise           Promise
 // [value, loading]    [value, Promise]    [value, Promise]  Promise
 // [value, value]      [value, value]      [value, value]    [value, value]
-testRecoil('waitFor - resolve to values', async () => {
+test('waitFor - resolve to values', async () => {
   const [depA, resolveA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
   const deps = [depA, depB];
@@ -171,7 +133,7 @@ testRecoil('waitFor - resolve to values', async () => {
 
   // Resolve the first dep
   resolveA(0);
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(waitForNone(deps))[0].contents).toBe(0);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
   expect(getValue(waitForAny(deps))[0].contents).toBe(0);
@@ -185,7 +147,7 @@ testRecoil('waitFor - resolve to values', async () => {
 
   // Resolve the second dep
   resolveB(1);
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(waitForNone(deps))[0].contents).toBe(0);
   expect(getValue(waitForNone(deps))[1].contents).toBe(1);
   expect(getValue(waitForAny(deps))[0].contents).toBe(0);
@@ -206,7 +168,7 @@ testRecoil('waitFor - resolve to values', async () => {
 // [loading, loading]  [Promise, Promise]  Promise      Promise
 // [error, loading]    [Error, Promise]    Promise      Error
 // [error, error]      [Error, Error]      Error        Error
-testRecoil('waitFor - rejected', async () => {
+test('waitFor - rejected', async () => {
   const [depA, _resolveA, rejectA] = asyncSelector();
   const [depB, _resolveB, rejectB] = asyncSelector();
   const deps = [depA, depB];
@@ -234,7 +196,7 @@ testRecoil('waitFor - rejected', async () => {
   const allTest = expect(get(waitForAll(deps))).rejects.toBeInstanceOf(Error1);
 
   rejectA(new Error1());
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
   expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
@@ -242,7 +204,7 @@ testRecoil('waitFor - rejected', async () => {
   expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
 
   rejectB(new Error2());
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Error2);
   expect(get(waitForAny(deps))).toBeInstanceOf(Error1);
@@ -259,7 +221,7 @@ testRecoil('waitFor - rejected', async () => {
 // [loading, loading]  [Promise, Promise]  Promise           Promise
 // [value, loading]    [value, Promise]    [value, Promise]  Promise
 // [value, error]      [value, Error]      [value, Error]    Error
-testRecoil('waitFor - resolve then reject', async () => {
+test('waitFor - resolve then reject', async () => {
   const [depA, resolveA] = asyncSelector();
   const [depB, _resolveB, rejectB] = asyncSelector();
   const deps = [depA, depB];
@@ -273,7 +235,7 @@ testRecoil('waitFor - resolve then reject', async () => {
   const allTest = expect(get(waitForAll(deps))).rejects.toBeInstanceOf(Error2);
 
   rejectB(new Error2());
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(waitForNone(deps))[0].contents).toBe(0);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Error2);
   expect(getValue(waitForAny(deps))[0].contents).toBe(0);
@@ -288,7 +250,7 @@ testRecoil('waitFor - resolve then reject', async () => {
 // [loading, loading]  [Promise, Promise]  Promise         Promise
 // [error, loading]    [Error, Promise]    Promise         Error
 // [error, value]      [Error, value]      [Error, value]  Error
-testRecoil('waitFor - reject then resolve', async () => {
+test('waitFor - reject then resolve', async () => {
   const [depA, _resolveA, rejectA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
   const deps = [depA, depB];
@@ -296,30 +258,28 @@ testRecoil('waitFor - reject then resolve', async () => {
 
   class Error1 extends Error {}
 
-  const anyTest0 = expect(getPromise(waitForAny(deps))).resolves.toEqual([
+  const anyTest0 = expect(get(waitForAny(deps))).resolves.toEqual([
     loadableWithError(new Error1()),
     loadableWithValue(1),
   ]);
 
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
 
   // Previous tests covered the initial values and the first rejection.  But,
   // test that the waitForAny provides the next state with the error and value
   rejectA(new Error1());
   expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
 
-  const anyTest1 = expect(getPromise(waitForAny(deps))).resolves.toEqual([
+  const anyTest1 = expect(get(waitForAny(deps))).resolves.toEqual([
     loadableWithError(new Error1()),
     loadableWithValue(1),
   ]);
 
-  const allTest = expect(getPromise(waitForAll(deps))).rejects.toBeInstanceOf(
-    Error1,
-  );
-  await flushPromisesAndTimers();
+  const allTest = expect(get(waitForAll(deps))).rejects.toBeInstanceOf(Error1);
+  act(() => jest.runAllTimers());
 
   resolveB(1);
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBe(1);
   expect(getValue(waitForAny(deps))[0].contents).toBeInstanceOf(Error1);
@@ -332,7 +292,7 @@ testRecoil('waitFor - reject then resolve', async () => {
 });
 
 // Similar as the first test that resolves both dependencies, but with named dependencies.
-testRecoil('waitFor - named dependency version', async () => {
+test('waitFor - named dependency version', async () => {
   const [depA, resolveA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
   const deps = {a: depA, b: depB};
@@ -373,7 +333,7 @@ testRecoil('waitFor - named dependency version', async () => {
   });
 
   resolveA(0);
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(waitForNone(deps)).a.contents).toBe(0);
   expect(getValue(waitForNone(deps)).b.contents).toBeInstanceOf(Promise);
   expect(getValue(waitForAny(deps)).a.contents).toBe(0);
@@ -386,7 +346,7 @@ testRecoil('waitFor - named dependency version', async () => {
   });
 
   resolveB(1);
-  await flushPromisesAndTimers();
+  act(() => jest.runAllTimers());
   expect(getValue(waitForNone(deps)).a.contents).toBe(0);
   expect(getValue(waitForNone(deps)).b.contents).toBe(1);
   expect(getValue(waitForAny(deps)).a.contents).toBe(0);
@@ -401,47 +361,4 @@ testRecoil('waitFor - named dependency version', async () => {
   await allTest0;
   await allTest1;
 });
-
-testRecoil('waitForAll - Evaluated concurrently', async () => {
-  const [depA, resolveA, _rejectA, evaluatedA] = asyncSelector();
-  const [depB, _resolveB, _rejectB, evaluatedB] = asyncSelector();
-  const deps = [depA, depB];
-
-  expect(evaluatedA()).toBe(false);
-  expect(evaluatedB()).toBe(false);
-
-  getPromise(waitForAll(deps));
-  await flushPromisesAndTimers();
-
-  // Confirm dependencies were evaluated in parallel
-  expect(evaluatedA()).toBe(true);
-  expect(evaluatedB()).toBe(true);
-
-  resolveA(0);
-  getPromise(waitForAll(deps));
-  await flushPromisesAndTimers();
-
-  expect(evaluatedA()).toBe(true);
-  expect(evaluatedB()).toBe(true);
-});
-
-testRecoil('waitForAll - mixed sync and async deps', async () => {
-  const [depA, resolveA] = asyncSelector();
-  const depB = selector({
-    key: 'mydepkeyB',
-    get: () => 1,
-  });
-
-  const deps = [depA, depB];
-
-  const allTest = expect(getPromise(waitForAll(deps))).resolves.toEqual([0, 1]);
-
-  resolveA(0);
-  await flushPromisesAndTimers();
-
-  expect(getValue(waitForAll(deps))).toEqual([0, 1]);
-
-  await allTest;
-});
-
 /* eslint-enable jest/valid-expect */
