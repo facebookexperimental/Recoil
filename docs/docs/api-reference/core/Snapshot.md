@@ -102,4 +102,4 @@ The `getInfo_UNSTABLE()` method provides additional debug information for atoms 
 
 ## State Initialization
 
-The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component and `snapshot_UNSTABLE()` factory take an optional `initializeState` prop for initializing the state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For most state initialization and persistence, though, consider Atom Effects.
+The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component and `snapshot_UNSTABLE()` factory take an optional `initializeState` prop for initializing the state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For per-atom initialization/persistence and ease of working with dynamic atoms, consider [atom effects](/docs/guides/atom-effects)
