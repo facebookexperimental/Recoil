@@ -193,11 +193,11 @@ export const RecoilBridge: React.FC;
 export function useRecoilBridgeAcrossReactRoots_UNSTABLE(): typeof RecoilBridge;
 
 // loadable.d.ts
-type ResolvedLoadablePromiseInfo<T> = Readonly<{
-  value: T;
-}>;
-
-export type LoadablePromise<T> = Promise<ResolvedLoadablePromiseInfo<T>>;
+declare const LoadablePromiseValue_OPAQUE: unique symbol;
+interface LoadablePromiseValue {
+  readonly [LoadablePromiseValue_OPAQUE]: true;
+}
+type LoadablePromise<T> = Promise<LoadablePromiseValue>;
 
 interface BaseLoadable<T> {
   getValue: () => T;
@@ -222,11 +222,11 @@ interface LoadingLoadable<T> extends BaseLoadable<T> {
 }
 
 interface ErrorLoadable<T> extends BaseLoadable<T> {
-  state: 'error';
+  state: 'hasError';
   contents: Error;
 }
 
-type Loadable<T> =
+export type Loadable<T> =
   | ValueLoadable<T>
   | LoadingLoadable<T>
   | ErrorLoadable<T>;
