@@ -8,10 +8,9 @@
  * @flow strict-local
  * @format
  */
-
 'use strict';
 
-const ArrayKeyedMap = require('../Recoil_ArrayKeyedMap');
+const {ArrayKeyedMap} = require('../Recoil_ArrayKeyedMap');
 
 test('basic operation', () => {
   const m = new ArrayKeyedMap();
