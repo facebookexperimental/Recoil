@@ -222,7 +222,7 @@ interface LoadingLoadable<T> extends BaseLoadable<T> {
 }
 
 interface ErrorLoadable<T> extends BaseLoadable<T> {
-  state: 'error';
+  state: 'hasError';
   contents: Error;
 }
 
