@@ -22,16 +22,23 @@ class Snapshot {
   } | void) => Iterable<RecoilValue<mixed>>;
   getInfo_UNSTABLE: <T>(RecoilValue<T>) => {...};
 }
+
+function snapshot_UNSTABLE(initializeState?: (MutableSnapshot => void)): Snapshot
 ```
 
-## Hooks
+## Obtaining Snapshots
 
-Recoil provides the following hooks for working with snapshots:
+### Hooks
+
+Recoil provides the following hooks for obtaining snapshots based on the current state:
 
 - [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback) - Asynchronous access to a Snapshot
 - [`useRecoilSnapshot()`](/docs/api-reference/core/useRecoilSnapshot) - Synchronous access to a Snapshot
-- [`useRecoilTransactionObserver()`](/docs/api-reference/core/useRecoilTransactionObserver) - Subscribe to Snapshots for all state changes
-- [`useGotoRecoilSnapshot()`](/docs/api-reference/core/useGotoRecoilSnapshot) - Update current state to match a Snapshot
+- [`useRecoilTransactionObserver_UNSTABLE()`](/docs/api-reference/core/useRecoilTransactionObserver) - Subscribe to Snapshots for all state changes
+
+### Building a Snapshot
+
+You can also build a fresh snapshot using the `snapshot_UNSTABLE()` factory, which accepts an optional initializer function.  This can be used for [testing](/docs/guides/testing) or evaluating selectors outside of a React context.
 
 ## Reading Snapshots
 
@@ -62,6 +69,12 @@ class MutableSnapshot {
 
 Notice that `set()` and `reset()` have the same signature as callbacks provided to a writeable selector's `set` property, but they only effect the new snapshot, not the current state.
 
+## Going to a Snapshot
+
+The following hook can be used for navigating the current Recoil state to the provided `Snapshot`:
+- [`useGotoRecoilSnapshot()`](/docs/api-reference/core/useGotoRecoilSnapshot) - Update current state to match a Snapshot
+
+
 ## Developer Tools
 
 Snapshots provide some methods useful for building developer tools or debugging capabilities with Recoil.  This API is still evolving, and thus marked as `_UNSTABLE`, as we work on the initial dev tools.
@@ -89,4 +102,4 @@ The `getInfo_UNSTABLE()` method provides additional debug information for atoms 
 
 ## State Initialization
 
-The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component takes an `initializeState` prop for initializing the global state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For most state initialization and persistence, though, consider Atom Effects.
+The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component and `snapshot_UNSTABLE()` factory take an optional `initializeState` prop for initializing the state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For most state initialization and persistence, though, consider Atom Effects.
