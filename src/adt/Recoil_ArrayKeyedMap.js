@@ -21,13 +21,11 @@ const LEAF = Symbol('ArrayKeyedMap');
 const emptyMap = new Map();
 
 class ArrayKeyedMap<V> {
-  // @fb-only: _base: Map<any, any> = new Map();
+  _base: Map<any, any> = new Map();
 
   constructor(
     existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
   ): ArrayKeyedMap<V> {
-    this._base = new Map(); // @oss-only
-
     if (existing instanceof ArrayKeyedMap) {
       for (const [k, v] of existing.entries()) {
         this.set(k, v);
@@ -102,4 +100,4 @@ class ArrayKeyedMap<V> {
   }
 }
 
-module.exports = ArrayKeyedMap;
+module.exports = {ArrayKeyedMap};
