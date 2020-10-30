@@ -12,6 +12,8 @@ function atom<T>({
   key: string,
   default: T | Promise<T> | RecoilValue<T>,
 
+  effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>>,
+
   dangerouslyAllowMutability?: boolean,
 }): RecoilState<T>
 ```
@@ -19,6 +21,7 @@ function atom<T>({
 
   - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
   - `default` - The initial value of the atom or a `Promise` or another atom or selector representing a value of the same type.
+  - `effects_UNSTABLE` - An optional array of [Atom Effects](/docs/guides/atom-effects) for the atom.
   - `dangerouslyAllowMutability` - Recoil depends on atom state changes to know when to notify components that use the atoms to re-render.  If an atom's value were mutated, it may bypass this and cause state to change without properly notifying subscribing components.  To help protect against this all stored values are frozen.  In some cases it may be desireable to override this using this option.
 
 ---
@@ -34,7 +37,7 @@ For rare cases where you need to read an atom's value without subscribing to the
 
 You can initialize an atom either with a static value or with a `Promise` or a `RecoilValue` representing a value of the same type.  Because the `Promise` may be pending or the default selector may be asynchronous it means that the atom value may also be pending or throw an error when reading.  Note that you cannot currently assign a `Promise` when setting an atom.  Please use [selectors](/docs/api-reference/core/selector) for async functions.
 
-Atoms cannot be used to store `Promise`s or `RecoilValues` directly, but they may be wrapped in an object.  Note that `Promises` may be mutable.
+Atoms cannot be used to store `Promise`'s or `RecoilValue`'s directly, but they may be wrapped in an object.  Note that `Promise`'s may be mutable.  Atoms can be set to a `function`, as long as it is pure, but to do so you may need to use the updater form of setters. (e.g. `set(myAtom, () => myFunc);`).
 
 ### Example
 

@@ -5,7 +5,7 @@ sidebar_label: Asynchronous Data Queries
 
 Recoil provides a way to map state and derived state to React components via a data-flow graph. What's really powerful is that the functions in the graph can also be asynchronous. This makes it easy to use asynchronous functions in synchronous React component render functions. Recoil allows you to seamlessly mix synchronous and asynchronous functions in your data-flow graph of selectors. Simply return a Promise to a value instead of the value itself from a selector `get` callback, the interface remains exactly the same. Because these are just selectors, other selectors can also depend on them to further transform the data.
 
-Selectors can be used as one way to incorporate asynchronous data into the Recoil data-flow graph.  Please keep in mind that selectors represent pure functions: For a given set of inputs they should always produce the same results (at least for the lifetime of the application).  This is important as selector evaluations may execute one or more times, may be restarted, and may be cached.  Because of this, selectors are a good way to model read-only DB queries where repeating a query provides consistent data.  For mutable data check out [Query Refresh](#query-refresh), or if you are looking to synchronize local and server state, then please see [Asynchronous State Sync](/docs/guides/asynchronous-state-sync) or [State Persistence](/docs/guides/persistence).
+Selectors can be used as one way to incorporate asynchronous data into the Recoil data-flow graph.  Please keep in mind that selectors represent "idempotent" functions: For a given set of inputs they should always produce the same results (at least for the lifetime of the application).  This is important as selector evaluations may be cached, restarted, or executed multiple times.  Because of this, selectors are generally a good way to model read-only DB queries.  For mutable data you can use a [Query Refresh](#query-refresh) or to synchronize mutable state, persist state, or for other side-effects consider the experimental [Atom Effects](/docs/guides/atom-effects) API.
 
 ## Synchronous Example
 
@@ -279,6 +279,24 @@ function CurrentUserInfo() {
 }
 ```
 
+## Async Queries Without React Suspense
+
+It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the status during rendering:
+
+```jsx
+function UserInfo({userID}) {
+  const userNameLoadable = useRecoilValueLoadable(userNameQuery(userID));
+  switch (userNameLoadable.state) {
+    case 'hasValue':
+      return <div>{userNameLoadable.contents}</div>;
+    case 'loading':
+      return <div>Loading...</div>;
+    case 'hasError':
+      throw userNameLoadable.contents;
+  }
+}
+```
+
 ## Query Refresh
 
 When using selectors to model data queries, it's important to remember that selector evaluation should always provide a consistent value for a given state.  Selectors represent state derived from other atom and selector states.  Thus, selector evaluation functions should be idempotent for a given input, as it may be cached or executed multiple times.  Practically, that means a single selector should not be used for a query where you expect the results to vary during the application's lifetime.
@@ -355,20 +373,4 @@ function RefreshUserInfo({userID}) {
 
 One downside to this approach is that atoms do not *currently* support accepting a `Promise` as the new value in order to automatically take advantage of React Suspense while the query refresh is pending, if that is your desired behavior.  However, you could store an object which manually encodes the loading status as well as the results if desired.
 
-## Async Queries Without React Suspense
-
-It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the status during rendering:
-
-```jsx
-function UserInfo({userID}) {
-  const userNameLoadable = useRecoilValueLoadable(userNameQuery(userID));
-  switch (userNameLoadable.state) {
-    case 'hasValue':
-      return <div>{userNameLoadable.contents}</div>;
-    case 'loading':
-      return <div>Loading...</div>;
-    case 'hasError':
-      throw userNameLoadable.contents;
-  }
-}
-```
+Also consider [atom effects](/docs/guides/atom-effects) for query synchronization of atoms.
