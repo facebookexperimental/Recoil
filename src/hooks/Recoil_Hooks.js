@@ -50,7 +50,7 @@ const {
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
-const useComponentName = require('../util/Recoil_useComponentName');
+import useComponentName from '../util/Recoil_useComponentName';
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
