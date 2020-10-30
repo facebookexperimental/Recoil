@@ -233,7 +233,7 @@ const testGKs = (gks: Array<string>, reloadImports: ReloadImports): TestFn => (
   test.each([
     [testDescription, null],
     ...gks.map(gk => [`${testDescription} (${gk})`, gk]),
-  ])('%s', (_title, gk) => {
+  ])('%s', async (_title, gk) => {
     jest.resetModules();
 
     if (gk) {
@@ -241,7 +241,7 @@ const testGKs = (gks: Array<string>, reloadImports: ReloadImports): TestFn => (
     }
 
     reloadImports();
-    assertionsFn();
+    await assertionsFn();
 
     if (gk) {
       gkx.setFail(gk);
