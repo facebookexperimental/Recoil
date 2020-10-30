@@ -4,10 +4,17 @@
         <title>Recoil Blog</title>
         <link>https://recoiljs.org/blog</link>
         <description>Recoil Blog</description>
-        <lastBuildDate>Tue, 15 Sep 2020 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 30 Oct 2020 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <copyright>Copyright © 2020 Facebook, Inc.</copyright>
+        <item>
+            <title><![CDATA[Recoil 0.1.1]]></title>
+            <link>https://recoiljs.org/blog/2020/10/30/0.1.1-released</link>
+            <guid>Recoil 0.1.1</guid>
+            <pubDate>Fri, 30 Oct 2020 00:00:00 GMT</pubDate>
+            <description><![CDATA[Welcome to Recoil version 0.1.1!  This release has performance improvements and introduces several *experimental* features such as support for React Native, working with Snapshots outside of React, and atom effects for managing side-effects of atoms such as logging, synchronization with external stores, persistence, etc.]]></description>
+        </item>
         <item>
             <title><![CDATA[Recoil 0.0.11]]></title>
             <link>https://recoiljs.org/blog/2020/09/15/0.0.11-released</link>
