@@ -9,7 +9,7 @@ sidebar_label: Asynchronous State Sync
 
 ----
 
-Recoil [atoms](/docs/api-reference/core/atom) represent local application state.  Your application may have remote or server-side state as well, such as via a RESTful API.  Consider synchronizing the remote state with Recoil atoms.  Doing this allows you to easily access or write to the  state from React components using the `useRecoilState()` hook, or use that state as input to the Recoil data-flow graph for other derived state selectors.  If you're looking to [query a database or server for read-only data](asynchronous-data-queries), consider using asynchronous selectors.
+Recoil [atoms](/docs/api-reference/core/atom) represent local application state.  Your application may have remote or server-side state as well, such as via a RESTful API.  Consider synchronizing the remote state with Recoil atoms.  Doing this allows you to easily access or write to the  state from React components using the `useRecoilState()` hook, or use that state as input to the Recoil data-flow graph for other derived state selectors.  If you're looking to [query a database or server for read-only data](/docs/guides/asynchronous-data-queries), consider using asynchronous selectors.
 
 ## Local State Example
 
@@ -56,7 +56,7 @@ function MyApp() {
 }
 ```
 
-If you want to handle synchronization of multiple atoms in a single place, you can also use the [State Persistence](persistence) pattern.
+If you want to handle synchronization of multiple atoms in a single place, you can also use the [State Persistence](/docs/guides/persistence) pattern.
 
 ## Bi-Directional Synching
 

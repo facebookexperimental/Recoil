@@ -71,3 +71,20 @@ It is recommended to add [`'useRecoilCallback'`](/docs/api-reference/core/useRec
   }
 }
 ```
+
+## Nightly Builds
+
+We build a package once every day based on the current `master` branch and publish it as the `nightly` branch on GitHub.  You can use this branch via `npm`:
+
+```shell
+npm install https://github.com/facebookexperimental/Recoil.git#nightly
+```
+
+ or `yarn`:
+ ```shell
+ yarn add https://github.com/facebookexperimental/Recoil.git#nightly
+ ```
+  or add a dependency in `package.json` and run `npm install` or `yarn`:
+```js
+  "recoil": "facebookexperimental/Recoil.git#nightly",
+```
