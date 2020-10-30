@@ -104,7 +104,7 @@ testRecoil('noWait - resolve', async () => {
 
   expect(getValue(noWait(dep)).contents).toBeInstanceOf(Promise);
   resolve(42);
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(noWait(dep)).contents).toBe(42);
   await pTest;
 });
@@ -118,7 +118,7 @@ testRecoil('noWait - reject', async () => {
   ).rejects.toBeInstanceOf(MyError);
   expect(getValue(noWait(dep)).contents).toBeInstanceOf(Promise);
   reject(new MyError());
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(noWait(dep)).contents).toBeInstanceOf(MyError);
   await pTest;
 });
@@ -171,7 +171,7 @@ testRecoil('waitFor - resolve to values', async () => {
 
   // Resolve the first dep
   resolveA(0);
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(waitForNone(deps))[0].contents).toBe(0);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
   expect(getValue(waitForAny(deps))[0].contents).toBe(0);
@@ -185,7 +185,7 @@ testRecoil('waitFor - resolve to values', async () => {
 
   // Resolve the second dep
   resolveB(1);
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(waitForNone(deps))[0].contents).toBe(0);
   expect(getValue(waitForNone(deps))[1].contents).toBe(1);
   expect(getValue(waitForAny(deps))[0].contents).toBe(0);
@@ -234,7 +234,7 @@ testRecoil('waitFor - rejected', async () => {
   const allTest = expect(get(waitForAll(deps))).rejects.toBeInstanceOf(Error1);
 
   rejectA(new Error1());
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
   expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
@@ -242,7 +242,7 @@ testRecoil('waitFor - rejected', async () => {
   expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
 
   rejectB(new Error2());
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Error2);
   expect(get(waitForAny(deps))).toBeInstanceOf(Error1);
@@ -273,7 +273,7 @@ testRecoil('waitFor - resolve then reject', async () => {
   const allTest = expect(get(waitForAll(deps))).rejects.toBeInstanceOf(Error2);
 
   rejectB(new Error2());
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(waitForNone(deps))[0].contents).toBe(0);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Error2);
   expect(getValue(waitForAny(deps))[0].contents).toBe(0);
@@ -301,7 +301,7 @@ testRecoil('waitFor - reject then resolve', async () => {
     loadableWithValue(1),
   ]);
 
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
 
   // Previous tests covered the initial values and the first rejection.  But,
   // test that the waitForAny provides the next state with the error and value
@@ -316,10 +316,10 @@ testRecoil('waitFor - reject then resolve', async () => {
   const allTest = expect(getPromise(waitForAll(deps))).rejects.toBeInstanceOf(
     Error1,
   );
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
 
   resolveB(1);
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBe(1);
   expect(getValue(waitForAny(deps))[0].contents).toBeInstanceOf(Error1);
@@ -373,7 +373,7 @@ testRecoil('waitFor - named dependency version', async () => {
   });
 
   resolveA(0);
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(waitForNone(deps)).a.contents).toBe(0);
   expect(getValue(waitForNone(deps)).b.contents).toBeInstanceOf(Promise);
   expect(getValue(waitForAny(deps)).a.contents).toBe(0);
@@ -386,7 +386,7 @@ testRecoil('waitFor - named dependency version', async () => {
   });
 
   resolveB(1);
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   expect(getValue(waitForNone(deps)).a.contents).toBe(0);
   expect(getValue(waitForNone(deps)).b.contents).toBe(1);
   expect(getValue(waitForAny(deps)).a.contents).toBe(0);
@@ -411,7 +411,7 @@ testRecoil('waitForAll - Evaluated concurrently', async () => {
   expect(evaluatedB()).toBe(false);
 
   getPromise(waitForAll(deps));
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
 
   // Confirm dependencies were evaluated in parallel
   expect(evaluatedA()).toBe(true);
@@ -419,7 +419,7 @@ testRecoil('waitForAll - Evaluated concurrently', async () => {
 
   resolveA(0);
   getPromise(waitForAll(deps));
-  flushPromisesAndTimers();
+  await flushPromisesAndTimers();
 
   expect(evaluatedA()).toBe(true);
   expect(evaluatedB()).toBe(true);
