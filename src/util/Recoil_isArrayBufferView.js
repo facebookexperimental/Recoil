@@ -10,26 +10,8 @@
  */
 'use strict';
 
-const ARRAY_BUFFER_VIEW_TYPES = [
-  Int8Array,
-  Uint8Array,
-  Uint8ClampedArray,
-  Int16Array,
-  Uint16Array,
-  Int32Array,
-  Uint32Array,
-  Float32Array,
-  Float64Array,
-  DataView,
-];
-
 function isArrayBufferView(value: mixed): boolean {
-  for (const type of ARRAY_BUFFER_VIEW_TYPES) {
-    if (value instanceof type) {
-      return true;
-    }
-  }
-  return false;
+  return ArrayBuffer.isView(value);
 }
 
 module.exports = isArrayBufferView;
