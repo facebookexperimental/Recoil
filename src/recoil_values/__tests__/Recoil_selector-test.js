@@ -403,57 +403,54 @@ testRecoil(
 // This tests ability to catch a pending result as a promise and
 // that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
-testRecoil(
-  'useRecoilState - selector catching promise 2',
-  async isSelectorGkPassing => {
-    let dependencyPromiseTest;
-    const resolvingSel = resolvingAsyncSelector('READY');
-    const catchPromiseSelector = selector({
-      key: 'useRecoilState/catch then async 2',
-      get: ({get}) => {
-        try {
-          return get(resolvingSel);
-        } catch (promise) {
-          expect(promise instanceof Promise).toBe(true);
-          if (isSelectorGkPassing) {
-            // eslint-disable-next-line jest/valid-expect
-            dependencyPromiseTest = expect(promise).resolves.toHaveProperty(
-              '__value',
-              'READY',
-            );
-          } else {
-            // eslint-disable-next-line jest/valid-expect
-            dependencyPromiseTest = expect(promise).resolves.toBe('READY');
-          }
-
-          return promise.then(result => {
-            expect(result).toBe('READY');
-            return result.value + ' NOW';
-          });
+testRecoil('useRecoilState - selector catching promise 2', async gk => {
+  let dependencyPromiseTest;
+  const resolvingSel = resolvingAsyncSelector('READY');
+  const catchPromiseSelector = selector({
+    key: 'useRecoilState/catch then async 2',
+    get: ({get}) => {
+      try {
+        return get(resolvingSel);
+      } catch (promise) {
+        expect(promise instanceof Promise).toBe(true);
+        if (gk === 'recoil_async_selector_refactor') {
+          // eslint-disable-next-line jest/valid-expect
+          dependencyPromiseTest = expect(promise).resolves.toHaveProperty(
+            '__value',
+            'READY',
+          );
+        } else {
+          // eslint-disable-next-line jest/valid-expect
+          dependencyPromiseTest = expect(promise).resolves.toBe('READY');
         }
-      },
-    });
-    const c = renderElements(<ReadsAtom atom={catchPromiseSelector} />);
 
-    expect(c.textContent).toEqual('loading');
+        return promise.then(result => {
+          expect(result).toBe('READY');
+          return result.value + ' NOW';
+        });
+      }
+    },
+  });
+  const c = renderElements(<ReadsAtom atom={catchPromiseSelector} />);
 
-    await flushPromisesAndTimers();
+  expect(c.textContent).toEqual('loading');
 
-    // NOTE!!!
-    // The output here may be "READY NOW" if we optimize the selector to
-    // cache the result of the async evaluation when the dependency is available
-    // in the cache key with the dependency being available.  Currently it does not
-    // So, when the dependency is ready and the component re-renders it will
-    // re-evaluate.  At that point the dependency is now READY and thus we only
-    // get READY and not READY NOW.
-    // expect(c.textContent).toEqual('"READY NOW"');
-    expect(c.textContent).toEqual('"READY"');
+  await flushPromisesAndTimers();
 
-    // Test that the promise for the dependency that we got actually resolved
-    // to the dependency's value.
-    await dependencyPromiseTest;
-  },
-);
+  // NOTE!!!
+  // The output here may be "READY NOW" if we optimize the selector to
+  // cache the result of the async evaluation when the dependency is available
+  // in the cache key with the dependency being available.  Currently it does not
+  // So, when the dependency is ready and the component re-renders it will
+  // re-evaluate.  At that point the dependency is now READY and thus we only
+  // get READY and not READY NOW.
+  // expect(c.textContent).toEqual('"READY NOW"');
+  expect(c.textContent).toEqual('"READY"');
+
+  // Test that the promise for the dependency that we got actually resolved
+  // to the dependency's value.
+  await dependencyPromiseTest;
+});
 
 // Test that Recoil will throw an error with a useful debug message instead of
 // infinite recurssion when there is a circular dependency
@@ -481,8 +478,8 @@ testRecoil('Detect circular dependencies', () => {
 
 testRecoil(
   'selector is able to track dependencies discovered asynchronously',
-  async isSelectorGkPassing => {
-    if (!isSelectorGkPassing) {
+  async gk => {
+    if (gk !== 'recoil_async_selector_refactor') {
       return;
     }
 
@@ -532,8 +529,8 @@ testRecoil(
  */
 testRecoil(
   'selector should rerun entire selector when a dep changes',
-  async isSelectorGkPassing => {
-    if (!isSelectorGkPassing) {
+  async gk => {
+    if (gk !== 'recoil_async_selector_refactor') {
       return;
     }
 
@@ -592,8 +589,8 @@ testRecoil(
  */
 testRecoil(
   'async selector runs the minimum number of times required',
-  isSelectorGkPassing => {
-    if (!isSelectorGkPassing) {
+  async gk => {
+    if (gk !== 'recoil_async_selector_refactor') {
       return;
     }
 
@@ -633,8 +630,8 @@ testRecoil(
 
 testRecoil(
   'async selector with changing dependencies finishes execution using original state',
-  async isSelectorGkPassing => {
-    if (!isSelectorGkPassing) {
+  async gk => {
+    if (gk !== 'recoil_async_selector_refactor') {
       return;
     }
 
@@ -671,16 +668,12 @@ testRecoil(
 
     renderElements(<MyComponent />);
 
-    // const promiseBeforeChangingAnything = nullthrows(loadableSoFar).contents;
     const loadableBeforeChangingAnything = nullthrows(loadableSoFar);
-
     expect(loadableBeforeChangingAnything.contents).toBeInstanceOf(Promise);
 
     act(() => setAtom(10));
 
-    // const promiseAfterChangingAtom = nullthrows(loadableSoFar).contents;
     const loadableAfterChangingAtom = nullthrows(loadableSoFar);
-
     expect(loadableAfterChangingAtom.contents).toBeInstanceOf(Promise);
     expect(loadableBeforeChangingAnything.contents).not.toBe(
       loadableAfterChangingAtom.contents,
@@ -697,8 +690,8 @@ testRecoil(
   },
 );
 
-testRecoil('selector - dynamic getRecoilValue()', async isSelectorGkPassing => {
-  if (!isSelectorGkPassing) {
+testRecoil('selector - dynamic getRecoilValue()', async gk => {
+  if (gk !== 'recoil_async_selector_refactor') {
     return;
   }
 
@@ -924,8 +917,8 @@ describe('Async selector resolution notifies all stores that read pending', () =
 
 testRecoil(
   'selector - kite pattern runs only necessary selectors',
-  isSelectorGkPassing => {
-    if (!isSelectorGkPassing) {
+  async gk => {
+    if (gk !== 'recoil_async_selector_refactor') {
       return;
     }
 
