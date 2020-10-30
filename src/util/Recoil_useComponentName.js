@@ -28,7 +28,6 @@ function useComponentName(): string {
         // with 'use'. We are only enabling this in dev for now, since once the
         // codebase is minified, the naming assumptions no longer hold true.
 
-        // eslint-disable-next-line fb-www/no-new-error
         const frames = stackTraceParser(new Error().stack);
         for (const {methodName} of frames) {
           // I observed cases where the frame was of the form 'Object.useXXX'
@@ -43,7 +42,7 @@ function useComponentName(): string {
     }
   }
   // @fb-only: return "<component name only available when both in dev mode and when passing GK 'recoil_infer_component_names'>";
-  return "<component name not available>"; // @oss-only
+  return '<component name not available>'; // @oss-only
 }
 
 module.exports = useComponentName;
