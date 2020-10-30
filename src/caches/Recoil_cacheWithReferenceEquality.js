@@ -14,7 +14,7 @@
 
 import type {CacheImplementation} from './Recoil_Cache';
 
-const ArrayKeyedMap = require('../adt/Recoil_ArrayKeyedMap');
+const {ArrayKeyedMap} = require('../adt/Recoil_ArrayKeyedMap');
 
 function cacheWithReferenceEquality<T>(): CacheImplementation<T> {
   return new ArrayKeyedMap();
