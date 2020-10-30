@@ -11,15 +11,13 @@
 
 'use strict';
 
-const React = require('React');
-
-const {useEffect, useRef} = require('react');
-const {Snapshot} = require('recoil-oss/core/Recoil_Snapshot');
+const {Snapshot} = require('../../core/Recoil_Snapshot');
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-} = require('recoil-oss/hooks/Recoil_Hooks');
-const useEffectOnce = require('useEffectOnce');
+} = require('../../hooks/Recoil_Hooks');
+const React = require('react');
+const {useEffect, useRef} = require('react');
 
 type Props = $ReadOnly<{
   name?: string,
@@ -66,7 +64,7 @@ function Connector({
   const goToSnapshot = useGotoRecoilSnapshot();
   const snapshot = useRecoilSnapshot();
 
-  useEffectOnce(() => {
+  useEffect(() => {
     connectionRef.current = connect({
       name,
       persistenceLimit,
@@ -78,7 +76,7 @@ function Connector({
     });
 
     return connectionRef.current?.disconnect;
-  });
+  }, []);
 
   useEffect(() => {
     const transactionID = transactionIdRef.current++;
