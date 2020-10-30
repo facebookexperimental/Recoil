@@ -31,6 +31,7 @@ module.name_mapper='Recoil_WaitFor' -> '<PROJECT_ROOT>/src/recoil_values/Recoil_
 module.name_mapper='Recoil_Hooks' -> '<PROJECT_ROOT>/src/hooks/Recoil_Hooks.js'
 module.name_mapper='Recoil_Loadable' -> '<PROJECT_ROOT>/src/adt/Recoil_Loadable.js'
 module.name_mapper='Recoil_Cache' -> '<PROJECT_ROOT>/src/caches/Recoil_Cache.js'
+module.name_mapper='Recoil_NodeCache' -> '<PROJECT_ROOT>/src/caches/Recoil_NodeCache.js'
 module.name_mapper='Recoil_ScopedAtomTaggedValue' -> '<PROJECT_ROOT>/src/adt/Recoil_ScopedAtomTaggedValue.js'
 module.name_mapper='Recoil_ArrayKeyedMap' -> '<PROJECT_ROOT>/src/adt/Recoil_ArrayKeyedMap.js'
 module.name_mapper='gkx' -> '<PROJECT_ROOT>/__mocks__/gkx.js'

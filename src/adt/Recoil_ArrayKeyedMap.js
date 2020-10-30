@@ -22,6 +22,7 @@ const emptyMap = new Map();
 
 class ArrayKeyedMap<V> {
   // @fb-only: _base: Map<any, any> = new Map();
+  _base: Map<any, any>; // @oss-only
 
   constructor(
     existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
