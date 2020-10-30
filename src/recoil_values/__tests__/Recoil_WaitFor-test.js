@@ -425,4 +425,23 @@ testRecoil('waitForAll - Evaluated concurrently', async () => {
   expect(evaluatedB()).toBe(true);
 });
 
+testRecoil('waitForAll - mixed sync and async deps', async () => {
+  const [depA, resolveA] = asyncSelector();
+  const depB = selector({
+    key: 'mydepkeyB',
+    get: () => 1,
+  });
+
+  const deps = [depA, depB];
+
+  const allTest = expect(getPromise(waitForAll(deps))).resolves.toEqual([0, 1]);
+
+  resolveA(0);
+  await flushPromisesAndTimers();
+
+  expect(getValue(waitForAll(deps))).toEqual([0, 1]);
+
+  await allTest;
+});
+
 /* eslint-enable jest/valid-expect */
