@@ -146,7 +146,7 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   gotoSnapshot(myAtom); // $ExpectError
 
   loadable.contents; // $ExpectType number | LoadablePromise<number> | Error
-  loadable.state; // $ExpectType "hasValue" | "loading" | "error"
+  loadable.state; // $ExpectType "hasValue" | "loading" | "hasError"
 
   set(myAtom, 5);
   set(myAtom, 'hello'); // $ExpectError
@@ -169,7 +169,7 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
 
       for (const node of Array.from(snapshot.getNodes_UNSTABLE({isModified: true}))) {
         const loadable = snapshot.getLoadable(node); // $ExpectType Loadable<unknown>
-        loadable.state; // $ExpectType "hasValue" | "loading" | "error"
+        loadable.state; // $ExpectType "hasValue" | "loading" | "hasError"
       }
     },
   );
