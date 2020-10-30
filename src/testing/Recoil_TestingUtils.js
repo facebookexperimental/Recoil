@@ -33,6 +33,7 @@ const {
   useSetRecoilState,
 } = require('../hooks/Recoil_Hooks');
 const selector = require('../recoil_values/Recoil_selector');
+const gkx = require('../util/Recoil_gkx');
 const invariant = require('../util/Recoil_invariant');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
@@ -221,6 +222,37 @@ function flushPromisesAndTimers(): Promise<void> {
   );
 }
 
+type ReloadImports = () => void;
+type AssertionsFn = (gk: string | null) => ?Promise<mixed>;
+type TestFn = (string, AssertionsFn) => void;
+
+const testGKs = (gks: Array<string>, reloadImports: ReloadImports): TestFn => (
+  testDescription: string,
+  assertionsFn: AssertionsFn,
+) => {
+  test.each([
+    [testDescription, null],
+    ...gks.map(gk => [`${testDescription} (${gk})`, gk]),
+  ])('%s', async (_title, gk) => {
+    jest.resetModules();
+
+    if (gk) {
+      gkx.setPass(gk);
+    }
+
+    reloadImports();
+    await assertionsFn(gk);
+
+    if (gk) {
+      gkx.setFail(gk);
+    }
+  });
+};
+
+const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
+  // @fb-only: testGKs(['recoil_async_selector_refactor'], reloadImports);
+  testGKs([], reloadImports); // @oss-only
+
 module.exports = {
   makeStore,
   renderElements,
@@ -232,4 +264,5 @@ module.exports = {
   loadingAsyncSelector,
   asyncSelector,
   flushPromisesAndTimers,
+  getRecoilTestFn,
 };

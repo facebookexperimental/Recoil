@@ -22,7 +22,6 @@ import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
 const concatIterables = require('../util/Recoil_concatIterables');
 const filterIterable = require('../util/Recoil_filterIterable');
-const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {batchUpdates} = require('./Recoil_Batching');
@@ -92,10 +91,12 @@ class Snapshot {
 
   getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
     recoilValue: RecoilValue<T>,
+    // $FlowFixMe[escaped-generic]
   ) => getRecoilValueAsLoadable(this._store, recoilValue);
 
   getPromise: <T>(RecoilValue<T>) => Promise<T> = <T>(
     recoilValue: RecoilValue<T>,
+    // $FlowFixMe[escaped-generic]
   ) => this.getLoadable(recoilValue).toPromise();
 
   // We want to allow the methods to be destructured and used as accessors
@@ -253,8 +254,9 @@ function cloneStoreState(
 }
 
 // Factory to build a fresh snapshot
-function freshSnapshot(): Snapshot {
-  return new Snapshot(makeEmptyStoreState());
+function freshSnapshot(initializeState?: MutableSnapshot => void): Snapshot {
+  const snapshot = new Snapshot(makeEmptyStoreState());
+  return initializeState != null ? snapshot.map(initializeState) : snapshot;
 }
 
 // Factory to clone a snapahot state
@@ -297,6 +299,7 @@ class MutableSnapshot extends Snapshot {
     });
   };
 
+  // $FlowFixMe[escaped-generic]
   reset: ResetRecoilState = recoilState =>
     // See note at `set` about batched updates.
     batchUpdates(() =>

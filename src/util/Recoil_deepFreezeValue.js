@@ -19,6 +19,8 @@ const isNode = require('./Recoil_isNode');
 const isPromise = require('./Recoil_isPromise');
 
 const isSSR = typeof window === 'undefined';
+const isReactNative =
+  typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
 function shouldNotBeFrozen(value: mixed): boolean {
   // Primitives and functions:
@@ -59,8 +61,12 @@ function shouldNotBeFrozen(value: mixed): boolean {
   }
 
   // Some environments, just as Jest, don't work with the instanceof check
-  // $FlowFixMe Window does not have a FlowType definition
-  if (!isSSR && (value === window || value instanceof Window)) {
+  if (
+    !isSSR &&
+    !isReactNative &&
+    // $FlowFixMe Window does not have a FlowType definition
+    (value === window || value instanceof Window)
+  ) {
     return true;
   }
 
