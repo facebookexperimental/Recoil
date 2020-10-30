@@ -295,7 +295,9 @@ type PersistenceOptions<T>: {
 const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onSet}) => {
   const savedValues = parseValuesFromStorage(localStorage);
   const savedValue = savedValues.get(options.key);
-  setSelf(options.restorer(savedValue ?? new DefaultValue(), new DefaultValue(), savedValues));
+  setSelf(
+    options.restorer(savedValue ?? new DefaultValue(), new DefaultValue(), savedValues),
+  );
 
   onSet(newValue => {
     if (newValue instanceof DefaultValue) {
