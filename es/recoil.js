@@ -5314,7 +5314,7 @@ function unwrapDependencies(dependencies) {
 }
 
 function getValueFromLoadablePromiseResult(result) {
-  if (result.hasOwnProperty('__value')) {
+  if (result != null && typeof result === 'object' && result.hasOwnProperty('__value')) {
     return result.__value;
   }
 
@@ -5331,6 +5331,18 @@ function wrapResults(dependencies, results) {
 function wrapLoadables(dependencies, results, exceptions) {
   const output = exceptions.map((exception, idx) => exception == null ? loadableWithValue$4(results[idx]) : Recoil_isPromise(exception) ? loadableWithPromise$4(exception) : loadableWithError$4(exception));
   return wrapResults(dependencies, output);
+}
+
+function combineAsyncResultsWithSyncResults(syncResults, asyncResults) {
+  return asyncResults.map((result, idx) =>
+  /**
+   * it's important we use === undefined as opposed to == null, because the
+   * resolved value of the async promise could be `null`, in which case we
+   * don't want to use syncResults[idx], which would be undefined. If async
+   * promise resolves to `undefined`, that's ok because `syncResults[idx]`
+   * will also be `undefined`. That's a little hacky, but it works.
+   */
+  result === undefined ? syncResults[idx] : result);
 } // Selector that requests all dependencies in parallel and immediately returns
 // current results without waiting.
 
@@ -5437,7 +5449,7 @@ const waitForAll = Recoil_selectorFamily({
 
     if (Recoil_gkx_1('recoil_async_selector_refactor')) {
       // Otherwise, return a promise that will resolve when all results are available
-      return Promise.all(exceptions).then(results => wrapResults(dependencies, results.map(getValueFromLoadablePromiseResult)));
+      return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults).map(getValueFromLoadablePromiseResult)));
     } else {
       throw Promise.all(exceptions).then(results => wrapResults(dependencies, results));
     }

@@ -49,7 +49,8 @@ declare function wrapResults(dependencies: $ReadOnlyArray<RecoilValueReadOnly<mi
 }, results: any): any;
 declare function wrapLoadables(dependencies: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | {
   +[string]: RecoilValueReadOnly<mixed>
-}, results: any, exceptions: any): any; // Selector that requests all dependencies in parallel and immediately returns
+}, results: any, exceptions: any): any;
+declare function combineAsyncResultsWithSyncResults<T>(syncResults: Array<T>, asyncResults: Array<T>): Array<T>; // Selector that requests all dependencies in parallel and immediately returns
 // current results without waiting.
 
 const waitForNone: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $ReadOnly<{
@@ -178,7 +179,7 @@ const waitForAll: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $R
 
     if (gkx('recoil_async_selector_refactor')) {
       // Otherwise, return a promise that will resolve when all results are available
-      return Promise.all(exceptions).then(results => wrapResults(dependencies, results.map(getValueFromLoadablePromiseResult)));
+      return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults).map(getValueFromLoadablePromiseResult)));
     } else {
       throw Promise.all(exceptions).then(results => wrapResults(dependencies, results));
     }

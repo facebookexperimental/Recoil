@@ -51,6 +51,8 @@ const {
 
 const selector = require('../recoil_values/Recoil_selector');
 
+const gkx = require('../util/Recoil_gkx');
+
 const invariant = require('../util/Recoil_invariant');
 
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -94,11 +96,12 @@ declare function ReadsAtom<T>(arg0: {
 
 declare function componentThatReadsAndWritesAtom<T>(atom: RecoilState<T>): [() => React.Node, (T) => void, () => void];
 declare function flushPromisesAndTimers(): Promise<void>;
-type ReloadImports = (isGkPassing: boolean) => void;
-type AssertionsFn = (isGkPassing: boolean) => ?Promise<mixed>;
+type ReloadImports = () => void;
+type AssertionsFn = (gk: string | null) => ?Promise<mixed>;
 type TestFn = (string, AssertionsFn) => void;
-declare var getTestThatTestsFeatureFlag: (featureFlag: string, reloadImports: ReloadImports) => TestFn;
-declare var getRecoilTestFn: (reloadImports: ReloadImports) => TestFn;
+declare var testGKs: (gks: Array<string>, reloadImports: ReloadImports) => TestFn;
+declare var getRecoilTestFn: (reloadImports: ReloadImports) => TestFn; // @oss-only
+
 module.exports = {
   makeStore,
   renderElements,

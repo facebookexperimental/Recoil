@@ -10,23 +10,21 @@
  */
 'use strict';
 
-const React = require('React');
+const {
+  Snapshot
+} = require('../../core/Recoil_Snapshot');
+
+const {
+  useGotoRecoilSnapshot,
+  useRecoilSnapshot
+} = require('../../hooks/Recoil_Hooks');
+
+const React = require('react');
 
 const {
   useEffect,
   useRef
 } = require('react');
-
-const {
-  Snapshot
-} = require('recoil-oss/core/Recoil_Snapshot');
-
-const {
-  useGotoRecoilSnapshot,
-  useRecoilSnapshot
-} = require('recoil-oss/hooks/Recoil_Hooks');
-
-const useEffectOnce = require('useEffectOnce');
 
 type Props = $ReadOnly<{
   name?: string,

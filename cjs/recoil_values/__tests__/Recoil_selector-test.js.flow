@@ -374,7 +374,7 @@ testRecoil('useRecoilState - selector catching promise and resolving asynchronou
 // that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
 
-testRecoil('useRecoilState - selector catching promise 2', async isSelectorGkPassing => {
+testRecoil('useRecoilState - selector catching promise 2', async gk => {
   let dependencyPromiseTest;
   const resolvingSel = resolvingAsyncSelector('READY');
   const catchPromiseSelector = selector({
@@ -387,7 +387,7 @@ testRecoil('useRecoilState - selector catching promise 2', async isSelectorGkPas
       } catch (promise) {
         expect(promise instanceof Promise).toBe(true);
 
-        if (isSelectorGkPassing) {
+        if (gk === 'recoil_async_selector_refactor') {
           // eslint-disable-next-line jest/valid-expect
           dependencyPromiseTest = expect(promise).resolves.toHaveProperty('__value', 'READY');
         } else {
@@ -445,8 +445,8 @@ testRecoil('Detect circular dependencies', () => {
   expect(getError(selectorC).message).toEqual(expect.stringContaining('circular/A'));
   window.__DEV__ = devStatus;
 });
-testRecoil('selector is able to track dependencies discovered asynchronously', async isSelectorGkPassing => {
-  if (!isSelectorGkPassing) {
+testRecoil('selector is able to track dependencies discovered asynchronously', async gk => {
+  if (gk !== 'recoil_async_selector_refactor') {
     return;
   }
 
@@ -482,8 +482,8 @@ testRecoil('selector is able to track dependencies discovered asynchronously', a
  * selector should run through the entire selector in response to those changes.
  */
 
-testRecoil('selector should rerun entire selector when a dep changes', async isSelectorGkPassing => {
-  if (!isSelectorGkPassing) {
+testRecoil('selector should rerun entire selector when a dep changes', async gk => {
+  if (gk !== 'recoil_async_selector_refactor') {
     return;
   }
 
@@ -523,8 +523,8 @@ testRecoil('selector should rerun entire selector when a dep changes', async isS
  * more times than we have to or creating numerous promises that retry).
  */
 
-testRecoil('async selector runs the minimum number of times required', isSelectorGkPassing => {
-  if (!isSelectorGkPassing) {
+testRecoil('async selector runs the minimum number of times required', async gk => {
+  if (gk !== 'recoil_async_selector_refactor') {
     return;
   }
 
@@ -550,8 +550,8 @@ testRecoil('async selector runs the minimum number of times required', isSelecto
   expect(numTimesRan).toBe(3);
   expect(container.textContent).toEqual('"ab"');
 });
-testRecoil('async selector with changing dependencies finishes execution using original state', async isSelectorGkPassing => {
-  if (!isSelectorGkPassing) {
+testRecoil('async selector with changing dependencies finishes execution using original state', async gk => {
+  if (gk !== 'recoil_async_selector_refactor') {
     return;
   }
 
@@ -575,12 +575,10 @@ testRecoil('async selector with changing dependencies finishes execution using o
   let loadableSoFar;
   let setAtom;
   declare var MyComponent: () => any;
-  renderElements(<MyComponent />); // const promiseBeforeChangingAnything = nullthrows(loadableSoFar).contents;
-
+  renderElements(<MyComponent />);
   const loadableBeforeChangingAnything = nullthrows(loadableSoFar);
   expect(loadableBeforeChangingAnything.contents).toBeInstanceOf(Promise);
-  act(() => setAtom(10)); // const promiseAfterChangingAtom = nullthrows(loadableSoFar).contents;
-
+  act(() => setAtom(10));
   const loadableAfterChangingAtom = nullthrows(loadableSoFar);
   expect(loadableAfterChangingAtom.contents).toBeInstanceOf(Promise);
   expect(loadableBeforeChangingAnything.contents).not.toBe(loadableAfterChangingAtom.contents);
@@ -588,8 +586,8 @@ testRecoil('async selector with changing dependencies finishes execution using o
   await flushPromisesAndTimers();
   await Promise.all([expect(loadableBeforeChangingAnything.toPromise()).resolves.toBe(3 + 3), expect(loadableAfterChangingAtom.toPromise()).resolves.toBe(10 + 10)]);
 });
-testRecoil('selector - dynamic getRecoilValue()', async isSelectorGkPassing => {
-  if (!isSelectorGkPassing) {
+testRecoil('selector - dynamic getRecoilValue()', async gk => {
+  if (gk !== 'recoil_async_selector_refactor') {
     return;
   }
 
@@ -748,8 +746,8 @@ describe('Async selector resolution notifies all stores that read pending', () =
     }
   });
 });
-testRecoil('selector - kite pattern runs only necessary selectors', isSelectorGkPassing => {
-  if (!isSelectorGkPassing) {
+testRecoil('selector - kite pattern runs only necessary selectors', async gk => {
+  if (gk !== 'recoil_async_selector_refactor') {
     return;
   }
 
