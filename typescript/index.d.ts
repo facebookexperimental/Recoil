@@ -49,6 +49,7 @@ export interface AtomOptions<T> {
   key: NodeKey;
   default: RecoilValue<T> | Promise<T> | T;
   effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
+  persistence_UNSTABLE?: { type: boolean };
   dangerouslyAllowMutability?: boolean;
 }
 
