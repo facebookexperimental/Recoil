@@ -2166,7 +2166,6 @@ function useComponentName() {
         // to look down the stack and find the first function which doesn't start
         // with 'use'. We are only enabling this in dev for now, since once the
         // codebase is minified, the naming assumptions no longer hold true.
-        // eslint-disable-next-line fb-www/no-new-error
         const frames = Recoil_stackTraceParser(new Error().stack);
 
         for (const {
@@ -2187,7 +2186,7 @@ function useComponentName() {
   } // @fb-only: return "<component name only available when both in dev mode and when passing GK 'recoil_infer_component_names'>";
 
 
-  return "<component name not available>"; // @oss-only
+  return '<component name not available>'; // @oss-only
 }
 
 var Recoil_useComponentName = useComponentName;
@@ -3096,7 +3095,8 @@ function shouldNotBeFrozen(value) {
   } // Some environments, just as Jest, don't work with the instanceof check
 
 
-  if (!isSSR && !isReactNative && (value === window || value instanceof Window)) {
+  if (!isSSR && !isReactNative && ( // $FlowFixMe Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+  value === window || value instanceof Window)) {
     return true;
   }
 
@@ -3172,14 +3172,12 @@ var Recoil_cacheMostRecent = cacheMostRecent;
  * 
  * @format
  */
-
 const LEAF = Symbol('ArrayKeyedMap');
 const emptyMap = new Map();
 
 class ArrayKeyedMap {
-  // @fb-only: _base: Map<any, any> = new Map();
   constructor(existing) {
-    this._base = new Map(); // @oss-only
+    _defineProperty(this, "_base", new Map());
 
     if (existing instanceof ArrayKeyedMap) {
       for (const [k, v] of existing.entries()) {
@@ -3265,10 +3263,23 @@ class ArrayKeyedMap {
 
 }
 
-var Recoil_ArrayKeyedMap = ArrayKeyedMap;
+var Recoil_ArrayKeyedMap = {
+  ArrayKeyedMap
+};
+
+var Recoil_ArrayKeyedMap_1 = Recoil_ArrayKeyedMap.ArrayKeyedMap;
+
+var Recoil_ArrayKeyedMap$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  ArrayKeyedMap: Recoil_ArrayKeyedMap_1
+});
+
+const {
+  ArrayKeyedMap: ArrayKeyedMap$1
+} = Recoil_ArrayKeyedMap$1;
 
 function cacheWithReferenceEquality() {
-  return new Recoil_ArrayKeyedMap();
+  return new ArrayKeyedMap$1();
 }
 
 var Recoil_cacheWithReferenceEquality = cacheWithReferenceEquality;
@@ -4168,8 +4179,7 @@ function selector(options) {
 
   function detectCircularDependencies(fn) {
     if (dependencyStack.includes(key)) {
-      const message = `Recoil selector has circular dependencies: ${dependencyStack.slice(dependencyStack.indexOf(key)).join(' \u2192 ')}`; // eslint-disable-next-line fb-www/no-new-error
-
+      const message = `Recoil selector has circular dependencies: ${dependencyStack.slice(dependencyStack.indexOf(key)).join(' \u2192 ')}`;
       return loadableWithError$1(new Error(message));
     }
 

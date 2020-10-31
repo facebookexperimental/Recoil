@@ -1,6 +1,10 @@
 # Change Log
 
-## 0.1.0 (2020-10-29)
+## 0.1.2 (2020-10-30)
+
+- Fix TypeScript exports
+
+## 0.1.1 (2020-10-29)
 
 - Performance Improvements
 - Experimental React Native support

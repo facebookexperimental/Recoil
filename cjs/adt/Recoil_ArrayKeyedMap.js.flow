@@ -18,6 +18,7 @@
 const LEAF = Symbol('ArrayKeyedMap');
 const emptyMap = new Map();
 declare class ArrayKeyedMap<V> {
+  _base: Map<any, any>,
   constructor(existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>): ArrayKeyedMap<V>,
   get(key: mixed): V | void,
   set(key: mixed, value: V): any,
@@ -25,4 +26,6 @@ declare class ArrayKeyedMap<V> {
   entries(): Iterator<[$ReadOnlyArray<mixed>, V]>,
   toBuiltInMap(): Map<$ReadOnlyArray<mixed>, V>,
 }
-module.exports = ArrayKeyedMap;
+module.exports = {
+  ArrayKeyedMap
+};
