@@ -12,12 +12,15 @@ function atom<T>({
   key: string,
   default: T | Promise<T> | RecoilValue<T>,
 
+  effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>>,
+
   dangerouslyAllowMutability?: boolean,
 }): RecoilState<T>
 ```
 
 - `key` - 내부적으로 atom을 식별하는데 사용되는 고유한 문자열. 이 문자열은 어플리케이션 전체에서 다른 atom과 selector에 대해 고유해야 한다.
 - `default` - atom의 초깃값 또는 `Promise` 또는 동일한 타입의 값을 나타내는 다른 atom이나 selector.
+- `effects_UNSTABLE` - atom을 위한 선택적인 [Atom Effects](/docs/guides/atom-effects) 배열.
 - `dangerouslyAllowMutability` - Recoil은 atom을 이용해 다시 렌더링 되는 컴포넌트에 언제 알려야 할지 알기 위해 atom의 상태 변화에 의존한다. 만약 atom의 값이 변경될 경우, 이를 거치지 않고 등록된 컴포넌트에 제대로 알리지 않고 상태가 변경될 수 있다. 이를 방지하기 위해 저장된 모든 값이 변경되지 않는다. 경우에 따라 이 옵션을 사용하여 이 옵션을 재정의할 수 있다.
 
 ---
@@ -33,7 +36,7 @@ atom과 상호작용하기 위해 가장 자주 사용되는 Hooks:
 
 정적인 값으로 atom을 초기화하거나 같은 유형의 값을 나타내는 `Promise` 또는 `RecoilValue`을 사용하여 원자를 초기화할 수 있다. 왜냐하면 `Promise`가 보류 중이거나 기본 selector가 비동기일 수 있기 때문에 atom의 값도 보류 중이거나 읽을 때 오류를 발생시킬 수 있다는 것을 의미한다. 현재 atom을 설정할 때 `Promise`을 지정할 수 없다는 점에 유의해야 한다. 비동기 함수를 사용하기 위해서는 [selectors](/docs/api-reference/core/selector)를 사용한다.
 
-atom은 `Promise`나 `RecoilValues`를 직접 저장하는 데 사용할 수 없지만 객체를 감쌀 수도 있다. `Promises`은 변경될 수 있다는 점에 유의해야 한다.
+atom은 `Promise`나 `RecoilValues`를 직접 저장하는 데 사용할 수 없지만 객체를 감쌀 수도 있다. `Promises`은 변경될 수 있다는 점에 유의해야 한다. Atom은 `function`로 설정할 수 있지만, 함수가 순수하다면, 그러기 위해서는 setter형태의 updater를 사용해야 할 수도 있다. (예: `set(myAtom, () => myFunc);`).
 
 ### 예시
 
