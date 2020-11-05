@@ -36,6 +36,7 @@ const {
   makeEmptyStoreState,
 } = require('../core/Recoil_State');
 const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
+const expectationViolation = require('../util/Recoil_expectationViolation');
 const nullthrows = require('../util/Recoil_nullthrows');
 // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
@@ -95,7 +96,17 @@ const AppContext = React.createContext<StoreRef>({current: defaultStore});
 const useStoreRef = (): StoreRef => useContext(AppContext);
 
 const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
-const useRecoilMutableSource = (): mixed => useContext(MutableSourceContext);
+function useRecoilMutableSource(): mixed {
+  const mutableSource = useContext(MutableSourceContext);
+  if (mutableSource == null) {
+    expectationViolation(
+      'Attempted to use a Recoil hook outside of a <RecoilRoot>. ' +
+        '<RecoilRoot> must be an ancestor of any component that uses ' +
+        'Recoil hooks.',
+    );
+  }
+  return mutableSource;
+}
 
 function sendEndOfBatchNotifications(store: Store) {
   const storeState = store.getState();
