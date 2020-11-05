@@ -16,6 +16,8 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
+const mapIterable = require('../util/Recoil_mapIterable');
+const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const RecoilValueClasses = require('./Recoil_RecoilValue');
 
@@ -87,6 +89,12 @@ declare function registerNode<T>(
   node: ReadOnlyNodeOptions<T>,
 ): RecoilValueClasses.RecoilValueReadOnly<T>;
 
+function recoilValuesForKeys(
+  keys: Iterable<NodeKey>,
+): Iterable<RecoilValue<mixed>> {
+  return mapIterable(keys, key => nullthrows(recoilValues.get(key)));
+}
+
 function registerNode<T>(node: Node<T>): RecoilValue<T> {
   if (nodes.has(node.key)) {
     const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
@@ -140,6 +148,7 @@ module.exports = {
   registerNode,
   getNode,
   getNodeMaybe,
+  recoilValuesForKeys,
   NodeMissingError,
   DefaultValue,
   DEFAULT_VALUE,
