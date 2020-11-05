@@ -57,6 +57,7 @@ const {
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
 } = require('./hooks/Recoil_Hooks');
+const useGetRecoilValueInfo = require('./hooks/Recoil_useGetRecoilValueInfo');
 const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
@@ -98,6 +99,7 @@ module.exports = {
   useRecoilStateLoadable,
   useSetRecoilState,
   useResetRecoilState,
+  useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
 
   // Hooks for asynchronous Recoil
   useRecoilCallback,
