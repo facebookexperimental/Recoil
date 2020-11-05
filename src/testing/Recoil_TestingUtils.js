@@ -9,9 +9,10 @@
  * @format
  */
 'use strict';
-import type {RecoilValueReadOnly} from 'Recoil_RecoilValue';
-import type {RecoilState, RecoilValue} from 'Recoil_RecoilValue';
-import type {Store} from 'Recoil_State';
+
+import type {RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
+import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+import type {Store} from '../core/Recoil_State';
 
 const React = require('React');
 const {useEffect} = require('React');
@@ -202,12 +203,16 @@ function componentThatReadsAndWritesAtom<T>(
 ): [() => React.Node, (T) => void, () => void] {
   let setValue;
   let resetValue;
-  const Component = (): React.Node => {
+  const ReadsAndWritesAtom = (): React.Node => {
     setValue = useSetRecoilState(atom);
     resetValue = useResetRecoilState(atom);
     return stableStringify(useRecoilValue(atom));
   };
-  return [Component, (value: T) => setValue(value), () => resetValue()];
+  return [
+    ReadsAndWritesAtom,
+    (value: T) => setValue(value),
+    () => resetValue(),
+  ];
 }
 
 function flushPromisesAndTimers(): Promise<void> {

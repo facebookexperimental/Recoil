@@ -102,6 +102,7 @@ interface AtomInfo<T> {
   deps: Iterable<RecoilValue<T>>;
   subscribers: {
     nodes: Iterable<RecoilValue<T>>,
+    components: Iterable<string>,
   };
 }
 
