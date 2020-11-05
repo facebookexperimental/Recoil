@@ -16,21 +16,21 @@ import type {
   SetRecoilState,
   ValueOrUpdater,
 } from '../recoil_values/Recoil_selector';
-import type {NodeKey} from './Recoil_Keys';
+import type {RecoilValueInfo} from './Recoil_FunctionalCore';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
 const concatIterables = require('../util/Recoil_concatIterables');
 const filterIterable = require('../util/Recoil_filterIterable');
-const mapIterable = require('../util/Recoil_mapIterable');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {batchUpdates} = require('./Recoil_Batching');
-const {
-  getDownstreamNodes,
-  peekNodeLoadable,
-} = require('./Recoil_FunctionalCore');
+const {getDownstreamNodes, peekNodeInfo} = require('./Recoil_FunctionalCore');
 const {graph} = require('./Recoil_Graph');
-const {DEFAULT_VALUE, recoilValues} = require('./Recoil_Node');
+const {
+  DEFAULT_VALUE,
+  recoilValues,
+  recoilValuesForKeys,
+} = require('./Recoil_Node');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -42,12 +42,6 @@ const {
 
 // Opaque at this surface because it's part of the public API from here.
 export opaque type SnapshotID = StateID;
-
-function recoilValuesForKeys(
-  keys: Iterable<NodeKey>,
-): Iterable<RecoilValue<mixed>> {
-  return mapIterable(keys, key => nullthrows(recoilValues.get(key)));
-}
 
 // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
@@ -167,40 +161,10 @@ class Snapshot {
   // Report the current status of a node.
   // This peeks the current state and does not affect the snapshot state at all
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  getInfo_UNSTABLE: <T>(
-    RecoilValue<T>,
-  ) => {
-    loadable: ?Loadable<T>,
-    isActive: boolean,
-    isSet: boolean,
-    isModified: boolean, // TODO report modified selectors
-    type: 'atom' | 'selector' | void, // void until initialized for now
-    deps: Iterable<RecoilValue<mixed>>,
-    subscribers: {
-      nodes: Iterable<RecoilValue<mixed>>,
-    },
-  } = <T>(recoilValue: RecoilValue<T>) => {
-    const {key} = recoilValue;
-    const state = this._store.getState().currentTree;
-    const graph = this._store.getGraph(state.version);
-    const type = this._store.getState().knownAtoms.has(key)
-      ? 'atom'
-      : this._store.getState().knownSelectors.has(key)
-      ? 'selector'
-      : undefined;
-    return {
-      loadable: peekNodeLoadable(this._store, state, key),
-      isActive:
-        this._store.getState().knownAtoms.has(key) ||
-        this._store.getState().knownSelectors.has(key),
-      isSet: type === 'selector' ? false : state.atomValues.has(key),
-      isModified: state.dirtyAtoms.has(key),
-      type,
-      // Don't use this.getDeps() as it will evaluate the node and we are only peeking
-      deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
-      subscribers: this.getSubscribers_UNSTABLE(recoilValue),
-    };
-  };
+  getInfo_UNSTABLE: <T>(RecoilValue<T>) => RecoilValueInfo<T> = <T>({
+    key,
+  }: RecoilValue<T>) =>
+    peekNodeInfo(this._store, this._store.getState().currentTree, key);
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
