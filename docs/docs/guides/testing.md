@@ -18,9 +18,9 @@ const multipliedState = selector({
 
 test('Test multipliedState', () => {
   const initialSnapshot = snapshot_UNSTABLE();
-  expect(mySnapshot.getLoadable(multipliedState).valueOrThrow()).toBe(0);
+  expect(initialSnapshot.getLoadable(multipliedState).valueOrThrow()).toBe(0);
 
   const testSnapshot = snapshot_UNSTABLE(({set}) => set(numberState, 1));
-  expect(mySnapshot.getLoadable(multipliedState).valueOrThrow()).toBe(100);
+  expect(testSnapshot.getLoadable(multipliedState).valueOrThrow()).toBe(100);
 })
 ```
