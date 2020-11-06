@@ -1499,6 +1499,8 @@ const {
   mapByDeletingMultipleFromMap: mapByDeletingMultipleFromMap$1
 } = Recoil_CopyOnWrite;
 
+
+
  // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 
@@ -1546,7 +1548,15 @@ const useStoreRef = () => useContext(AppContext);
 
 const MutableSourceContext = react.createContext(null); // TODO T2710559282599660
 
-const useRecoilMutableSource = () => useContext(MutableSourceContext);
+function useRecoilMutableSource() {
+  const mutableSource = useContext(MutableSourceContext);
+
+  if (mutableSource == null) {
+    Recoil_expectationViolation('Attempted to use a Recoil hook outside of a <RecoilRoot>. ' + '<RecoilRoot> must be an ancestor of any component that uses ' + 'Recoil hooks.');
+  }
+
+  return mutableSource;
+}
 
 function sendEndOfBatchNotifications(store) {
   const storeState = store.getState();

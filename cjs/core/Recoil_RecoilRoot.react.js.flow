@@ -62,6 +62,8 @@ const {
   mapByDeletingMultipleFromMap
 } = require('../util/Recoil_CopyOnWrite');
 
+const expectationViolation = require('../util/Recoil_expectationViolation');
+
 const nullthrows = require('../util/Recoil_nullthrows'); // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 
@@ -95,7 +97,7 @@ const AppContext = React.createContext<StoreRef>({
 declare var useStoreRef: () => StoreRef;
 const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
 
-declare var useRecoilMutableSource: () => mixed;
+declare function useRecoilMutableSource(): mixed;
 declare function sendEndOfBatchNotifications(store: Store): any;
 /*
  * The purpose of the Batcher is to observe when React batches end so that
