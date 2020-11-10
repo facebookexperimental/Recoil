@@ -63,6 +63,7 @@ function shouldNotBeFrozen(value: mixed): boolean {
   if (
     !isSSR &&
     !isReactNative &&
+    // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
     (value === window || value instanceof Window)
   ) {
     return true;
