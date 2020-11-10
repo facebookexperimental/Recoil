@@ -3035,31 +3035,6 @@ var Recoil_Loadable = {
  * @format
  */
 
-const ARRAY_BUFFER_VIEW_TYPES = [Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, DataView];
-
-function isArrayBufferView(value) {
-  for (const type of ARRAY_BUFFER_VIEW_TYPES) {
-    if (value instanceof type) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-var Recoil_isArrayBufferView = isArrayBufferView;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
 function isNode(object) {
   var _ownerDocument, _doc$defaultView;
 
@@ -3106,12 +3081,13 @@ function shouldNotBeFrozen(value) {
     return true;
   }
 
-  if (Recoil_isArrayBufferView(value)) {
+  if (ArrayBuffer.isView(value)) {
     return true;
   } // Some environments, just as Jest, don't work with the instanceof check
 
 
-  if (!isSSR && !isReactNative && (value === window || value instanceof Window)) {
+  if (!isSSR && !isReactNative && ( // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+  value === window || value instanceof Window)) {
     return true;
   }
 

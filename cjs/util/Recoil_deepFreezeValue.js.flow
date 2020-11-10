@@ -14,8 +14,6 @@
  */
 'use strict';
 
-const isArrayBufferView = require('./Recoil_isArrayBufferView');
-
 const isNode = require('./Recoil_isNode');
 
 const isPromise = require('./Recoil_isPromise');
