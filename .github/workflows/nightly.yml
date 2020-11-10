@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy-nightly:
-
+    if: github.repository_owner == 'facebookexperimental'
     runs-on: ubuntu-latest
 
     steps:
