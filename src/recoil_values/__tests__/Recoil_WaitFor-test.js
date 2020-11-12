@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type {RecoilValue} from 'Recoil_RecoilValue';
+import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 
 const {
   flushPromisesAndTimers,
@@ -36,7 +36,6 @@ const testRecoil = getRecoilTestFn(() => {
     loadableWithError,
     loadableWithValue,
   } = require('../../adt/Recoil_Loadable'));
-
   ({
     getRecoilValueAsLoadable,
   } = require('../../core/Recoil_RecoilValueInterface'));

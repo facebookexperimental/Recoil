@@ -6,12 +6,15 @@
  *
  * @emails oncall+recoil
  * @format
- * @flow
+ * @flow strict-local
  */
 'use strict';
 
-import type {Loadable} from 'Recoil_Loadable';
-import type {RecoilValue, RecoilValueReadOnly} from 'Recoil_RecoilValue';
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {
+  RecoilValue,
+  RecoilValueReadOnly,
+} from '../core/Recoil_RecoilValue';
 
 type UnwrapArrayRecoilValues<RecoilValues> = $TupleMap<
   RecoilValues,
@@ -33,31 +36,31 @@ type UnwrapObjRecoilValueLoadables<RecoilValues> = $ObjMap<
 
 /* eslint-disable no-redeclare */
 
-declare function waitForNone<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>(
+declare function waitForNone<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>( // flowlint-line unclear-type:off
   RecoilValues,
 ): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
 declare function waitForNone<
-  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>,
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>, // flowlint-line unclear-type:off
 >(
   RecoilValues,
 ): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
 
-declare function waitForAny<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>(
+declare function waitForAny<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>( // flowlint-line unclear-type:off
   RecoilValues,
 ): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
 declare function waitForAny<
-  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>,
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>, // flowlint-line unclear-type:off
 >(
   RecoilValues,
 ): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
 
-// waitForAll does not return placeholder Promises or Errors in the results
+// waitForAll() does not return placeholder Promises or Errors in the results
 // as it only returns when all values are available.
-declare function waitForAll<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>(
+declare function waitForAll<RecoilValues: $ReadOnlyArray<RecoilValue<any>>>( // flowlint-line unclear-type:off
   RecoilValues,
 ): RecoilValueReadOnly<UnwrapArrayRecoilValues<RecoilValues>>;
 declare function waitForAll<
-  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>,
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>, // flowlint-line unclear-type:off
 >(
   RecoilValues,
 ): RecoilValueReadOnly<UnwrapObjRecoilValues<RecoilValues>>;
