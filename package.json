@@ -27,7 +27,7 @@
     "deploy-nightly": "yarn build && node scripts/deploy_nightly_build.js"
   },
   "peerDependencies": {
-    "react": "^16.13.1"
+    "react": "^16.13.1 || ^17.0.0"
   },
   "peerDependenciesMeta": {
     "react-dom": {
