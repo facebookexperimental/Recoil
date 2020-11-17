@@ -8,7 +8,8 @@ import {
   selector,
   selectorFamily,
   Snapshot,
-  snapshot_UNSTABLE, useGotoRecoilSnapshot,
+  snapshot_UNSTABLE,
+  useGetRecoilValueInfo_UNSTABLE, useGotoRecoilSnapshot,
   useRecoilBridgeAcrossReactRoots_UNSTABLE, useRecoilCallback,
   useRecoilSnapshot, useRecoilState,
   useRecoilStateLoadable,
@@ -52,13 +53,14 @@ const readOnlySelectorSel = selector({
       get(myAtom) + 10;
       get(mySelector1);
       get(5); // $ExpectError
+      return 5;
   },
 });
 
 const writeableSelector = selector({
   key: 'WriteableSelector',
   get: ({ get }) => {
-    get(mySelector1) + 10;
+    return get(mySelector1) + 10;
   },
   set: ({ get, set, reset }) => {
     get(myAtom);
@@ -80,7 +82,7 @@ RecoilRoot({
     reset(myAtom);
 
     set(readOnlySelectorSel, 2); // $ExpectError
-    set(writeableSelector, 10); // $ExpectError
+    set(writeableSelector, 10);
     setUnvalidatedAtomValues({}); // $ExpectError
     set(writeableSelector, new DefaultValue());
   },
@@ -91,31 +93,31 @@ const roAtom: RecoilValueReadOnly<string> = {} as any;
 const waAtom: RecoilState<string> = {} as any;
 const nsAtom: RecoilState<number | string> = {} as any; // number or string
 
-useRecoilValue(roAtom);
-useRecoilValue(waAtom);
+useRecoilValue(roAtom); // $ExpectType string
+useRecoilValue(waAtom); // $ExpectType string
 
 useRecoilState(roAtom); // $ExpectError
-useRecoilState(waAtom);
+useRecoilState(waAtom); // $ExpectType [string, SetterOrUpdater<string>]
 
 useRecoilState<number>(waAtom); // $ExpectError
 useRecoilState<number | string>(waAtom); // $ExpectError
 useRecoilValue<number>(waAtom); // $ExpectError
-useRecoilValue<number | string>(waAtom);
+useRecoilValue<number | string>(waAtom); // $ExpectType string | number
 useRecoilValue<number>(nsAtom); // $ExpectError
 
-useRecoilValue(myAtom);
-useRecoilValue(mySelector1);
-useRecoilValue(readOnlySelectorSel);
-useRecoilValue(writeableSelector);
+useRecoilValue(myAtom); // $ExpectType number
+useRecoilValue(mySelector1); // $ExpectType number
+useRecoilValue(readOnlySelectorSel); // $ExpectType number
+useRecoilValue(writeableSelector); // $ExpectType number
 useRecoilValue({}); // $ExpectError
 
-useRecoilValueLoadable(myAtom);
-useRecoilValueLoadable(readOnlySelectorSel);
-useRecoilValueLoadable(writeableSelector);
+useRecoilValueLoadable(myAtom); // $ExpectType Loadable<number>
+useRecoilValueLoadable(readOnlySelectorSel); // $ExpectType Loadable<number>
+useRecoilValueLoadable(writeableSelector); // $ExpectType Loadable<number>
 useRecoilValueLoadable({}); // $ExpectError
 
-useRecoilState(myAtom);
-useRecoilState(writeableSelector);
+useRecoilState(myAtom); // $ExpectType [number, SetterOrUpdater<number>]
+useRecoilState(writeableSelector); // $ExpectType [number, SetterOrUpdater<number>]
 useRecoilState(readOnlySelectorSel); // $ExpectError
 useRecoilState({}); // $ExpectError
 
@@ -124,15 +126,19 @@ useRecoilStateLoadable(writeableSelector);
 useRecoilStateLoadable(readOnlySelectorSel); // $ExpectError
 useRecoilStateLoadable({}); // $ExpectError
 
-useSetRecoilState(myAtom);
-useSetRecoilState(writeableSelector);
+useSetRecoilState(myAtom); // $ExpectType SetterOrUpdater<number>
+useSetRecoilState(writeableSelector); // $ExpectType SetterOrUpdater<number>
 useSetRecoilState(readOnlySelectorSel); // $ExpectError
 useSetRecoilState({}); // $ExpectError
 
-useResetRecoilState(myAtom);
-useResetRecoilState(writeableSelector);
+useResetRecoilState(myAtom); // $ExpectType Resetter
+useResetRecoilState(writeableSelector); // $ExpectType Resetter
 useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
+
+useGetRecoilValueInfo_UNSTABLE(myAtom); // $ExpectType AtomInfo<number>
+useGetRecoilValueInfo_UNSTABLE(mySelector2); // $ExpectType AtomInfo<string>
+useGetRecoilValueInfo_UNSTABLE({}); // $ExpectError
 
 useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   snapshot; // $ExpectType Snapshot

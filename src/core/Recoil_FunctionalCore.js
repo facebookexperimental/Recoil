@@ -13,6 +13,7 @@
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DependencyMap} from './Recoil_Graph';
 import type {DefaultValue} from './Recoil_Node';
+import type {RecoilValue} from './Recoil_RecoilValue';
 import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
 
 const {
@@ -20,7 +21,8 @@ const {
   mapBySettingInMap,
   setByAddingToSet,
 } = require('../util/Recoil_CopyOnWrite');
-const {getNode, getNodeMaybe} = require('./Recoil_Node');
+const filterIterable = require('../util/Recoil_filterIterable');
+const {getNode, getNodeMaybe, recoilValuesForKeys} = require('./Recoil_Node');
 
 // flowlint-next-line unclear-type:off
 const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());
@@ -92,6 +94,48 @@ function cleanUpNode(store: Store, key: NodeKey) {
   node.cleanUp(store);
 }
 
+export type RecoilValueInfo<T> = {
+  loadable: ?Loadable<T>,
+  isActive: boolean,
+  isSet: boolean,
+  isModified: boolean, // TODO report modified selectors
+  type: 'atom' | 'selector' | void, // void until initialized for now
+  deps: Iterable<RecoilValue<mixed>>,
+  subscribers: {
+    nodes: Iterable<RecoilValue<mixed>>,
+  },
+};
+
+function peekNodeInfo<T>(
+  store: Store,
+  state: TreeState,
+  key: NodeKey,
+): RecoilValueInfo<T> {
+  const storeState = store.getState();
+  const graph = store.getGraph(state.version);
+  const type = storeState.knownAtoms.has(key)
+    ? 'atom'
+    : storeState.knownSelectors.has(key)
+    ? 'selector'
+    : undefined;
+  const downstreamNodes = filterIterable(
+    getDownstreamNodes(store, state, new Set([key])),
+    nodeKey => nodeKey !== key,
+  );
+  return {
+    loadable: peekNodeLoadable(store, state, key),
+    isActive:
+      storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
+    isSet: type === 'selector' ? false : state.atomValues.has(key),
+    isModified: state.dirtyAtoms.has(key),
+    type,
+    deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
+    subscribers: {
+      nodes: recoilValuesForKeys(downstreamNodes),
+    },
+  };
+}
+
 // Find all of the recursively dependent nodes
 function getDownstreamNodes(
   store: Store,
@@ -120,5 +164,6 @@ module.exports = {
   setNodeValue,
   cleanUpNode,
   setUnvalidatedAtomValue_DEPRECATED,
+  peekNodeInfo,
   getDownstreamNodes,
 };
