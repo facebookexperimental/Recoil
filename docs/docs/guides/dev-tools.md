@@ -1,5 +1,5 @@
 ---
-title: Dev Tools
+title: Development Tools
 sidebar_label: Dev Tools
 ---
 
@@ -93,3 +93,7 @@ function TimeTravelObserver() {
   );
 }
 ```
+
+## Inspecting current state
+
+The [`useGetRecoilValueInfo_UNSTABLE()`](/docs/api-reference/core/useGetRecoilValueInfo) provides a callback which can be used to peek at the current state and get information about atoms and selectors.  For the most part this is equivalent to calling [`getInfo_UNSTABLE()`](/docs/api-reference/core/Snapshot#debug-information) on a current [`Snapshot`](/docs/api-reference/core/Snapshot), except that it can provide additional information such as the set of React components subscribing to an atom, which can change and isn't associated with a snapshot of Recoil state.

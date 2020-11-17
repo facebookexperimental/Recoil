@@ -53,6 +53,7 @@ module.exports = {
               'api-reference/core/useResetRecoilState',
               'api-reference/core/useRecoilValueLoadable',
               'api-reference/core/useRecoilStateLoadable',
+              'api-reference/core/useGetRecoilValueInfo',
               'api-reference/core/isRecoilValue',
               // 'api-reference/core/DefaultValue',
             ],
