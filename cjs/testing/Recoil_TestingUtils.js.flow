@@ -10,9 +10,9 @@
  */
 'use strict';
 
-import type { RecoilValueReadOnly } from 'Recoil_RecoilValue';
-import type { RecoilState, RecoilValue } from 'Recoil_RecoilValue';
-import type { Store } from 'Recoil_State';
+import type { RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
+import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
+import type { Store } from '../core/Recoil_State';
 
 const React = require('React');
 

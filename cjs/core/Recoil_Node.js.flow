@@ -17,6 +17,10 @@ import type { AtomValues, NodeKey, Store, TreeState } from './Recoil_State';
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 
+const mapIterable = require('../util/Recoil_mapIterable');
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 const RecoilValueClasses = require('./Recoil_RecoilValue');
@@ -61,6 +65,7 @@ const recoilValues: Map<string, RecoilValue<any>> = new Map();
 
 declare function registerNode<T>(node: ReadWriteNodeOptions<T>): RecoilValueClasses.RecoilState<T>;
 declare function registerNode<T>(node: ReadOnlyNodeOptions<T>): RecoilValueClasses.RecoilValueReadOnly<T>;
+declare function recoilValuesForKeys(keys: Iterable<NodeKey>): Iterable<RecoilValue<mixed>>;
 declare function registerNode<T>(node: Node<T>): RecoilValue<T>;
 /* eslint-enable no-redeclare */
 
@@ -75,6 +80,7 @@ module.exports = {
   registerNode,
   getNode,
   getNodeMaybe,
+  recoilValuesForKeys,
   NodeMissingError,
   DefaultValue,
   DEFAULT_VALUE,

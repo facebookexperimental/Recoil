@@ -12,15 +12,13 @@
 
 import type { Loadable } from '../adt/Recoil_Loadable';
 import type { ResetRecoilState, SetRecoilState, ValueOrUpdater } from '../recoil_values/Recoil_selector';
-import type { NodeKey } from './Recoil_Keys';
+import type { RecoilValueInfo } from './Recoil_FunctionalCore';
 import type { RecoilState, RecoilValue } from './Recoil_RecoilValue';
 import type { StateID, Store, StoreState, TreeState } from './Recoil_State';
 
 const concatIterables = require('../util/Recoil_concatIterables');
 
 const filterIterable = require('../util/Recoil_filterIterable');
-
-const mapIterable = require('../util/Recoil_mapIterable');
 
 const nullthrows = require('../util/Recoil_nullthrows');
 
@@ -30,7 +28,7 @@ const {
 
 const {
   getDownstreamNodes,
-  peekNodeLoadable
+  peekNodeInfo
 } = require('./Recoil_FunctionalCore');
 
 const {
@@ -39,7 +37,8 @@ const {
 
 const {
   DEFAULT_VALUE,
-  recoilValues
+  recoilValues,
+  recoilValuesForKeys
 } = require('./Recoil_Node');
 
 const {
@@ -53,8 +52,7 @@ const {
 } = require('./Recoil_State'); // Opaque at this surface because it's part of the public API from here.
 
 
-export opaque type SnapshotID = StateID;
-declare function recoilValuesForKeys(keys: Iterable<NodeKey>): Iterable<RecoilValue<mixed>>; // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
+export opaque type SnapshotID = StateID; // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
 // evaluation functions are executed and async selectors resolve.
 
@@ -74,19 +72,7 @@ declare class Snapshot {
   getSubscribers_UNSTABLE: <T>(RecoilValue<T>) => {
     nodes: Iterable<RecoilValue<mixed>>
   },
-  getInfo_UNSTABLE: <T>(RecoilValue<T>) => {
-    loadable: ?Loadable<T>,
-    isActive: boolean,
-    isSet: boolean,
-    isModified: boolean,
-    // TODO report modified selectors
-    type: 'atom' | 'selector' | void,
-    // void until initialized for now
-    deps: Iterable<RecoilValue<mixed>>,
-    subscribers: {
-      nodes: Iterable<RecoilValue<mixed>>
-    },
-  },
+  getInfo_UNSTABLE: <T>(RecoilValue<T>) => RecoilValueInfo<T>,
   map: ((MutableSnapshot) => void) => Snapshot,
   asyncMap: ((MutableSnapshot) => Promise<void>) => Promise<Snapshot>,
 }

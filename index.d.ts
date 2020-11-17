@@ -93,22 +93,29 @@ export interface SnapshotID {
   readonly [SnapshotID_OPAQUE]: true;
 }
 
+interface ComponentInfo {
+  name: string;
+}
+
+interface AtomInfo<T> {
+  loadable?: Loadable<T>;
+  isActive: boolean;
+  isSet: boolean;
+  isModified: boolean; // TODO report modified selectors
+  type: 'atom' | 'selector' | undefined; // undefined until initialized for now
+  deps: Iterable<RecoilValue<T>>;
+  subscribers: {
+    nodes: Iterable<RecoilValue<T>>,
+    components: Iterable<ComponentInfo>,
+  };
+}
+
 export class Snapshot {
   getID(): SnapshotID;
   getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
   getPromise<T>(recoilValue: RecoilValue<T>): Promise<T>;
   getNodes_UNSTABLE(opts?: { isModified?: boolean }): Iterable<RecoilValue<unknown>>;
-  getInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): {
-    loadable?: Loadable<T>,
-    isActive: boolean,
-    isSet: boolean,
-    isModified: boolean, // TODO report modified selectors
-    type: 'atom' | 'selector' | undefined, // undefined until initialized for now
-    deps: Iterable<RecoilValue<T>>,
-    subscribers: {
-      nodes: Iterable<RecoilValue<T>>,
-    },
-  };
+  getInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): AtomInfo<T>;
   map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
   asyncMap(cb: (mutableSnapshot: MutableSnapshot) => Promise<void>): Promise<Snapshot>;
 }
@@ -166,6 +173,11 @@ export function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdat
  * Returns a function that will reset the given state to its default value.
  */
 export function useResetRecoilState(recoilState: RecoilState<any>): Resetter; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/**
+ * Returns current info about an atom
+ */
+export function useGetRecoilValueInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): AtomInfo<T>;
 
 /**
  * Returns a function that will run the callback that was passed when

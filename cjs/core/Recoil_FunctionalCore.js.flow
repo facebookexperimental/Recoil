@@ -13,6 +13,7 @@
 import type { Loadable } from '../adt/Recoil_Loadable';
 import type { DependencyMap } from './Recoil_Graph';
 import type { DefaultValue } from './Recoil_Node';
+import type { RecoilValue } from './Recoil_RecoilValue';
 import type { AtomValues, NodeKey, Store, TreeState } from './Recoil_State';
 
 const {
@@ -21,9 +22,14 @@ const {
   setByAddingToSet
 } = require('../util/Recoil_CopyOnWrite');
 
+const filterIterable = require('../util/Recoil_filterIterable');
+
+const mapIterable = require('../util/Recoil_mapIterable');
+
 const {
   getNode,
-  getNodeMaybe
+  getNodeMaybe,
+  recoilValuesForKeys
 } = require('./Recoil_Node'); // flowlint-next-line unclear-type:off
 
 
@@ -42,7 +48,25 @@ declare function setUnvalidatedAtomValue_DEPRECATED<T>(state: TreeState, key: No
 // set upstreams; deps may be discovered because of reads in updater functions.)
 
 declare function setNodeValue<T>(store: Store, state: TreeState, key: NodeKey, newValue: T | DefaultValue): [DependencyMap, AtomValues];
-declare function cleanUpNode(store: Store, key: NodeKey): any; // Find all of the recursively dependent nodes
+declare function cleanUpNode(store: Store, key: NodeKey): any;
+type ComponentInfo = {
+  name: string
+};
+export type RecoilValueInfo<T> = {
+  loadable: ?Loadable<T>,
+  isActive: boolean,
+  isSet: boolean,
+  isModified: boolean,
+  // TODO report modified selectors
+  type: 'atom' | 'selector' | void,
+  // void until initialized for now
+  deps: Iterable<RecoilValue<mixed>>,
+  subscribers: {
+    nodes: Iterable<RecoilValue<mixed>>,
+    components: Iterable<ComponentInfo>,
+  },
+};
+declare function peekNodeInfo<T>(store: Store, state: TreeState, key: NodeKey): RecoilValueInfo<T>; // Find all of the recursively dependent nodes
 
 declare function getDownstreamNodes(store: Store, state: TreeState, keys: $ReadOnlySet<NodeKey>): $ReadOnlySet<NodeKey>;
 module.exports = {
@@ -51,5 +75,6 @@ module.exports = {
   setNodeValue,
   cleanUpNode,
   setUnvalidatedAtomValue_DEPRECATED,
+  peekNodeInfo,
   getDownstreamNodes
 };
