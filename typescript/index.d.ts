@@ -93,6 +93,10 @@ export interface SnapshotID {
   readonly [SnapshotID_OPAQUE]: true;
 }
 
+interface ComponentInfo {
+  name: string;
+}
+
 interface AtomInfo<T> {
   loadable?: Loadable<T>;
   isActive: boolean;
@@ -102,6 +106,7 @@ interface AtomInfo<T> {
   deps: Iterable<RecoilValue<T>>;
   subscribers: {
     nodes: Iterable<RecoilValue<T>>,
+    components: Iterable<ComponentInfo>,
   };
 }
 

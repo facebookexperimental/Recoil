@@ -11,6 +11,7 @@ const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
 let React,
   act,
+  gkx,
   atom,
   selector,
   ReadsAtom,
@@ -23,6 +24,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({act} = require('ReactTestUtils'));
 
   atom = require('../../recoil_values/Recoil_atom');
+  gkx = require('../../util/Recoil_gkx');
   selector = require('../../recoil_values/Recoil_selector');
   ({
     ReadsAtom,
@@ -33,6 +35,9 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 testRecoil('useGetRecoilValueInfo', () => {
+  const recoil_infer_component_names = gkx('recoil_infer_component_names');
+  gkx.setPass('recoil_infer_component_names');
+
   const myAtom = atom<string>({
     key: 'useGetRecoilValueInfo atom',
     default: 'DEFAULT',
@@ -67,6 +72,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   });
   expect(Array.from(getRecoilValueInfo(myAtom).deps)).toEqual([]);
   expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual([]);
+  expect(Array.from(getRecoilValueInfo(myAtom).subscribers.components)).toEqual(
+    [],
+  );
   expect(getRecoilValueInfo(selectorA)).toMatchObject({
     loadable: undefined,
     isActive: false,
@@ -78,6 +86,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
     [],
   );
+  expect(
+    Array.from(getRecoilValueInfo(selectorA).subscribers.components),
+  ).toEqual([]);
   expect(getRecoilValueInfo(selectorB)).toMatchObject({
     loadable: undefined,
     isActive: false,
@@ -89,6 +100,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(
     [],
   );
+  expect(
+    Array.from(getRecoilValueInfo(selectorB).subscribers.components),
+  ).toEqual([]);
 
   // After reading values
   const [ReadWriteAtom, setAtom, resetAtom] = componentThatReadsAndWritesAtom(
@@ -114,6 +128,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual(
     expect.arrayContaining([selectorA, selectorB]),
   );
+  expect(
+    Array.from(getRecoilValueInfo(myAtom).subscribers.components),
+  ).toEqual([{name: 'ReadsAndWritesAtom'}]);
   expect(getRecoilValueInfo(selectorA)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'DEFAULT'}),
     isActive: true,
@@ -127,6 +144,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
     expect.arrayContaining([selectorB]),
   );
+  expect(
+    Array.from(getRecoilValueInfo(selectorA).subscribers.components),
+  ).toEqual([]);
   expect(getRecoilValueInfo(selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
@@ -143,6 +163,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(
     [],
   );
+  expect(
+    Array.from(getRecoilValueInfo(selectorB).subscribers.components),
+  ).toEqual([{name: 'ReadsAtom'}]);
 
   // After setting a value
   act(() => setAtom('SET'));
@@ -158,6 +181,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual(
     expect.arrayContaining([selectorA, selectorB]),
   );
+  expect(
+    Array.from(getRecoilValueInfo(myAtom).subscribers.components),
+  ).toEqual([{name: 'ReadsAndWritesAtom'}]);
   expect(getRecoilValueInfo(selectorA)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'SET'}),
     isActive: true,
@@ -171,6 +197,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
     expect.arrayContaining([selectorB]),
   );
+  expect(
+    Array.from(getRecoilValueInfo(selectorA).subscribers.components),
+  ).toEqual([]);
   expect(getRecoilValueInfo(selectorB)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'SETSET'}),
     isActive: true,
@@ -184,6 +213,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(
     [],
   );
+  expect(
+    Array.from(getRecoilValueInfo(selectorB).subscribers.components),
+  ).toEqual([{name: 'ReadsAtom'}]);
 
   // After reseting a value
   act(resetAtom);
@@ -199,6 +231,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual(
     expect.arrayContaining([selectorA, selectorB]),
   );
+  expect(
+    Array.from(getRecoilValueInfo(myAtom).subscribers.components),
+  ).toEqual([{name: 'ReadsAndWritesAtom'}]);
   expect(getRecoilValueInfo(selectorA)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'DEFAULT'}),
     isActive: true,
@@ -212,6 +247,9 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
     expect.arrayContaining([selectorB]),
   );
+  expect(
+    Array.from(getRecoilValueInfo(selectorA).subscribers.components),
+  ).toEqual([]);
   expect(getRecoilValueInfo(selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
@@ -228,4 +266,11 @@ testRecoil('useGetRecoilValueInfo', () => {
   expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(
     [],
   );
+  expect(
+    Array.from(getRecoilValueInfo(selectorB).subscribers.components),
+  ).toEqual([{name: 'ReadsAtom'}]);
+
+  recoil_infer_component_names
+    ? gkx.setPass('recoil_infer_component_names')
+    : gkx.setFail('recoil_infer_component_names');
 });

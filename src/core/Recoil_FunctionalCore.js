@@ -22,6 +22,7 @@ const {
   setByAddingToSet,
 } = require('../util/Recoil_CopyOnWrite');
 const filterIterable = require('../util/Recoil_filterIterable');
+const mapIterable = require('../util/Recoil_mapIterable');
 const {getNode, getNodeMaybe, recoilValuesForKeys} = require('./Recoil_Node');
 
 // flowlint-next-line unclear-type:off
@@ -94,6 +95,10 @@ function cleanUpNode(store: Store, key: NodeKey) {
   node.cleanUp(store);
 }
 
+type ComponentInfo = {
+  name: string,
+};
+
 export type RecoilValueInfo<T> = {
   loadable: ?Loadable<T>,
   isActive: boolean,
@@ -103,6 +108,7 @@ export type RecoilValueInfo<T> = {
   deps: Iterable<RecoilValue<mixed>>,
   subscribers: {
     nodes: Iterable<RecoilValue<mixed>>,
+    components: Iterable<ComponentInfo>,
   },
 };
 
@@ -132,6 +138,10 @@ function peekNodeInfo<T>(
     deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
     subscribers: {
       nodes: recoilValuesForKeys(downstreamNodes),
+      components: mapIterable(
+        storeState.nodeToComponentSubscriptions.get(key)?.values() ?? [],
+        ([name]) => ({name}),
+      ),
     },
   };
 }
