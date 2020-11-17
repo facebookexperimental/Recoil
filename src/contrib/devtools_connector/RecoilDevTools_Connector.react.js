@@ -26,6 +26,7 @@ type Props = $ReadOnly<{
   devMode?: ?boolean,
   maxDepth?: number,
   maxItems?: number,
+  serializeFn?: (mixed, string) => mixed,
 }>;
 
 type ConnectProps = $ReadOnly<{
@@ -57,6 +58,7 @@ function Connector({
   persistenceLimit = 50,
   maxDepth,
   maxItems,
+  serializeFn,
   devMode = true,
 }: Props): React.Node {
   const transactionIdRef = useRef(0);
@@ -72,6 +74,7 @@ function Connector({
       goToSnapshot,
       maxDepth,
       maxItems,
+      serializeFn,
       initialSnapshot: snapshot,
     });
 
