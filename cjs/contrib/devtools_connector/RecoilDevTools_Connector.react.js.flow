@@ -33,6 +33,7 @@ type Props = $ReadOnly<{
   devMode?: ?boolean,
   maxDepth?: number,
   maxItems?: number,
+  serializeFn?: (mixed, string) => mixed,
 }>;
 type ConnectProps = $ReadOnly<{ ...Props,
   goToSnapshot: (Snapshot) => void,
