@@ -7,10 +7,7 @@ import {terser} from 'rollup-plugin-terser';
 const inputFile = 'src/Recoil_index.js';
 const externalLibs = ['react', 'react-dom'];
 
-const defaultNodeResolveConfig = {};
-const nodeResolvePlugin = nodeResolve(defaultNodeResolveConfig);
-
-const commonPlugins = [
+const getCommonPlugins = ({renderer = 'react-dom'} = {}) => [
   babel({
     presets: ['@babel/preset-react', '@babel/preset-flow'],
     plugins: [
@@ -27,28 +24,27 @@ const commonPlugins = [
       if (source === 'React') {
         return {id: 'react', external: true};
       }
-      if (source === 'ReactDOM') {
-        return {id: 'react-dom', external: true};
-      }
-      if (source === 'ReactNative') {
-        return {id: 'react-native', external: true};
+      if (source === 'ReactRenderer') {
+        return {id: renderer, external: true};
       }
       return null;
     },
   },
-  nodeResolvePlugin,
+  nodeResolve({}),
   commonjs(),
 ];
 
+const commonPluginsDOM = getCommonPlugins();
+
 const developmentPlugins = [
-  ...commonPlugins,
+  ...commonPluginsDOM,
   replace({
     'process.env.NODE_ENV': JSON.stringify('development'),
   }),
 ];
 
 const productionPlugins = [
-  ...commonPlugins,
+  ...commonPluginsDOM,
   replace({
     'process.env.NODE_ENV': JSON.stringify('production'),
   }),
@@ -65,7 +61,7 @@ const configs = [
       exports: 'named',
     },
     external: externalLibs,
-    plugins: commonPlugins,
+    plugins: commonPluginsDOM,
   },
 
   // ES
@@ -77,7 +73,7 @@ const configs = [
       exports: 'named',
     },
     external: externalLibs,
-    plugins: commonPlugins,
+    plugins: commonPluginsDOM,
   },
 
   // React Native
@@ -89,17 +85,7 @@ const configs = [
       exports: 'named',
     },
     external: [...externalLibs, 'react-native'],
-    plugins: commonPlugins.map(plugin => {
-      // Replace the default nodeResolve plugin
-      if (plugin === nodeResolvePlugin) {
-        return nodeResolve({
-          ...defaultNodeResolveConfig,
-          extensions: ['.native.js', '.js'],
-        });
-      }
-
-      return plugin;
-    }),
+    plugins: getCommonPlugins({renderer: 'react-native'}),
   },
 
   // ES for Browsers
