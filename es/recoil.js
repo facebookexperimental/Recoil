@@ -1044,12 +1044,14 @@ var Recoil_RecoilValueInterface = {
  * 
  * @format
  *
- * This is to export esstiential functions from react-dom
- * for our web build
+ * This is to export esstiential functions from a react renderer,
+ * such as react-dom or react-native
  */
+// in OSS it's configured in rollup.config.js
 const {
   unstable_batchedUpdates
 } = reactDom; // @oss-only
+// in FB, ReactDOMComet falls back to ReactDOM in non-comet environment
 // @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
 
 
@@ -2840,12 +2842,12 @@ const {
   useStoreRef: useStoreRef$2
 } = Recoil_RecoilRoot_react;
 
-function useGetRecoilValueInfo() {
+var Recoil_useGetRecoilValueInfo = function useGetRecoilValueInfo() {
   const storeRef = useStoreRef$2();
   return ({
     key
   }) => peekNodeInfo$2(storeRef.current, storeRef.current.getState().currentTree, key);
-}
+};
 
 const {
   useMemo: useMemo$2
@@ -5578,7 +5580,7 @@ var Recoil_index = {
   useRecoilStateLoadable: useRecoilStateLoadable$1,
   useSetRecoilState: useSetRecoilState$1,
   useResetRecoilState: useResetRecoilState$1,
-  useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
+  useGetRecoilValueInfo_UNSTABLE: Recoil_useGetRecoilValueInfo,
   // Hooks for asynchronous Recoil
   useRecoilCallback: useRecoilCallback$1,
   // Hooks for Snapshots

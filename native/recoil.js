@@ -1,4 +1,4 @@
-import reactNative from 'react-native';
+import reactDom from 'react-dom';
 import react from 'react';
 
 /**
@@ -382,6 +382,12 @@ var Recoil_RecoilValue$1 = /*#__PURE__*/Object.freeze({
   isRecoilValue: Recoil_RecoilValue_4
 });
 
+function getCjsExportFromNamespace (n) {
+	return n && n['default'] || n;
+}
+
+var require$$3 = getCjsExportFromNamespace(Recoil_RecoilValue$1);
+
 class DefaultValue {}
 
 const DEFAULT_VALUE = new DefaultValue();
@@ -424,7 +430,7 @@ function registerNode(node) {
   }
 
   nodes.set(node.key, node);
-  const recoilValue = node.set == null ? new Recoil_RecoilValue$1.RecoilValueReadOnly(node.key) : new Recoil_RecoilValue$1.RecoilState(node.key);
+  const recoilValue = node.set == null ? new require$$3.RecoilValueReadOnly(node.key) : new require$$3.RecoilState(node.key);
   recoilValues.set(node.key, recoilValue);
   return recoilValue;
 }
@@ -762,7 +768,7 @@ const {
   RecoilState: RecoilState$1,
   RecoilValueReadOnly: RecoilValueReadOnly$1,
   isRecoilValue: isRecoilValue$1
-} = Recoil_RecoilValue$1;
+} = require$$3;
 
 function getRecoilValueAsLoadable(store, {
   key
@@ -1044,18 +1050,20 @@ var Recoil_RecoilValueInterface = {
  * 
  * @format
  *
- * This is to export esstiential functions from react-native
- * for our react-native build (currently only available on github)
+ * This is to export esstiential functions from a react renderer,
+ * such as react-dom or react-native
  */
-// $FlowExpectedError[cannot-resolve-module] // @oss-only
+// in OSS it's configured in rollup.config.js
 const {
   unstable_batchedUpdates
-} = reactNative; // @oss-only
+} = reactDom; // @oss-only
+// in FB, ReactDOMComet falls back to ReactDOM in non-comet environment
+// @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
 
 
-var Recoil_ReactBatchedUpdates_native = {
+var Recoil_ReactBatchedUpdates = {
   unstable_batchedUpdates
-}; // @oss-only
+};
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -1073,7 +1081,7 @@ const {
 
 const {
   unstable_batchedUpdates: unstable_batchedUpdates$1
-} = Recoil_ReactBatchedUpdates_native;
+} = Recoil_ReactBatchedUpdates;
 
 let batcher = unstable_batchedUpdates$1; // flowlint-next-line unclear-type:off
 
@@ -1464,6 +1472,8 @@ function unionSets(...sets) {
 
 var Recoil_unionSets = unionSets;
 
+var require$$4 = getCjsExportFromNamespace(Recoil_Snapshot$1);
+
 const {
   useContext,
   useEffect,
@@ -1499,7 +1509,7 @@ const {
 
 const {
   freshSnapshot: freshSnapshot$1
-} = Recoil_Snapshot$1;
+} = require$$4;
 
 const {
   getNextTreeStateVersion: getNextTreeStateVersion$2,
@@ -2237,7 +2247,7 @@ const {
 
 const {
   isRecoilValue: isRecoilValue$2
-} = Recoil_RecoilValue$1;
+} = require$$3;
 
 const {
   AbstractRecoilValue: AbstractRecoilValue$2,
@@ -2251,7 +2261,7 @@ const {
 const {
   Snapshot: Snapshot$1,
   cloneSnapshot: cloneSnapshot$1
-} = Recoil_Snapshot$1;
+} = require$$4;
 
 const {
   setByAddingToSet: setByAddingToSet$2
@@ -2840,12 +2850,12 @@ const {
   useStoreRef: useStoreRef$2
 } = Recoil_RecoilRoot_react;
 
-function useGetRecoilValueInfo() {
+var Recoil_useGetRecoilValueInfo = function useGetRecoilValueInfo() {
   const storeRef = useStoreRef$2();
   return ({
     key
   }) => peekNodeInfo$2(storeRef.current, storeRef.current.getState().currentTree, key);
-}
+};
 
 const {
   useMemo: useMemo$2
@@ -3285,9 +3295,11 @@ var Recoil_ArrayKeyedMap$1 = /*#__PURE__*/Object.freeze({
   ArrayKeyedMap: Recoil_ArrayKeyedMap_1
 });
 
+var require$$0 = getCjsExportFromNamespace(Recoil_ArrayKeyedMap$1);
+
 const {
   ArrayKeyedMap: ArrayKeyedMap$1
-} = Recoil_ArrayKeyedMap$1;
+} = require$$0;
 
 function cacheWithReferenceEquality() {
   return new ArrayKeyedMap$1();
@@ -3654,11 +3666,11 @@ const {
 
 const {
   isRecoilValue: isRecoilValue$3
-} = Recoil_RecoilValue$1;
+} = require$$3;
 
 const {
   AbstractRecoilValue: AbstractRecoilValue$3
-} = Recoil_RecoilValue$1;
+} = require$$3;
 
 const {
   setRecoilValueLoadable: setRecoilValueLoadable$2
@@ -4315,7 +4327,7 @@ const {
 
 const {
   AbstractRecoilValue: AbstractRecoilValue$4
-} = Recoil_RecoilValue$1;
+} = require$$3;
 
 const {
   getRecoilValueAsLoadable: getRecoilValueAsLoadable$3,
@@ -4716,7 +4728,7 @@ const {
 
 const {
   isRecoilValue: isRecoilValue$5
-} = Recoil_RecoilValue$1;
+} = require$$3;
 
 const {
   markRecoilValueModified: markRecoilValueModified$1,
@@ -5510,11 +5522,11 @@ const {
 
 const {
   isRecoilValue: isRecoilValue$6
-} = Recoil_RecoilValue$1;
+} = require$$3;
 
 const {
   freshSnapshot: freshSnapshot$2
-} = Recoil_Snapshot$1;
+} = require$$4;
 
 const {
   useGotoRecoilSnapshot: useGotoRecoilSnapshot$1,
@@ -5578,7 +5590,7 @@ var Recoil_index = {
   useRecoilStateLoadable: useRecoilStateLoadable$1,
   useSetRecoilState: useSetRecoilState$1,
   useResetRecoilState: useResetRecoilState$1,
-  useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
+  useGetRecoilValueInfo_UNSTABLE: Recoil_useGetRecoilValueInfo,
   // Hooks for asynchronous Recoil
   useRecoilCallback: useRecoilCallback$1,
   // Hooks for Snapshots
