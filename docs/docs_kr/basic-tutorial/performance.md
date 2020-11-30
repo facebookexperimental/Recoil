@@ -8,30 +8,30 @@ title: 'Bonus: Performance'
 
 ### `<TodoList />`
 
-이 컴포넌트는 'todoListState'와 'todoListFilterState'에 의존하는 selector인 'filteredToListState'를 구독한다. 이는 다음 상태가 변경될 때 'TodoList'가 다시 렌더링됨을 의미한다.
+이 컴포넌트는 `todoListState`와 `todoListFilterState`에 의존하는 selector인 `filteredTodoListState`를 구독한다. 이는 다음 상태가 변경될 때 `TodoList`가 다시 렌더링됨을 의미한다.
 
 - `todoListState`
 - `todoListFilterState`
 
 ### `<TodoItem />`
 
-이 컴포넌트는 'todoListState'를 구독한다. 그래서 'todoListState'가 바뀔 때나 부모 컴포넌트인 'todoList'가 다시 렌더링 될 때 다시 렌더링 된다.
+이 컴포넌트는 `todoListState`를 구독한다. 그래서 `todoListState`가 바뀔 때나 부모 컴포넌트인 `TodoList`가 다시 렌더링 될 때 다시 렌더링 된다.
 
 ### `<TodoItemCreator />`
 
-이 컴포넌트는 Recoil 상태("SetRecoilState()"가 구독을 생성하지 않음)를 구독하지 않는다, 그래서 부모 컴포넌트인 `TodoList`가 다시 렌더링 될 때만 다시 렌더링 된다.
+이 컴포넌트는 Recoil 상태("useSetRecoilState()"가 구독을 생성하지 않음)를 구독하지 않는다, 그래서 부모 컴포넌트인 `TodoList`가 다시 렌더링 될 때만 다시 렌더링 된다.
 
 ### `<TodoListFilters />`
 
-이 컴포넌트는 'todoListFilterState'를 구독한다. 그래서 해당 상태가 변경되거나 부모 컴포넌트인 'todoList'가 다시 렌더링될 때 다시 렌더링된다.
+이 컴포넌트는 `todoListFilterState`를 구독한다. 그래서 해당 상태가 변경되거나 부모 컴포넌트인 `TodoList`가 다시 렌더링될 때 다시 렌더링된다.
 
 ### `<TodoListStats />`
 
-이 컴포넌트는 `filteredToListState`를 구독한다. 그래서 해당 상태가 바뀌거나 부모 컴포넌트인 `TodoList`가 다시 렌더링 될 때마다 다시 렌더링 된다.
+이 컴포넌트는 `filteredTodoListState`를 구독한다. 그래서 해당 상태가 바뀌거나 부모 컴포넌트인 `TodoList`가 다시 렌더링 될 때마다 다시 렌더링 된다.
 
-## 개션될 여지
+## 개선될 여지
 
-기존 구현에는 몇 가지 단점이 있는데, 주로 `<TodoList />`가 우리 모든 컴포넌트의 부모라는 점 때문에 우리가 'todoListState'를 변경할 때마다 트리 전체를 다시 렌더링하고 있다는 점이 있다.
+기존 구현에는 몇 가지 단점이 있는데, 주로 `<TodoList />`가 우리 모든 컴포넌트의 부모라는 점 때문에 우리가 `todoListState`를 변경할 때마다 트리 전체를 다시 렌더링하고 있다는 점이 있다.
 
 이상적인 경우에는 컴포넌트가 반드시 필요한 경우(화면에 표시되는 데이터가 변경된 경우)에만 다시 렌더링 될 수 있다.
 
@@ -61,7 +61,7 @@ todo 리스트를 객체의 배열로 생각하는 것은 각각의 todo 아이�
 
 > 어떻게 정규화된 상태에 대해 생각할 것인가에 대한 더 상세한 논의는 [이 Redux 문서의 페이지](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape)를 보면된다.
 
-이것은 궁극적으로 'todoListState'를 두 가지로 나눈다는 것을 의미한다.
+이것은 궁극적으로 `todoListState`를 두 가지로 나눈다는 것을 의미한다.
 
 - todo 아이템의 ID를 갖는 배열
 - 아이템의 ID를 아이템의 데이터에 매핑

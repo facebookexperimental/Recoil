@@ -2,7 +2,7 @@
 title: Intro
 ---
 
-이 섹션은 Recoil과 React가 설치했다고 가정한다. Recoil과 React를 처음부터 시작하는 방법은 [Getting Started](/docs/introduction/getting-started)를 보면된다. 앞으로의 섹션의 컴포넌트들은 부모트리에 `<RecoilRoot /`가 있다고 가정한다.
+이 섹션은 Recoil과 React가 설치했다고 가정한다. Recoil과 React를 처음부터 시작하는 방법은 [Getting Started](/docs/introduction/getting-started)를 보면된다. 앞으로의 섹션의 컴포넌트들은 부모트리에 `<RecoilRoot />`가 있다고 가정한다.
 
 이 튜토리얼에서는 간단한 todo 리스트 애플리케이션을 제작한다. 애플리케이션은 다음 기능을 수행한다.
 
