@@ -35,7 +35,8 @@ let React,
   resolvingAsyncSelector,
   flushPromisesAndTimers,
   DefaultValue,
-  mutableSourceExists;
+  mutableSourceExists,
+  freshSnapshot;
 
 const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
@@ -59,6 +60,7 @@ const testRecoil = getRecoilTestFn(() => {
     setRecoilValue,
   } = require('../../core/Recoil_RecoilValueInterface'));
   selector = require('../Recoil_selector');
+  ({freshSnapshot} = require('../../core/Recoil_Snapshot'));
   ({
     asyncSelector,
     ReadsAtom,
@@ -971,3 +973,57 @@ testRecoil(
     expect(dNodeRunCount).toEqual(2);
   },
 );
+
+testRecoil('async set not supported', async () => {
+  const myAtom = atom({
+    key: 'selector / async not supported / other atom',
+    default: 'DEFAULT',
+  });
+
+  const mySelector = selector({
+    key: 'selector / async set not supported / async set method',
+    get: () => myAtom,
+    set: async ({set, reset}, newVal) => {
+      await Promise.resolve();
+      newVal instanceof DefaultValue ? reset(myAtom) : set(myAtom, 'SET');
+    },
+  });
+
+  let setAttempt, resetAttempt;
+  const mySelector2 = selector({
+    key: 'selector / async set not supported / async upstream call',
+    get: () => myAtom,
+    set: ({set, reset}, newVal) => {
+      if (newVal instanceof DefaultValue) {
+        resetAttempt = new Promise.resolve().then(() => {
+          reset(myAtom);
+        });
+      } else {
+        setAttempt = new Promise.resolve().then(() => {
+          set(myAtom, 'SET');
+        });
+      }
+    },
+  });
+
+  const testSnapshot = freshSnapshot();
+  expect(() =>
+    testSnapshot.map(({set}) => {
+      set(mySelector, 'SET');
+    }),
+  ).toThrow();
+  expect(() =>
+    testSnapshot.map(({reset}) => {
+      reset(mySelector);
+    }),
+  ).toThrow();
+  const setSnapshot = testSnapshot.map(({set, reset}) => {
+    set(mySelector2, 'SET');
+    reset(mySelector2);
+  });
+
+  await flushPromisesAndTimers();
+  expect(setSnapshot.getLoadable(mySelector2).contents).toEqual('DEFAULT');
+  await expect(setAttempt).rejects.toThrowError();
+  await expect(resetAttempt).rejects.toThrowError();
+});
