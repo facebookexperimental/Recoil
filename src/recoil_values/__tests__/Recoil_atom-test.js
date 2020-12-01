@@ -775,6 +775,54 @@ describe('Effects', () => {
     expect(c.textContent).toBe('');
     expect(refCounts).toEqual([0, 0]);
   });
+
+  // Test that effects can initialize state when an atom is first used after an
+  // action that also updated another atom's state.
+  // This corner case was reported by multiple customers.
+  testRecoil('initialze concurrent with state update', () => {
+    const myAtom = atom({
+      key: 'atom effect - concurrent update',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [({setSelf}) => setSelf('INIT')],
+    });
+    const otherAtom = atom({
+      key: 'atom effect - concurrent update / other atom',
+      default: 'OTHER_DEFAULT',
+    });
+
+    const [OtherAtom, setOtherAtom] = componentThatReadsAndWritesAtom(
+      otherAtom,
+    );
+
+    function NewPage() {
+      return <ReadsAtom atom={myAtom} />;
+    }
+
+    let renderPage;
+    function App() {
+      const [showPage, setShowPage] = useState(false);
+      renderPage = () => setShowPage(true);
+      return (
+        <>
+          <OtherAtom />
+          {showPage && <NewPage />}
+        </>
+      );
+    }
+
+    const c = renderElements(<App />);
+
+    // <NewPage> is not yet rendered
+    expect(c.textContent).toEqual('"OTHER_DEFAULT"');
+
+    // Render <NewPage> which initializes myAtom via effect while also
+    // updating an unrelated atom.
+    act(() => {
+      renderPage();
+      setOtherAtom('OTHER');
+    });
+    expect(c.textContent).toEqual('"OTHER""INIT"');
+  });
 });
 
 testRecoil('object is frozen when stored in atom', () => {

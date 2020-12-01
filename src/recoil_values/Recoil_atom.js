@@ -341,12 +341,15 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     // Mutate initial state in place since we know there are no other subscribers
     // since we are the ones initializing on first use.
     if (!(initValue instanceof DefaultValue)) {
-      initState.atomValues.set(
-        key,
-        isPromise(initValue)
-          ? loadableWithPromise(wrapPendingPromise(store, initValue))
-          : loadableWithValue(initValue),
-      );
+      const initLoadable = isPromise(initValue)
+        ? loadableWithPromise(wrapPendingPromise(store, initValue))
+        : loadableWithValue(initValue);
+      initState.atomValues.set(key, initLoadable);
+
+      // If there is a pending transaction, then also mutate the next state tree.
+      // This could happen if the atom was first initialized in an action that
+      // also updated some other atom's state.
+      store.getState().nextTree?.atomValues.set(key, initLoadable);
     }
   }
 
