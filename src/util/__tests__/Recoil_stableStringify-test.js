@@ -140,7 +140,7 @@ describe('stableStringify', () => {
     expect(
       stableStringify({
         // eslint-disable-next-line object-shorthand
-        [Symbol.iterator]: function*() {
+        [Symbol.iterator]: function* () {
           yield 'foo';
           yield 'bar';
         },
