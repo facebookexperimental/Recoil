@@ -5225,7 +5225,7 @@
         // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
         // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
         // @fb-only: params,
-        // @fb-only: )
+        // @fb-only: ),
 
       });
       atomCache = atomCache.set(params, newAtom);
