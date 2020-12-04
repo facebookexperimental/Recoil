@@ -106,7 +106,7 @@ const todoListStatsState = selector({
     const totalNum = todoList.length;
     const totalCompletedNum = todoList.filter((item) => item.isComplete).length;
     const totalUncompletedNum = totalNum - totalCompletedNum;
-    const percentCompleted = totalNum === 0 ? 0 : totalCompletedNum / totalNum;
+    const percentCompleted = totalNum === 0 ? 0 : totalCompletedNum / totalNum * 100;
 
     return {
       totalNum,
@@ -129,7 +129,7 @@ function TodoListStats() {
     percentCompleted,
   } = useRecoilValue(todoListStatsState);
 
-  const formattedPercentCompleted = Math.round(percentCompleted * 100);
+  const formattedPercentCompleted = Math.round(percentCompleted);
 
   return (
     <ul>
