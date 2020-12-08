@@ -55,7 +55,8 @@ function setInTreeCache<T>(
         return ret;
       } else {
         invariant(
-          root.result === result,
+          root.result.contents === result.contents &&
+            root.result.state === result.state,
           'Existing cache must have the same result at the end of the route',
         );
         const ret = root;

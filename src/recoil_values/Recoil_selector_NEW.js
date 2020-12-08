@@ -204,7 +204,15 @@ function selector<T>(
       ? nodeCacheMostRecent()
       : treeCacheReferenceEquality();
 
-  const executionInfo: ExecutionInfo<T> = getInitialExecutionInfo();
+  const executionInfoMap: Map<Store, ExecutionInfo<T>> = new Map();
+
+  function getExecutionInfo(store: Store): ExecutionInfo<T> {
+    if (!executionInfoMap.has(store)) {
+      executionInfoMap.set(store, getInitialExecutionInfo());
+    }
+
+    return nullthrows(executionInfoMap.get(store));
+  }
 
   function initSelector(store: Store) {
     store.getState().knownSelectors.add(key);
@@ -226,10 +234,6 @@ function selector<T>(
     }
   }
 
-  /**
-   * FIXME: we should keep track of latest execution id _per store_ and update
-   * the stores accordingly.
-   */
   function notifyStoresOfSettledAsync(
     newLoadable: Loadable<T>,
     executionId: ExecutionId,
@@ -311,13 +315,13 @@ function selector<T>(
         maybeFreezeValue(value);
         setCache(state, depValuesToDepRoute(depValues), loadable);
 
-        setLoadableInStoreToNotifyDeps(loadable, executionId);
+        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
         return {__value: value, __key: key};
       })
       .catch(errorOrPromise => {
-        if (isLatestExecution(executionId)) {
-          updateExecutionInfoDepValues(depValues, executionId);
+        if (isLatestExecution(store, executionId)) {
+          updateExecutionInfoDepValues(depValues, store, executionId);
         }
 
         if (isPromise(errorOrPromise)) {
@@ -335,7 +339,7 @@ function selector<T>(
         maybeFreezeValue(errorOrPromise);
         setCache(state, depValuesToDepRoute(depValues), loadable);
 
-        setLoadableInStoreToNotifyDeps(loadable, executionId);
+        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
         throw errorOrPromise;
       });
@@ -399,15 +403,15 @@ function selector<T>(
           executionId,
         );
 
-        if (isLatestExecution(executionId)) {
-          updateExecutionInfoDepValues(depValues, executionId);
+        if (isLatestExecution(store, executionId)) {
+          updateExecutionInfoDepValues(depValues, store, executionId);
         }
 
         maybeFreezeLoadableContents(loadable);
 
         if (loadable.state !== 'loading') {
           setCache(state, depValuesToDepRoute(depValues), loadable);
-          setLoadableInStoreToNotifyDeps(loadable, executionId);
+          setLoadableInStoreToNotifyDeps(store, loadable, executionId);
         }
 
         if (loadable.state === 'hasError') {
@@ -435,18 +439,19 @@ function selector<T>(
           loadableWithError(error),
         );
 
-        setLoadableInStoreToNotifyDeps(loadable, executionId);
+        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
         throw error;
       });
   }
 
   function setLoadableInStoreToNotifyDeps(
+    store: Store,
     loadable: Loadable<T>,
     executionId: ExecutionId,
   ): void {
-    if (isLatestExecution(executionId)) {
-      setExecutionInfo(loadable);
+    if (isLatestExecution(store, executionId)) {
+      setExecutionInfo(loadable, store);
       notifyStoresOfSettledAsync(loadable, executionId);
     }
   }
@@ -458,7 +463,7 @@ function selector<T>(
     executionId: ?ExecutionId,
   ): void {
     if (
-      isLatestExecution(executionId) ||
+      isLatestExecution(store, executionId) ||
       state.version === store.getState()?.currentTree?.version ||
       state.version === store.getState()?.nextTree?.version
     ) {
@@ -580,6 +585,8 @@ function selector<T>(
       store.getGraph(state.version).nodeDeps.get(key) ?? emptySet,
     );
 
+    const executionInfo = getExecutionInfo(store);
+
     setDepsInStore(store, state, deps, executionInfo.latestExecutionId);
 
     const cachedVal = cache.get(
@@ -636,7 +643,7 @@ function selector<T>(
       newExecutionId,
     );
 
-    setExecutionInfo(loadable, newDepValues, newExecutionId, state);
+    setExecutionInfo(loadable, store, newDepValues, newExecutionId, state);
     maybeSetCacheWithLoadable(
       state,
       depValuesToDepRoute(newDepValues),
@@ -673,17 +680,25 @@ function selector<T>(
     const cachedVal = getValFromCacheAndUpdatedDownstreamDeps(store, state);
 
     if (cachedVal != null) {
-      setExecutionInfo(cachedVal);
+      setExecutionInfo(cachedVal, store);
       return cachedVal;
     }
 
+    const inProgressExecutionInfo = getExecutionInfoOfInProgressExecution(
+      store,
+      state,
+    );
+
     // FIXME: this won't work with custom caching b/c it uses separate cache
-    if (asyncWorkIsInProgressAndDepsDiscoveredHaveNotChanged(store, state)) {
+    if (inProgressExecutionInfo) {
+      const executionInfo = inProgressExecutionInfo;
+
       notifyStoreWhenAsyncSettles(
         store,
         nullthrows(executionInfo.latestLoadable),
         nullthrows(executionInfo.latestExecutionId),
       );
+
       // FIXME: check after the fact to see if we made the right choice by waiting
       return nullthrows(executionInfo.latestLoadable);
     }
@@ -691,20 +706,31 @@ function selector<T>(
     return getValFromRunningNewExecutionAndUpdatedDeps(store, state);
   }
 
-  function asyncWorkIsInProgressAndDepsDiscoveredHaveNotChanged(
+  /**
+   * Searches execution info across all stores to see if there is an in-progress
+   * execution whose dependency values match the values of the requesting store.
+   */
+  function getExecutionInfoOfInProgressExecution(
     store: Store,
     state: TreeState,
-  ) {
-    return (
-      executionInfo.latestLoadable != null &&
-      executionInfo.latestExecutionId != null &&
-      !haveAsyncDepsChanged(store, state)
-    );
+  ): ?ExecutionInfo<T> {
+    const [, executionInfo] =
+      Array.from(executionInfoMap.entries()).find(([, executionInfo]) => {
+        return (
+          executionInfo.latestLoadable != null &&
+          executionInfo.latestExecutionId != null &&
+          !haveAsyncDepsChanged(store, state)
+        );
+      }) ?? [];
+
+    return executionInfo;
   }
 
   const mapOfCheckedVersions = new Map();
 
   function haveAsyncDepsChanged(store: Store, state: TreeState): boolean {
+    const executionInfo = getExecutionInfo(store);
+
     const oldDepValues =
       executionInfo.depValuesDiscoveredSoFarDuringAsyncWork ?? new Map();
 
@@ -761,10 +787,13 @@ function selector<T>(
    */
   function setExecutionInfo(
     loadable: Loadable<T>,
+    store: Store,
     depValues?: DepValues,
     newExecutionId?: ExecutionId,
     state?: TreeState,
   ) {
+    const executionInfo = getExecutionInfo(store);
+
     if (loadable.state === 'loading') {
       executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
       executionInfo.latestExecutionId = newExecutionId;
@@ -801,14 +830,19 @@ function selector<T>(
 
   function updateExecutionInfoDepValues(
     depValues: DepValues,
+    store: Store,
     executionId: ExecutionId,
   ) {
-    if (isLatestExecution(executionId)) {
+    const executionInfo = getExecutionInfo(store);
+
+    if (isLatestExecution(store, executionId)) {
       executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
     }
   }
 
-  function isLatestExecution(executionId): boolean {
+  function isLatestExecution(store: Store, executionId): boolean {
+    const executionInfo = getExecutionInfo(store);
+
     return executionId === executionInfo.latestExecutionId;
   }
 

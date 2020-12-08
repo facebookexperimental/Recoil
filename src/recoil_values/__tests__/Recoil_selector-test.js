@@ -852,10 +852,12 @@ describe('Async selector resolution notifies all stores that read pending', () =
       key: 'notifiesAllStores/twoRoots/switch',
       default: false,
     });
+
     const selectorA = selector({
       key: 'notifiesAllStores/twoRoots/a',
       get: () => 'SELECTOR A',
     });
+
     let resolve = _ => {
       throw new Error('error in test');
     };
@@ -908,7 +910,9 @@ describe('Async selector resolution notifies all stores that read pending', () =
       expect(rootB.textContent).toEqual('loading');
 
       act(() => resolve('SELECTOR B'));
+
       await flushPromisesAndTimers();
+
       expect(rootA.textContent).toEqual('SELECTOR B');
       expect(rootB.textContent).toEqual('SELECTOR B');
     }
