@@ -3534,7 +3534,7 @@
           };
           return ret;
         } else {
-          !(root.result === result) ?  Recoil_invariant(false, 'Existing cache must have the same result at the end of the route')  : void 0;
+          !(root.result.contents === result.contents && root.result.state === result.state) ?  Recoil_invariant(false, 'Existing cache must have the same result at the end of the route')  : void 0;
           const ret = root;
           return ret;
         }
@@ -3716,7 +3716,15 @@
      */
 
     const cache = cacheImplementation === Recoil_cacheWithReferenceEquality ? Recoil_treeCacheReferenceEquality() : cacheImplementation === Recoil_cacheWithValueEquality ? Recoil_treeCacheValueEquality() : cacheImplementation === Recoil_cacheMostRecent ? Recoil_nodeCacheMostRecent() : Recoil_treeCacheReferenceEquality();
-    const executionInfo = getInitialExecutionInfo();
+    const executionInfoMap = new Map();
+
+    function getExecutionInfo(store) {
+      if (!executionInfoMap.has(store)) {
+        executionInfoMap.set(store, getInitialExecutionInfo());
+      }
+
+      return Recoil_nullthrows(executionInfoMap.get(store));
+    }
 
     function initSelector(store) {
       store.getState().knownSelectors.add(key);
@@ -3733,11 +3741,6 @@
         stores.add(store);
       }
     }
-    /**
-     * FIXME: we should keep track of latest execution id _per store_ and update
-     * the stores accordingly.
-     */
-
 
     function notifyStoresOfSettledAsync(newLoadable, executionId) {
       const stores = waitingStores.get(executionId);
@@ -3801,14 +3804,14 @@
         const loadable = loadableWithValue$1(value);
         maybeFreezeValue(value);
         setCache(state, depValuesToDepRoute(depValues), loadable);
-        setLoadableInStoreToNotifyDeps(loadable, executionId);
+        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
         return {
           __value: value,
           __key: key
         };
       }).catch(errorOrPromise => {
-        if (isLatestExecution(executionId)) {
-          updateExecutionInfoDepValues(depValues, executionId);
+        if (isLatestExecution(store, executionId)) {
+          updateExecutionInfoDepValues(depValues, store, executionId);
         }
 
         if (Recoil_isPromise(errorOrPromise)) {
@@ -3818,7 +3821,7 @@
         const loadable = loadableWithError$1(errorOrPromise);
         maybeFreezeValue(errorOrPromise);
         setCache(state, depValuesToDepRoute(depValues), loadable);
-        setLoadableInStoreToNotifyDeps(loadable, executionId);
+        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
         throw errorOrPromise;
       });
     }
@@ -3874,15 +3877,15 @@
 
         const [loadable, depValues] = evaluateSelectorGetter(store, state, executionId);
 
-        if (isLatestExecution(executionId)) {
-          updateExecutionInfoDepValues(depValues, executionId);
+        if (isLatestExecution(store, executionId)) {
+          updateExecutionInfoDepValues(depValues, store, executionId);
         }
 
         maybeFreezeLoadableContents(loadable);
 
         if (loadable.state !== 'loading') {
           setCache(state, depValuesToDepRoute(depValues), loadable);
-          setLoadableInStoreToNotifyDeps(loadable, executionId);
+          setLoadableInStoreToNotifyDeps(store, loadable, executionId);
         }
 
         if (loadable.state === 'hasError') {
@@ -3907,14 +3910,14 @@
         const loadable = loadableWithError$1(error);
         maybeFreezeValue(error);
         setCache(state, depValuesToDepRoute(existingDeps), loadableWithError$1(error));
-        setLoadableInStoreToNotifyDeps(loadable, executionId);
+        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
         throw error;
       });
     }
 
-    function setLoadableInStoreToNotifyDeps(loadable, executionId) {
-      if (isLatestExecution(executionId)) {
-        setExecutionInfo(loadable);
+    function setLoadableInStoreToNotifyDeps(store, loadable, executionId) {
+      if (isLatestExecution(store, executionId)) {
+        setExecutionInfo(loadable, store);
         notifyStoresOfSettledAsync(loadable, executionId);
       }
     }
@@ -3922,7 +3925,7 @@
     function setDepsInStore(store, state, deps, executionId) {
       var _store$getState, _store$getState$curre, _store$getState2, _store$getState2$next;
 
-      if (isLatestExecution(executionId) || state.version === ((_store$getState = store.getState()) === null || _store$getState === void 0 ? void 0 : (_store$getState$curre = _store$getState.currentTree) === null || _store$getState$curre === void 0 ? void 0 : _store$getState$curre.version) || state.version === ((_store$getState2 = store.getState()) === null || _store$getState2 === void 0 ? void 0 : (_store$getState2$next = _store$getState2.nextTree) === null || _store$getState2$next === void 0 ? void 0 : _store$getState2$next.version)) {
+      if (isLatestExecution(store, executionId) || state.version === ((_store$getState = store.getState()) === null || _store$getState === void 0 ? void 0 : (_store$getState$curre = _store$getState.currentTree) === null || _store$getState$curre === void 0 ? void 0 : _store$getState$curre.version) || state.version === ((_store$getState2 = store.getState()) === null || _store$getState2 === void 0 ? void 0 : (_store$getState2$next = _store$getState2.nextTree) === null || _store$getState2$next === void 0 ? void 0 : _store$getState2$next.version)) {
         var _store$getState$nextT, _store$getState3, _store$getState3$next;
 
         saveDependencyMapToStore$3(new Map([[key, deps]]), store, (_store$getState$nextT = (_store$getState3 = store.getState()) === null || _store$getState3 === void 0 ? void 0 : (_store$getState3$next = _store$getState3.nextTree) === null || _store$getState3$next === void 0 ? void 0 : _store$getState3$next.version) !== null && _store$getState$nextT !== void 0 ? _store$getState$nextT : store.getState().currentTree.version);
@@ -4010,6 +4013,7 @@
       }
 
       const deps = new Set((_store$getGraph$nodeD = store.getGraph(state.version).nodeDeps.get(key)) !== null && _store$getGraph$nodeD !== void 0 ? _store$getGraph$nodeD : emptySet$1);
+      const executionInfo = getExecutionInfo(store);
       setDepsInStore(store, state, deps, executionInfo.latestExecutionId);
       const cachedVal = cache.get(nodeKey => {
         const [, loadable] = getCachedNodeLoadable(store, state, nodeKey);
@@ -4043,7 +4047,7 @@
     function getValFromRunningNewExecutionAndUpdatedDeps(store, state) {
       const newExecutionId = getNewExecutionId();
       const [loadable, newDepValues] = evaluateSelectorGetter(store, state, newExecutionId);
-      setExecutionInfo(loadable, newDepValues, newExecutionId, state);
+      setExecutionInfo(loadable, store, newDepValues, newExecutionId, state);
       maybeSetCacheWithLoadable(state, depValuesToDepRoute(newDepValues), loadable);
       notifyStoreWhenAsyncSettles(store, loadable, newExecutionId);
       return loadable;
@@ -4073,12 +4077,14 @@
       const cachedVal = getValFromCacheAndUpdatedDownstreamDeps(store, state);
 
       if (cachedVal != null) {
-        setExecutionInfo(cachedVal);
+        setExecutionInfo(cachedVal, store);
         return cachedVal;
-      } // FIXME: this won't work with custom caching b/c it uses separate cache
+      }
 
+      const inProgressExecutionInfo = getExecutionInfoOfInProgressExecution(store, state); // FIXME: this won't work with custom caching b/c it uses separate cache
 
-      if (asyncWorkIsInProgressAndDepsDiscoveredHaveNotChanged(store, state)) {
+      if (inProgressExecutionInfo) {
+        const executionInfo = inProgressExecutionInfo;
         notifyStoreWhenAsyncSettles(store, Recoil_nullthrows(executionInfo.latestLoadable), Recoil_nullthrows(executionInfo.latestExecutionId)); // FIXME: check after the fact to see if we made the right choice by waiting
 
         return Recoil_nullthrows(executionInfo.latestLoadable);
@@ -4086,9 +4092,19 @@
 
       return getValFromRunningNewExecutionAndUpdatedDeps(store, state);
     }
+    /**
+     * Searches execution info across all stores to see if there is an in-progress
+     * execution whose dependency values match the values of the requesting store.
+     */
 
-    function asyncWorkIsInProgressAndDepsDiscoveredHaveNotChanged(store, state) {
-      return executionInfo.latestLoadable != null && executionInfo.latestExecutionId != null && !haveAsyncDepsChanged(store, state);
+
+    function getExecutionInfoOfInProgressExecution(store, state) {
+      var _Array$from$find;
+
+      const [, executionInfo] = (_Array$from$find = Array.from(executionInfoMap.entries()).find(([, executionInfo]) => {
+        return executionInfo.latestLoadable != null && executionInfo.latestExecutionId != null && !haveAsyncDepsChanged(store, state);
+      })) !== null && _Array$from$find !== void 0 ? _Array$from$find : [];
+      return executionInfo;
     }
 
     const mapOfCheckedVersions = new Map();
@@ -4096,6 +4112,7 @@
     function haveAsyncDepsChanged(store, state) {
       var _executionInfo$depVal, _mapOfCheckedVersions;
 
+      const executionInfo = getExecutionInfo(store);
       const oldDepValues = (_executionInfo$depVal = executionInfo.depValuesDiscoveredSoFarDuringAsyncWork) !== null && _executionInfo$depVal !== void 0 ? _executionInfo$depVal : new Map();
       const cachedDepValuesCheckedForThisVersion = Array(((_mapOfCheckedVersions = mapOfCheckedVersions.get(state.version)) !== null && _mapOfCheckedVersions !== void 0 ? _mapOfCheckedVersions : new Map()).entries());
       const isCachedVersionSame = mapOfCheckedVersions.has(state.version) && cachedDepValuesCheckedForThisVersion.length === oldDepValues.size && cachedDepValuesCheckedForThisVersion.every(([nodeKey, nodeVal]) => {
@@ -4135,7 +4152,9 @@
      */
 
 
-    function setExecutionInfo(loadable, depValues, newExecutionId, state) {
+    function setExecutionInfo(loadable, store, depValues, newExecutionId, state) {
+      const executionInfo = getExecutionInfo(store);
+
       if (loadable.state === 'loading') {
         executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
         executionInfo.latestExecutionId = newExecutionId;
@@ -4167,13 +4186,16 @@
       }
     }
 
-    function updateExecutionInfoDepValues(depValues, executionId) {
-      if (isLatestExecution(executionId)) {
+    function updateExecutionInfoDepValues(depValues, store, executionId) {
+      const executionInfo = getExecutionInfo(store);
+
+      if (isLatestExecution(store, executionId)) {
         executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
       }
     }
 
-    function isLatestExecution(executionId) {
+    function isLatestExecution(store, executionId) {
+      const executionInfo = getExecutionInfo(store);
       return executionId === executionInfo.latestExecutionId;
     }
 
