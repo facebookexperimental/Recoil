@@ -349,7 +349,7 @@ function useRefreshUserInfo(userID) {
 
 function CurrentUserInfo() {
   const currentUserID = useRecoilValue(currentUserIDState);
-  const currentUserInfo = userRecoilValue(userInfoQuery(currentUserID));
+  const currentUserInfo = useRecoilValue(userInfoQuery(currentUserID));
   const refreshUserInfo = useRefreshUserInfo(currentUserID);
 
   return (
