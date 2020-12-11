@@ -17,6 +17,7 @@ import type {
   ValueOrUpdater,
 } from '../recoil_values/Recoil_selector';
 import type {RecoilValueInfo} from './Recoil_FunctionalCore';
+import type {NodeKey} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
@@ -32,8 +33,10 @@ const {
   recoilValuesForKeys,
 } = require('./Recoil_Node');
 const {
+  AbstractRecoilValue,
   getRecoilValueAsLoadable,
   setRecoilValue,
+  setUnvalidatedRecoilValue,
 } = require('./Recoil_RecoilValueInterface');
 const {
   getNextTreeStateVersion,
@@ -269,6 +272,19 @@ class MutableSnapshot extends Snapshot {
     batchUpdates(() =>
       setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE),
     );
+
+  // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  setUnvalidatedAtomValues_UNSTABLE: (Map<NodeKey, mixed>) => void = (
+    values: Map<NodeKey, mixed>,
+  ) => {
+    const store = this.getStore_INTERNAL();
+    batchUpdates(() => {
+      for (const [k, v] of values.entries()) {
+        setUnvalidatedRecoilValue(store, new AbstractRecoilValue(k), v);
+      }
+    });
+  };
 }
 
 module.exports = {
