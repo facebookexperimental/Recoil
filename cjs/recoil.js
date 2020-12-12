@@ -1241,8 +1241,10 @@ const {
 } = Recoil_Node;
 
 const {
+  AbstractRecoilValue: AbstractRecoilValue$2,
   getRecoilValueAsLoadable: getRecoilValueAsLoadable$1,
-  setRecoilValue: setRecoilValue$1
+  setRecoilValue: setRecoilValue$1,
+  setUnvalidatedRecoilValue: setUnvalidatedRecoilValue$1
 } = Recoil_RecoilValueInterface;
 
 const {
@@ -1421,6 +1423,15 @@ class MutableSnapshot extends Snapshot {
 
     _defineProperty(this, "reset", recoilState => // See note at `set` about batched updates.
     batchUpdates$1(() => setRecoilValue$1(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE$1)));
+
+    _defineProperty(this, "setUnvalidatedAtomValues_UNSTABLE", values => {
+      const store = this.getStore_INTERNAL();
+      batchUpdates$1(() => {
+        for (const [k, v] of values.entries()) {
+          setUnvalidatedRecoilValue$1(store, new AbstractRecoilValue$2(k), v);
+        }
+      });
+    });
   } // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
 
@@ -2248,11 +2259,11 @@ const {
 } = Recoil_RecoilValue$1;
 
 const {
-  AbstractRecoilValue: AbstractRecoilValue$2,
+  AbstractRecoilValue: AbstractRecoilValue$3,
   getRecoilValueAsLoadable: getRecoilValueAsLoadable$2,
   setRecoilValue: setRecoilValue$2,
   setRecoilValueLoadable: setRecoilValueLoadable$1,
-  setUnvalidatedRecoilValue: setUnvalidatedRecoilValue$1,
+  setUnvalidatedRecoilValue: setUnvalidatedRecoilValue$2,
   subscribeToRecoilValue: subscribeToRecoilValue$1
 } = Recoil_RecoilValueInterface;
 
@@ -2350,7 +2361,7 @@ function useRecoilInterface_DEPRECATED() {
         return;
       }
 
-      const sub = subscribeToRecoilValue$1(store, new AbstractRecoilValue$2(key), state => {
+      const sub = subscribeToRecoilValue$1(store, new AbstractRecoilValue$3(key), state => {
         Recoil_Tracing.trace('RecoilValue subscription fired', key, () => {
           updateState(state, key);
         });
@@ -2766,7 +2777,7 @@ function useGotoRecoilSnapshot() {
       }
 
       keysToUpdate.forEach(key => {
-        setRecoilValueLoadable$1(storeRef.current, new AbstractRecoilValue$2(key), next.atomValues.has(key) ? Recoil_nullthrows(next.atomValues.get(key)) : DEFAULT_VALUE$2);
+        setRecoilValueLoadable$1(storeRef.current, new AbstractRecoilValue$3(key), next.atomValues.has(key) ? Recoil_nullthrows(next.atomValues.get(key)) : DEFAULT_VALUE$2);
       });
       storeRef.current.replaceState(state => {
         return { ...state,
@@ -2782,7 +2793,7 @@ function useSetUnvalidatedAtomValues() {
   return (values, transactionMetadata = {}) => {
     batchUpdates$2(() => {
       storeRef.current.addTransactionMetadata(transactionMetadata);
-      values.forEach((value, key) => setUnvalidatedRecoilValue$1(storeRef.current, new AbstractRecoilValue$2(key), value));
+      values.forEach((value, key) => setUnvalidatedRecoilValue$2(storeRef.current, new AbstractRecoilValue$3(key), value));
     });
   };
 }
@@ -3665,7 +3676,7 @@ const {
 } = Recoil_RecoilValue$1;
 
 const {
-  AbstractRecoilValue: AbstractRecoilValue$3
+  AbstractRecoilValue: AbstractRecoilValue$4
 } = Recoil_RecoilValue$1;
 
 const {
@@ -3747,7 +3758,7 @@ function selector(options) {
 
     if (stores !== undefined) {
       for (const store of stores) {
-        setRecoilValueLoadable$2(store, new AbstractRecoilValue$3(key), newLoadable);
+        setRecoilValueLoadable$2(store, new AbstractRecoilValue$4(key), newLoadable);
       }
 
       waitingStores.delete(executionId);
@@ -4344,7 +4355,7 @@ const {
 } = Recoil_Node;
 
 const {
-  AbstractRecoilValue: AbstractRecoilValue$4
+  AbstractRecoilValue: AbstractRecoilValue$5
 } = Recoil_RecoilValue$1;
 
 const {
@@ -4415,7 +4426,7 @@ function selector$1(options) {
 
     if (stores !== undefined) {
       for (const store of stores) {
-        setRecoilValueLoadable$3(store, new AbstractRecoilValue$4(key), newLoadable);
+        setRecoilValueLoadable$3(store, new AbstractRecoilValue$5(key), newLoadable);
       }
 
       waitingStores$1.delete(originalLoadable);
@@ -4583,7 +4594,7 @@ function selector$1(options) {
         loadable = loadableWithPromise$2(errorOrDepPromise.then(() => {
           // Now that its deps are ready, re-evaluate the selector (and
           // record any newly-discovered dependencies in the Store):
-          const loadable = getRecoilValueAsLoadable$3(store, new AbstractRecoilValue$4(key));
+          const loadable = getRecoilValueAsLoadable$3(store, new AbstractRecoilValue$5(key));
 
           if (loadable.state === 'hasError') {
             throw loadable.contents;

@@ -13,6 +13,7 @@
 import type { Loadable } from '../adt/Recoil_Loadable';
 import type { ResetRecoilState, SetRecoilState, ValueOrUpdater } from '../recoil_values/Recoil_selector';
 import type { RecoilValueInfo } from './Recoil_FunctionalCore';
+import type { NodeKey } from './Recoil_Keys';
 import type { RecoilState, RecoilValue } from './Recoil_RecoilValue';
 import type { StateID, Store, StoreState, TreeState } from './Recoil_State';
 
@@ -42,8 +43,10 @@ const {
 } = require('./Recoil_Node');
 
 const {
+  AbstractRecoilValue,
   getRecoilValueAsLoadable,
-  setRecoilValue
+  setRecoilValue,
+  setUnvalidatedRecoilValue
 } = require('./Recoil_RecoilValueInterface');
 
 const {
@@ -85,6 +88,7 @@ declare class MutableSnapshot extends Snapshot {
   constructor(snapshot: Snapshot): any,
   set: SetRecoilState,
   reset: ResetRecoilState,
+  setUnvalidatedAtomValues_UNSTABLE: (Map<NodeKey, mixed>) => void,
 }
 module.exports = {
   Snapshot,
