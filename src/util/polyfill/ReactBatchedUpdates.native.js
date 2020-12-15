@@ -12,6 +12,7 @@
  * for our react-native build
  */
 
-const {unstable_batchedUpdates} = require('ReactNative');
+// $FlowExpectedError[cannot-resolve-module] // @oss-only
+const {unstable_batchedUpdates} = require('ReactNative'); // @oss-only
 
-module.exports = {unstable_batchedUpdates};
+module.exports = {unstable_batchedUpdates}; // @oss-only
