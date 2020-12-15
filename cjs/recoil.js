@@ -4953,7 +4953,14 @@ function baseAtom(options) {
 
 
     if (!(initValue instanceof DefaultValue$2)) {
-      initState.atomValues.set(key, Recoil_isPromise(initValue) ? loadableWithPromise$3(wrapPendingPromise(store, initValue)) : loadableWithValue$3(initValue));
+      var _store$getState$nextT4;
+
+      const initLoadable = Recoil_isPromise(initValue) ? loadableWithPromise$3(wrapPendingPromise(store, initValue)) : loadableWithValue$3(initValue);
+      initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
+      // This could happen if the atom was first initialized in an action that
+      // also updated some other atom's state.
+
+      (_store$getState$nextT4 = store.getState().nextTree) === null || _store$getState$nextT4 === void 0 ? void 0 : _store$getState$nextT4.atomValues.set(key, initLoadable);
     }
   }
 
