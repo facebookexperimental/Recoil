@@ -78,7 +78,7 @@ function FontButton() {
 
   return (
     <>
-      <div>Current font size: ${fontSizeLabel}</div>
+      <div>Current font size: {fontSizeLabel}</div>
 
       <button onClick={() => setFontSize(fontSize + 1)} style={{fontSize}}>
         Click to Enlarge
