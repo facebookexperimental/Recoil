@@ -13,7 +13,7 @@ import type {RecoilValue} from '../core/Recoil_RecoilValue';
 const {peekNodeInfo} = require('../core/Recoil_FunctionalCore');
 const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
 
-export default function useGetRecoilValueInfo(): <T>(
+module.exports = function useGetRecoilValueInfo(): <T>(
   RecoilValue<T>,
 ) => RecoilValueInfo<T> {
   const storeRef = useStoreRef();
@@ -24,4 +24,4 @@ export default function useGetRecoilValueInfo(): <T>(
       storeRef.current.getState().currentTree,
       key,
     );
-}
+};
