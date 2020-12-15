@@ -7,7 +7,6 @@
         "root": ["./src"],
         "alias": {
           "React": "react",
-          "ReactRenderer": "react-dom",
           "ReactDOM": "react-dom",
           "ReactNative": "react-native",
           "ReactTestUtils": "react-dom/test-utils"

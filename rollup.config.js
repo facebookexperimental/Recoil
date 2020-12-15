@@ -7,7 +7,10 @@ import {terser} from 'rollup-plugin-terser';
 const inputFile = 'src/Recoil_index.js';
 const externalLibs = ['react', 'react-dom'];
 
-const getCommonPlugins = ({renderer = 'react-dom'} = {}) => [
+const defaultNodeResolveConfig = {};
+const nodeResolvePlugin = nodeResolve(defaultNodeResolveConfig);
+
+const commonPlugins = [
   babel({
     presets: ['@babel/preset-react', '@babel/preset-flow'],
     plugins: [
@@ -24,27 +27,28 @@ const getCommonPlugins = ({renderer = 'react-dom'} = {}) => [
       if (source === 'React') {
         return {id: 'react', external: true};
       }
-      if (source === 'ReactRenderer') {
-        return {id: renderer, external: true};
+      if (source === 'ReactDOM') {
+        return {id: 'react-dom', external: true};
+      }
+      if (source === 'ReactNative') {
+        return {id: 'react-native', external: true};
       }
       return null;
     },
   },
-  nodeResolve({}),
+  nodeResolvePlugin,
   commonjs(),
 ];
 
-const commonPluginsDOM = getCommonPlugins();
-
 const developmentPlugins = [
-  ...commonPluginsDOM,
+  ...commonPlugins,
   replace({
     'process.env.NODE_ENV': JSON.stringify('development'),
   }),
 ];
 
 const productionPlugins = [
-  ...commonPluginsDOM,
+  ...commonPlugins,
   replace({
     'process.env.NODE_ENV': JSON.stringify('production'),
   }),
@@ -61,7 +65,7 @@ const configs = [
       exports: 'named',
     },
     external: externalLibs,
-    plugins: commonPluginsDOM,
+    plugins: commonPlugins,
   },
 
   // ES
@@ -73,7 +77,7 @@ const configs = [
       exports: 'named',
     },
     external: externalLibs,
-    plugins: commonPluginsDOM,
+    plugins: commonPlugins,
   },
 
   // React Native
@@ -85,7 +89,17 @@ const configs = [
       exports: 'named',
     },
     external: [...externalLibs, 'react-native'],
-    plugins: getCommonPlugins({renderer: 'react-native'}),
+    plugins: commonPlugins.map(plugin => {
+      // Replace the default nodeResolve plugin
+      if (plugin === nodeResolvePlugin) {
+        return nodeResolve({
+          ...defaultNodeResolveConfig,
+          extensions: ['.native.js', '.js'],
+        });
+      }
+
+      return plugin;
+    }),
   },
 
   // ES for Browsers

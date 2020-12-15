@@ -8,13 +8,11 @@
  * @flow strict
  * @format
  *
- * This is to export esstiential functions from a react renderer,
- * such as react-dom or react-native
+ * This is to export esstiential functions from react-dom
+ * for our web build
  */
 
-// in OSS it's configured in rollup.config.js
-const {unstable_batchedUpdates} = require('ReactRenderer'); // @oss-only
-// in FB, ReactDOMComet falls back to ReactDOM in non-comet environment
+const {unstable_batchedUpdates} = require('ReactDOM'); // @oss-only
 // @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
 
 module.exports = {unstable_batchedUpdates};
