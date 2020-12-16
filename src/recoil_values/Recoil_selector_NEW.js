@@ -913,10 +913,17 @@ function selector<T>(
     function mySet(store, state, newValue): [DependencyMap, AtomValues] {
       initSelector(store);
 
+      let syncSelectorSetFinished = false;
       const dependencyMap: DependencyMap = new Map();
       const writes: AtomValues = new Map();
 
       function getRecoilValue<S>({key}: RecoilValue<S>): S {
+        if (syncSelectorSetFinished) {
+          throw new Error(
+            'Recoil: Async selector sets are not currently supported.',
+          );
+        }
+
         const [, loadable] = getCachedNodeLoadable(store, state, key);
 
         if (loadable.state === 'hasValue') {
@@ -932,6 +939,12 @@ function selector<T>(
         recoilState: RecoilState<S>,
         valueOrUpdater: S | DefaultValue | ((S, GetRecoilValue) => S),
       ) {
+        if (syncSelectorSetFinished) {
+          throw new Error(
+            'Recoil: Async selector sets are not currently supported.',
+          );
+        }
+
         const newValue =
           typeof valueOrUpdater === 'function'
             ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
@@ -953,11 +966,21 @@ function selector<T>(
         setRecoilState(recoilState, DEFAULT_VALUE);
       }
 
-      set(
+      const ret = set(
         {set: setRecoilState, get: getRecoilValue, reset: resetRecoilState},
         newValue,
       );
 
+      // set should be a void method, but if the user makes it `async`, then it
+      // will return a Promise, which we don't currently support.
+      if (ret !== undefined) {
+        throw isPromise(ret)
+          ? new Error(
+              'Recoil: Async selector sets are not currently supported.',
+            )
+          : new Error('Recoil: selector set should be a void function.');
+      }
+      syncSelectorSetFinished = true;
       return [dependencyMap, writes];
     }
 
