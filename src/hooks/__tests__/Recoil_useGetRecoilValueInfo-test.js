@@ -34,7 +34,7 @@ const testRecoil = getRecoilTestFn(() => {
 
 testRecoil(
   'useGetRecoilValueInfo',
-  gk => {
+  gks => {
     const myAtom = atom<string>({
       key: 'useGetRecoilValueInfo atom',
       default: 'DEFAULT',
@@ -74,7 +74,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual(
       [],
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(myAtom).subscribers.components),
       ).toEqual([]);
@@ -90,7 +90,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
       [],
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(selectorA).subscribers.components),
       ).toEqual([]);
@@ -106,7 +106,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(
       [],
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(selectorB).subscribers.components),
       ).toEqual([]);
@@ -139,7 +139,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual(
       expect.arrayContaining([selectorA, selectorB]),
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(myAtom).subscribers.components),
       ).toEqual([{name: 'ReadsAndWritesAtom'}]);
@@ -160,7 +160,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
       expect.arrayContaining([selectorB]),
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(selectorA).subscribers.components),
       ).toEqual([]);
@@ -181,7 +181,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(
       [],
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(selectorB).subscribers.components),
       ).toEqual([{name: 'ReadsAtom'}]);
@@ -201,7 +201,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual(
       expect.arrayContaining([selectorA, selectorB]),
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(myAtom).subscribers.components),
       ).toEqual([{name: 'ReadsAndWritesAtom'}]);
@@ -219,7 +219,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
       expect.arrayContaining([selectorB]),
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(selectorA).subscribers.components),
       ).toEqual([]);
@@ -240,7 +240,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(
       [],
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(selectorB).subscribers.components),
       ).toEqual([{name: 'ReadsAtom'}]);
@@ -263,7 +263,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual(
       expect.arrayContaining([selectorA, selectorB]),
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(myAtom).subscribers.components),
       ).toEqual([{name: 'ReadsAndWritesAtom'}]);
@@ -284,7 +284,7 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
       expect.arrayContaining([selectorB]),
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(selectorA).subscribers.components),
       ).toEqual([]);
@@ -305,11 +305,11 @@ testRecoil(
     expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(
       [],
     );
-    if (gk === 'recoil_infer_component_names') {
+    if (gks.includes('recoil_infer_component_names')) {
       expect(
         Array.from(getRecoilValueInfo(selectorB).subscribers.components),
       ).toEqual([{name: 'ReadsAtom'}]);
     }
   },
-  // @fb-only: {gks: ['recoil_infer_component_names']},
+  // @fb-only: {gks: [['recoil_infer_component_names']]},
 );
