@@ -229,15 +229,19 @@ function flushPromisesAndTimers(): Promise<void> {
 
 type ReloadImports = () => void;
 type AssertionsFn = (gk: string | null) => ?Promise<mixed>;
-type TestFn = (string, AssertionsFn) => void;
+type TestOptions = {
+  gks?: Array<string>,
+};
+type TestFn = (string, AssertionsFn, TestOptions | void) => void;
 
 const testGKs = (gks: Array<string>, reloadImports: ReloadImports): TestFn => (
   testDescription: string,
   assertionsFn: AssertionsFn,
+  {gks: additionalGKs = []}: TestOptions = {},
 ) => {
   test.each([
     [testDescription, null],
-    ...gks.map(gk => [`${testDescription} (${gk})`, gk]),
+    ...[...gks, ...additionalGKs].map(gk => [`${testDescription} (${gk})`, gk]),
   ])('%s', async (_title, gk) => {
     jest.resetModules();
 
