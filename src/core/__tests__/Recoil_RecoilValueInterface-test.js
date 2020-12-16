@@ -96,7 +96,7 @@ testRecoil('selector subscriber is called when upstream changes', () => {
   expect(callback).toHaveBeenCalledTimes(0);
   setRecoilValue(store, a, 1);
   expect(callback).toHaveBeenCalledTimes(1);
-  release(store);
+  release();
   setRecoilValue(store, a, 2);
   expect(callback).toHaveBeenCalledTimes(1);
 });
@@ -114,7 +114,7 @@ testRecoil(
     expect(callback).toHaveBeenCalledTimes(0);
     setRecoilValue(store, a, 1);
     expect(callback).toHaveBeenCalledTimes(1);
-    release(store);
+    release();
     setRecoilValue(store, a, 2);
     expect(callback).toHaveBeenCalledTimes(1);
   },
