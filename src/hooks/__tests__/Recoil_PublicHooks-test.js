@@ -23,6 +23,7 @@ const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 let React,
   useEffect,
   useState,
+  Profiler,
   act,
   Queue,
   batchUpdates,
@@ -49,7 +50,7 @@ let {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('React');
-  ({useEffect, useState} = require('React'));
+  ({useEffect, useState, Profiler} = require('React'));
   ({act} = require('ReactTestUtils'));
 
   Queue = require('../../adt/Recoil_Queue');
@@ -199,8 +200,11 @@ function componentThatReadsTwoAtoms(one, two) {
 function componentThatReadsAtomWithCommitCount(atom) {
   const commit = jest.fn(() => {});
   function ReadsAtom() {
-    useEffect(commit);
-    return useRecoilValue(atom);
+    return (
+      <Profiler id="test" onRender={commit}>
+        {useRecoilValue(atom)}
+      </Profiler>
+    );
   }
   return [ReadsAtom, commit];
 }
