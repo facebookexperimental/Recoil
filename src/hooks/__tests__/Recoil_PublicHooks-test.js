@@ -354,63 +354,62 @@ testRecoil('Async selectors can depend on async selectors', async () => {
   }
 });
 
-testRecoil(
-  'Dep of upstream selector can change while pending',
-  async isSelectorGkPassing => {
-    if (isSelectorGkPassing) {
-      const anAtom = counterAtom();
-      const [
-        upstreamSel,
-        upstreamResolvers,
-      ] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
-      const [
-        downstreamSel,
-        downstreamResolvers,
-      ] = asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
+testRecoil('Dep of upstream selector can change while pending', async gk => {
+  if (gk !== 'recoil_async_selector_refactor') {
+    return;
+  }
 
-      const [Component, updateValue] = componentThatWritesAtom(anAtom);
-      const container = renderElements(
-        <>
-          <Component />
-          <ReadsAtom atom={downstreamSel} />
-        </>,
-      );
+  const anAtom = counterAtom();
+  const [
+    upstreamSel,
+    upstreamResolvers,
+  ] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
+  const [
+    downstreamSel,
+    downstreamResolvers,
+  ] = asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
 
-      // Initially, upstream has returned a promise so there is one upstream resolver.
-      // Downstream is waiting on upstream so it hasn't returned anything yet.
-      expect(container.textContent).toEqual('loading');
-      expect(upstreamResolvers.length).toEqual(1);
-      expect(downstreamResolvers.length).toEqual(0);
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  const container = renderElements(
+    <>
+      <Component />
+      <ReadsAtom atom={downstreamSel} />
+    </>,
+  );
 
-      // Resolve upstream; downstream should now have returned a new promise:
-      upstreamResolvers[0][0](123);
-      await flushPromisesAndTimers();
-      expect(downstreamResolvers.length).toEqual(1);
+  // Initially, upstream has returned a promise so there is one upstream resolver.
+  // Downstream is waiting on upstream so it hasn't returned anything yet.
+  expect(container.textContent).toEqual('loading');
+  expect(upstreamResolvers.length).toEqual(1);
+  expect(downstreamResolvers.length).toEqual(0);
 
-      // Update atom to a new value while downstream is pending:
-      act(() => updateValue(1));
-      await flushPromisesAndTimers();
+  // Resolve upstream; downstream should now have returned a new promise:
+  upstreamResolvers[0][0](123);
+  await flushPromisesAndTimers();
+  expect(downstreamResolvers.length).toEqual(1);
 
-      // Upstream returns a new promise for the new atom value.
-      // Downstream is once again waiting on upstream so it hasn't returned a new
-      // promise for the new value.
-      expect(upstreamResolvers.length).toEqual(2);
-      expect(downstreamResolvers.length).toEqual(1);
+  // Update atom to a new value while downstream is pending:
+  act(() => updateValue(1));
+  await flushPromisesAndTimers();
 
-      // Resolve the new upstream promise:
-      upstreamResolvers[1][0](123);
-      await flushPromisesAndTimers();
+  // Upstream returns a new promise for the new atom value.
+  // Downstream is once again waiting on upstream so it hasn't returned a new
+  // promise for the new value.
+  expect(upstreamResolvers.length).toEqual(2);
+  expect(downstreamResolvers.length).toEqual(1);
 
-      // Downstream can now return its new promise:
-      expect(downstreamResolvers.length).toEqual(2);
+  // Resolve the new upstream promise:
+  upstreamResolvers[1][0](123);
+  await flushPromisesAndTimers();
 
-      // If we resolve downstream's new promise we should see the result:
-      downstreamResolvers[1][0](123);
-      await flushPromisesAndTimers();
-      expect(container.textContent).toEqual('123');
-    }
-  },
-);
+  // Downstream can now return its new promise:
+  expect(downstreamResolvers.length).toEqual(2);
+
+  // If we resolve downstream's new promise we should see the result:
+  downstreamResolvers[1][0](123);
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('123');
+});
 
 testRecoil('Errors are propogated through selectors', () => {
   const errorThrower = errorSelector('ERROR');

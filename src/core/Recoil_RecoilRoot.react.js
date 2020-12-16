@@ -10,9 +10,9 @@
  */
 'use strict';
 
-import type {RecoilValue} from '../core/Recoil_RecoilValue';
-import type {MutableSnapshot} from '../core/Recoil_Snapshot';
-import type {Store, StoreRef, StoreState} from '../core/Recoil_State';
+import type {RecoilValue} from './Recoil_RecoilValue';
+import type {MutableSnapshot} from './Recoil_Snapshot';
+import type {Store, StoreRef, StoreState} from './Recoil_State';
 
 const React = require('React');
 const {useContext, useEffect, useMemo, useRef, useState} = require('React');
@@ -21,26 +21,26 @@ const {useContext, useEffect, useMemo, useRef, useState} = require('React');
 // @fb-only: const URI = require('URI');
 
 const Queue = require('../adt/Recoil_Queue');
-const {
-  cleanUpNode,
-  getDownstreamNodes,
-  setNodeValue,
-  setUnvalidatedAtomValue_DEPRECATED,
-} = require('../core/Recoil_FunctionalCore');
-const {graph, saveDependencyMapToStore} = require('../core/Recoil_Graph');
-const {cloneGraph} = require('../core/Recoil_Graph');
-const {applyAtomValueWrites} = require('../core/Recoil_RecoilValueInterface');
-const {freshSnapshot} = require('../core/Recoil_Snapshot');
-const {
-  getNextTreeStateVersion,
-  makeEmptyStoreState,
-} = require('../core/Recoil_State');
 const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const nullthrows = require('../util/Recoil_nullthrows');
 // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
+const {
+  cleanUpNode,
+  getDownstreamNodes,
+  setNodeValue,
+  setUnvalidatedAtomValue_DEPRECATED,
+} = require('./Recoil_FunctionalCore');
+const {graph, saveDependencyMapToStore} = require('./Recoil_Graph');
+const {cloneGraph} = require('./Recoil_Graph');
+const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
+const {freshSnapshot} = require('./Recoil_Snapshot');
+const {
+  getNextTreeStateVersion,
+  makeEmptyStoreState,
+} = require('./Recoil_State');
 // @fb-only: const gkx = require('gkx');
 
 type Props = {
