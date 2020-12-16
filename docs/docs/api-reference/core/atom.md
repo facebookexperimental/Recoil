@@ -5,8 +5,6 @@ sidebar_label: atom()
 
 An *atom* represents state in Recoil.  The `atom()` function returns a writeable `RecoilState` object.
 
-Recoil manages atom state changes to know when to notify components subscribing to that atom to re-render, so you should use the hooks listed below to change atom state.  If an object stored in an atom was mutated directly it may bypass this and cause state changes without properly notifying subscribing components.  To help detect bugs Recoil will freeze objects stored in atoms in development mode.
-
 ---
 
 ```jsx
@@ -26,6 +24,8 @@ function atom<T>({
   - `dangerouslyAllowMutability` - In some cases it may be desireable allow mutating of objects stored in atoms that don't represent state changes.  Use this option to override freezing objects in development mode.
 
 ---
+
+Recoil manages atom state changes to know when to notify components subscribing to that atom to re-render, so you should use the hooks listed below to change atom state.  If an object stored in an atom was mutated directly it may bypass this and cause state changes without properly notifying subscribing components.  To help detect bugs Recoil will freeze objects stored in atoms in development mode.
 
 Most often, you'll use the following hooks to interact with atoms:
 
