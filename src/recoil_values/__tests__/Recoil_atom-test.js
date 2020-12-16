@@ -10,8 +10,8 @@
 const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
 let React,
-  useEffect,
   useState,
+  Profiler,
   ReactDOM,
   act,
   DEFAULT_VALUE,
@@ -34,7 +34,7 @@ const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
   React = require('React');
-  ({useEffect, useState} = require('React'));
+  ({useState, Profiler} = require('React'));
   ReactDOM = require('ReactDOM');
   ({act} = require('ReactTestUtils'));
 
@@ -185,9 +185,6 @@ testRecoil("Updating with same value doesn't rerender", () => {
   let resetAtom;
   let renders = 0;
   function AtomComponent() {
-    useEffect(() => {
-      renders++;
-    });
     const [value, setValue] = useRecoilState(myAtom);
     const resetValue = useResetRecoilState(myAtom);
     setAtom = setValue;
@@ -195,7 +192,15 @@ testRecoil("Updating with same value doesn't rerender", () => {
     return value;
   }
   expect(renders).toEqual(0);
-  const c = renderElements(<AtomComponent />);
+  const c = renderElements(
+    <Profiler
+      id="test"
+      onRender={() => {
+        renders++;
+      }}>
+      <AtomComponent />
+    </Profiler>,
+  );
 
   // Initial render happens one time in www and 2 times in oss.
   // resetting the counter to 1 after the initial render to make them

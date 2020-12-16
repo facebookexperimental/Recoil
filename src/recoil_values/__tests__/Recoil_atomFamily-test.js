@@ -10,13 +10,13 @@
  */
 'use strict';
 
-import type {Store} from 'Recoil_State';
+import type {Store} from '../../core/Recoil_State';
 
 const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
 let store: Store,
   React,
-  useEffect,
+  Profiler,
   useState,
   ReactDOM,
   act,
@@ -42,7 +42,7 @@ const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
   React = require('React');
-  ({useEffect, useState} = require('React'));
+  ({Profiler, useState} = require('React'));
   ReactDOM = require('ReactDOM');
   ({act} = require('ReactTestUtils'));
 
@@ -443,11 +443,16 @@ testRecoil('Independent atom subscriptions', () => {
     let setValue;
 
     const Component = () => {
-      useEffect(() => {
-        numUpdates++;
-      });
       setValue = useSetRecoilState(myAtom(param));
-      return stableStringify(useRecoilValue(myAtom(param)));
+      return (
+        <Profiler
+          id="test"
+          onRender={() => {
+            numUpdates++;
+          }}>
+          {stableStringify(useRecoilValue(myAtom(param)))}
+        </Profiler>
+      );
     };
 
     return [Component, value => setValue(value), () => numUpdates];
