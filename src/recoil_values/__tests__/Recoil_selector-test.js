@@ -403,7 +403,7 @@ testRecoil(
 // This tests ability to catch a pending result as a promise and
 // that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
-testRecoil('useRecoilState - selector catching promise 2', async gk => {
+testRecoil('useRecoilState - selector catching promise 2', async gks => {
   let dependencyPromiseTest;
   const resolvingSel = resolvingAsyncSelector('READY');
   const catchPromiseSelector = selector({
@@ -413,7 +413,7 @@ testRecoil('useRecoilState - selector catching promise 2', async gk => {
         return get(resolvingSel);
       } catch (promise) {
         expect(promise instanceof Promise).toBe(true);
-        if (gk === 'recoil_async_selector_refactor') {
+        if (gks.includes('recoil_async_selector_refactor')) {
           // eslint-disable-next-line jest/valid-expect
           dependencyPromiseTest = expect(promise).resolves.toHaveProperty(
             '__value',
@@ -478,8 +478,8 @@ testRecoil('Detect circular dependencies', () => {
 
 testRecoil(
   'selector is able to track dependencies discovered asynchronously',
-  async gk => {
-    if (gk !== 'recoil_async_selector_refactor') {
+  async gks => {
+    if (!gks.includes('recoil_async_selector_refactor')) {
       return;
     }
 
@@ -529,8 +529,8 @@ testRecoil(
  */
 testRecoil(
   'selector should rerun entire selector when a dep changes',
-  async gk => {
-    if (gk !== 'recoil_async_selector_refactor') {
+  async gks => {
+    if (!gks.includes('recoil_async_selector_refactor')) {
       return;
     }
 
@@ -589,8 +589,8 @@ testRecoil(
  */
 testRecoil(
   'async selector runs the minimum number of times required',
-  async gk => {
-    if (gk !== 'recoil_async_selector_refactor') {
+  async gks => {
+    if (!gks.includes('recoil_async_selector_refactor')) {
       return;
     }
 
@@ -630,8 +630,8 @@ testRecoil(
 
 testRecoil(
   'async selector with changing dependencies finishes execution using original state',
-  async gk => {
-    if (gk !== 'recoil_async_selector_refactor') {
+  async gks => {
+    if (!gks.includes('recoil_async_selector_refactor')) {
       return;
     }
 
@@ -690,8 +690,8 @@ testRecoil(
   },
 );
 
-testRecoil('selector - dynamic getRecoilValue()', async gk => {
-  if (gk !== 'recoil_async_selector_refactor') {
+testRecoil('selector - dynamic getRecoilValue()', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
     return;
   }
 
@@ -921,8 +921,8 @@ describe('Async selector resolution notifies all stores that read pending', () =
 
 testRecoil(
   'selector - kite pattern runs only necessary selectors',
-  async gk => {
-    if (gk !== 'recoil_async_selector_refactor') {
+  async gks => {
+    if (!gks.includes('recoil_async_selector_refactor')) {
       return;
     }
 

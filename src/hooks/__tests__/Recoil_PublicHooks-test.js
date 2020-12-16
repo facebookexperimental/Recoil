@@ -354,8 +354,8 @@ testRecoil('Async selectors can depend on async selectors', async () => {
   }
 });
 
-testRecoil('Dep of upstream selector can change while pending', async gk => {
-  if (gk !== 'recoil_async_selector_refactor') {
+testRecoil('Dep of upstream selector can change while pending', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
     return;
   }
 

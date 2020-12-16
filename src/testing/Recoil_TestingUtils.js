@@ -228,39 +228,41 @@ function flushPromisesAndTimers(): Promise<void> {
 }
 
 type ReloadImports = () => void;
-type AssertionsFn = (gk: string | null) => ?Promise<mixed>;
+type AssertionsFn = (gks: Array<string>) => ?Promise<mixed>;
 type TestOptions = {
-  gks?: Array<string>,
+  gks?: Array<Array<string>>,
 };
 type TestFn = (string, AssertionsFn, TestOptions | void) => void;
 
-const testGKs = (gks: Array<string>, reloadImports: ReloadImports): TestFn => (
+const testGKs = (
+  reloadImports: ReloadImports,
+  gks: Array<Array<string>>,
+): TestFn => (
   testDescription: string,
   assertionsFn: AssertionsFn,
   {gks: additionalGKs = []}: TestOptions = {},
 ) => {
   test.each([
-    [testDescription, null],
-    ...[...gks, ...additionalGKs].map(gk => [`${testDescription} (${gk})`, gk]),
-  ])('%s', async (_title, gk) => {
+    [testDescription, []],
+    ...[...gks, ...additionalGKs].map(gks => [
+      !gks.length ? testDescription : `${testDescription} [${gks.join(', ')}]`,
+      gks,
+    ]),
+  ])('%s', async (_title, gks) => {
     jest.resetModules();
 
-    if (gk) {
-      gkx.setPass(gk);
-    }
+    gks.forEach(gkx.setPass);
 
     reloadImports();
-    await assertionsFn(gk);
+    await assertionsFn(gks);
 
-    if (gk) {
-      gkx.setFail(gk);
-    }
+    gks.forEach(gkx.setFail);
   });
 };
 
 const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
-  // @fb-only: testGKs(['recoil_async_selector_refactor'], reloadImports);
- testGKs([], reloadImports); // @oss-only
+  // @fb-only: testGKs(reloadImports, [['recoil_async_selector_refactor']]);
+ testGKs(reloadImports, []); // @oss-only
 
 module.exports = {
   makeStore,
