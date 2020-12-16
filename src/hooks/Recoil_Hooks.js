@@ -104,11 +104,11 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     key => {
       const sub = subscriptions.current.get(key);
       if (sub) {
-        sub.release(storeRef.current);
+        sub.release();
         subscriptions.current.delete(key);
       }
     },
-    [storeRef, subscriptions],
+    [subscriptions],
   );
 
   const componentName = useComponentName();
@@ -301,7 +301,7 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   const subscribe = useCallback(
     (_something, callback) => {
       const store = storeRef.current;
-      const sub = subscribeToRecoilValue(
+      const subscription = subscribeToRecoilValue(
         store,
         recoilValue,
         () => {
@@ -315,7 +315,7 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
         },
         componentName,
       );
-      return () => sub.release(store);
+      return subscription.release;
     },
     [recoilValue, storeRef, componentName],
   );
@@ -337,7 +337,8 @@ function useRecoilValueLoadable_LEGACY<T>(
 
   useEffect(() => {
     const store = storeRef.current;
-    const sub = subscribeToRecoilValue(
+    const storeState = store.getState();
+    const subscription = subscribeToRecoilValue(
       store,
       recoilValue,
       _state => {
@@ -376,8 +377,8 @@ function useRecoilValueLoadable_LEGACY<T>(
       }
     });
 
-    return () => sub.release(store);
-  }, [recoilValue, storeRef]);
+    return subscription.release;
+  }, [componentName, recoilValue, storeRef]);
 
   return getRecoilValueAsLoadable(storeRef.current, recoilValue);
 }
