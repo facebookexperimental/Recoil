@@ -10,13 +10,13 @@
  */
 'use strict';
 
-import type { Store } from 'Recoil_State';
+import type { Store } from '../../core/Recoil_State';
 
 const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-let store: Store, React, useEffect, useState, ReactDOM, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, mutableSourceExists, stableStringify, atom, atomFamily, selectorFamily, pAtom;
+let store: Store, React, Profiler, useState, ReactDOM, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, mutableSourceExists, stableStringify, atom, atomFamily, selectorFamily, pAtom;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
@@ -24,7 +24,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   React = require('React');
   ({
-    useEffect,
+    Profiler,
     useState
   } = require('React'));
   ReactDOM = require('ReactDOM');

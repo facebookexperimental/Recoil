@@ -1148,6 +1148,31 @@ var Recoil_Queue = {
  * 
  * @format
  */
+
+function unionSets(...sets) {
+  const result = new Set();
+
+  for (const set of sets) {
+    for (const value of set) {
+      result.add(value);
+    }
+  }
+
+  return result;
+}
+
+var Recoil_unionSets = unionSets;
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
 /**
  * Combines multiple Iterables into a single Iterable.
  * Traverses the input Iterables in the order provided and maintains the order
@@ -1452,31 +1477,6 @@ var Recoil_Snapshot$1 = /*#__PURE__*/Object.freeze({
   cloneSnapshot: Recoil_Snapshot_4
 });
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-function unionSets(...sets) {
-  const result = new Set();
-
-  for (const set of sets) {
-    for (const value of set) {
-      result.add(value);
-    }
-  }
-
-  return result;
-}
-
-var Recoil_unionSets = unionSets;
-
 const {
   useContext,
   useEffect,
@@ -1486,6 +1486,19 @@ const {
 } = react; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
+
+
+
+
+const {
+  mapByDeletingMultipleFromMap: mapByDeletingMultipleFromMap$1
+} = Recoil_CopyOnWrite;
+
+
+
+ // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
+
+
 
 
 
@@ -1517,20 +1530,7 @@ const {
 const {
   getNextTreeStateVersion: getNextTreeStateVersion$2,
   makeEmptyStoreState: makeEmptyStoreState$2
-} = Recoil_State;
-
-const {
-  mapByDeletingMultipleFromMap: mapByDeletingMultipleFromMap$1
-} = Recoil_CopyOnWrite;
-
-
-
- // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
-
-
-
-
- // @fb-only: const gkx = require('gkx');
+} = Recoil_State; // @fb-only: const gkx = require('gkx');
 
 
 function notInAContext() {
@@ -2333,10 +2333,10 @@ function useRecoilInterface_DEPRECATED() {
     const sub = subscriptions.current.get(key);
 
     if (sub) {
-      sub.release(storeRef.current);
+      sub.release();
       subscriptions.current.delete(key);
     }
-  }, [storeRef, subscriptions]);
+  }, [subscriptions]);
   const componentName = Recoil_useComponentName();
   useEffect$1(() => {
     const store = storeRef.current;
@@ -2495,12 +2495,12 @@ function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
   const componentName = Recoil_useComponentName();
   const subscribe = useCallback((_something, callback) => {
     const store = storeRef.current;
-    const sub = subscribeToRecoilValue$1(store, recoilValue, () => {
+    const subscription = subscribeToRecoilValue$1(store, recoilValue, () => {
       Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
         callback();
       });
     }, componentName);
-    return () => sub.release(store);
+    return subscription.release;
   }, [recoilValue, storeRef, componentName]);
   return useMutableSource$1(useRecoilMutableSource$1(), getValue, subscribe);
 }
@@ -2516,7 +2516,8 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
   const componentName = Recoil_useComponentName();
   useEffect$1(() => {
     const store = storeRef.current;
-    const sub = subscribeToRecoilValue$1(store, recoilValue, _state => {
+    const storeState = store.getState();
+    const subscription = subscribeToRecoilValue$1(store, recoilValue, _state => {
       Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
         forceUpdate([]);
       });
@@ -2548,8 +2549,8 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
         forceUpdate([]);
       }
     });
-    return () => sub.release(store);
-  }, [recoilValue, storeRef]);
+    return subscription.release;
+  }, [componentName, recoilValue, storeRef]);
   return getRecoilValueAsLoadable$2(storeRef.current, recoilValue);
 }
 /**
@@ -4258,12 +4259,17 @@ function selector(options) {
   if (set != null) {
     function mySet(store, state, newValue) {
       initSelector(store);
+      let syncSelectorSetFinished = false;
       const dependencyMap = new Map();
       const writes = new Map();
 
       function getRecoilValue({
         key
       }) {
+        if (syncSelectorSetFinished) {
+          throw new Error('Recoil: Async selector sets are not currently supported.');
+        }
+
         const [, loadable] = getCachedNodeLoadable(store, state, key);
 
         if (loadable.state === 'hasValue') {
@@ -4276,6 +4282,10 @@ function selector(options) {
       }
 
       function setRecoilState(recoilState, valueOrUpdater) {
+        if (syncSelectorSetFinished) {
+          throw new Error('Recoil: Async selector sets are not currently supported.');
+        }
+
         const newValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
         // flowlint-next-line unclear-type:off
         valueOrUpdater(getRecoilValue(recoilState)) : valueOrUpdater;
@@ -4287,11 +4297,18 @@ function selector(options) {
         setRecoilState(recoilState, DEFAULT_VALUE$3);
       }
 
-      set({
+      const ret = set({
         set: setRecoilState,
         get: getRecoilValue,
         reset: resetRecoilState
-      }, newValue);
+      }, newValue); // set should be a void method, but if the user makes it `async`, then it
+      // will return a Promise, which we don't currently support.
+
+      if (ret !== undefined) {
+        throw Recoil_isPromise(ret) ? new Error('Recoil: Async selector sets are not currently supported.') : new Error('Recoil: selector set should be a void function.');
+      }
+
+      syncSelectorSetFinished = true;
       return [dependencyMap, writes];
     }
 
@@ -4667,12 +4684,17 @@ function selector$1(options) {
   if (set != null) {
     function mySet(store, state, newValue) {
       initSelector(store);
+      let syncSelectorSetFinished = false;
       const dependencyMap = new Map();
       const writes = new Map();
 
       function getRecoilValue({
         key
       }) {
+        if (syncSelectorSetFinished) {
+          throw new Error('Recoil: Async selector sets are not currently supported.');
+        }
+
         const [deps, loadable] = getNodeLoadable$3(store, state, key);
         mergeDepsIntoDependencyMap$1(deps, dependencyMap);
 
@@ -4686,6 +4708,10 @@ function selector$1(options) {
       }
 
       function setRecoilState(recoilState, valueOrUpdater) {
+        if (syncSelectorSetFinished) {
+          throw new Error('Recoil: Async selector sets are not currently supported.');
+        }
+
         const newValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
         // flowlint-next-line unclear-type:off
         valueOrUpdater(getRecoilValue(recoilState)) : valueOrUpdater;
@@ -4698,11 +4724,18 @@ function selector$1(options) {
         setRecoilState(recoilState, DEFAULT_VALUE$4);
       }
 
-      set({
+      const ret = set({
         set: setRecoilState,
         get: getRecoilValue,
         reset: resetRecoilState
-      }, newValue);
+      }, newValue); // set should be a void method, but if the user makes it `async`, then it
+      // will return a Promise, which we don't currently support.
+
+      if (ret !== undefined) {
+        throw Recoil_isPromise(ret) ? new Error('Recoil: Async selector sets are not currently supported.') : new Error('Recoil: selector set should be a void function.');
+      }
+
+      syncSelectorSetFinished = true;
       return [dependencyMap, writes];
     }
 

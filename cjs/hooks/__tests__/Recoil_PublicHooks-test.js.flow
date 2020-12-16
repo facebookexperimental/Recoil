@@ -19,7 +19,7 @@ const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-let React, useEffect, useState, act, Queue, batchUpdates, atom, errorSelector, selector, ReadsAtom, asyncSelector, errorThrowingAsyncSelector, flushPromisesAndTimers, renderElements, renderElementsWithSuspenseCount, recoilComponentGetRecoilValueCount_FOR_TESTING, useRecoilState, useRecoilStateLoadable, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useSetUnvalidatedAtomValues, useTransactionObservation_DEPRECATED, invariant;
+let React, useEffect, useState, Profiler, act, Queue, batchUpdates, atom, errorSelector, selector, ReadsAtom, asyncSelector, errorThrowingAsyncSelector, flushPromisesAndTimers, renderElements, renderElementsWithSuspenseCount, recoilComponentGetRecoilValueCount_FOR_TESTING, useRecoilState, useRecoilStateLoadable, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useSetUnvalidatedAtomValues, useTransactionObservation_DEPRECATED, invariant;
 
 let {
   mutableSourceExists
@@ -29,7 +29,8 @@ const testRecoil = getRecoilTestFn(() => {
   React = require('React');
   ({
     useEffect,
-    useState
+    useState,
+    Profiler
   } = require('React'));
   ({
     act
@@ -171,43 +172,45 @@ testRecoil('Async selectors can depend on async selectors', async () => {
     expect(container.textContent).toEqual('3');
   }
 });
-testRecoil('Dep of upstream selector can change while pending', async isSelectorGkPassing => {
-  if (isSelectorGkPassing) {
-    const anAtom = counterAtom();
-    const [upstreamSel, upstreamResolvers] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
-    const [downstreamSel, downstreamResolvers] = asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
-    const [Component, updateValue] = componentThatWritesAtom(anAtom);
-    const container = renderElements(<>
-          <Component />
-          <ReadsAtom atom={downstreamSel} />
-        </>); // Initially, upstream has returned a promise so there is one upstream resolver.
-    // Downstream is waiting on upstream so it hasn't returned anything yet.
-
-    expect(container.textContent).toEqual('loading');
-    expect(upstreamResolvers.length).toEqual(1);
-    expect(downstreamResolvers.length).toEqual(0); // Resolve upstream; downstream should now have returned a new promise:
-
-    upstreamResolvers[0][0](123);
-    await flushPromisesAndTimers();
-    expect(downstreamResolvers.length).toEqual(1); // Update atom to a new value while downstream is pending:
-
-    act(() => updateValue(1));
-    await flushPromisesAndTimers(); // Upstream returns a new promise for the new atom value.
-    // Downstream is once again waiting on upstream so it hasn't returned a new
-    // promise for the new value.
-
-    expect(upstreamResolvers.length).toEqual(2);
-    expect(downstreamResolvers.length).toEqual(1); // Resolve the new upstream promise:
-
-    upstreamResolvers[1][0](123);
-    await flushPromisesAndTimers(); // Downstream can now return its new promise:
-
-    expect(downstreamResolvers.length).toEqual(2); // If we resolve downstream's new promise we should see the result:
-
-    downstreamResolvers[1][0](123);
-    await flushPromisesAndTimers();
-    expect(container.textContent).toEqual('123');
+testRecoil('Dep of upstream selector can change while pending', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
+    return;
   }
+
+  const anAtom = counterAtom();
+  const [upstreamSel, upstreamResolvers] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
+  const [downstreamSel, downstreamResolvers] = asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  const container = renderElements(<>
+      <Component />
+      <ReadsAtom atom={downstreamSel} />
+    </>); // Initially, upstream has returned a promise so there is one upstream resolver.
+  // Downstream is waiting on upstream so it hasn't returned anything yet.
+
+  expect(container.textContent).toEqual('loading');
+  expect(upstreamResolvers.length).toEqual(1);
+  expect(downstreamResolvers.length).toEqual(0); // Resolve upstream; downstream should now have returned a new promise:
+
+  upstreamResolvers[0][0](123);
+  await flushPromisesAndTimers();
+  expect(downstreamResolvers.length).toEqual(1); // Update atom to a new value while downstream is pending:
+
+  act(() => updateValue(1));
+  await flushPromisesAndTimers(); // Upstream returns a new promise for the new atom value.
+  // Downstream is once again waiting on upstream so it hasn't returned a new
+  // promise for the new value.
+
+  expect(upstreamResolvers.length).toEqual(2);
+  expect(downstreamResolvers.length).toEqual(1); // Resolve the new upstream promise:
+
+  upstreamResolvers[1][0](123);
+  await flushPromisesAndTimers(); // Downstream can now return its new promise:
+
+  expect(downstreamResolvers.length).toEqual(2); // If we resolve downstream's new promise we should see the result:
+
+  downstreamResolvers[1][0](123);
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('123');
 });
 testRecoil('Errors are propogated through selectors', () => {
   const errorThrower = errorSelector('ERROR');

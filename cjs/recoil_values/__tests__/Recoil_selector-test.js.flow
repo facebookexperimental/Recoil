@@ -14,7 +14,7 @@ const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-let React, store, atom, nullthrows, useEffect, useState, act, useRecoilCallback, useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, constSelector, errorSelector, getRecoilValueAsLoadable, setRecoilValue, selector, asyncSelector, ReadsAtom, renderElements, resolvingAsyncSelector, flushPromisesAndTimers, DefaultValue, mutableSourceExists;
+let React, store, atom, nullthrows, useEffect, useState, act, useRecoilCallback, useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, constSelector, errorSelector, getRecoilValueAsLoadable, setRecoilValue, selector, asyncSelector, ReadsAtom, renderElements, resolvingAsyncSelector, flushPromisesAndTimers, DefaultValue, mutableSourceExists, freshSnapshot;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
@@ -44,6 +44,9 @@ const testRecoil = getRecoilTestFn(() => {
     setRecoilValue
   } = require('../../core/Recoil_RecoilValueInterface'));
   selector = require('../Recoil_selector');
+  ({
+    freshSnapshot
+  } = require('../../core/Recoil_Snapshot'));
   ({
     asyncSelector,
     ReadsAtom,
@@ -374,7 +377,7 @@ testRecoil('useRecoilState - selector catching promise and resolving asynchronou
 // that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
 
-testRecoil('useRecoilState - selector catching promise 2', async gk => {
+testRecoil('useRecoilState - selector catching promise 2', async gks => {
   let dependencyPromiseTest;
   const resolvingSel = resolvingAsyncSelector('READY');
   const catchPromiseSelector = selector({
@@ -387,7 +390,7 @@ testRecoil('useRecoilState - selector catching promise 2', async gk => {
       } catch (promise) {
         expect(promise instanceof Promise).toBe(true);
 
-        if (gk === 'recoil_async_selector_refactor') {
+        if (gks.includes('recoil_async_selector_refactor')) {
           // eslint-disable-next-line jest/valid-expect
           dependencyPromiseTest = expect(promise).resolves.toHaveProperty('__value', 'READY');
         } else {
@@ -445,8 +448,8 @@ testRecoil('Detect circular dependencies', () => {
   expect(getError(selectorC).message).toEqual(expect.stringContaining('circular/A'));
   window.__DEV__ = devStatus;
 });
-testRecoil('selector is able to track dependencies discovered asynchronously', async gk => {
-  if (gk !== 'recoil_async_selector_refactor') {
+testRecoil('selector is able to track dependencies discovered asynchronously', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
     return;
   }
 
@@ -482,8 +485,8 @@ testRecoil('selector is able to track dependencies discovered asynchronously', a
  * selector should run through the entire selector in response to those changes.
  */
 
-testRecoil('selector should rerun entire selector when a dep changes', async gk => {
-  if (gk !== 'recoil_async_selector_refactor') {
+testRecoil('selector should rerun entire selector when a dep changes', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
     return;
   }
 
@@ -523,8 +526,8 @@ testRecoil('selector should rerun entire selector when a dep changes', async gk 
  * more times than we have to or creating numerous promises that retry).
  */
 
-testRecoil('async selector runs the minimum number of times required', async gk => {
-  if (gk !== 'recoil_async_selector_refactor') {
+testRecoil('async selector runs the minimum number of times required', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
     return;
   }
 
@@ -550,8 +553,8 @@ testRecoil('async selector runs the minimum number of times required', async gk 
   expect(numTimesRan).toBe(3);
   expect(container.textContent).toEqual('"ab"');
 });
-testRecoil('async selector with changing dependencies finishes execution using original state', async gk => {
-  if (gk !== 'recoil_async_selector_refactor') {
+testRecoil('async selector with changing dependencies finishes execution using original state', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
     return;
   }
 
@@ -586,8 +589,8 @@ testRecoil('async selector with changing dependencies finishes execution using o
   await flushPromisesAndTimers();
   await Promise.all([expect(loadableBeforeChangingAnything.toPromise()).resolves.toBe(3 + 3), expect(loadableAfterChangingAtom.toPromise()).resolves.toBe(10 + 10)]);
 });
-testRecoil('selector - dynamic getRecoilValue()', async gk => {
-  if (gk !== 'recoil_async_selector_refactor') {
+testRecoil('selector - dynamic getRecoilValue()', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
     return;
   }
 
@@ -746,8 +749,8 @@ describe('Async selector resolution notifies all stores that read pending', () =
     }
   });
 });
-testRecoil('selector - kite pattern runs only necessary selectors', async gk => {
-  if (gk !== 'recoil_async_selector_refactor') {
+testRecoil('selector - kite pattern runs only necessary selectors', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
     return;
   }
 
@@ -799,4 +802,64 @@ testRecoil('selector - kite pattern runs only necessary selectors', async gk => 
   expect(bNodeRunCount).toEqual(1);
   expect(cNodeRunCount).toEqual(1);
   expect(dNodeRunCount).toEqual(2);
+});
+testRecoil('async set not supported', async () => {
+  const myAtom = atom({
+    key: 'selector / async not supported / other atom',
+    default: 'DEFAULT'
+  });
+  const mySelector = selector({
+    key: 'selector / async set not supported / async set method',
+    get: () => myAtom,
+    // Set should not be async, this test checks that it throws an error.
+    // $FlowExpectedError
+    set: async ({
+      set,
+      reset
+    }, newVal) => {
+      await Promise.resolve();
+      newVal instanceof DefaultValue ? reset(myAtom) : set(myAtom, 'SET');
+    }
+  });
+  let setAttempt, resetAttempt;
+  const mySelector2 = selector({
+    key: 'selector / async set not supported / async upstream call',
+    get: () => myAtom,
+    set: ({
+      set,
+      reset
+    }, newVal) => {
+      if (newVal instanceof DefaultValue) {
+        resetAttempt = new Promise.resolve().then(() => {
+          reset(myAtom);
+        });
+      } else {
+        setAttempt = new Promise.resolve().then(() => {
+          set(myAtom, 'SET');
+        });
+      }
+    }
+  });
+  const testSnapshot = freshSnapshot();
+  expect(() => testSnapshot.map(({
+    set
+  }) => {
+    set(mySelector, 'SET');
+  })).toThrow();
+  expect(() => testSnapshot.map(({
+    reset
+  }) => {
+    reset(mySelector);
+  })).toThrow();
+  const setSnapshot = testSnapshot.map(({
+    set,
+    reset
+  }) => {
+    set(mySelector2, 'SET');
+    reset(mySelector2);
+  });
+  await flushPromisesAndTimers();
+  expect(setSnapshot.getLoadable(mySelector2).contents).toEqual('DEFAULT');
+  await expect(setAttempt).rejects.toThrowError();
+  await expect(resetAttempt).rejects.toThrowError();
 });

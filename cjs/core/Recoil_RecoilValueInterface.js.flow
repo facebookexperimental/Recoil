@@ -82,7 +82,7 @@ declare function setRecoilValueLoadable<T>(store: Store, recoilValue: AbstractRe
 declare function markRecoilValueModified<T>(store: Store, recoilValue: AbstractRecoilValue<T>): void;
 declare function setUnvalidatedRecoilValue<T>(store: Store, recoilValue: AbstractRecoilValue<T>, unvalidatedValue: T): void;
 export type ComponentSubscription = {
-  release: (Store) => void
+  release: () => void
 };
 let subscriptionID = 0;
 declare function subscribeToRecoilValue<T>(store: Store, arg1: AbstractRecoilValue<T>, callback: (TreeState) => void, componentDebugName: ?string): ComponentSubscription;
