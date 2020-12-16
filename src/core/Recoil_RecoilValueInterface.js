@@ -318,7 +318,7 @@ function setUnvalidatedRecoilValue<T>(
   );
 }
 
-export type ComponentSubscription = {release: Store => void};
+export type ComponentSubscription = {release: () => void};
 let subscriptionID = 0;
 function subscribeToRecoilValue<T>(
   store: Store,
