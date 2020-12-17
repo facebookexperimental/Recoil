@@ -40,6 +40,7 @@ const differenceSets = require('../util/Recoil_differenceSets');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const filterMap = require('../util/Recoil_filterMap');
 const filterSet = require('../util/Recoil_filterSet');
+const gkx = require('../util/Recoil_gkx');
 const invariant = require('../util/Recoil_invariant');
 const mapMap = require('../util/Recoil_mapMap');
 const mergeMaps = require('../util/Recoil_mergeMaps');
@@ -285,42 +286,57 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   }
   const storeRef = useStoreRef();
 
-  const getValue = useCallback(() => {
+  const getLoadable = useCallback(() => {
+    const store = storeRef.current;
+    const treeState = store.getState().currentTree;
+    return getRecoilValueAsLoadable(store, recoilValue, treeState);
+  }, [storeRef, recoilValue]);
+  const getLoadableWithTesting = useCallback(() => {
     if (__DEV__) {
       recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
     }
-    return getRecoilValueAsLoadable(
-      storeRef.current,
-      recoilValue,
-      storeRef.current.getState().currentTree,
-    );
-  }, [storeRef, recoilValue]);
+    return getLoadable();
+  }, [getLoadable]);
 
   const componentName = useComponentName();
 
   const subscribe = useCallback(
-    (_something, callback) => {
+    (_storeState, callback) => {
       const store = storeRef.current;
       const subscription = subscribeToRecoilValue(
         store,
         recoilValue,
-        () => {
+        () =>
           Tracing.trace(
             'RecoilValue subscription fired',
             recoilValue.key,
             () => {
-              callback();
+              if (!gkx('recoil_suppress_rerender_in_callback')) {
+                return callback();
+              }
+              // Only re-render if the value has changed.
+              // This will evaluate the atom/selector now as well as when the
+              // component renders, but that may help with prefetching.
+              const newLoadable = getLoadable();
+              if (!prevLoadableRef.current.is(newLoadable)) {
+                callback();
+              }
             },
-          );
-        },
+          ),
         componentName,
       );
       return subscription.release;
     },
-    [recoilValue, storeRef, componentName],
+    [storeRef, recoilValue, componentName, getLoadable],
   );
 
-  return useMutableSource(useRecoilMutableSource(), getValue, subscribe);
+  const source = useRecoilMutableSource();
+  const loadable = useMutableSource(source, getLoadableWithTesting, subscribe);
+  const prevLoadableRef = useRef(loadable);
+  useEffect(() => {
+    prevLoadableRef.current = loadable;
+  });
+  return loadable;
 }
 
 function useRecoilValueLoadable_LEGACY<T>(
@@ -343,7 +359,17 @@ function useRecoilValueLoadable_LEGACY<T>(
       recoilValue,
       _state => {
         Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
-          forceUpdate([]);
+          if (!gkx('recoil_suppress_rerender_in_callback')) {
+            return forceUpdate([]);
+          }
+          const newLoadable = getRecoilValueAsLoadable(
+            store,
+            recoilValue,
+            store.getState().currentTree,
+          );
+          if (!prevLoadableRef.current?.is(newLoadable)) {
+            forceUpdate(newLoadable);
+          }
         });
       },
       componentName,
@@ -365,10 +391,10 @@ function useRecoilValueLoadable_LEGACY<T>(
        * In this sequence we miss the update. To avoid that, add the update
        * to queuedComponentCallback if a batch is in progress.
        */
-      const state = store.getState();
-      if (state.nextTree) {
+      if (storeState.nextTree) {
         store.getState().queuedComponentCallbacks_DEPRECATED.push(
           Tracing.wrap(() => {
+            prevLoadableRef.current = null;
             forceUpdate([]);
           }),
         );
@@ -380,7 +406,12 @@ function useRecoilValueLoadable_LEGACY<T>(
     return subscription.release;
   }, [componentName, recoilValue, storeRef]);
 
-  return getRecoilValueAsLoadable(storeRef.current, recoilValue);
+  const loadable = getRecoilValueAsLoadable(storeRef.current, recoilValue);
+  const prevLoadableRef = useRef(loadable);
+  useEffect(() => {
+    prevLoadableRef.current = loadable;
+  });
+  return loadable;
 }
 
 /**

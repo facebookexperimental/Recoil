@@ -36,7 +36,6 @@ type Accessors<T> = $ReadOnly<{
   // If there's an error, throw an error.  If it's still loading, throw a Promise
   // This is useful for composing with React Suspense or in a Recoil Selector.
   getValue: () => T,
-
   toPromise: () => Promise<T>,
 
   // Convenience accessors
@@ -46,6 +45,8 @@ type Accessors<T> = $ReadOnly<{
   errorOrThrow: () => Error,
   promiseMaybe: () => Promise<T> | void,
   promiseOrThrow: () => Promise<T>,
+
+  is: (Loadable<mixed>) => boolean,
 
   map: <T, S>(map: (T) => Promise<S> | S) => Loadable<S>,
 }>;
@@ -128,6 +129,10 @@ const loadableAccessors = {
     return gkx('recoil_async_selector_refactor')
       ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
       : (this.contents: Promise<$FlowFixMe>);
+  },
+
+  is(other: Loadable<mixed>): boolean {
+    return other.state === this.state && other.contents === this.contents;
   },
 
   // TODO Unit tests

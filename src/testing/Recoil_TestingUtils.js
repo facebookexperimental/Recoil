@@ -261,8 +261,14 @@ const testGKs = (
 };
 
 const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
-  // @fb-only: testGKs(reloadImports, [['recoil_async_selector_refactor']]);
- testGKs(reloadImports, []); // @oss-only
+  testGKs(reloadImports, [
+    // @fb-only: ['recoil_async_selector_refactor'],
+    ['recoil_suppress_rerender_in_callback'],
+    [
+      // @fb-only: 'recoil_async_selector_refactor',
+      // @fb-only: 'recoil_suppress_rerender_in_callback',
+    ],
+  ]);
 
 module.exports = {
   makeStore,
