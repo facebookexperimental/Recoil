@@ -18,12 +18,14 @@ let React,
   nullthrows,
   useEffect,
   useState,
+  Profiler,
   act,
   useRecoilCallback,
   useRecoilState,
   useRecoilValue,
   useRecoilValueLoadable,
   useSetRecoilState,
+  useResetRecoilState,
   constSelector,
   errorSelector,
   getRecoilValueAsLoadable,
@@ -42,7 +44,7 @@ const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
   React = require('React');
-  ({useEffect, useState} = require('React'));
+  ({useEffect, useState, Profiler} = require('React'));
   ({act} = require('ReactTestUtils'));
   atom = require('../Recoil_atom');
   ({
@@ -51,6 +53,7 @@ const testRecoil = getRecoilTestFn(() => {
     useRecoilValue,
     useRecoilValueLoadable,
     useSetRecoilState,
+    useResetRecoilState,
   } = require('../../hooks/Recoil_Hooks'));
   constSelector = require('../Recoil_constSelector');
   errorSelector = require('../Recoil_errorSelector');
@@ -583,6 +586,135 @@ testRecoil(
     expect(container.textContent).toEqual('7');
   },
 );
+
+testRecoil("Updating with same value doesn't rerender", gks => {
+  if (!gks.includes('recoil_suppress_rerender_in_callback')) {
+    return;
+  }
+
+  const myAtom = atom({
+    key: 'selector same value rerender / atom',
+    default: {value: 'DEFAULT'},
+  });
+  const mySelector = selector({
+    key: 'selector - same value rerender',
+    get: ({get}) => get(myAtom).value,
+  });
+
+  let setAtom;
+  let resetAtom;
+  let renders = 0;
+  function SelectorComponent() {
+    const value = useRecoilValue(mySelector);
+    const setValue = useSetRecoilState(myAtom);
+    const resetValue = useResetRecoilState(myAtom);
+    setAtom = value => setValue({value});
+    resetAtom = resetValue;
+    return value;
+  }
+  expect(renders).toEqual(0);
+  const c = renderElements(
+    <Profiler
+      id="test"
+      onRender={() => {
+        renders++;
+      }}>
+      <SelectorComponent />
+    </Profiler>,
+  );
+
+  // Initial render happens one time in www and 2 times in oss.
+  // resetting the counter to 1 after the initial render to make them
+  // the same in both repos. 2 renders probably need to be looked into.
+  renders = 1;
+
+  expect(c.textContent).toEqual('DEFAULT');
+
+  act(() => setAtom('SET'));
+  expect(c.textContent).toEqual('SET');
+  expect(renders).toEqual(2);
+
+  act(() => setAtom('SET'));
+  expect(c.textContent).toEqual('SET');
+  expect(renders).toEqual(2);
+
+  act(() => setAtom('CHANGE'));
+  expect(c.textContent).toEqual('CHANGE');
+  expect(renders).toEqual(3);
+
+  act(resetAtom);
+  expect(c.textContent).toEqual('DEFAULT');
+  expect(renders).toEqual(4);
+
+  act(resetAtom);
+  expect(c.textContent).toEqual('DEFAULT');
+  expect(renders).toEqual(4);
+});
+
+// Test the following scenario:
+// 0. Recoil state version 1 with A=FOO and B=BAR
+// 1. Component renders with A for a value of FOO
+// 2. Component renders with B for a value of BAR
+// 3. Recoil state updated to version 2 with A=FOO and B=FOO
+//
+// Step 2 may be problematic if we attempt to suppress re-renders and don't
+// properly keep track of previous component values when the mutable source changes.
+testRecoil('Updating with changed selector', gks => {
+  if (!gks.includes('recoil_suppress_rerender_in_callback')) {
+    return;
+  }
+
+  const atomA = atom({
+    key: 'selector change rerender / atomA',
+    default: {value: 'FOO'},
+  });
+  const atomB = atom({
+    key: 'selector change rerender / atomB',
+    default: {value: 'BAR'},
+  });
+  const selectorA = selector({
+    key: 'selector change rerender / selectorA',
+    get: ({get}) => get(atomA).value,
+  });
+  const selectorB = selector({
+    key: 'selector change rerender / selectorB',
+    get: ({get}) => get(atomB).value,
+  });
+
+  let setSide;
+  let setB;
+  function SelectorComponent() {
+    const [side, setSideState] = useState('A');
+    setSide = setSideState;
+
+    setB = useRecoilCallback(({snapshot, gotoSnapshot}) => value => {
+      gotoSnapshot(
+        snapshot.map(({set}) => {
+          set(atomB, {value});
+        }),
+      );
+    });
+
+    return useRecoilValue(side === 'A' ? selectorA : selectorB);
+  }
+  const c = renderElements(<SelectorComponent />);
+
+  expect(c.textContent).toEqual('FOO');
+
+  // When we change the selector we are looking up it will render other atom's value
+  act(() => setSide('B'));
+  expect(c.textContent).toEqual('BAR');
+
+  // When we change Recoil state the component should re-render with new value.
+  // True even if we keep track of previous renders values to suppress re-renders when they don't change.
+  // If we don't keep track properly when the atom changes, this may break.
+  act(() => setB('FOO'));
+  expect(c.textContent).toEqual('FOO');
+
+  // When we swap back to atomA it now has the same value as atomB.
+  act(() => setSide('A'));
+  expect(c.textContent).toEqual('FOO');
+});
 
 /**
  * This test ensures that we are not running the selector's get() an unnecessary

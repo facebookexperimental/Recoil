@@ -260,9 +260,22 @@ const testGKs = (
   });
 };
 
+const WWW_GKS_TO_TEST = [
+  ['recoil_async_selector_refactor'],
+  ['recoil_suppress_rerender_in_callback'],
+  ['recoil_async_selector_refactor', 'recoil_suppress_rerender_in_callback'],
+];
+
+// TODO Disable testing GKs in OSS until that infra is fixed
+// eslint-disable-next-line no-unused-vars
+const OSS_GKS_TO_TEST = [];
+
 const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
-  // @fb-only: testGKs(reloadImports, [['recoil_async_selector_refactor']]);
- testGKs(reloadImports, []); // @oss-only
+  testGKs(
+    reloadImports,
+    // @fb-only: WWW_GKS_TO_TEST,
+    OSS_GKS_TO_TEST, // @oss-only
+  );
 
 module.exports = {
   makeStore,
