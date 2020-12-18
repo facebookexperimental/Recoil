@@ -1,4 +1,4 @@
-import reactDom from 'react-dom';
+import reactNative from 'react-native';
 import react from 'react';
 
 /**
@@ -382,12 +382,6 @@ var Recoil_RecoilValue$1 = /*#__PURE__*/Object.freeze({
   isRecoilValue: Recoil_RecoilValue_4
 });
 
-function getCjsExportFromNamespace (n) {
-	return n && n['default'] || n;
-}
-
-var require$$3 = getCjsExportFromNamespace(Recoil_RecoilValue$1);
-
 class DefaultValue {}
 
 const DEFAULT_VALUE = new DefaultValue();
@@ -430,7 +424,7 @@ function registerNode(node) {
   }
 
   nodes.set(node.key, node);
-  const recoilValue = node.set == null ? new require$$3.RecoilValueReadOnly(node.key) : new require$$3.RecoilState(node.key);
+  const recoilValue = node.set == null ? new Recoil_RecoilValue$1.RecoilValueReadOnly(node.key) : new Recoil_RecoilValue$1.RecoilState(node.key);
   recoilValues.set(node.key, recoilValue);
   return recoilValue;
 }
@@ -768,7 +762,7 @@ const {
   RecoilState: RecoilState$1,
   RecoilValueReadOnly: RecoilValueReadOnly$1,
   isRecoilValue: isRecoilValue$1
-} = require$$3;
+} = Recoil_RecoilValue$1;
 
 function getRecoilValueAsLoadable(store, {
   key
@@ -1050,19 +1044,39 @@ var Recoil_RecoilValueInterface = {
  * 
  * @format
  *
- * This is to export esstiential functions from a react renderer,
- * such as react-dom or react-native
+ * This is to export esstiential functions from react-dom
+ * for our react-native build
  */
-// in OSS it's configured in rollup.config.js
+// $FlowExpectedError[cannot-resolve-module]
 const {
   unstable_batchedUpdates
-} = reactDom; // @oss-only
-// in FB, ReactDOMComet falls back to ReactDOM in non-comet environment
+} = reactNative;
+
+var ReactBatchedUpdates_native = {
+  unstable_batchedUpdates
+};
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ *
+ * This is to export esstiential functions from react-dom
+ * for our web build
+ */
 // @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
+const {
+  unstable_batchedUpdates: unstable_batchedUpdates$1
+} = ReactBatchedUpdates_native; // @oss-only
 
 
 var Recoil_ReactBatchedUpdates = {
-  unstable_batchedUpdates
+  unstable_batchedUpdates: unstable_batchedUpdates$1
 };
 
 /**
@@ -1080,10 +1094,10 @@ const {
 } = Recoil_RecoilValueInterface;
 
 const {
-  unstable_batchedUpdates: unstable_batchedUpdates$1
+  unstable_batchedUpdates: unstable_batchedUpdates$2
 } = Recoil_ReactBatchedUpdates;
 
-let batcher = unstable_batchedUpdates$1; // flowlint-next-line unclear-type:off
+let batcher = unstable_batchedUpdates$2; // flowlint-next-line unclear-type:off
 
 /**
  * Sets the provided batcher function as the batcher function used by Recoil.
@@ -1483,8 +1497,6 @@ var Recoil_Snapshot$1 = /*#__PURE__*/Object.freeze({
   cloneSnapshot: Recoil_Snapshot_4
 });
 
-var require$$4 = getCjsExportFromNamespace(Recoil_Snapshot$1);
-
 const {
   useContext,
   useEffect,
@@ -1533,7 +1545,7 @@ const {
 
 const {
   freshSnapshot: freshSnapshot$1
-} = require$$4;
+} = Recoil_Snapshot$1;
 
 const {
   getNextTreeStateVersion: getNextTreeStateVersion$2,
@@ -2258,7 +2270,7 @@ const {
 
 const {
   isRecoilValue: isRecoilValue$2
-} = require$$3;
+} = Recoil_RecoilValue$1;
 
 const {
   AbstractRecoilValue: AbstractRecoilValue$3,
@@ -2272,11 +2284,13 @@ const {
 const {
   Snapshot: Snapshot$1,
   cloneSnapshot: cloneSnapshot$1
-} = require$$4;
+} = Recoil_Snapshot$1;
 
 const {
   setByAddingToSet: setByAddingToSet$2
 } = Recoil_CopyOnWrite;
+
+
 
 
 
@@ -2493,24 +2507,44 @@ function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
   }
 
   const storeRef = useStoreRef$1();
-  const getValue = useCallback(() => {
+  const getLoadable = useCallback(() => {
+    const store = storeRef.current;
+    const treeState = store.getState().currentTree;
+    return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
+  }, [storeRef, recoilValue]);
+  const getLoadableWithTesting = useCallback(() => {
     if (process.env.NODE_ENV !== "production") {
       recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
     }
 
-    return getRecoilValueAsLoadable$2(storeRef.current, recoilValue, storeRef.current.getState().currentTree);
-  }, [storeRef, recoilValue]);
+    return getLoadable();
+  }, [getLoadable]);
   const componentName = Recoil_useComponentName();
-  const subscribe = useCallback((_something, callback) => {
+  const subscribe = useCallback((_storeState, callback) => {
     const store = storeRef.current;
-    const subscription = subscribeToRecoilValue$1(store, recoilValue, () => {
-      Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
+    const subscription = subscribeToRecoilValue$1(store, recoilValue, () => Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
+      if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
+        return callback();
+      } // Only re-render if the value has changed.
+      // This will evaluate the atom/selector now as well as when the
+      // component renders, but that may help with prefetching.
+
+
+      const newLoadable = getLoadable();
+
+      if (!prevLoadableRef.current.is(newLoadable)) {
         callback();
-      });
-    }, componentName);
+      }
+    }), componentName);
     return subscription.release;
-  }, [recoilValue, storeRef, componentName]);
-  return useMutableSource$1(useRecoilMutableSource$1(), getValue, subscribe);
+  }, [storeRef, recoilValue, componentName, getLoadable]);
+  const source = useRecoilMutableSource$1();
+  const loadable = useMutableSource$1(source, getLoadableWithTesting, subscribe);
+  const prevLoadableRef = useRef$2(loadable);
+  useEffect$1(() => {
+    prevLoadableRef.current = loadable;
+  });
+  return loadable;
 }
 
 function useRecoilValueLoadable_LEGACY(recoilValue) {
@@ -2527,7 +2561,17 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
     const storeState = store.getState();
     const subscription = subscribeToRecoilValue$1(store, recoilValue, _state => {
       Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
-        forceUpdate([]);
+        var _prevLoadableRef$curr;
+
+        if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
+          return forceUpdate([]);
+        }
+
+        const newLoadable = getRecoilValueAsLoadable$2(store, recoilValue, store.getState().currentTree);
+
+        if (!((_prevLoadableRef$curr = prevLoadableRef.current) === null || _prevLoadableRef$curr === void 0 ? void 0 : _prevLoadableRef$curr.is(newLoadable))) {
+          forceUpdate(newLoadable);
+        }
       });
     }, componentName);
     Recoil_Tracing.trace('initial update on subscribing', recoilValue.key, () => {
@@ -2547,10 +2591,9 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
        * In this sequence we miss the update. To avoid that, add the update
        * to queuedComponentCallback if a batch is in progress.
        */
-      const state = store.getState();
-
-      if (state.nextTree) {
+      if (storeState.nextTree) {
         store.getState().queuedComponentCallbacks_DEPRECATED.push(Recoil_Tracing.wrap(() => {
+          prevLoadableRef.current = null;
           forceUpdate([]);
         }));
       } else {
@@ -2559,7 +2602,12 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
     });
     return subscription.release;
   }, [componentName, recoilValue, storeRef]);
-  return getRecoilValueAsLoadable$2(storeRef.current, recoilValue);
+  const loadable = getRecoilValueAsLoadable$2(storeRef.current, recoilValue);
+  const prevLoadableRef = useRef$2(loadable);
+  useEffect$1(() => {
+    prevLoadableRef.current = loadable;
+  });
+  return loadable;
 }
 /**
   Like useRecoilValue(), but either returns the value if available or
@@ -2862,12 +2910,14 @@ const {
   useStoreRef: useStoreRef$2
 } = Recoil_RecoilRoot_react;
 
-var Recoil_useGetRecoilValueInfo = function useGetRecoilValueInfo() {
+function useGetRecoilValueInfo() {
   const storeRef = useStoreRef$2();
   return ({
     key
   }) => peekNodeInfo$2(storeRef.current, storeRef.current.getState().currentTree, key);
-};
+}
+
+var Recoil_useGetRecoilValueInfo = useGetRecoilValueInfo;
 
 const {
   useMemo: useMemo$2
@@ -2983,6 +3033,10 @@ const loadableAccessors = {
     return Recoil_gkx_1('recoil_async_selector_refactor') ? this.contents.then(({
       __value
     }) => __value) : this.contents;
+  },
+
+  is(other) {
+    return other.state === this.state && other.contents === this.contents;
   },
 
   // TODO Unit tests
@@ -3307,11 +3361,9 @@ var Recoil_ArrayKeyedMap$1 = /*#__PURE__*/Object.freeze({
   ArrayKeyedMap: Recoil_ArrayKeyedMap_1
 });
 
-var require$$0 = getCjsExportFromNamespace(Recoil_ArrayKeyedMap$1);
-
 const {
   ArrayKeyedMap: ArrayKeyedMap$1
-} = require$$0;
+} = Recoil_ArrayKeyedMap$1;
 
 function cacheWithReferenceEquality() {
   return new ArrayKeyedMap$1();
@@ -3678,11 +3730,11 @@ const {
 
 const {
   isRecoilValue: isRecoilValue$3
-} = require$$3;
+} = Recoil_RecoilValue$1;
 
 const {
   AbstractRecoilValue: AbstractRecoilValue$4
-} = require$$3;
+} = Recoil_RecoilValue$1;
 
 const {
   setRecoilValueLoadable: setRecoilValueLoadable$2
@@ -4377,7 +4429,7 @@ const {
 
 const {
   AbstractRecoilValue: AbstractRecoilValue$5
-} = require$$3;
+} = Recoil_RecoilValue$1;
 
 const {
   getRecoilValueAsLoadable: getRecoilValueAsLoadable$3,
@@ -4794,7 +4846,7 @@ const {
 
 const {
   isRecoilValue: isRecoilValue$5
-} = require$$3;
+} = Recoil_RecoilValue$1;
 
 const {
   markRecoilValueModified: markRecoilValueModified$1,
@@ -5595,11 +5647,11 @@ const {
 
 const {
   isRecoilValue: isRecoilValue$6
-} = require$$3;
+} = Recoil_RecoilValue$1;
 
 const {
   freshSnapshot: freshSnapshot$2
-} = require$$4;
+} = Recoil_Snapshot$1;
 
 const {
   useGotoRecoilSnapshot: useGotoRecoilSnapshot$1,

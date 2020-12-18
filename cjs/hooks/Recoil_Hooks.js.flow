@@ -70,6 +70,8 @@ const filterMap = require('../util/Recoil_filterMap');
 
 const filterSet = require('../util/Recoil_filterSet');
 
+const gkx = require('../util/Recoil_gkx');
+
 const invariant = require('../util/Recoil_invariant');
 
 const mapMap = require('../util/Recoil_mapMap');

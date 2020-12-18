@@ -103,8 +103,11 @@ type TestOptions = {
 };
 type TestFn = (string, AssertionsFn, TestOptions | void) => void;
 declare var testGKs: (reloadImports: ReloadImports, gks: Array<Array<string>>) => TestFn;
-declare var getRecoilTestFn: (reloadImports: ReloadImports) => TestFn; // @oss-only
+const WWW_GKS_TO_TEST = [['recoil_async_selector_refactor'], ['recoil_suppress_rerender_in_callback'], ['recoil_async_selector_refactor', 'recoil_suppress_rerender_in_callback']]; // TODO Disable testing GKs in OSS until that infra is fixed
+// eslint-disable-next-line no-unused-vars
 
+const OSS_GKS_TO_TEST = [];
+declare var getRecoilTestFn: (reloadImports: ReloadImports) => TestFn;
 module.exports = {
   makeStore,
   renderElements,
