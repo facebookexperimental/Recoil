@@ -18,7 +18,7 @@ suppress_type=$FlowOSSFixMe
 
 module.name_mapper='React' -> '<PROJECT_ROOT>/node_modules/react'
 module.name_mapper='ReactDOM' -> '<PROJECT_ROOT>/node_modules/react-dom'
-module.name_mapper='ReactRenderer' -> '<PROJECT_ROOT>/node_modules/react-dom'
+module.name_mapper='ReactNative' -> '<PROJECT_ROOT>/node_modules/react-native'
 module.name_mapper='ReactTestUtils' -> '<PROJECT_ROOT>/node_modules/react-dom/test-utils'
 
 module.name_mapper='RecoilUtils' -> '<PROJECT_ROOT>/src/RecoilUtils.js'

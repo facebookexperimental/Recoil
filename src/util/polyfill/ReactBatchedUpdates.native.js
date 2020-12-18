@@ -9,11 +9,10 @@
  * @format
  *
  * This is to export esstiential functions from react-dom
- * for our web build
+ * for our react-native build
  */
 
-// @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
-
-const {unstable_batchedUpdates} = require('./polyfill/ReactBatchedUpdates'); // @oss-only
+// $FlowExpectedError[cannot-resolve-module]
+const {unstable_batchedUpdates} = require('ReactNative');
 
 module.exports = {unstable_batchedUpdates};
