@@ -21,6 +21,10 @@ const {useContext, useEffect, useMemo, useRef, useState} = require('React');
 // @fb-only: const URI = require('URI');
 
 const Queue = require('../adt/Recoil_Queue');
+const {
+  getNextTreeStateVersion,
+  makeEmptyStoreState,
+} = require('../core/Recoil_State');
 const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -37,10 +41,6 @@ const {graph, saveDependencyMapToStore} = require('./Recoil_Graph');
 const {cloneGraph} = require('./Recoil_Graph');
 const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
 const {freshSnapshot} = require('./Recoil_Snapshot');
-const {
-  getNextTreeStateVersion,
-  makeEmptyStoreState,
-} = require('./Recoil_State');
 // @fb-only: const gkx = require('gkx');
 
 type Props = {
@@ -229,10 +229,10 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
 
       saveDependencyMapToStore(depMap, store, state.version);
 
-      const nonvalidatedAtoms = mapByDeletingMultipleFromMap(
-        state.nonvalidatedAtoms,
-        writtenNodes,
-      );
+      const nonvalidatedAtoms = state.nonvalidatedAtoms.clone();
+      for (const n of writtenNodes) {
+        nonvalidatedAtoms.delete(n);
+      }
 
       initial.currentTree = {
         ...state,

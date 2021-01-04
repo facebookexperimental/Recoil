@@ -202,8 +202,8 @@ function cloneStoreState(
           stateID: version,
           transactionMetadata: {...treeState.transactionMetadata},
           dirtyAtoms: new Set(treeState.dirtyAtoms),
-          atomValues: new Map(treeState.atomValues),
-          nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
+          atomValues: treeState.atomValues.clone(),
+          nonvalidatedAtoms: treeState.nonvalidatedAtoms.clone(),
         }
       : treeState,
     nextTree: null,

@@ -12,10 +12,15 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {ValueOrUpdater} from '../recoil_values/Recoil_selector';
-import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
+import type {
+  AtomValues,
+  AtomWrites,
+  NodeKey,
+  Store,
+  TreeState,
+} from './Recoil_State';
 
 const gkx = require('../util/Recoil_gkx');
-const mapMap = require('../util/Recoil_mapMap');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
@@ -66,9 +71,9 @@ function getRecoilValueAsLoadable<T>(
 
 function applyAtomValueWrites(
   atomValues: AtomValues,
-  writes: AtomValues,
+  writes: AtomWrites,
 ): AtomValues {
-  const result = mapMap(atomValues, v => v);
+  const result = atomValues.clone();
   writes.forEach((v, k) => {
     if (v.state === 'hasValue' && v.contents instanceof DefaultValue) {
       result.delete(k);
@@ -234,8 +239,8 @@ function batchStart(): () => void {
 function copyTreeState(state) {
   return {
     ...state,
-    atomValues: new Map(state.atomValues),
-    nonvalidatedAtoms: new Map(state.nonvalidatedAtoms),
+    atomValues: state.atomValues.clone(),
+    nonvalidatedAtoms: state.nonvalidatedAtoms.clone(),
     dirtyAtoms: new Set(state.dirtyAtoms),
   };
 }
