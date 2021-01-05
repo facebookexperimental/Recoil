@@ -399,7 +399,14 @@ function useRecoilValueLoadable_LEGACY<T>(
           }),
         );
       } else {
-        forceUpdate([]);
+        const newLoadable = getRecoilValueAsLoadable(
+          store,
+          recoilValue,
+          store.getState().currentTree,
+        );
+        if (!prevLoadableRef.current?.is(newLoadable)) {
+          forceUpdate(newLoadable);
+        }
       }
     });
 
