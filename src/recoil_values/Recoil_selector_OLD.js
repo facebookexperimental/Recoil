@@ -62,7 +62,7 @@ import type {
   RecoilValue,
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
-import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
+import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {
   loadableWithError,
@@ -455,12 +455,12 @@ function selector<T>(
   }
 
   if (set != null) {
-    function mySet(store, state, newValue): [DependencyMap, AtomValues] {
+    function mySet(store, state, newValue): [DependencyMap, AtomWrites] {
       initSelector(store);
 
       let syncSelectorSetFinished = false;
       const dependencyMap: DependencyMap = new Map();
-      const writes: AtomValues = new Map();
+      const writes: AtomWrites = new Map();
 
       function getRecoilValue<S>({key}: RecoilValue<S>): S {
         if (syncSelectorSetFinished) {

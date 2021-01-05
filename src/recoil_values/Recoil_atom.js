@@ -66,7 +66,7 @@ import type {
 import type {DependencyMap} from '../core/Recoil_Graph';
 import type {PersistenceInfo, ReadWriteNodeOptions} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {AtomValues, NodeKey, Store, TreeState} from '../core/Recoil_State';
+import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
@@ -409,7 +409,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     store: Store,
     state: TreeState,
     newValue: T | DefaultValue,
-  ): [DependencyMap, AtomValues] {
+  ): [DependencyMap, AtomWrites] {
     initAtom(store, state, 'set');
 
     // Bail out if we're being set to the existing value, or if we're being

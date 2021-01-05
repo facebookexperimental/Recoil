@@ -26,6 +26,9 @@
     "lint": "eslint .",
     "deploy-nightly": "yarn build && node scripts/deploy_nightly_build.js"
   },
+  "dependencies": {
+    "hamt_plus": "1.0.2"
+  },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0"
   },

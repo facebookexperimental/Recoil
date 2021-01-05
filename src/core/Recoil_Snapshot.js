@@ -202,8 +202,8 @@ function cloneStoreState(
           stateID: version,
           transactionMetadata: {...treeState.transactionMetadata},
           dirtyAtoms: new Set(treeState.dirtyAtoms),
-          atomValues: new Map(treeState.atomValues),
-          nonvalidatedAtoms: new Map(treeState.nonvalidatedAtoms),
+          atomValues: treeState.atomValues.clone(),
+          nonvalidatedAtoms: treeState.nonvalidatedAtoms.clone(),
         }
       : treeState,
     nextTree: null,
@@ -275,7 +275,7 @@ class MutableSnapshot extends Snapshot {
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  setUnvalidatedAtomValues_UNSTABLE: (Map<NodeKey, mixed>) => void = (
+  setUnvalidatedAtomValues_DEPRECATED: (Map<NodeKey, mixed>) => void = (
     values: Map<NodeKey, mixed>,
   ) => {
     const store = this.getStore_INTERNAL();

@@ -11,14 +11,18 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
+import type {PersistentMap} from '../adt/Recoil_PersistentMap';
 import type {Graph} from './Recoil_GraphTypes';
 import type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
 const {graph} = require('./Recoil_Graph');
+const {persistentMap} = require('../adt/Recoil_PersistentMap');
 
 // flowlint-next-line unclear-type:off
-export type AtomValues = Map<NodeKey, Loadable<any>>;
+export type AtomValues = PersistentMap<NodeKey, Loadable<any>>;
+// flowlint-next-line unclear-type:off
+export type AtomWrites = Map<NodeKey, Loadable<any>>;
 
 type ComponentCallback = TreeState => void;
 
@@ -39,7 +43,7 @@ export type TreeState = $ReadOnly<{
   // Atoms:
   dirtyAtoms: Set<NodeKey>,
   atomValues: AtomValues,
-  nonvalidatedAtoms: Map<NodeKey, mixed>,
+  nonvalidatedAtoms: PersistentMap<NodeKey, mixed>,
 }>;
 
 // StoreState represents the state of a Recoil context. It is global and mutable.
@@ -128,8 +132,8 @@ function makeEmptyTreeState(): TreeState {
     stateID: version,
     transactionMetadata: {},
     dirtyAtoms: new Set(),
-    atomValues: new Map(),
-    nonvalidatedAtoms: new Map(),
+    atomValues: persistentMap(),
+    nonvalidatedAtoms: persistentMap(),
   };
 }
 
