@@ -127,7 +127,7 @@ class HashArrayMappedTrieMap<K: string, V> implements PersistentMap<K, V> {
   }
 }
 
-export function persistentMap<K: string, V>(
+function persistentMap<K: string, V>(
   existing?: PersistentMap<K, V>,
 ): PersistentMap<K, V> {
   if (gkx('recoil_hamt_2020')) {
@@ -136,3 +136,7 @@ export function persistentMap<K: string, V>(
     return new BuiltInMap(existing);
   }
 }
+
+module.exports = {
+  persistentMap,
+};
