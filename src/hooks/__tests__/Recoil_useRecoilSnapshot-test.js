@@ -138,6 +138,7 @@ testRecoil('useRecoilSnapshot - goto snapshots', () => {
   act(() => gotoSnapshot(snapshots[0]));
   expect(c.textContent).toEqual('"DEFAULT""DEFAULT"');
 
+  // $FlowFixMe[incompatible-call]
   act(() => gotoSnapshot(snapshots[2].map(({set}) => set(atomB, 3))));
   expect(c.textContent).toEqual('13');
 });

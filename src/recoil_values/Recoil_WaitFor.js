@@ -137,6 +137,7 @@ const waitForNone: <
   RecoilValues,
 ) => RecoilValueReadOnly<
   $ReadOnlyArray<Loadable<mixed>> | $ReadOnly<{[string]: Loadable<mixed>, ...}>,
+  // $FlowFixMe[incompatible-type-arg]
 > = selectorFamily({
   key: '__waitForNone',
   get: (
