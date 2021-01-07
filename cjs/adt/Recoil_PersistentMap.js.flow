@@ -1,0 +1,56 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict
+ * @format
+ */
+'use strict';
+
+import type { HAMTPlusMap } from 'hamt_plus';
+
+const gkx = require('../util/Recoil_gkx');
+
+const hamt = require('hamt_plus');
+
+export interface PersistentMap<K: string, V> {
+  keys(): Iterable<K>,
+  entries(): Iterable<[K, V]>,
+  get(key: K): V | void,
+  has(key: K): boolean,
+  set(key: K, value: V): PersistentMap<K, V>,
+  delete(key: K): PersistentMap<K, V>,
+  clone(): PersistentMap<K, V>,
+  toMap(): Map<K, V>,
+}
+declare class BuiltInMap<K: string, V> implements PersistentMap<K, V> {
+  _map: Map<K, V>,
+  constructor(existing?: PersistentMap<K, V>): any,
+  keys(): Iterable<K>,
+  entries(): Iterable<[K, V]>,
+  get(k: K): V | void,
+  has(k: K): boolean,
+  set(k: K, v: V): PersistentMap<K, V>,
+  delete(k: K): PersistentMap<K, V>,
+  clone(): PersistentMap<K, V>,
+  toMap(): Map<K, V>,
+}
+declare class HashArrayMappedTrieMap<K: string, V> implements PersistentMap<K, V> {
+  _hamt: HAMTPlusMap<K, V>,
+  constructor(existing?: PersistentMap<K, V>): any,
+  keys(): Iterable<K>,
+  entries(): Iterable<[K, V]>,
+  get(k: K): V | void,
+  has(k: K): boolean,
+  set(k: K, v: V): PersistentMap<K, V>,
+  delete(k: K): PersistentMap<K, V>,
+  clone(): PersistentMap<K, V>,
+  toMap(): Map<K, V>,
+}
+declare function persistentMap<K: string, V>(existing?: PersistentMap<K, V>): PersistentMap<K, V>;
+module.exports = {
+  persistentMap
+};

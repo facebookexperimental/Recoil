@@ -61,7 +61,7 @@ import type { Loadable, LoadablePromise, ResolvedLoadablePromiseInfo } from '../
 import type { DependencyMap } from '../core/Recoil_Graph';
 import type { PersistenceInfo, ReadWriteNodeOptions } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
-import type { AtomValues, NodeKey, Store, TreeState } from '../core/Recoil_State'; // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
+import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State'; // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
 const {
   loadableWithError,

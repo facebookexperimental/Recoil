@@ -88,7 +88,7 @@ declare class MutableSnapshot extends Snapshot {
   constructor(snapshot: Snapshot): any,
   set: SetRecoilState,
   reset: ResetRecoilState,
-  setUnvalidatedAtomValues_UNSTABLE: (Map<NodeKey, mixed>) => void,
+  setUnvalidatedAtomValues_DEPRECATED: (Map<NodeKey, mixed>) => void,
 }
 module.exports = {
   Snapshot,

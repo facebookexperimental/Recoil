@@ -14,11 +14,9 @@ import type { Loadable } from '../adt/Recoil_Loadable';
 import type { DependencyMap } from './Recoil_Graph';
 import type { DefaultValue } from './Recoil_Node';
 import type { RecoilValue } from './Recoil_RecoilValue';
-import type { AtomValues, NodeKey, Store, TreeState } from './Recoil_State';
+import type { AtomWrites, NodeKey, Store, TreeState } from './Recoil_State';
 
 const {
-  mapByDeletingFromMap,
-  mapBySettingInMap,
   setByAddingToSet
 } = require('../util/Recoil_CopyOnWrite');
 
@@ -47,7 +45,7 @@ declare function setUnvalidatedAtomValue_DEPRECATED<T>(state: TreeState, key: No
 // a node value. (Multiple values may be written due to selectors getting to
 // set upstreams; deps may be discovered because of reads in updater functions.)
 
-declare function setNodeValue<T>(store: Store, state: TreeState, key: NodeKey, newValue: T | DefaultValue): [DependencyMap, AtomValues];
+declare function setNodeValue<T>(store: Store, state: TreeState, key: NodeKey, newValue: T | DefaultValue): [DependencyMap, AtomWrites];
 declare function cleanUpNode(store: Store, key: NodeKey): any;
 type ComponentInfo = {
   name: string

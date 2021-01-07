@@ -13,7 +13,7 @@
 import type { Loadable } from '../adt/Recoil_Loadable';
 import type { DependencyMap } from './Recoil_GraphTypes';
 import type { RecoilValue } from './Recoil_RecoilValue';
-import type { AtomValues, NodeKey, Store, TreeState } from './Recoil_State';
+import type { AtomWrites, NodeKey, Store, TreeState } from './Recoil_State';
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 
@@ -54,7 +54,7 @@ export type ReadWriteNodeOptions<T> = $ReadOnly<{ ...ReadOnlyNodeOptions<T>,
   // Returns the discovered deps and the set of key-value pairs to be written.
   // (Deps may be discovered since selectors get an updater function which has
   //  the ability to read other atoms, which may have deps.)
-  set: (store: Store, state: TreeState, newValue: T | DefaultValue) => [DependencyMap, AtomValues],
+  set: (store: Store, state: TreeState, newValue: T | DefaultValue) => [DependencyMap, AtomWrites],
 }>;
 type Node<T> = ReadOnlyNodeOptions<T> | ReadWriteNodeOptions<T>; // flowlint-next-line unclear-type:off
 

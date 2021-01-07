@@ -59,7 +59,7 @@ import type { NodeCache, NodeCacheRoute } from '../caches/Recoil_NodeCache';
 import type { DependencyMap } from '../core/Recoil_Graph';
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
-import type { AtomValues, NodeKey, Store, TreeState } from '../core/Recoil_State';
+import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State';
 
 const {
   loadableWithError,
