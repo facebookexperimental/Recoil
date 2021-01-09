@@ -13,7 +13,6 @@
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DependencyMap} from './Recoil_GraphTypes';
 import type {RecoilValue} from './Recoil_RecoilValue';
-import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
@@ -39,8 +38,6 @@ export type PersistenceInfo = $ReadOnly<{
   backButton?: boolean,
 }>;
 
-export type Trigger = 'get' | 'set';
-
 export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   key: NodeKey,
 
@@ -50,10 +47,8 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   // Returns the discovered deps and the loadable value of the node
   get: (Store, TreeState) => [DependencyMap, Loadable<T>],
 
-  // Informs the node the first time it is used (either ever or since the node was
-  // last released). Returns a cleanup function for when the store ceases to be or
-  // the node is released again.
-  init: (Store, TreeState, Trigger) => () => void,
+  // Clean up the node when it is removed from a <RecoilRoot>
+  cleanUp: Store => void,
 
   // Informs the node to invalidate any caches as needed in case either it is
   // set or it has an upstream dependency that was set. (Called at batch end.)
@@ -63,13 +58,6 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
 
   dangerouslyAllowMutability?: boolean,
   persistence_UNSTABLE?: PersistenceInfo,
-
-  // True for members of families, since another node can be created later for the
-  // same parameter value; but false for individual atoms and selectors which have
-  // a singleton config passed to us only once when they're defined:
-  shouldDeleteConfigOnRelease?: () => boolean,
-
-  retainedBy: RetainedBy,
 }>;
 
 export type ReadWriteNodeOptions<T> = $ReadOnly<{
@@ -154,37 +142,12 @@ function getNodeMaybe(key: NodeKey): void | Node<any> {
   return nodes.get(key);
 }
 
-const configDeletionHandlers = new Map();
-
-function deleteNodeConfigIfPossible(key: NodeKey): void {
-  const node = nodes.get(key);
-  if (node?.shouldDeleteConfigOnRelease?.()) {
-    nodes.delete(key);
-    configDeletionHandlers.delete(key);
-  }
-}
-
-function setConfigDeletionHandler(key: NodeKey, fn: void | (() => void)): void {
-  if (fn === undefined) {
-    configDeletionHandlers.delete(key);
-  } else {
-    configDeletionHandlers.set(key, fn);
-  }
-}
-
-function getConfigDeletionHandler(key: NodeKey): void | (() => void) {
-  return configDeletionHandlers.get(key);
-}
-
 module.exports = {
   nodes,
   recoilValues,
   registerNode,
   getNode,
   getNodeMaybe,
-  deleteNodeConfigIfPossible,
-  setConfigDeletionHandler,
-  getConfigDeletionHandler,
   recoilValuesForKeys,
   NodeMissingError,
   DefaultValue,

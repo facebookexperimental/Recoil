@@ -14,9 +14,12 @@
  */
 'use strict';
 
-const {isReactNative, isSSR} = require('./Recoil_Environment');
 const isNode = require('./Recoil_isNode');
 const isPromise = require('./Recoil_isPromise');
+
+const isSSR = typeof window === 'undefined';
+const isReactNative =
+  typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
 function shouldNotBeFrozen(value: mixed): boolean {
   // Primitives and functions:

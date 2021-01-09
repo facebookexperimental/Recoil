@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type {CacheImplementation} from './Recoil_Cache';
+import type {CacheImplementation} from 'Recoil_Cache';
 
 // cache implementation that only stores the most recent entry
 // based on key reference equality
@@ -22,12 +22,6 @@ function cacheMostRecent<T>(): CacheImplementation<T> {
     set: (key, value) => {
       mostRecentKey = key;
       mostRecentValue = value;
-      return cache;
-    },
-    delete: key => {
-      if (key === mostRecentKey) {
-        mostRecentKey = mostRecentValue = undefined;
-      }
       return cache;
     },
   };

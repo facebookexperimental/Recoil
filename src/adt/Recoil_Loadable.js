@@ -29,12 +29,7 @@ export type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
   __key?: NodeKey,
 }>;
 
-class Canceled {}
-const CANCELED: Canceled = new Canceled();
-
-export type LoadablePromise<+T> = Promise<
-  ResolvedLoadablePromiseInfo<T> | Canceled,
->;
+export type LoadablePromise<+T> = Promise<ResolvedLoadablePromiseInfo<T>>;
 
 type Accessors<T> = $ReadOnly<{
   // Attempt to get the value.
@@ -237,6 +232,4 @@ module.exports = {
   loadableWithPromise,
   loadableLoading,
   loadableAll,
-  Canceled,
-  CANCELED,
 };

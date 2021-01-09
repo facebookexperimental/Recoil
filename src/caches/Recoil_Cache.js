@@ -10,11 +10,9 @@
  */
 'use strict';
 
-// eslint-disable-next-line fb-www/flow-readonly-object
 export type CacheImplementation<T> = {
   +get: mixed => T | void,
   +set: (mixed, T) => CacheImplementation<T>,
-  +delete: mixed => CacheImplementation<T>,
   ...
 };
 

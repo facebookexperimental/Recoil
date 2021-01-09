@@ -190,7 +190,6 @@ describe('useRecoilCallback', () => {
       function Component() {
         setter = useSetRecoilState(anAtom);
         cb = useRecoilCallback(({snapshot}) => async () => {
-          snapshot.retain();
           await delay();
           seenValue = await snapshot.getPromise(anAtom);
         });

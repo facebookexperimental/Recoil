@@ -59,7 +59,6 @@ testRecoil('useRecoilSnapshot - subscribe to updates', () => {
   const snapshots = [];
   function RecoilSnapshotAndSubscribe() {
     const snapshot = useRecoilSnapshot();
-    snapshot.retain();
     snapshots.push(snapshot);
     return null;
   }
@@ -111,7 +110,6 @@ testRecoil('useRecoilSnapshot - goto snapshots', () => {
   function RecoilSnapshotAndSubscribe() {
     gotoSnapshot = useGotoRecoilSnapshot();
     const snapshot = useRecoilSnapshot();
-    snapshot.retain();
     snapshots.push(snapshot);
     return null;
   }
@@ -151,7 +149,6 @@ testRecoil('useRecoilSnapshot - async selectors', async () => {
   const snapshots = [];
   function RecoilSnapshotAndSubscribe() {
     const snapshot = useRecoilSnapshot();
-    snapshot.retain();
     useEffect(() => {
       snapshots.push(snapshot);
     });

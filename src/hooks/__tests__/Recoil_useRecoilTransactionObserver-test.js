@@ -51,7 +51,6 @@ testRecoil('getNodes', () => {
   let snapshot = freshSnapshot();
   function UseRecoilTransactionObserver() {
     useRecoilTransactionObserver(p => {
-      p.snapshot.retain();
       snapshot = p.snapshot;
     });
     return null;
@@ -149,8 +148,6 @@ testRecoil('Can observe atom value', async () => {
     <>
       <TransactionObserver
         callback={({snapshot, previousSnapshot}) => {
-          snapshot.retain();
-          previousSnapshot.retain();
           transactions.push({snapshot, previousSnapshot});
         }}
       />
@@ -226,8 +223,6 @@ testRecoil('Can observe selector value', async () => {
     <>
       <TransactionObserver
         callback={({snapshot, previousSnapshot}) => {
-          snapshot.retain();
-          previousSnapshot.retain();
           transactions.push({snapshot, previousSnapshot});
         }}
       />
@@ -266,8 +261,6 @@ testRecoil('Can observe async selector value', async () => {
     <>
       <TransactionObserver
         callback={({snapshot, previousSnapshot}) => {
-          snapshot.retain();
-          previousSnapshot.retain();
           transactions.push({snapshot, previousSnapshot});
         }}
       />

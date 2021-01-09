@@ -64,13 +64,8 @@ import type {
   ResolvedLoadablePromiseInfo,
 } from '../adt/Recoil_Loadable';
 import type {DependencyMap} from '../core/Recoil_Graph';
-import type {
-  PersistenceInfo,
-  ReadWriteNodeOptions,
-  Trigger,
-} from '../core/Recoil_Node';
+import type {PersistenceInfo, ReadWriteNodeOptions} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
@@ -83,9 +78,7 @@ const {
 const {
   DEFAULT_VALUE,
   DefaultValue,
-  getConfigDeletionHandler,
   registerNode,
-  setConfigDeletionHandler,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
@@ -93,7 +86,6 @@ const {
   setRecoilValue,
   setRecoilValueLoadable,
 } = require('../core/Recoil_RecoilValueInterface');
-const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
@@ -116,7 +108,7 @@ type NewValueOrUpdater<T> =
 // Effect is called the first time a node is used with a <RecoilRoot>
 export type AtomEffect<T> = ({
   node: RecoilState<T>,
-  trigger: Trigger,
+  trigger: 'set' | 'get',
 
   // Call synchronously to initialize value or async to change it later
   setSelf: (
@@ -141,7 +133,6 @@ export type AtomOptions<T> = $ReadOnly<{
   persistence_UNSTABLE?: PersistenceSettings<T>,
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
   dangerouslyAllowMutability?: boolean,
-  retainedBy_UNSTABLE?: RetainedBy,
 }>;
 
 type BaseAtomOptions<T> = $ReadOnly<{
@@ -151,9 +142,6 @@ type BaseAtomOptions<T> = $ReadOnly<{
 
 function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const {key, persistence_UNSTABLE: persistence} = options;
-  const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
-
-  let liveStoresCount = 0;
 
   let defaultLoadable: Loadable<T> = isPromise(options.default)
     ? loadableWithPromise(
@@ -215,10 +203,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   function initAtom(
     store: Store,
     initState: TreeState,
-    trigger: Trigger,
-  ): () => void {
-    liveStoresCount++;
-    const alreadyKnown = store.getState().knownAtoms.has(key);
+    trigger: 'set' | 'get',
+  ) {
+    if (store.getState().knownAtoms.has(key)) {
+      return;
+    }
     store.getState().knownAtoms.add(key);
 
     // Setup async defaults to notify subscribers when they resolve
@@ -243,7 +232,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       value: T | DefaultValue,
     } = null;
 
-    if (options.effects_UNSTABLE != null && !alreadyKnown) {
+    if (options.effects_UNSTABLE != null) {
       let duringInit = true;
 
       const setSelf = (effect: AtomEffect<T>) => (
@@ -362,19 +351,9 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       // also updated some other atom's state.
       store.getState().nextTree?.atomValues.set(key, initLoadable);
     }
-
-    return () => {
-      liveStoresCount--;
-      cleanupEffectsByStore.get(store)?.();
-      cleanupEffectsByStore.delete(store);
-      store.getState().knownAtoms.delete(key); // FIXME remove knownAtoms?
-      if (liveStoresCount === 0) {
-        getConfigDeletionHandler(key)?.();
-      }
-    };
   }
 
-  function peekAtom(_store, state: TreeState): ?Loadable<T> {
+  function myPeek(_store, state: TreeState): ?Loadable<T> {
     return (
       state.atomValues.get(key) ??
       cachedAnswerForUnvalidatedValue?.[1] ??
@@ -382,10 +361,9 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     );
   }
 
-  function getAtom(
-    _store: Store,
-    state: TreeState,
-  ): [DependencyMap, Loadable<T>] {
+  function myGet(store: Store, state: TreeState): [DependencyMap, Loadable<T>] {
+    initAtom(store, state, 'get');
+
     if (state.atomValues.has(key)) {
       // Atom value is stored in state:
       return [new Map(), nullthrows(state.atomValues.get(key))];
@@ -418,15 +396,22 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     }
   }
 
-  function invalidateAtom() {
+  function myCleanup(store: Store) {
+    cleanupEffectsByStore.get(store)?.();
+    cleanupEffectsByStore.delete(store);
+  }
+
+  function invalidate() {
     cachedAnswerForUnvalidatedValue = undefined;
   }
 
-  function setAtom(
-    _store: Store,
+  function mySet(
+    store: Store,
     state: TreeState,
     newValue: T | DefaultValue,
   ): [DependencyMap, AtomWrites] {
+    initAtom(store, state, 'set');
+
     // Bail out if we're being set to the existing value, or if we're being
     // reset but have no stored value (validated or unvalidated) to reset from:
     if (state.atomValues.has(key)) {
@@ -451,19 +436,14 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     return [new Map(), new Map().set(key, loadableWithValue(newValue))];
   }
 
-  function shouldDeleteConfigOnReleaseAtom() {
-    return getConfigDeletionHandler(key) !== undefined && liveStoresCount <= 0;
-  }
-
   const node = registerNode(
     ({
       key,
-      peek: peekAtom,
-      get: getAtom,
-      set: setAtom,
-      init: initAtom,
-      invalidate: invalidateAtom,
-      shouldDeleteConfigOnRelease: shouldDeleteConfigOnReleaseAtom,
+      peek: myPeek,
+      get: myGet,
+      set: mySet,
+      cleanUp: myCleanup,
+      invalidate,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       persistence_UNSTABLE: options.persistence_UNSTABLE
         ? {
@@ -472,7 +452,6 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           }
         : undefined,
       shouldRestoreFromSnapshots: true,
-      retainedBy,
     }: ReadWriteNodeOptions<T>),
   );
   return node;
@@ -535,7 +514,7 @@ function atomWithFallback<T>(
     effects_UNSTABLE: (options.effects_UNSTABLE: any),
   });
 
-  const sel = selector<T>({
+  return selector<T>({
     key: `${options.key}__withFallback`,
     get: ({get}) => {
       const baseValue = get(base);
@@ -544,8 +523,6 @@ function atomWithFallback<T>(
     set: ({set}, newValue) => set(base, newValue),
     dangerouslyAllowMutability: options.dangerouslyAllowMutability,
   });
-  setConfigDeletionHandler(sel.key, getConfigDeletionHandler(options.key));
-  return sel;
 }
 
 module.exports = atom;
