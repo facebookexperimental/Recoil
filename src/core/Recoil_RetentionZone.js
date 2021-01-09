@@ -8,14 +8,11 @@
  * @flow strict
  * @format
  */
+
 'use strict';
 
-// eslint-disable-next-line fb-www/flow-readonly-object
-export type CacheImplementation<T> = {
-  +get: mixed => T | void,
-  +set: (mixed, T) => CacheImplementation<T>,
-  +delete: mixed => CacheImplementation<T>,
-  ...
-};
+export class RetentionZone {}
 
-module.exports = ({}: {...});
+export function retentionZone(): RetentionZone {
+  return new RetentionZone();
+}

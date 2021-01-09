@@ -12,19 +12,103 @@
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DependencyMap} from './Recoil_Graph';
-import type {DefaultValue} from './Recoil_Node';
+import type {DefaultValue, Trigger} from './Recoil_Node';
 import type {RecoilValue} from './Recoil_RecoilValue';
+import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const filterIterable = require('../util/Recoil_filterIterable');
+const gkx = require('../util/Recoil_gkx');
 const mapIterable = require('../util/Recoil_mapIterable');
 const {getNode, getNodeMaybe, recoilValuesForKeys} = require('./Recoil_Node');
+const {RetentionZone} = require('./Recoil_RetentionZone');
 
 // flowlint-next-line unclear-type:off
 const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());
 
 class ReadOnlyRecoilValueError extends Error {}
+
+function initializeRetentionForNode(
+  store: Store,
+  nodeKey: NodeKey,
+  retainedBy: RetainedBy,
+): () => void {
+  if (!gkx('recoil_memory_managament_2020')) {
+    return () => undefined;
+  }
+  const {nodesRetainedByZone} = store.getState().retention;
+
+  function addToZone(zone: RetentionZone) {
+    let set = nodesRetainedByZone.get(zone);
+    if (!set) {
+      nodesRetainedByZone.set(zone, (set = new Set()));
+    }
+    set.add(nodeKey);
+  }
+
+  if (retainedBy instanceof RetentionZone) {
+    addToZone(retainedBy);
+  } else if (Array.isArray(retainedBy)) {
+    for (const zone of retainedBy) {
+      addToZone(zone);
+    }
+  }
+
+  return () => {
+    if (!gkx('recoil_memory_managament_2020')) {
+      return;
+    }
+    const nodesRetainedByZone = store.getState().retention.nodesRetainedByZone;
+
+    function deleteFromZone(zone: RetentionZone) {
+      const set = nodesRetainedByZone.get(zone);
+      if (set) {
+        set.delete(nodeKey);
+      }
+      if (set && set.size === 0) {
+        nodesRetainedByZone.delete(zone);
+      }
+    }
+
+    if (retainedBy instanceof RetentionZone) {
+      deleteFromZone(retainedBy);
+    } else if (Array.isArray(retainedBy)) {
+      for (const zone of retainedBy) {
+        deleteFromZone(zone);
+      }
+    }
+  };
+}
+
+function initializeNodeIfNewToStore(
+  store: Store,
+  treeState: TreeState,
+  key: NodeKey,
+  trigger: Trigger,
+): void {
+  const storeState = store.getState();
+  if (storeState.nodeCleanupFunctions.has(key)) {
+    return;
+  }
+  const config = getNode(key);
+  const retentionCleanup = initializeRetentionForNode(
+    store,
+    key,
+    config.retainedBy,
+  );
+  const nodeCleanup = config.init(store, treeState, trigger);
+  storeState.nodeCleanupFunctions.set(key, () => {
+    nodeCleanup();
+    retentionCleanup();
+  });
+}
+
+function cleanUpNode(store: Store, key: NodeKey) {
+  const state = store.getState();
+  state.nodeCleanupFunctions.get(key)?.();
+  state.nodeCleanupFunctions.delete(key);
+}
 
 // Get the current value loadable of a node and update the state.
 // Update dependencies and subscriptions for selectors.
@@ -34,6 +118,7 @@ function getNodeLoadable<T>(
   state: TreeState,
   key: NodeKey,
 ): [DependencyMap, Loadable<T>] {
+  initializeNodeIfNewToStore(store, state, key, 'get');
   return getNode(key).get(store, state);
 }
 
@@ -79,12 +164,9 @@ function setNodeValue<T>(
       `Attempt to set read-only RecoilValue: ${key}`,
     );
   }
-  return node.set(store, state, newValue);
-}
-
-function cleanUpNode(store: Store, key: NodeKey) {
-  const node = getNode(key);
-  node.cleanUp(store);
+  const set = node.set; // so flow doesn't lose the above refinement.
+  initializeNodeIfNewToStore(store, state, key, 'set');
+  return set(store, state, newValue);
 }
 
 type ComponentInfo = {
@@ -142,7 +224,7 @@ function peekNodeInfo<T>(
 function getDownstreamNodes(
   store: Store,
   state: TreeState,
-  keys: $ReadOnlySet<NodeKey>,
+  keys: $ReadOnlySet<NodeKey> | $ReadOnlyArray<NodeKey>,
 ): $ReadOnlySet<NodeKey> {
   const visitedNodes = new Set();
   const visitingNodes = Array.from(keys);
@@ -168,4 +250,5 @@ module.exports = {
   setUnvalidatedAtomValue_DEPRECATED,
   peekNodeInfo,
   getDownstreamNodes,
+  initializeNodeIfNewToStore,
 };

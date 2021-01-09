@@ -22,10 +22,16 @@ import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
 const concatIterables = require('../util/Recoil_concatIterables');
+const {isSSR} = require('../util/Recoil_Environment');
 const filterIterable = require('../util/Recoil_filterIterable');
+const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {batchUpdates} = require('./Recoil_Batching');
-const {getDownstreamNodes, peekNodeInfo} = require('./Recoil_FunctionalCore');
+const {
+  getDownstreamNodes,
+  initializeNodeIfNewToStore,
+  peekNodeInfo,
+} = require('./Recoil_FunctionalCore');
 const {graph} = require('./Recoil_Graph');
 const {
   DEFAULT_VALUE,
@@ -51,6 +57,7 @@ export opaque type SnapshotID = StateID;
 // evaluation functions are executed and async selectors resolve.
 class Snapshot {
   _store: Store;
+  _refCount: number = 0;
 
   constructor(storeState: StoreState) {
     this._store = {
@@ -72,29 +79,87 @@ class Snapshot {
         throw new Error('Cannot subscribe to Snapshots');
       },
     };
+    // Initialize any nodes that are live in the parent store (primarily so that this
+    // snapshot gets counted towards the node's live stores count).
+    for (const nodeKey of this._store.getState().nodeCleanupFunctions.keys()) {
+      initializeNodeIfNewToStore(
+        this._store,
+        storeState.currentTree,
+        nodeKey,
+        'get',
+      );
+    }
+    this.retain();
+    this.autorelease();
+  }
+
+  retain(): () => void {
+    this._refCount++;
+    let released = false;
+    return () => {
+      if (!released) {
+        released = true;
+        this.release();
+      }
+    };
+  }
+
+  autorelease(): void {
+    if (!isSSR) {
+      window.setTimeout(() => this.release(), 0);
+    }
+  }
+
+  release(): void {
+    this._refCount--;
+    if (this._refCount === 0) {
+      for (const fn of this._store.getState().nodeCleanupFunctions.values()) {
+        fn();
+      }
+      this._store.getState().nodeCleanupFunctions.clear();
+    }
+  }
+
+  checkRefCount_INTERNAL(): void {
+    if (gkx('recoil_memory_managament_2020') && this._refCount <= 0) {
+      throw new Error(
+        'Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it).',
+      );
+    }
   }
 
   getStore_INTERNAL(): Store {
+    this.checkRefCount_INTERNAL();
     return this._store;
   }
 
   getID(): SnapshotID {
+    this.checkRefCount_INTERNAL();
     return this.getID_INTERNAL();
   }
 
   getID_INTERNAL(): StateID {
+    this.checkRefCount_INTERNAL();
     return this._store.getState().currentTree.stateID;
   }
 
+  // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
   getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
     recoilValue: RecoilValue<T>,
-    // $FlowFixMe[escaped-generic]
-  ) => getRecoilValueAsLoadable(this._store, recoilValue);
+  ): Loadable<T> => {
+    this.checkRefCount_INTERNAL();
+    return getRecoilValueAsLoadable(this._store, recoilValue);
+  };
 
+  // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
   getPromise: <T>(RecoilValue<T>) => Promise<T> = <T>(
     recoilValue: RecoilValue<T>,
-    // $FlowFixMe[escaped-generic]
-  ) => this.getLoadable(recoilValue).toPromise();
+  ): Promise<T> => {
+    this.checkRefCount_INTERNAL();
+    return this.getLoadable(recoilValue).toPromise();
+  };
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
@@ -104,6 +169,8 @@ class Snapshot {
       isInitialized?: boolean,
     } | void,
   ) => Iterable<RecoilValue<mixed>> = opt => {
+    this.checkRefCount_INTERNAL();
+
     // TODO Deal with modified selectors
     if (opt?.isModified === true) {
       if (opt?.isInitialized === false) {
@@ -134,6 +201,7 @@ class Snapshot {
   getDeps_UNSTABLE: <T>(RecoilValue<T>) => Iterable<RecoilValue<mixed>> = <T>(
     recoilValue: RecoilValue<T>,
   ) => {
+    this.checkRefCount_INTERNAL();
     this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
     const deps = this._store
       .getGraph(this._store.getState().currentTree.version)
@@ -150,6 +218,7 @@ class Snapshot {
     nodes: Iterable<RecoilValue<mixed>>,
     // TODO components, observers, and atom effects
   } = <T>({key}: RecoilValue<T>) => {
+    this.checkRefCount_INTERNAL();
     const state = this._store.getState().currentTree;
     const downstreamNodes = filterIterable(
       getDownstreamNodes(this._store, state, new Set([key])),
@@ -166,11 +235,14 @@ class Snapshot {
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   getInfo_UNSTABLE: <T>(RecoilValue<T>) => RecoilValueInfo<T> = <T>({
     key,
-  }: RecoilValue<T>) =>
-    peekNodeInfo(this._store, this._store.getState().currentTree, key);
+  }: RecoilValue<T>) => {
+    this.checkRefCount_INTERNAL();
+    return peekNodeInfo(this._store, this._store.getState().currentTree, key);
+  };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
+    this.checkRefCount_INTERNAL();
     const mutableSnapshot = new MutableSnapshot(this);
     mapper(mutableSnapshot); // if removing batchUpdates from `set` add it here
     return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
@@ -180,6 +252,7 @@ class Snapshot {
   asyncMap: (
     (MutableSnapshot) => Promise<void>,
   ) => Promise<Snapshot> = async mapper => {
+    this.checkRefCount_INTERNAL();
     const mutableSnapshot = new MutableSnapshot(this);
     await mapper(mutableSnapshot);
     return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
@@ -217,6 +290,12 @@ function cloneStoreState(
     suspendedComponentResolvers: new Set(),
     graphsByVersion: new Map().set(version, store.getGraph(treeState.version)),
     versionsUsedByComponent: new Map(),
+    retention: {
+      referenceCounts: new Map(),
+      nodesRetainedByZone: new Map(),
+      retainablesToCheckForRelease: new Set(),
+    },
+    nodeCleanupFunctions: new Map(),
   };
 }
 
@@ -256,28 +335,32 @@ class MutableSnapshot extends Snapshot {
     recoilState: RecoilState<T>,
     newValueOrUpdater: ValueOrUpdater<T>,
   ) => {
-    const store = this.getStore_INTERNAL();
+    this.checkRefCount_INTERNAL();
     // This batchUpdates ensures this `set` is applied immediately and you can
     // read the written value after calling `set`. I would like to remove this
     // behavior and only batch in `Snapshot.map`, but this would be a breaking
     // change potentially.
     batchUpdates(() => {
-      setRecoilValue(store, recoilState, newValueOrUpdater);
+      setRecoilValue(this.getStore_INTERNAL(), recoilState, newValueOrUpdater);
     });
   };
 
-  // $FlowFixMe[escaped-generic]
-  reset: ResetRecoilState = recoilState =>
+  // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  reset: ResetRecoilState = <T>(recoilState: RecoilState<T>) => {
+    this.checkRefCount_INTERNAL();
     // See note at `set` about batched updates.
     batchUpdates(() =>
       setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE),
     );
+  };
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   setUnvalidatedAtomValues_DEPRECATED: (Map<NodeKey, mixed>) => void = (
     values: Map<NodeKey, mixed>,
   ) => {
+    this.checkRefCount_INTERNAL();
     const store = this.getStore_INTERNAL();
     batchUpdates(() => {
       for (const [k, v] of values.entries()) {
