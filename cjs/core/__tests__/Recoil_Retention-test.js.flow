@@ -1,0 +1,271 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { RecoilState } from '../../core/Recoil_RecoilValue';
+
+const {
+  getRecoilTestFn
+} = require('../../testing/Recoil_TestingUtils');
+
+let React, act, atom, componentThatReadsAndWritesAtom, gkx, useRecoilValue, useRecoilValueLoadable, useRetain, useRecoilCallback, useState, selector, renderElements, retentionZone;
+const testRecoil = getRecoilTestFn(() => {
+  React = require('React');
+  ({
+    useState
+  } = require('React'));
+  ({
+    act
+  } = require('ReactTestUtils'));
+  ({
+    retentionZone
+  } = require('../../core/Recoil_RetentionZone'));
+  ({
+    useRecoilValue,
+    useRecoilValueLoadable,
+    useRetain,
+    useRecoilCallback
+  } = require('../../hooks/Recoil_Hooks'));
+  atom = require('../../recoil_values/Recoil_atom');
+  selector = require('../../recoil_values/Recoil_selector');
+  ({
+    componentThatReadsAndWritesAtom,
+    renderElements
+  } = require('../../testing/Recoil_TestingUtils'));
+  gkx = require('../../util/Recoil_gkx');
+  const initialGKValue = gkx('recoil_memory_managament_2020');
+  gkx.setPass('recoil_memory_managament_2020');
+  return () => {
+    initialGKValue || gkx.setFail('recoil_memory_managament_2020');
+  };
+});
+let nextKey = 0;
+declare function atomRetainedBy(retainedBy: any): any;
+declare function switchComponent(defaultVisible: any): any; // Mounts a component that reads the given atom, sets its value, then unmounts it
+// and re-mounts it again. Checks whether the value of the atom that was written
+// is still observed. If otherChildren is provided, it will be mounted throughout this,
+// then at the end it will be unmounted and the atom expected to be released.
+
+declare function testWhetherAtomIsRetained(shouldBeRetained: boolean, atom: RecoilState<number>, otherChildren: any): void;
+describe('Default retention', () => {
+  testRecoil('By default, atoms are retained for the lifetime of the root', () => {
+    testWhetherAtomIsRetained(true, atomRetainedBy(undefined));
+  });
+});
+describe('Component-level retention', () => {
+  testRecoil('With retainedBy: components, atoms are released when not in use', () => {
+    testWhetherAtomIsRetained(false, atomRetainedBy('components'));
+  });
+  testRecoil('An atom is retained by a component being subscribed to it', () => {
+    const anAtom = atomRetainedBy('components');
+    declare function Subscribes(): any;
+    testWhetherAtomIsRetained(true, anAtom, <Subscribes />);
+  });
+  testRecoil('An atom is retained by a component retaining it explicitly', () => {
+    const anAtom = atomRetainedBy('components');
+    declare function Retains(): any;
+    testWhetherAtomIsRetained(true, anAtom, <Retains />);
+  });
+});
+describe('RetentionZone retention', () => {
+  testRecoil('An atom can be retained via a retention zone', () => {
+    const zone = retentionZone();
+    const anAtom = atomRetainedBy(zone);
+    declare function RetainsZone(): any;
+    testWhetherAtomIsRetained(true, anAtom, <RetainsZone />);
+  });
+});
+describe('Retention of and via selectors', () => {
+  testRecoil('An atom is retained when a depending selector is retained', () => {
+    const anAtom = atomRetainedBy('components');
+    const aSelector = selector({
+      key: '...',
+      retainedBy_UNSTABLE: 'components',
+      get: ({
+        get
+      }) => {
+        return get(anAtom);
+      }
+    });
+    declare function SubscribesToSelector(): any;
+    testWhetherAtomIsRetained(true, anAtom, <SubscribesToSelector />);
+  });
+  declare var flushPromises: () => any;
+  testRecoil('An async selector is not released when its only subscribed component suspends', async () => {
+    let resolve;
+    let evalCount = 0;
+    const anAtom = atomRetainedBy('components');
+    const aSelector = selector({
+      key: '......',
+      retainedBy_UNSTABLE: 'components',
+      get: ({
+        get
+      }) => {
+        evalCount++;
+        get(anAtom);
+        return new Promise(r => {
+          resolve = r;
+        });
+      }
+    });
+    declare function SubscribesToSelector(): any;
+    const c = renderElements(<SubscribesToSelector />);
+    expect(c.textContent).toEqual('loading');
+    expect(evalCount).toBe(1);
+    act(() => resolve(123)); // We need to let the selector promise resolve but NOT flush timeouts because
+    // we do release after suspending after a timeout and we don't want that
+    // to happen because we're testing what happens when it doesn't.
+
+    await flushPromises();
+    await flushPromises();
+    expect(c.textContent).toEqual('123');
+    expect(evalCount).toBe(1); // Still in cache, hence wasn't released.
+  });
+  testRecoil('An async selector ignores promises that settle after it is released', async () => {
+    let resolve;
+    let evalCount = 0;
+    const anAtom = atomRetainedBy('components');
+    const aSelector = selector({
+      key: 'retention/asyncSettlesAfterRelease',
+      retainedBy_UNSTABLE: 'components',
+      get: ({
+        get
+      }) => {
+        evalCount++;
+        get(anAtom);
+        return new Promise(r => {
+          resolve = r;
+        });
+      }
+    });
+    declare function SubscribesToSelector(): any;
+    const [Switch, setMounted] = switchComponent(true);
+    const c = renderElements(<Switch>
+          <SubscribesToSelector />
+        </Switch>);
+    expect(c.textContent).toEqual('loading');
+    expect(evalCount).toBe(1);
+    act(() => setMounted(false)); // release selector while promise is in flight
+
+    act(() => resolve(123));
+    await flushPromises();
+    act(() => setMounted(true));
+    expect(evalCount).toBe(2); // selector must be re-evaluated because the resolved value is not in cache
+
+    expect(c.textContent).toEqual('loading');
+    act(() => resolve(123));
+    await flushPromises();
+    expect(c.textContent).toEqual('123');
+  });
+  testRecoil('Selector changing deps releases old deps, retains new ones', () => {
+    const switchAtom = atom({
+      key: 'switch',
+      default: false
+    });
+    const depA = atomRetainedBy('components');
+    const depB = atomRetainedBy('components');
+    const theSelector = selector({
+      key: 'sel',
+      get: ({
+        get
+      }) => {
+        if (get(switchAtom)) {
+          return get(depB);
+        } else {
+          return get(depA);
+        }
+      },
+      retainedBy_UNSTABLE: 'components'
+    });
+    let setup;
+    declare function Setup(): any;
+    declare function ReadsSelector(): any;
+    let depAValue;
+    declare function ReadsDepA(): any;
+    let depBValue;
+    declare function ReadsDepB(): any;
+    const [MountSwitch, setAtomsMountedDirectly] = switchComponent(true);
+    declare function unmountAndRemount(): any;
+    const [ReadsSwitch, setDepSwitch] = componentThatReadsAndWritesAtom(switchAtom);
+    renderElements(<>
+          <ReadsSelector />
+          <ReadsSwitch />
+          <MountSwitch>
+            <ReadsDepA />
+            <ReadsDepB />
+          </MountSwitch>
+          <Setup />
+        </>);
+    act(() => {
+      setup();
+    });
+    unmountAndRemount();
+    expect(depAValue).toBe(123);
+    expect(depBValue).toBe(0);
+    act(() => {
+      setDepSwitch(true);
+    });
+    unmountAndRemount();
+    expect(depAValue).toBe(0);
+    act(() => {
+      setup();
+    });
+    unmountAndRemount();
+    expect(depBValue).toBe(456);
+  });
+});
+describe('Retention during a transaction', () => {
+  testRecoil('Atoms are not released if unmounted and mounted within the same transaction', () => {
+    const anAtom = atomRetainedBy('components');
+    const [ReaderA, setAtom] = componentThatReadsAndWritesAtom(anAtom);
+    const [ReaderB] = componentThatReadsAndWritesAtom(anAtom);
+    const [SwitchA, setSwitchA] = switchComponent(true);
+    const [SwitchB, setSwitchB] = switchComponent(false);
+    const container = renderElements(<>
+          <SwitchA>
+            <ReaderA />
+          </SwitchA>
+          <SwitchB>
+            <ReaderB />
+          </SwitchB>
+        </>);
+    act(() => setAtom(123));
+    act(() => {
+      setSwitchA(false);
+      setSwitchB(true);
+    });
+    expect(container.textContent).toEqual('123');
+  });
+  testRecoil('An atom is released when two zones retaining it are released at the same time', () => {
+    const zoneA = retentionZone();
+    const zoneB = retentionZone();
+    const anAtom = atomRetainedBy([zoneA, zoneB]);
+    declare function RetainsZone(arg0: any): any; // It's the no-longer-retained-when-unmounting-otherChildren part that is
+    // important for this test.
+
+    testWhetherAtomIsRetained(true, anAtom, <>
+          <RetainsZone zone={zoneA} />
+          <RetainsZone zone={zoneB} />
+        </>);
+  });
+  testRecoil('An atom is released when both direct-retainer and zone-retainer are released at the same time', () => {
+    const zone = retentionZone();
+    const anAtom = atomRetainedBy(zone);
+    declare function RetainsZone(): any;
+    declare function RetainsAtom(): any; // It's the no-longer-retained-when-unmounting-otherChildren part that is
+    // important for this test.
+
+    testWhetherAtomIsRetained(true, anAtom, <>
+          <RetainsZone />
+          <RetainsAtom />
+        </>);
+  });
+});

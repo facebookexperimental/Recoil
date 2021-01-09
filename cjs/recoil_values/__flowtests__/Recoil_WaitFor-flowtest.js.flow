@@ -46,7 +46,8 @@ let str: string; //////////////
 const arrayResults = useRecoilValue( // $FlowExpectedError
 waitForAll([readOnlySelector(numberAtom), readOnlySelector(stringAtom)]));
 num = arrayResults[0];
-str = arrayResults[1];
+str = arrayResults[1]; // $FlowExpectedError
+
 num = arrayResults[1]; // $FlowExpectedError
 
 str = arrayResults[0]; // Test object unwrapping of types
@@ -58,7 +59,8 @@ waitForAll({
   str: stringAtom
 }));
 num = objResults.num;
-str = objResults.str;
+str = objResults.str; // $FlowExpectedError
+
 num = objResults.str; // $FlowExpectedError
 
 str = objResults.num; //////////////
@@ -70,7 +72,8 @@ str = objResults.num; //////////////
 const arrayResultsNone = useRecoilValue( // $FlowExpectedError
 waitForNone([readOnlySelector(numberAtom), readOnlySelector(stringAtom)]));
 num = arrayResultsNone[0].valueOrThrow();
-str = arrayResultsNone[1].valueOrThrow();
+str = arrayResultsNone[1].valueOrThrow(); // $FlowExpectedError
+
 num = arrayResultsNone[1].valueOrThrow(); // $FlowExpectedError
 
 str = arrayResultsNone[0].valueOrThrow(); // Test object unwrapping of types
@@ -82,7 +85,8 @@ waitForNone({
   str: stringAtom
 }));
 num = objResultsNone.num.valueOrThrow();
-str = objResultsNone.str.valueOrThrow();
+str = objResultsNone.str.valueOrThrow(); // $FlowExpectedError
+
 num = objResultsNone.str.valueOrThrow(); // $FlowExpectedError
 
 str = objResultsNone.num.valueOrThrow(); //////////////

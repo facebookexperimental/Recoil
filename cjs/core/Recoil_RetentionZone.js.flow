@@ -10,8 +10,5 @@
  */
 'use strict';
 
-import type { CacheImplementation } from './Recoil_Cache'; // cache implementation that only stores the most recent entry
-// based on key reference equality
-
-declare function cacheMostRecent<T>(): CacheImplementation<T>;
-module.exports = cacheMostRecent;
+declare export class RetentionZone {}
+declare export function retentionZone(): RetentionZone;

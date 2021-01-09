@@ -14,9 +14,14 @@ import type { Loadable } from '../adt/Recoil_Loadable';
 import type { CacheImplementation } from '../caches/Recoil_Cache';
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
+import type { RetainedBy } from '../core/Recoil_RetainedBy';
 import type { GetRecoilValue, ResetRecoilState, SetRecoilState } from './Recoil_selector';
 
 const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
+
+const {
+  setConfigDeletionHandler
+} = require('../core/Recoil_Node');
 
 const stableStringify = require('../util/Recoil_stableStringify');
 
@@ -33,6 +38,7 @@ type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
   cacheImplementation_UNSTABLE?: () => CacheImplementation<Loadable<T>>,
   cacheImplementationForParams_UNSTABLE?: () => CacheImplementation<RecoilValue<T>>,
   dangerouslyAllowMutability?: boolean,
+  retainedBy_UNSTABLE?: RetainedBy | ((P) => RetainedBy),
 }>;
 export type ReadWriteSelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{ ...ReadOnlySelectorFamilyOptions<T, P>,
   set: (P) => ({

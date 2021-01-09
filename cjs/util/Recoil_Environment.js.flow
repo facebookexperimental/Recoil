@@ -10,8 +10,10 @@
  */
 'use strict';
 
-import type { CacheImplementation } from './Recoil_Cache'; // cache implementation that only stores the most recent entry
-// based on key reference equality
+const isSSR: boolean = typeof window === 'undefined';
+const isReactNative: boolean = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
-declare function cacheMostRecent<T>(): CacheImplementation<T>;
-module.exports = cacheMostRecent;
+module.exports = {
+  isSSR,
+  isReactNative
+};

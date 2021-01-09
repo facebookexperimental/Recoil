@@ -945,6 +945,7 @@ testRecoil('async set not supported', async () => {
     }
   });
   const testSnapshot = freshSnapshot();
+  testSnapshot.retain();
   expect(() => testSnapshot.map(({
     set
   }) => {
@@ -962,6 +963,7 @@ testRecoil('async set not supported', async () => {
     set(mySelector2, 'SET');
     reset(mySelector2);
   });
+  setSnapshot.retain();
   await flushPromisesAndTimers();
   expect(setSnapshot.getLoadable(mySelector2).contents).toEqual('DEFAULT');
   await expect(setAttempt).rejects.toThrowError();

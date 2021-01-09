@@ -8,4 +8,7 @@
  * @flow strict
  * @format
  */
-declare export default function shallowArrayEqual<TArr: $ReadOnlyArray<mixed>>(a: TArr, b: TArr): boolean;
+'use strict';
+
+declare function shallowArrayEqual<TArr: $ReadOnlyArray<mixed>>(a: TArr, b: TArr): boolean;
+module.exports = shallowArrayEqual;
