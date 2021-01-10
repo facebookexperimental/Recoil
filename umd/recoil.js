@@ -430,68 +430,18 @@
     return nodes.get(key);
   }
 
-  const configDeletionHandlers = new Map();
-
-  function deleteNodeConfigIfPossible(key) {
-    var _node$shouldDeleteCon;
-
-    const node = nodes.get(key);
-
-    if (node === null || node === void 0 ? void 0 : (_node$shouldDeleteCon = node.shouldDeleteConfigOnRelease) === null || _node$shouldDeleteCon === void 0 ? void 0 : _node$shouldDeleteCon.call(node)) {
-      nodes.delete(key);
-      configDeletionHandlers.delete(key);
-    }
-  }
-
-  function setConfigDeletionHandler(key, fn) {
-    if (fn === undefined) {
-      configDeletionHandlers.delete(key);
-    } else {
-      configDeletionHandlers.set(key, fn);
-    }
-  }
-
-  function getConfigDeletionHandler(key) {
-    return configDeletionHandlers.get(key);
-  }
-
   var Recoil_Node = {
     nodes,
     recoilValues,
     registerNode,
     getNode,
     getNodeMaybe,
-    deleteNodeConfigIfPossible,
-    setConfigDeletionHandler,
-    getConfigDeletionHandler,
     recoilValuesForKeys,
     NodeMissingError,
     DefaultValue,
     DEFAULT_VALUE,
     RecoilValueNotReady
   };
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  class RetentionZone {}
-  function retentionZone() {
-    return new RetentionZone();
-  }
-
-  var Recoil_RetentionZone = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    RetentionZone: RetentionZone,
-    retentionZone: retentionZone
-  });
 
   const {
     setByAddingToSet: setByAddingToSet$1
@@ -501,108 +451,21 @@
 
 
 
-
-
   const {
     getNode: getNode$1,
     getNodeMaybe: getNodeMaybe$1,
     recoilValuesForKeys: recoilValuesForKeys$1
-  } = Recoil_Node;
-
-  const {
-    RetentionZone: RetentionZone$1
-  } = Recoil_RetentionZone; // flowlint-next-line unclear-type:off
+  } = Recoil_Node; // flowlint-next-line unclear-type:off
 
 
   const emptySet = Object.freeze(new Set());
 
-  class ReadOnlyRecoilValueError extends Error {}
-
-  function initializeRetentionForNode(store, nodeKey, retainedBy) {
-    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-      return () => undefined;
-    }
-
-    const {
-      nodesRetainedByZone
-    } = store.getState().retention;
-
-    function addToZone(zone) {
-      let set = nodesRetainedByZone.get(zone);
-
-      if (!set) {
-        nodesRetainedByZone.set(zone, set = new Set());
-      }
-
-      set.add(nodeKey);
-    }
-
-    if (retainedBy instanceof RetentionZone$1) {
-      addToZone(retainedBy);
-    } else if (Array.isArray(retainedBy)) {
-      for (const zone of retainedBy) {
-        addToZone(zone);
-      }
-    }
-
-    return () => {
-      if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-        return;
-      }
-
-      const nodesRetainedByZone = store.getState().retention.nodesRetainedByZone;
-
-      function deleteFromZone(zone) {
-        const set = nodesRetainedByZone.get(zone);
-
-        if (set) {
-          set.delete(nodeKey);
-        }
-
-        if (set && set.size === 0) {
-          nodesRetainedByZone.delete(zone);
-        }
-      }
-
-      if (retainedBy instanceof RetentionZone$1) {
-        deleteFromZone(retainedBy);
-      } else if (Array.isArray(retainedBy)) {
-        for (const zone of retainedBy) {
-          deleteFromZone(zone);
-        }
-      }
-    };
-  }
-
-  function initializeNodeIfNewToStore(store, treeState, key, trigger) {
-    const storeState = store.getState();
-
-    if (storeState.nodeCleanupFunctions.has(key)) {
-      return;
-    }
-
-    const config = getNode$1(key);
-    const retentionCleanup = initializeRetentionForNode(store, key, config.retainedBy);
-    const nodeCleanup = config.init(store, treeState, trigger);
-    storeState.nodeCleanupFunctions.set(key, () => {
-      nodeCleanup();
-      retentionCleanup();
-    });
-  }
-
-  function cleanUpNode(store, key) {
-    var _state$nodeCleanupFun;
-
-    const state = store.getState();
-    (_state$nodeCleanupFun = state.nodeCleanupFunctions.get(key)) === null || _state$nodeCleanupFun === void 0 ? void 0 : _state$nodeCleanupFun();
-    state.nodeCleanupFunctions.delete(key);
-  } // Get the current value loadable of a node and update the state.
+  class ReadOnlyRecoilValueError extends Error {} // Get the current value loadable of a node and update the state.
   // Update dependencies and subscriptions for selectors.
   // Update saved value validation for atoms.
 
 
   function getNodeLoadable(store, state, key) {
-    initializeNodeIfNewToStore(store, state, key, 'get');
     return getNode$1(key).get(store, state);
   } // Peek at the current value loadable for a node without any evaluation or state change
 
@@ -635,10 +498,12 @@
       throw new ReadOnlyRecoilValueError(`Attempt to set read-only RecoilValue: ${key}`);
     }
 
-    const set = node.set; // so flow doesn't lose the above refinement.
+    return node.set(store, state, newValue);
+  }
 
-    initializeNodeIfNewToStore(store, state, key, 'set');
-    return set(store, state, newValue);
+  function cleanUpNode(store, key) {
+    const node = getNode$1(key);
+    node.cleanUp(store);
   }
 
   function peekNodeInfo(store, state, key) {
@@ -693,8 +558,7 @@
     cleanUpNode,
     setUnvalidatedAtomValue_DEPRECATED,
     peekNodeInfo,
-    getDownstreamNodes,
-    initializeNodeIfNewToStore
+    getDownstreamNodes
   };
 
   /**
@@ -2547,13 +2411,7 @@
       queuedComponentCallbacks_DEPRECATED: [],
       suspendedComponentResolvers: new Set(),
       graphsByVersion: new Map().set(currentTree.version, graph$1()),
-      versionsUsedByComponent: new Map(),
-      retention: {
-        referenceCounts: new Map(),
-        nodesRetainedByZone: new Map(),
-        retainablesToCheckForRelease: new Set()
-      },
-      nodeCleanupFunctions: new Map()
+      versionsUsedByComponent: new Map()
     };
   }
 
@@ -2599,307 +2457,6 @@
    * @format
    */
   /**
-   * The someSet() method tests whether some elements in the given Set pass the
-   * test implemented by the provided function.
-   */
-
-  function someSet(set, callback, context) {
-    const iterator = set.entries();
-    let current = iterator.next();
-
-    while (!current.done) {
-      const entry = current.value;
-
-      if (callback.call(context, entry[1], entry[0], set)) {
-        return true;
-      }
-
-      current = iterator.next();
-    }
-
-    return false;
-  }
-
-  const {
-    cleanUpNode: cleanUpNode$1
-  } = Recoil_FunctionalCore;
-
-  const {
-    deleteNodeConfigIfPossible: deleteNodeConfigIfPossible$1,
-    getNode: getNode$2
-  } = Recoil_Node;
-
-  const {
-    RetentionZone: RetentionZone$2
-  } = Recoil_RetentionZone;
-
-  const emptySet$1 = new Set();
-
-  function releaseRetainablesNowOnCurrentTree(store, retainables) {
-    const storeState = store.getState();
-    const treeState = storeState.currentTree;
-
-    if (storeState.nextTree) {
-      Recoil_recoverableViolation('releaseNodesNowOnCurrentTree should only be called at the end of a batch');
-      return; // leak memory rather than erase something that's about to be used.
-    }
-
-    const nodes = new Set();
-
-    for (const r of retainables) {
-      if (r instanceof RetentionZone$2) {
-        for (const n of nodesRetainedByZone(storeState, r)) {
-          nodes.add(n);
-        }
-      } else {
-        nodes.add(r);
-      }
-    }
-
-    const releasableNodes = findReleasableNodes(store, nodes);
-
-    for (const node of releasableNodes) {
-      releaseNode(store, treeState, node);
-    }
-  }
-
-  function findReleasableNodes(store, searchFromNodes) {
-    const storeState = store.getState();
-    const treeState = storeState.currentTree;
-    const graph = store.getGraph(treeState.version);
-    const releasableNodes = new Set(); // mutated to collect answer
-
-    const nonReleasableNodes = new Set();
-    findReleasableNodesInner(searchFromNodes);
-    return releasableNodes;
-
-    function findReleasableNodesInner(searchFromNodes) {
-      const releasableNodesFoundThisIteration = new Set();
-      const downstreams = getDownstreamNodesInTopologicalOrder(store, treeState, searchFromNodes, releasableNodes, // don't descend into these
-      nonReleasableNodes // don't descend into these
-      ); // Find which of the downstream nodes are releasable and which are not:
-
-      for (const node of downstreams) {
-        var _storeState$retention;
-
-        // Not releasable if configured to be retained forever:
-        if (getNode$2(node).retainedBy === 'recoilRoot') {
-          nonReleasableNodes.add(node);
-          continue;
-        } // Not releasable if retained directly by a component:
-
-
-        if (((_storeState$retention = storeState.retention.referenceCounts.get(node)) !== null && _storeState$retention !== void 0 ? _storeState$retention : 0) > 0) {
-          nonReleasableNodes.add(node);
-          continue;
-        } // Not releasable if retained by a zone:
-
-
-        if (zonesThatCouldRetainNode(node).some(z => storeState.retention.referenceCounts.get(z))) {
-          nonReleasableNodes.add(node);
-          continue;
-        } // Not releasable if it has a non-releasable child (which will already be in
-        // nonReleasableNodes because we are going in topological order):
-
-
-        const nodeChildren = graph.nodeToNodeSubscriptions.get(node);
-
-        if (nodeChildren && someSet(nodeChildren, child => nonReleasableNodes.has(child))) {
-          nonReleasableNodes.add(node);
-          continue;
-        }
-
-        releasableNodes.add(node);
-        releasableNodesFoundThisIteration.add(node);
-      } // If we found any releasable nodes, we need to walk UP from those nodes to
-      // find whether their parents can now be released as well:
-
-
-      const parents = new Set();
-
-      for (const node of releasableNodesFoundThisIteration) {
-        for (const parent of (_graph$nodeDeps$get = graph.nodeDeps.get(node)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : emptySet$1) {
-          var _graph$nodeDeps$get;
-
-          if (!releasableNodes.has(parent)) {
-            parents.add(parent);
-          }
-        }
-      }
-
-      if (parents.size) {
-        findReleasableNodesInner(parents);
-      }
-    }
-  } // Children before parents
-
-
-  function getDownstreamNodesInTopologicalOrder(store, treeState, nodes, // Mutable set is destroyed in place
-  doNotDescendInto1, doNotDescendInto2) {
-    const graph = store.getGraph(treeState.version);
-    const answer = [];
-    const visited = new Set();
-
-    while (nodes.size > 0) {
-      visit(Recoil_nullthrows(nodes.values().next().value));
-    }
-
-    return answer;
-
-    function visit(node) {
-      if (doNotDescendInto1.has(node) || doNotDescendInto2.has(node)) {
-        nodes.delete(node);
-        return;
-      }
-
-      if (visited.has(node)) {
-        return;
-      }
-
-      const children = graph.nodeToNodeSubscriptions.get(node);
-
-      if (children) {
-        for (const child of children) {
-          visit(child);
-        }
-      }
-
-      visited.add(node);
-      nodes.delete(node);
-      answer.push(node);
-    }
-  }
-
-  function releaseNode(store, treeState, node) {
-    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-      return;
-    } // Atom effects, in-closure caches, etc.:
-
-
-    cleanUpNode$1(store, node); // Delete from store state:
-
-    const storeState = store.getState();
-    storeState.knownAtoms.delete(node);
-    storeState.knownSelectors.delete(node);
-    storeState.nodeTransactionSubscriptions.delete(node);
-    storeState.retention.referenceCounts.delete(node);
-    const zones = zonesThatCouldRetainNode(node);
-
-    for (const zone of zones) {
-      var _storeState$retention2;
-
-      (_storeState$retention2 = storeState.retention.nodesRetainedByZone.get(zone)) === null || _storeState$retention2 === void 0 ? void 0 : _storeState$retention2.delete(node);
-    } // Note that we DO NOT delete from nodeToComponentSubscriptions because this
-    // already happens when the last component that was retaining the node unmounts,
-    // and this could happen either before or after that.
-    // Delete from TreeState and dep graph:
-
-
-    treeState.atomValues.delete(node);
-    treeState.dirtyAtoms.delete(node);
-    treeState.nonvalidatedAtoms.delete(node);
-    const graph = storeState.graphsByVersion.get(treeState.version);
-
-    if (graph) {
-      const deps = graph.nodeDeps.get(node);
-
-      if (deps !== undefined) {
-        graph.nodeDeps.delete(node);
-
-        for (const dep of deps) {
-          var _graph$nodeToNodeSubs;
-
-          (_graph$nodeToNodeSubs = graph.nodeToNodeSubscriptions.get(dep)) === null || _graph$nodeToNodeSubs === void 0 ? void 0 : _graph$nodeToNodeSubs.delete(node);
-        }
-      } // No need to delete sub's deps as there should be no subs at this point.
-      // But an invariant would require deleting nodes in topological order.
-
-
-      graph.nodeToNodeSubscriptions.delete(node);
-    } // Node config (for family members only as their configs can be recreated, and
-    // only if they are not retained within any other Stores):
-
-
-    deleteNodeConfigIfPossible$1(node);
-  }
-
-  function nodesRetainedByZone(storeState, zone) {
-    var _storeState$retention3;
-
-    return (_storeState$retention3 = storeState.retention.nodesRetainedByZone.get(zone)) !== null && _storeState$retention3 !== void 0 ? _storeState$retention3 : emptySet$1;
-  }
-
-  function zonesThatCouldRetainNode(node) {
-    const retainedBy = getNode$2(node).retainedBy;
-
-    if (retainedBy === undefined || retainedBy === 'components' || retainedBy === 'recoilRoot') {
-      return [];
-    } else if (retainedBy instanceof RetentionZone$2) {
-      return [retainedBy];
-    } else {
-      return retainedBy; // it's an array of zones
-    }
-  }
-
-  function scheduleOrPerformPossibleReleaseOfRetainable(store, retainable) {
-    const state = store.getState();
-
-    if (state.nextTree) {
-      state.retention.retainablesToCheckForRelease.add(retainable);
-    } else {
-      releaseRetainablesNowOnCurrentTree(store, new Set([retainable]));
-    }
-  }
-
-  function updateRetainCount(store, retainable, delta) {
-    var _map$get;
-
-    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-      return;
-    }
-
-    const map = store.getState().retention.referenceCounts;
-    const newCount = ((_map$get = map.get(retainable)) !== null && _map$get !== void 0 ? _map$get : 0) + delta;
-
-    if (newCount === 0) {
-      map.delete(retainable);
-      scheduleOrPerformPossibleReleaseOfRetainable(store, retainable);
-    } else {
-      map.set(retainable, newCount);
-    }
-  }
-  function releaseScheduledRetainablesNow(store) {
-    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-      return;
-    }
-
-    const state = store.getState();
-    releaseRetainablesNowOnCurrentTree(store, state.retention.retainablesToCheckForRelease);
-    state.retention.retainablesToCheckForRelease.clear();
-  }
-  function retainedByOptionWithDefault(r) {
-    // The default will change from 'recoilRoot' to 'components' in the future.
-    return r === undefined ? 'recoilRoot' : r;
-  }
-
-  var Recoil_Retention = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    updateRetainCount: updateRetainCount,
-    releaseScheduledRetainablesNow: releaseScheduledRetainablesNow,
-    retainedByOptionWithDefault: retainedByOptionWithDefault
-  });
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-  /**
    * Combines multiple Iterables into a single Iterable.
    * Traverses the input Iterables in the order provided and maintains the order
    * of their elements.
@@ -2921,42 +2478,12 @@
 
   var Recoil_concatIterables = concatIterables;
 
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  const isSSR = typeof window === 'undefined';
-  const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
-
-  var Recoil_Environment = {
-    isSSR,
-    isReactNative
-  };
-
-  const {
-    isSSR: isSSR$1
-  } = Recoil_Environment;
-
-
-
-
-
-
-
   const {
     batchUpdates: batchUpdates$1
   } = Recoil_Batching;
 
   const {
     getDownstreamNodes: getDownstreamNodes$2,
-    initializeNodeIfNewToStore: initializeNodeIfNewToStore$1,
     peekNodeInfo: peekNodeInfo$1
   } = Recoil_FunctionalCore;
 
@@ -2990,21 +2517,14 @@
     constructor(storeState) {
       _defineProperty(this, "_store", void 0);
 
-      _defineProperty(this, "_refCount", 0);
+      _defineProperty(this, "getLoadable", recoilValue => // $FlowFixMe[escaped-generic]
+      getRecoilValueAsLoadable$1(this._store, recoilValue));
 
-      _defineProperty(this, "getLoadable", recoilValue => {
-        this.checkRefCount_INTERNAL();
-        return getRecoilValueAsLoadable$1(this._store, recoilValue);
-      });
-
-      _defineProperty(this, "getPromise", recoilValue => {
-        this.checkRefCount_INTERNAL();
-        return this.getLoadable(recoilValue).toPromise();
-      });
+      _defineProperty(this, "getPromise", recoilValue => // $FlowFixMe[escaped-generic]
+      this.getLoadable(recoilValue).toPromise());
 
       _defineProperty(this, "getNodes_UNSTABLE", opt => {
-        this.checkRefCount_INTERNAL(); // TODO Deal with modified selectors
-
+        // TODO Deal with modified selectors
         if ((opt === null || opt === void 0 ? void 0 : opt.isModified) === true) {
           if ((opt === null || opt === void 0 ? void 0 : opt.isInitialized) === false) {
             return [];
@@ -3025,7 +2545,6 @@
       });
 
       _defineProperty(this, "getDeps_UNSTABLE", recoilValue => {
-        this.checkRefCount_INTERNAL();
         this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
 
         const deps = this._store.getGraph(this._store.getState().currentTree.version).nodeDeps.get(recoilValue.key);
@@ -3036,8 +2555,6 @@
       _defineProperty(this, "getSubscribers_UNSTABLE", ({
         key
       }) => {
-        this.checkRefCount_INTERNAL();
-
         const state = this._store.getState().currentTree;
 
         const downstreamNodes = Recoil_filterIterable(getDownstreamNodes$2(this._store, state, new Set([key])), nodeKey => nodeKey !== key);
@@ -3048,13 +2565,9 @@
 
       _defineProperty(this, "getInfo_UNSTABLE", ({
         key
-      }) => {
-        this.checkRefCount_INTERNAL();
-        return peekNodeInfo$1(this._store, this._store.getState().currentTree, key);
-      });
+      }) => peekNodeInfo$1(this._store, this._store.getState().currentTree, key));
 
       _defineProperty(this, "map", mapper => {
-        this.checkRefCount_INTERNAL();
         const mutableSnapshot = new MutableSnapshot(this);
         mapper(mutableSnapshot); // if removing batchUpdates from `set` add it here
 
@@ -3062,7 +2575,6 @@
       });
 
       _defineProperty(this, "asyncMap", async mapper => {
-        this.checkRefCount_INTERNAL();
         const mutableSnapshot = new MutableSnapshot(this);
         await mapper(mutableSnapshot);
         return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
@@ -3090,68 +2602,20 @@
         addTransactionMetadata: () => {
           throw new Error('Cannot subscribe to Snapshots');
         }
-      }; // Initialize any nodes that are live in the parent store (primarily so that this
-      // snapshot gets counted towards the node's live stores count).
-
-      for (const nodeKey of this._store.getState().nodeCleanupFunctions.keys()) {
-        initializeNodeIfNewToStore$1(this._store, storeState.currentTree, nodeKey, 'get');
-      }
-
-      this.retain();
-      this.autorelease();
-    }
-
-    retain() {
-      this._refCount++;
-      let released = false;
-      return () => {
-        if (!released) {
-          released = true;
-          this.release();
-        }
       };
     }
 
-    autorelease() {
-      if (!isSSR$1) {
-        window.setTimeout(() => this.release(), 0);
-      }
-    }
-
-    release() {
-      this._refCount--;
-
-      if (this._refCount === 0) {
-        for (const fn of this._store.getState().nodeCleanupFunctions.values()) {
-          fn();
-        }
-
-        this._store.getState().nodeCleanupFunctions.clear();
-      }
-    }
-
-    checkRefCount_INTERNAL() {
-      if (Recoil_gkx_1('recoil_memory_managament_2020') && this._refCount <= 0) {
-        throw new Error('Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it).');
-      }
-    }
-
     getStore_INTERNAL() {
-      this.checkRefCount_INTERNAL();
       return this._store;
     }
 
     getID() {
-      this.checkRefCount_INTERNAL();
       return this.getID_INTERNAL();
     }
 
     getID_INTERNAL() {
-      this.checkRefCount_INTERNAL();
       return this._store.getState().currentTree.stateID;
-    } // We want to allow the methods to be destructured and used as accessors
-    // eslint-disable-next-line fb-www/extra-arrow-initializer
-
+    }
 
   }
 
@@ -3182,13 +2646,7 @@
       queuedComponentCallbacks_DEPRECATED: [],
       suspendedComponentResolvers: new Set(),
       graphsByVersion: new Map().set(version, store.getGraph(treeState.version)),
-      versionsUsedByComponent: new Map(),
-      retention: {
-        referenceCounts: new Map(),
-        nodesRetainedByZone: new Map(),
-        retainablesToCheckForRelease: new Set()
-      },
-      nodeCleanupFunctions: new Map()
+      versionsUsedByComponent: new Map()
     };
   } // Factory to build a fresh snapshot
 
@@ -3210,24 +2668,20 @@
       super(cloneStoreState(snapshot.getStore_INTERNAL(), snapshot.getStore_INTERNAL().getState().currentTree, true));
 
       _defineProperty(this, "set", (recoilState, newValueOrUpdater) => {
-        this.checkRefCount_INTERNAL(); // This batchUpdates ensures this `set` is applied immediately and you can
+        const store = this.getStore_INTERNAL(); // This batchUpdates ensures this `set` is applied immediately and you can
         // read the written value after calling `set`. I would like to remove this
         // behavior and only batch in `Snapshot.map`, but this would be a breaking
         // change potentially.
 
         batchUpdates$1(() => {
-          setRecoilValue$1(this.getStore_INTERNAL(), recoilState, newValueOrUpdater);
+          setRecoilValue$1(store, recoilState, newValueOrUpdater);
         });
       });
 
-      _defineProperty(this, "reset", recoilState => {
-        this.checkRefCount_INTERNAL(); // See note at `set` about batched updates.
-
-        batchUpdates$1(() => setRecoilValue$1(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE$1));
-      });
+      _defineProperty(this, "reset", recoilState => // See note at `set` about batched updates.
+      batchUpdates$1(() => setRecoilValue$1(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE$1)));
 
       _defineProperty(this, "setUnvalidatedAtomValues_DEPRECATED", values => {
-        this.checkRefCount_INTERNAL();
         const store = this.getStore_INTERNAL();
         batchUpdates$1(() => {
           for (const [k, v] of values.entries()) {
@@ -3281,8 +2735,6 @@
 
 
 
-
-
    // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 
@@ -3291,7 +2743,7 @@
 
 
   const {
-    cleanUpNode: cleanUpNode$2,
+    cleanUpNode: cleanUpNode$1,
     getDownstreamNodes: getDownstreamNodes$3,
     setNodeValue: setNodeValue$2,
     setUnvalidatedAtomValue_DEPRECATED: setUnvalidatedAtomValue_DEPRECATED$1
@@ -3311,12 +2763,9 @@
   } = Recoil_RecoilValueInterface;
 
   const {
-    releaseScheduledRetainablesNow: releaseScheduledRetainablesNow$1
-  } = Recoil_Retention;
-
-  const {
     freshSnapshot: freshSnapshot$1
-  } = Recoil_Snapshot$1;
+  } = Recoil_Snapshot$1; // @fb-only: const gkx = require('gkx');
+
 
   function notInAContext() {
     throw new Error('This component must be used inside a <RecoilRoot> component.');
@@ -3456,10 +2905,6 @@
         const discardedVersion = Recoil_nullthrows(storeState.previousTree).version;
         storeState.graphsByVersion.delete(discardedVersion);
         storeState.previousTree = null;
-
-        if (Recoil_gkx_1('recoil_memory_managament_2020')) {
-          releaseScheduledRetainablesNow$1(storeRef.current);
-        }
       });
     });
     return null;
@@ -3652,7 +3097,7 @@
 
     useEffect(() => () => {
       for (const atomKey of storeRef.current.getState().knownAtoms) {
-        cleanUpNode$2(storeRef.current, atomKey);
+        cleanUpNode$1(storeRef.current, atomKey);
       }
     }, []);
     return /*#__PURE__*/react.createElement(AppContext.Provider, {
@@ -3802,37 +3247,6 @@
     mutableSourceExists,
     useMutableSource
   };
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  function shallowArrayEqual(a, b) {
-    if (a === b) {
-      return true;
-    }
-
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    for (let i = 0, l = a.length; i < l; i++) {
-      if (a[i] !== b[i]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  var Recoil_shallowArrayEqual = shallowArrayEqual;
 
   /**
    * Copyright (c) Facebook, Inc. and its affiliates.
@@ -4064,7 +3478,7 @@
 
   const {
     DEFAULT_VALUE: DEFAULT_VALUE$2,
-    getNode: getNode$3,
+    getNode: getNode$2,
     nodes: nodes$1
   } = Recoil_Node;
 
@@ -4087,14 +3501,6 @@
   } = Recoil_RecoilValueInterface;
 
   const {
-    updateRetainCount: updateRetainCount$1
-  } = Recoil_Retention;
-
-  const {
-    RetentionZone: RetentionZone$3
-  } = Recoil_RetentionZone;
-
-  const {
     Snapshot: Snapshot$1,
     cloneSnapshot: cloneSnapshot$1
   } = Recoil_Snapshot$1;
@@ -4104,10 +3510,6 @@
   } = Recoil_CopyOnWrite;
 
 
-
-  const {
-    isSSR: isSSR$2
-  } = Recoil_Environment;
 
 
 
@@ -4136,12 +3538,6 @@
 
 
 
-   // Components that aren't mounted after suspending for this long will be assumed
-  // to be discarded and their resources released.
-
-
-  const SUSPENSE_TIMEOUT_MS = 120000;
-
   function handleLoadable(loadable, atom, storeRef) {
     // We can't just throw the promise we are waiting on to Suspense.  If the
     // upstream dependencies change it may produce a state in which the component
@@ -4166,10 +3562,6 @@
     }
   }
 
-  /**
-   * Various things are broken with useRecoilInterface, particularly concurrent mode
-   * and memory management. They will not be fixed.
-   * */
   function useRecoilInterface_DEPRECATED() {
     const storeRef = useStoreRef$1();
     const [_, forceUpdate] = useState$1([]);
@@ -4443,11 +3835,6 @@
 
 
   function useRecoilValueLoadable(recoilValue) {
-    if (Recoil_gkx_1('recoil_memory_managament_2020')) {
-      // eslint-disable-next-line fb-www/react-hooks
-      useRetain(recoilValue);
-    }
-
     if (mutableSourceExists$1()) {
       // eslint-disable-next-line fb-www/react-hooks
       return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
@@ -4552,7 +3939,7 @@
   function externallyVisibleAtomValuesInState(state) {
     const atomValues = state.atomValues.toMap();
     const persistedAtomContentsValues = Recoil_mapMap(Recoil_filterMap(atomValues, (v, k) => {
-      const node = getNode$3(k);
+      const node = getNode$2(k);
       const persistence = node.persistence_UNSTABLE;
       return persistence != null && persistence.type !== 'none' && v.state === 'hasValue';
     }), v => v.contents); // Merge in nonvalidated atoms; we may not have defs for them but they will
@@ -4623,51 +4010,18 @@
 
   function useRecoilTransactionObserver(callback) {
     useTransactionSubscription(useCallback(store => {
-      const snapshot = cloneSnapshot$1(store, 'current');
-      const previousSnapshot = cloneSnapshot$1(store, 'previous');
       callback({
-        snapshot,
-        previousSnapshot
+        snapshot: cloneSnapshot$1(store, 'current'),
+        previousSnapshot: cloneSnapshot$1(store, 'previous')
       });
     }, [callback]));
-  }
-
-  function usePrevious(value) {
-    const ref = useRef$2();
-    useEffect$1(() => {
-      ref.current = value;
-    });
-    return ref.current;
   } // Return a snapshot of the current state and subscribe to all state changes
 
 
   function useRecoilSnapshot() {
     const storeRef = useStoreRef$1();
     const [snapshot, setSnapshot] = useState$1(() => cloneSnapshot$1(storeRef.current));
-    const previousSnapshot = usePrevious(snapshot);
-    const timeoutID = useRef$2();
-    useEffect$1(() => {
-      if (timeoutID.current && !isSSR$2) {
-        window.clearTimeout(timeoutID.current);
-      }
-
-      return snapshot.retain();
-    }, [snapshot]);
     useTransactionSubscription(useCallback(store => setSnapshot(cloneSnapshot$1(store)), []));
-
-    if (previousSnapshot !== snapshot && !isSSR$2) {
-      if (timeoutID.current) {
-        previousSnapshot === null || previousSnapshot === void 0 ? void 0 : previousSnapshot.release();
-        window.clearTimeout(timeoutID.current);
-      }
-
-      snapshot.retain();
-      timeoutID.current = window.setTimeout(() => {
-        snapshot.release();
-        timeoutID.current = null;
-      }, SUSPENSE_TIMEOUT_MS);
-    }
-
     return snapshot;
   }
 
@@ -4686,7 +4040,7 @@
           for (const key of keys) {
             var _prev$atomValues$get, _next$atomValues$get;
 
-            if (((_prev$atomValues$get = prev.atomValues.get(key)) === null || _prev$atomValues$get === void 0 ? void 0 : _prev$atomValues$get.contents) !== ((_next$atomValues$get = next.atomValues.get(key)) === null || _next$atomValues$get === void 0 ? void 0 : _next$atomValues$get.contents) && getNode$3(key).shouldRestoreFromSnapshots) {
+            if (((_prev$atomValues$get = prev.atomValues.get(key)) === null || _prev$atomValues$get === void 0 ? void 0 : _prev$atomValues$get.contents) !== ((_next$atomValues$get = next.atomValues.get(key)) === null || _next$atomValues$get === void 0 ? void 0 : _next$atomValues$get.contents) && getNode$2(key).shouldRestoreFromSnapshots) {
               keysToUpdate.add(key);
             }
           }
@@ -4722,16 +4076,17 @@
     const storeRef = useStoreRef$1();
     const gotoSnapshot = useGotoRecoilSnapshot();
     return useCallback((...args) => {
+      // Use currentTree for the snapshot to show the currently committed state
+      const snapshot = cloneSnapshot$1(storeRef.current);
+
       function set(recoilState, newValueOrUpdater) {
         setRecoilValue$2(storeRef.current, recoilState, newValueOrUpdater);
       }
 
       function reset(recoilState) {
         setRecoilValue$2(storeRef.current, recoilState, DEFAULT_VALUE$2);
-      } // Use currentTree for the snapshot to show the currently committed state
+      }
 
-
-      const snapshot = cloneSnapshot$1(storeRef.current);
       let ret = SENTINEL;
       batchUpdates$2(() => {
         // flowlint-next-line unclear-type:off
@@ -4746,84 +4101,6 @@
       return ret;
     }, deps != null ? [...deps, storeRef] : undefined // eslint-disable-line fb-www/react-hooks-deps
     );
-  } // I don't see a way to avoid the any type here because we want to accept readable
-  // and writable values with any type parameter, but normally with writable ones
-  // RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
-
-
-  // flowlint-line unclear-type:off
-  function useRetain(toRetain) {
-    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-      return;
-    } // eslint-disable-next-line fb-www/react-hooks
-
-
-    return useRetain_ACTUAL(toRetain);
-  }
-
-  function useRetain_ACTUAL(toRetain) {
-    const array = Array.isArray(toRetain) ? toRetain : [toRetain];
-    const retainables = array.map(a => a instanceof RetentionZone$3 ? a : a.key);
-    const storeRef = useStoreRef$1();
-    useEffect$1(() => {
-      if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-        return;
-      }
-
-      const store = storeRef.current;
-
-      if (timeoutID.current && !isSSR$2) {
-        // Already performed a temporary retain on render, simply cancel the release
-        // of that temporary retain.
-        window.clearTimeout(timeoutID.current);
-        timeoutID.current = null;
-      } else {
-        // Log this since it's not clear that there's any scenario where it should happen.
-        Recoil_recoverableViolation('Did not retain recoil value on render, or committed after timeout elapsed. This is fine, but odd.');
-
-        for (const r of retainables) {
-          updateRetainCount$1(store, r, 1);
-        }
-      }
-
-      return () => {
-        for (const r of retainables) {
-          updateRetainCount$1(store, r, -1);
-        }
-      }; // eslint-disable-next-line fb-www/react-hooks-deps
-    }, [storeRef, ...retainables]); // We want to retain if the component suspends. This is terrible but the Suspense
-    // API affords us no better option. If we suspend and never commit after some
-    // seconds, then release. The 'actual' retain/release in the effect above
-    // cancels this.
-
-    const timeoutID = useRef$2();
-    const previousRetainables = usePrevious(retainables);
-
-    if (!isSSR$2 && (previousRetainables === undefined || !Recoil_shallowArrayEqual(previousRetainables, retainables))) {
-      const store = storeRef.current;
-
-      for (const r of retainables) {
-        updateRetainCount$1(store, r, 1);
-      }
-
-      if (previousRetainables) {
-        for (const r of previousRetainables) {
-          updateRetainCount$1(store, r, -1);
-        }
-      }
-
-      if (timeoutID.current) {
-        window.clearTimeout(timeoutID.current);
-      }
-
-      timeoutID.current = window.setTimeout(() => {
-        timeoutID.current = null;
-
-        for (const r of retainables) {
-          updateRetainCount$1(store, r, -1);
-        }
-      }, SUSPENSE_TIMEOUT_MS);
-    }
   }
 
   var Recoil_Hooks = {
@@ -4837,7 +4114,6 @@
     useRecoilTransactionObserver,
     useRecoilValue,
     useRecoilValueLoadable,
-    useRetain,
     useResetRecoilState,
     useSetRecoilState,
     useSetUnvalidatedAtomValues,
@@ -4913,9 +4189,6 @@
   // Containing static factories of withValue(), withError(), withPromise(), and all()
 
 
-  class Canceled {}
-
-  const CANCELED = new Canceled();
   const loadableAccessors = {
     /**
      * if loadable has a value (state === 'hasValue'), return that value.
@@ -5063,9 +4336,7 @@
     loadableWithError,
     loadableWithPromise,
     loadableLoading,
-    loadableAll,
-    Canceled,
-    CANCELED
+    loadableAll
   };
 
   /**
@@ -5093,14 +4364,8 @@
 
   var Recoil_isNode = isNode;
 
-  const {
-    isReactNative: isReactNative$1,
-    isSSR: isSSR$3
-  } = Recoil_Environment;
-
-
-
-
+  const isSSR = typeof window === 'undefined';
+  const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
   function shouldNotBeFrozen(value) {
     // Primitives and functions:
@@ -5136,7 +4401,7 @@
     } // Some environments, just as Jest, don't work with the instanceof check
 
 
-    if (!isSSR$3 && !isReactNative$1 && ( // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+    if (!isSSR && !isReactNative && ( // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
     value === window || value instanceof Window)) {
       return true;
     }
@@ -5190,13 +4455,6 @@
       set: (key, value) => {
         mostRecentKey = key;
         mostRecentValue = value;
-        return cache;
-      },
-      delete: key => {
-        if (key === mostRecentKey) {
-          mostRecentKey = mostRecentValue = undefined;
-        }
-
         return cache;
       }
     };
@@ -5487,10 +4745,6 @@
         map.set(Recoil_stableStringify(key), value);
         return cache;
       },
-      delete: key => {
-        map.delete(Recoil_stableStringify(key));
-        return cache;
-      },
       map // For debugging
 
     };
@@ -5660,8 +4914,6 @@
   };
 
   const {
-    CANCELED: CANCELED$1,
-    Canceled: Canceled$1,
     loadableWithError: loadableWithError$1,
     loadableWithPromise: loadableWithPromise$1,
     loadableWithValue: loadableWithValue$1
@@ -5692,7 +4944,6 @@
   const {
     DEFAULT_VALUE: DEFAULT_VALUE$3,
     RecoilValueNotReady: RecoilValueNotReady$2,
-    getConfigDeletionHandler: getConfigDeletionHandler$1,
     registerNode: registerNode$1
   } = Recoil_Node;
 
@@ -5708,12 +4959,6 @@
     setRecoilValueLoadable: setRecoilValueLoadable$2
   } = Recoil_RecoilValueInterface;
 
-  const {
-    retainedByOptionWithDefault: retainedByOptionWithDefault$1
-  } = Recoil_Retention;
-
-
-
 
 
 
@@ -5724,10 +4969,8 @@
     startPerfBlock: startPerfBlock$1
   } = Recoil_PerformanceTimings;
 
-
-
   // flowlint-next-line unclear-type:off
-  const emptySet$2 = Object.freeze(new Set());
+  const emptySet$1 = Object.freeze(new Set());
   const dependencyStack = []; // for detecting circular dependencies.
 
   const waitingStores = new Map();
@@ -5760,13 +5003,7 @@
      */
 
     const cache = cacheImplementation === Recoil_cacheWithReferenceEquality ? Recoil_treeCacheReferenceEquality() : cacheImplementation === Recoil_cacheWithValueEquality ? Recoil_treeCacheValueEquality() : cacheImplementation === Recoil_cacheMostRecent ? Recoil_nodeCacheMostRecent() : Recoil_treeCacheReferenceEquality();
-    const retainedBy = retainedByOptionWithDefault$1(options.retainedBy_UNSTABLE);
     const executionInfoMap = new Map();
-    let liveStoresCount = 0;
-
-    function selectorIsLive() {
-      return !Recoil_gkx_1('recoil_memory_managament_2020') || liveStoresCount > 0;
-    }
 
     function getExecutionInfo(store) {
       if (!executionInfoMap.has(store)) {
@@ -5776,26 +5013,8 @@
       return Recoil_nullthrows(executionInfoMap.get(store));
     }
 
-    function selectorInit(store) {
-      liveStoresCount++;
-      store.getState().knownSelectors.add(key); // FIXME remove knownSelectors?
-
-      return () => {
-        liveStoresCount--;
-        store.getState().knownSelectors.delete(key);
-
-        if (liveStoresCount === 0) {
-          var _getConfigDeletionHan;
-
-          (_getConfigDeletionHan = getConfigDeletionHandler$1(key)) === null || _getConfigDeletionHan === void 0 ? void 0 : _getConfigDeletionHan();
-        }
-
-        executionInfoMap.delete(store);
-      };
-    }
-
-    function selectorShouldDeleteConfigOnRelease() {
-      return getConfigDeletionHandler$1(key) !== undefined && !selectorIsLive();
+    function initSelector(store) {
+      store.getState().knownSelectors.add(key);
     }
 
     function notifyStoreWhenAsyncSettles(store, loadable, executionId) {
@@ -5869,12 +5088,6 @@
 
     function wrapPendingPromise(store, promise, state, depValues, executionId) {
       return promise.then(value => {
-        if (!selectorIsLive()) {
-          // The selector was released since the request began; ignore the response.
-          clearExecutionInfo(store, executionId);
-          return CANCELED$1;
-        }
-
         const loadable = loadableWithValue$1(value);
         maybeFreezeValue(value);
         setCache(state, depValuesToDepRoute(depValues), loadable);
@@ -5884,12 +5097,6 @@
           __key: key
         };
       }).catch(errorOrPromise => {
-        if (!selectorIsLive()) {
-          // The selector was released since the request began; ignore the response.
-          clearExecutionInfo(store, executionId);
-          return CANCELED$1;
-        }
-
         if (isLatestExecution(store, executionId)) {
           updateExecutionInfoDepValues(depValues, store, executionId);
         }
@@ -5939,17 +5146,6 @@
 
     function wrapPendingDependencyPromise(store, promise, state, existingDeps, executionId) {
       return promise.then(resolvedDep => {
-        if (!selectorIsLive()) {
-          // The selector was released since the request began; ignore the response.
-          clearExecutionInfo(store, executionId);
-          return CANCELED$1;
-        }
-
-        if (resolvedDep instanceof Canceled$1) {
-          Recoil_recoverableViolation('Selector was released while it had dependencies');
-          return CANCELED$1;
-        }
-
         const {
           __key: resolvedDepKey,
           __value: depValue
@@ -5998,12 +5194,6 @@
 
         return loadable.contents;
       }).catch(error => {
-        if (!selectorIsLive()) {
-          // The selector was released since the request began; ignore the response.
-          clearExecutionInfo(store, executionId);
-          return CANCELED$1;
-        }
-
         const loadable = loadableWithError$1(error);
         maybeFreezeValue(error);
         setCache(state, depValuesToDepRoute(existingDeps), loadableWithError$1(error));
@@ -6109,7 +5299,7 @@
         return state.atomValues.get(key);
       }
 
-      const deps = new Set((_store$getGraph$nodeD = store.getGraph(state.version).nodeDeps.get(key)) !== null && _store$getGraph$nodeD !== void 0 ? _store$getGraph$nodeD : emptySet$2);
+      const deps = new Set((_store$getGraph$nodeD = store.getGraph(state.version).nodeDeps.get(key)) !== null && _store$getGraph$nodeD !== void 0 ? _store$getGraph$nodeD : emptySet$1);
       const executionInfo = getExecutionInfo(store);
       setDepsInStore(store, state, deps, executionInfo.latestExecutionId);
       const cachedVal = cache.get(nodeKey => {
@@ -6291,12 +5481,6 @@
       }
     }
 
-    function clearExecutionInfo(store, executionId) {
-      if (isLatestExecution(store, executionId)) {
-        executionInfoMap.delete(store);
-      }
-    }
-
     function isLatestExecution(store, executionId) {
       const executionInfo = getExecutionInfo(store);
       return executionId === executionInfo.latestExecutionId;
@@ -6336,7 +5520,7 @@
       }
     }
 
-    function selectorPeek(store, state) {
+    function myPeek(store, state) {
       const cacheVal = cache.get(nodeKey => {
         const peek = peekNodeLoadable$1(store, state, nodeKey);
         return peek === null || peek === void 0 ? void 0 : peek.contents;
@@ -6344,16 +5528,18 @@
       return cacheVal;
     }
 
-    function selectorGet(store, state) {
+    function myGet(store, state) {
+      initSelector(store);
       return [new Map(), detectCircularDependencies(() => getSelectorValAndUpdatedDeps(store, state))];
     }
 
-    function invalidateSelector(state) {
+    function invalidate(state) {
       state.atomValues.delete(key);
     }
 
     if (set != null) {
-      function selectorSet(store, state, newValue) {
+      function mySet(store, state, newValue) {
+        initSelector(store);
         let syncSelectorSetFinished = false;
         const dependencyMap = new Map();
         const writes = new Map();
@@ -6409,27 +5595,23 @@
 
       return registerNode$1({
         key,
-        peek: selectorPeek,
-        get: selectorGet,
-        set: selectorSet,
-        init: selectorInit,
-        invalidate: invalidateSelector,
-        shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
+        peek: myPeek,
+        get: myGet,
+        set: mySet,
+        cleanUp: () => {},
+        invalidate,
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-        shouldRestoreFromSnapshots: false,
-        retainedBy
+        shouldRestoreFromSnapshots: false
       });
     } else {
       return registerNode$1({
         key,
-        peek: selectorPeek,
-        get: selectorGet,
-        init: selectorInit,
-        invalidate: invalidateSelector,
-        shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
+        peek: myPeek,
+        get: myGet,
+        cleanUp: () => {},
+        invalidate,
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-        shouldRestoreFromSnapshots: false,
-        retainedBy
+        shouldRestoreFromSnapshots: false
       });
     }
   }
@@ -6461,7 +5643,6 @@
   const {
     DEFAULT_VALUE: DEFAULT_VALUE$4,
     RecoilValueNotReady: RecoilValueNotReady$3,
-    getConfigDeletionHandler: getConfigDeletionHandler$2,
     registerNode: registerNode$2
   } = Recoil_Node;
 
@@ -6475,12 +5656,6 @@
     setRecoilValueLoadable: setRecoilValueLoadable$3
   } = Recoil_RecoilValueInterface;
 
-  const {
-    retainedByOptionWithDefault: retainedByOptionWithDefault$2
-  } = Recoil_Retention;
-
-
-
 
 
 
@@ -6492,7 +5667,7 @@
   } = Recoil_PerformanceTimings;
 
   // flowlint-next-line unclear-type:off
-  const emptySet$3 = Object.freeze(new Set());
+  const emptySet$2 = Object.freeze(new Set());
 
   function cacheKeyFromDepValues(depValues) {
     const answer = [];
@@ -6521,27 +5696,9 @@
     const set = options.set != null ? options.set : undefined; // flow
 
     let cache = cacheImplementation !== null && cacheImplementation !== void 0 ? cacheImplementation : Recoil_cacheWithReferenceEquality();
-    const retainedBy = retainedByOptionWithDefault$2(options.retainedBy_UNSTABLE);
-    let liveStoresCount = 0;
 
-    function selectorIsLive() {
-      return !Recoil_gkx_1('recoil_memory_managament_2020') || liveStoresCount > 0;
-    }
-
-    function selectorInit(store) {
-      liveStoresCount++;
-      store.getState().knownSelectors.add(key); // FIXME remove knownSelectors?
-
-      return () => {
-        liveStoresCount--;
-        store.getState().knownSelectors.delete(key);
-
-        if (liveStoresCount === 0) {
-          var _getConfigDeletionHan;
-
-          (_getConfigDeletionHan = getConfigDeletionHandler$2(key)) === null || _getConfigDeletionHan === void 0 ? void 0 : _getConfigDeletionHan();
-        }
-      };
+    function initSelector(store) {
+      store.getState().knownSelectors.add(key);
     }
 
     function letStoreBeNotifiedWhenAsyncSettles(store, loadable) {
@@ -6581,10 +5738,6 @@
         // When the promise resolves, we need to replace the loading state in the
         // cache and fire any external subscriptions to re-render with the new value.
         loadable.contents.then(result => {
-          if (!selectorIsLive()) {
-            return; // The selector was released since the request began.
-          }
-
           {
             if (!options.dangerouslyAllowMutability === true) {
               Recoil_deepFreezeValue(result);
@@ -6615,12 +5768,10 @@
           notifyStoresOfSettledAsync(loadable, newLoadable);
           return result;
         }).catch(error => {
+          // TODO Figure out why we are catching promises here versus evaluateSelectorFunction
+          // OH, I see why.  Ok, work on this.
           if (Recoil_isPromise(error)) {
             return error;
-          }
-
-          if (!selectorIsLive()) {
-            return; // The selector was released since the request began.
           }
 
           {
@@ -6650,7 +5801,7 @@
 
       const dependencyMap = new Map(); // First, get the current deps for this selector
 
-      const currentDeps = (_store$getGraph$nodeD = store.getGraph(state.version).nodeDeps.get(key)) !== null && _store$getGraph$nodeD !== void 0 ? _store$getGraph$nodeD : emptySet$3;
+      const currentDeps = (_store$getGraph$nodeD = store.getGraph(state.version).nodeDeps.get(key)) !== null && _store$getGraph$nodeD !== void 0 ? _store$getGraph$nodeD : emptySet$2;
       const depValues = new Map(Array.from(currentDeps).sort().map(depKey => {
         const [deps, loadable] = getNodeLoadable$3(store, state, depKey);
         mergeDepsIntoDependencyMap$1(deps, dependencyMap);
@@ -6766,11 +5917,11 @@
       }
     }
 
-    function selectorPeek(store, state) {
+    function myPeek(store, state) {
       var _store$getGraph$nodeD2;
 
       // First, get the current deps for this selector
-      const currentDeps = (_store$getGraph$nodeD2 = store.getGraph(state.version).nodeDeps.get(key)) !== null && _store$getGraph$nodeD2 !== void 0 ? _store$getGraph$nodeD2 : emptySet$3;
+      const currentDeps = (_store$getGraph$nodeD2 = store.getGraph(state.version).nodeDeps.get(key)) !== null && _store$getGraph$nodeD2 !== void 0 ? _store$getGraph$nodeD2 : emptySet$2;
       const depValues = new Map(Array.from(currentDeps).sort().map(depKey => [depKey, peekNodeLoadable$2(store, state, depKey)]));
       const cacheDepValues = new Map();
 
@@ -6788,13 +5939,14 @@
       return cache.get(cacheKey);
     }
 
-    function selectorInvalidate(state) {
+    function invalidate(state) {
       state.atomValues.delete(key);
     }
 
-    function selectorGet(store, state) {
-      // First-level cache: Have we already evaluated the selector since being
+    function myGet(store, state) {
+      initSelector(store); // First-level cache: Have we already evaluated the selector since being
       // invalidated due to a dependency changing?
+
       const cached = state.atomValues.get(key);
 
       if (cached !== undefined) {
@@ -6808,12 +5960,9 @@
       }
     }
 
-    function selectorShouldDeleteConfigOnRelease() {
-      return getConfigDeletionHandler$2(key) !== undefined && !selectorIsLive();
-    }
-
     if (set != null) {
-      function selectorSet(store, state, newValue) {
+      function mySet(store, state, newValue) {
+        initSelector(store);
         let syncSelectorSetFinished = false;
         const dependencyMap = new Map();
         const writes = new Map();
@@ -6871,27 +6020,23 @@
 
       return registerNode$2({
         key,
-        peek: selectorPeek,
-        get: selectorGet,
-        set: selectorSet,
-        invalidate: selectorInvalidate,
-        init: selectorInit,
-        shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
+        peek: myPeek,
+        get: myGet,
+        set: mySet,
+        invalidate,
+        cleanUp: () => {},
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-        shouldRestoreFromSnapshots: false,
-        retainedBy
+        shouldRestoreFromSnapshots: false
       });
     } else {
       return registerNode$2({
         key,
-        peek: selectorPeek,
-        get: selectorGet,
-        invalidate: selectorInvalidate,
-        init: selectorInit,
-        shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
+        peek: myPeek,
+        get: myGet,
+        invalidate,
+        cleanUp: () => {},
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-        shouldRestoreFromSnapshots: false,
-        retainedBy
+        shouldRestoreFromSnapshots: false
       });
     }
   }
@@ -6913,9 +6058,7 @@
   const {
     DEFAULT_VALUE: DEFAULT_VALUE$5,
     DefaultValue: DefaultValue$2,
-    getConfigDeletionHandler: getConfigDeletionHandler$3,
-    registerNode: registerNode$3,
-    setConfigDeletionHandler: setConfigDeletionHandler$1
+    registerNode: registerNode$3
   } = Recoil_Node;
 
   const {
@@ -6927,10 +6070,6 @@
     setRecoilValue: setRecoilValue$3,
     setRecoilValueLoadable: setRecoilValueLoadable$4
   } = Recoil_RecoilValueInterface;
-
-  const {
-    retainedByOptionWithDefault: retainedByOptionWithDefault$3
-  } = Recoil_Retention;
 
 
 
@@ -6949,8 +6088,6 @@
       key,
       persistence_UNSTABLE: persistence
     } = options;
-    const retainedBy = retainedByOptionWithDefault$3(options.retainedBy_UNSTABLE);
-    let liveStoresCount = 0;
     let defaultLoadable = Recoil_isPromise(options.default) ? loadableWithPromise$3(options.default.then(value => {
       defaultLoadable = loadableWithValue$3(value); // TODO Temporary disable Flow due to pending selector_NEW refactor
 
@@ -6997,8 +6134,10 @@
     }
 
     function initAtom(store, initState, trigger) {
-      liveStoresCount++;
-      const alreadyKnown = store.getState().knownAtoms.has(key);
+      if (store.getState().knownAtoms.has(key)) {
+        return;
+      }
+
       store.getState().knownAtoms.add(key); // Setup async defaults to notify subscribers when they resolve
 
       if (defaultLoadable.state === 'loading') {
@@ -7020,7 +6159,7 @@
       let initValue = DEFAULT_VALUE$5;
       let pendingSetSelf = null;
 
-      if (options.effects_UNSTABLE != null && !alreadyKnown) {
+      if (options.effects_UNSTABLE != null) {
         let duringInit = true;
 
         const setSelf = effect => valueOrUpdater => {
@@ -7129,30 +6268,17 @@
 
         (_store$getState$nextT4 = store.getState().nextTree) === null || _store$getState$nextT4 === void 0 ? void 0 : _store$getState$nextT4.atomValues.set(key, initLoadable);
       }
-
-      return () => {
-        var _cleanupEffectsByStor;
-
-        liveStoresCount--;
-        (_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor === void 0 ? void 0 : _cleanupEffectsByStor();
-        cleanupEffectsByStore.delete(store);
-        store.getState().knownAtoms.delete(key); // FIXME remove knownAtoms?
-
-        if (liveStoresCount === 0) {
-          var _getConfigDeletionHan;
-
-          (_getConfigDeletionHan = getConfigDeletionHandler$3(key)) === null || _getConfigDeletionHan === void 0 ? void 0 : _getConfigDeletionHan();
-        }
-      };
     }
 
-    function peekAtom(_store, state) {
+    function myPeek(_store, state) {
       var _ref, _state$atomValues$get3, _cachedAnswerForUnval;
 
       return (_ref = (_state$atomValues$get3 = state.atomValues.get(key)) !== null && _state$atomValues$get3 !== void 0 ? _state$atomValues$get3 : (_cachedAnswerForUnval = cachedAnswerForUnvalidatedValue) === null || _cachedAnswerForUnval === void 0 ? void 0 : _cachedAnswerForUnval[1]) !== null && _ref !== void 0 ? _ref : defaultLoadable;
     }
 
-    function getAtom(_store, state) {
+    function myGet(store, state) {
+      initAtom(store, state, 'get');
+
       if (state.atomValues.has(key)) {
         // Atom value is stored in state:
         return [new Map(), Recoil_nullthrows(state.atomValues.get(key))];
@@ -7178,13 +6304,21 @@
       }
     }
 
-    function invalidateAtom() {
+    function myCleanup(store) {
+      var _cleanupEffectsByStor;
+
+      (_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor === void 0 ? void 0 : _cleanupEffectsByStor();
+      cleanupEffectsByStore.delete(store);
+    }
+
+    function invalidate() {
       cachedAnswerForUnvalidatedValue = undefined;
     }
 
-    function setAtom(_store, state, newValue) {
-      // Bail out if we're being set to the existing value, or if we're being
+    function mySet(store, state, newValue) {
+      initAtom(store, state, 'set'); // Bail out if we're being set to the existing value, or if we're being
       // reset but have no stored value (validated or unvalidated) to reset from:
+
       if (state.atomValues.has(key)) {
         const existing = Recoil_nullthrows(state.atomValues.get(key));
 
@@ -7206,25 +6340,19 @@
       return [new Map(), new Map().set(key, loadableWithValue$3(newValue))];
     }
 
-    function shouldDeleteConfigOnReleaseAtom() {
-      return getConfigDeletionHandler$3(key) !== undefined && liveStoresCount <= 0;
-    }
-
     const node = registerNode$3({
       key,
-      peek: peekAtom,
-      get: getAtom,
-      set: setAtom,
-      init: initAtom,
-      invalidate: invalidateAtom,
-      shouldDeleteConfigOnRelease: shouldDeleteConfigOnReleaseAtom,
+      peek: myPeek,
+      get: myGet,
+      set: mySet,
+      cleanUp: myCleanup,
+      invalidate,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       persistence_UNSTABLE: options.persistence_UNSTABLE ? {
         type: options.persistence_UNSTABLE.type,
         backButton: options.persistence_UNSTABLE.backButton
       } : undefined,
-      shouldRestoreFromSnapshots: true,
-      retainedBy
+      shouldRestoreFromSnapshots: true
     });
     return node;
   } // prettier-ignore
@@ -7267,7 +6395,7 @@
       // flowlint-next-line unclear-type: off
       effects_UNSTABLE: options.effects_UNSTABLE
     });
-    const sel = Recoil_selector({
+    return Recoil_selector({
       key: `${options.key}__withFallback`,
       get: ({
         get
@@ -7280,19 +6408,11 @@
       }, newValue) => set(base, newValue),
       dangerouslyAllowMutability: options.dangerouslyAllowMutability
     });
-    setConfigDeletionHandler$1(sel.key, getConfigDeletionHandler$3(options.key));
-    return sel;
   }
 
   var Recoil_atom = atom;
 
-  const {
-    setConfigDeletionHandler: setConfigDeletionHandler$2
-  } = Recoil_Node;
-
-
-
-   // Keep in mind the parameter needs to be serializable as a cahche key
+  // Keep in mind the parameter needs to be serializable as a cahche key
   // using Recoil_stableStringify
 
 
@@ -7335,7 +6455,6 @@
       const myGet = callbacks => options.get(params)(callbacks);
 
       const myCacheImplementation = (_options$cacheImpleme3 = options.cacheImplementation_UNSTABLE) === null || _options$cacheImpleme3 === void 0 ? void 0 : _options$cacheImpleme3.call(options);
-      const retainedBy = typeof options.retainedBy_UNSTABLE === 'function' ? options.retainedBy_UNSTABLE(params) : options.retainedBy_UNSTABLE;
       let newSelector;
 
       if (options.set != null) {
@@ -7348,21 +6467,18 @@
           get: myGet,
           set: mySet,
           cacheImplementation_UNSTABLE: myCacheImplementation,
-          dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-          retainedBy_UNSTABLE: retainedBy
+          dangerouslyAllowMutability: options.dangerouslyAllowMutability
         });
       } else {
         newSelector = Recoil_selector({
           key: myKey,
           get: myGet,
           cacheImplementation_UNSTABLE: myCacheImplementation,
-          dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-          retainedBy_UNSTABLE: retainedBy
+          dangerouslyAllowMutability: options.dangerouslyAllowMutability
         });
       }
 
       selectorCache = selectorCache.set(params, newSelector);
-      setConfigDeletionHandler$2(newSelector.key, () => void selectorCache.delete(params));
       return newSelector;
     };
   }
@@ -7376,8 +6492,7 @@
 
   const {
     DEFAULT_VALUE: DEFAULT_VALUE$6,
-    DefaultValue: DefaultValue$3,
-    setConfigDeletionHandler: setConfigDeletionHandler$3
+    DefaultValue: DefaultValue$3
   } = Recoil_Node;
   /*
   A function which returns an atom based on the input parameter.
@@ -7438,8 +6553,7 @@
         : // Default may be a static value, promise, or RecoilValue
         options.default;
       },
-      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-      retainedBy_UNSTABLE: options.retainedBy_UNSTABLE
+      dangerouslyAllowMutability: options.dangerouslyAllowMutability
     }); // Simple atomFamily implementation to cache individual atoms based
     // on the parameter value equality.
 
@@ -7455,7 +6569,6 @@
       const newAtom = Recoil_atom({ ...options,
         key: `${options.key}__${(_stableStringify = Recoil_stableStringify(params)) !== null && _stableStringify !== void 0 ? _stableStringify : 'void'}`,
         default: atomFamilyDefault(params),
-        retainedBy_UNSTABLE: typeof options.retainedBy_UNSTABLE === 'function' ? options.retainedBy_UNSTABLE(params) : options.retainedBy_UNSTABLE,
         effects_UNSTABLE: typeof options.effects_UNSTABLE === 'function' ? options.effects_UNSTABLE(params) : options.effects_UNSTABLE // prettier-ignore
         // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
         // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
@@ -7464,7 +6577,6 @@
 
       });
       atomCache = atomCache.set(params, newAtom);
-      setConfigDeletionHandler$3(newAtom.key, () => void atomCache.delete(params));
       return newAtom;
     };
   }
@@ -7755,10 +6867,6 @@
   } = Recoil_RecoilValue$1;
 
   const {
-    retentionZone: retentionZone$1
-  } = Recoil_RetentionZone;
-
-  const {
     freshSnapshot: freshSnapshot$2
   } = Recoil_Snapshot$1;
 
@@ -7772,7 +6880,6 @@
     useRecoilValue: useRecoilValue$1,
     useRecoilValueLoadable: useRecoilValueLoadable$1,
     useResetRecoilState: useResetRecoilState$1,
-    useRetain: useRetain$1,
     useSetRecoilState: useSetRecoilState$1,
     useSetUnvalidatedAtomValues: useSetUnvalidatedAtomValues$1,
     useTransactionObservation_DEPRECATED: useTransactionObservation_DEPRECATED$1
@@ -7812,8 +6919,6 @@
     // RecoilValues
     atom: Recoil_atom,
     selector: Recoil_selector,
-    // Other factories
-    retentionZone: retentionZone$1,
     // Convenience RecoilValues
     atomFamily: Recoil_atomFamily,
     selectorFamily: Recoil_selectorFamily,
@@ -7828,7 +6933,6 @@
     useSetRecoilState: useSetRecoilState$1,
     useResetRecoilState: useResetRecoilState$1,
     useGetRecoilValueInfo_UNSTABLE: Recoil_useGetRecoilValueInfo,
-    useRetain: useRetain$1,
     // Hooks for asynchronous Recoil
     useRecoilCallback: useRecoilCallback$1,
     // Hooks for Snapshots
@@ -7855,69 +6959,65 @@
   var Recoil_index_3 = Recoil_index.useRecoilBridgeAcrossReactRoots_UNSTABLE;
   var Recoil_index_4 = Recoil_index.atom;
   var Recoil_index_5 = Recoil_index.selector;
-  var Recoil_index_6 = Recoil_index.retentionZone;
-  var Recoil_index_7 = Recoil_index.atomFamily;
-  var Recoil_index_8 = Recoil_index.selectorFamily;
-  var Recoil_index_9 = Recoil_index.constSelector;
-  var Recoil_index_10 = Recoil_index.errorSelector;
-  var Recoil_index_11 = Recoil_index.readOnlySelector;
-  var Recoil_index_12 = Recoil_index.useRecoilValue;
-  var Recoil_index_13 = Recoil_index.useRecoilValueLoadable;
-  var Recoil_index_14 = Recoil_index.useRecoilState;
-  var Recoil_index_15 = Recoil_index.useRecoilStateLoadable;
-  var Recoil_index_16 = Recoil_index.useSetRecoilState;
-  var Recoil_index_17 = Recoil_index.useResetRecoilState;
-  var Recoil_index_18 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
-  var Recoil_index_19 = Recoil_index.useRetain;
-  var Recoil_index_20 = Recoil_index.useRecoilCallback;
-  var Recoil_index_21 = Recoil_index.useGotoRecoilSnapshot;
-  var Recoil_index_22 = Recoil_index.useRecoilSnapshot;
-  var Recoil_index_23 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
-  var Recoil_index_24 = Recoil_index.useTransactionObservation_UNSTABLE;
-  var Recoil_index_25 = Recoil_index.useSetUnvalidatedAtomValues_UNSTABLE;
-  var Recoil_index_26 = Recoil_index.noWait;
-  var Recoil_index_27 = Recoil_index.waitForNone;
-  var Recoil_index_28 = Recoil_index.waitForAny;
-  var Recoil_index_29 = Recoil_index.waitForAll;
-  var Recoil_index_30 = Recoil_index.isRecoilValue;
-  var Recoil_index_31 = Recoil_index.batchUpdates;
-  var Recoil_index_32 = Recoil_index.setBatcher;
-  var Recoil_index_33 = Recoil_index.snapshot_UNSTABLE;
+  var Recoil_index_6 = Recoil_index.atomFamily;
+  var Recoil_index_7 = Recoil_index.selectorFamily;
+  var Recoil_index_8 = Recoil_index.constSelector;
+  var Recoil_index_9 = Recoil_index.errorSelector;
+  var Recoil_index_10 = Recoil_index.readOnlySelector;
+  var Recoil_index_11 = Recoil_index.useRecoilValue;
+  var Recoil_index_12 = Recoil_index.useRecoilValueLoadable;
+  var Recoil_index_13 = Recoil_index.useRecoilState;
+  var Recoil_index_14 = Recoil_index.useRecoilStateLoadable;
+  var Recoil_index_15 = Recoil_index.useSetRecoilState;
+  var Recoil_index_16 = Recoil_index.useResetRecoilState;
+  var Recoil_index_17 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
+  var Recoil_index_18 = Recoil_index.useRecoilCallback;
+  var Recoil_index_19 = Recoil_index.useGotoRecoilSnapshot;
+  var Recoil_index_20 = Recoil_index.useRecoilSnapshot;
+  var Recoil_index_21 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
+  var Recoil_index_22 = Recoil_index.useTransactionObservation_UNSTABLE;
+  var Recoil_index_23 = Recoil_index.useSetUnvalidatedAtomValues_UNSTABLE;
+  var Recoil_index_24 = Recoil_index.noWait;
+  var Recoil_index_25 = Recoil_index.waitForNone;
+  var Recoil_index_26 = Recoil_index.waitForAny;
+  var Recoil_index_27 = Recoil_index.waitForAll;
+  var Recoil_index_28 = Recoil_index.isRecoilValue;
+  var Recoil_index_29 = Recoil_index.batchUpdates;
+  var Recoil_index_30 = Recoil_index.setBatcher;
+  var Recoil_index_31 = Recoil_index.snapshot_UNSTABLE;
 
   exports.DefaultValue = Recoil_index_1;
   exports.RecoilRoot = Recoil_index_2;
   exports.atom = Recoil_index_4;
-  exports.atomFamily = Recoil_index_7;
-  exports.batchUpdates = Recoil_index_31;
-  exports.constSelector = Recoil_index_9;
+  exports.atomFamily = Recoil_index_6;
+  exports.batchUpdates = Recoil_index_29;
+  exports.constSelector = Recoil_index_8;
   exports.default = Recoil_index;
-  exports.errorSelector = Recoil_index_10;
-  exports.isRecoilValue = Recoil_index_30;
-  exports.noWait = Recoil_index_26;
-  exports.readOnlySelector = Recoil_index_11;
-  exports.retentionZone = Recoil_index_6;
+  exports.errorSelector = Recoil_index_9;
+  exports.isRecoilValue = Recoil_index_28;
+  exports.noWait = Recoil_index_24;
+  exports.readOnlySelector = Recoil_index_10;
   exports.selector = Recoil_index_5;
-  exports.selectorFamily = Recoil_index_8;
-  exports.setBatcher = Recoil_index_32;
-  exports.snapshot_UNSTABLE = Recoil_index_33;
-  exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_18;
-  exports.useGotoRecoilSnapshot = Recoil_index_21;
+  exports.selectorFamily = Recoil_index_7;
+  exports.setBatcher = Recoil_index_30;
+  exports.snapshot_UNSTABLE = Recoil_index_31;
+  exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_17;
+  exports.useGotoRecoilSnapshot = Recoil_index_19;
   exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = Recoil_index_3;
-  exports.useRecoilCallback = Recoil_index_20;
-  exports.useRecoilSnapshot = Recoil_index_22;
-  exports.useRecoilState = Recoil_index_14;
-  exports.useRecoilStateLoadable = Recoil_index_15;
-  exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_23;
-  exports.useRecoilValue = Recoil_index_12;
-  exports.useRecoilValueLoadable = Recoil_index_13;
-  exports.useResetRecoilState = Recoil_index_17;
-  exports.useRetain = Recoil_index_19;
-  exports.useSetRecoilState = Recoil_index_16;
-  exports.useSetUnvalidatedAtomValues_UNSTABLE = Recoil_index_25;
-  exports.useTransactionObservation_UNSTABLE = Recoil_index_24;
-  exports.waitForAll = Recoil_index_29;
-  exports.waitForAny = Recoil_index_28;
-  exports.waitForNone = Recoil_index_27;
+  exports.useRecoilCallback = Recoil_index_18;
+  exports.useRecoilSnapshot = Recoil_index_20;
+  exports.useRecoilState = Recoil_index_13;
+  exports.useRecoilStateLoadable = Recoil_index_14;
+  exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_21;
+  exports.useRecoilValue = Recoil_index_11;
+  exports.useRecoilValueLoadable = Recoil_index_12;
+  exports.useResetRecoilState = Recoil_index_16;
+  exports.useSetRecoilState = Recoil_index_15;
+  exports.useSetUnvalidatedAtomValues_UNSTABLE = Recoil_index_23;
+  exports.useTransactionObservation_UNSTABLE = Recoil_index_22;
+  exports.waitForAll = Recoil_index_27;
+  exports.waitForAny = Recoil_index_26;
+  exports.waitForNone = Recoil_index_25;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

@@ -59,9 +59,8 @@
 
 import type { Loadable, LoadablePromise, ResolvedLoadablePromiseInfo } from '../adt/Recoil_Loadable';
 import type { DependencyMap } from '../core/Recoil_Graph';
-import type { PersistenceInfo, ReadWriteNodeOptions, Trigger } from '../core/Recoil_Node';
+import type { PersistenceInfo, ReadWriteNodeOptions } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
-import type { RetainedBy } from '../core/Recoil_RetainedBy';
 import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State'; // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
 const {
@@ -73,9 +72,7 @@ const {
 const {
   DEFAULT_VALUE,
   DefaultValue,
-  getConfigDeletionHandler,
-  registerNode,
-  setConfigDeletionHandler
+  registerNode
 } = require('../core/Recoil_Node');
 
 const {
@@ -87,10 +84,6 @@ const {
   setRecoilValue,
   setRecoilValueLoadable
 } = require('../core/Recoil_RecoilValueInterface');
-
-const {
-  retainedByOptionWithDefault
-} = require('../core/Recoil_Retention');
 
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 
@@ -112,7 +105,7 @@ type NewValueOrUpdater<T> = T | DefaultValue | Promise<T | DefaultValue> | ((T |
 
 export type AtomEffect<T> = ({
   node: RecoilState<T>,
-  trigger: Trigger,
+  trigger: 'set' | 'get',
   // Call synchronously to initialize value or async to change it later
   setSelf: (T | DefaultValue | Promise<T | DefaultValue> | ((T | DefaultValue) => T | DefaultValue)) => void,
   resetSelf: () => void,
@@ -127,7 +120,6 @@ export type AtomOptions<T> = $ReadOnly<{
   persistence_UNSTABLE?: PersistenceSettings<T>,
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
   dangerouslyAllowMutability?: boolean,
-  retainedBy_UNSTABLE?: RetainedBy,
 }>;
 type BaseAtomOptions<T> = $ReadOnly<{ ...AtomOptions<T>,
   default: T | Promise<T>,

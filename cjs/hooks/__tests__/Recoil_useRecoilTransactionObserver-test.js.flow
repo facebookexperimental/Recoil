@@ -122,8 +122,6 @@ testRecoil('Can observe atom value', async () => {
       snapshot,
       previousSnapshot
     }) => {
-      snapshot.retain();
-      previousSnapshot.retain();
       transactions.push({
         snapshot,
         previousSnapshot
@@ -169,8 +167,6 @@ testRecoil('Can observe selector value', async () => {
       snapshot,
       previousSnapshot
     }) => {
-      snapshot.retain();
-      previousSnapshot.retain();
       transactions.push({
         snapshot,
         previousSnapshot
@@ -198,8 +194,6 @@ testRecoil('Can observe async selector value', async () => {
       snapshot,
       previousSnapshot
     }) => {
-      snapshot.retain();
-      previousSnapshot.retain();
       transactions.push({
         snapshot,
         previousSnapshot

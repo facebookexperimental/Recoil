@@ -12,9 +12,8 @@
 
 import type { Loadable } from '../adt/Recoil_Loadable';
 import type { DependencyMap } from './Recoil_Graph';
-import type { DefaultValue, Trigger } from './Recoil_Node';
+import type { DefaultValue } from './Recoil_Node';
 import type { RecoilValue } from './Recoil_RecoilValue';
-import type { RetainedBy } from './Recoil_RetainedBy';
 import type { AtomWrites, NodeKey, Store, TreeState } from './Recoil_State';
 
 const {
@@ -23,26 +22,17 @@ const {
 
 const filterIterable = require('../util/Recoil_filterIterable');
 
-const gkx = require('../util/Recoil_gkx');
-
 const mapIterable = require('../util/Recoil_mapIterable');
 
 const {
   getNode,
   getNodeMaybe,
   recoilValuesForKeys
-} = require('./Recoil_Node');
-
-const {
-  RetentionZone
-} = require('./Recoil_RetentionZone'); // flowlint-next-line unclear-type:off
+} = require('./Recoil_Node'); // flowlint-next-line unclear-type:off
 
 
 const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());
-declare class ReadOnlyRecoilValueError extends Error {}
-declare function initializeRetentionForNode(store: Store, nodeKey: NodeKey, retainedBy: RetainedBy): () => void;
-declare function initializeNodeIfNewToStore(store: Store, treeState: TreeState, key: NodeKey, trigger: Trigger): void;
-declare function cleanUpNode(store: Store, key: NodeKey): any; // Get the current value loadable of a node and update the state.
+declare class ReadOnlyRecoilValueError extends Error {} // Get the current value loadable of a node and update the state.
 // Update dependencies and subscriptions for selectors.
 // Update saved value validation for atoms.
 
@@ -56,6 +46,7 @@ declare function setUnvalidatedAtomValue_DEPRECATED<T>(state: TreeState, key: No
 // set upstreams; deps may be discovered because of reads in updater functions.)
 
 declare function setNodeValue<T>(store: Store, state: TreeState, key: NodeKey, newValue: T | DefaultValue): [DependencyMap, AtomWrites];
+declare function cleanUpNode(store: Store, key: NodeKey): any;
 type ComponentInfo = {
   name: string
 };
@@ -75,7 +66,7 @@ export type RecoilValueInfo<T> = {
 };
 declare function peekNodeInfo<T>(store: Store, state: TreeState, key: NodeKey): RecoilValueInfo<T>; // Find all of the recursively dependent nodes
 
-declare function getDownstreamNodes(store: Store, state: TreeState, keys: $ReadOnlySet<NodeKey> | $ReadOnlyArray<NodeKey>): $ReadOnlySet<NodeKey>;
+declare function getDownstreamNodes(store: Store, state: TreeState, keys: $ReadOnlySet<NodeKey>): $ReadOnlySet<NodeKey>;
 module.exports = {
   getNodeLoadable,
   peekNodeLoadable,
@@ -83,6 +74,5 @@ module.exports = {
   cleanUpNode,
   setUnvalidatedAtomValue_DEPRECATED,
   peekNodeInfo,
-  getDownstreamNodes,
-  initializeNodeIfNewToStore
+  getDownstreamNodes
 };

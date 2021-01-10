@@ -38,10 +38,6 @@ const {
 } = require('./core/Recoil_RecoilValue');
 
 const {
-  retentionZone
-} = require('./core/Recoil_RetentionZone');
-
-const {
   freshSnapshot
 } = require('./core/Recoil_Snapshot');
 
@@ -55,7 +51,6 @@ const {
   useRecoilValue,
   useRecoilValueLoadable,
   useResetRecoilState,
-  useRetain,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED
@@ -95,8 +90,6 @@ module.exports = {
   // RecoilValues
   atom,
   selector,
-  // Other factories
-  retentionZone,
   // Convenience RecoilValues
   atomFamily,
   selectorFamily,
@@ -111,7 +104,6 @@ module.exports = {
   useSetRecoilState,
   useResetRecoilState,
   useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
-  useRetain,
   // Hooks for asynchronous Recoil
   useRecoilCallback,
   // Hooks for Snapshots

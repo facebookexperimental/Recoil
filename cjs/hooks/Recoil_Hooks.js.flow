@@ -54,14 +54,6 @@ const {
 } = require('../core/Recoil_RecoilValueInterface');
 
 const {
-  updateRetainCount
-} = require('../core/Recoil_Retention');
-
-const {
-  RetentionZone
-} = require('../core/Recoil_RetentionZone');
-
-const {
   Snapshot,
   cloneSnapshot
 } = require('../core/Recoil_Snapshot');
@@ -71,10 +63,6 @@ const {
 } = require('../util/Recoil_CopyOnWrite');
 
 const differenceSets = require('../util/Recoil_differenceSets');
-
-const {
-  isSSR
-} = require('../util/Recoil_Environment');
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 
@@ -99,15 +87,10 @@ const nullthrows = require('../util/Recoil_nullthrows');
 
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
-const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
-
 const Tracing = require('../util/Recoil_Tracing');
 
-const useComponentName = require('../util/Recoil_useComponentName'); // Components that aren't mounted after suspending for this long will be assumed
-// to be discarded and their resources released.
+const useComponentName = require('../util/Recoil_useComponentName');
 
-
-const SUSPENSE_TIMEOUT_MS = 120000;
 declare function handleLoadable<T>(loadable: Loadable<T>, atom: any, storeRef: any): T;
 declare function validateRecoilValue(recoilValue: any, hookName: any): any;
 export type SetterOrUpdater<T> = (((T) => T) | T) => void;
@@ -120,11 +103,6 @@ export type RecoilInterface = {
   getSetRecoilState: <T>(RecoilState<T>) => SetterOrUpdater<T>,
   getResetRecoilState: <T>(RecoilState<T>) => Resetter,
 };
-/**
- * Various things are broken with useRecoilInterface, particularly concurrent mode
- * and memory management. They will not be fixed.
- * */
-
 declare function useRecoilInterface_DEPRECATED(): RecoilInterface;
 const recoilComponentGetRecoilValueCount_FOR_TESTING = {
   current: 0
@@ -220,8 +198,7 @@ declare function useTransactionObservation_DEPRECATED(callback: ({
 declare function useRecoilTransactionObserver(callback: ({
   snapshot: Snapshot,
   previousSnapshot: Snapshot,
-}) => void): any;
-declare function usePrevious<T>(value: T): T | void; // Return a snapshot of the current state and subscribe to all state changes
+}) => void): any; // Return a snapshot of the current state and subscribe to all state changes
 
 declare function useRecoilSnapshot(): Snapshot;
 declare function useGotoRecoilSnapshot(): (Snapshot) => void;
@@ -234,15 +211,7 @@ type CallbackInterface = $ReadOnly<{
 }>;
 declare class Sentinel {}
 const SENTINEL = new Sentinel();
-declare function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(fn: (CallbackInterface) => (...Args) => Return, deps?: $ReadOnlyArray<mixed>): (...Args) => Return; // I don't see a way to avoid the any type here because we want to accept readable
-// and writable values with any type parameter, but normally with writable ones
-// RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
-
-type ToRetain = RecoilValue<any> // flowlint-line unclear-type:off
-| RetentionZone | $ReadOnlyArray<RecoilValue<any> | RetentionZone>; // flowlint-line unclear-type:off
-
-declare function useRetain(toRetain: ToRetain): void;
-declare function useRetain_ACTUAL(toRetain: ToRetain): void;
+declare function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(fn: (CallbackInterface) => (...Args) => Return, deps?: $ReadOnlyArray<mixed>): (...Args) => Return;
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
   useGotoRecoilSnapshot,
@@ -254,7 +223,6 @@ module.exports = {
   useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
-  useRetain,
   useResetRecoilState,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,

@@ -44,7 +44,6 @@ const testRecoil = getRecoilTestFn(() => {
 });
 testRecoil('Goto mapped snapshot', async () => {
   const snapshot = freshSnapshot();
-  snapshot.retain();
   const myAtom = atom({
     key: 'Goto Snapshot Atom',
     default: 'DEFAULT'
@@ -56,7 +55,6 @@ testRecoil('Goto mapped snapshot', async () => {
   }) => {
     set(myAtom, 'SET IN SNAPSHOT');
   });
-  updatedSnapshot.retain();
   let gotoRecoilSnapshot;
   declare function GotoRecoilSnapshot(): any;
   const c = renderElements(<>
@@ -98,7 +96,6 @@ testRecoil('Goto callback snapshot', () => {
 });
 testRecoil('Goto snapshot with dependent async selector', async () => {
   const snapshot = freshSnapshot();
-  snapshot.retain();
   const myAtom = atom({
     key: 'atom for dep async snapshot',
     default: 'DEFAULT'
@@ -118,7 +115,6 @@ testRecoil('Goto snapshot with dependent async selector', async () => {
   }) => {
     set(myAtom, 'SET IN SNAPSHOT');
   });
-  updatedSnapshot.retain();
   let gotoRecoilSnapshot;
   declare function GotoRecoilSnapshot(): any;
   const c = renderElements(<>
@@ -140,7 +136,6 @@ testRecoil('Goto snapshot with dependent async selector', async () => {
 });
 testRecoil('Goto snapshot with async selector', async () => {
   const snapshot = freshSnapshot();
-  snapshot.retain();
   const [mySelector, resolve] = asyncSelector();
   let gotoRecoilSnapshot;
   declare function GotoRecoilSnapshot(): any;
