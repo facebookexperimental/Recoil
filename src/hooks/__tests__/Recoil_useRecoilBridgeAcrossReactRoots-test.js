@@ -54,16 +54,14 @@ testRecoil('useRecoilBridgeAcrossReactRoots - create a context bridge', () => {
     const ref = useRef();
     const RecoilBridge = useRecoilBridgeAcrossReactRoots();
 
-    useEffect(
-      () =>
-        act(() => {
-          ReactDOM.render(
-            <RecoilBridge>{children}</RecoilBridge>,
-            ref.current ?? document.createElement('div'),
-          );
-        }),
-      [children],
-    );
+    useEffect(() => {
+      act(() => {
+        ReactDOM.render(
+          <RecoilBridge>{children}</RecoilBridge>,
+          ref.current ?? document.createElement('div'),
+        );
+      });
+    }, [children]);
 
     return <div ref={ref} />;
   }

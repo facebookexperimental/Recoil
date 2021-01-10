@@ -14,13 +14,9 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DependencyMap} from './Recoil_Graph';
 import type {DefaultValue} from './Recoil_Node';
 import type {RecoilValue} from './Recoil_RecoilValue';
-import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
+import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
-const {
-  mapByDeletingFromMap,
-  mapBySettingInMap,
-  setByAddingToSet,
-} = require('../util/Recoil_CopyOnWrite');
+const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const filterIterable = require('../util/Recoil_filterIterable');
 const mapIterable = require('../util/Recoil_mapIterable');
 const {getNode, getNodeMaybe, recoilValuesForKeys} = require('./Recoil_Node');
@@ -62,12 +58,8 @@ function setUnvalidatedAtomValue_DEPRECATED<T>(
 
   return {
     ...state,
-    atomValues: mapByDeletingFromMap(state.atomValues, key),
-    nonvalidatedAtoms: mapBySettingInMap(
-      state.nonvalidatedAtoms,
-      key,
-      newValue,
-    ),
+    atomValues: state.atomValues.clone().delete(key),
+    nonvalidatedAtoms: state.nonvalidatedAtoms.clone().set(key, newValue),
     dirtyAtoms: setByAddingToSet(state.dirtyAtoms, key),
   };
 }
@@ -80,7 +72,7 @@ function setNodeValue<T>(
   state: TreeState,
   key: NodeKey,
   newValue: T | DefaultValue,
-): [DependencyMap, AtomValues] {
+): [DependencyMap, AtomWrites] {
   const node = getNode(key);
   if (node.set == null) {
     throw new ReadOnlyRecoilValueError(

@@ -520,7 +520,7 @@ function useTransactionSubscription(callback: Store => void) {
 function externallyVisibleAtomValuesInState(
   state: TreeState,
 ): Map<NodeKey, mixed> {
-  const atomValues: Map<NodeKey, Loadable<mixed>> = state.atomValues;
+  const atomValues = state.atomValues.toMap();
   const persistedAtomContentsValues = mapMap(
     filterMap(atomValues, (v, k) => {
       const node = getNode(k);
@@ -535,7 +535,10 @@ function externallyVisibleAtomValuesInState(
   );
   // Merge in nonvalidated atoms; we may not have defs for them but they will
   // all have persistence on or they wouldn't be there in the first place.
-  return mergeMaps(state.nonvalidatedAtoms, persistedAtomContentsValues);
+  return mergeMaps(
+    state.nonvalidatedAtoms.toMap(),
+    persistedAtomContentsValues,
+  );
 }
 
 type ExternallyVisibleAtomInfo = {

@@ -13,7 +13,7 @@
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DependencyMap} from './Recoil_GraphTypes';
 import type {RecoilValue} from './Recoil_RecoilValue';
-import type {AtomValues, NodeKey, Store, TreeState} from './Recoil_State';
+import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const mapIterable = require('../util/Recoil_mapIterable');
@@ -70,7 +70,7 @@ export type ReadWriteNodeOptions<T> = $ReadOnly<{
     store: Store,
     state: TreeState,
     newValue: T | DefaultValue,
-  ) => [DependencyMap, AtomValues],
+  ) => [DependencyMap, AtomWrites],
 }>;
 
 type Node<T> = ReadOnlyNodeOptions<T> | ReadWriteNodeOptions<T>;

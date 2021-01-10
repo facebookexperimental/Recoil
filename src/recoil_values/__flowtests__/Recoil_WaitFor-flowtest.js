@@ -37,6 +37,7 @@ const arrayResults = useRecoilValue(
 );
 num = arrayResults[0];
 str = arrayResults[1];
+// $FlowExpectedError
 num = arrayResults[1];
 // $FlowExpectedError
 str = arrayResults[0];
@@ -49,6 +50,7 @@ const objResults = useRecoilValue(
 );
 num = objResults.num;
 str = objResults.str;
+// $FlowExpectedError
 num = objResults.str;
 // $FlowExpectedError
 str = objResults.num;
@@ -65,6 +67,7 @@ const arrayResultsNone = useRecoilValue(
 );
 num = arrayResultsNone[0].valueOrThrow();
 str = arrayResultsNone[1].valueOrThrow();
+// $FlowExpectedError
 num = arrayResultsNone[1].valueOrThrow();
 // $FlowExpectedError
 str = arrayResultsNone[0].valueOrThrow();
@@ -77,6 +80,7 @@ const objResultsNone = useRecoilValue(
 );
 num = objResultsNone.num.valueOrThrow();
 str = objResultsNone.str.valueOrThrow();
+// $FlowExpectedError
 num = objResultsNone.str.valueOrThrow();
 // $FlowExpectedError
 str = objResultsNone.num.valueOrThrow();
