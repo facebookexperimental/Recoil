@@ -214,12 +214,88 @@ const syncStorageEffect = userID => ({setSelf, onSet, trigger}) => {
 
 Atom effects can be used to persist atom state with [browser local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).  Note that the following examples are simplified for illustrative purposes and do not cover all cases.
 
+### Synchronous
+
 ```jsx
 const localStorageEffect = key => ({setSelf, onSet}) => {
   const savedValue = localStorage.getItem(key)
   if (savedValue != null) {
     setSelf(JSON.parse(savedValue));
   }
+
+  onSet(newValue => {
+    if (newValue instanceof DefaultValue) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, JSON.stringify(newValue));
+    }
+  });
+};
+
+const currentUserIDState = atom({
+  key: 'CurrentUserID',
+  default: 1,
+  effects_UNSTABLE: [
+    localStorageEffect('current_user'),
+  ]
+});
+```
+
+### Asynchronous
+
+If your persisted data needs to be `await`ed, you can either create an `asynchronous` function and call that or use a `promise` in the setSelf function 
+
+- Using the promise approach you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback state while waiting for `Recoil` to load the persisted values.
+- This is not possible with the async await approach.
+
+#### Promise
+
+```jsx
+const localStorageEffect = key => ({setSelf, onSet}) => {
+  setSelf(
+    localStorage.getItem(key).then((savedValue) => {
+      if (savedValue != null) {
+        return JSON.parse(savedValue);
+      }
+    }),
+  );
+
+  onSet(newValue => {
+    if (newValue instanceof DefaultValue) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, JSON.stringify(newValue));
+    }
+  });
+};
+
+const currentUserIDState = atom({
+  key: 'CurrentUserID',
+  default: 1,
+  effects_UNSTABLE: [
+    localStorageEffect('current_user'),
+  ]
+});
+```
+
+
+#### Async Await
+
+```jsx
+
+/** If there's a persisted value - set it on load  */
+const loadPersisted = async ({ key, setSelf }) => {
+  const savedValue = await localStorage.getItem(key);
+
+  if (savedValue != null) {
+    setSelf(JSON.parse(savedValue));
+  }
+};
+
+
+const localStorageEffect = key => ({setSelf, onSet}) => {
+  // Load the persisted data
+  loadPersisted({ key, setSelf })
 
   onSet(newValue => {
     if (newValue instanceof DefaultValue) {
