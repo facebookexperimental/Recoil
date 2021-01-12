@@ -10,7 +10,7 @@
  */
 'use strict';
 
-declare function recoverableViolation(message: string, projectName: 'recoil', arg2: {|
+declare function recoverableViolation(message: string, projectName: 'recoil', arg2: {
   error?: Error
-|}): null;
+}): null;
 module.exports = recoverableViolation;
