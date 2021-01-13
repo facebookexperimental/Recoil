@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type { CacheImplementation } from 'Recoil_Cache'; // cache implementation that only stores the most recent entry
+import type { CacheImplementation } from './Recoil_Cache'; // cache implementation that only stores the most recent entry
 // based on key reference equality
 
 declare function cacheMostRecent<T>(): CacheImplementation<T>;

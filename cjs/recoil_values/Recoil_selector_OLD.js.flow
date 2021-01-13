@@ -58,6 +58,7 @@ import type { CacheImplementation } from '../caches/Recoil_Cache';
 import type { DependencyMap } from '../core/Recoil_Graph';
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
+import type { RetainedBy } from '../core/Recoil_RetainedBy';
 import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State';
 
 const {
@@ -83,6 +84,7 @@ const {
 const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
+  getConfigDeletionHandler,
   registerNode
 } = require('../core/Recoil_Node');
 
@@ -96,7 +98,13 @@ const {
   setRecoilValueLoadable
 } = require('../core/Recoil_RecoilValueInterface');
 
+const {
+  retainedByOptionWithDefault
+} = require('../core/Recoil_Retention');
+
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+
+const gkx = require('../util/Recoil_gkx');
 
 const isPromise = require('../util/Recoil_isPromise');
 
@@ -115,6 +123,7 @@ type ReadOnlySelectorOptions<T> = $ReadOnly<{
   get: ({
     get: GetRecoilValue
   }) => Promise<T> | RecoilValue<T> | T,
+  retainedBy_UNSTABLE?: RetainedBy,
   cacheImplementation_UNSTABLE?: CacheImplementation<Loadable<T>>,
   dangerouslyAllowMutability?: boolean,
 }>;

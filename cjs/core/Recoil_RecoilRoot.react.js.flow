@@ -40,6 +40,8 @@ const {
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 
+const gkx = require('../util/Recoil_gkx');
+
 const nullthrows = require('../util/Recoil_nullthrows'); // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 
@@ -68,9 +70,12 @@ const {
 } = require('./Recoil_RecoilValueInterface');
 
 const {
-  freshSnapshot
-} = require('./Recoil_Snapshot'); // @fb-only: const gkx = require('gkx');
+  releaseScheduledRetainablesNow
+} = require('./Recoil_Retention');
 
+const {
+  freshSnapshot
+} = require('./Recoil_Snapshot');
 
 type Props = {
   initializeState_DEPRECATED?: ({

@@ -12,13 +12,15 @@
 
 import type { CacheImplementation } from '../caches/Recoil_Cache';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
+import type { RetainedBy } from '../core/Recoil_RetainedBy';
 import type { AtomEffect, AtomOptions } from './Recoil_atom'; // @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
 
 const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
 
 const {
   DEFAULT_VALUE,
-  DefaultValue
+  DefaultValue,
+  setConfigDeletionHandler
 } = require('../core/Recoil_Node');
 
 const stableStringify = require('../util/Recoil_stableStringify');
@@ -38,6 +40,7 @@ export type ParameterizedScopeRules<P> = $ReadOnlyArray<RecoilValue<$ReadOnlyArr
 export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{ ...AtomOptions<T>,
   default: RecoilValue<T> | Promise<T> | T | ((P) => T | RecoilValue<T> | Promise<T>),
   effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>> | ((P) => $ReadOnlyArray<AtomEffect<T>>),
+  retainedBy_UNSTABLE?: RetainedBy | ((P) => RetainedBy),
 }>; // Process scopeRules to handle any entries which are functions taking parameters
 
 declare function mapScopeRules<P>(scopeRules?: ParameterizedScopeRules<P>, param: P): ScopeRules | void;

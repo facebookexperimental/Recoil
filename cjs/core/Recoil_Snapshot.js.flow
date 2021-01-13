@@ -19,7 +19,13 @@ import type { StateID, Store, StoreState, TreeState } from './Recoil_State';
 
 const concatIterables = require('../util/Recoil_concatIterables');
 
+const {
+  isSSR
+} = require('../util/Recoil_Environment');
+
 const filterIterable = require('../util/Recoil_filterIterable');
+
+const gkx = require('../util/Recoil_gkx');
 
 const nullthrows = require('../util/Recoil_nullthrows');
 
@@ -29,6 +35,7 @@ const {
 
 const {
   getDownstreamNodes,
+  initializeNodeIfNewToStore,
   peekNodeInfo
 } = require('./Recoil_FunctionalCore');
 
@@ -61,7 +68,12 @@ export opaque type SnapshotID = StateID; // A "Snapshot" is "read-only" and capt
 
 declare class Snapshot {
   _store: Store,
+  _refCount: number,
   constructor(storeState: StoreState): any,
+  retain(): () => void,
+  autorelease(): void,
+  release(): void,
+  checkRefCount_INTERNAL(): void,
   getStore_INTERNAL(): Store,
   getID(): SnapshotID,
   getID_INTERNAL(): StateID,
