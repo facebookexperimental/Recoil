@@ -39,6 +39,10 @@ function cacheWithValueEquality<T>(): CacheImplementation<T> {
       map.set(stableStringify(key), value);
       return cache;
     },
+    delete: key => {
+      map.delete(stableStringify(key));
+      return cache;
+    },
     map, // For debugging
   };
   return cache;

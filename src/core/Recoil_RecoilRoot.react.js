@@ -27,6 +27,7 @@ const {
 } = require('../core/Recoil_State');
 const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const expectationViolation = require('../util/Recoil_expectationViolation');
+const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
@@ -40,8 +41,8 @@ const {
 const {graph, saveDependencyMapToStore} = require('./Recoil_Graph');
 const {cloneGraph} = require('./Recoil_Graph');
 const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
+const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
 const {freshSnapshot} = require('./Recoil_Snapshot');
-// @fb-only: const gkx = require('gkx');
 
 type Props = {
   initializeState_DEPRECATED?: ({
@@ -204,6 +205,10 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
       const discardedVersion = nullthrows(storeState.previousTree).version;
       storeState.graphsByVersion.delete(discardedVersion);
       storeState.previousTree = null;
+
+      if (gkx('recoil_memory_managament_2020')) {
+        releaseScheduledRetainablesNow(storeRef.current);
+      }
     });
   });
 

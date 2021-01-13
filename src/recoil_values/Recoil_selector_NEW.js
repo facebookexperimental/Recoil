@@ -63,9 +63,12 @@ import type {
   RecoilValue,
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
+import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {
+  CANCELED,
+  Canceled,
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
@@ -85,15 +88,19 @@ const {saveDependencyMapToStore} = require('../core/Recoil_Graph');
 const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
+  getConfigDeletionHandler,
   registerNode,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
 const {setRecoilValueLoadable} = require('../core/Recoil_RecoilValueInterface');
+const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+const gkx = require('../util/Recoil_gkx');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 export type ValueOrUpdater<T> =
   | T
@@ -107,6 +114,7 @@ type ReadOnlySelectorOptions<T> = $ReadOnly<{
   key: string,
   get: ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
 
+  retainedBy_UNSTABLE?: RetainedBy,
   cacheImplementation_UNSTABLE?: CacheImplementation<Loadable<T>>,
   dangerouslyAllowMutability?: boolean,
 }>;
@@ -204,7 +212,14 @@ function selector<T>(
       ? nodeCacheMostRecent()
       : treeCacheReferenceEquality();
 
+  const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
+
   const executionInfoMap: Map<Store, ExecutionInfo<T>> = new Map();
+  let liveStoresCount = 0;
+
+  function selectorIsLive() {
+    return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
+  }
 
   function getExecutionInfo(store: Store): ExecutionInfo<T> {
     if (!executionInfoMap.has(store)) {
@@ -214,8 +229,21 @@ function selector<T>(
     return nullthrows(executionInfoMap.get(store));
   }
 
-  function initSelector(store: Store) {
-    store.getState().knownSelectors.add(key);
+  function selectorInit(store: Store): () => void {
+    liveStoresCount++;
+    store.getState().knownSelectors.add(key); // FIXME remove knownSelectors?
+    return () => {
+      liveStoresCount--;
+      store.getState().knownSelectors.delete(key);
+      if (liveStoresCount === 0) {
+        getConfigDeletionHandler(key)?.();
+      }
+      executionInfoMap.delete(store);
+    };
+  }
+
+  function selectorShouldDeleteConfigOnRelease() {
+    return getConfigDeletionHandler(key) !== undefined && !selectorIsLive();
   }
 
   function notifyStoreWhenAsyncSettles(
@@ -310,6 +338,12 @@ function selector<T>(
   ): LoadablePromise<T> {
     return promise
       .then(value => {
+        if (!selectorIsLive()) {
+          // The selector was released since the request began; ignore the response.
+          clearExecutionInfo(store, executionId);
+          return CANCELED;
+        }
+
         const loadable = loadableWithValue(value);
 
         maybeFreezeValue(value);
@@ -320,6 +354,12 @@ function selector<T>(
         return {__value: value, __key: key};
       })
       .catch(errorOrPromise => {
+        if (!selectorIsLive()) {
+          // The selector was released since the request began; ignore the response.
+          clearExecutionInfo(store, executionId);
+          return CANCELED;
+        }
+
         if (isLatestExecution(store, executionId)) {
           updateExecutionInfoDepValues(depValues, store, executionId);
         }
@@ -384,6 +424,20 @@ function selector<T>(
   ): LoadablePromise<T> {
     return promise
       .then(resolvedDep => {
+        if (!selectorIsLive()) {
+          // The selector was released since the request began; ignore the response.
+          clearExecutionInfo(store, executionId);
+          return CANCELED;
+        }
+
+        if (resolvedDep instanceof Canceled) {
+          recoverableViolation(
+            'Selector was released while it had dependencies',
+            'recoil',
+          );
+          return CANCELED;
+        }
+
         const {__key: resolvedDepKey, __value: depValue} = resolvedDep;
 
         if (resolvedDepKey != null) {
@@ -430,6 +484,12 @@ function selector<T>(
         return loadable.contents;
       })
       .catch(error => {
+        if (!selectorIsLive()) {
+          // The selector was released since the request began; ignore the response.
+          clearExecutionInfo(store, executionId);
+          return CANCELED;
+        }
+
         const loadable = loadableWithError(error);
 
         maybeFreezeValue(error);
@@ -840,6 +900,12 @@ function selector<T>(
     }
   }
 
+  function clearExecutionInfo(store: Store, executionId: ExecutionId) {
+    if (isLatestExecution(store, executionId)) {
+      executionInfoMap.delete(store);
+    }
+  }
+
   function isLatestExecution(store: Store, executionId): boolean {
     const executionInfo = getExecutionInfo(store);
 
@@ -884,7 +950,7 @@ function selector<T>(
     }
   }
 
-  function myPeek(store: Store, state: TreeState): ?Loadable<T> {
+  function selectorPeek(store: Store, state: TreeState): ?Loadable<T> {
     const cacheVal = cache.get(nodeKey => {
       const peek = peekNodeLoadable(store, state, nodeKey);
 
@@ -894,9 +960,10 @@ function selector<T>(
     return cacheVal;
   }
 
-  function myGet(store: Store, state: TreeState): [DependencyMap, Loadable<T>] {
-    initSelector(store);
-
+  function selectorGet(
+    store: Store,
+    state: TreeState,
+  ): [DependencyMap, Loadable<T>] {
     return [
       new Map(),
       detectCircularDependencies(() =>
@@ -905,14 +972,12 @@ function selector<T>(
     ];
   }
 
-  function invalidate(state: TreeState) {
+  function invalidateSelector(state: TreeState) {
     state.atomValues.delete(key);
   }
 
   if (set != null) {
-    function mySet(store, state, newValue): [DependencyMap, AtomWrites] {
-      initSelector(store);
-
+    function selectorSet(store, state, newValue): [DependencyMap, AtomWrites] {
       let syncSelectorSetFinished = false;
       const dependencyMap: DependencyMap = new Map();
       const writes: AtomWrites = new Map();
@@ -986,23 +1051,27 @@ function selector<T>(
 
     return registerNode<T>({
       key,
-      peek: myPeek,
-      get: myGet,
-      set: mySet,
-      cleanUp: () => {},
-      invalidate,
+      peek: selectorPeek,
+      get: selectorGet,
+      set: selectorSet,
+      init: selectorInit,
+      invalidate: invalidateSelector,
+      shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
+      retainedBy,
     });
   } else {
     return registerNode<T>({
       key,
-      peek: myPeek,
-      get: myGet,
-      cleanUp: () => {},
-      invalidate,
+      peek: selectorPeek,
+      get: selectorGet,
+      init: selectorInit,
+      invalidate: invalidateSelector,
+      shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
+      retainedBy,
     });
   }
 }

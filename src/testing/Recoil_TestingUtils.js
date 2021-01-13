@@ -227,7 +227,7 @@ function flushPromisesAndTimers(): Promise<void> {
   );
 }
 
-type ReloadImports = () => void;
+type ReloadImports = () => void | (() => void);
 type AssertionsFn = (gks: Array<string>) => ?Promise<mixed>;
 type TestOptions = {
   gks?: Array<Array<string>>,
@@ -243,7 +243,7 @@ const testGKs = (
   {gks: additionalGKs = []}: TestOptions = {},
 ) => {
   test.each([
-    [testDescription, []],
+    // [testDescription, []],
     ...[...gks, ...additionalGKs].map(gks => [
       !gks.length ? testDescription : `${testDescription} [${gks.join(', ')}]`,
       gks,
@@ -253,10 +253,12 @@ const testGKs = (
 
     gks.forEach(gkx.setPass);
 
-    reloadImports();
+    const after = reloadImports();
     await assertionsFn(gks);
 
     gks.forEach(gkx.setFail);
+
+    after?.();
   });
 };
 
@@ -264,6 +266,9 @@ const WWW_GKS_TO_TEST = [
   ['recoil_async_selector_refactor'],
   ['recoil_suppress_rerender_in_callback'],
   ['recoil_async_selector_refactor', 'recoil_suppress_rerender_in_callback'],
+  ['recoil_hamt_2020'],
+  ['recoil_memory_managament_2020'],
+  ['recoil_async_selector_refactor', 'recoil_memory_managament_2020'],
 ];
 
 // TODO Disable testing GKs in OSS until that infra is fixed

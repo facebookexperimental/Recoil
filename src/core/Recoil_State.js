@@ -8,12 +8,14 @@
  * @flow strict
  * @format
  */
+
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {PersistentMap} from '../adt/Recoil_PersistentMap';
 import type {Graph} from './Recoil_GraphTypes';
 import type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
+import type {RetentionZone} from './Recoil_RetentionZone';
 export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
 const {graph} = require('./Recoil_Graph');
@@ -25,6 +27,8 @@ export type AtomValues = PersistentMap<NodeKey, Loadable<any>>;
 export type AtomWrites = Map<NodeKey, Loadable<any>>;
 
 type ComponentCallback = TreeState => void;
+
+export type Retainable = RetentionZone | NodeKey;
 
 // TreeState represents the state of a rendered React tree. As such, multiple
 // TreeStates may be in play at one time due to concurrent rendering, and each
@@ -73,6 +77,17 @@ export type StoreState = {
   // Removed from when components (1) unmount (2) commit another version
   // or (3) wake from suspense.
   +versionsUsedByComponent: Map<ComponentID, Version>,
+
+  +retention: {
+    referenceCounts: Map<NodeKey | RetentionZone, number>,
+    nodesRetainedByZone: Map<RetentionZone, Set<NodeKey>>,
+    retainablesToCheckForRelease: Set<Retainable>,
+  },
+
+  // Between the time a component is first used and when it is released,
+  // there will be a function in this map that cleans up the node upon release
+  // (or upon root unmount).
+  +nodeCleanupFunctions: Map<NodeKey, () => void>,
 
   // Which components depend on a specific node. (COMMIT/SUSPEND updates).
   +nodeToComponentSubscriptions: Map<
@@ -152,6 +167,12 @@ function makeEmptyStoreState(): StoreState {
     suspendedComponentResolvers: new Set(),
     graphsByVersion: new Map().set(currentTree.version, graph()),
     versionsUsedByComponent: new Map(),
+    retention: {
+      referenceCounts: new Map(),
+      nodesRetainedByZone: new Map(),
+      retainablesToCheckForRelease: new Set(),
+    },
+    nodeCleanupFunctions: new Map(),
   };
 }
 

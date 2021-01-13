@@ -10,12 +10,11 @@
  */
 'use strict';
 
-// eslint-disable-next-line fb-www/flow-readonly-object
-export type CacheImplementation<T> = {
-  +get: mixed => T | void,
-  +set: (mixed, T) => CacheImplementation<T>,
-  +delete: mixed => CacheImplementation<T>,
-  ...
-};
+const isSSR: boolean = typeof window === 'undefined';
+const isReactNative: boolean =
+  typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
-module.exports = ({}: {...});
+module.exports = {
+  isSSR,
+  isReactNative,
+};

@@ -142,6 +142,7 @@ testRecoil(
         expect(seenIDs.has(snapshotID)).toBe(false);
       }
       seenIDs.add(snapshotID);
+      snapshot.retain();
       snapshots.push({snapshotID, snapshot});
     };
     function TransactionObserver() {

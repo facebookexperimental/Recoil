@@ -13,12 +13,17 @@
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {CacheImplementation} from '../caches/Recoil_Cache';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomEffect, AtomOptions} from './Recoil_atom';
 
 // @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
 
 const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
-const {DEFAULT_VALUE, DefaultValue} = require('../core/Recoil_Node');
+const {
+  DEFAULT_VALUE,
+  DefaultValue,
+  setConfigDeletionHandler,
+} = require('../core/Recoil_Node');
 const stableStringify = require('../util/Recoil_stableStringify');
 const atom = require('./Recoil_atom');
 const selectorFamily = require('./Recoil_selectorFamily');
@@ -46,6 +51,7 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
   effects_UNSTABLE?:
     | $ReadOnlyArray<AtomEffect<T>>
     | (P => $ReadOnlyArray<AtomEffect<T>>),
+  retainedBy_UNSTABLE?: RetainedBy | (P => RetainedBy),
 
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ParameterizedScopeRules<P>,
 }>;
@@ -125,6 +131,7 @@ function atomFamily<T, P: Parameter>(
           options.default;
     },
     dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+    retainedBy_UNSTABLE: options.retainedBy_UNSTABLE,
   });
 
   // Simple atomFamily implementation to cache individual atoms based
@@ -140,6 +147,11 @@ function atomFamily<T, P: Parameter>(
       key: `${options.key}__${stableStringify(params) ?? 'void'}`,
       default: atomFamilyDefault(params),
 
+      retainedBy_UNSTABLE:
+        typeof options.retainedBy_UNSTABLE === 'function'
+          ? options.retainedBy_UNSTABLE(params)
+          : options.retainedBy_UNSTABLE,
+
       effects_UNSTABLE:
         typeof options.effects_UNSTABLE === 'function'
           ? options.effects_UNSTABLE(params)
@@ -153,6 +165,8 @@ function atomFamily<T, P: Parameter>(
     });
 
     atomCache = atomCache.set(params, newAtom);
+    setConfigDeletionHandler(newAtom.key, () => void atomCache.delete(params));
+
     return newAtom;
   };
 }

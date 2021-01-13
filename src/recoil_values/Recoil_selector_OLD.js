@@ -62,6 +62,7 @@ import type {
   RecoilValue,
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
+import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {
@@ -83,6 +84,7 @@ const {
 const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
+  getConfigDeletionHandler,
   registerNode,
 } = require('../core/Recoil_Node');
 const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
@@ -91,7 +93,9 @@ const {
   isRecoilValue,
   setRecoilValueLoadable,
 } = require('../core/Recoil_RecoilValueInterface');
+const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+const gkx = require('../util/Recoil_gkx');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
@@ -108,6 +112,7 @@ type ReadOnlySelectorOptions<T> = $ReadOnly<{
   key: string,
   get: ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
 
+  retainedBy_UNSTABLE?: RetainedBy,
   cacheImplementation_UNSTABLE?: CacheImplementation<Loadable<T>>,
   dangerouslyAllowMutability?: boolean,
 }>;
@@ -159,8 +164,23 @@ function selector<T>(
   let cache: CacheImplementation<Loadable<T>> =
     cacheImplementation ?? cacheWithReferenceEquality();
 
-  function initSelector(store: Store) {
-    store.getState().knownSelectors.add(key);
+  const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
+  let liveStoresCount = 0;
+
+  function selectorIsLive() {
+    return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
+  }
+
+  function selectorInit(store: Store) {
+    liveStoresCount++;
+    store.getState().knownSelectors.add(key); // FIXME remove knownSelectors?
+    return () => {
+      liveStoresCount--;
+      store.getState().knownSelectors.delete(key);
+      if (liveStoresCount === 0) {
+        getConfigDeletionHandler(key)?.();
+      }
+    };
   }
 
   function letStoreBeNotifiedWhenAsyncSettles(
@@ -211,6 +231,9 @@ function selector<T>(
       // cache and fire any external subscriptions to re-render with the new value.
       loadable.contents
         .then((result: $FlowFixMe) => {
+          if (!selectorIsLive()) {
+            return; // The selector was released since the request began.
+          }
           if (__DEV__) {
             if (!options.dangerouslyAllowMutability === true) {
               deepFreezeValue(result);
@@ -244,10 +267,11 @@ function selector<T>(
           return result;
         })
         .catch(error => {
-          // TODO Figure out why we are catching promises here versus evaluateSelectorFunction
-          // OH, I see why.  Ok, work on this.
           if (isPromise(error)) {
             return error;
+          }
+          if (!selectorIsLive()) {
+            return; // The selector was released since the request began.
           }
           if (__DEV__) {
             if (!options.dangerouslyAllowMutability === true) {
@@ -405,7 +429,7 @@ function selector<T>(
     }
   }
 
-  function myPeek(store: Store, state: TreeState): ?Loadable<T> {
+  function selectorPeek(store: Store, state: TreeState): ?Loadable<T> {
     // First, get the current deps for this selector
     const currentDeps =
       store.getGraph(state.version).nodeDeps.get(key) ?? emptySet;
@@ -429,13 +453,14 @@ function selector<T>(
     return cache.get(cacheKey);
   }
 
-  function invalidate(state: TreeState) {
+  function selectorInvalidate(state: TreeState) {
     state.atomValues.delete(key);
   }
 
-  function myGet(store: Store, state: TreeState): [DependencyMap, Loadable<T>] {
-    initSelector(store);
-
+  function selectorGet(
+    store: Store,
+    state: TreeState,
+  ): [DependencyMap, Loadable<T>] {
     // First-level cache: Have we already evaluated the selector since being
     // invalidated due to a dependency changing?
     const cached = state.atomValues.get(key);
@@ -454,10 +479,12 @@ function selector<T>(
     }
   }
 
-  if (set != null) {
-    function mySet(store, state, newValue): [DependencyMap, AtomWrites] {
-      initSelector(store);
+  function selectorShouldDeleteConfigOnRelease() {
+    return getConfigDeletionHandler(key) !== undefined && !selectorIsLive();
+  }
 
+  if (set != null) {
+    function selectorSet(store, state, newValue): [DependencyMap, AtomWrites] {
       let syncSelectorSetFinished = false;
       const dependencyMap: DependencyMap = new Map();
       const writes: AtomWrites = new Map();
@@ -531,23 +558,27 @@ function selector<T>(
     }
     return registerNode<T>({
       key,
-      peek: myPeek,
-      get: myGet,
-      set: mySet,
-      invalidate,
-      cleanUp: () => {},
+      peek: selectorPeek,
+      get: selectorGet,
+      set: selectorSet,
+      invalidate: selectorInvalidate,
+      init: selectorInit,
+      shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
+      retainedBy,
     });
   } else {
     return registerNode<T>({
       key,
-      peek: myPeek,
-      get: myGet,
-      invalidate,
-      cleanUp: () => {},
+      peek: selectorPeek,
+      get: selectorGet,
+      invalidate: selectorInvalidate,
+      init: selectorInit,
+      shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
+      retainedBy,
     });
   }
 }
