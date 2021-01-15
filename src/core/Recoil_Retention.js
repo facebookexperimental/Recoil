@@ -251,7 +251,7 @@ function scheduleOrPerformPossibleReleaseOfRetainable(
   }
 }
 
-export function updateRetainCount(
+function updateRetainCount(
   store: Store,
   retainable: Retainable,
   delta: 1 | -1,
@@ -269,7 +269,7 @@ export function updateRetainCount(
   }
 }
 
-export function releaseScheduledRetainablesNow(store: Store) {
+function releaseScheduledRetainablesNow(store: Store) {
   if (!gkx('recoil_memory_managament_2020')) {
     return;
   }
@@ -281,7 +281,13 @@ export function releaseScheduledRetainablesNow(store: Store) {
   state.retention.retainablesToCheckForRelease.clear();
 }
 
-export function retainedByOptionWithDefault(r: RetainedBy | void): RetainedBy {
+function retainedByOptionWithDefault(r: RetainedBy | void): RetainedBy {
   // The default will change from 'recoilRoot' to 'components' in the future.
   return r === undefined ? 'recoilRoot' : r;
 }
+
+module.exports = {
+  updateRetainCount,
+  releaseScheduledRetainablesNow,
+  retainedByOptionWithDefault,
+};
