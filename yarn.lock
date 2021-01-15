@@ -1951,10 +1951,10 @@ escodegen@^1.14.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-fb-www@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-fb-www/-/eslint-plugin-fb-www-1.0.2.tgz#c4a9415e99e63d742c2495fc876f153152ae21d4"
-  integrity sha512-yZOCrEZwS/99a5frXFuTM3HyQvPkJN68Vpq846a4JBNcZpsoMgTNpHxRNClsO0eewEoCu8ifVcvWNcUZ6PcGsw==
+eslint-plugin-fb-www@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-fb-www/-/eslint-plugin-fb-www-1.0.4.tgz#8fb4beb4105e4e355582363bd4a199230eed26a4"
+  integrity sha512-m/XABkdtBcml2cTwDysQx/laAU1sAhwjaELP8X/RYY0CoKAQelYZvBHOF2Puc8sZlGNJy3cNnjZ48qYzgTIRqQ==
 
 eslint-plugin-flowtype@^5.1.3:
   version "5.1.3"
