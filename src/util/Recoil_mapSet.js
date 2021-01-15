@@ -18,7 +18,7 @@
  * "map" operation, in that the cardinality of the returned set may be less than
  * the cardinality of the starting set.
  */
-export default function mapSet<TValue, TValueOut>(
+function mapSet<TValue, TValueOut>(
   set: $ReadOnlySet<TValue>,
   callback: (value: TValue) => TValueOut,
 ): Set<TValueOut> {
@@ -28,3 +28,5 @@ export default function mapSet<TValue, TValueOut>(
   }
   return result;
 }
+
+module.exports = mapSet;

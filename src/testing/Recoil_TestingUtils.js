@@ -243,7 +243,6 @@ const testGKs = (
   {gks: additionalGKs = []}: TestOptions = {},
 ) => {
   test.each([
-    // [testDescription, []],
     ...[...gks, ...additionalGKs].map(gks => [
       !gks.length ? testDescription : `${testDescription} [${gks.join(', ')}]`,
       gks,
@@ -273,7 +272,7 @@ const WWW_GKS_TO_TEST = [
 
 // TODO Disable testing GKs in OSS until that infra is fixed
 // eslint-disable-next-line no-unused-vars
-const OSS_GKS_TO_TEST = [];
+const OSS_GKS_TO_TEST = [[]];
 
 const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
   testGKs(
