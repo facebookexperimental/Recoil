@@ -15,7 +15,7 @@
  * The someSet() method tests whether some elements in the given Set pass the
  * test implemented by the provided function.
  */
-export default function someSet<T>(
+function someSet<T>(
   set: $ReadOnlySet<T>,
   callback: (value: T, key: T, set: $ReadOnlySet<T>) => boolean,
   context?: mixed,
@@ -31,3 +31,5 @@ export default function someSet<T>(
   }
   return false;
 }
+
+module.exports = someSet;

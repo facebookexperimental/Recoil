@@ -11,8 +11,13 @@
 
 'use strict';
 
-export class RetentionZone {}
+class RetentionZone {}
 
-export function retentionZone(): RetentionZone {
+function retentionZone(): RetentionZone {
   return new RetentionZone();
 }
+
+module.exports = {
+  RetentionZone,
+  retentionZone,
+};
