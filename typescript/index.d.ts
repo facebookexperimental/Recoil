@@ -273,7 +273,7 @@ type Primitive = undefined | null | boolean | number | symbol | string;
 export type SerializableParam = Primitive | ReadonlyArray<SerializableParam> | Readonly<{[key: string]: SerializableParam}>;
 
 export interface AtomFamilyOptions<T, K extends NodeKey = NodeKey, P extends SerializableParam = SerializableParam> {
-  key: NodeKey;
+  key: K;
   dangerouslyAllowMutability?: boolean;
   default: RecoilValue<T, K> | Promise<T> | T | ((param: P) => T | RecoilValue<T, K> | Promise<T>);
   effects_UNSTABLE?: | ReadonlyArray<AtomEffect<T, K>> | ((param: P) => ReadonlyArray<AtomEffect<T, K>>);
