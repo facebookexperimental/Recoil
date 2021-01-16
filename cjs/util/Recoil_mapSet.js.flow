@@ -18,4 +18,5 @@
  * the cardinality of the starting set.
  */
 
-declare export default function mapSet<TValue, TValueOut>(set: $ReadOnlySet<TValue>, callback: (value: TValue) => TValueOut): Set<TValueOut>;
+declare function mapSet<TValue, TValueOut>(set: $ReadOnlySet<TValue>, callback: (value: TValue) => TValueOut): Set<TValueOut>;
+module.exports = mapSet;

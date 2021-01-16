@@ -485,15 +485,15 @@ var Recoil_Node = {
  */
 
 class RetentionZone {}
+
 function retentionZone() {
   return new RetentionZone();
 }
 
-var Recoil_RetentionZone = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  RetentionZone: RetentionZone,
-  retentionZone: retentionZone
-});
+var Recoil_RetentionZone = {
+  RetentionZone,
+  retentionZone
+};
 
 const {
   setByAddingToSet: setByAddingToSet$1
@@ -2622,6 +2622,8 @@ function someSet(set, callback, context) {
   return false;
 }
 
+var Recoil_someSet = someSet;
+
 const {
   cleanUpNode: cleanUpNode$1
 } = Recoil_FunctionalCore;
@@ -2706,7 +2708,7 @@ function findReleasableNodes(store, searchFromNodes) {
 
       const nodeChildren = graph.nodeToNodeSubscriptions.get(node);
 
-      if (nodeChildren && someSet(nodeChildren, child => nonReleasableNodes.has(child))) {
+      if (nodeChildren && Recoil_someSet(nodeChildren, child => nonReleasableNodes.has(child))) {
         nonReleasableNodes.add(node);
         continue;
       }
@@ -2870,6 +2872,7 @@ function updateRetainCount(store, retainable, delta) {
     map.set(retainable, newCount);
   }
 }
+
 function releaseScheduledRetainablesNow(store) {
   if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
     return;
@@ -2879,17 +2882,17 @@ function releaseScheduledRetainablesNow(store) {
   releaseRetainablesNowOnCurrentTree(store, state.retention.retainablesToCheckForRelease);
   state.retention.retainablesToCheckForRelease.clear();
 }
+
 function retainedByOptionWithDefault(r) {
   // The default will change from 'recoilRoot' to 'components' in the future.
   return r === undefined ? 'recoilRoot' : r;
 }
 
-var Recoil_Retention = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  updateRetainCount: updateRetainCount,
-  releaseScheduledRetainablesNow: releaseScheduledRetainablesNow,
-  retainedByOptionWithDefault: retainedByOptionWithDefault
-});
+var Recoil_Retention = {
+  updateRetainCount,
+  releaseScheduledRetainablesNow,
+  retainedByOptionWithDefault
+};
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.

@@ -44,6 +44,11 @@ declare function releaseNode(store: Store, treeState: TreeState, node: NodeKey):
 declare function nodesRetainedByZone(storeState: StoreState, zone: RetentionZone): Set<NodeKey>;
 declare function zonesThatCouldRetainNode(node: NodeKey): Array<RetentionZone>;
 declare function scheduleOrPerformPossibleReleaseOfRetainable(store: Store, retainable: Retainable): any;
-declare export function updateRetainCount(store: Store, retainable: Retainable, delta: 1 | -1): void;
-declare export function releaseScheduledRetainablesNow(store: Store): any;
-declare export function retainedByOptionWithDefault(r: RetainedBy | void): RetainedBy;
+declare function updateRetainCount(store: Store, retainable: Retainable, delta: 1 | -1): void;
+declare function releaseScheduledRetainablesNow(store: Store): any;
+declare function retainedByOptionWithDefault(r: RetainedBy | void): RetainedBy;
+module.exports = {
+  updateRetainCount,
+  releaseScheduledRetainablesNow,
+  retainedByOptionWithDefault
+};
