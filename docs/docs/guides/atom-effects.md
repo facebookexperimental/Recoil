@@ -241,7 +241,7 @@ const currentUserIDState = atom({
 
 ### Backward Compatibility
 
-What if you change the format for an atom?  Loading a page with the new format with a `localStorage` based on the old format could case a problem.  You could build effects to handle restoring and validating the value in a type safe way:
+What if you change the format for an atom?  Loading a page with the new format with a `localStorage` based on the old format could cause a problem.  You could build effects to handle restoring and validating the value in a type safe way:
 
 ```jsx
 type PersistenceOptions<T>: {
