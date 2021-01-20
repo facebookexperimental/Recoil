@@ -94,7 +94,11 @@ function stringify(x: mixed, opt: Options, key?: string): string {
   }
 
   // Anything else that is iterable serialize as an Array.
-  if (x[Symbol.iterator] != null && typeof x[Symbol.iterator] === 'function') {
+  if (
+    Symbol !== undefined &&
+    x[Symbol.iterator] != null &&
+    typeof x[Symbol.iterator] === 'function'
+  ) {
     // flowlint-next-line unclear-type: off
     return stringify(Array.from((x: any)), opt, key);
   }

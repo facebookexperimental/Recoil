@@ -15,8 +15,7 @@
  */
 'use strict';
 
-// eslint-disable-next-line fb-www/no-symbol
-const LEAF = Symbol('ArrayKeyedMap');
+const LEAF = {};
 
 const emptyMap = new Map();
 
