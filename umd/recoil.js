@@ -4447,7 +4447,17 @@
             forceUpdate([]);
           }));
         } else {
-          forceUpdate([]);
+          var _prevLoadableRef$curr2;
+
+          if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
+            return forceUpdate([]);
+          }
+
+          const newLoadable = getRecoilValueAsLoadable$2(store, recoilValue, store.getState().currentTree);
+
+          if (!((_prevLoadableRef$curr2 = prevLoadableRef.current) === null || _prevLoadableRef$curr2 === void 0 ? void 0 : _prevLoadableRef$curr2.is(newLoadable))) {
+            forceUpdate(newLoadable);
+          }
         }
       });
       return subscription.release;
@@ -5243,7 +5253,7 @@
    * 
    * @format
    */
-  const LEAF = Symbol('ArrayKeyedMap');
+  const LEAF = {};
   const emptyMap = new Map();
 
   class ArrayKeyedMap {
@@ -5440,7 +5450,7 @@
     } // Anything else that is iterable serialize as an Array.
 
 
-    if (x[Symbol.iterator] != null && typeof x[Symbol.iterator] === 'function') {
+    if (Symbol !== undefined && x[Symbol.iterator] != null && typeof x[Symbol.iterator] === 'function') {
       // flowlint-next-line unclear-type: off
       return stringify(Array.from(x), opt, key);
     } // For all other Objects, sort the keys in a stable order.

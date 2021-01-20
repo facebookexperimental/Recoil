@@ -13,9 +13,9 @@
  * @flow
  * @format
  */
-'use strict'; // eslint-disable-next-line fb-www/no-symbol
+'use strict';
 
-const LEAF = Symbol('ArrayKeyedMap');
+const LEAF = {};
 const emptyMap = new Map();
 declare class ArrayKeyedMap<V> {
   _base: Map<any, any>,
