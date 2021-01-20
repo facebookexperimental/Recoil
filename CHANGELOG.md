@@ -2,7 +2,9 @@
 
 ## NEXT
 
-- Performance optimization to suppress re-rendering components when subscribed selectors evaluate to the same value. (#749)
+- Performance optimization to suppress re-rendering components:
+    - When subscribed selectors evaluate to the same value. (#749)
+    - On initial render when not using React Concurrent Mode (#820)
 - Added useGetRecoilValueInfo_UNSTABLE() hook for dev tools. (#713, #714)
 
 ## 0.1.2 (2020-10-30)

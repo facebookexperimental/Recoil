@@ -432,7 +432,13 @@ testRecoil(
   },
 );
 
-testRecoil('Independent atom subscriptions', () => {
+testRecoil('Independent atom subscriptions', gks => {
+  const BASE_CALLS =
+    mutableSourceExists() ||
+    gks.includes('recoil_suppress_rerender_in_callback')
+      ? 0
+      : 1;
+
   const myAtom = atomFamily({
     key: 'atomFamily/independent subscriptions',
     default: 'DEFAULT',
@@ -467,23 +473,22 @@ testRecoil('Independent atom subscriptions', () => {
     </>,
   );
 
-  const baseUpdates = mutableSourceExists() ? 0 : 1;
   // Initial:
   expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
-  expect(getNumUpdatesA()).toBe(baseUpdates + 1);
-  expect(getNumUpdatesB()).toBe(baseUpdates + 1);
+  expect(getNumUpdatesA()).toBe(BASE_CALLS + 1);
+  expect(getNumUpdatesB()).toBe(BASE_CALLS + 1);
 
   // After setting at parameter A, component A should update:
   act(() => setValueA(1));
   expect(container.textContent).toBe('1"DEFAULT"');
-  expect(getNumUpdatesA()).toBe(baseUpdates + 2);
-  expect(getNumUpdatesB()).toBe(baseUpdates + 1);
+  expect(getNumUpdatesA()).toBe(BASE_CALLS + 2);
+  expect(getNumUpdatesB()).toBe(BASE_CALLS + 1);
 
   // After setting at parameter B, component B should update:
   act(() => setValueB(2));
   expect(container.textContent).toBe('12');
-  expect(getNumUpdatesA()).toBe(baseUpdates + 2);
-  expect(getNumUpdatesB()).toBe(baseUpdates + 2);
+  expect(getNumUpdatesA()).toBe(BASE_CALLS + 2);
+  expect(getNumUpdatesB()).toBe(BASE_CALLS + 2);
 });
 
 describe('Effects', () => {

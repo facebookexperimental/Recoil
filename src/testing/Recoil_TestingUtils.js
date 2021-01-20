@@ -272,7 +272,7 @@ const WWW_GKS_TO_TEST = [
 
 // TODO Disable testing GKs in OSS until that infra is fixed
 // eslint-disable-next-line no-unused-vars
-const OSS_GKS_TO_TEST = [[]];
+const OSS_GKS_TO_TEST = [[], ['recoil_suppress_rerender_in_callback']];
 
 const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
   testGKs(

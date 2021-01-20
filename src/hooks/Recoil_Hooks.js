@@ -411,7 +411,17 @@ function useRecoilValueLoadable_LEGACY<T>(
           }),
         );
       } else {
-        forceUpdate([]);
+        if (!gkx('recoil_suppress_rerender_in_callback')) {
+          return forceUpdate([]);
+        }
+        const newLoadable = getRecoilValueAsLoadable(
+          store,
+          recoilValue,
+          store.getState().currentTree,
+        );
+        if (!prevLoadableRef.current?.is(newLoadable)) {
+          forceUpdate(newLoadable);
+        }
       }
     });
 
