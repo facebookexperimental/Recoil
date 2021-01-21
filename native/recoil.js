@@ -436,7 +436,10 @@ function deleteNodeConfigIfPossible(key) {
   const node = nodes.get(key);
 
   if (node === null || node === void 0 ? void 0 : (_node$shouldDeleteCon = node.shouldDeleteConfigOnRelease) === null || _node$shouldDeleteCon === void 0 ? void 0 : _node$shouldDeleteCon.call(node)) {
+    var _getConfigDeletionHan;
+
     nodes.delete(key);
+    (_getConfigDeletionHan = getConfigDeletionHandler(key)) === null || _getConfigDeletionHan === void 0 ? void 0 : _getConfigDeletionHan();
     configDeletionHandlers.delete(key);
   }
 }
@@ -5811,13 +5814,6 @@ function selector(options) {
     return () => {
       liveStoresCount--;
       store.getState().knownSelectors.delete(key);
-
-      if (liveStoresCount === 0) {
-        var _getConfigDeletionHan;
-
-        (_getConfigDeletionHan = getConfigDeletionHandler$1(key)) === null || _getConfigDeletionHan === void 0 ? void 0 : _getConfigDeletionHan();
-      }
-
       executionInfoMap.delete(store);
     };
   }
@@ -6563,12 +6559,6 @@ function selector$1(options) {
     return () => {
       liveStoresCount--;
       store.getState().knownSelectors.delete(key);
-
-      if (liveStoresCount === 0) {
-        var _getConfigDeletionHan;
-
-        (_getConfigDeletionHan = getConfigDeletionHandler$2(key)) === null || _getConfigDeletionHan === void 0 ? void 0 : _getConfigDeletionHan();
-      }
     };
   }
 
@@ -7167,12 +7157,6 @@ function baseAtom(options) {
       (_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor === void 0 ? void 0 : _cleanupEffectsByStor();
       cleanupEffectsByStore.delete(store);
       store.getState().knownAtoms.delete(key); // FIXME remove knownAtoms?
-
-      if (liveStoresCount === 0) {
-        var _getConfigDeletionHan;
-
-        (_getConfigDeletionHan = getConfigDeletionHandler$3(key)) === null || _getConfigDeletionHan === void 0 ? void 0 : _getConfigDeletionHan();
-      }
     };
   }
 
@@ -7392,7 +7376,9 @@ function selectorFamily(options) {
     }
 
     selectorCache = selectorCache.set(params, newSelector);
-    setConfigDeletionHandler$2(newSelector.key, () => void selectorCache.delete(params));
+    setConfigDeletionHandler$2(newSelector.key, () => {
+      selectorCache = selectorCache.delete(params);
+    });
     return newSelector;
   };
 }
@@ -7494,7 +7480,9 @@ function atomFamily(options) {
 
     });
     atomCache = atomCache.set(params, newAtom);
-    setConfigDeletionHandler$3(newAtom.key, () => void atomCache.delete(params));
+    setConfigDeletionHandler$3(newAtom.key, () => {
+      atomCache = atomCache.delete(params);
+    });
     return newAtom;
   };
 }
