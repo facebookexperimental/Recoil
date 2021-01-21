@@ -165,7 +165,9 @@ function atomFamily<T, P: Parameter>(
     });
 
     atomCache = atomCache.set(params, newAtom);
-    setConfigDeletionHandler(newAtom.key, () => void atomCache.delete(params));
+    setConfigDeletionHandler(newAtom.key, () => {
+      atomCache = atomCache.delete(params);
+    });
 
     return newAtom;
   };

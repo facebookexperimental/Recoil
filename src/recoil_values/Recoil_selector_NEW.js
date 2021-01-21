@@ -235,9 +235,6 @@ function selector<T>(
     return () => {
       liveStoresCount--;
       store.getState().knownSelectors.delete(key);
-      if (liveStoresCount === 0) {
-        getConfigDeletionHandler(key)?.();
-      }
       executionInfoMap.delete(store);
     };
   }

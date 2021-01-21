@@ -164,6 +164,7 @@ function deleteNodeConfigIfPossible(key: NodeKey): void {
   const node = nodes.get(key);
   if (node?.shouldDeleteConfigOnRelease?.()) {
     nodes.delete(key);
+    getConfigDeletionHandler(key)?.();
     configDeletionHandlers.delete(key);
   }
 }

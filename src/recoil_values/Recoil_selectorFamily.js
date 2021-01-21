@@ -140,10 +140,9 @@ function selectorFamily<T, Params: Parameter>(
       });
     }
     selectorCache = selectorCache.set(params, newSelector);
-    setConfigDeletionHandler(
-      newSelector.key,
-      () => void selectorCache.delete(params),
-    );
+    setConfigDeletionHandler(newSelector.key, () => {
+      selectorCache = selectorCache.delete(params);
+    });
     return newSelector;
   };
 }
