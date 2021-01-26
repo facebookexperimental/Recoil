@@ -52,6 +52,10 @@ function shouldNotBeFrozen(value: mixed): boolean {
     return true;
   }
 
+  if (value instanceof Error) {
+    return true;
+  }
+
   if (ArrayBuffer.isView(value)) {
     return true;
   }
