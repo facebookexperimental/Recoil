@@ -513,6 +513,7 @@ testRecoil(
     expect(container.textContent).toEqual('loading');
 
     await flushPromisesAndTimers();
+    await flushPromisesAndTimers(); // HACK: not sure why but this is needed in OSS
 
     expect(container.textContent).toEqual('Async Dep Value');
 
@@ -575,12 +576,20 @@ testRecoil(
 
     await flushPromisesAndTimers();
 
+    // HACK: not sure why but these are needed in OSS
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+
     expect(container.textContent).toEqual('6');
 
     act(() => setAtom(4));
 
     expect(container.textContent).toEqual('loading');
 
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
     await flushPromisesAndTimers();
 
     expect(container.textContent).toEqual('7');
@@ -747,17 +756,20 @@ testRecoil(
 
     expect(numTimesRan).toBe(1);
 
-    resolveAsyncDep1('a');
+    act(() => resolveAsyncDep1('a'));
 
-    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
 
     expect(numTimesRan).toBe(2);
 
-    resolveAsyncDep2('b');
+    act(() => resolveAsyncDep2('b'));
 
-    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
 
     expect(numTimesRan).toBe(3);
+
+    await flushPromisesAndTimers();
+
     expect(container.textContent).toEqual('"ab"');
   },
 );

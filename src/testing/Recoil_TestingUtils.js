@@ -34,7 +34,6 @@ const {
   useSetRecoilState,
 } = require('../hooks/Recoil_Hooks');
 const selector = require('../recoil_values/Recoil_selector');
-const gkx = require('../util/Recoil_gkx');
 const invariant = require('../util/Recoil_invariant');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
@@ -250,6 +249,8 @@ const testGKs = (
   ])('%s', async (_title, gks) => {
     jest.resetModules();
 
+    const gkx = require('../util/Recoil_gkx');
+
     gks.forEach(gkx.setPass);
 
     const after = reloadImports();
@@ -270,9 +271,21 @@ const WWW_GKS_TO_TEST = [
   ['recoil_async_selector_refactor', 'recoil_memory_managament_2020'],
 ];
 
-// TODO Disable testing GKs in OSS until that infra is fixed
+/**
+ * GK combinations to exclude in OSS, presumably because these combinations pass
+ * in FB internally but not in OSS. Ideally this array would be empty.
+ */
+const OSS_GK_COMBINATION_EXCLUSIONS = [
+  ['recoil_async_selector_refactor', 'recoil_memory_managament_2020'], // FIXME
+];
+
 // eslint-disable-next-line no-unused-vars
-const OSS_GKS_TO_TEST = [[], ['recoil_suppress_rerender_in_callback']];
+const OSS_GKS_TO_TEST = WWW_GKS_TO_TEST.filter(
+  gkCombination =>
+    !OSS_GK_COMBINATION_EXCLUSIONS.some(exclusion =>
+      exclusion.every(gk => gkCombination.includes(gk)),
+    ),
+);
 
 const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
   testGKs(

@@ -638,13 +638,9 @@ function selector<T>(
       return state.atomValues.get(key);
     }
 
-    const deps = new Set(
-      store.getGraph(state.version).nodeDeps.get(key) ?? emptySet,
-    );
+    const depsAfterCacheDone = new Set();
 
     const executionInfo = getExecutionInfo(store);
-
-    setDepsInStore(store, state, deps, executionInfo.latestExecutionId);
 
     const cachedVal = cache.get(
       nodeKey => {
@@ -655,17 +651,28 @@ function selector<T>(
       {
         onCacheHit: nodeKey => {
           if (nodeKey !== key) {
-            setNewDepInStore(
-              store,
-              state,
-              deps,
-              nodeKey,
-              executionInfo.latestExecutionId,
-            );
+            depsAfterCacheDone.add(nodeKey);
           }
         },
       },
     );
+
+    /**
+     * Ensure store contains correct dependencies if we hit the cache so that
+     * the store deps and cache are in sync for a given state. This is important
+     * because store deps are normally updated when new executions are created,
+     * but cache hits don't trigger new executions but they still _may_ signifiy
+     * a change in deps in the store if the store deps for this state are empty
+     * or stale.
+     */
+    if (cachedVal) {
+      setDepsInStore(
+        store,
+        state,
+        depsAfterCacheDone,
+        executionInfo.latestExecutionId,
+      );
+    }
 
     return cachedVal;
   }
