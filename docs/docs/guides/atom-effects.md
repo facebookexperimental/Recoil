@@ -212,9 +212,9 @@ const syncStorageEffect = userID => ({setSelf, onSet, trigger}) => {
 
 ## Local Storage Persistence
 
-Atom effects can be used to persist atom state with [browser local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).  Note that the following examples are simplified for illustrative purposes and do not cover all cases.
+Atom effects can be used to persist atom state with [browser local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage). Since `localStorage` is synchronous, we can retrieve the items without `async` `await` or `Promise`.
 
-### Synchronous
+Note that the following examples are simplified for illustrative purposes and do not cover all cases.
 
 ```jsx
 const localStorageEffect = key => ({setSelf, onSet}) => {
@@ -241,14 +241,17 @@ const currentUserIDState = atom({
 });
 ```
 
-### Asynchronous
+## Asynchronous Storage Persistence
 
-If your persisted data needs to be `await`ed, you can either create an `asynchronous` function and call that or use a `promise` in the setSelf function 
+If your persisted data needs to be retrieved asynchronously, you can either create an `asynchronous` function and call that or use a `Promise` in the `setSelf()` function.
 
-- Using the promise approach you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback state while waiting for `Recoil` to load the persisted values.
-- This is not possible with the async await approach.
+### `Promise`
 
-#### Promise
+By synchronously calling `setSelf()` with a `Promise` you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback state while waiting for `Recoil` to load the persisted values.
+
+The `<Suspense/>` fallback will be shown until the `setSelf()` function has been called.
+
+Note that if the `atoms` later are "reset", they will revert to their default value, and not the initialized value.
 
 ```jsx
 const localStorageEffect = key => ({setSelf, onSet}) => {
@@ -279,29 +282,36 @@ const currentUserIDState = atom({
 ```
 
 
-#### Async Await
+### `Asynchronous` 
+
+Using an Asynchronous approach your `atoms`, `selectors` etc, will use their default value until the deferred `setSelf()` has been called to set the value.
+
+Unlike the `Promise` approach, it is therefore not possible to use `<Suspense/>` to show a fallback.
+
+This approach isn't just limited to `await`, but for any `async` usage of `setSelf()`, such as `setTimeout()`.
+
+### `AsyncLocalStorage`/`localForage` example
 
 ```jsx
 
-/** If there's a persisted value - set it on load  */
-const loadPersisted = async ({ key, setSelf }) => {
-  const savedValue = await localStorage.getItem(key);
+const localForageEffect = key => ({setSelf, onSet}) => {
+  /** If there's a persisted value - set it on load  */
+  const loadPersisted = async () => {
+    const savedValue = await localForage.getItem(key);
 
-  if (savedValue != null) {
-    setSelf(JSON.parse(savedValue));
-  }
-};
+    if (savedValue != null) {
+      setSelf(JSON.parse(savedValue));
+    }
+  };
 
-
-const localStorageEffect = key => ({setSelf, onSet}) => {
   // Load the persisted data
-  loadPersisted({ key, setSelf })
+  loadPersisted()
 
   onSet(newValue => {
     if (newValue instanceof DefaultValue) {
-      localStorage.removeItem(key);
+      localForage.removeItem(key);
     } else {
-      localStorage.setItem(key, JSON.stringify(newValue));
+      localForage.setItem(key, JSON.stringify(newValue));
     }
   });
 };
@@ -310,7 +320,7 @@ const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
   effects_UNSTABLE: [
-    localStorageEffect('current_user'),
+    localForageEffect('current_user'),
   ]
 });
 ```
