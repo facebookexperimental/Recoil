@@ -18,6 +18,12 @@ Or if you're using [yarn](https://classic.yarnpkg.com/en/docs/install/):
 yarn add recoil
 ```
 
+Or if you're using [bower](https://cloud.google.com/community/tutorials/install-bower-dependencies-on-google-app-engine):
+
+```shell
+bower install --save recoil
+```
+
 ## Contributing
 
 Development of Recoil happens in the open on GitHub, and we are grateful to the community for contributing bugfixes and improvements. Read below to learn how you can take part in improving Recoil.
