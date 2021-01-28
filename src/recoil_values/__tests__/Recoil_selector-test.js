@@ -87,8 +87,12 @@ function get(recoilValue) {
   return getLoadable(recoilValue).contents;
 }
 
-function getError(recoilValue) {
-  return getRecoilValueAsLoadable(store, recoilValue).errorOrThrow();
+function getError(recoilValue): Error {
+  const error = getRecoilValueAsLoadable(store, recoilValue).errorOrThrow();
+  if (!(error instanceof Error)) {
+    throw new Error('Expected error to be instance of Error');
+  }
+  return error;
 }
 
 function set(recoilState, value) {
@@ -202,6 +206,30 @@ testRecoil('selector - catching exceptions', () => {
   expect(get(catchingSelector)).toEqual('CAUGHT');
 });
 
+testRecoil('selector - catching exception (non Error)', () => {
+  const throwingSel = selector({
+    key: '__error/non Error thrown',
+    get: () => {
+      // eslint-disable-next-line no-throw-literal
+      throw 'MY ERROR';
+    },
+  });
+
+  const catchingSelector = selector({
+    key: 'selector/catching selector',
+    get: ({get}) => {
+      try {
+        return get(throwingSel);
+      } catch (e) {
+        expect(e).toBe('MY ERROR');
+        return 'CAUGHT';
+      }
+    },
+  });
+
+  expect(get(catchingSelector)).toEqual('CAUGHT');
+});
+
 testRecoil('selector - catching loads', () => {
   const loadingSel = resolvingAsyncSelector('READY');
   expect(get(loadingSel) instanceof Promise).toBe(true);
@@ -245,6 +273,34 @@ testRecoil('useRecoilState - selector catching exceptions', () => {
       }
     },
   });
+  const c2 = renderElements(<ReadsAtom atom={catchingSelector} />);
+  expect(c2.textContent).toEqual('"CAUGHT"');
+});
+
+testRecoil('useRecoilState - selector catching exceptions (non Errors)', () => {
+  const throwingSel = selector({
+    key: '__error/non Error thrown',
+    get: () => {
+      // eslint-disable-next-line no-throw-literal
+      throw 'MY ERROR';
+    },
+  });
+
+  const c1 = renderElements(<ReadsAtom atom={throwingSel} />);
+  expect(c1.textContent).toEqual('error');
+
+  const catchingSelector = selector({
+    key: 'useRecoilState/catching selector',
+    get: ({get}) => {
+      try {
+        return get(throwingSel);
+      } catch (e) {
+        expect(e).toBe('MY ERROR');
+        return 'CAUGHT';
+      }
+    },
+  });
+
   const c2 = renderElements(<ReadsAtom atom={catchingSelector} />);
   expect(c2.textContent).toEqual('"CAUGHT"');
 });

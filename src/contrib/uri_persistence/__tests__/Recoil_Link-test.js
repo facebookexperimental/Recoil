@@ -29,7 +29,9 @@ const LinkToSnapshot = ({snapshot, children}) => (
   <LinkToRecoilSnapshot
     snapshot={snapshot}
     uriFromSnapshot={({getLoadable}) =>
-      `https://test.com/test?atom="${getLoadable(myAtom).contents.toString()}`
+      `https://test.com/test?atom="${getLoadable(myAtom)
+        .valueOrThrow()
+        .toString()}`
     }>
     {children}
   </LinkToRecoilSnapshot>
@@ -39,7 +41,9 @@ const LinkToStateChange = ({stateChange, children}) => (
   <LinkToRecoilStateChange
     stateChange={stateChange}
     uriFromSnapshot={({getLoadable}) =>
-      `https://test.com/test?atom="${getLoadable(myAtom).contents.toString()}`
+      `https://test.com/test?atom="${getLoadable(myAtom)
+        .valueOrThrow()
+        .toString()}`
     }>
     {children}
   </LinkToRecoilStateChange>
@@ -52,7 +56,7 @@ test('Link - snapshot', async () => {
     <>
       <ReadsAndWritesAtom />
       <LinkToSnapshot snapshot={snapshot}>
-        LINK-{snapshot.getLoadable(myAtom).contents.toString()}
+        LINK-{snapshot.getLoadable(myAtom).valueOrThrow().toString()}
       </LinkToSnapshot>
     </>,
   );

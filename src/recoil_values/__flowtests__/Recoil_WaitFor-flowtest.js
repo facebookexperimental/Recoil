@@ -8,9 +8,10 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
-import type {RecoilState} from 'Recoil_RecoilValue';
+import type {RecoilState} from '../../core/Recoil_RecoilValue';
 
 const {useRecoilValue} = require('../../hooks/Recoil_Hooks');
 const atom = require('../Recoil_atom');

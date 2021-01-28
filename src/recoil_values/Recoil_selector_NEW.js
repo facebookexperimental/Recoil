@@ -567,6 +567,7 @@ function selector<T>(
   ): [Loadable<T>, DepValues] {
     const endPerfBlock = startPerfBlock(key); // TODO T63965866: use execution ID here
     let result;
+    let resultIsError = false;
     let loadable: Loadable<T>;
 
     const depValues = new Map();
@@ -630,11 +631,12 @@ function selector<T>(
           executionId,
         ).finally(endPerfBlock);
       } else {
+        resultIsError = true;
         endPerfBlock();
       }
     }
 
-    if (result instanceof Error) {
+    if (resultIsError) {
       loadable = loadableWithError(result);
     } else if (isPromise(result)) {
       loadable = loadableWithPromise<T>(result);

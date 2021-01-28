@@ -6,6 +6,7 @@
     - When subscribed selectors evaluate to the same value. (#749)
     - On initial render when not using React Concurrent Mode (#820)
 - Added useGetRecoilValueInfo_UNSTABLE() hook for dev tools. (#713, #714)
+- Bug Fix: Ensuring that throwing non Error (and non Promise) objects is supported and puts the selector into a hasError state
 
 ## 0.1.2 (2020-10-30)
 
