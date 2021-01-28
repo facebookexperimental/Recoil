@@ -474,6 +474,8 @@ testRecoil('selector is able to track dependencies discovered asynchronously', a
   const container = renderElements(<Component />);
   expect(container.textContent).toEqual('loading');
   await flushPromisesAndTimers();
+  await flushPromisesAndTimers(); // HACK: not sure why but this is needed in OSS
+
   expect(container.textContent).toEqual('Async Dep Value');
   act(() => setAtom('CHANGED Async Dep'));
   expect(container.textContent).toEqual('loading');
@@ -515,10 +517,17 @@ testRecoil('selector should rerun entire selector when a dep changes', async gks
   declare function Component(): any;
   const container = renderElements(<Component />);
   expect(container.textContent).toEqual('loading');
+  await flushPromisesAndTimers(); // HACK: not sure why but these are needed in OSS
+
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('6');
   act(() => setAtom(4));
   expect(container.textContent).toEqual('loading');
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('7');
 });
@@ -649,12 +658,13 @@ testRecoil('async selector runs the minimum number of times required', async gks
   });
   const container = renderElements(<ReadsAtom atom={selectorWithAsyncDeps} />);
   expect(numTimesRan).toBe(1);
-  resolveAsyncDep1('a');
-  act(() => jest.runAllTimers());
+  act(() => resolveAsyncDep1('a'));
+  await flushPromisesAndTimers();
   expect(numTimesRan).toBe(2);
-  resolveAsyncDep2('b');
-  act(() => jest.runAllTimers());
+  act(() => resolveAsyncDep2('b'));
+  await flushPromisesAndTimers();
   expect(numTimesRan).toBe(3);
+  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('"ab"');
 });
 testRecoil('async selector with changing dependencies finishes execution using original state', async gks => {
