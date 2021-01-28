@@ -19,6 +19,7 @@ let React,
   useEffect,
   useState,
   Profiler,
+  noWait,
   act,
   useRecoilCallback,
   useRecoilState,
@@ -71,14 +72,19 @@ const testRecoil = getRecoilTestFn(() => {
     resolvingAsyncSelector,
     flushPromisesAndTimers,
   } = require('../../testing/Recoil_TestingUtils'));
+  ({noWait} = require('../Recoil_WaitFor'));
   ({DefaultValue} = require('../../core/Recoil_Node'));
   ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
 
   store = makeStore();
 });
 
+function getLoadable(recoilValue) {
+  return getRecoilValueAsLoadable(store, recoilValue);
+}
+
 function get(recoilValue) {
-  return getRecoilValueAsLoadable(store, recoilValue).contents;
+  return getLoadable(recoilValue).contents;
 }
 
 function getError(recoilValue) {
@@ -1179,3 +1185,93 @@ testRecoil('async set not supported', async () => {
   await expect(setAttempt).rejects.toThrowError();
   await expect(resetAttempt).rejects.toThrowError();
 });
+
+testRecoil(
+  'selectors with user-thrown loadable promises execute to completion as expected',
+  async () => {
+    const [asyncDep, resolveAsyncDep] = asyncSelector<string, void>();
+
+    const selWithUserThrownPromise = selector({
+      key: 'selWithUserThrownPromise',
+      get: ({get}) => {
+        const loadable = get(noWait(asyncDep));
+
+        if (loadable.state === 'loading') {
+          throw loadable.toPromise();
+        }
+
+        return loadable.valueOrThrow();
+      },
+    });
+
+    const loadable = getLoadable(selWithUserThrownPromise);
+    const promise = loadable.toPromise();
+
+    expect(loadable.state).toBe('loading');
+
+    resolveAsyncDep('RESOLVED');
+
+    await flushPromisesAndTimers();
+
+    const val = await promise;
+
+    expect(val).toBe('RESOLVED');
+  },
+);
+
+testRecoil(
+  'selectors with user-thrown loadable promises execute to completion as expected',
+  async gks => {
+    if (!gks.includes('recoil_async_selector_refactor')) {
+      return;
+    }
+
+    const myAtomA = atom({
+      key: 'myatoma selectors user-thrown promise',
+      default: 'A',
+    });
+
+    const myAtomB = atom({
+      key: 'myatomb selectors user-thrown promise',
+      default: 'B',
+    });
+
+    let isResolved = false;
+    let resolve = () => {};
+
+    const myPromise = new Promise(localResolve => {
+      resolve = () => {
+        isResolved = true;
+        localResolve();
+      };
+    });
+
+    const selWithUserThrownPromise = selector({
+      key: 'selWithUserThrownPromise',
+      get: ({get}) => {
+        const a = get(myAtomA);
+
+        if (!isResolved) {
+          throw myPromise;
+        }
+
+        const b = get(myAtomB);
+
+        return `${a}${b}`;
+      },
+    });
+
+    const loadable = getLoadable(selWithUserThrownPromise);
+    const promise = loadable.toPromise();
+
+    expect(loadable.state).toBe('loading');
+
+    resolve();
+
+    await flushPromisesAndTimers();
+
+    const val = await promise;
+
+    expect(val).toBe('AB');
+  },
+);

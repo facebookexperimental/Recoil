@@ -435,7 +435,14 @@ function selector<T>(
           return CANCELED;
         }
 
-        const {__key: resolvedDepKey, __value: depValue} = resolvedDep;
+        const {__key: resolvedDepKey, __value: depValue} = resolvedDep ?? {};
+
+        /**
+         * We need to bypass the selector dep cache if the resolved dep was a
+         * user-thrown promise because the selector dep cache will contain the
+         * stale values of dependencies, causing an infinite evaluation loop.
+         */
+        let bypassSelectorDepCacheOnReevaluation = true;
 
         if (resolvedDepKey != null) {
           /**
@@ -446,12 +453,19 @@ function selector<T>(
            * in Recoil_atom.js)
            */
           state.atomValues.set(resolvedDepKey, loadableWithValue(depValue));
+
+          /**
+           * We've added the resolved dependency to the selector dep cache, so
+           * there's no need to bypass the cache
+           */
+          bypassSelectorDepCacheOnReevaluation = false;
         }
 
         const [loadable, depValues] = evaluateSelectorGetter(
           store,
           state,
           executionId,
+          bypassSelectorDepCacheOnReevaluation,
         );
 
         if (isLatestExecution(store, executionId)) {
@@ -549,6 +563,7 @@ function selector<T>(
     store: Store,
     state: TreeState,
     executionId: ExecutionId,
+    bypassSelectorDepCache?: boolean = false,
   ): [Loadable<T>, DepValues] {
     const endPerfBlock = startPerfBlock(key); // TODO T63965866: use execution ID here
     let result;
@@ -575,7 +590,9 @@ function selector<T>(
 
       setNewDepInStore(store, state, deps, depKey, executionId);
 
-      const [, depLoadable] = getCachedNodeLoadable(store, state, depKey);
+      const [, depLoadable] = bypassSelectorDepCache
+        ? getNodeLoadable(store, state, depKey)
+        : getCachedNodeLoadable(store, state, depKey);
 
       depValues.set(depKey, depLoadable);
 
@@ -634,10 +651,6 @@ function selector<T>(
     store: Store,
     state: TreeState,
   ): ?Loadable<T> {
-    if (state.atomValues.has(key)) {
-      return state.atomValues.get(key);
-    }
-
     const depsAfterCacheDone = new Set();
 
     const executionInfo = getExecutionInfo(store);
