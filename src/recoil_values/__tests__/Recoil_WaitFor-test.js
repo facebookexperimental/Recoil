@@ -21,6 +21,7 @@ const {
 let getRecoilValueAsLoadable,
   noWait,
   waitForAll,
+  waitForAllSettled,
   waitForAny,
   waitForNone,
   store,
@@ -38,6 +39,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     noWait,
     waitForAll,
+    waitForAllSettled,
     waitForAny,
     waitForNone,
   } = require('../Recoil_WaitFor'));
@@ -124,10 +126,10 @@ testRecoil('noWait - reject', async () => {
 });
 
 // TRUTH TABLE
-// Dependencies        waitForNone         waitForAny        waitForAll
-// [loading, loading]  [Promise, Promise]  Promise           Promise
-// [value, loading]    [value, Promise]    [value, Promise]  Promise
-// [value, value]      [value, value]      [value, value]    [value, value]
+// Dependencies        waitForNone         waitForAny        waitForAll      waitForAllSettled
+// [loading, loading]  [Promise, Promise]  Promise           Promise         Promise
+// [value, loading]    [value, Promise]    [value, Promise]  Promise         Promise
+// [value, value]      [value, value]      [value, value]    [value, value]  [value, value]
 testRecoil('waitFor - resolve to values', async () => {
   const [depA, resolveA] = asyncSelector();
   const [depB, resolveB] = asyncSelector();
@@ -202,10 +204,10 @@ testRecoil('waitFor - resolve to values', async () => {
 });
 
 // TRUTH TABLE
-// Dependencies        waitForNone         waitForAny        waitForAll
-// [loading, loading]  [Promise, Promise]  Promise           Promise
-// [error, loading]    [Error, Promise]    [Error, Promise]  Error
-// [error, error]      [Error, Error]      [Error, Error]    Error
+// Dependencies        waitForNone         waitForAny        waitForAll    waitForAllSettled
+// [loading, loading]  [Promise, Promise]  Promise           Promise       Promise
+// [error, loading]    [Error, Promise]    [Error, Promise]  Error         Promise
+// [error, error]      [Error, Error]      [Error, Error]    Error         [Error, Error]
 testRecoil('waitFor - rejected', async () => {
   const [depA, _resolveA, rejectA] = asyncSelector();
   const [depB, _resolveB, rejectB] = asyncSelector();
@@ -239,6 +241,16 @@ testRecoil('waitFor - rejected', async () => {
     }),
   ).resolves.toEqual('failure');
 
+  expect(getState(waitForAllSettled(deps))).toEqual('loading');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  const allSettledTest0 = expect(
+    getPromise(waitForAllSettled(deps)).then(res => {
+      expect(res[0].contents).toBeInstanceOf(Error1);
+      expect(res[1].contents).toBeInstanceOf(Error2);
+      return 'success';
+    }),
+  ).resolves.toEqual('success');
+
   // depA Rejected tests
   rejectA(new Error1());
   await flushPromisesAndTimers();
@@ -255,6 +267,16 @@ testRecoil('waitFor - rejected', async () => {
 
   expect(getState(waitForAll(deps))).toEqual('hasError');
   expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
+
+  expect(getState(waitForAllSettled(deps))).toEqual('loading');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  const allSettledTest1 = expect(
+    getPromise(waitForAllSettled(deps)).then(res => {
+      expect(res[0].contents).toBeInstanceOf(Error1);
+      expect(res[1].contents).toBeInstanceOf(Error2);
+      return 'success';
+    }),
+  ).resolves.toEqual('success');
 
   // depB Rejected tests
   rejectB(new Error2());
@@ -273,15 +295,22 @@ testRecoil('waitFor - rejected', async () => {
   expect(getState(waitForAll(deps))).toEqual('hasError');
   expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
 
+  expect(getState(waitForAllSettled(deps))).toEqual('hasValue');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Array);
+  expect(getValue(waitForAllSettled(deps))[0].contents).toBeInstanceOf(Error1);
+  expect(getValue(waitForAllSettled(deps))[1].contents).toBeInstanceOf(Error2);
+
   await anyTest0;
   await allTest0;
+  await allSettledTest0;
+  await allSettledTest1;
 });
 
 // TRUTH TABLE
-// Dependencies        waitForNone         waitForAny        waitForAll
-// [loading, loading]  [Promise, Promise]  Promise           Promise
-// [value, loading]    [value, Promise]    [value, Promise]  Promise
-// [value, error]      [value, Error]      [value, Error]    Error
+// Dependencies        waitForNone         waitForAny        waitForAll    waitForAllSettled
+// [loading, loading]  [Promise, Promise]  Promise           Promise       Promise
+// [value, loading]    [value, Promise]    [value, Promise]  Promise       Promise
+// [value, error]      [value, Error]      [value, Error]    Error         [value, Error]
 testRecoil('waitFor - resolve then reject', async () => {
   const [depA, resolveA, _rejectA] = asyncSelector();
   const [depB, _resolveB, rejectB] = asyncSelector();
@@ -314,6 +343,16 @@ testRecoil('waitFor - resolve then reject', async () => {
     }),
   ).resolves.toEqual('failure');
 
+  expect(getState(waitForAllSettled(deps))).toEqual('loading');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  const allSettledTest0 = expect(
+    getPromise(waitForAllSettled(deps)).then(res => {
+      expect(res[0].contents).toEqual(1);
+      expect(res[1].contents).toBeInstanceOf(Error2);
+      return 'success';
+    }),
+  ).resolves.toEqual('success');
+
   // depA Resolves tests
   resolveA(1);
   await flushPromisesAndTimers();
@@ -334,6 +373,16 @@ testRecoil('waitFor - resolve then reject', async () => {
     Error2,
   );
 
+  expect(getState(waitForAllSettled(deps))).toEqual('loading');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  const allSettledTest1 = expect(
+    getPromise(waitForAllSettled(deps)).then(res => {
+      expect(res[0].contents).toEqual(1);
+      expect(res[1].contents).toBeInstanceOf(Error2);
+      return 'success';
+    }),
+  ).resolves.toEqual('success');
+
   // depB Rejected tests
   rejectB(new Error2());
   await flushPromisesAndTimers();
@@ -351,16 +400,23 @@ testRecoil('waitFor - resolve then reject', async () => {
   expect(getState(waitForAll(deps))).toEqual('hasError');
   expect(get(waitForAll(deps))).toBeInstanceOf(Error2);
 
+  expect(getState(waitForAllSettled(deps))).toEqual('hasValue');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Array);
+  expect(getValue(waitForAllSettled(deps))[0].contents).toEqual(1);
+  expect(getValue(waitForAllSettled(deps))[1].contents).toBeInstanceOf(Error2);
+
   await anyTest0;
   await allTest0;
   await allTest1;
+  await allSettledTest0;
+  await allSettledTest1;
 });
 
 // TRUTH TABLE
-// Dependencies        waitForNone         waitForAny        waitForAll
-// [loading, loading]  [Promise, Promise]  Promise           Promise
-// [error, loading]    [Error, Promise]    [Error, Promsie]  Error
-// [error, value]      [Error, value]      [Error, value]    Error
+// Dependencies        waitForNone         waitForAny        waitForAll    waitForAllSettled
+// [loading, loading]  [Promise, Promise]  Promise           Promise       Promise
+// [error, loading]    [Error, Promise]    [Error, Promsie]  Error         Promise
+// [error, value]      [Error, value]      [Error, value]    Error         [Error, value]
 testRecoil('waitFor - reject then resolve', async () => {
   const [depA, _resolveA, rejectA] = asyncSelector();
   const [depB, resolveB, _rejectB] = asyncSelector();
@@ -393,6 +449,16 @@ testRecoil('waitFor - reject then resolve', async () => {
     }),
   ).resolves.toEqual('failure');
 
+  expect(getState(waitForAllSettled(deps))).toEqual('loading');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  const allSettledTest0 = expect(
+    getPromise(waitForAllSettled(deps)).then(res => {
+      expect(res[0].contents).toBeInstanceOf(Error1);
+      expect(res[1].contents).toEqual(1);
+      return 'success';
+    }),
+  ).resolves.toEqual('success');
+
   // depA Rejects tests
   rejectA(new Error1());
   await flushPromisesAndTimers();
@@ -409,6 +475,16 @@ testRecoil('waitFor - reject then resolve', async () => {
 
   expect(getState(waitForAll(deps))).toEqual('hasError');
   expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
+
+  expect(getState(waitForAllSettled(deps))).toEqual('loading');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  const allSettledTest1 = expect(
+    getPromise(waitForAllSettled(deps)).then(res => {
+      expect(res[0].contents).toBeInstanceOf(Error1);
+      expect(res[1].contents).toEqual(1);
+      return 'success';
+    }),
+  ).resolves.toEqual('success');
 
   // depB Resolves tests
   resolveB(1);
@@ -427,8 +503,15 @@ testRecoil('waitFor - reject then resolve', async () => {
   expect(getState(waitForAll(deps))).toEqual('hasError');
   expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
 
+  expect(getState(waitForAllSettled(deps))).toEqual('hasValue');
+  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Array);
+  expect(getValue(waitForAllSettled(deps))[0].contents).toBeInstanceOf(Error1);
+  expect(getValue(waitForAllSettled(deps))[1].contents).toEqual(1);
+
   await anyTest0;
   await allTest0;
+  await allSettledTest0;
+  await allSettledTest1;
 });
 
 // Similar as the first test that resolves both dependencies, but with named dependencies.

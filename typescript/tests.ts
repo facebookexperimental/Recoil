@@ -16,7 +16,7 @@ import {
   useRecoilTransactionObserver_UNSTABLE, useRecoilValue,
   useRecoilValueLoadable,
   useResetRecoilState, useSetRecoilState,
-  waitForAll, waitForAny, waitForNone
+  waitForAll, waitForAllSettled, waitForAny, waitForNone
 } from 'recoil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -372,6 +372,23 @@ isRecoilValue(mySelector1);
 
   useRecoilValue(mySel2).a; // $ExpectType number
   useRecoilValue(mySel2).b; // $ExpectType string
+}
+
+/**
+ * waitForAllSettled() tests
+ */
+{
+  const numSel: RecoilValueReadOnly<number> = {} as any;
+  const strSel: RecoilValueReadOnly<string> = {} as any;
+
+  const mySel = waitForAllSettled([numSel, strSel]);
+  const mySel2 = waitForAllSettled({ a: numSel, b: strSel });
+
+  useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
+  useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
+
+  useRecoilValue(mySel2).a; // $ExpectType Loadable<number>
+  useRecoilValue(mySel2).b; // $ExpectType Loadable<string>
 }
 
 /**

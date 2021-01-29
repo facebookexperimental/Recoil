@@ -71,6 +71,7 @@ const selectorFamily = require('./recoil_values/Recoil_selectorFamily');
 const {
   noWait,
   waitForAll,
+  waitForAllSettled,
   waitForAny,
   waitForNone,
 } = require('./recoil_values/Recoil_WaitFor');
@@ -122,6 +123,7 @@ module.exports = {
   waitForNone,
   waitForAny,
   waitForAll,
+  waitForAllSettled,
 
   // Other functions
   isRecoilValue,
