@@ -14,7 +14,7 @@ const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-let React, store, atom, nullthrows, useEffect, useState, Profiler, act, useRecoilCallback, useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useResetRecoilState, constSelector, errorSelector, getRecoilValueAsLoadable, setRecoilValue, selector, asyncSelector, ReadsAtom, renderElements, resolvingAsyncSelector, flushPromisesAndTimers, DefaultValue, mutableSourceExists, freshSnapshot;
+let React, store, atom, nullthrows, useEffect, useState, Profiler, noWait, act, useRecoilCallback, useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useResetRecoilState, constSelector, errorSelector, getRecoilValueAsLoadable, setRecoilValue, selector, asyncSelector, ReadsAtom, renderElements, resolvingAsyncSelector, flushPromisesAndTimers, DefaultValue, mutableSourceExists, freshSnapshot;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
@@ -57,6 +57,9 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers
   } = require('../../testing/Recoil_TestingUtils'));
   ({
+    noWait
+  } = require('../Recoil_WaitFor'));
+  ({
     DefaultValue
   } = require('../../core/Recoil_Node'));
   ({
@@ -64,8 +67,9 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('../../util/Recoil_mutableSource'));
   store = makeStore();
 });
+declare function getLoadable(recoilValue: any): any;
 declare function get(recoilValue: any): any;
-declare function getError(recoilValue: any): any;
+declare function getError(recoilValue: any): Error;
 declare function set(recoilState: any, value: any): any;
 declare function reset(recoilState: any): any;
 testRecoil('useRecoilState - static selector', () => {
@@ -175,6 +179,29 @@ testRecoil('selector - catching exceptions', () => {
   });
   expect(get(catchingSelector)).toEqual('CAUGHT');
 });
+testRecoil('selector - catching exception (non Error)', () => {
+  const throwingSel = selector({
+    key: '__error/non Error thrown',
+    get: () => {
+      // eslint-disable-next-line no-throw-literal
+      throw 'MY ERROR';
+    }
+  });
+  const catchingSelector = selector({
+    key: 'selector/catching selector',
+    get: ({
+      get
+    }) => {
+      try {
+        return get(throwingSel);
+      } catch (e) {
+        expect(e).toBe('MY ERROR');
+        return 'CAUGHT';
+      }
+    }
+  });
+  expect(get(catchingSelector)).toEqual('CAUGHT');
+});
 testRecoil('selector - catching loads', () => {
   const loadingSel = resolvingAsyncSelector('READY');
   expect(get(loadingSel) instanceof Promise).toBe(true);
@@ -216,6 +243,32 @@ testRecoil('useRecoilState - selector catching exceptions', () => {
       } catch (e) {
         expect(e instanceof Error).toBe(true);
         expect(e.message).toContain('MY ERROR');
+        return 'CAUGHT';
+      }
+    }
+  });
+  const c2 = renderElements(<ReadsAtom atom={catchingSelector} />);
+  expect(c2.textContent).toEqual('"CAUGHT"');
+});
+testRecoil('useRecoilState - selector catching exceptions (non Errors)', () => {
+  const throwingSel = selector({
+    key: '__error/non Error thrown',
+    get: () => {
+      // eslint-disable-next-line no-throw-literal
+      throw 'MY ERROR';
+    }
+  });
+  const c1 = renderElements(<ReadsAtom atom={throwingSel} />);
+  expect(c1.textContent).toEqual('error');
+  const catchingSelector = selector({
+    key: 'useRecoilState/catching selector',
+    get: ({
+      get
+    }) => {
+      try {
+        return get(throwingSel);
+      } catch (e) {
+        expect(e).toBe('MY ERROR');
         return 'CAUGHT';
       }
     }
@@ -978,4 +1031,72 @@ testRecoil('async set not supported', async () => {
   expect(setSnapshot.getLoadable(mySelector2).contents).toEqual('DEFAULT');
   await expect(setAttempt).rejects.toThrowError();
   await expect(resetAttempt).rejects.toThrowError();
+});
+testRecoil('selectors with user-thrown loadable promises execute to completion as expected', async () => {
+  const [asyncDep, resolveAsyncDep] = asyncSelector<string, void>();
+  const selWithUserThrownPromise = selector({
+    key: 'selWithUserThrownPromise',
+    get: ({
+      get
+    }) => {
+      const loadable = get(noWait(asyncDep));
+
+      if (loadable.state === 'loading') {
+        throw loadable.toPromise();
+      }
+
+      return loadable.valueOrThrow();
+    }
+  });
+  const loadable = getLoadable(selWithUserThrownPromise);
+  const promise = loadable.toPromise();
+  expect(loadable.state).toBe('loading');
+  resolveAsyncDep('RESOLVED');
+  await flushPromisesAndTimers();
+  const val = await promise;
+  expect(val).toBe('RESOLVED');
+});
+testRecoil('selectors with user-thrown loadable promises execute to completion as expected', async gks => {
+  if (!gks.includes('recoil_async_selector_refactor')) {
+    return;
+  }
+
+  const myAtomA = atom({
+    key: 'myatoma selectors user-thrown promise',
+    default: 'A'
+  });
+  const myAtomB = atom({
+    key: 'myatomb selectors user-thrown promise',
+    default: 'B'
+  });
+  let isResolved = false;
+  declare var resolve: () => any;
+  const myPromise = new Promise(localResolve => {
+    resolve = () => {
+      isResolved = true;
+      localResolve();
+    };
+  });
+  const selWithUserThrownPromise = selector({
+    key: 'selWithUserThrownPromise',
+    get: ({
+      get
+    }) => {
+      const a = get(myAtomA);
+
+      if (!isResolved) {
+        throw myPromise;
+      }
+
+      const b = get(myAtomB);
+      return `${a}${b}`;
+    }
+  });
+  const loadable = getLoadable(selWithUserThrownPromise);
+  const promise = loadable.toPromise();
+  expect(loadable.state).toBe('loading');
+  resolve();
+  await flushPromisesAndTimers();
+  const val = await promise;
+  expect(val).toBe('AB');
 });

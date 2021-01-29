@@ -26,7 +26,7 @@ const testRecoil = getRecoilTestFn(() => {
   errorSelector = require('../Recoil_errorSelector');
   store = makeStore();
 });
-declare function getError(recoilValue: any): any;
+declare function getError(recoilValue: any): Error;
 testRecoil('errorSelector - string', () => {
   const mySelector = errorSelector('My Error');
   expect(getError(mySelector).message).toEqual(expect.stringContaining('My Error'));

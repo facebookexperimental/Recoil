@@ -45,7 +45,7 @@ test('Link - snapshot', async () => {
   const c = renderElements(<>
       <ReadsAndWritesAtom />
       <LinkToSnapshot snapshot={snapshot}>
-        LINK-{snapshot.getLoadable(myAtom).contents.toString()}
+        LINK-{snapshot.getLoadable(myAtom).valueOrThrow().toString()}
       </LinkToSnapshot>
     </>);
   expect(c.textContent).toEqual('"DEFAULT"LINK-MAP');

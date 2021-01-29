@@ -4983,7 +4983,8 @@
 
     valueOrThrow() {
       if (this.state !== 'hasValue') {
-        throw new Error(`Loadable expected value, but in "${this.state}" state`);
+        const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+        throw error;
       }
 
       return this.contents;
@@ -4995,7 +4996,8 @@
 
     errorOrThrow() {
       if (this.state !== 'hasError') {
-        throw new Error(`Loadable expected error, but in "${this.state}" state`);
+        const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+        throw error;
       }
 
       return this.contents;
@@ -5009,7 +5011,8 @@
 
     promiseOrThrow() {
       if (this.state !== 'loading') {
-        throw new Error(`Loadable expected promise, but in "${this.state}" state`);
+        const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+        throw error;
       }
 
       return Recoil_gkx_1('recoil_async_selector_refactor') ? this.contents.then(({
@@ -5053,7 +5056,8 @@
         }));
       }
 
-      throw new Error('Invalid Loadable state');
+      const error = new Error('Invalid Loadable state'); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+      throw error;
     }
 
   };
@@ -5986,7 +5990,14 @@
         const {
           __key: resolvedDepKey,
           __value: depValue
-        } = resolvedDep;
+        } = resolvedDep !== null && resolvedDep !== void 0 ? resolvedDep : {};
+        /**
+         * We need to bypass the selector dep cache if the resolved dep was a
+         * user-thrown promise because the selector dep cache will contain the
+         * stale values of dependencies, causing an infinite evaluation loop.
+         */
+
+        let bypassSelectorDepCacheOnReevaluation = true;
 
         if (resolvedDepKey != null) {
           /**
@@ -5997,9 +6008,15 @@
            * in Recoil_atom.js)
            */
           state.atomValues.set(resolvedDepKey, loadableWithValue$1(depValue));
+          /**
+           * We've added the resolved dependency to the selector dep cache, so
+           * there's no need to bypass the cache
+           */
+
+          bypassSelectorDepCacheOnReevaluation = false;
         }
 
-        const [loadable, depValues] = evaluateSelectorGetter(store, state, executionId);
+        const [loadable, depValues] = evaluateSelectorGetter(store, state, executionId, bypassSelectorDepCacheOnReevaluation);
 
         if (isLatestExecution(store, executionId)) {
           updateExecutionInfoDepValues(depValues, store, executionId);
@@ -6067,10 +6084,11 @@
       setDepsInStore(store, state, deps, executionId);
     }
 
-    function evaluateSelectorGetter(store, state, executionId) {
+    function evaluateSelectorGetter(store, state, executionId, bypassSelectorDepCache = false) {
       const endPerfBlock = startPerfBlock$1(key); // TODO T63965866: use execution ID here
 
       let result;
+      let resultIsError = false;
       let loadable;
       const depValues = new Map();
       /**
@@ -6092,7 +6110,7 @@
           key: depKey
         } = recoilValue;
         setNewDepInStore(store, state, deps, depKey, executionId);
-        const [, depLoadable] = getCachedNodeLoadable(store, state, depKey);
+        const [, depLoadable] = bypassSelectorDepCache ? getNodeLoadable$2(store, state, depKey) : getCachedNodeLoadable(store, state, depKey);
         depValues.set(depKey, depLoadable);
 
         if (depLoadable.state === 'hasValue') {
@@ -6119,11 +6137,12 @@
         if (Recoil_isPromise(result)) {
           result = wrapPendingDependencyPromise(store, result, state, depValues, executionId).finally(endPerfBlock);
         } else {
+          resultIsError = true;
           endPerfBlock();
         }
       }
 
-      if (result instanceof Error) {
+      if (resultIsError) {
         loadable = loadableWithError$1(result);
       } else if (Recoil_isPromise(result)) {
         loadable = loadableWithPromise$1(result);
@@ -6136,10 +6155,6 @@
     }
 
     function getValFromCacheAndUpdatedDownstreamDeps(store, state) {
-      if (state.atomValues.has(key)) {
-        return state.atomValues.get(key);
-      }
-
       const depsAfterCacheDone = new Set();
       const executionInfo = getExecutionInfo(store);
       const cachedVal = cache.get(nodeKey => {
@@ -7580,8 +7595,8 @@
   //  [value, loading]    [value, Promise]    [value, Promise]  Promise
   //  [value, value]      [value, value]      [value, value]    [value, value]
   //
-  //  [error, loading]    [Error, Promise]    Promise           Error
-  //  [error, error]      [Error, Error]      Error             Error
+  //  [error, loading]    [Error, Promise]    [Error, Promise]  Error
+  //  [error, error]      [Error, Error]      [Error, Error]    Error
   //  [value, error]      [value, Error]      [value, Error]    Error
   // Issue parallel requests for all dependencies and return the current
   // status if they have results, have some error, or are still pending.
@@ -7668,41 +7683,32 @@
       // Issue requests for all dependencies in parallel.
       // Exceptions can either be Promises of pending results or real errors
       const deps = unwrapDependencies(dependencies);
-      const [results, exceptions] = concurrentRequests(get, deps); // If any results are available, return the current status
+      const [results, exceptions] = concurrentRequests(get, deps); // If any results are available, value or error, return the current status
 
-      if (exceptions.some(exp => exp == null)) {
+      if (exceptions.some(exp => !Recoil_isPromise(exp))) {
         return wrapLoadables(dependencies, results, exceptions);
-      } // Since we are waiting for any results, only throw an error if all
-      // dependencies have an error.  Then, throw the first one.
-
-
-      if (exceptions.every(isError)) {
-        throw exceptions.find(isError);
       }
 
       if (Recoil_gkx_1('recoil_async_selector_refactor')) {
         // Otherwise, return a promise that will resolve when the next result is
         // available, whichever one happens to be next.  But, if all pending
         // dependencies end up with errors, then reject the promise.
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
           for (const [i, exp] of exceptions.entries()) {
             if (Recoil_isPromise(exp)) {
               exp.then(result => {
                 results[i] = getValueFromLoadablePromiseResult(result);
-                exceptions[i] = null;
+                exceptions[i] = undefined;
                 resolve(wrapLoadables(dependencies, results, exceptions));
               }).catch(error => {
                 exceptions[i] = error;
-
-                if (exceptions.every(isError)) {
-                  reject(exceptions[0]);
-                }
+                resolve(wrapLoadables(dependencies, results, exceptions));
               });
             }
           }
         });
       } else {
-        throw new Promise((resolve, reject) => {
+        throw new Promise(resolve => {
           for (const [i, exp] of exceptions.entries()) {
             if (Recoil_isPromise(exp)) {
               exp.then(result => {
@@ -7711,10 +7717,7 @@
                 resolve(wrapLoadables(dependencies, results, exceptions));
               }).catch(error => {
                 exceptions[i] = error;
-
-                if (exceptions.every(isError)) {
-                  reject(exceptions[0]);
-                }
+                resolve(wrapLoadables(dependencies, results, exceptions));
               });
             }
           }

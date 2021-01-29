@@ -41,8 +41,8 @@ type Accessors<T> = $ReadOnly<{
   // Convenience accessors
   valueMaybe: () => T | void,
   valueOrThrow: () => T,
-  errorMaybe: () => Error | void,
-  errorOrThrow: () => Error,
+  errorMaybe: () => mixed | void,
+  errorOrThrow: () => mixed,
   promiseMaybe: () => Promise<T> | void,
   promiseOrThrow: () => Promise<T>,
   is: (Loadable<mixed>) => boolean,
@@ -54,7 +54,7 @@ export type Loadable<+T> = $ReadOnly<{
   ...Accessors<T>,
 }> | $ReadOnly<{
   state: 'hasError',
-  contents: Error,
+  contents: mixed,
   ...Accessors<T>,
 }> | $ReadOnly<{
   state: 'loading',
@@ -93,7 +93,10 @@ const loadableAccessors = {
 
   valueOrThrow() {
     if (this.state !== 'hasValue') {
-      throw new Error(`Loadable expected value, but in "${this.state}" state`);
+      const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+
+      error.stack;
+      throw error;
     }
 
     return this.contents;
@@ -105,7 +108,10 @@ const loadableAccessors = {
 
   errorOrThrow() {
     if (this.state !== 'hasError') {
-      throw new Error(`Loadable expected error, but in "${this.state}" state`);
+      const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+
+      error.stack;
+      throw error;
     }
 
     return this.contents;
@@ -119,7 +125,10 @@ const loadableAccessors = {
 
   promiseOrThrow(): Promise<$FlowFixMe> {
     if (this.state !== 'loading') {
-      throw new Error(`Loadable expected promise, but in "${this.state}" state`);
+      const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+
+      error.stack;
+      throw error;
     }
 
     return gkx('recoil_async_selector_refactor') ? (this.contents: Promise<$FlowFixMe>).then(({
@@ -163,12 +172,15 @@ const loadableAccessors = {
       }));
     }
 
-    throw new Error('Invalid Loadable state');
+    const error = new Error('Invalid Loadable state'); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+
+    error.stack;
+    throw error;
   }
 
 };
 declare function loadableWithValue<T>(value: T): Loadable<T>;
-declare function loadableWithError<T>(error: Error): Loadable<T>;
+declare function loadableWithError<T>(error: mixed): Loadable<T>;
 declare function loadableWithPromise<T>(promise: LoadablePromise<T>): Loadable<T>;
 declare function loadableLoading<T>(): Loadable<T>;
 declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
