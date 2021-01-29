@@ -232,7 +232,6 @@ function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
     ? loadableWithValue(inputs.map(i => i.contents))
     : inputs.some(i => i.state === 'hasError')
     ? loadableWithError(
-        // $FlowIssue[incompatible-call] #44070740 Array.find should refine parameter
         nullthrows(
           inputs.find(i => i.state === 'hasError'),
           'Invalid loadable passed to loadableAll',
