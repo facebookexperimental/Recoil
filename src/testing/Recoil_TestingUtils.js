@@ -275,9 +275,7 @@ const WWW_GKS_TO_TEST = [
  * GK combinations to exclude in OSS, presumably because these combinations pass
  * in FB internally but not in OSS. Ideally this array would be empty.
  */
-const OSS_GK_COMBINATION_EXCLUSIONS = [
-  ['recoil_async_selector_refactor', 'recoil_memory_managament_2020'], // FIXME
-];
+const OSS_GK_COMBINATION_EXCLUSIONS = [];
 
 // eslint-disable-next-line no-unused-vars
 const OSS_GKS_TO_TEST = WWW_GKS_TO_TEST.filter(
