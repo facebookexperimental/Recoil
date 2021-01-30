@@ -62,9 +62,9 @@ module.exports = {
           'api-reference/utils/constSelector',
           'api-reference/utils/errorSelector',
           'api-reference/utils/waitForAll',
+          'api-reference/utils/noWait',
           'api-reference/utils/waitForNone',
           'api-reference/utils/waitForAny',
-          'api-reference/utils/noWait',
         ],
         Snapshots: [
           'api-reference/core/Snapshot',
