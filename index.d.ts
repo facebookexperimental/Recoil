@@ -360,6 +360,14 @@ export function waitForAll<RecoilValues extends { [key: string]: RecoilValue<any
   param: RecoilValues,
 ): RecoilValueReadOnly<UnwrapRecoilValues<RecoilValues>>;
 
+export function waitForAllSettled<RecoilValues extends Array<RecoilValue<any>> | [RecoilValue<any>]>(
+  param: RecoilValues,
+): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+
+export function waitForAllSettled<RecoilValues extends { [key: string]: RecoilValue<any> }>(
+  param: RecoilValues,
+): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function snapshot_UNSTABLE(initializeState?: (shapshot: MutableSnapshot) => void): Snapshot;

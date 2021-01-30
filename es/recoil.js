@@ -5086,8 +5086,7 @@ function loadableLoading() {
 }
 
 function loadableAll(inputs) {
-  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError( // $FlowIssue[incompatible-call] #44070740 Array.find should refine parameter
-  Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Recoil_gkx_1('recoil_async_selector_refactor') ? Promise.all(inputs.map(i => i.contents)).then(value => ({
+  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Recoil_gkx_1('recoil_async_selector_refactor') ? Promise.all(inputs.map(i => i.contents)).then(value => ({
     __value: value
   })) : Promise.all(inputs.map(i => i.contents)));
 }
@@ -7586,14 +7585,14 @@ const {
  /////////////////
 //  TRUTH TABLE
 /////////////////
-// Dependencies        waitForNone         waitForAny        waitForAll
-//  [loading, loading]  [Promise, Promise]  Promise           Promise
-//  [value, loading]    [value, Promise]    [value, Promise]  Promise
-//  [value, value]      [value, value]      [value, value]    [value, value]
+// Dependencies        waitForNone         waitForAny        waitForAll       waitForAllSettled
+//  [loading, loading]  [Promise, Promise]  Promise           Promise         Promise
+//  [value, loading]    [value, Promise]    [value, Promise]  Promise         Promise
+//  [value, value]      [value, value]      [value, value]    [value, value]  [value, value]
 //
-//  [error, loading]    [Error, Promise]    [Error, Promise]  Error
-//  [error, error]      [Error, Error]      [Error, Error]    Error
-//  [value, error]      [value, Error]      [value, Error]    Error
+//  [error, loading]    [Error, Promise]    [Error, Promise]  Error           Promise
+//  [error, error]      [Error, Error]      [Error, Error]    Error           [error, error]
+//  [value, error]      [value, Error]      [value, Error]    Error           [value, error]
 // Issue parallel requests for all dependencies and return the current
 // status if they have results, have some error, or are still pending.
 
@@ -7752,6 +7751,42 @@ const waitForAll = Recoil_selectorFamily({
     }
   }
 });
+const waitForAllSettled = Recoil_selectorFamily({
+  key: '__waitForAllSettled',
+  get: dependencies => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    // Exceptions can either be Promises of pending results or real errors
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // If all results are available, return the results
+
+    if (exceptions.every(exp => !Recoil_isPromise(exp))) {
+      return wrapLoadables(dependencies, results, exceptions);
+    } // Wait for all results to settle
+
+
+    if (Recoil_gkx_1('recoil_async_selector_refactor')) {
+      return Promise.all(exceptions.map((exp, i) => Recoil_isPromise(exp) ? exp.then(result => {
+        results[i] = getValueFromLoadablePromiseResult(result);
+        exceptions[i] = undefined;
+      }).catch(error => {
+        results[i] = undefined;
+        exceptions[i] = error;
+      }) : null)) // Then wrap them as loadables
+      .then(() => wrapLoadables(dependencies, results, exceptions));
+    } else {
+      throw Promise.all(exceptions.map((exp, i) => Recoil_isPromise(exp) ? exp.then(result => {
+        results[i] = getValueFromLoadablePromiseResult(result);
+        exceptions[i] = undefined;
+      }).catch(error => {
+        results[i] = undefined;
+        exceptions[i] = error;
+      }) : null)) // Then wrap them as loadables
+      .then(() => wrapLoadables(dependencies, results, exceptions));
+    }
+  }
+});
 const noWait = Recoil_selectorFamily({
   key: '__noWait',
   get: dependency => ({
@@ -7768,6 +7803,7 @@ var Recoil_WaitFor = {
   waitForNone,
   waitForAny,
   waitForAll,
+  waitForAllSettled,
   noWait
 };
 
@@ -7833,6 +7869,7 @@ const {
 const {
   noWait: noWait$1,
   waitForAll: waitForAll$1,
+  waitForAllSettled: waitForAllSettled$1,
   waitForAny: waitForAny$1,
   waitForNone: waitForNone$1
 } = Recoil_WaitFor;
@@ -7876,6 +7913,7 @@ var Recoil_index = {
   waitForNone: waitForNone$1,
   waitForAny: waitForAny$1,
   waitForAll: waitForAll$1,
+  waitForAllSettled: waitForAllSettled$1,
   // Other functions
   isRecoilValue: isRecoilValue$6,
   // Batching
@@ -7913,10 +7951,11 @@ var Recoil_index_26 = Recoil_index.noWait;
 var Recoil_index_27 = Recoil_index.waitForNone;
 var Recoil_index_28 = Recoil_index.waitForAny;
 var Recoil_index_29 = Recoil_index.waitForAll;
-var Recoil_index_30 = Recoil_index.isRecoilValue;
-var Recoil_index_31 = Recoil_index.batchUpdates;
-var Recoil_index_32 = Recoil_index.setBatcher;
-var Recoil_index_33 = Recoil_index.snapshot_UNSTABLE;
+var Recoil_index_30 = Recoil_index.waitForAllSettled;
+var Recoil_index_31 = Recoil_index.isRecoilValue;
+var Recoil_index_32 = Recoil_index.batchUpdates;
+var Recoil_index_33 = Recoil_index.setBatcher;
+var Recoil_index_34 = Recoil_index.snapshot_UNSTABLE;
 
 export default Recoil_index;
-export { Recoil_index_1 as DefaultValue, Recoil_index_2 as RecoilRoot, Recoil_index_4 as atom, Recoil_index_7 as atomFamily, Recoil_index_31 as batchUpdates, Recoil_index_9 as constSelector, Recoil_index_10 as errorSelector, Recoil_index_30 as isRecoilValue, Recoil_index_26 as noWait, Recoil_index_11 as readOnlySelector, Recoil_index_6 as retentionZone, Recoil_index_5 as selector, Recoil_index_8 as selectorFamily, Recoil_index_32 as setBatcher, Recoil_index_33 as snapshot_UNSTABLE, Recoil_index_18 as useGetRecoilValueInfo_UNSTABLE, Recoil_index_21 as useGotoRecoilSnapshot, Recoil_index_3 as useRecoilBridgeAcrossReactRoots_UNSTABLE, Recoil_index_20 as useRecoilCallback, Recoil_index_22 as useRecoilSnapshot, Recoil_index_14 as useRecoilState, Recoil_index_15 as useRecoilStateLoadable, Recoil_index_23 as useRecoilTransactionObserver_UNSTABLE, Recoil_index_12 as useRecoilValue, Recoil_index_13 as useRecoilValueLoadable, Recoil_index_17 as useResetRecoilState, Recoil_index_19 as useRetain, Recoil_index_16 as useSetRecoilState, Recoil_index_25 as useSetUnvalidatedAtomValues_UNSTABLE, Recoil_index_24 as useTransactionObservation_UNSTABLE, Recoil_index_29 as waitForAll, Recoil_index_28 as waitForAny, Recoil_index_27 as waitForNone };
+export { Recoil_index_1 as DefaultValue, Recoil_index_2 as RecoilRoot, Recoil_index_4 as atom, Recoil_index_7 as atomFamily, Recoil_index_32 as batchUpdates, Recoil_index_9 as constSelector, Recoil_index_10 as errorSelector, Recoil_index_31 as isRecoilValue, Recoil_index_26 as noWait, Recoil_index_11 as readOnlySelector, Recoil_index_6 as retentionZone, Recoil_index_5 as selector, Recoil_index_8 as selectorFamily, Recoil_index_33 as setBatcher, Recoil_index_34 as snapshot_UNSTABLE, Recoil_index_18 as useGetRecoilValueInfo_UNSTABLE, Recoil_index_21 as useGotoRecoilSnapshot, Recoil_index_3 as useRecoilBridgeAcrossReactRoots_UNSTABLE, Recoil_index_20 as useRecoilCallback, Recoil_index_22 as useRecoilSnapshot, Recoil_index_14 as useRecoilState, Recoil_index_15 as useRecoilStateLoadable, Recoil_index_23 as useRecoilTransactionObserver_UNSTABLE, Recoil_index_12 as useRecoilValue, Recoil_index_13 as useRecoilValueLoadable, Recoil_index_17 as useResetRecoilState, Recoil_index_19 as useRetain, Recoil_index_16 as useSetRecoilState, Recoil_index_25 as useSetUnvalidatedAtomValues_UNSTABLE, Recoil_index_24 as useTransactionObservation_UNSTABLE, Recoil_index_29 as waitForAll, Recoil_index_30 as waitForAllSettled, Recoil_index_28 as waitForAny, Recoil_index_27 as waitForNone };

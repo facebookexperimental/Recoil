@@ -26,14 +26,14 @@ const isPromise = require('../util/Recoil_isPromise');
 const selectorFamily = require('./Recoil_selectorFamily'); /////////////////
 //  TRUTH TABLE
 /////////////////
-// Dependencies        waitForNone         waitForAny        waitForAll
-//  [loading, loading]  [Promise, Promise]  Promise           Promise
-//  [value, loading]    [value, Promise]    [value, Promise]  Promise
-//  [value, value]      [value, value]      [value, value]    [value, value]
+// Dependencies        waitForNone         waitForAny        waitForAll       waitForAllSettled
+//  [loading, loading]  [Promise, Promise]  Promise           Promise         Promise
+//  [value, loading]    [value, Promise]    [value, Promise]  Promise         Promise
+//  [value, value]      [value, value]      [value, value]    [value, value]  [value, value]
 //
-//  [error, loading]    [Error, Promise]    [Error, Promise]  Error
-//  [error, error]      [Error, Error]      [Error, Error]    Error
-//  [value, error]      [value, Error]      [value, Error]    Error
+//  [error, loading]    [Error, Promise]    [Error, Promise]  Error           Promise
+//  [error, error]      [Error, Error]      [Error, Error]    Error           [error, error]
+//  [value, error]      [value, Error]      [value, Error]    Error           [value, error]
 // Issue parallel requests for all dependencies and return the current
 // status if they have results, have some error, or are still pending.
 
@@ -173,6 +173,50 @@ const waitForAll: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $R
     }
   }
 });
+const waitForAllSettled: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $ReadOnly<{
+  [string]: RecoilValueReadOnly<mixed>,
+  ...
+}>>(RecoilValues) => RecoilValueReadOnly<$ReadOnlyArray<mixed> | $ReadOnly<{
+  [string]: mixed,
+  ...
+}>> = selectorFamily({
+  key: '__waitForAllSettled',
+  get: (dependencies: $ReadOnly<{
+    [string]: RecoilValueReadOnly<mixed>
+  }> | $ReadOnlyArray<RecoilValueReadOnly<mixed>>) => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    // Exceptions can either be Promises of pending results or real errors
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // If all results are available, return the results
+
+    if (exceptions.every(exp => !isPromise(exp))) {
+      return wrapLoadables(dependencies, results, exceptions);
+    } // Wait for all results to settle
+
+
+    if (gkx('recoil_async_selector_refactor')) {
+      return Promise.all(exceptions.map((exp, i) => isPromise(exp) ? exp.then(result => {
+        results[i] = getValueFromLoadablePromiseResult(result);
+        exceptions[i] = undefined;
+      }).catch(error => {
+        results[i] = undefined;
+        exceptions[i] = error;
+      }) : null)) // Then wrap them as loadables
+      .then(() => wrapLoadables(dependencies, results, exceptions));
+    } else {
+      throw Promise.all(exceptions.map((exp, i) => isPromise(exp) ? exp.then(result => {
+        results[i] = getValueFromLoadablePromiseResult(result);
+        exceptions[i] = undefined;
+      }).catch(error => {
+        results[i] = undefined;
+        exceptions[i] = error;
+      }) : null)) // Then wrap them as loadables
+      .then(() => wrapLoadables(dependencies, results, exceptions));
+    }
+  }
+});
 const noWait: (RecoilValue<mixed>) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
   key: '__noWait',
   get: dependency => ({
@@ -189,5 +233,6 @@ module.exports = {
   waitForNone,
   waitForAny,
   waitForAll,
+  waitForAllSettled,
   noWait
 };
