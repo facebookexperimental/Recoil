@@ -269,6 +269,7 @@ const WWW_GKS_TO_TEST = [
   ['recoil_hamt_2020'],
   ['recoil_memory_managament_2020'],
   ['recoil_async_selector_refactor', 'recoil_memory_managament_2020'],
+  ['recoil_async_selector_refactor', 'recoil_hamt_2020'],
 ];
 
 /**
