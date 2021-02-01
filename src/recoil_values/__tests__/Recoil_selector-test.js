@@ -1035,6 +1035,14 @@ describe('Async selector resolution notifies all stores that read pending', () =
       const query = useRecoilValueLoadable(shouldQuery ? selectorB : selectorA);
 
       doIt = useRecoilCallback(({snapshot, set}) => () => {
+        /**
+         * this is required as we need the selector accessed below to outlive
+         * the end of this callback so that the async resolution notifies the
+         * store of the resolution and a re-render is triggered. Otherwise, the
+         * selector will be cleaned up at the end of the callback, meaning the
+         * resolution of the selector will not result in a re-render.
+         */
+        snapshot.retain();
         snapshot.getLoadable(selectorB); // cause query to be triggered in context of snapshot store
         set(switchAtom, true); // cause us to then read from the pending selector
       });
