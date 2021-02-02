@@ -101,14 +101,13 @@ type TestOptions = {
 };
 type TestFn = (string, AssertionsFn, TestOptions | void) => void;
 declare var testGKs: (reloadImports: ReloadImports, gks: Array<Array<string>>) => TestFn;
-const WWW_GKS_TO_TEST = [['recoil_async_selector_refactor'], ['recoil_suppress_rerender_in_callback'], ['recoil_async_selector_refactor', 'recoil_suppress_rerender_in_callback'], ['recoil_hamt_2020'], ['recoil_memory_managament_2020'], ['recoil_async_selector_refactor', 'recoil_memory_managament_2020']];
+const WWW_GKS_TO_TEST = [['recoil_async_selector_refactor'], ['recoil_suppress_rerender_in_callback'], ['recoil_async_selector_refactor', 'recoil_suppress_rerender_in_callback'], ['recoil_hamt_2020'], ['recoil_memory_managament_2020'], ['recoil_async_selector_refactor', 'recoil_memory_managament_2020'], ['recoil_async_selector_refactor', 'recoil_hamt_2020']];
 /**
  * GK combinations to exclude in OSS, presumably because these combinations pass
  * in FB internally but not in OSS. Ideally this array would be empty.
  */
 
-const OSS_GK_COMBINATION_EXCLUSIONS = [['recoil_async_selector_refactor', 'recoil_memory_managament_2020'] // FIXME
-]; // eslint-disable-next-line no-unused-vars
+const OSS_GK_COMBINATION_EXCLUSIONS = []; // eslint-disable-next-line no-unused-vars
 
 const OSS_GKS_TO_TEST = WWW_GKS_TO_TEST.filter(gkCombination => !OSS_GK_COMBINATION_EXCLUSIONS.some(exclusion => exclusion.every(gk => gkCombination.includes(gk))));
 declare var getRecoilTestFn: (reloadImports: ReloadImports) => TestFn;
