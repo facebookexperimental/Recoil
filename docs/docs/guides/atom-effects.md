@@ -243,18 +243,18 @@ const currentUserIDState = atom({
 
 ## Asynchronous Storage Persistence
 
-If your persisted data needs to be retrieved asynchronously, you can either use a [`Promise`](#promise) in the `setSelf()` function or create an [asynchronous](#asynchronous) function and call that.
+If your persisted data needs to be retrieved asynchronously, you can either use a [`Promise`](#promise) in the `setSelf()` function or call it [asynchronously](#asynchronous-setself).
 
-### `Promise`
+Below we will use `AsyncLocalStorage` or `localForage` as an example of an asynchronous store.
 
-By synchronously calling `setSelf()` with a `Promise` you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback while waiting for `Recoil` to load the persisted values.
+### Initialize with `Promise`
 
-`<Suspense>` will show a fallback until the `Promise` provided to `setSelf()` resolves.
+By synchronously calling `setSelf()` with a `Promise`, you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback while waiting for `Recoil` to load the persisted values.  `<Suspense>` will show a fallback until the `Promise` provided to `setSelf()` resolves.  If the atom is set to a value before the `Promise` resolves then the initialized value will be ignored.
 
 Note that if the `atoms` later are "reset", they will revert to their default value, and not the initialized value.
 
 ```jsx
-const localStorageEffect = key => ({setSelf, onSet}) => {
+const localForageEffect = key => ({setSelf, onSet}) => {
   setSelf(localForage.getItem(key).then(savedValue =>
     savedValue != null
       ? JSON.parse(savedValue)
@@ -280,13 +280,9 @@ const currentUserIDState = atom({
 ```
 
 
-### Asynchronous
+### Asynchronous setSelf()
 
-Unlike initializing to a `Promise`, the atom's default value will be used initially, so `<Suspense>` will not show a fallback unless the atom's default is a `Promise` or async selector.
-
-This approach isn't just limited to `await`, but for any `async` usage of `setSelf()`, such as `setTimeout()`.
-
-### `AsyncLocalStorage`/`localForage` example
+With this approach, you can asynchronously call `setSelf()` when the value is available.  Unlike initializing to a `Promise`, the atom's default value will be used initially, so `<Suspense>` will not show a fallback unless the atom's default is a `Promise` or async selector.  If the atom is set to a value before the `setSelf()` is called, then it will be overwritten by the `setSelf()`.  This approach isn't just limited to `await`, but for any asynchronous usage of `setSelf()`, such as `setTimeout()`.
 
 ```jsx
 const localForageEffect = key => ({setSelf, onSet}) => {
@@ -320,7 +316,7 @@ const currentUserIDState = atom({
 });
 ```
 
-### Backward Compatibility
+## Backward Compatibility
 
 What if you change the format for an atom?  Loading a page with the new format with a `localStorage` based on the old format could cause a problem.  You could build effects to handle restoring and validating the value in a type safe way:
 
