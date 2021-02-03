@@ -249,19 +249,17 @@ If your persisted data needs to be retrieved asynchronously, you can either use 
 
 By synchronously calling `setSelf()` with a `Promise` you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback while waiting for `Recoil` to load the persisted values.
 
-The `<Suspense/>` fallback will be shown until the `setSelf()` function has been called.
+`<Suspense>` will show a fallback until the `Promise` provided to `setSelf()` resolves.
 
 Note that if the `atoms` later are "reset", they will revert to their default value, and not the initialized value.
 
 ```jsx
 const localStorageEffect = key => ({setSelf, onSet}) => {
-  setSelf(
-    localStorage.getItem(key).then((savedValue) => {
-      if (savedValue != null) {
-        return JSON.parse(savedValue);
-      }
-    }),
-  );
+  setSelf(localForage.getItem(key).then(savedValue =>
+    savedValue != null
+      ? JSON.parse(savedValue)
+      : new DefaultValue() // Abort initialization if no value was stored
+  ));
 
   onSet(newValue => {
     if (newValue instanceof DefaultValue) {
@@ -284,9 +282,7 @@ const currentUserIDState = atom({
 
 ### Asynchronous
 
-Using an asynchronous function your `atoms`, `selectors` etc, will use their default value until the deferred `setSelf()` has been called to set the value.
-
-Unlike using a `Promise`, it is not possible to use `<Suspense/>` to show a fallback.
+Unlike initializing to a `Promise`, the atom's default value will be used initially, so `<Suspense>` will not show a fallback unless the atom's default is a `Promise` or async selector.
 
 This approach isn't just limited to `await`, but for any `async` usage of `setSelf()`, such as `setTimeout()`.
 
@@ -304,7 +300,7 @@ const localForageEffect = key => ({setSelf, onSet}) => {
   };
 
   // Load the persisted data
-  loadPersisted()
+  loadPersisted();
 
   onSet(newValue => {
     if (newValue instanceof DefaultValue) {
