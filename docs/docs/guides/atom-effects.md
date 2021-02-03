@@ -243,7 +243,7 @@ const currentUserIDState = atom({
 
 ## Asynchronous Storage Persistence
 
-If your persisted data needs to be retrieved asynchronously, you can either use a [`Promise`](#promise) in the `setSelf()` function or call it [asynchronously](#asynchronous-setself).
+If your persisted data needs to be retrieved asynchronously, you can either [use a `Promise`](#initialize-with-promise) in the `setSelf()` function or call it [asynchronously](#asynchronous-setself).
 
 Below we will use `AsyncLocalStorage` or `localForage` as an example of an asynchronous store.
 
@@ -274,7 +274,7 @@ const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
   effects_UNSTABLE: [
-    localStorageEffect('current_user'),
+    localForageEffect('current_user'),
   ]
 });
 ```
