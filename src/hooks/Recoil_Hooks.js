@@ -811,7 +811,13 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       let ret = SENTINEL;
       batchUpdates(() => {
         // flowlint-next-line unclear-type:off
-        ret = (fn: any)({set, reset, snapshot, gotoSnapshot})(...args);
+        const cb = (fn: any)({set, reset, snapshot, gotoSnapshot});
+        if (typeof cb !== 'function') {
+          throw new Error(
+            'useRecoilCallback() accepts a function parameter which returns a function that matches the signature of the callback function.',
+          );
+        }
+        ret = cb(...args);
       });
       invariant(
         !(ret instanceof Sentinel),
