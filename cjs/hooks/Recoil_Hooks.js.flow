@@ -116,7 +116,7 @@ export type RecoilInterface = {
   getRecoilValue: <T>(RecoilValue<T>) => T,
   getRecoilValueLoadable: <T>(RecoilValue<T>) => Loadable<T>,
   getRecoilState: <T>(RecoilState<T>) => [T, SetterOrUpdater<T>],
-  getRecoilStateLoadable<T>(RecoilState<T>): [Loadable<T>, SetterOrUpdater<T>],
+  getRecoilStateLoadable: <T>(RecoilState<T>) => [Loadable<T>, SetterOrUpdater<T>],
   getSetRecoilState: <T>(RecoilState<T>) => SetterOrUpdater<T>,
   getResetRecoilState: <T>(RecoilState<T>) => Resetter,
 };
