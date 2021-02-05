@@ -22,21 +22,21 @@ const {
   RecoilDevToolsActions,
 } = require('../../constants/Constants');
 const EvictableList = require('../../utils/EvictableList');
-const { serialize } = require('../../utils/Serialization');
-const { debug } = require('../../utils/Logger');
+const {serialize} = require('../../utils/Serialization');
+const {debug} = require('../../utils/Logger');
 
 const DefaultCustomSerialize = (item: mixed, _: string): mixed => item;
 
 async function normalizeSnapshot(
   snapshot: ?RecoilSnapshot,
   onlyDirty: boolean,
-  props: DevToolsConnnectProps
-): Promise<{ modifiedValues: { [string]: mixed } }> {
+  props: DevToolsConnnectProps,
+): Promise<{modifiedValues: {[string]: mixed}}> {
   if (snapshot == null) {
     return {};
   }
 
-  const dirtyNodes = snapshot.getNodes_UNSTABLE({ isModified: onlyDirty });
+  const dirtyNodes = snapshot.getNodes_UNSTABLE({isModified: onlyDirty});
   const customSerialize = props.serializeFn ?? DefaultCustomSerialize;
   const modifiedValues = {};
   const subscribers = new Set();
@@ -44,7 +44,7 @@ async function normalizeSnapshot(
   // We wrap this loop into a promise to defer the execution
   // of the second (subscribers) loop, so selector
   // can settle before we check their values
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     for (const node of dirtyNodes) {
       const info = snapshot.getInfo_UNSTABLE(node);
       // We only accumulate subscribers if we are looking at only dirty nodes
@@ -55,10 +55,10 @@ async function normalizeSnapshot(
         content: serialize(
           customSerialize(info.loadable?.contents, node.key),
           props.maxDepth,
-          props.maxItems
+          props.maxItems,
         ),
         nodeType: info.type,
-        deps: Array.from(info.deps).map((n) => n.key),
+        deps: Array.from(info.deps).map(n => n.key),
       };
     }
     resolve();
@@ -71,11 +71,11 @@ async function normalizeSnapshot(
         content: serialize(
           customSerialize(info.loadable?.contents, node.key),
           props.maxDepth,
-          props.maxItems
+          props.maxItems,
         ),
         nodeType: info.type,
         isSubscriber: true,
-        deps: Array.from(info.deps).map((n) => n.key),
+        deps: Array.from(info.deps).map(n => n.key),
       };
     }
   }
@@ -97,9 +97,9 @@ const __RECOIL_DEVTOOLS_EXTENSION__ = {
   connect: (props: DevToolsConnnectProps) => {
     debug('CONNECT_PAGE', props);
     initConnection(props);
-    const { devMode, goToSnapshot, initialSnapshot } = props;
+    const {devMode, goToSnapshot, initialSnapshot} = props;
     const previousSnapshots = new EvictableList<RecoilSnapshot>(
-      props.persistenceLimit
+      props.persistenceLimit,
     );
     if (devMode && initialSnapshot != null) {
       previousSnapshots.add(initialSnapshot);
@@ -126,7 +126,7 @@ const __RECOIL_DEVTOOLS_EXTENSION__ = {
       async track(
         txID: number,
         snapshot: RecoilSnapshot,
-        _previousSnapshot: RecoilSnapshot
+        _previousSnapshot: RecoilSnapshot,
       ) {
         // if we just went to a snapshot, we don't need to record a new transaction
         if (
@@ -150,7 +150,7 @@ const __RECOIL_DEVTOOLS_EXTENSION__ = {
             txID,
             message: await normalizeSnapshot(snapshot, true, props),
           },
-          '*'
+          '*',
         );
       },
     };
@@ -161,7 +161,7 @@ async function initConnection(props: DevToolsConnnectProps) {
   const initialValues = await normalizeSnapshot(
     props.initialSnapshot,
     false,
-    props
+    props,
   );
   window.postMessage(
     {
@@ -174,7 +174,7 @@ async function initConnection(props: DevToolsConnnectProps) {
         initialValues: initialValues.modifiedValues,
       },
     },
-    '*'
+    '*',
   );
 }
 

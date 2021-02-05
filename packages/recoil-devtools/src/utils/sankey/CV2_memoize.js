@@ -50,9 +50,7 @@ function cacheKeyFromObject(object: mixed): mixed {
   }
 }
 
-export default function memoize<Arg, Result>(
-  fn: (Arg) => Result
-): (Arg) => Result {
+export default function memoize<Arg, Result>(fn: Arg => Result): Arg => Result {
   let map;
   return (arg: Arg) => {
     if (!map) {

@@ -14,7 +14,7 @@ import type {
   SupportedSerializedValueTypes,
 } from '../../../utils/Serialization';
 
-const { SerializedValueType } = require('../../../utils/Serialization');
+const {SerializedValueType} = require('../../../utils/Serialization');
 const React = require('react');
 
 const styles = {
@@ -54,7 +54,7 @@ const ItemDescriptionRenderers = {
   [SerializedValueType.symbol]: (): string => `Symbol`,
 };
 
-function ItemDescription({ content }: KeyProps): React.Node {
+function ItemDescription({content}: KeyProps): React.Node {
   if (content == null || !hasItemDescription(content)) {
     return null;
   }

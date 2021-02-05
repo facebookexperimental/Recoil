@@ -16,11 +16,11 @@ import type {
   ValuesMessageType,
 } from '../types/DevtoolsTypes';
 
-const { RecoilDevToolsActions } = require('../constants/Constants');
+const {RecoilDevToolsActions} = require('../constants/Constants');
 const Connection = require('./Connection');
-const { debug } = require('./Logger');
+const {debug} = require('./Logger');
 
-type Handler = ({ connectionId: string, ... }) => void;
+type Handler = ({connectionId: string, ...}) => void;
 
 class Store {
   connections: Map<number, Connection>;
@@ -40,7 +40,7 @@ class Store {
     initialValues?: ValuesMessageType,
     displayName: ?string,
     devMode: ?boolean,
-    port: ConnectionPort
+    port: ConnectionPort,
   ) {
     this.connections.set(
       connectionId,
@@ -50,16 +50,16 @@ class Store {
         initialValues,
         displayName,
         devMode,
-        port
-      )
+        port,
+      ),
     );
     this.connectionIndex++;
-    this.trigger(RecoilDevToolsActions.CONNECT, { connectionId });
+    this.trigger(RecoilDevToolsActions.CONNECT, {connectionId});
   }
 
   disconnect(connectionId: number): void {
     this.connections.delete(connectionId);
-    this.trigger(RecoilDevToolsActions.DISCONNECT, { connectionId });
+    this.trigger(RecoilDevToolsActions.DISCONNECT, {connectionId});
   }
 
   hasConnection(id: number): boolean {
@@ -104,12 +104,12 @@ class Store {
 
     const msgId = connection.processMessage(msg);
 
-    this.trigger(RecoilDevToolsActions.UPDATE_STORE, { connectionId, msgId });
+    this.trigger(RecoilDevToolsActions.UPDATE_STORE, {connectionId, msgId});
   }
 
   trigger(
     evt: RecoilDevToolsActionsType,
-    data: { connectionId: number, msgId?: number, ... }
+    data: {connectionId: number, msgId?: number, ...},
   ): void {
     for (const popup of this.subscriptions) {
       popup.postMessage({

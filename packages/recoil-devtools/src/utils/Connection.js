@@ -18,13 +18,13 @@ import type {
   ConnectionPort,
   ValuesMessageType,
 } from '../types/DevtoolsTypes';
-import type { SerializedValue } from './Serialization';
+import type {SerializedValue} from './Serialization';
 
-const { depsHaveChaged } = require('../utils/GraphUtils');
+const {depsHaveChaged} = require('../utils/GraphUtils');
 const EvictableList = require('./EvictableList');
 const TXHashTable = require('./TXHashtable');
 const nullthrows = require('nullthrows');
-const { RecoilDevToolsActions } = require('../constants/Constants');
+const {RecoilDevToolsActions} = require('../constants/Constants');
 
 class Connection {
   id: number;
@@ -43,7 +43,7 @@ class Connection {
     initialValues?: ?ValuesMessageType,
     displayName?: ?string,
     devMode?: ?boolean,
-    port: ConnectionPort
+    port: ConnectionPort,
   ) {
     this.id = nullthrows(id);
     this.displayName = displayName ?? 'Recoil Connection';
@@ -62,7 +62,7 @@ class Connection {
 
   initializeValues(values: ValuesMessageType) {
     this.transactions.add({
-      modifiedValues: [{ name: 'INIT', isSubscriber: false }],
+      modifiedValues: [{name: 'INIT', isSubscriber: false}],
       id: 0,
       ts: new Date(),
     });
@@ -73,7 +73,7 @@ class Connection {
     const txID = this.transactions.getNextIndex();
     if (msg.message?.modifiedValues != null) {
       this.transactions.add({
-        modifiedValues: Object.keys(msg.message.modifiedValues).map((key) => ({
+        modifiedValues: Object.keys(msg.message.modifiedValues).map(key => ({
           name: key,
           isSubscriber:
             msg.message?.modifiedValues?.[key].isSubscriber === true,
@@ -103,7 +103,7 @@ class Connection {
         {
           updateCount: (this.nodesState.get(key)?.updateCount ?? 0) + 1,
         },
-        txID
+        txID,
       );
 
       const newDeps = new Set(item?.deps ?? []);

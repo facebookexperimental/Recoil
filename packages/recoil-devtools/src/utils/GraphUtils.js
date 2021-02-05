@@ -20,7 +20,7 @@ const nullthrows = require('nullthrows');
 
 function depsHaveChaged(
   prev: ?DependenciesSetType,
-  next: DependenciesSetType
+  next: DependenciesSetType,
 ): boolean {
   if (prev == null || next == null) {
     return true;
@@ -37,7 +37,7 @@ function depsHaveChaged(
 }
 
 function createGraph(
-  deps: DependenciesSnapshotType
+  deps: DependenciesSnapshotType,
 ): {
   // TODO: define proper types
   levels: $ReadOnlyArray<$ReadOnlyArray<string>>,
@@ -78,7 +78,7 @@ function createGraph(
         const coors = [level, levels[level].length];
         nodes.set(key, coors);
         levels[level].push(key);
-        links.forEach((link) => {
+        links.forEach(link => {
           edges.push([link, coors]);
         });
         solved++;
@@ -89,16 +89,16 @@ function createGraph(
     queue = newQueue;
   } while (solved > 0 && queue.length && it < 10);
 
-  return { levels, edges };
+  return {levels, edges};
 }
 
 function flattenLevels(
-  levels: $ReadOnlyArray<$ReadOnlyArray<string>>
-): $ReadOnlyArray<{ x: number, y: number, name: string }> {
+  levels: $ReadOnlyArray<$ReadOnlyArray<string>>,
+): $ReadOnlyArray<{x: number, y: number, name: string}> {
   const result = [];
   levels.forEach((level, x) => {
     level.forEach((name, y) => {
-      result.push({ x, y, name });
+      result.push({x, y, name});
     });
   });
 
@@ -107,23 +107,23 @@ function flattenLevels(
 
 function createSankeyData(
   deps: DependenciesSnapshotType,
-  nodeWeights: NodesSnapshotType
+  nodeWeights: NodesSnapshotType,
 ): {
   nodes: string[],
-  edges: $ReadOnlyArray<{ value: number, source: string, target: string }>,
+  edges: $ReadOnlyArray<{value: number, source: string, target: string}>,
 } {
   const nodes = Object.keys(deps);
   const edges = nodes.reduce((agg, target) => {
     agg.push(
-      ...Array.from(deps[target]).map((source) => ({
+      ...Array.from(deps[target]).map(source => ({
         value: nodeWeights[source]?.updateCount ?? 1,
         source,
         target,
-      }))
+      })),
     );
     return agg;
   }, []);
-  return { nodes, edges };
+  return {nodes, edges};
 }
 
 module.exports = {

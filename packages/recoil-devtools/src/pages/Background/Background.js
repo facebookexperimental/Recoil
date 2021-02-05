@@ -14,18 +14,18 @@ import type {
   ConnectionPort,
 } from '../../types/DevtoolsTypes';
 
-const { RecoilDevToolsActions } = require('../../constants/Constants');
-const { debug, warn } = require('../../utils/Logger');
+const {RecoilDevToolsActions} = require('../../constants/Constants');
+const {debug, warn} = require('../../utils/Logger');
 const Store = require('../../utils/Store');
 
 const store = (window.store = new Store());
 
-const getConnectionId = ({ sender }: ConnectionPort): number => {
+const getConnectionId = ({sender}: ConnectionPort): number => {
   // If this is a devtool connection, there's no tab.id
   // But that ID is not required so we return 0
   return sender?.tab?.id ?? 0;
 };
-const getConnectionName = ({ name }: ConnectionPort): string => {
+const getConnectionName = ({name}: ConnectionPort): string => {
   let id = name || 'Recoil Connection';
   return id;
 };
@@ -50,7 +50,7 @@ function onConnect(port: ConnectionPort): void {
         msg.data?.initialValues,
         displayName,
         msg.data?.devMode,
-        port
+        port,
       );
       debug('CONNECT', connectionId);
       // This is only needed if we want to display a popup banner
@@ -92,4 +92,4 @@ function onConnect(port: ConnectionPort): void {
 // $FlowFixMe: add chrome types
 chrome.runtime.onConnect.addListener(onConnect);
 
-module.exports = { onConnect };
+module.exports = {onConnect};

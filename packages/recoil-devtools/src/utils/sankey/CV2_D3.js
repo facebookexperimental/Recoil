@@ -20,20 +20,20 @@ type D3Selection = any;
 // The values are either static values or a function that takes a data element
 // and returns the new value.  Values may be null to remove a style.
 export type Styles<T> = $ReadOnly<{
-  [string]: null | string | number | ((T) => string | number | null),
+  [string]: null | string | number | (T => string | number | null),
 }>;
 
 // Attributes objects use attribute names for keys.  The values are either
 // static values or a function which takes a data element and returns the value.
 // Values may be null to remove the attribute.
 export type Attributes<T> = $ReadOnly<{
-  [string]: null | string | number | ((T) => string | number | null),
+  [string]: null | string | number | (T => string | number | null),
 }>;
 
 // Events objects are similar, only use DOM event typenames for the keys
 // such as click or mouseenter.
 export type Events<T> = $ReadOnly<{
-  [string]: null | ((T) => void),
+  [string]: null | (T => void),
 }>;
 
 type Options = {
@@ -58,7 +58,7 @@ class Selection<T> {
       old: D3Selection,
       update: D3Selection,
     },
-    options: Options
+    options: Options,
   ) {
     this.all = props.all;
     this.new = props.new;
@@ -71,7 +71,7 @@ class Selection<T> {
   bind<U>(
     selector: string,
     data: $ReadOnlyArray<U>,
-    key: (U) => string | number
+    key: U => string | number,
   ): Selection<U> {
     const [tag, className] = selector.split('.');
 
@@ -107,7 +107,7 @@ class Selection<T> {
         old: oldSelector,
         update: updateSelection,
       },
-      this.options
+      this.options,
     );
   }
 
@@ -142,7 +142,7 @@ class Selection<T> {
         old: this.old.select(selector),
         update: this.update.select(selector),
       },
-      this.options
+      this.options,
     );
   }
 
@@ -159,7 +159,7 @@ class Selection<T> {
         this.update
           .transition('attrs')
           .duration(this.options.animationDurationMS),
-        attrs
+        attrs,
       );
     }
     return this;
@@ -186,13 +186,13 @@ class Selection<T> {
   }
 
   // Set the inner text of the elements in the selection.
-  text(str: string | ((T) => string)): Selection<T> {
+  text(str: string | (T => string)): Selection<T> {
     this.all.text(str);
     return this;
   }
 
   // Set the inner HTML for the elements in the selection.
-  html(str: string | ((T) => string)): Selection<T> {
+  html(str: string | (T => string)): Selection<T> {
     this.all.html(str);
     return this;
   }
@@ -207,6 +207,6 @@ export function select(el: Element, options: $Shape<Options>): Selection<void> {
       old: d3.select(),
       update: selection,
     },
-    { ...OPTION_DEFAULTS, ...options }
+    {...OPTION_DEFAULTS, ...options},
   );
 }

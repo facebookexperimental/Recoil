@@ -8,7 +8,7 @@
  * @format
  */
 'use strict';
-import type { Node } from '../../../types/DevtoolsTypes';
+import type {Node} from '../../../types/DevtoolsTypes';
 const React = require('react');
 const NodeName = require('./NodeName');
 const styles = {
@@ -28,9 +28,9 @@ type KeyProps = {
   isRoot?: ?boolean,
 };
 
-function ItemLabel({ name, node, isRoot = false }: KeyProps) {
+function ItemLabel({name, node, isRoot = false}: KeyProps) {
   return (
-    <span style={{ ...styles.label, ...(isRoot ? styles.isRoot : {}) }}>
+    <span style={{...styles.label, ...(isRoot ? styles.isRoot : {})}}>
       <NodeName name={name} node={node} />:
     </span>
   );

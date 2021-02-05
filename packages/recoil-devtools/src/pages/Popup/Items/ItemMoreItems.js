@@ -9,9 +9,9 @@
  */
 'use strict';
 
-import type { SerializedValue } from '../../../utils/Serialization';
+import type {SerializedValue} from '../../../utils/Serialization';
 
-const { SerializedValueType } = require('../../../utils/Serialization');
+const {SerializedValueType} = require('../../../utils/Serialization');
 const React = require('react');
 
 const styles = {
@@ -37,7 +37,7 @@ const Renderers = {
     `... ${value} more items`,
 };
 
-function ItemMoreItems({ content }: KeyProps): React.Node {
+function ItemMoreItems({content}: KeyProps): React.Node {
   if (
     content == null ||
     !Renderers.hasOwnProperty(content?.t) ||

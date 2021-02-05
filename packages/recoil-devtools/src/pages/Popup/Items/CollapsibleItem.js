@@ -10,7 +10,7 @@
 'use strict';
 
 const React = require('react');
-const { useState } = require('react');
+const {useState} = require('react');
 
 const styles = {
   holder: {
@@ -87,15 +87,13 @@ function CollapsibleItem({
         ...(isHovered ? styles.hovered : {}),
       }}
       onMouseEnter={isRoot ? () => setIsHovered(true) : noop}
-      onMouseLeave={isRoot ? () => setIsHovered(false) : noop}
-    >
+      onMouseLeave={isRoot ? () => setIsHovered(false) : noop}>
       <div
         style={{
           ...styles.labelHolder,
           ...(isRoot ? styles.labelRoot : {}),
           ...(isHovered ? styles.labelHovered : {}),
-        }}
-      >
+        }}>
         <span style={styles.selectorHolder}>
           {collapsible && (
             <span

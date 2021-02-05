@@ -10,12 +10,12 @@
 'use strict';
 
 import type Store from '../utils/Store';
-import type { SerializedValue } from '../utils/Serialization';
+import type {SerializedValue} from '../utils/Serialization';
 
 const RecoilDevToolsActions = require('../constants/Constants');
 
 // TODO: import snapshot type from recoil
-export type RecoilSnapshot = { [string]: any };
+export type RecoilSnapshot = {[string]: any};
 
 export type SnapshotType = {
   [string]: SerializedValue,
@@ -33,8 +33,8 @@ export type TransactionType = {
 };
 
 export type DependenciesSetType = Set<string>;
-export type DependenciesSnapshotType = { [string]: DependenciesSetType };
-export type NodesSnapshotType = { [string]: NodeState };
+export type DependenciesSnapshotType = {[string]: DependenciesSetType};
+export type NodesSnapshotType = {[string]: NodeState};
 
 export type BackgroundPage = {
   store: Store,
@@ -52,7 +52,7 @@ export type DevToolsOptions = $ReadOnly<{
 
 export type DevToolsConnnectProps = $ReadOnly<{
   ...DevToolsOptions,
-  goToSnapshot: (mixed) => void,
+  goToSnapshot: mixed => void,
 }>;
 
 export type RecoilDevToolsActionsType = $Values<typeof RecoilDevToolsActions>;

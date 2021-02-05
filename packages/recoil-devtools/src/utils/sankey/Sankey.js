@@ -9,31 +9,31 @@
  */
 'use strict';
 
-import type { Events, Styles } from './CV2_D3';
-import type { Graph, Key, Link, Node } from './SankeyGraph';
+import type {Events, Styles} from './CV2_D3';
+import type {Graph, Key, Link, Node} from './SankeyGraph';
 
-const { select } = require('./CV2_D3');
-const { generateGraph } = require('./SankeyGraph');
+const {select} = require('./CV2_D3');
+const {generateGraph} = require('./SankeyGraph');
 const React = require('react');
-const { useLayoutEffect, useMemo, useRef } = require('react');
+const {useLayoutEffect, useMemo, useRef} = require('react');
 
 const d3Interpolate = require('d3-interpolate');
 const d3Scale = require('d3-scale');
 
 export type LinkData<L> = $ReadOnly<{
   data: $ReadOnlyArray<L>,
-  getLinkValue: (L) => number,
-  getLinkSourceKey: (L) => ?Key,
-  getLinkTargetKey: (L) => ?Key,
+  getLinkValue: L => number,
+  getLinkSourceKey: L => ?Key,
+  getLinkTargetKey: L => ?Key,
 }>;
 
 // Optional to provide node data if you would like to set node values other
 // that that derived from incoming and outgoing links or use names distinct from keys, etc.
 export type NodeData<N> = $ReadOnly<{
   data: $ReadOnlyArray<N>,
-  getNodeKey: (N) => Key,
-  getNodeName: (N) => string,
-  getNodeValue?: (N) => number, // If not provided, node value is based on max of incoming or outgoing links
+  getNodeKey: N => Key,
+  getNodeName: N => string,
+  getNodeValue?: N => number, // If not provided, node value is based on max of incoming or outgoing links
 }>;
 
 type Layout = $ReadOnly<{
@@ -76,7 +76,7 @@ type Props<N, L> = $ReadOnly<{
   // Threshold of link width to thickness when to switch between link path rendering approaches
   // using a spline with width for thin lines vs a filled in path for thick lines
   linkThickPathThreshold?: number,
-  valueFormatter?: (number) => string, // Formatter for values in default tooltips
+  valueFormatter?: number => string, // Formatter for values in default tooltips
   animationDurationMS?: number, // Animation duration in ms
   // Optional SVG defs to use for filters and other styling
   defs?: React.Node,
@@ -124,7 +124,7 @@ function Sankey<N, L>({
   // Chart Size
   const positionRange = useMemo(
     () => [0, (orientation === 'horizontal' ? height : width) - margin * 2],
-    [orientation, height, width, margin]
+    [orientation, height, width, margin],
   );
   const depthRange = useMemo(
     () => [
@@ -133,11 +133,11 @@ function Sankey<N, L>({
         nodeThickness -
         margin * 2,
     ],
-    [orientation, height, width, margin, nodeThickness]
+    [orientation, height, width, margin, nodeThickness],
   );
 
   // Generate Graph
-  const graph = useMemo(() => generateGraph({ nodeData, linkData }), [
+  const graph = useMemo(() => generateGraph({nodeData, linkData}), [
     nodeData,
     linkData,
   ]);
@@ -150,7 +150,7 @@ function Sankey<N, L>({
         positionRange,
         depthRange,
       }),
-    [depthRange, graph, layoutFunction, positionRange]
+    [depthRange, graph, layoutFunction, positionRange],
   );
 
   // Render Sankey via D3
@@ -169,24 +169,24 @@ function Sankey<N, L>({
     if (ref.current == null) {
       return;
     }
-    const svg = select(ref.current, { animationDurationMS });
+    const svg = select(ref.current, {animationDurationMS});
 
     // Bind Data
     const linksSelection = svg.select('g.links').bind(
       'g.link',
-      layout.graph.links.filter((l) => l.visible),
-      (l) => l.key
+      layout.graph.links.filter(l => l.visible),
+      l => l.key,
     );
     const nodesSelection = svg.select('g.nodes').bind(
       'svg.node',
-      layout.graph.nodes.filter((n) => n.visible),
-      (n) => n.key
+      layout.graph.nodes.filter(n => n.visible),
+      n => n.key,
     );
 
     // Render Nodes
-    const nodeDepth = (n) => depth(n.depth);
-    const nodePosition = (n) => breadth(n.position);
-    const nodeWidth = (n) => breadth(n.value);
+    const nodeDepth = n => depth(n.depth);
+    const nodePosition = n => breadth(n.position);
+    const nodeWidth = n => breadth(n.value);
     nodesSelection.attr({
       x: orientation === 'horizontal' ? nodeDepth : nodePosition,
       y: orientation === 'horizontal' ? nodePosition : nodeDepth,
@@ -196,7 +196,7 @@ function Sankey<N, L>({
     // Node Rects
     nodesSelection
       .select('rect')
-      .attr({ width: '100%', height: '100%', class: nodeClass ?? null })
+      .attr({width: '100%', height: '100%', class: nodeClass ?? null})
       .style(nodeStyles)
       .on(nodeEvents);
 
@@ -205,46 +205,46 @@ function Sankey<N, L>({
       .select('title')
       .text(
         getNodeTooltip
-          ? (n) => getNodeTooltip(n)
-          : (n) => `${n.name}\n${valueFormatter(n.value)}`
+          ? n => getNodeTooltip(n)
+          : n => `${n.name}\n${valueFormatter(n.value)}`,
       );
 
     // Render Labels
-    const labelsSelection = nodesSelection.select('text').text((n) => n.name);
-    const labelAlignRight = (n) =>
+    const labelsSelection = nodesSelection.select('text').text(n => n.name);
+    const labelAlignRight = n =>
       nodeLabelAlignment === 'right' || n.depth <= layout.depthDomain[1] / 2;
     if (orientation === 'horizontal') {
-      nodesSelection.style({ overflow: 'visible' });
+      nodesSelection.style({overflow: 'visible'});
       labelsSelection.attr({
-        y: (n) => nodeWidth(n) / 2,
-        x: (n) => (labelAlignRight(n) ? nodeThickness : 0),
-        dx: (n) => (labelAlignRight(n) ? '0.25em' : '-0.25em'),
-        'text-anchor': (n) => (labelAlignRight(n) ? 'start' : 'end'),
+        y: n => nodeWidth(n) / 2,
+        x: n => (labelAlignRight(n) ? nodeThickness : 0),
+        dx: n => (labelAlignRight(n) ? '0.25em' : '-0.25em'),
+        'text-anchor': n => (labelAlignRight(n) ? 'start' : 'end'),
         'dominant-baseline': 'middle',
       });
     } else {
-      nodesSelection.style({ overflow: 'hidden' });
+      nodesSelection.style({overflow: 'hidden'});
       labelsSelection.attr({
-        x: (n) => breadth(n.value) / 2,
+        x: n => breadth(n.value) / 2,
         dy: nodeThickness / 2,
         'text-anchor': 'middle',
         'dominant-baseline': 'middle',
       });
     }
     labelsSelection
-      .attr({ class: nodeLabelClass ?? '' })
-      .style({ 'pointer-events': 'none' })
+      .attr({class: nodeLabelClass ?? ''})
+      .style({'pointer-events': 'none'})
       .style(nodeLabelStyles);
 
     // Link Tooltips
     linksSelection
       .select('title')
-      .html((l) =>
+      .html(l =>
         getLinkTooltip
           ? getLinkTooltip(l)
           : `${l.source?.name ?? '[UNKNOWN]'} &nbsp;&#8594;&nbsp; ${
               l.target?.name ?? '[UNKNOWN]'
-            }\n${valueFormatter(l.value)}`
+            }\n${valueFormatter(l.value)}`,
       );
 
     const isThickCurve = (l: Link<L>) => {
@@ -259,7 +259,7 @@ function Sankey<N, L>({
     linksSelection
       .select('path')
       .attr({
-        d: (l) => {
+        d: l => {
           const linkBreadth = breadth(l.value);
           const sourceDepth = depth(l.sourceDepth) + nodeThickness;
           const targetDepth = depth(l.targetDepth);
@@ -269,7 +269,7 @@ function Sankey<N, L>({
           const isBackEdgeCurve = targetDepth <= sourceDepth;
           const depthInterpolator = d3Interpolate.interpolateRound(
             sourceDepth,
-            targetDepth
+            targetDepth,
           );
           const backEdgeCurvature = isBackEdgeCurve
             ? Math.pow(l.sourceDepth - l.targetDepth, 0.5) + 1
@@ -329,9 +329,9 @@ function Sankey<N, L>({
                   `Z`;
           }
         },
-        'stroke-width': (l) =>
+        'stroke-width': l =>
           !isThickCurve(l) ? Math.max(1, breadth(l.value)) : 0,
-        mask: (l) =>
+        mask: l =>
           l.fadeSource
             ? 'url(#mask_fade_left)'
             : l.fadeTarget
@@ -341,10 +341,10 @@ function Sankey<N, L>({
       })
       .style({
         ...linkStyles,
-        fill: (l) => (isThickCurve(l) ? functor(linkColor)(l) : 'none'),
-        stroke: (l) => (isThickCurve(l) ? 'none' : functor(linkColor)(l)),
-        'fill-opacity': (l) => (isThickCurve(l) ? 1 : 0),
-        'stroke-opacity': (l) => (isThickCurve(l) ? 0 : 1),
+        fill: l => (isThickCurve(l) ? functor(linkColor)(l) : 'none'),
+        stroke: l => (isThickCurve(l) ? 'none' : functor(linkColor)(l)),
+        'fill-opacity': l => (isThickCurve(l) ? 1 : 0),
+        'stroke-opacity': l => (isThickCurve(l) ? 0 : 1),
       })
       .on(linkEvents);
   }, [
@@ -376,8 +376,7 @@ function Sankey<N, L>({
       ref={ref}
       height={height}
       width={width}
-      viewBox={`${-margin} ${-margin} ${width} ${height}`}
-    >
+      viewBox={`${-margin} ${-margin} ${width} ${height}`}>
       <defs>
         <linearGradient id="gradient_for_mask_fade_right">
           <stop offset="0.5" stopColor="white" stopOpacity="1" />
@@ -393,8 +392,7 @@ function Sankey<N, L>({
           x="-1"
           y="-500000%"
           height="1000000%"
-          width="2"
-        >
+          width="2">
           <rect
             x="-1"
             y="-500000"
@@ -408,8 +406,7 @@ function Sankey<N, L>({
           maskContentUnits="objectBoundingBox"
           y="-500000%"
           height="1000000%"
-          width="2"
-        >
+          width="2">
           <rect
             y="-500000"
             height="1000000"

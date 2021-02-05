@@ -9,17 +9,17 @@
  */
 'use strict';
 
-import type { TransactionType } from '../../types/DevtoolsTypes';
+import type {TransactionType} from '../../types/DevtoolsTypes';
 
-const { RecoilDevToolsActions } = require('../../constants/Constants');
+const {RecoilDevToolsActions} = require('../../constants/Constants');
 const Header = require('./PopupHeader');
 const Main = require('./PopupMainContent');
 const Sidebar = require('./PopupSidebar');
 const React = require('react');
-const { useEffect, useState, useContext } = require('react');
-const { debug } = require('../../utils/Logger');
+const {useEffect, useState, useContext} = require('react');
+const {debug} = require('../../utils/Logger');
 const ConnectionContext = require('./ConnectionContext');
-const { useSelectedTransaction } = require('./useSelectionHooks');
+const {useSelectedTransaction} = require('./useSelectionHooks');
 
 const styles = {
   app: {
@@ -44,7 +44,7 @@ type Props = $ReadOnly<{
   maxTransactionId: number,
 }>;
 
-const PopupComponent = ({ maxTransactionId }: Props): React.Node => {
+const PopupComponent = ({maxTransactionId}: Props): React.Node => {
   const connection = useContext(ConnectionContext);
 
   const [selectedTX, setSelectedTX] = useSelectedTransaction();

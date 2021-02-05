@@ -9,25 +9,23 @@
  */
 'use strict';
 
-const { createGraph, depsHaveChaged } = require('../GraphUtils');
+const {createGraph, depsHaveChaged} = require('../GraphUtils');
 
 describe('base cases', () => {
   const emptySet = new Set();
   it('empty snapshot and deps', () => {
-    expect(createGraph({})).toEqual({ levels: [[]], edges: [] });
+    expect(createGraph({})).toEqual({levels: [[]], edges: []});
   });
 
   it('only snapshot', () => {
-    expect(createGraph({ a: new Set(), b: new Set() })).toEqual({
+    expect(createGraph({a: new Set(), b: new Set()})).toEqual({
       levels: [['a', 'b']],
       edges: [],
     });
   });
 
   it('snapshot with single dep', () => {
-    expect(
-      createGraph({ a: emptySet, b: emptySet, c: new Set(['a']) })
-    ).toEqual({
+    expect(createGraph({a: emptySet, b: emptySet, c: new Set(['a'])})).toEqual({
       levels: [['a', 'b'], ['c']],
       edges: [
         [
@@ -45,7 +43,7 @@ describe('base cases', () => {
         d: new Set(['a', 'b']),
         a: emptySet,
         b: emptySet,
-      })
+      }),
     ).toEqual({
       levels: [
         ['a', 'b'],
@@ -76,7 +74,7 @@ describe('base cases', () => {
         e: new Set(['c']),
         c: new Set(['b']),
         d: new Set(['a', 'b']),
-      })
+      }),
     ).toEqual({
       levels: [['a', 'b'], ['c', 'd'], ['e']],
       edges: [
@@ -109,7 +107,7 @@ describe('base cases', () => {
         c: new Set(['b']),
         d: new Set(['a', 'b']),
         f: new Set(['g', 'a']),
-      })
+      }),
     ).toEqual({
       levels: [['a', 'b'], ['c', 'd'], ['e']],
       edges: [
