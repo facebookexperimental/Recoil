@@ -10,10 +10,7 @@
 'use strict';
 
 /* global chrome */
-import type {
-  DevToolsOptions,
-  PostMessageData,
-} from '../../types/DevtoolsTypes';
+import type {DevToolsOptions, PostMessageData} from '../../types/DevtoolsTypes';
 
 const {
   ExtensionSource,
@@ -21,7 +18,7 @@ const {
   RecoilDevToolsActions,
   MessageChunkSize,
 } = require('../../constants/Constants');
-const { debug, warn } = require('../../utils/Logger');
+const {debug, warn} = require('../../utils/Logger');
 const nullthrows = require('nullthrows');
 
 // Init message listeners
@@ -51,14 +48,14 @@ function initContentScriptListeners() {
       name: props?.name ?? '',
     });
 
-    send({ action: RecoilDevToolsActions.INIT, data: { ...props } });
+    send({action: RecoilDevToolsActions.INIT, data: {...props}});
 
     bg.onDisconnect.addListener(() => {
       connected = false;
       bg = null;
     });
 
-    bg.onMessage.addListener((msg) => {
+    bg.onMessage.addListener(msg => {
       window.postMessage({
         source: ExtensionSourceContentScript,
         ...msg,
@@ -120,4 +117,4 @@ function initPageScript() {
 initContentScriptListeners();
 initPageScript();
 
-module.exports = { initContentScriptListeners };
+module.exports = {initContentScriptListeners};

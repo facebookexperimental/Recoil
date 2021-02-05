@@ -7,11 +7,11 @@
  */
 'use strict';
 
-import type { LayoutFunction } from './Sankey';
-import type { Graph, Key, Link, Node } from './SankeyGraph';
+import type {LayoutFunction} from './Sankey';
+import type {Graph, Key, Link, Node} from './SankeyGraph';
 
 const memoize = require('./CV2_memoize').default;
-const { updateVisibility } = require('./SankeyGraph');
+const {updateVisibility} = require('./SankeyGraph');
 
 const compactArray = require('./compactArray').default;
 
@@ -79,9 +79,9 @@ const BUTTERFLY_LAYOUT_DEFAULT: ButterflyLayoutOptions = {
 };
 
 // Utility functions
-const sortAsc = <T>(array: Array<T>, accessor: (T) => number) =>
+const sortAsc = <T>(array: Array<T>, accessor: T => number) =>
   array.sort((a, b) => accessor(a) - accessor(b));
-const sortDesc = <T>(array: Array<T>, accessor: (T) => number) =>
+const sortDesc = <T>(array: Array<T>, accessor: T => number) =>
   array.sort((a, b) => accessor(b) - accessor(a));
 
 // Limit the graph to just the top n nodes.
@@ -92,8 +92,8 @@ function limitNodes(
   graph: Graph,
   nodeLimit: ?number,
   rootNodes: $ReadOnlyArray<Node<>> = graph.nodes.filter(
-    (node) => node.sourceLinks.length === 0
-  )
+    node => node.sourceLinks.length === 0,
+  ),
 ) {
   if (nodeLimit == null || nodeLimit >= graph.nodes.length) {
     return graph;
@@ -101,8 +101,8 @@ function limitNodes(
   let nodesToAdd = nodeLimit;
 
   const nodesSet: Set<Node<>> = new Set();
-  let nextLinks: Array<Link<>> = rootNodes.flatMap((node) =>
-    node.targetLinks.concat(node.sourceLinks)
+  let nextLinks: Array<Link<>> = rootNodes.flatMap(node =>
+    node.targetLinks.concat(node.sourceLinks),
   );
   const consideredLinks: Set<Link<>> = new Set(nextLinks);
 
@@ -113,14 +113,14 @@ function limitNodes(
     nodesSet.add(node);
     const newLinks = node.targetLinks
       .concat(node.sourceLinks)
-      .filter((link) => !consideredLinks.has(link));
-    newLinks.forEach((link) => consideredLinks.add(link));
+      .filter(link => !consideredLinks.has(link));
+    newLinks.forEach(link => consideredLinks.add(link));
     nextLinks = nextLinks.concat(newLinks);
     nodesToAdd--;
   }
 
   while (nodesToAdd && nextLinks.length) {
-    sortDesc(nextLinks, (link) => link.value);
+    sortDesc(nextLinks, link => link.value);
     const link = nextLinks.shift();
     for (const node of [link.target, link.source]) {
       if (node && !nodesSet.has(node)) {
@@ -136,9 +136,9 @@ function limitNodes(
 // Assign depths to each node based on how they flow
 function flowLayoutNodeDepths(
   graph: Graph,
-  layoutOptions: FlowLayoutOptions
+  layoutOptions: FlowLayoutOptions,
 ): [number, number] {
-  const visibleNodes = graph.nodes.filter((node) => node.visible);
+  const visibleNodes = graph.nodes.filter(node => node.visible);
   // Compute the depth of each node
   let remainingNodes = visibleNodes;
   let depth = 0;
@@ -146,7 +146,7 @@ function flowLayoutNodeDepths(
     const nextNodes = [];
     for (const node: Node<> of remainingNodes) {
       node.depth = depth;
-      for (const targetLink of node.targetLinks.filter((l) => !l.backedge)) {
+      for (const targetLink of node.targetLinks.filter(l => !l.backedge)) {
         if (!targetLink.fadeTarget && targetLink.target != null) {
           nextNodes.push(targetLink.target);
         }
@@ -174,7 +174,7 @@ function flowLayoutNodeDepths(
 function butterflyLayoutNodeDepths(
   graph: Graph,
   focalNode: Node<>,
-  layoutOptions: ButterflyLayoutOptions
+  layoutOptions: ButterflyLayoutOptions,
 ): [number, number] {
   const nodesSet: Set<Node<>> = new Set([focalNode]);
   const depthDomain = [0, 0];
@@ -182,14 +182,14 @@ function butterflyLayoutNodeDepths(
   function addNeighbors(
     node: Node<>,
     direction: 'target' | 'source',
-    depth: number
+    depth: number,
   ) {
     const neighborLinks =
       direction === 'target' ? node.targetLinks : node.sourceLinks;
     const neighbors: Array<Node<>> = compactArray(
-      neighborLinks.map((link) =>
-        direction === 'target' ? link.target : link.source
-      )
+      neighborLinks.map(link =>
+        direction === 'target' ? link.target : link.source,
+      ),
     );
     const newNodes = [];
     for (const neighbor of neighbors) {
@@ -207,7 +207,7 @@ function butterflyLayoutNodeDepths(
         addNeighbors(
           neighbor,
           direction,
-          depth + (direction === 'target' ? 1 : -1)
+          depth + (direction === 'target' ? 1 : -1),
         );
       }
     }
@@ -229,28 +229,28 @@ function butterflyLayoutNodeDepths(
 function layoutPositions(
   graph: Graph,
   layoutOptions: PositionLayoutOptions,
-  maxBreadth: number
+  maxBreadth: number,
 ): [number, number] {
-  const visibleNodes = graph.nodes.filter((node) => node.visible);
+  const visibleNodes = graph.nodes.filter(node => node.visible);
 
   // Prepare set of depths
   const depths: Array<
-    Array<Node<>> & { paddingPercent: number, padding: number }
+    Array<Node<>> & {paddingPercent: number, padding: number},
   > = d3Collection
     .nest()
-    .key((n) => n.depth)
+    .key(n => n.depth)
     .entries(visibleNodes)
-    .map((g) => g.values);
-  sortAsc(depths, (depth) => depth[0]?.depth); // d3.nest().sortKeys() didn't work?
+    .map(g => g.values);
+  sortAsc(depths, depth => depth[0]?.depth); // d3.nest().sortKeys() didn't work?
 
   // Calculate node padding and positions
   // Start by determining the percentage of each column to use for padding
-  const { nodePadding } = layoutOptions;
+  const {nodePadding} = layoutOptions;
   if (typeof nodePadding === 'number') {
     for (const depth of depths) {
       depth.paddingPercent = Math.max(
         (nodePadding * (depth.length - 1)) / maxBreadth,
-        0.8
+        0.8,
       );
     }
   } else if (nodePadding.charAt(nodePadding.length - 1) === '%') {
@@ -262,15 +262,15 @@ function layoutPositions(
     }
   } else {
     throw new Error(
-      `Unsupported nodePadding parameter: ${String(nodePadding)}`
+      `Unsupported nodePadding parameter: ${String(nodePadding)}`,
     );
   }
   // Calculate maximum breadth, including padding
   const maxPosition: number = d3Array.max(
     depths.map(
-      (depth) =>
-        d3Array.sum(depth, (node) => node.value) / (1 - depth.paddingPercent)
-    )
+      depth =>
+        d3Array.sum(depth, node => node.value) / (1 - depth.paddingPercent),
+    ),
   );
   // Calculate node padding for each depth
   for (const depth of depths) {
@@ -283,7 +283,7 @@ function layoutPositions(
   // Detect collisions and move nodes to avoid overlap
   function collisionDetection() {
     for (const depth of depths) {
-      sortAsc(depth, (n) => n.position);
+      sortAsc(depth, n => n.position);
 
       // Push overlapping nodes down
       let position = 0;
@@ -314,8 +314,8 @@ function layoutPositions(
 
   // Assign node link weights
   for (const node of visibleNodes) {
-    const sourceWeight: number = d3Array.sum(node.sourceLinks, (l) => l.value);
-    const targetWeight: number = d3Array.sum(node.targetLinks, (l) => l.value);
+    const sourceWeight: number = d3Array.sum(node.sourceLinks, l => l.value);
+    const targetWeight: number = d3Array.sum(node.targetLinks, l => l.value);
     node.linkWeight =
       sourceWeight + targetWeight * layoutOptions.targetLinksWeight;
   }
@@ -329,7 +329,7 @@ function layoutPositions(
           ? maxPosition - depth[0].value
           : 0;
       for (const node of depth) {
-        sortAsc(node.sourceLinks, (link) => link.source?.position ?? Infinity);
+        sortAsc(node.sourceLinks, link => link.source?.position ?? Infinity);
         let trailingPosition = node.position - padding / 2;
         let trailingPadding = padding / (node.sourceLinks.length - 1);
         let position = node.position;
@@ -345,7 +345,7 @@ function layoutPositions(
           trailingPosition += sourceLink.value + trailingPadding;
         }
 
-        sortAsc(node.targetLinks, (link) => link.target?.position ?? Infinity);
+        sortAsc(node.targetLinks, link => link.target?.position ?? Infinity);
         position = node.position;
         trailingPosition = node.position - padding / 2;
         trailingPadding = padding / (node.targetLinks.length - 1);
@@ -369,8 +369,8 @@ function layoutPositions(
     // Sort the nodes
     layoutOptions.sortNodes === 'ascending' ||
     layoutOptions.sortNodes === 'inward'
-      ? sortAsc(depth, (node) => node.value)
-      : sortDesc(depth, (node) => node.value);
+      ? sortAsc(depth, node => node.value)
+      : sortDesc(depth, node => node.value);
     if (
       layoutOptions.sortNodes === 'outward' ||
       layoutOptions.sortNodes === 'inward'
@@ -480,57 +480,51 @@ function layoutPositions(
   return [0, maxPosition];
 }
 
-const memoizedFlowGraphLayout: (FlowLayoutOptions) => LayoutFunction = memoize(
-  (layoutOptions) => ({ graph, positionRange }) => {
+const memoizedFlowGraphLayout: FlowLayoutOptions => LayoutFunction = memoize(
+  layoutOptions => ({graph, positionRange}) => {
     limitNodes(graph, layoutOptions.nodeLimit);
     const depthDomain = flowLayoutNodeDepths(graph, layoutOptions);
     const positionDomain = layoutPositions(
       graph,
       layoutOptions,
-      positionRange[1]
+      positionRange[1],
     );
-    return { graph, positionDomain, depthDomain };
-  }
+    return {graph, positionDomain, depthDomain};
+  },
 );
 const flowGraphLayout: (
-  layoutOptions?: $Shape<FlowLayoutOptions>
+  layoutOptions?: $Shape<FlowLayoutOptions>,
 ) => LayoutFunction = (layoutOptions = FLOW_LAYOUT_DEFAULT) =>
-  memoizedFlowGraphLayout({ ...FLOW_LAYOUT_DEFAULT, ...layoutOptions });
+  memoizedFlowGraphLayout({...FLOW_LAYOUT_DEFAULT, ...layoutOptions});
 
 const memoizedButterflyGraphLayout: ({
   ...ButterflyLayoutOptions,
   focalNodeKey: Key,
   ...
-}) => LayoutFunction = memoize(
-  (layoutOptions) => ({ graph, positionRange }) => {
-    const focalNode = graph.nodes.find(
-      (n) => n.key === layoutOptions.focalNodeKey
-    );
-    if (focalNode == null) {
-      throw new Error(
-        `Unable to find focal node: ${layoutOptions.focalNodeKey}`
-      );
-    }
-    const depthDomain = butterflyLayoutNodeDepths(
-      graph,
-      focalNode,
-      layoutOptions
-    );
-    limitNodes(graph, layoutOptions.nodeLimit, [focalNode]);
-    const positionDomain = layoutPositions(
-      graph,
-      layoutOptions,
-      positionRange[1]
-    );
-    return { graph, positionDomain, depthDomain };
+}) => LayoutFunction = memoize(layoutOptions => ({graph, positionRange}) => {
+  const focalNode = graph.nodes.find(n => n.key === layoutOptions.focalNodeKey);
+  if (focalNode == null) {
+    throw new Error(`Unable to find focal node: ${layoutOptions.focalNodeKey}`);
   }
-);
+  const depthDomain = butterflyLayoutNodeDepths(
+    graph,
+    focalNode,
+    layoutOptions,
+  );
+  limitNodes(graph, layoutOptions.nodeLimit, [focalNode]);
+  const positionDomain = layoutPositions(
+    graph,
+    layoutOptions,
+    positionRange[1],
+  );
+  return {graph, positionDomain, depthDomain};
+});
 const butterflyGraphLayout: (
   focalNodeKey: Key,
-  layoutOptions?: $Shape<ButterflyLayoutOptions>
+  layoutOptions?: $Shape<ButterflyLayoutOptions>,
 ) => LayoutFunction = (
   focalNodeKey,
-  layoutOptions = BUTTERFLY_LAYOUT_DEFAULT
+  layoutOptions = BUTTERFLY_LAYOUT_DEFAULT,
 ) =>
   memoizedButterflyGraphLayout({
     ...BUTTERFLY_LAYOUT_DEFAULT,

@@ -9,16 +9,16 @@
  */
 'use strict';
 
-import type { MainTabsType } from '../../constants/Constants';
+import type {MainTabsType} from '../../constants/Constants';
 
 const DependencyGraph = require('./PopupDependencyGraph');
 const Diff = require('./PopupDiff');
 const Snapshot = require('./PopupSnapshot').default;
 const Tabs = require('./Tabs');
 const React = require('react');
-const { useContext } = require('react');
+const {useContext} = require('react');
 const ConnectionContext = require('./ConnectionContext');
-const { MainTabsTitle } = require('../../constants/Constants');
+const {MainTabsTitle} = require('../../constants/Constants');
 
 const styles = {
   main: {
@@ -64,7 +64,7 @@ type Props = $ReadOnly<{
   selectedMainTab: MainTabsType,
 }>;
 
-function MainContent({ selectedMainTab }: Props): React.Node {
+function MainContent({selectedMainTab}: Props): React.Node {
   const connection = useContext(ConnectionContext);
   if (connection == null) {
     return null;

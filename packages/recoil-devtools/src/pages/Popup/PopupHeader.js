@@ -9,12 +9,12 @@
  */
 'use strict';
 
-import type { MainTabsType } from '../../constants/Constants';
+import type {MainTabsType} from '../../constants/Constants';
 
-const { MainTabs } = require('../../constants/Constants');
+const {MainTabs} = require('../../constants/Constants');
 const Tabs = require('./Tabs');
 const React = require('react');
-const { useFilter } = require('./useSelectionHooks');
+const {useFilter} = require('./useSelectionHooks');
 
 const styles = {
   header: {
@@ -47,7 +47,7 @@ const styles = {
 
 type Props = $ReadOnly<{
   selectedMainTab: MainTabsType,
-  setSelectedMainTab: (MainTabsType) => void,
+  setSelectedMainTab: MainTabsType => void,
 }>;
 
 /**
@@ -67,7 +67,7 @@ function PopupHeader({
           type="text"
           placeholder="Filter..."
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
+          onChange={e => setFilter(e.target.value)}
         />
       </div>
       <div style={styles.main}>

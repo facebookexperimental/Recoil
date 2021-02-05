@@ -11,9 +11,9 @@
 
 const React = require('react');
 const DiffItem = require('./Items/DiffItem').default;
-const { useContext } = require('react');
+const {useContext} = require('react');
 const ConnectionContext = require('./ConnectionContext');
-const { useSelectedTransaction } = require('./useSelectionHooks');
+const {useSelectedTransaction} = require('./useSelectionHooks');
 
 function PopupDiff(): React.Node {
   const connection = useContext(ConnectionContext);
@@ -30,7 +30,7 @@ function PopupDiff(): React.Node {
 
   return (
     <>
-      {transaction?.modifiedValues?.map(({ name }) => (
+      {transaction?.modifiedValues?.map(({name}) => (
         <DiffItem name={name} key={name} isRoot={true} />
       ))}
     </>

@@ -9,27 +9,27 @@
  */
 'use strict';
 
-import type { TransactionType } from '../../types/DevtoolsTypes';
+import type {TransactionType} from '../../types/DevtoolsTypes';
 import type Store from '../../utils/Store';
 
-const { RecoilDevToolsActions } = require('../../constants/Constants');
+const {RecoilDevToolsActions} = require('../../constants/Constants');
 
 const PopupComponent = require('./PopupComponent');
 
 const ConnectionContext = require('./ConnectionContext');
 const React = require('react');
-const { useEffect, useState, useRef } = require('react');
-const { debug } = require('../../utils/Logger');
+const {useEffect, useState, useRef} = require('react');
+const {debug} = require('../../utils/Logger');
 
 type AppProps = {
   store: Store,
 };
 
-function PopupApp({ store }: AppProps) {
+function PopupApp({store}: AppProps) {
   const tabId = chrome.devtools?.inspectedWindow?.tabId ?? null;
   const [selectedConnection, setSelectedConnection] = useState(tabId);
   const [maxTransactionId, setMaxTransactionId] = useState(
-    store.getConnection(selectedConnection)?.transactions.getLast()
+    store.getConnection(selectedConnection)?.transactions.getLast(),
   );
 
   const port = useRef(null);
@@ -40,12 +40,12 @@ function PopupApp({ store }: AppProps) {
       port.current.disconnect();
     }
     // $FlowFixMe: chrome types
-    port.current = chrome.extension.connect({ name: 'Recoil Devtools Popup' });
+    port.current = chrome.extension.connect({name: 'Recoil Devtools Popup'});
 
     port.current.postMessage({
       action: RecoilDevToolsActions.SUBSCRIBE_POPUP,
     });
-    port.current?.onMessage.addListener((msg) => {
+    port.current?.onMessage.addListener(msg => {
       if (
         msg.action === RecoilDevToolsActions.CONNECT &&
         tabId != null &&

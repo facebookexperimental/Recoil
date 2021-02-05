@@ -9,7 +9,7 @@
  */
 'use strict';
 
-import type { Node } from '../../../types/DevtoolsTypes';
+import type {Node} from '../../../types/DevtoolsTypes';
 const React = require('react');
 
 const styles = {
@@ -34,7 +34,7 @@ type KeyProps = {
   node: ?Node,
 };
 
-function NodeName({ name, node }: KeyProps) {
+function NodeName({name, node}: KeyProps) {
   return (
     <span style={styles.label}>
       {node?.type === 'selector' && <span style={styles.selector}>S</span>}

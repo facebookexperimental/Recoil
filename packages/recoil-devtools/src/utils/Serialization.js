@@ -43,77 +43,77 @@ function serialize(
   maxDepth: number = DefaultMaxDepth,
   maxItems: number = DefaultMaxItems,
   parents?: ?Set<mixed>,
-  depth: number = 0
+  depth: number = 0,
 ): SerializedValue {
   if (parents == null) {
     parents = new Set();
   }
 
   if (depth > maxDepth) {
-    return { t: SerializedValueType.primitive, v: '[Max Depth Reached]' };
+    return {t: SerializedValueType.primitive, v: '[Max Depth Reached]'};
   }
   if (item && typeof item === 'object') {
     if (parents.has(item)) {
-      return { t: SerializedValueType.primitive, v: '[Circular Reference]' };
+      return {t: SerializedValueType.primitive, v: '[Circular Reference]'};
     }
     parents.add(item);
   }
 
   let serialized: ?SerializedValue = null;
   if (item === null) {
-    serialized = { t: SerializedValueType.null };
+    serialized = {t: SerializedValueType.null};
   } else if (item === undefined) {
-    serialized = { t: SerializedValueType.undefined };
+    serialized = {t: SerializedValueType.undefined};
   } else if (Array.isArray(item)) {
-    const { iterable, exceeds } = getExceedingItems<mixed>(item, maxItems);
+    const {iterable, exceeds} = getExceedingItems<mixed>(item, maxItems);
     serialized = maybeAddExceeds(
       {
         t: SerializedValueType.array,
-        v: iterable.map((it) =>
-          serialize(it, maxDepth, maxItems, parents, depth + 1)
+        v: iterable.map(it =>
+          serialize(it, maxDepth, maxItems, parents, depth + 1),
         ),
       },
-      exceeds
+      exceeds,
     );
   } else if (item instanceof Set) {
-    const { iterable, exceeds } = getExceedingItems<mixed>(
+    const {iterable, exceeds} = getExceedingItems<mixed>(
       Array.from(item),
-      maxItems
+      maxItems,
     );
     serialized = maybeAddExceeds(
       {
         t: SerializedValueType.set,
-        v: iterable.map((it) =>
-          serialize(it, maxDepth, maxItems, parents, depth + 1)
+        v: iterable.map(it =>
+          serialize(it, maxDepth, maxItems, parents, depth + 1),
         ),
       },
-      exceeds
+      exceeds,
     );
   } else if (item instanceof Map) {
-    const { iterable, exceeds } = getExceedingItems<[mixed, mixed]>(
+    const {iterable, exceeds} = getExceedingItems<[mixed, mixed]>(
       Array.from(item.entries()),
-      maxItems
+      maxItems,
     );
     serialized = maybeAddExceeds(
       {
         t: SerializedValueType.map,
-        v: iterable.map((entry) =>
-          entry.map((it) =>
-            serialize(it, maxDepth, maxItems, parents, depth + 1)
-          )
+        v: iterable.map(entry =>
+          entry.map(it =>
+            serialize(it, maxDepth, maxItems, parents, depth + 1),
+          ),
         ),
       },
-      exceeds
+      exceeds,
     );
   } else if (item instanceof Promise || typeof item?.then === 'function') {
-    serialized = { t: SerializedValueType.promise, v: 'Promise<Pending>' };
+    serialized = {t: SerializedValueType.promise, v: 'Promise<Pending>'};
   } else if (item instanceof Error) {
     serialized = {
       t: SerializedValueType.error,
       v: capStringLength(item.toString(), 150),
     };
   } else if (item instanceof Date) {
-    serialized = { t: SerializedValueType.date, v: item.getTime() };
+    serialized = {t: SerializedValueType.date, v: item.getTime()};
   } else if (typeof item === 'symbol') {
     serialized = {
       t: SerializedValueType.symbol,
@@ -125,23 +125,23 @@ function serialize(
       v: capStringLength(String(item), 150),
     };
   } else if (typeof item === 'object') {
-    const { iterable, exceeds } = getExceedingItems<[string, mixed]>(
+    const {iterable, exceeds} = getExceedingItems<[string, mixed]>(
       Object.entries(item),
-      maxItems
+      maxItems,
     );
     serialized = maybeAddExceeds(
       {
         t: SerializedValueType.object,
-        v: iterable.map((entry) =>
-          entry.map((it) =>
-            serialize(it, maxDepth, maxItems, parents, depth + 1)
-          )
+        v: iterable.map(entry =>
+          entry.map(it =>
+            serialize(it, maxDepth, maxItems, parents, depth + 1),
+          ),
         ),
       },
-      exceeds
+      exceeds,
     );
   } else {
-    serialized = { t: SerializedValueType.primitive, v: item };
+    serialized = {t: SerializedValueType.primitive, v: item};
   }
 
   if (item && typeof item === 'object') {
@@ -152,7 +152,7 @@ function serialize(
 
 function maybeAddExceeds(
   value: SerializedValue,
-  exceeds: number
+  exceeds: number,
 ): SerializedValue {
   if (exceeds > 0) {
     value.e = exceeds;
@@ -162,15 +162,15 @@ function maybeAddExceeds(
 
 function getExceedingItems<T>(
   items: $ReadOnlyArray<T>,
-  maxItems: number
-): { exceeds: number, iterable: $ReadOnlyArray<T> } {
+  maxItems: number,
+): {exceeds: number, iterable: $ReadOnlyArray<T>} {
   if (items.length > maxItems) {
     return {
       iterable: items.slice(0, maxItems),
       exceeds: items.length - maxItems,
     };
   }
-  return { iterable: items, exceeds: 0 };
+  return {iterable: items, exceeds: 0};
 }
 
 /*
@@ -181,7 +181,7 @@ function deserialize(item: ?SerializedValue): mixed {
   if (item == null) {
     return null;
   }
-  const { v: value, t: type } = item;
+  const {v: value, t: type} = item;
   if (type === SerializedValueType.null) {
     return null;
   } else if (type === SerializedValueType.undefined) {
@@ -189,7 +189,7 @@ function deserialize(item: ?SerializedValue): mixed {
   } else if (type === SerializedValueType.set) {
     return new Set(value?.map(deserialize));
   } else if (type === SerializedValueType.map) {
-    return new Map(value?.map((entry) => entry.map(deserialize)));
+    return new Map(value?.map(entry => entry.map(deserialize)));
   } else if (type === SerializedValueType.date) {
     return new Date(value ?? 0);
   } else if (type == SerializedValueType.function) {
@@ -218,7 +218,7 @@ function formatForDiff(item: ?SerializedValue): mixed {
   if (item == null) {
     return 'undefined';
   }
-  const { v: value, t: type } = item;
+  const {v: value, t: type} = item;
   if (type === SerializedValueType.null) {
     return null;
   } else if (type === SerializedValueType.undefined) {
@@ -261,4 +261,4 @@ function capStringLength(str: string, newLength: number): string {
   return str;
 }
 
-module.exports = { serialize, deserialize, formatForDiff, SerializedValueType };
+module.exports = {serialize, deserialize, formatForDiff, SerializedValueType};

@@ -22,4 +22,4 @@ function warn(...args: $ReadOnlyArray<mixed>) {
   }
 }
 
-module.exports = { debug, warn };
+module.exports = {debug, warn};

@@ -67,7 +67,7 @@ class EvictableList<TType> {
     return this.list.get(id);
   }
 
-  findFirst(fn: (TType) => boolean): ?TType {
+  findFirst(fn: TType => boolean): ?TType {
     let l = this.index - this.list.size;
     let r = Math.max(this.index - 1, 0);
     let found = undefined;
@@ -86,7 +86,7 @@ class EvictableList<TType> {
     return found;
   }
 
-  findLast(fn: (TType) => boolean): ?TType {
+  findLast(fn: TType => boolean): ?TType {
     let l = this.index - this.list.size;
     let r = Math.max(this.index - 1, 0);
     let found = undefined;

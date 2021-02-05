@@ -65,20 +65,20 @@ describe('EvictableList find first elements with a condition', () => {
     list.add(10);
     list.add(15);
     list.add(20);
-    expect(list.findFirst((n) => n > 8)).toEqual(10);
-    expect(list.findFirst((n) => n >= 15)).toEqual(15);
-    expect(list.findFirst((n) => n > 15)).toEqual(20);
-    expect(list.findFirst((n) => Boolean(n))).toEqual(10);
+    expect(list.findFirst(n => n > 8)).toEqual(10);
+    expect(list.findFirst(n => n >= 15)).toEqual(15);
+    expect(list.findFirst(n => n > 15)).toEqual(20);
+    expect(list.findFirst(n => Boolean(n))).toEqual(10);
   });
 
   it("don't include evicted element in the results", () => {
     list.add(25);
     list.add(30);
-    expect(list.findFirst((n) => n > 8)).toEqual(20);
-    expect(list.findFirst((n) => n >= 15)).toEqual(20);
-    expect(list.findFirst((n) => n > 15)).toEqual(20);
-    expect(list.findFirst((n) => Boolean(n))).toEqual(20);
-    expect(list.findFirst((n) => n > 25)).toEqual(30);
+    expect(list.findFirst(n => n > 8)).toEqual(20);
+    expect(list.findFirst(n => n >= 15)).toEqual(20);
+    expect(list.findFirst(n => n > 15)).toEqual(20);
+    expect(list.findFirst(n => Boolean(n))).toEqual(20);
+    expect(list.findFirst(n => n > 25)).toEqual(30);
   });
 });
 
@@ -93,11 +93,11 @@ describe('EvictableList binary search even elements', () => {
   list.add(25);
   list.add(30);
   it('find element', () => {
-    expect(list.findFirst((n) => n >= 2)).toEqual(4);
-    expect(list.findFirst((n) => n > 4)).toEqual(8);
-    expect(list.findFirst((n) => n >= 9)).toEqual(10);
-    expect(list.findFirst((n) => n >= 14)).toEqual(15);
-    expect(list.findFirst((n) => n >= 28)).toEqual(30);
+    expect(list.findFirst(n => n >= 2)).toEqual(4);
+    expect(list.findFirst(n => n > 4)).toEqual(8);
+    expect(list.findFirst(n => n >= 9)).toEqual(10);
+    expect(list.findFirst(n => n >= 14)).toEqual(15);
+    expect(list.findFirst(n => n >= 28)).toEqual(30);
   });
 });
 
@@ -108,10 +108,10 @@ describe('EvictableList binary search with non-full list', () => {
   list.add(10);
   list.add(12);
   it('find element', () => {
-    expect(list.findFirst((n) => n >= 2)).toEqual(4);
-    expect(list.findFirst((n) => n > 4)).toEqual(8);
-    expect(list.findFirst((n) => n >= 9)).toEqual(10);
-    expect(list.findFirst((n) => n >= 11)).toEqual(12);
+    expect(list.findFirst(n => n >= 2)).toEqual(4);
+    expect(list.findFirst(n => n > 4)).toEqual(8);
+    expect(list.findFirst(n => n >= 9)).toEqual(10);
+    expect(list.findFirst(n => n >= 11)).toEqual(12);
   });
 });
 
@@ -123,10 +123,10 @@ describe('EvictableList binary search non-full odd elements', () => {
   list.add(12);
   list.add(15);
   it('find element', () => {
-    expect(list.findFirst((n) => n >= 4)).toEqual(4);
-    expect(list.findFirst((n) => n >= 9)).toEqual(10);
-    expect(list.findFirst((n) => n >= 11)).toEqual(12);
-    expect(list.findFirst((n) => n >= 15)).toEqual(15);
+    expect(list.findFirst(n => n >= 4)).toEqual(4);
+    expect(list.findFirst(n => n >= 9)).toEqual(10);
+    expect(list.findFirst(n => n >= 11)).toEqual(12);
+    expect(list.findFirst(n => n >= 15)).toEqual(15);
   });
 });
 
@@ -137,20 +137,20 @@ describe('EvictableList find last elements with a condition', () => {
     list.add(10);
     list.add(15);
     list.add(20);
-    expect(list.findLast((n) => n < 8)).toEqual(undefined);
-    expect(list.findLast((n) => n <= 15)).toEqual(15);
-    expect(list.findLast((n) => n < 15)).toEqual(10);
-    expect(list.findLast((n) => n < 100)).toEqual(20);
+    expect(list.findLast(n => n < 8)).toEqual(undefined);
+    expect(list.findLast(n => n <= 15)).toEqual(15);
+    expect(list.findLast(n => n < 15)).toEqual(10);
+    expect(list.findLast(n => n < 100)).toEqual(20);
   });
 
   it("don't include evicted element in the results", () => {
     list.add(25);
     list.add(30);
-    expect(list.findLast((n) => n < 8)).toEqual(undefined);
-    expect(list.findLast((n) => n <= 15)).toEqual(undefined);
-    expect(list.findLast((n) => n > 15)).toEqual(30);
-    expect(list.findLast((n) => Boolean(n))).toEqual(30);
-    expect(list.findLast((n) => n <= 25)).toEqual(25);
+    expect(list.findLast(n => n < 8)).toEqual(undefined);
+    expect(list.findLast(n => n <= 15)).toEqual(undefined);
+    expect(list.findLast(n => n > 15)).toEqual(30);
+    expect(list.findLast(n => Boolean(n))).toEqual(30);
+    expect(list.findLast(n => n <= 25)).toEqual(25);
   });
 });
 
@@ -165,12 +165,12 @@ describe('EvictableList find last binary search even elements', () => {
   list.add(25);
   list.add(30);
   it('find element', () => {
-    expect(list.findLast((n) => n >= 2)).toEqual(30);
-    expect(list.findLast((n) => n <= 2)).toEqual(undefined);
-    expect(list.findLast((n) => n < 10)).toEqual(8);
-    expect(list.findLast((n) => n <= 10)).toEqual(10);
-    expect(list.findLast((n) => n <= 18)).toEqual(15);
-    expect(list.findLast((n) => n <= 50)).toEqual(30);
+    expect(list.findLast(n => n >= 2)).toEqual(30);
+    expect(list.findLast(n => n <= 2)).toEqual(undefined);
+    expect(list.findLast(n => n < 10)).toEqual(8);
+    expect(list.findLast(n => n <= 10)).toEqual(10);
+    expect(list.findLast(n => n <= 18)).toEqual(15);
+    expect(list.findLast(n => n <= 50)).toEqual(30);
   });
 });
 
@@ -181,11 +181,11 @@ describe('EvictableList find last binary search with non-full list', () => {
   list.add(10);
   list.add(12);
   it('find element', () => {
-    expect(list.findLast((n) => n >= 2)).toEqual(12);
-    expect(list.findLast((n) => n < 4)).toEqual(undefined);
-    expect(list.findLast((n) => n <= 4)).toEqual(4);
-    expect(list.findLast((n) => n <= 9)).toEqual(8);
-    expect(list.findLast((n) => n <= 12)).toEqual(12);
+    expect(list.findLast(n => n >= 2)).toEqual(12);
+    expect(list.findLast(n => n < 4)).toEqual(undefined);
+    expect(list.findLast(n => n <= 4)).toEqual(4);
+    expect(list.findLast(n => n <= 9)).toEqual(8);
+    expect(list.findLast(n => n <= 12)).toEqual(12);
   });
 });
 
@@ -197,9 +197,9 @@ describe('EvictableList find last binary search non-full odd elements', () => {
   list.add(12);
   list.add(15);
   it('find element', () => {
-    expect(list.findLast((n) => n <= 4)).toEqual(4);
-    expect(list.findLast((n) => n <= 9)).toEqual(8);
-    expect(list.findLast((n) => n <= 11)).toEqual(10);
-    expect(list.findLast((n) => n <= 15)).toEqual(15);
+    expect(list.findLast(n => n <= 4)).toEqual(4);
+    expect(list.findLast(n => n <= 9)).toEqual(8);
+    expect(list.findLast(n => n <= 11)).toEqual(10);
+    expect(list.findLast(n => n <= 15)).toEqual(15);
   });
 });

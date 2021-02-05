@@ -16,11 +16,11 @@ const JsonDiff = require('jsondiffpatch-for-react').default;
 const CollapsibleItem = require('./CollapsibleItem');
 const ItemLabel = require('./ItemLabel');
 const ItemDescription = require('./ItemDescription');
-const { formatForDiff } = require('../../../utils/Serialization');
+const {formatForDiff} = require('../../../utils/Serialization');
 const ConnectionContext = require('../ConnectionContext');
-const { useSelectedTransaction } = require('../useSelectionHooks');
+const {useSelectedTransaction} = require('../useSelectionHooks');
 const nullthrows = require('nullthrows');
-const { useContext } = require('react');
+const {useContext} = require('react');
 
 const styles = {
   label: {
@@ -39,7 +39,7 @@ type Props = {
   isDiff?: boolean,
 };
 
-function ItemDependencies({ name, isDiff = false }: Props): React.Node {
+function ItemDependencies({name, isDiff = false}: Props): React.Node {
   const connection = nullthrows(useContext(ConnectionContext));
   const [txID] = useSelectedTransaction();
 
@@ -56,17 +56,14 @@ function ItemDependencies({ name, isDiff = false }: Props): React.Node {
           <span style={styles.label}>
             {deps.size} {deps.size === 1 ? 'dependency' : 'dependencies'}
           </span>
-        }
-      >
+        }>
         <div>
-          {Array.from(deps).map((dep) => (
+          {Array.from(deps).map(dep => (
             <Item
               key={dep}
               name={dep}
               startCollapsed={true}
-              content={
-                connection?.tree?.get(dep, txID) ?? { type: 'undefined' }
-              }
+              content={connection?.tree?.get(dep, txID) ?? {type: 'undefined'}}
               isRoot={false}
             />
           ))}

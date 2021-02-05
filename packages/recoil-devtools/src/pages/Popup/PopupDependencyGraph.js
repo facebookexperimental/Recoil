@@ -24,9 +24,9 @@ const {
   butterflyGraphLayout,
 } = require('../../utils/sankey/SankeyGraphLayout');
 const React = require('react');
-const { useMemo, useState, useContext, useRef, useEffect } = require('react');
+const {useMemo, useState, useContext, useRef, useEffect} = require('react');
 const ConnectionContext = require('./ConnectionContext');
-const { useSelectedTransaction } = require('./useSelectionHooks');
+const {useSelectedTransaction} = require('./useSelectionHooks');
 const nullthrows = require('nullthrows');
 const d3 = require('d3');
 const Sankey = require('../../utils/sankey/Sankey');
@@ -89,10 +89,10 @@ type ReferenceProps = {
   legend: string,
 };
 
-function ColorReference({ color, legend }: ReferenceProps): React.Node {
+function ColorReference({color, legend}: ReferenceProps): React.Node {
   return (
     <div style={styles.referenceHolder}>
-      <span style={{ ...styles.referenceColor, backgroundColor: color }} />
+      <span style={{...styles.referenceColor, backgroundColor: color}} />
 
       <span>{legend}</span>
     </div>
@@ -103,7 +103,7 @@ function PopupDependencyGraph(): React.Node {
   const connection = nullthrows(useContext(ConnectionContext));
   const [txID] = useSelectedTransaction();
   const [focalNodeKey, setFocalNodeKey] = useState();
-  const { edges, nodes } = useMemo(() => {
+  const {edges, nodes} = useMemo(() => {
     const nodeDeps = connection.dependencies.getSnapshot(txID);
     const nodeWeights = connection.nodesState.getSnapshot(txID);
     return createSankeyData(nodeDeps, nodeWeights);
@@ -118,8 +118,7 @@ function PopupDependencyGraph(): React.Node {
         <button
           style={styles.button}
           disabled={focalNodeKey == null}
-          onClick={() => setFocalNodeKey(null)}
-        >
+          onClick={() => setFocalNodeKey(null)}>
           Reset View
         </button>
       </div>
@@ -131,18 +130,18 @@ function PopupDependencyGraph(): React.Node {
           orientation="horizontal"
           nodes={{
             data: nodes,
-            getNodeKey: (n) => n,
-            getNodeName: (n) => (n.length < 25 ? n : `${n.substr(0, 22)}...`),
-            getNodeValue: (n) => 1,
+            getNodeKey: n => n,
+            getNodeName: n => (n.length < 25 ? n : `${n.substr(0, 22)}...`),
+            getNodeValue: n => 1,
           }}
           links={{
             data: edges,
-            getLinkValue: (l) => l.value,
-            getLinkSourceKey: (l) => l.source,
-            getLinkTargetKey: (l) => l.target,
+            getLinkValue: l => l.value,
+            getLinkSourceKey: l => l.source,
+            getLinkTargetKey: l => l.target,
           }}
           nodeStyles={{
-            fill: (n) => {
+            fill: n => {
               const type = connection.getNode(n.key)?.type;
               return type === 'selector'
                 ? 'red'
@@ -178,10 +177,10 @@ function PopupDependencyGraph(): React.Node {
                 })
           }
           nodeThickness={20}
-          linkStyles={{ stroke: 'lightblue', opacity: 0.4 }}
-          linkColor={(l) => 'lightblue'}
-          getNodeTooltip={(n) => String(n.key)}
-          getLinkTooltip={(n) =>
+          linkStyles={{stroke: 'lightblue', opacity: 0.4}}
+          linkColor={l => 'lightblue'}
+          getNodeTooltip={n => String(n.key)}
+          getLinkTooltip={n =>
             `${n.source?.key ?? ''} => ${n.target?.key ?? ''}`
           }
         />

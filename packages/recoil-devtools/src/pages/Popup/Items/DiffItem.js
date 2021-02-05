@@ -12,15 +12,15 @@ import type Connection from '../../../utils/Connection';
 import ItemDependencies from './ItemDependencies';
 
 const React = require('react');
-const { useMemo } = require('react');
+const {useMemo} = require('react');
 const JsonDiff = require('jsondiffpatch-for-react').default;
 const CollapsibleItem = require('./CollapsibleItem');
 const ItemLabel = require('./ItemLabel');
 const ItemDescription = require('./ItemDescription');
-const { formatForDiff } = require('../../../utils/Serialization');
-const { useContext } = require('react');
+const {formatForDiff} = require('../../../utils/Serialization');
+const {useContext} = require('react');
 const ConnectionContext = require('../ConnectionContext');
-const { useSelectedTransaction } = require('../useSelectionHooks');
+const {useSelectedTransaction} = require('../useSelectionHooks');
 const nullthrows = require('nullthrows');
 const ItemMoreItems = require('./ItemMoreItems');
 
@@ -48,13 +48,13 @@ function DiffItem({
   const connection = nullthrows(useContext(ConnectionContext));
   const [txID] = useSelectedTransaction();
 
-  const { tree, dependencies } = connection;
-  const { value, previous } = useMemo(
+  const {tree, dependencies} = connection;
+  const {value, previous} = useMemo(
     () => ({
       value: tree.get(name, txID),
       previous: tree.get(name, txID - 1),
     }),
-    [tree, txID]
+    [tree, txID],
   );
 
   return (
@@ -71,8 +71,7 @@ function DiffItem({
           <ItemDescription content={value} isDiff={true} previous={previous} />
         </>
       }
-      startCollapsed={startCollapsed}
-    >
+      startCollapsed={startCollapsed}>
       <div style={styles.valuesHolder}>
         <JsonDiff left={formatForDiff(previous)} right={formatForDiff(value)} />
       </div>
