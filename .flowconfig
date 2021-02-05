@@ -1,5 +1,6 @@
 [ignore]
 .*/__tests__.*
+.*/packages/.*
 
 [include]
 
