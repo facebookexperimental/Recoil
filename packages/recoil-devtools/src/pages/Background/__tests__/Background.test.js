@@ -7,8 +7,8 @@ global.chrome = {
 };
 global.__DEV__ = true;
 
-const { onConnect } = require('../Background');
-const { RecoilDevToolsActions } = require('../../../constants/Constants');
+const {onConnect} = require('../Background');
+const {RecoilDevToolsActions} = require('../../../constants/Constants');
 
 describe('Background Proccess', () => {
   it('onConnect listern added', () => {
@@ -23,7 +23,7 @@ describe('Background Proccess', () => {
   let evtHandler = null;
   const port = {
     onMessage: {
-      addListener: jest.fn((fn) => (evtHandler = fn)),
+      addListener: jest.fn(fn => (evtHandler = fn)),
     },
     onDisconnect: {
       addListener: jest.fn(),
@@ -40,7 +40,7 @@ describe('Background Proccess', () => {
       action: RecoilDevToolsActions.INIT,
       data: {
         initialValues: {
-          a: { t: '0', v: 2 },
+          a: {t: '0', v: 2},
         },
       },
     });
@@ -53,14 +53,14 @@ describe('Background Proccess', () => {
       action: RecoilDevToolsActions.UPDATE,
       message: {
         modifiedValues: {
-          b: { t: '0', v: 2 },
+          b: {t: '0', v: 2},
         },
       },
     });
     expect(store.connections.get(0).transactions.getSize()).toBe(2);
     expect(
-      store.connections.get(0).transactions.get(1).modifiedValues
-    ).toEqual([{ isSubscriber: false, name: 'b' }]);
+      store.connections.get(0).transactions.get(1).modifiedValues,
+    ).toEqual([{isSubscriber: false, name: 'b'}]);
   });
 
   it('transaction in chunks is stored', () => {
@@ -87,8 +87,8 @@ describe('Background Proccess', () => {
 
     expect(store.connections.get(0).transactions.getSize()).toBe(3);
     expect(
-      store.connections.get(0).transactions.get(2).modifiedValues
-    ).toEqual([{ isSubscriber: false, name: 'c' }]);
+      store.connections.get(0).transactions.get(2).modifiedValues,
+    ).toEqual([{isSubscriber: false, name: 'c'}]);
   });
 
   it('mixed chunks are dealt with properly', () => {
@@ -138,10 +138,10 @@ describe('Background Proccess', () => {
 
     expect(store.connections.get(0).transactions.getSize()).toBe(5);
     expect(
-      store.connections.get(0).transactions.get(3).modifiedValues
-    ).toEqual([{ isSubscriber: false, name: 'd' }]);
+      store.connections.get(0).transactions.get(3).modifiedValues,
+    ).toEqual([{isSubscriber: false, name: 'd'}]);
     expect(
-      store.connections.get(0).transactions.get(4).modifiedValues
-    ).toEqual([{ isSubscriber: false, name: 'e' }]);
+      store.connections.get(0).transactions.get(4).modifiedValues,
+    ).toEqual([{isSubscriber: false, name: 'e'}]);
   });
 });

@@ -15,5 +15,5 @@ chrome.devtools.panels.create(
   __DEV__ ? 'Recoil (DEV)' : 'Recoil',
   '',
   'devpanel.html',
-  () => {}
+  () => {},
 );

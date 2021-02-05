@@ -10,16 +10,16 @@
 'use strict';
 
 import type Connection from '../../utils/Connection';
-import type { TransactionType } from '../../types/DevtoolsTypes';
+import type {TransactionType} from '../../types/DevtoolsTypes';
 
 const nullthrows = require('nullthrows');
 const Transaction = require('./PopupSidebarTransaction');
 const React = require('react');
-const { useContext, useMemo } = require('react');
+const {useContext, useMemo} = require('react');
 const ConnectionContext = require('./ConnectionContext');
-const { useSelectedTransaction } = require('./useSelectionHooks');
+const {useSelectedTransaction} = require('./useSelectionHooks');
 
-const { useFilter } = require('./useSelectionHooks');
+const {useFilter} = require('./useSelectionHooks');
 const styles = {
   sidebar: {
     backgroundColor: 'white',
@@ -45,10 +45,10 @@ function Sidebar(): React.MixedElement {
     connection?.transactions?.getArray() ?? [];
   const transactions = useMemo(() => {
     if (filter !== '') {
-      return allTransactions.filter((tx) =>
+      return allTransactions.filter(tx =>
         tx.modifiedValues.some(
-          (node) => node.name.toLowerCase().indexOf(filter.toLowerCase()) !== -1
-        )
+          node => node.name.toLowerCase().indexOf(filter.toLowerCase()) !== -1,
+        ),
       );
     }
     return allTransactions;

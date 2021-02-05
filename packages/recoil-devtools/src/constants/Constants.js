@@ -36,7 +36,7 @@ export type MainTabsType = 'Diff' | 'State' | 'Graph';
 
 const MainTabs: MainTabsType[] = ['Diff', 'State', 'Graph'];
 
-const MainTabsTitle: { [MainTabsType]: string } = Object.freeze({
+const MainTabsTitle: {[MainTabsType]: string} = Object.freeze({
   Diff: 'Modified Values',
   State: 'Known Nodes',
   Graph: 'Registered Dependencies',

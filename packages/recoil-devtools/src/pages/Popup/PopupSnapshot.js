@@ -9,12 +9,12 @@
  */
 'use strict';
 
-import type { SnapshotType } from '../../types/DevtoolsTypes';
+import type {SnapshotType} from '../../types/DevtoolsTypes';
 import Item from './Items/Item';
 
-const { useContext, useMemo } = require('react');
+const {useContext, useMemo} = require('react');
 const ConnectionContext = require('./ConnectionContext');
-const { useSelectedTransaction } = require('./useSelectionHooks');
+const {useSelectedTransaction} = require('./useSelectionHooks');
 
 const React = require('react');
 
@@ -27,7 +27,7 @@ const styles = {
 function SnapshotRenderer(): React.Node {
   const connection = useContext(ConnectionContext);
   const [txID] = useSelectedTransaction();
-  const { snapshot, sortedKeys } = useMemo(() => {
+  const {snapshot, sortedKeys} = useMemo(() => {
     const localSnapshot = connection?.tree?.getSnapshot(txID);
     return {
       snapshot: localSnapshot,
@@ -41,7 +41,7 @@ function SnapshotRenderer(): React.Node {
 
   const atoms = [];
   const selectors = [];
-  sortedKeys.forEach((key) => {
+  sortedKeys.forEach(key => {
     const node = connection.getNode(key);
     const list = node?.type === 'selector' ? selectors : atoms;
     list.push(
@@ -51,7 +51,7 @@ function SnapshotRenderer(): React.Node {
         key={key}
         content={snapshot[key]}
         node={node}
-      />
+      />,
     );
   });
 

@@ -9,13 +9,13 @@
  */
 'use strict';
 
-import type { TransactionType } from '../../types/DevtoolsTypes';
+import type {TransactionType} from '../../types/DevtoolsTypes';
 import type Connection from '../../utils/Connection';
 
 const React = require('react');
-const { useRef, useEffect } = require('react');
+const {useRef, useEffect} = require('react');
 const NodeName = require('./Items/NodeName');
-const { useContext } = require('react');
+const {useContext} = require('react');
 const ConnectionContext = require('./ConnectionContext');
 
 const styles = {
@@ -64,7 +64,7 @@ type Props = $ReadOnly<{
   transaction: TransactionType,
   previous: ?TransactionType,
   isSelected: boolean,
-  setSelected: (number) => void,
+  setSelected: number => void,
 }>;
 
 const Transaction = ({
@@ -93,17 +93,16 @@ const Transaction = ({
     nextList.push(
       <span
         key={modifiedValue.name}
-        style={modifiedValue.isSubscriber ? styles.subscriber : styles.atom}
-      >
+        style={modifiedValue.isSubscriber ? styles.subscriber : styles.atom}>
         <NodeName
           name={modifiedValue.name}
           node={connection?.getNode(modifiedValue.name)}
         />
-      </span>
+      </span>,
     );
   }
 
-  const gotoCallback = (evt) => {
+  const gotoCallback = evt => {
     evt.stopPropagation();
     connection?.goToSnapshot(transaction.id);
     setSelected(transaction.id);
@@ -116,8 +115,7 @@ const Transaction = ({
         ...styles.transaction,
         ...(isSelected ? styles.transactionSelected : {}),
       }}
-      onClick={() => setSelected(transaction.id)}
-    >
+      onClick={() => setSelected(transaction.id)}>
       <div style={styles.itemHeader}>
         {transaction.id >= 0 ? <span>Tx {transaction.id}</span> : <span />}
         <div>

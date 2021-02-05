@@ -44,14 +44,14 @@ describe('Timestamp hashtable', () => {
 
   it('get latest snapshot', () => {
     hash.set('other', 199, 7);
-    expect(hash.getSnapshot()).toEqual({ other: 199, test: 199 });
+    expect(hash.getSnapshot()).toEqual({other: 199, test: 199});
   });
 
   it('get timed snapshot', () => {
-    expect(hash.getSnapshot(7)).toEqual({ other: 199, test: 99 });
+    expect(hash.getSnapshot(7)).toEqual({other: 199, test: 99});
   });
 
   it('get timed snapshot with missing keys', () => {
-    expect(hash.getSnapshot(5)).toEqual({ test: 99 });
+    expect(hash.getSnapshot(5)).toEqual({test: 99});
   });
 });

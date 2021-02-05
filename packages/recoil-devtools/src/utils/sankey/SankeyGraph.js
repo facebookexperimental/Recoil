@@ -7,7 +7,7 @@
  */
 'use strict';
 
-import type { LinkData, NodeData } from './Sankey';
+import type {LinkData, NodeData} from './Sankey';
 
 const objectValues = require('../ObjectValues').default;
 
@@ -50,7 +50,7 @@ export type Graph = $ReadOnly<{
 }>;
 
 // Utility functions
-const sortDesc = <T>(array: Array<T>, accessor: (T) => number) =>
+const sortDesc = <T>(array: Array<T>, accessor: T => number) =>
   array.sort((a, b) => accessor(b) - accessor(a));
 
 // Generate the Node and Link objects for layout.  These may be mutated.
@@ -62,7 +62,7 @@ function generateGraph<N, L>({
   linkData: LinkData<L>,
 }): Graph {
   // Prepare the Nodesx
-  const nodesByKey: { [Key]: Node<N> } = {};
+  const nodesByKey: {[Key]: Node<N>} = {};
   if (nodeData != null) {
     for (const n of nodeData.data) {
       const key: Key = nodeData.getNodeKey(n);
@@ -111,7 +111,7 @@ function generateGraph<N, L>({
   }
 
   // Prepare the Links
-  const links: Array<Link<L>> = linkData.data.map((l) => {
+  const links: Array<Link<L>> = linkData.data.map(l => {
     const sourceKey = linkData.getLinkSourceKey(l);
     const targetKey = linkData.getLinkTargetKey(l);
     const source = sourceKey != null ? nodesByKey[sourceKey] : undefined;
@@ -138,22 +138,22 @@ function generateGraph<N, L>({
 
   // Only include connected nodes
   const nodes = objectValues(nodesByKey).filter(
-    (node: Node<>) => node.sourceLinks.length || node.targetLinks.length
+    (node: Node<>) => node.sourceLinks.length || node.targetLinks.length,
   );
 
   // Compute the node values
   for (const node: Node<> of nodes) {
-    const sourceWeight: number = d3Array.sum(node.sourceLinks, (l) => l.value);
-    const targetWeight: number = d3Array.sum(node.targetLinks, (l) => l.value);
+    const sourceWeight: number = d3Array.sum(node.sourceLinks, l => l.value);
+    const targetWeight: number = d3Array.sum(node.targetLinks, l => l.value);
     node.value = Math.max(node.value, sourceWeight, targetWeight);
     // Sort links for deterministic back-edge detection
-    sortDesc(node.sourceLinks, (l) => l.value);
-    sortDesc(node.targetLinks, (l) => l.value);
+    sortDesc(node.sourceLinks, l => l.value);
+    sortDesc(node.targetLinks, l => l.value);
   }
 
   // Detect Back Edges / Cycles
   sortDesc(nodes, (node: Node<>) => node.value); // sort for deterministic back-edge detection
-  const visited: { [Key]: boolean } = {};
+  const visited: {[Key]: boolean} = {};
   for (const node: Node<> of nodes) {
     if (visited[node.key]) {
       continue;
@@ -174,7 +174,7 @@ function generateGraph<N, L>({
   }
 
   // Return the Graph
-  return { links, nodes };
+  return {links, nodes};
 }
 
 function updateVisibility(graph: Graph, nodesSet: Set<Node<>>) {

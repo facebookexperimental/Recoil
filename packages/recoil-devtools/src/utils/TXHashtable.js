@@ -8,7 +8,7 @@
  * @format
  */
 'use strict';
-import type { SerializedValue } from './Serialization';
+import type {SerializedValue} from './Serialization';
 type TXItem = {
   transactionId: number,
   timestamp: number,
@@ -25,7 +25,7 @@ class TXHashTable<TBaseItem> {
       transactionId: number,
       timestamp: number,
       value: TBaseItem,
-    }>
+    }>,
   >;
   persistenceLimit: number;
 
@@ -50,7 +50,7 @@ class TXHashTable<TBaseItem> {
           transactionId: number,
           timestamp: number,
           value: TBaseItem,
-        }>(this.persistenceLimit)
+        }>(this.persistenceLimit),
       );
     }
     nullthrows(this.map.get(atomName)).add({
@@ -69,7 +69,7 @@ class TXHashTable<TBaseItem> {
       transactionId == null
         ? data.getLastValue()
         : data.findLast(
-            (item) => item != null && item.transactionId <= transactionId
+            item => item != null && item.transactionId <= transactionId,
           );
 
     if (foundItem == null) {
@@ -80,7 +80,7 @@ class TXHashTable<TBaseItem> {
   }
 
   // TODO: memoize
-  getSnapshot(transactionId?: number): { [string]: TBaseItem } {
+  getSnapshot(transactionId?: number): {[string]: TBaseItem} {
     const data = {};
     for (const atomName of this.map.keys()) {
       const value = this.get(atomName, transactionId);

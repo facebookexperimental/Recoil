@@ -8,21 +8,21 @@
  * @format
  */
 'use strict';
-import type { SerializedValue } from '../../../utils/Serialization';
-import type { Node } from '../../../types/DevtoolsTypes';
+import type {SerializedValue} from '../../../utils/Serialization';
+import type {Node} from '../../../types/DevtoolsTypes';
 
 import ItemValue from './ItemValue';
 import ItemDependencies from './ItemDependencies';
 
 const React = require('react');
 const ItemDescription = require('./ItemDescription');
-const { hasItemDescription } = require('./ItemDescription');
+const {hasItemDescription} = require('./ItemDescription');
 const CollapsibleItem = require('./CollapsibleItem');
 const ItemLabel = require('./ItemLabel');
 const ConnectionContext = require('../ConnectionContext');
-const { useSelectedTransaction } = require('../useSelectionHooks');
+const {useSelectedTransaction} = require('../useSelectionHooks');
 const nullthrows = require('nullthrows');
-const { useContext } = require('react');
+const {useContext} = require('react');
 const ItemMoreItems = require('./ItemMoreItems');
 
 type KeyProps = {
@@ -71,8 +71,7 @@ function Item({
             )}
           </>
         </span>
-      }
-    >
+      }>
       <div>
         {hasDescription && (
           <ItemValue content={content} startCollapsed={startCollapsed} />

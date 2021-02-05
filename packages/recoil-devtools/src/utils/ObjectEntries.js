@@ -26,7 +26,7 @@ export default function objectEntries<TKey, TValue>(obj: {
     if (obj instanceof Map) {
       // eslint-disable-next-line fb-www/no-console
       console.error(
-        "objectEntries doesn't work on Map instances; use instance.entries() instead"
+        "objectEntries doesn't work on Map instances; use instance.entries() instead",
       );
     }
   }

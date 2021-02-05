@@ -9,9 +9,9 @@
  */
 'use strict';
 
-import type { RecoilState } from 'Recoil';
+import type {RecoilState} from 'Recoil';
 
-const { atom, useRecoilState } = require('recoil');
+const {atom, useRecoilState} = require('recoil');
 
 const FilterAtom = atom({
   key: 'filter-atom',
@@ -31,4 +31,4 @@ const useSelectedTransaction = (): [number, (number) => void] => {
   return useRecoilState(SelectecTransactionAtom);
 };
 
-module.exports = { useFilter, useSelectedTransaction };
+module.exports = {useFilter, useSelectedTransaction};

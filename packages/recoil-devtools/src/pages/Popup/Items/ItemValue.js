@@ -13,10 +13,10 @@ import type {
   SerializedValue,
   SupportedSerializedValueTypes,
 } from '../../../utils/Serialization';
-import type { Node } from '../../../types/DevtoolsTypes';
+import type {Node} from '../../../types/DevtoolsTypes';
 import Item from './Item';
 
-const { SerializedValueType } = require('../../../utils/Serialization');
+const {SerializedValueType} = require('../../../utils/Serialization');
 const React = require('react');
 
 const styles = {
@@ -32,7 +32,7 @@ type ValueSpanProps = {
   children: React.Node,
 };
 
-const ValueSpan = ({ children }: ValueSpanProps): React.Node => {
+const ValueSpan = ({children}: ValueSpanProps): React.Node => {
   return <span style={styles.value}>{children}</span>;
 };
 
@@ -62,7 +62,7 @@ const ItemRenderers: {
     value: $ReadOnlyArray<$ReadOnlyArray<SerializedValue>>,
     startCollapsed: ?boolean,
   }) => {
-    return ItemRenderers[SerializedValueType.map]({ value, startCollapsed });
+    return ItemRenderers[SerializedValueType.map]({value, startCollapsed});
   },
   [SerializedValueType.set]: ({
     value,
@@ -71,7 +71,7 @@ const ItemRenderers: {
     value: $ReadOnlyArray<any>,
     startCollapsed: ?boolean,
   }) => {
-    return ItemRenderers[SerializedValueType.array]({ value, startCollapsed });
+    return ItemRenderers[SerializedValueType.array]({value, startCollapsed});
   },
   [SerializedValueType.map]: ({
     value,
@@ -89,21 +89,21 @@ const ItemRenderers: {
       />
     ));
   },
-  [SerializedValueType.date]: ({ value }: { value: Date }) => {
+  [SerializedValueType.date]: ({value}: {value: Date}) => {
     return <ValueSpan>{new Date(value).toISOString()}</ValueSpan>;
   },
-  [SerializedValueType.function]: ({ value }: { value: string }) => {
+  [SerializedValueType.function]: ({value}: {value: string}) => {
     return <ValueSpan>{value}</ValueSpan>;
   },
-  [SerializedValueType.symbol]: ({ value }: { value: string }) => {
+  [SerializedValueType.symbol]: ({value}: {value: string}) => {
     return <ValueSpan>Symbol({value})</ValueSpan>;
   },
-  [SerializedValueType.error]: ({ value }: { value: string }) =>
-    ItemRenderers[SerializedValueType.primitive]({ value }),
-  [SerializedValueType.promise]: ({ value }: { value: string }) => (
+  [SerializedValueType.error]: ({value}: {value: string}) =>
+    ItemRenderers[SerializedValueType.primitive]({value}),
+  [SerializedValueType.promise]: ({value}: {value: string}) => (
     <ValueSpan>Promise{'<Pending>'}</ValueSpan>
   ),
-  [SerializedValueType.primitive]: ({ value }: { value: any }) => {
+  [SerializedValueType.primitive]: ({value}: {value: any}) => {
     if (typeof value === 'string') {
       return <ValueSpan>"{value}"</ValueSpan>;
     } else if (typeof value?.toString === 'function') {

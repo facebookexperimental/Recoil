@@ -7,7 +7,7 @@ const bg = {
   onMessage: {
     addListener: jest.fn(),
   },
-  postMessage: jest.fn((msg) => {
+  postMessage: jest.fn(msg => {
     if (msg.message?.mustThrow) {
       throw new Error('Message length exceeded maximum allowed length.');
     }
@@ -49,7 +49,7 @@ jest.mock('../../../constants/Constants', () => ({
   MessageChunkSize: 50,
 }));
 
-const { initContentScriptListeners } = require('../ContentScript');
+const {initContentScriptListeners} = require('../ContentScript');
 
 describe('initializing Content Script listeners', () => {
   it('sets events handler', () => {
@@ -95,7 +95,7 @@ describe('initializing Content Script listeners', () => {
       data: {
         action: RecoilDevToolsActions.UPDATE,
         source: ExtensionSource,
-        message: { modifiedValues: { a: { t: '0', v: 2 } } },
+        message: {modifiedValues: {a: {t: '0', v: 2}}},
       },
     });
     expect(bg.postMessage).toHaveBeenLastCalledWith({
@@ -103,7 +103,7 @@ describe('initializing Content Script listeners', () => {
       source: ExtensionSource,
       message: {
         modifiedValues: {
-          a: { t: '0', v: 2 },
+          a: {t: '0', v: 2},
         },
       },
     });
@@ -116,7 +116,7 @@ describe('initializing Content Script listeners', () => {
       data: {
         action: RecoilDevToolsActions.UPDATE,
         source: ExtensionSource,
-        message: { mustThrow: true, modifiedValues: { a: { t: '0', v: 2 } } },
+        message: {mustThrow: true, modifiedValues: {a: {t: '0', v: 2}}},
       },
     });
     expect(bg.postMessage).toHaveBeenCalledTimes(4);

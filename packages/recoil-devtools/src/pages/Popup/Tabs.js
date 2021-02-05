@@ -46,7 +46,7 @@ function Tabs<TType: string>({
 }: $ReadOnly<{
   tabs: $ReadOnlyArray<TType>,
   selected: TType,
-  onSelect: (TType) => void,
+  onSelect: TType => void,
 }>): React.Node {
   return (
     <div style={styles.tabs}>
@@ -61,8 +61,7 @@ function Tabs<TType: string>({
             tabIndex={i}
             role="option"
             aria-selected={tab === selected}
-            onClick={() => onSelect(tab)}
-          >
+            onClick={() => onSelect(tab)}>
             <span>{tab}</span>
           </span>
         );
