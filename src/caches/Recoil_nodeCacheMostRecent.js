@@ -13,6 +13,7 @@ import type {NodeCache} from './Recoil_NodeCache';
 function nodeCacheMostRecent<T>(): NodeCache<T> {
   let mostRecent;
   return {
+    type: 'mostRecent',
     get: (getNodeValue, handlers) => {
       if (mostRecent === undefined) {
         return undefined;

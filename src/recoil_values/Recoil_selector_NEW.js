@@ -201,16 +201,19 @@ function selector<T>(
   const set = options.set != null ? options.set : undefined; // flow
 
   /**
-   * HACK: doing this as a way to map given cache to corresponding tree cache
+   * HACK: doing this as a way to map given cache to corresponding tree cache.
+   * Current implementation does not allow custom cache implementations. Custom
+   * caches have a type 'custom' and fall back to reference equality.
    */
-  const cache: NodeCache<T> =
-    cacheImplementation === cacheWithReferenceEquality
-      ? treeCacheReferenceEquality()
-      : cacheImplementation === cacheWithValueEquality
-      ? treeCacheValueEquality()
-      : cacheImplementation === cacheMostRecent
-      ? nodeCacheMostRecent()
-      : treeCacheReferenceEquality();
+  const cache: NodeCache<T> = !cacheImplementation
+    ? treeCacheReferenceEquality()
+    : cacheImplementation.type === 'reference'
+    ? treeCacheReferenceEquality()
+    : cacheImplementation.type === 'value'
+    ? treeCacheValueEquality()
+    : cacheImplementation.type === 'mostRecent'
+    ? nodeCacheMostRecent()
+    : treeCacheReferenceEquality();
 
   const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
 
@@ -345,6 +348,7 @@ function selector<T>(
 
         maybeFreezeValue(value);
         setCache(state, depValuesToDepRoute(depValues), loadable);
+        setDepsInStore(store, state, new Set(depValues.keys()), executionId);
 
         setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
@@ -375,6 +379,7 @@ function selector<T>(
 
         maybeFreezeValue(errorOrPromise);
         setCache(state, depValuesToDepRoute(depValues), loadable);
+        setDepsInStore(store, state, new Set(depValues.keys()), executionId);
 
         setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
@@ -476,6 +481,7 @@ function selector<T>(
 
         if (loadable.state !== 'loading') {
           setCache(state, depValuesToDepRoute(depValues), loadable);
+          setDepsInStore(store, state, new Set(depValues.keys()), executionId);
           setLoadableInStoreToNotifyDeps(store, loadable, executionId);
         }
 
@@ -509,6 +515,7 @@ function selector<T>(
           depValuesToDepRoute(existingDeps),
           loadableWithError(error),
         );
+        setDepsInStore(store, state, new Set(existingDeps.keys()), executionId);
 
         setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 

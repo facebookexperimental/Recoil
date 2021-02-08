@@ -10,8 +10,20 @@
  */
 'use strict';
 
+/**
+ * HACK: doing this as a way to map given cache to corresponding tree cache.
+ * Current implementation does not allow custom cache implementations. Custom
+ * caches have a type 'custom' and fall back to reference equality.
+ */
+export type CacheImplementationType =
+  | 'reference'
+  | 'value'
+  | 'mostRecent'
+  | 'custom';
+
 // eslint-disable-next-line fb-www/flow-readonly-object
 export type CacheImplementation<T> = {
+  +type: CacheImplementationType,
   +get: mixed => T | void,
   +set: (mixed, T) => CacheImplementation<T>,
   +delete: mixed => CacheImplementation<T>,

@@ -15,6 +15,7 @@ const {getFromTreeCache, setInTreeCache} = require('./Recoil_TreeNodeCache');
 function treeCacheReferenceEquality<T>(): NodeCache<T> {
   let treeRoot;
   return {
+    type: 'reference',
     get: (getNodeValue, handlers) =>
       getFromTreeCache(treeRoot, getNodeValue, handlers),
     set: (route, result) => {

@@ -17,7 +17,9 @@ import type {CacheImplementation} from './Recoil_Cache';
 function cacheMostRecent<T>(): CacheImplementation<T> {
   let mostRecentKey;
   let mostRecentValue;
+
   const cache = {
+    type: 'mostRecent',
     get: key => (key === mostRecentKey ? mostRecentValue : undefined),
     set: (key, value) => {
       mostRecentKey = key;

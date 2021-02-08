@@ -50,18 +50,30 @@ function setInTreeCache<T>(
         'Existing cache must have a result type node at the end of the route',
       );
       if (root.result && root.result.state === 'loading') {
-        const ret = {type: 'result', result};
-
-        return ret;
+        return {type: 'result', result};
       } else {
-        invariant(
-          root.result.contents === result.contents &&
-            root.result.state === result.state,
-          'Existing cache must have the same result at the end of the route',
-        );
-        const ret = root;
-
-        return ret;
+        /**
+         * Note the existing cache may have a non-equal result at the end of
+         * the route for identical paths in some edge cases. For example take
+         * this example when using value-equality caching:
+         *
+         * - AtomC: 2
+         * - SelectorB: (AtomC) => {val: AtomC % 2} [pretend this is async]
+         * - SelectorA: (AtomB) => AtomB
+         *
+         * For the first run, Selector A evaluates to {val: 0}
+         *
+         * Now if AtomC changes to 4, SelectorB is placed in an async state,
+         * which triggers a re-evaluation of Selector A. It turns out SelectorB
+         * will evaluate once again to {val: 0}, which means selector A will
+         * compute a cache path key ["A": "{val: 0}"], which is a cache key
+         * that was previously computed (when using a value-equality cache) in
+         * the first run, but the new value is a new object so it will not have
+         * reference equality with the object produced in the first run. For
+         * that reason, we should not have an invariant() check for checking
+         * that equal paths have equal values in the cache.
+         */
+        return root;
       }
     } else {
       const [path, ...rest] = route;
@@ -97,9 +109,11 @@ function getFromTreeCache<T>(
     return root.result;
   }
 
-  handlers?.onCacheHit?.(root.nodeKey);
-
   const nodeValue = getNodeValue(root.nodeKey);
+
+  if (root.branches.has(nodeValue)) {
+    handlers?.onCacheHit?.(root.nodeKey);
+  }
 
   return getFromTreeCache(root.branches.get(nodeValue), getNodeValue, handlers);
 }
