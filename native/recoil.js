@@ -5207,168 +5207,9 @@ function deepFreezeValue(value) {
 
 var Recoil_deepFreezeValue = deepFreezeValue;
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-// cache implementation that only stores the most recent entry
-// based on key reference equality
-function cacheMostRecent() {
-  let mostRecentKey;
-  let mostRecentValue;
-  const cache = {
-    get: key => key === mostRecentKey ? mostRecentValue : undefined,
-    set: (key, value) => {
-      mostRecentKey = key;
-      mostRecentValue = value;
-      return cache;
-    },
-    delete: key => {
-      if (key === mostRecentKey) {
-        mostRecentKey = mostRecentValue = undefined;
-      }
-
-      return cache;
-    }
-  };
-  return cache;
-}
-
-var Recoil_cacheMostRecent = cacheMostRecent;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * Implements (a subset of) the interface of built-in Map but supports arrays as
- * keys. Two keys are equal if corresponding elements are equal according to the
- * equality semantics of built-in Map. Operations are at worst O(n*b) where n is
- * the array length and b is the complexity of the built-in operation.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-const LEAF = {};
-const emptyMap = new Map();
-
-class ArrayKeyedMap {
-  constructor(existing) {
-    _defineProperty(this, "_base", new Map());
-
-    if (existing instanceof ArrayKeyedMap) {
-      for (const [k, v] of existing.entries()) {
-        this.set(k, v);
-      }
-    } else if (existing) {
-      for (const [k, v] of existing) {
-        this.set(k, v);
-      }
-    }
-
-    return this;
-  }
-
-  get(key) {
-    const ks = Array.isArray(key) ? key : [key];
-    let map = this._base;
-    ks.forEach(k => {
-      var _map$get;
-
-      map = (_map$get = map.get(k)) !== null && _map$get !== void 0 ? _map$get : emptyMap;
-    });
-    return map === undefined ? undefined : map.get(LEAF);
-  }
-
-  set(key, value) {
-    const ks = Array.isArray(key) ? key : [key];
-    let map = this._base;
-    let next = map;
-    ks.forEach(k => {
-      next = map.get(k);
-
-      if (!next) {
-        next = new Map();
-        map.set(k, next);
-      }
-
-      map = next;
-    });
-    next.set(LEAF, value);
-    return this;
-  }
-
-  delete(key) {
-    const ks = Array.isArray(key) ? key : [key];
-    let map = this._base;
-    let next = map;
-    ks.forEach(k => {
-      next = map.get(k);
-
-      if (!next) {
-        next = new Map();
-        map.set(k, next);
-      }
-
-      map = next;
-    });
-    next.delete(LEAF); // TODO We could cleanup empty maps
-
-    return this;
-  }
-
-  entries() {
-    const answer = [];
-
-    function recurse(level, prefix) {
-      level.forEach((v, k) => {
-        if (k === LEAF) {
-          answer.push([prefix, v]);
-        } else {
-          recurse(v, prefix.concat(k));
-        }
-      });
-    }
-
-    recurse(this._base, []);
-    return answer.values();
-  }
-
-  toBuiltInMap() {
-    return new Map(this.entries());
-  }
-
-}
-
-var Recoil_ArrayKeyedMap = {
-  ArrayKeyedMap
-};
-
-var Recoil_ArrayKeyedMap_1 = Recoil_ArrayKeyedMap.ArrayKeyedMap;
-
-var Recoil_ArrayKeyedMap$1 = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  ArrayKeyedMap: Recoil_ArrayKeyedMap_1
+var Recoil_cacheWithReferenceEquality = /*#__PURE__*/Object.freeze({
+  __proto__: null
 });
-
-const {
-  ArrayKeyedMap: ArrayKeyedMap$1
-} = Recoil_ArrayKeyedMap$1;
-
-function cacheWithReferenceEquality() {
-  return new ArrayKeyedMap$1();
-}
-
-var Recoil_cacheWithReferenceEquality = cacheWithReferenceEquality;
 
 const TIME_WARNING_THRESHOLD_MS = 15;
 
@@ -5520,6 +5361,7 @@ var Recoil_stableStringify = stableStringify;
 function cacheWithValueEquality() {
   const map = new Map();
   const cache = {
+    type: 'value',
     get: key => map.get(Recoil_stableStringify(key)),
     set: (key, value) => {
       map.set(Recoil_stableStringify(key), value);
@@ -5548,6 +5390,7 @@ var Recoil_cacheWithValueEquality = cacheWithValueEquality;
 function nodeCacheMostRecent() {
   let mostRecent;
   return {
+    type: 'mostRecent',
     get: (getNodeValue, handlers) => {
       if (mostRecent === undefined) {
         return undefined;
@@ -5599,15 +5442,33 @@ function setInTreeCache(root, route, result) {
       !(root.type === 'result') ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Existing cache must have a result type node at the end of the route') : Recoil_invariant(false) : void 0;
 
       if (root.result && root.result.state === 'loading') {
-        const ret = {
+        return {
           type: 'result',
           result
         };
-        return ret;
       } else {
-        !(root.result.contents === result.contents && root.result.state === result.state) ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Existing cache must have the same result at the end of the route') : Recoil_invariant(false) : void 0;
-        const ret = root;
-        return ret;
+        /**
+         * Note the existing cache may have a non-equal result at the end of
+         * the route for identical paths in some edge cases. For example take
+         * this example when using value-equality caching:
+         *
+         * - AtomC: 2
+         * - SelectorB: (AtomC) => {val: AtomC % 2} [pretend this is async]
+         * - SelectorA: (AtomB) => AtomB
+         *
+         * For the first run, Selector A evaluates to {val: 0}
+         *
+         * Now if AtomC changes to 4, SelectorB is placed in an async state,
+         * which triggers a re-evaluation of Selector A. It turns out SelectorB
+         * will evaluate once again to {val: 0}, which means selector A will
+         * compute a cache path key ["A": "{val: 0}"], which is a cache key
+         * that was previously computed (when using a value-equality cache) in
+         * the first run, but the new value is a new object so it will not have
+         * reference equality with the object produced in the first run. For
+         * that reason, we should not have an invariant() check for checking
+         * that equal paths have equal values in the cache.
+         */
+        return root;
       }
     } else {
       const [path, ...rest] = route;
@@ -5621,8 +5482,6 @@ function setInTreeCache(root, route, result) {
 }
 
 function getFromTreeCache(root, getNodeValue, handlers) {
-  var _handlers$onCacheHit;
-
   if (root == null) {
     return undefined;
   }
@@ -5631,8 +5490,14 @@ function getFromTreeCache(root, getNodeValue, handlers) {
     return root.result;
   }
 
-  handlers === null || handlers === void 0 ? void 0 : (_handlers$onCacheHit = handlers.onCacheHit) === null || _handlers$onCacheHit === void 0 ? void 0 : _handlers$onCacheHit.call(handlers, root.nodeKey);
   const nodeValue = getNodeValue(root.nodeKey);
+
+  if (root.branches.has(nodeValue)) {
+    var _handlers$onCacheHit;
+
+    handlers === null || handlers === void 0 ? void 0 : (_handlers$onCacheHit = handlers.onCacheHit) === null || _handlers$onCacheHit === void 0 ? void 0 : _handlers$onCacheHit.call(handlers, root.nodeKey);
+  }
+
   return getFromTreeCache(root.branches.get(nodeValue), getNodeValue, handlers);
 }
 
@@ -5649,6 +5514,7 @@ const {
 function treeCacheReferenceEquality() {
   let treeRoot;
   return {
+    type: 'reference',
     get: (getNodeValue, handlers) => getFromTreeCache$1(treeRoot, getNodeValue, handlers),
     set: (route, result) => {
       treeRoot = setInTreeCache$1(treeRoot, route, result);
@@ -5667,6 +5533,7 @@ const {
 function treeCacheValueEquality() {
   let treeRoot;
   return {
+    type: 'value',
     get: (getNodeValue, handlers) => getFromTreeCache$2(treeRoot, nodeKey => Recoil_stableStringify(getNodeValue(nodeKey)), handlers),
     set: (route, result) => {
       treeRoot = setInTreeCache$2(treeRoot, route.map(([nodeKey, nodeValue]) => [nodeKey, Recoil_stableStringify(nodeValue)]), result);
@@ -5794,10 +5661,12 @@ function selector(options) {
   const set = options.set != null ? options.set : undefined; // flow
 
   /**
-   * HACK: doing this as a way to map given cache to corresponding tree cache
+   * HACK: doing this as a way to map given cache to corresponding tree cache.
+   * Current implementation does not allow custom cache implementations. Custom
+   * caches have a type 'custom' and fall back to reference equality.
    */
 
-  const cache = cacheImplementation === Recoil_cacheWithReferenceEquality ? Recoil_treeCacheReferenceEquality() : cacheImplementation === Recoil_cacheWithValueEquality ? Recoil_treeCacheValueEquality() : cacheImplementation === Recoil_cacheMostRecent ? Recoil_nodeCacheMostRecent() : Recoil_treeCacheReferenceEquality();
+  const cache = !cacheImplementation ? Recoil_treeCacheReferenceEquality() : cacheImplementation.type === 'reference' ? Recoil_treeCacheReferenceEquality() : cacheImplementation.type === 'value' ? Recoil_treeCacheValueEquality() : cacheImplementation.type === 'mostRecent' ? Recoil_nodeCacheMostRecent() : Recoil_treeCacheReferenceEquality();
   const retainedBy = retainedByOptionWithDefault$1(options.retainedBy_UNSTABLE);
   const executionInfoMap = new Map();
   let liveStoresCount = 0;
@@ -5909,6 +5778,7 @@ function selector(options) {
       const loadable = loadableWithValue$1(value);
       maybeFreezeValue(value);
       setCache(state, depValuesToDepRoute(depValues), loadable);
+      setDepsInStore(store, state, new Set(depValues.keys()), executionId);
       setLoadableInStoreToNotifyDeps(store, loadable, executionId);
       return {
         __value: value,
@@ -5932,6 +5802,7 @@ function selector(options) {
       const loadable = loadableWithError$1(errorOrPromise);
       maybeFreezeValue(errorOrPromise);
       setCache(state, depValuesToDepRoute(depValues), loadable);
+      setDepsInStore(store, state, new Set(depValues.keys()), executionId);
       setLoadableInStoreToNotifyDeps(store, loadable, executionId);
       throw errorOrPromise;
     });
@@ -6020,6 +5891,7 @@ function selector(options) {
 
       if (loadable.state !== 'loading') {
         setCache(state, depValuesToDepRoute(depValues), loadable);
+        setDepsInStore(store, state, new Set(depValues.keys()), executionId);
         setLoadableInStoreToNotifyDeps(store, loadable, executionId);
       }
 
@@ -6051,6 +5923,7 @@ function selector(options) {
       const loadable = loadableWithError$1(error);
       maybeFreezeValue(error);
       setCache(state, depValuesToDepRoute(existingDeps), loadableWithError$1(error));
+      setDepsInStore(store, state, new Set(existingDeps.keys()), executionId);
       setLoadableInStoreToNotifyDeps(store, loadable, executionId);
       throw error;
     });

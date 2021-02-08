@@ -12,11 +12,15 @@
  */
 'use strict';
 
-import type { CacheImplementation } from './Recoil_Cache';
+import type { CacheImplementation, CacheImplementationType } from './Recoil_Cache';
 
 const {
   ArrayKeyedMap
 } = require('../adt/Recoil_ArrayKeyedMap');
 
+declare class ArrayKeyedMapWithCacheImplementationType<T> extends ArrayKeyedMap<T> {
+  type: CacheImplementationType,
+  constructor(type: CacheImplementationType): any,
+}
 declare function cacheWithReferenceEquality<T>(): CacheImplementation<T>;
 module.exports = cacheWithReferenceEquality;
