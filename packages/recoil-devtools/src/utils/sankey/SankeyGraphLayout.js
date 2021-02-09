@@ -10,11 +10,9 @@
 import type {LayoutFunction} from './Sankey';
 import type {Graph, Key, Link, Node} from './SankeyGraph';
 
+const compactArray = require('./compactArray').default;
 const memoize = require('./CV2_memoize').default;
 const {updateVisibility} = require('./SankeyGraph');
-
-const compactArray = require('./compactArray').default;
-
 const d3Array = require('d3-array');
 const d3Collection = require('d3-collection');
 

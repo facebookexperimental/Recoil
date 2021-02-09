@@ -14,11 +14,10 @@ import type {Graph, Key, Link, Node} from './SankeyGraph';
 
 const {select} = require('./CV2_D3');
 const {generateGraph} = require('./SankeyGraph');
-const React = require('react');
-const {useLayoutEffect, useMemo, useRef} = require('react');
-
 const d3Interpolate = require('d3-interpolate');
 const d3Scale = require('d3-scale');
+const React = require('react');
+const {useLayoutEffect, useMemo, useRef} = require('react');
 
 export type LinkData<L> = $ReadOnly<{
   data: $ReadOnlyArray<L>,
@@ -298,33 +297,41 @@ function Sankey<N, L>({
               (l.fadeTarget && isStraight ? 1 : 0);
             return orientation === 'horizontal'
               ? `M${sourceDepth},${sourcePosition}` + // Start of curve
-                `C${sourceControlPointDepth},${sourcePosition}` + // First control point
-                ` ${targetControlPointDepth},${targetPosition}` + // Second conrol point
+                  `C${sourceControlPointDepth},${sourcePosition}` + // First control point
+                  ` ${targetControlPointDepth},${targetPosition}` + // Second conrol point
                   ` ${targetDepth},${targetPosition}` // End of curve
               : `M${sourcePosition},${sourceDepth}` + // Start of curve
-                `C${sourcePosition},${sourceControlPointDepth}` + // First control point
-                ` ${targetPosition},${targetControlPointDepth}` + // Second conrol point
+                  `C${sourcePosition},${sourceControlPointDepth}` + // First control point
+                  ` ${targetPosition},${targetControlPointDepth}` + // Second conrol point
                   ` ${targetPosition},${targetDepth}`; // End of curve
           } else {
             const sourcePosition = breadth(l.sourcePosition);
             const targetPosition = breadth(l.targetPosition);
             return orientation === 'horizontal'
               ? `M${sourceDepth},${sourcePosition}` + // Start of curve
-                `C${sourceControlPointDepth},${sourcePosition}` + // First control point
-                ` ${targetControlPointDepth},${targetPosition}` + // Second conrol point
-                ` ${targetDepth},${targetPosition}` + // End of curve
-                `v${linkBreadth}` +
-                `C${targetControlPointDepth},${targetPosition + linkBreadth}` + // Second control point
-                ` ${sourceControlPointDepth},${sourcePosition + linkBreadth}` + // First conrol point
+                  `C${sourceControlPointDepth},${sourcePosition}` + // First control point
+                  ` ${targetControlPointDepth},${targetPosition}` + // Second conrol point
+                  ` ${targetDepth},${targetPosition}` + // End of curve
+                  `v${linkBreadth}` +
+                  `C${targetControlPointDepth},${
+                    targetPosition + linkBreadth
+                  }` + // Second control point
+                  ` ${sourceControlPointDepth},${
+                    sourcePosition + linkBreadth
+                  }` + // First conrol point
                   ` ${sourceDepth},${sourcePosition + linkBreadth}` +
                   `Z`
               : `M${sourcePosition},${sourceDepth}` + // Start of curve
-                `C${sourcePosition},${sourceControlPointDepth}` + // First control point
-                ` ${targetPosition},${targetControlPointDepth}` + // Second conrol point
-                ` ${targetPosition},${targetDepth}` + // End of curve
-                `h${linkBreadth}` +
-                `C${targetPosition + linkBreadth},${targetControlPointDepth}` + // Second control point
-                ` ${sourcePosition + linkBreadth},${sourceControlPointDepth}` + // First conrol point
+                  `C${sourcePosition},${sourceControlPointDepth}` + // First control point
+                  ` ${targetPosition},${targetControlPointDepth}` + // Second conrol point
+                  ` ${targetPosition},${targetDepth}` + // End of curve
+                  `h${linkBreadth}` +
+                  `C${
+                    targetPosition + linkBreadth
+                  },${targetControlPointDepth}` + // Second control point
+                  ` ${
+                    sourcePosition + linkBreadth
+                  },${sourceControlPointDepth}` + // First conrol point
                   ` ${sourcePosition + linkBreadth},${sourceDepth}` +
                   `Z`;
           }

@@ -10,7 +10,6 @@
 import type {LinkData, NodeData} from './Sankey';
 
 const objectValues = require('../ObjectValues').default;
-
 const d3Array = require('d3-array');
 
 export type Key = string | number;

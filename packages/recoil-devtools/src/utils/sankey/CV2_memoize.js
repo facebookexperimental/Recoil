@@ -6,8 +6,8 @@
  */
 'use strict';
 
-import Immutable from 'immutable';
 import isImmutable from './isImmutable';
+import Immutable from 'immutable';
 
 const KEY = Symbol('CV2_cacheKeyFromObject.KEY');
 const TIME_WARNING_THRESHOLD_MS = 15;
