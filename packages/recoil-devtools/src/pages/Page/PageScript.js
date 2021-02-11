@@ -10,10 +10,10 @@
 'use strict';
 
 import type {
-  DevToolsOptions,
-  RecoilSnapshot,
-  RecoilDevToolsActionsType,
   DevToolsConnnectProps,
+  DevToolsOptions,
+  RecoilDevToolsActionsType,
+  RecoilSnapshot,
 } from '../../types/DevtoolsTypes';
 
 const {
@@ -22,8 +22,8 @@ const {
   RecoilDevToolsActions,
 } = require('../../constants/Constants');
 const EvictableList = require('../../utils/EvictableList');
-const {serialize} = require('../../utils/Serialization');
 const {debug} = require('../../utils/Logger');
+const {serialize} = require('../../utils/Serialization');
 
 const DefaultCustomSerialize = (item: mixed, _: string): mixed => item;
 
