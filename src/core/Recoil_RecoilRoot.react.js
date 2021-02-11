@@ -25,7 +25,6 @@ const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
 } = require('../core/Recoil_State');
-const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');

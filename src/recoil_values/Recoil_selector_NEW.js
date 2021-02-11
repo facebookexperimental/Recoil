@@ -73,9 +73,6 @@ const {
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
-const cacheMostRecent = require('../caches/Recoil_cacheMostRecent');
-const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
-const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
 const nodeCacheMostRecent = require('../caches/Recoil_nodeCacheMostRecent');
 const treeCacheReferenceEquality = require('../caches/Recoil_treeCacheReferenceEquality');
 const treeCacheValueEquality = require('../caches/Recoil_treeCacheValueEquality');
