@@ -5207,178 +5207,6 @@ function deepFreezeValue(value) {
 
 var Recoil_deepFreezeValue = deepFreezeValue;
 
-var Recoil_cacheWithReferenceEquality = /*#__PURE__*/Object.freeze({
-  __proto__: null
-});
-
-const TIME_WARNING_THRESHOLD_MS = 15;
-
-function stringify(x, opt, key) {
-  // A optimization to avoid the more expensive JSON.stringify() for simple strings
-  // This may lose protection for u2028 and u2029, though.
-  if (typeof x === 'string' && !x.includes('"') && !x.includes('\\')) {
-    return `"${x}"`;
-  } // Handle primitive types
-
-
-  switch (typeof x) {
-    case 'undefined':
-      return '';
-    // JSON.stringify(undefined) returns undefined, but we always want to return a string
-
-    case 'boolean':
-      return x ? 'true' : 'false';
-
-    case 'number':
-    case 'symbol':
-      // case 'bigint': // BigInt is not supported in www
-      return String(x);
-
-    case 'string':
-      // Add surrounding quotes and escape internal quotes
-      return JSON.stringify(x);
-
-    case 'function':
-      if ((opt === null || opt === void 0 ? void 0 : opt.allowFunctions) !== true) {
-        throw new Error('Attempt to serialize function in a Recoil cache key');
-      }
-
-      return `__FUNCTION(${x.name})__`;
-  }
-
-  if (x === null) {
-    return 'null';
-  } // Fallback case for unknown types
-
-
-  if (typeof x !== 'object') {
-    var _JSON$stringify;
-
-    return (_JSON$stringify = JSON.stringify(x)) !== null && _JSON$stringify !== void 0 ? _JSON$stringify : '';
-  } // Deal with all promises as equivalent for now.
-
-
-  if (Recoil_isPromise(x)) {
-    return '__PROMISE__';
-  } // Arrays handle recursive stringification
-
-
-  if (Array.isArray(x)) {
-    return `[${x.map((v, i) => stringify(v, opt, i.toString()))}]`;
-  } // If an object defines a toJSON() method, then use that to override the
-  // serialization.  This matches the behavior of JSON.stringify().
-  // Pass the key for compatibility.
-  // Immutable.js collections define this method to allow us to serialize them.
-
-
-  if (typeof x.toJSON === 'function') {
-    // flowlint-next-line unclear-type: off
-    return stringify(x.toJSON(key), opt, key);
-  } // For built-in Maps, sort the keys in a stable order instead of the
-  // default insertion order.  Support non-string keys.
-
-
-  if (x instanceof Map) {
-    const obj = {};
-
-    for (const [k, v] of x) {
-      // Stringify will escape any nested quotes
-      obj[typeof k === 'string' ? k : stringify(k, opt)] = v;
-    }
-
-    return stringify(obj, opt, key);
-  } // For built-in Sets, sort the keys in a stable order instead of the
-  // default insertion order.
-
-
-  if (x instanceof Set) {
-    return stringify(Array.from(x).sort((a, b) => stringify(a, opt).localeCompare(stringify(b, opt))), opt, key);
-  } // Anything else that is iterable serialize as an Array.
-
-
-  if (Symbol !== undefined && x[Symbol.iterator] != null && typeof x[Symbol.iterator] === 'function') {
-    // flowlint-next-line unclear-type: off
-    return stringify(Array.from(x), opt, key);
-  } // For all other Objects, sort the keys in a stable order.
-
-
-  return `{${Object.keys(x).filter(key => x[key] !== undefined).sort() // stringify the key to add quotes and escape any nested slashes or quotes.
-  .map(key => `${stringify(key, opt)}:${stringify(x[key], opt, key)}`).join(',')}}`;
-} // Utility similar to JSON.stringify() except:
-// * Serialize built-in Sets as an Array
-// * Serialize built-in Maps as an Object.  Supports non-string keys.
-// * Serialize other iterables as arrays
-// * Sort the keys of Objects and Maps to have a stable order based on string conversion.
-//    This overrides their default insertion order.
-// * Still uses toJSON() of any object to override serialization
-// * Support Symbols (though don't guarantee uniqueness)
-// * We could support BigInt, but Flow doesn't seem to like it.
-// See Recoil_stableStringify-test.js for examples
-
-
-function stableStringify(x, opt = {
-  allowFunctions: false
-}) {
-  if (process.env.NODE_ENV !== "production") {
-    if (typeof window !== 'undefined') {
-      const startTime = window.performance ? window.performance.now() : 0;
-      const str = stringify(x, opt);
-      const endTime = window.performance ? window.performance.now() : 0;
-
-      if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
-        /* eslint-disable fb-www/no-console */
-        console.groupCollapsed(`Recoil: Spent ${endTime - startTime}ms computing a cache key`);
-        console.warn(x, str);
-        console.groupEnd();
-        /* eslint-enable fb-www/no-console */
-      }
-
-      return str;
-    }
-  }
-
-  return stringify(x, opt);
-}
-
-var Recoil_stableStringify = stableStringify;
-
-// If we do profile and find the key equality check is expensive,
-// we could always try to optimize..  Something that comes to mind is having
-// each check assign an incrementing index to each reference that maps to the
-// value equivalency.  Then, if an object already has an index, the comparison
-// check/lookup would be trivial and the string serialization would only need
-// to be done once per object instance.  Just a thought..
-// Cache implementation to use value equality for keys instead of the default
-// reference equality.  This allows different instances of dependency values to
-// be used.  Normally this is not needed, as dependent atoms/selectors will
-// themselves be cached and always return the same instance.  However, if
-// different params or upstream values for those dependencies could produce
-// equivalent values or they have a custom cache implementation, then this
-// implementation may be needed.  The downside with this approach is that it
-// takes longer to compute the value equivalence vs simple reference equality.
-
-
-function cacheWithValueEquality() {
-  const map = new Map();
-  const cache = {
-    type: 'value',
-    get: key => map.get(Recoil_stableStringify(key)),
-    set: (key, value) => {
-      map.set(Recoil_stableStringify(key), value);
-      return cache;
-    },
-    delete: key => {
-      map.delete(Recoil_stableStringify(key));
-      return cache;
-    },
-    map // For debugging
-
-  };
-  return cache;
-}
-
-var Recoil_cacheWithValueEquality = cacheWithValueEquality;
-
 /**
  * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
  *
@@ -5525,6 +5353,137 @@ function treeCacheReferenceEquality() {
 
 var Recoil_treeCacheReferenceEquality = treeCacheReferenceEquality;
 
+const TIME_WARNING_THRESHOLD_MS = 15;
+
+function stringify(x, opt, key) {
+  // A optimization to avoid the more expensive JSON.stringify() for simple strings
+  // This may lose protection for u2028 and u2029, though.
+  if (typeof x === 'string' && !x.includes('"') && !x.includes('\\')) {
+    return `"${x}"`;
+  } // Handle primitive types
+
+
+  switch (typeof x) {
+    case 'undefined':
+      return '';
+    // JSON.stringify(undefined) returns undefined, but we always want to return a string
+
+    case 'boolean':
+      return x ? 'true' : 'false';
+
+    case 'number':
+    case 'symbol':
+      // case 'bigint': // BigInt is not supported in www
+      return String(x);
+
+    case 'string':
+      // Add surrounding quotes and escape internal quotes
+      return JSON.stringify(x);
+
+    case 'function':
+      if ((opt === null || opt === void 0 ? void 0 : opt.allowFunctions) !== true) {
+        throw new Error('Attempt to serialize function in a Recoil cache key');
+      }
+
+      return `__FUNCTION(${x.name})__`;
+  }
+
+  if (x === null) {
+    return 'null';
+  } // Fallback case for unknown types
+
+
+  if (typeof x !== 'object') {
+    var _JSON$stringify;
+
+    return (_JSON$stringify = JSON.stringify(x)) !== null && _JSON$stringify !== void 0 ? _JSON$stringify : '';
+  } // Deal with all promises as equivalent for now.
+
+
+  if (Recoil_isPromise(x)) {
+    return '__PROMISE__';
+  } // Arrays handle recursive stringification
+
+
+  if (Array.isArray(x)) {
+    return `[${x.map((v, i) => stringify(v, opt, i.toString()))}]`;
+  } // If an object defines a toJSON() method, then use that to override the
+  // serialization.  This matches the behavior of JSON.stringify().
+  // Pass the key for compatibility.
+  // Immutable.js collections define this method to allow us to serialize them.
+
+
+  if (typeof x.toJSON === 'function') {
+    // flowlint-next-line unclear-type: off
+    return stringify(x.toJSON(key), opt, key);
+  } // For built-in Maps, sort the keys in a stable order instead of the
+  // default insertion order.  Support non-string keys.
+
+
+  if (x instanceof Map) {
+    const obj = {};
+
+    for (const [k, v] of x) {
+      // Stringify will escape any nested quotes
+      obj[typeof k === 'string' ? k : stringify(k, opt)] = v;
+    }
+
+    return stringify(obj, opt, key);
+  } // For built-in Sets, sort the keys in a stable order instead of the
+  // default insertion order.
+
+
+  if (x instanceof Set) {
+    return stringify(Array.from(x).sort((a, b) => stringify(a, opt).localeCompare(stringify(b, opt))), opt, key);
+  } // Anything else that is iterable serialize as an Array.
+
+
+  if (Symbol !== undefined && x[Symbol.iterator] != null && typeof x[Symbol.iterator] === 'function') {
+    // flowlint-next-line unclear-type: off
+    return stringify(Array.from(x), opt, key);
+  } // For all other Objects, sort the keys in a stable order.
+
+
+  return `{${Object.keys(x).filter(key => x[key] !== undefined).sort() // stringify the key to add quotes and escape any nested slashes or quotes.
+  .map(key => `${stringify(key, opt)}:${stringify(x[key], opt, key)}`).join(',')}}`;
+} // Utility similar to JSON.stringify() except:
+// * Serialize built-in Sets as an Array
+// * Serialize built-in Maps as an Object.  Supports non-string keys.
+// * Serialize other iterables as arrays
+// * Sort the keys of Objects and Maps to have a stable order based on string conversion.
+//    This overrides their default insertion order.
+// * Still uses toJSON() of any object to override serialization
+// * Support Symbols (though don't guarantee uniqueness)
+// * We could support BigInt, but Flow doesn't seem to like it.
+// See Recoil_stableStringify-test.js for examples
+
+
+function stableStringify(x, opt = {
+  allowFunctions: false
+}) {
+  if (process.env.NODE_ENV !== "production") {
+    if (typeof window !== 'undefined') {
+      const startTime = window.performance ? window.performance.now() : 0;
+      const str = stringify(x, opt);
+      const endTime = window.performance ? window.performance.now() : 0;
+
+      if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
+        /* eslint-disable fb-www/no-console */
+        console.groupCollapsed(`Recoil: Spent ${endTime - startTime}ms computing a cache key`);
+        console.warn(x, str);
+        console.groupEnd();
+        /* eslint-enable fb-www/no-console */
+      }
+
+      return str;
+    }
+  }
+
+  return stringify(x, opt);
+}
+
+var Recoil_stableStringify = stableStringify;
+
 const {
   getFromTreeCache: getFromTreeCache$2,
   setInTreeCache: setInTreeCache$2
@@ -5571,12 +5530,6 @@ const {
   loadableWithPromise: loadableWithPromise$1,
   loadableWithValue: loadableWithValue$1
 } = Recoil_Loadable;
-
-
-
-
-
-
 
 
 
@@ -6362,6 +6315,10 @@ function selector(options) {
 
 
 var Recoil_selector_NEW = selector;
+
+var Recoil_cacheWithReferenceEquality = /*#__PURE__*/Object.freeze({
+  __proto__: null
+});
 
 const {
   loadableWithError: loadableWithError$2,
@@ -7200,6 +7157,43 @@ function atomWithFallback(options) {
 }
 
 var Recoil_atom = atom;
+
+// If we do profile and find the key equality check is expensive,
+// we could always try to optimize..  Something that comes to mind is having
+// each check assign an incrementing index to each reference that maps to the
+// value equivalency.  Then, if an object already has an index, the comparison
+// check/lookup would be trivial and the string serialization would only need
+// to be done once per object instance.  Just a thought..
+// Cache implementation to use value equality for keys instead of the default
+// reference equality.  This allows different instances of dependency values to
+// be used.  Normally this is not needed, as dependent atoms/selectors will
+// themselves be cached and always return the same instance.  However, if
+// different params or upstream values for those dependencies could produce
+// equivalent values or they have a custom cache implementation, then this
+// implementation may be needed.  The downside with this approach is that it
+// takes longer to compute the value equivalence vs simple reference equality.
+
+
+function cacheWithValueEquality() {
+  const map = new Map();
+  const cache = {
+    type: 'value',
+    get: key => map.get(Recoil_stableStringify(key)),
+    set: (key, value) => {
+      map.set(Recoil_stableStringify(key), value);
+      return cache;
+    },
+    delete: key => {
+      map.delete(Recoil_stableStringify(key));
+      return cache;
+    },
+    map // For debugging
+
+  };
+  return cache;
+}
+
+var Recoil_cacheWithValueEquality = cacheWithValueEquality;
 
 const {
   setConfigDeletionHandler: setConfigDeletionHandler$2
