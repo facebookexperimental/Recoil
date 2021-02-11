@@ -9,8 +9,8 @@
  */
 'use strict';
 
-import type Store from '../utils/Store';
 import type {SerializedValue} from '../utils/Serialization';
+import type Store from '../utils/Store';
 
 const RecoilDevToolsActions = require('../constants/Constants');
 
