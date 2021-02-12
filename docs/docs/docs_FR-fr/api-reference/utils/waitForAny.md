@@ -3,9 +3,9 @@ title: waitForAny(dependencies)
 sidebar_label: waitForAny()
 ---
 
-A concurrency helper that returns a set of [`Loadable`s](/docs/api-reference/core/Loadable) for the current state of the requested dependencies.  It waits until at least one of the dependencies are available.
+Un assistant de concurrence qui renvoie un ensemble de [`Loadable`s](/docs_FR-fr/api-reference/core/Loadable) pour l'état actuel des dépendances demandées. Il attend qu'au moins une des dépendances soit disponible.
 
-The dependencies may either be provided as a tuple array or as named dependencies in an object.
+Les dépendances peuvent être fournies sous forme de tableau de tuples ou de dépendances nommées dans un objet.
 
 ---
 
@@ -20,4 +20,4 @@ function waitForAny(dependencies: {[string]: RecoilValue<>}):
 ```
 ---
 
-`waitForAny()` is similar to [`waitForNone()`](/docs/api-reference/utils/waitForNone), except that it waits until at least one dependency has a value available instead of returning immediately.
+`waitForAny()` est similaire à [`waitForNone()`](/docs_FR-fr/api-reference/utils/waitForNone), sauf qu'il attend qu'au moins une dépendance ait une valeur disponible au lieu de retourner immédiatement. 

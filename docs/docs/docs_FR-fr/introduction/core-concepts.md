@@ -23,7 +23,6 @@ Les atomes ont besoin d'une clé unique, qui est utilisée pour le débogage, la
 
 Pour lire et écrire un atome à partir d'un composant, nous utilisons un _Hook_ appelé `useRecoilState`. C'est exactement comme `useState` de React, mais maintenant l'état peut être partagé entre les composants:
 
-
 ```jsx
 function FontButton() {
   const [fontSize, setFontSize] = useRecoilState(fontSizeState);

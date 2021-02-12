@@ -3,7 +3,7 @@ title: atomFamily(options)
 sidebar_label: atomFamily()
 ---
 
-Returns a function that returns a writeable `RecoilState` [atom](/docs/api-reference/core/atom).
+Renvoie une fonction qui renvoie un `RecoilState` [atom](/docs_FR-fr/api-reference/core/atom) inscriptible.
 
 ---
 
@@ -17,20 +17,26 @@ function atomFamily<T, Parameter>({
     | T
     | (Parameter => T | RecoilValue<T> | Promise<T>),
 
+  effects_UNSTABLE?:
+    | $ReadOnlyArray<AtomEffect<T>>
+    | (P => $ReadOnlyArray<AtomEffect<T>>),
+
   dangerouslyAllowMutability?: boolean,
-}): RecoilState<T>
+}): Parameter => RecoilState<T>
 ```
 
-- `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-- `default` - The initial value of the atom. It may either be a value directly, a `RecoilValue` or `Promise` that represents the default value, or a function to get the default value. The callback function is passed a copy of the parameter used when the `atomFamily` function is called.
+- `key` - Une chaîne unique utilisée pour identifier l'atome en interne. Cette chaîne doit être unique par rapport aux autres atomes et sélecteurs dans l'ensemble de l'application.
+- `default` - La valeur initiale de l'atome. Il peut s'agir soit directement d'une valeur, d'une `RecoilValue` ou d'une` Promise` qui représente la valeur par défaut, ou d'une fonction pour obtenir la valeur par défaut. La fonction de rappel reçoit une copie du paramètre utilisé lorsque la fonction `atomFamily` est appelée.
+- `effects_UNSTABLE` - Un tableau facultatif, ou une fonction de rappel pour obtenir le tableau basé sur le paramètre de famille, de [Atom Effects](/docs_FR-fr/guides/atom-effects).
+- `dangerouslyAllowMutability` - Recoil dépend des changements d'état de l'atome pour savoir quand notifier les composants qui utilisent les atomes pour effectuer un nouveau rendu. Si la valeur d'un atome a été mutée, il peut contourner cela et provoquer un changement d'état sans notifier correctement les composants abonnés. Pour vous protéger contre cela, toutes les valeurs stockées sont gelées. Dans certains cas, il peut être souhaitable de remplacer cette option en utilisant cette option.
 
 ---
 
-An `atom` represents a piece of state with _Recoil_. An atom is created and registered per `<RecoilRoot>` by your app. But, what if your state isn’t global? What if your state is associated with a particular instance of a control, or with a particular element? For example, maybe your app is a UI prototyping tool where the user can dynamically add elements and each element has state, such as its position. Ideally, each element would get its own atom of state. You could implement this yourself via a memoization pattern. But, _Recoil_ provides this pattern for you with the `atomFamily` utility. An Atom Family represents a collection of atoms. When you call `atomFamily` it will return a function which provides the `RecoilState` atom based on the parameters you pass in.
+Un `atome` représente un morceau d'état avec _Recoil_. Un atome est créé et enregistré par `<RecoilRoot>` par votre application. Mais que se passe-t-il si votre état n’est pas mondial? Que faire si votre état est associé à une instance particulière d'un contrôle ou à un élément particulier? Par exemple, votre application est peut-être un outil de prototypage d'interface utilisateur dans lequel l'utilisateur peut ajouter dynamiquement des éléments et chaque élément a un état, tel que sa position. Idéalement, chaque élément aurait son propre atome d'état. Vous pouvez l'implémenter vous-même via un modèle de mémorisation. Mais, _Recoil_ fournit ce modèle pour vous avec l'utilitaire `atomFamily`. Une famille d'atomes représente une collection d'atomes. Lorsque vous appelez `atomFamily`, il retournera une fonction qui fournit l'atome` RecoilState` en fonction des paramètres que vous passez.
 
-The `atomFamily` essentially provides a map from the parameter to a atom.  You only need to provide a single key for the `atomFamily` and it will generate a unique key for each underlying atom.  These atom keys can be used for persistence, and so must be stable across application executions.  The parameters may also be generated at different callsites and we want equivalent parameters to use the same underlying atom.  Therefore, value-equality is used instead of reference-equality for `atomFamily` parameters.  This imposes restrictions on the types which can be used for the parameter.  `atomFamily` accepts primitive types, or arrays or objects which can contain arrays, objects, or primitive types.
+`AtomFamily` fournit essentiellement une carte du paramètre à un atome. Il vous suffit de fournir une clé unique pour `atomFamily` et elle générera une clé unique pour chaque atome sous-jacent. Ces clés atom peuvent être utilisées pour la persistance et doivent donc être stables entre les exécutions d'application. Les paramètres peuvent également être générés sur différents sites d'appel et nous voulons que des paramètres équivalents utilisent le même atome sous-jacent. Par conséquent, l'égalité des valeurs est utilisée à la place de l'égalité des références pour les paramètres `atomFamily`. Cela impose des restrictions sur les types qui peuvent être utilisés pour le paramètre. `atomFamily` accepte des types primitifs, ou des tableaux ou des objets qui peuvent contenir des tableaux, des objets ou des types primitifs.
 
-## Example
+## Exemple
 
 ```jsx
 const elementPositionStateFamily = atomFamily({
@@ -49,7 +55,7 @@ function ElementListItem({elementID}) {
 }
 ```
 
-An `atomFamily()` takes almost the same options as a simple [`atom()`](/docs/api-reference/core/atom).  However, the default value can also be parameterized. That means you could provide a function which takes the parameter value and returns the actual default value.  For example:
+Un `atomFamily()` prend presque les mêmes options qu'un simple [`atom()`](/docs_FR-fr/api-reference/ core/atom). Cependant, la valeur par défaut peut également être paramétrée. Cela signifie que vous pouvez fournir une fonction qui prend la valeur du paramètre et renvoie la valeur par défaut réelle. Par exemple:
 
 ```jsx
 const myAtomFamily = atomFamily({
@@ -58,7 +64,7 @@ const myAtomFamily = atomFamily({
 });
 ```
 
-or using [`selectorFamily`](/docs/api-reference/utils/selectorFamily) instead of `selector`, you can also access the parameter value in a `default` selector as well.
+ou en utilisant [`selectorFamily`](/docs_FR-fr/api-reference/utils/selectorFamily) au lieu de `selector`, vous pouvez également accéder à la valeur du paramètre dans un sélecteur `default`.
 
 ```jsx
 const myAtomFamily = atomFamily({
@@ -72,12 +78,12 @@ const myAtomFamily = atomFamily({
 });
 ```
 
-## Subscriptions
+## Abonnements
 
-One advantage of using this pattern for separate atoms for each element over trying to store a single atom with a map of state for all elements is that they all maintain their own individual subscriptions. So, updating the value for one element will only cause React components that have subscribed to just that atom to update.
+Un avantage de l'utilisation de ce modèle pour des atomes séparés pour chaque élément par rapport à essayer de stocker un seul atome avec une carte d'état pour tous les éléments est qu'ils maintiennent tous leurs propres abonnements individuels. Ainsi, la mise à jour de la valeur d'un élément entraînera uniquement la mise à jour des composants React qui se sont abonnés uniquement à cet atome.
 
-## Persistence
+## Persistance
 
-Persistence observers will persist the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to only use parameters which are primitives or simple compound objects containing primitives. Custom classes or functions are not allowed.
+Les observateurs de persistance conserveront l'état de chaque valeur de paramètre en tant qu'atome distinct avec une clé unique basée sur la sérialisation de la valeur de paramètre utilisée. Par conséquent, il est important de n'utiliser que des paramètres qui sont des primitives ou de simples objets composés contenant des primitives. Les classes ou fonctions personnalisées ne sont pas autorisées.
 
-It is allowed to “upgrade” a simple `atom` to be an `atomFamily` in a newer version of your app based on the same key. If you do this, then any persisted values with the old simple key can still be read and all parameter values of the new `atomFamily` will default to the persisted state of the simple atom. If you change the format of the parameter in an `atomFamily`, however, it will not automatically read the previous values that were persisted before the change. However, you can add logic in a default selector or validator to lookup values based on previous parameter formats. We hope to help automate this pattern in the future.
+Il est permis de "promouvoir" un simple `atom` pour en faire un `atomFamily` dans une version plus récente de votre application basée sur la même clé. Si vous faites cela, alors toutes les valeurs persistantes avec l'ancienne clé simple peuvent toujours être lues et toutes les valeurs de paramètres de la nouvelle `atomFamily` seront par défaut à l'état persistant de l'atome simple. Si vous modifiez le format du paramètre dans une `atomFamily`, cependant, il ne lira pas automatiquement les valeurs précédentes qui étaient conservées avant la modification. Cependant, vous pouvez ajouter une logique dans un sélecteur ou un validateur par défaut pour rechercher des valeurs basées sur les formats de paramètres précédents. Nous espérons aider à automatiser ce modèle à l'avenir. 

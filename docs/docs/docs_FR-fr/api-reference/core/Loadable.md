@@ -3,20 +3,20 @@ title: class Loadable
 sidebar_label: Loadable
 ---
 
-A `Loadable` object represents the current state of a Recoil [atom](/docs/api-reference/core/atom) or [selector](/docs/api-reference/core/selector).  This state may either have a value available, may be in an error state, or may still be pending asynchronous resolution.  A `Loadable` has the following interface:
+Un objet `Loadable` représente l'état actuel d'un Recoil [atome](/docs_FR-fr/api-reference/core/atom) ou [sélecteur](/docs_FR-fr/api-reference/core/selector). Cet état peut avoir une valeur disponible, être dans un état d'erreur ou encore être en attente de résolution asynchrone. Un `Loadable` a l'interface suivante:
 
-- `state`: The current state of the atom or selector.  Possible values are `'hasValue'`, `'hasError'`, or `'loading'`.
-- `contents`: The value represented by this `Loadable`.  If the state is `hasValue`, it is the actual value, if the state is `hasError` it is the `Error` object that was thrown, and if the state is `loading`, then it is a `Promise` of the value.
+- `state`: l'état actuel de l'atome ou du sélecteur. Les valeurs possibles sont `'hasValue'`, `'hasError'`, ou `'loading'`.
+- `contents`: La valeur représentée par ce `Loadable`. Si l'état est `hasValue`, c'est la valeur réelle, si l'état est `hasError`, c'est l'objet `Error` qui a été lancé, et si l'état est `loading`, alors vous pouvez utiliser `toPromise()` pour obtenir une `Promise` de la valeur.
 
-Loadables also contain helper methods for accessing the current state.  *Consider this API to be unstable*:
+Les chargeables contiennent également des méthodes d'assistance pour accéder à l'état actuel. *Considérez cette API comme instable*:
 
-- `getValue()` - Method to access the value that matches the semantics of React Suspense and Recoil selectors.  If the state has a value then it returns a value, if it has an error then it throws that error, and if it is still pending then it suspends execution or rendering to propagate the pending state.
-- `toPromise()`: returns a `Promise` that will resolve when the selector has resolved. If the selector is synchronous or has already resolved, it returns a `Promise` that resolves immediately.
-- `valueMaybe()` - Returns the value if available, otherwise returns `undefined`
-- `valueOrThrow()` - Returns the value if available or throws an Error.
-- `map()` - Takes a function to transform the value of the Loadable and returns a new Loadable with the transformed value.  The transformation function gets a parameter of the value and returns the new value; it can also propagate thrown errors or suspense.
+- `getValue()` - Méthode pour accéder à la valeur qui correspond à la sémantique des sélecteurs React Suspense et Recoil. Si l'état a une valeur, il renvoie une valeur, s'il contient une erreur, il renvoie cette erreur, et s'il est toujours en attente, il suspend l'exécution ou le rendu pour propager l'état en attente.
+- `toPromise()`: renvoie une `Promise` qui se résoudra lorsque le sélecteur sera résolu. Si le sélecteur est synchrone ou a déjà été résolu, il renvoie une `Promise` qui se résout immédiatement.
+- `valueMaybe()` - Renvoie la valeur si disponible, sinon renvoie `undefined`
+- `valueOrThrow()` - Renvoie la valeur si disponible ou renvoie une erreur.
+- `map()` - Prend une fonction pour transformer la valeur du Loadable et renvoie un nouveau Loadable avec la valeur transformée. La fonction de transformation obtient un paramètre de la valeur et renvoie la nouvelle valeur; il peut également propager des erreurs lancées ou du suspense.
 
-### Example
+### Exemple
 
 ```jsx
 function UserInfo({userID}) {

@@ -1,9 +1,9 @@
 ---
-title: noWait(state)
-sidebar_label: noWait()
+titre: noWait (état)
+étiquette_barre latérale: noWait ()
 ---
 
-A selector helper that will return a [`Loadable`](/docs/api-reference/core/Loadable) for the current state of the provided [`atom`](/docs/api-reference/core/atom) or [`selector`](/docs/api-reference/core/selector).
+Un assistant de sélection qui renverra un [`Loadable`](/docs_FR-fr/api-reference/core/Loadable) pour l'état actuel de l'[`atome`](/docs_FR-fr/api-reference/core/atom)) ou [ `sélecteur`](/docs_FR-fr/api-reference/core/selector).
 
 ```jsx
 function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T>>
@@ -11,21 +11,21 @@ function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T>>
 
 ---
 
-This helper can be used to obtain the current state of a potentially asynchronous dependency without throwing if there is an error or the dependency is still pending.  It is similar to [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) except that it is a selector instead of a hook.  Because `noWait()` returns a selector, it can in turn be used by other Recoil selectors as well as hooks.
+Cet assistant peut être utilisé pour obtenir l'état actuel d'une dépendance potentiellement asynchrone sans lever d'exception s'il y a une erreur ou si la dépendance est toujours en attente. Il est similaire à [`useRecoilValueLoadable()`](/docs_FR-fr/api-reference/core/useRecoilValueLoadable) sauf qu'il s'agit d'un sélecteur au lieu d'un hook. Puisque `noWait ()` renvoie un sélecteur, il peut à son tour être utilisé par d'autres sélecteurs Recoil ainsi que par des hooks.
 
-### Example
+### Exemple
 
 ```jsx
 const myQuery = selector({
-  key: 'MyQuery',
+  key: 'MaRequête',
   get: ({get}) => {
-    const results = noWait(dbQuerySelector);
+    const loadable = get(noWait(dbQuerySelector));
 
     return {
-      hasValue: {data: results.contents},
-      hasError: {error: results.contents},
-      loading: {data: 'placeholder while loading'},
-    }[results.state];
+      hasValue: {data: loadable.contents},
+      hasError: {error: loadable.contents},
+      loading: {data: 'substituant pendant chargement'},
+    }[loadable.state];
   }
 })
 

@@ -3,9 +3,9 @@ title: useRecoilValue(state)
 sidebar_label: useRecoilValue()
 ---
 
-Returns the value of the given Recoil state.
+Renvoie la valeur de l'état Recoil donné.
 
-This hook will implicitly subscribe the component to the given state.
+Ce hook abonnera implicitement le composant à l'état donné.
 
 ---
 
@@ -13,15 +13,15 @@ This hook will implicitly subscribe the component to the given state.
 function useRecoilValue<T>(state: RecoilValue<T>): T;
 ```
 
-- `state`: an [`atom`](/docs/api-reference/core/atom) or [`selector`](/docs/api-reference/core/selector)
+- `state`: un [`atome`](/docs_FR-fr/api-reference/core/atom) ou [`sélecteur`](/docs_FR-fr/api-reference/core/selector)
 
 ---
 
-This is the recommended hook to use when a component intends to read state without writing to it, as this hook works with both **read-only state** and **writeable state**. Atoms are writeable state while selectors may be either read-only or writeable. See [`selector()`](/docs/api-reference/core/selector) for more info.
+C'est le hook recommandé à utiliser lorsqu'un composant a l'intention de lire l'état sans y écrire, car ce hook fonctionne à la fois avec **l'état en lecture seule** et **l'état inscriptible**. Les atomes sont des états inscriptibles tandis que les sélecteurs peuvent être en lecture seule ou en écriture. Voir [`selector()`](/docs_FR-fr/api-reference/core/selector) pour plus d'informations.
 
-Using this hook in a React component will subscribe the component to re-render when the state is updated.  This hook may throw if the state has an error or is pending asynchronous resolution.  Please see [this guide](/docs/guides/asynchronous-data-queries).
+L'utilisation de ce hook dans un composant React abonnera le composant à restituer lorsque l'état est mis à jour. Ce hook peut déclencher si l'état a une erreur ou est en attente de résolution asynchrone. Veuillez consulter [ce guide](/docs_FR-fr/guides/asynchronous-data-queries).
 
-### Example
+### Exemple
 
 ```jsx
 import {atom, selector, useRecoilValue} from 'recoil';

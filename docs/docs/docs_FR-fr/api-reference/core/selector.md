@@ -3,7 +3,9 @@ title: selector(options)
 sidebar_label: selector()
 ---
 
-*Selectors* represent a function, or **derived state** in Recoil.  You can think of them as a "pure function" without side-effects that always returns the same value for a given set of dependency values.  If only a `get` function is provided, the selector is read-only and returns a `RecoilValueReadOnly` object.  If a `set` is also provided, it returns a writeable `RecoilState` object.
+Les *sélecteurs* représentent une fonction, ou un **état dérivé** dans Recoil. Vous pouvez les considérer comme similaires à une "fonction idempotente" ou "pure" sans effets secondaires qui renvoie toujours la même valeur pour un ensemble donné de valeurs de dépendance. Si seule une fonction `get` est fournie, le sélecteur est en lecture seule et renvoie un objet `RecoilValueReadOnly`. Si un `set` est également fourni, il renvoie un objet` RecoilState` inscriptible.
+
+Recoil gère les changements d'état des atomes et des sélecteurs pour savoir quand notifier les composants abonnés à ce sélecteur pour qu'ils effectuent un nouveau rendu. Si une valeur d'objet d'un sélecteur est mutée directement, il peut le contourner et éviter de notifier correctement les composants abonnés. Pour aider à détecter les bogues, Recoil gèlera les objets de valeur du sélecteur en mode développement.
 
 ---
 
@@ -35,17 +37,17 @@ type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilState = <T>(RecoilState<T>) => void;
 ```
 
-- `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.  It needs to be stable across executions if used for persistence.
-- `get` - A function that evaluates the value for the derived state.  It may return either a value directly or an asynchronous `Promise` or another atom or selector representing the same type.  It is passed an object as the first parameter containing the following properties:
-  - `get` - a function used to retrieve values from other atoms/selectors. All atoms/selectors passed to this function will be implicitly added to a list of **dependencies** for the selector. If any of the selector's dependencies change, the selector will re-evaluate.
-- `set?` - If this property is set, the selector will return **writeable** state. A function that is passed an object of callbacks as the first parameter and the new incoming value.  The incoming value may be a value of type `T` or maybe an object of type `DefaultValue` if the user reset the selector.  The callbacks include:
-  - `get` - a function used to retrieve values from other atoms/selectors. This function will not subscribe the selector to the given atoms/selectors.
-  - `set` - a function used to set the values of upstream Recoil state. The first parameter is the Recoil state and the second parameter is the new value.  The new value may be an updater function or a `DefaultValue` object to propagate reset actions.
-- `dangerouslyAllowMutability` - Selectors represent "pure functions" of derived state and should always return the same value for the same set of dependency input values.  To help protect this all values stored in a selector are frozen by default.  In some cases this may need to be overridden using this option.
+- `key` - Une chaîne unique utilisée pour identifier l'atome en interne. Cette chaîne doit être unique par rapport aux autres atomes et sélecteurs dans l'ensemble de l'application. Il doit être stable entre les exécutions s'il est utilisé pour la persistance.
+- `get` - Une fonction qui évalue la valeur de l'état dérivé. Il peut renvoyer soit une valeur directement, soit une `Promise` asynchrone ou un autre atome ou sélecteur représentant le même type. Il est passé un objet comme premier paramètre contenant les propriétés suivantes:
+  - `get` - une fonction utilisée pour récupérer les valeurs d'autres atomes / sélecteurs. Tous les atomes / sélecteurs passés à cette fonction seront implicitement ajoutés à une liste de **dépendances** pour le sélecteur. Si l'une des dépendances du sélecteur change, le sélecteur réévaluera.
+- `set?` - Si cette propriété est définie, le sélecteur retournera l'état **inscriptible**. Une fonction qui reçoit un objet de rappels en tant que premier paramètre et nouvelle valeur entrante. La valeur entrante peut être une valeur de type `T` ou peut-être un objet de type `DefaultValue` si l'utilisateur réinitialise le sélecteur. Les rappels incluent:
+  - `get` - une fonction utilisée pour récupérer les valeurs d'autres atomes/sélecteurs. Cette fonction n'abonnera pas le sélecteur aux atomes/sélecteurs donnés.
+  - `set` - une fonction utilisée pour définir les valeurs de l'état Recoil en amont. Le premier paramètre est l'état Recoil et le second paramètre est la nouvelle valeur. La nouvelle valeur peut être une fonction de mise à jour ou un objet `DefaultValue` pour propager les actions de réinitialisation.
+- `dangerouslyAllowMutability` - Dans certains cas, il peut être souhaitable d'autoriser la mutation des objets stockés dans des sélecteurs qui ne représentent pas des changements d'état. Utilisez cette option pour remplacer le gel des objets en mode développement.
 
 ---
 
-A selector with a simple static dependency:
+Un sélecteur avec une simple dépendance statique:
 
 ```jsx
 const mySelector = selector({
@@ -54,11 +56,11 @@ const mySelector = selector({
 });
 ```
 
-### Dynamic Dependencies
+### Dépendances dynamiques
 
-A read-only selector has a `get` method which evaluates the value of the selector based on dependencies.  If any of those dependencies are updated, then the selector will re-evaluate.  The dependencies are dynamically determined based on the atoms or selectors you actually use when evaluating the selector.  Depending on the values of the previous dependencies, you may dynamically use different additional dependencies.  Recoil will automatically update the current data-flow graph so that the selector is only subscribed to updates from the current set of dependencies
+Un sélecteur en lecture seule a une méthode `get` qui évalue la valeur du sélecteur en fonction des dépendances. Si l'une de ces dépendances est mise à jour, le sélecteur réévaluera. Les dépendances sont déterminées dynamiquement en fonction des atomes ou des sélecteurs que vous utilisez réellement lors de l'évaluation du sélecteur. En fonction des valeurs des dépendances précédentes, vous pouvez utiliser dynamiquement différentes dépendances supplémentaires. Recoil mettra automatiquement à jour le graphique de flux de données actuel afin que le sélecteur ne soit abonné qu'aux mises à jour de l'ensemble actuel de dépendances
 
-In this example `mySelector` will depend on the `toggleState` atom as well as either `selectorA` or `selectorB` depending on the state of `toggleState`.
+Dans cet exemple, `mySelector` dépendra de l'atome` toggleState` ainsi que de `selectorA` ou de` selectorB` selon l'état de `toggleState`.
 ```jsx
 const toggleState = atom({key: 'Toggle', default: false});
 
@@ -75,11 +77,11 @@ const mySelector = selector({
 });
 ```
 
-### Writeable Selectors
+### Sélecteurs inscriptibles
 
-A bi-directional selector receives the incoming value as a parameter and can use that to propagate the changes back upstream along the data-flow graph.  Because the user may either set the selector with a new value or reset the selector, the incoming value is either of the same type that the selector represents or a `DefaultValue` object which represents a reset action.
+Un sélecteur bidirectionnel reçoit la valeur entrante en tant que paramètre et peut l'utiliser pour propager les modifications en amont le long du graphe de flux de données. Étant donné que l'utilisateur peut définir le sélecteur avec une nouvelle valeur ou réinitialiser le sélecteur, la valeur entrante est soit du même type que le sélecteur représente, soit un objet `DefaultValue` qui représente une action de réinitialisation.
 
-This simple selector essentially wraps an atom to add an additional field.  It just passes through set and reset operations to the upstream atom.
+Ce sélecteur simple enveloppe essentiellement un atome pour ajouter un champ supplémentaire. Il passe simplement par les opérations de définition et de réinitialisation de l'atome en amont.
 ```jsx
 const proxySelector = selector({
   key: 'ProxySelector',
@@ -88,7 +90,7 @@ const proxySelector = selector({
 });
 ```
 
-This selector transforms the data, so needs to check if the incoming value is a `DefaultValue`.
+Ce sélecteur transforme les données, il doit donc vérifier si la valeur entrante est une `DefaultValue`.
 ```jsx
 const transformSelector = selector({
   key: 'TransformSelector',
@@ -98,9 +100,9 @@ const transformSelector = selector({
 });
 ```
 
-### Asynchronous Selectors
+### Sélecteurs asynchrones
 
-Selectors may also have asynchronous evaluation functions and return a `Promise` to the output value.  Please see [this guide](/docs/guides/asynchronous-data-queries) for more information.
+Les sélecteurs peuvent également avoir des fonctions d'évaluation asynchrones et renvoyer une `Promise` à la valeur de sortie. Veuillez consulter [ce guide](/docs_FR-fr/guides/asynchronous-data-queries) pour plus d'informations.
 
 ```jsx
 const myQuery = selector({
@@ -111,18 +113,18 @@ const myQuery = selector({
 });
 ```
 
-### Example (Synchronous)
+### Exemple (synchrone)
 
 ```jsx
-import {atom, selector, useRecoilState} from 'recoil';
+import {atom, selector, useRecoilState, DefaultValue} from 'recoil';
 
 const tempFahrenheit = atom({
   key: 'tempFahrenheit',
   default: 32,
 });
 
-const tempCelcius = selector({
-  key: 'tempCelcius',
+const tempCelsius = selector({
+  key: 'tempCelsius',
   get: ({get}) => ((get(tempFahrenheit) - 32) * 5) / 9,
   set: ({set}, newValue) =>
     set(
@@ -131,22 +133,22 @@ const tempCelcius = selector({
     ),
 });
 
-function TempCelcius() {
+function TempCelsius() {
   const [tempF, setTempF] = useRecoilState(tempFahrenheit);
-  const [tempC, setTempC] = useRecoilState(tempCelcius);
-  const resetTemp = useResetRecoilState(tempCelcius);
+  const [tempC, setTempC] = useRecoilState(tempCelsius);
+  const resetTemp = useResetRecoilState(tempCelsius);
 
-  const addTenCelcius = () => setTempC(tempC + 10);
+  const addTenCelsius = () => setTempC(tempC + 10);
   const addTenFahrenheit = () => setTempF(tempF + 10);
   const reset = () => resetTemp();
 
   return (
     <div>
-      Temp (Celcius): {tempC}
+      Temp (Celsius): {tempC}
       <br />
       Temp (Fahrenheit): {tempF}
       <br />
-      <button onClick={addTenCelcius}>Add 10 Celcius</button>
+      <button onClick={addTenCelsius}>Add 10 Celsius</button>
       <br />
       <button onClick={addTenFahrenheit}>Add 10 Fahrenheit</button>
       <br />
@@ -156,7 +158,7 @@ function TempCelcius() {
 }
 ```
 
-### Example (Asynchronous)
+### Exemple (asynchrone)
 
 ```jsx
 import {selector, useRecoilValue} from 'recoil';
@@ -164,7 +166,8 @@ import {selector, useRecoilValue} from 'recoil';
 const myQuery = selector({
   key: 'MyDBQuery',
   get: async () => {
-    return myDBQueryPromise();
+    const response = await fetch(getMyRequestUrl());
+    return response.json();
   },
 });
 
@@ -187,4 +190,4 @@ function ResultsSection() {
 }
 ```
 
-Please see [this guide](/docs/guides/asynchronous-data-queries) for more complex examples.
+Veuillez consulter [ce guide](/docs_FR-fr/guides/asynchronous-data-queries) pour des exemples plus complexes.

@@ -3,9 +3,9 @@ title: waitForAll(dependencies)
 sidebar_label: waitForAll()
 ---
 
-A concurrency helper which allows us to concurrently evaluate multiple asynchronous dependencies.
+Un assistant d'accès concurrentiel qui nous permet d'évaluer simultanément plusieurs dépendances asynchrones.
 
-The dependencies may either be provided as a tuple array or as named dependencies in an object.
+Les dépendances peuvent être fournies sous forme de tableau de tuples ou de dépendances nommées dans un objet.
 
 ---
 
@@ -20,9 +20,9 @@ function waitForAll(dependencies: {[string]: RecoilValue<>}):
 ```
 ---
 
-Because the concurrency helper is provided as a selector, it may be used by Recoil hooks in a React component, as a dependency in a Recoil selector, or anywhere a Recoil state is used.
+Comme l'assistant de concurrence est fourni en tant que sélecteur, il peut être utilisé par les hooks Recoil dans un composant React, en tant que dépendance dans un sélecteur Recoil, ou partout où un état Recoil est utilisé.
 
-### Examples
+### Exemples
 
 ```jsx
 function FriendsInfo() {

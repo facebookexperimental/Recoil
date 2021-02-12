@@ -3,7 +3,7 @@ title: useSetRecoilState(state)
 sidebar_label: useSetRecoilState()
 ---
 
-Returns a setter function for updating the value of writeable Recoil state.
+Renvoie une fonction de réglage pour mettre à jour la valeur de l'état Recoil inscriptible.
 
 ---
 
@@ -13,15 +13,15 @@ function useSetRecoilState<T>(state: RecoilState<T>): SetterOrUpdater<T>;
 type SetterOrUpdater<T> = (T | (T => T)) => void;
 ```
 
-- `state`: writeable Recoil state (an [`atom`](/docs/api-reference/core/atom) or a _writeable_ [`selector`](/docs/api-reference/core/selector))
+- `state`: état Recoil inscriptible (un [`atome`](/docs_FR-fr/api-reference/core/atom) ou un _writeable_ [`sélecteur`](/docs_FR-fr/api-reference/core/selector))
 
-Returns a setter function which can be used asynchronously to change the state.  The setter may either be passed a new value or an updater function which receives the previous value as an argument.
+Renvoie une fonction setter qui peut être utilisée de manière asynchrone pour changer l'état. Le setter peut recevoir une nouvelle valeur ou une fonction de mise à jour qui reçoit la valeur précédente comme argument.
 
 ---
 
-This is the recommended hook to use when a component intends to write to state without reading it. If a component used the [`useRecoilState()`](/docs/api-reference/core/useRecoilState) hook to get the setter, it would also subscribe to updates and re-render when the atom or selector updated. Using `useSetRecoilState()` allows a component to set the value without re-rendering when the value changes.
+Il s'agit du hook recommandé à utiliser lorsqu'un composant a l'intention d'écrire dans l'état sans le lire. Si un composant utilisait le hook [`useRecoilState()`](/docs_FR-fr/api-reference/core/useRecoilState) pour obtenir le setter, il s'abonnerait également aux mises à jour et effectuerait un nouveau rendu lorsque l'atome ou le sélecteur serait mis à jour. L'utilisation de `useSetRecoilState()` permet à un composant de définir la valeur sans souscrire au composant pour le restituer lorsque la valeur change.
 
-### Example
+### Exemple
 
 ```jsx
 import {atom, useSetRecoilState} from 'recoil';
@@ -31,23 +31,20 @@ const namesState = atom({
   default: ['Ella', 'Chris', 'Paul'],
 });
 
-function NameInput() {
+function FormContent({setNamesState}) {
   const [name, setName] = useState('');
-  const setNamesState = useSetRecoilState(namesState);
-
-  const addName = () => {
-    setNamesState(existingNames => [...existingNames, name]);
-  };
-
-  const onChange = (e) => {
-    setName(e.target.value);
-  };
-
+  
   return (
     <>
-      <input type="text" value={name} onChange={onChange} />
-      <button onClick={addName}>Add Name</button>
+      <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+      <button onClick={() => setNamesState(names => [...names, name])}>Ajouter un nom</button>
     </>
-  );
+)}
+
+// This component will be rendered once when mounting
+function Form() {
+  const setNamesState = useSetRecoilState(namesState);
+  
+  return <FormContent setNamesState={setNamesState} />;
 }
 ```

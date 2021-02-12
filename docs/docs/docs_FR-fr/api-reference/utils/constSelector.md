@@ -1,19 +1,19 @@
 ---
-title: constSelector(constant)
+title: constSelector(constante)
 sidebar_label: constSelector()
 ---
 
-A [selector](/docs/api-reference/core/selector) which always provides a constant value.
+Un [sélecteur](/docs_FR-fr/api-reference/core/selector) qui fournit toujours une valeur constante.
 
 ```jsx
 function constSelector<T: Parameter>(constant: T): RecoilValueReadOnly<T>
 ```
 
-A `constSelector` may be useful if you have an interface that uses a type such as `RecoilValue<T>` or `RecoilValueReadOnly<T>` that may be provided by different selector implementations.
+Un `constSelector` peut être utile si vous avez une interface qui utilise un type tel que `RecoilValue<T>` ou `RecoilValueReadOnly<T> `qui peut être fournie par différentes implémentations de sélecteur.
 
-These selectors will memoize based on reference value equality.  So, `constSelector()` can be called multiple times with the same value and the same selector will be provided.  Because of this, the value used as a constant is restricted to types that may be serialized using the Recoil serialization.  Please see documentation in [`selectorFamily`](/docs/api-reference/utils/selectorFamily) describing the limitations.
+Ces sélecteurs mémoriseront en fonction de l'égalité des valeurs de référence. Ainsi, `constSelector()` peut être appelé plusieurs fois avec la même valeur et le même sélecteur sera fourni. Pour cette raison, la valeur utilisée comme constante est limitée aux types qui peuvent être sérialisés à l'aide de la sérialisation Recoil. Veuillez consulter la documentation dans [`selectorFamily`](/docs_FR-fr/api-reference/utils/selectorFamily) décrivant les limitations.
 
-### Example
+### Exemple
 
 ```jsx
 type MyInterface = {

@@ -3,9 +3,9 @@ title: selectorFamily(options)
 sidebar_label: selectorFamily()
 ---
 
-Returns a function that returns a read-only `RecoilValueReadOnly` or writeable `RecoilState` selector.
+Renvoie une fonction qui renvoie un sélecteur en lecture seule `RecoilValueReadOnly` ou en écriture `RecoilState`.
 
-A `selectorFamily` is a powerful pattern that is similar to a [`selector`](/docs/api-reference/core/selector), but allows you to pass parameters to the `get` and `set` callbacks of a `selector`.  The `selectorFamily()` utility returns a function which can be called with user-defined parameters and returns a selector. Each unique parameter value will return the same memoized selector instance.
+Un `selectorFamily` est un modèle puissant qui est similaire à un [`sélecteur`](/docs/api-reference/core/selector), mais vous permet de passer des paramètres aux callbacks `get` et` set` d'un ` sélecteur ». L'utilitaire `selectorFamily ()` retourne une fonction qui peut être appelée avec des paramètres définis par l'utilisateur et renvoie un sélecteur. Chaque valeur de paramètre unique renverra la même instance de sélecteur mémorisée.
 
 ---
 
@@ -16,7 +16,7 @@ function selectorFamily<T, Parameter>({
   get: Parameter => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
 
   dangerouslyAllowMutability?: boolean,
-}): RecoilValueReadOnly<T>
+}): Parameter => RecoilValueReadOnly<T>
 ```
 
 ```jsx
@@ -35,10 +35,10 @@ function selectorFamily<T, Parameter>({
   ) => void,
 
   dangerouslyAllowMutability?: boolean,
-}): RecoilState<T>
+}): Parameter => RecoilState<T>
 ```
 
-Where
+Où
 
 ```jsx
 type ValueOrUpdater<T> =  T | DefaultValue | ((prevValue: T) => T | DefaultValue);
@@ -47,52 +47,52 @@ type SetRecoilValue = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilValue = <T>(RecoilState<T>) => void;
 ```
 
-- `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-- `get` - A function that is passed an object of named callbacks that returns the value of the selector, the same as the `selector()` interface. This is wrapped by a function which is passed the parameter from calling the selector family function.
-- `set?` - An optional function that will produce writeable selectors when provided. It should be a function that takes an object of named callbacks, same as the `selector()` interface. This is again wrapped by another function with gets the parameters from calling the selector family function.
+- `key` - Une chaîne unique utilisée pour identifier l'atome en interne. Cette chaîne doit être unique par rapport aux autres atomes et sélecteurs dans l'ensemble de l'application.
+- `get` - Une fonction qui reçoit un objet de callbacks nommés qui retourne la valeur du sélecteur, identique à l'interface `selector()`. Ceci est encapsulé par une fonction qui reçoit le paramètre de l'appel de la fonction de famille de sélecteur.
+- `set?` - Une fonction optionnelle qui produira des sélecteurs inscriptibles lorsqu'ils sont fournis. Ce devrait être une fonction qui prend un objet de callbacks nommés, comme l'interface `selector()`. Ceci est à nouveau encapsulé par une autre fonction avec obtient les paramètres de l'appel de la fonction de famille de sélecteur.
 
 ---
 
-The `selectorFamily` essentially provides a map from the parameter to a selector.  Because the parameters are often generated at the callsites using the family, and we want equivalent parameters to re-use the same underlying selector, it uses value-equality by default instead of reference-equality.  (There is an unstable `cacheImplementationForParams` API to adjust this behavior).  This imposes restrictions on the types which can be used for the parameter.  Please use a primitive type or an object that can be serialized.  Recoil uses a custom serializer that can support objects and arrays, some containers (such as ES6 Sets and Maps), is invariant of object key ordering, supports Symbols, Iterables, and uses `toJSON` properties for custom serialization (such as provided with libraries like Immutable containers).  Using functions or mutable objects, such as Promises, in parameters is problematic.
+Le `selectorFamily` fournit essentiellement une carte du paramètre à un sélecteur. Étant donné que les paramètres sont souvent générés sur les sites d'appel à l'aide de la famille, et que nous voulons que les paramètres équivalents réutilisent le même sélecteur sous-jacent, il utilise l'égalité des valeurs par défaut au lieu de l'égalité des références. (Il existe une API instable `cacheImplementationForParams` pour ajuster ce comportement). Cela impose des restrictions sur les types qui peuvent être utilisés pour le paramètre. Veuillez utiliser un type primitif ou un objet qui peut être sérialisé. Recoil utilise un sérialiseur personnalisé qui peut prendre en charge les objets et les tableaux, certains conteneurs (tels que les ensembles et les cartes ES6), est invariant de l'ordre des clés d'objet, prend en charge les symboles, les itérables et utilise les propriétés `toJSON` pour la sérialisation personnalisée (comme celles fournies avec les bibliothèques comme les conteneurs immuables). L'utilisation de fonctions ou d'objets modifiables, tels que les promesses, dans les paramètres est problématique.
 
-## Example
+## Exemple
 
 ```jsx
 const myNumberState = atom({
-  key: 'MyNumber',
+  key: 'MonNumero',
   default: 2,
 });
 
 const myMultipliedState = selectorFamily({
-  key: 'MyMultipliedNumber',
+  key: 'MonNumeroMultiplié',
   get: (multiplier) => ({get}) => {
     return get(myNumberState) * multiplier;
   },
 
-  // optional set
+  // set optionel
   set: (multiplier) => ({set}, newValue) => {
     set(myNumberState, newValue / multiplier);
   },
 });
 
-function MyComponent() {
-  // defaults to 2
+function MonComposant() {
+  // 2 par défaut
   const number = useRecoilValue(myNumberState);
 
-  // defaults to 200
+  // 200 par défaut
   const multipliedNumber = useRecoilValue(myMultipliedState(100));
 
   return <div>...</div>;
 }
 ```
 
-## Async Query Example
+## Exemple de requête asynchrone
 
-Selector Families are also useful to use for passing parameters to queries.  Note that using a selector to abstract queries like this should still be "pure" functions which always return the same result for a given set of inputs and dependency values.  See [this guide](/docs/guides/asynchronous-data-queries) for more examples.
+Les familles de sélecteurs sont également utiles pour passer des paramètres aux requêtes. Notez que l'utilisation d'un sélecteur pour abstraire des requêtes comme celle-ci doit toujours être des fonctions «pures» qui renvoient toujours le même résultat pour un ensemble donné d'entrées et de valeurs de dépendance. Voir [ce guide](/docs_FR-fr/guides/asynchronous-data-queries) pour plus d'exemples.
 
 ```jsx
 const myDataQuery = selectorFamily({
-  key: 'MyDataQuery',
+  key: 'MaRequêteDeDonnées',
   get: (queryParameters) => async ({get}) => {
     const response = await asyncDataRequest(queryParameters);
     if (response.error) {
@@ -102,13 +102,13 @@ const myDataQuery = selectorFamily({
   },
 });
 
-function MyComponent() {
+function MonComposant() {
   const data = useRecoilValue(myDataQuery({userID: 132}));
   return <div>...</div>;
 }
 ```
 
-## Destructuring Example
+## Exemple de destruction
 
 ```jsx
 const formState = atom({
@@ -130,15 +130,17 @@ const formFieldState = selectorFamily({
 const Component1 = () => {
   const [value, onChange] = useRecoilState(formFieldState('field1'));
   return (
-    <input value={value} onChange={onChange} />
-    <Component2 />
-  )
+    <>
+      <input value={value} onChange={onChange} />
+      <Component2 />
+    </>
+  );
 }
 
 const Component2 = () => {
   const [value, onChange] = useRecoilState(formFieldState('field2'));
   return (
     <input value={value} onChange={onChange} />
-  )
+  );
 }
 ```

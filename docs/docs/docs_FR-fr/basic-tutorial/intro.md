@@ -1,15 +1,15 @@
 ---
-title: Intro
+title: Introduction
 ---
 
-This section assumes you have installed Recoil and React. See the [Getting Started](/docs/introduction/getting-started) page for how to get started with Recoil and React from scratch. Components in the following sections are assumed to have a `<RecoilRoot />` in the parent tree.
+Cette section suppose que vous avez installé Recoil et React. Consultez la page [Commencer](/docs_FR-fr/introduction/getting-started) pour savoir comment démarrer avec Recoil et React à partir de zéro. Les composants des sections suivantes sont supposés avoir un `<RecoilRoot />` dans l'arborescence parent.
 
-In this tutorial, we'll be building a simple todo-list application. Our app will be able to do the following:
+Dans ce didacticiel, nous allons créer une application simple de liste de tâches. Notre application pourra effectuer les opérations suivantes:
 
-- Add todo items
-- Edit todo items
-- Delete todo items
-- Filter todo items
-- Display useful stats
+- Ajouter des tâches à faire
+- Modifier les tâches à faire
+- Supprimer les tâches à faire
+- Filtrer les tâches à faire
+- Afficher des statistiques utiles
 
-Along the way, we'll cover atoms, selectors, atom families, and the hooks exposed by the Recoil API. We'll also cover optimization
+En cours de route, nous couvrirons les atomes, les sélecteurs, les familles d'atomes et les hooks exposés par l'API Recoil. Nous couvrirons également l'optimisation

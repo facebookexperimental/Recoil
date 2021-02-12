@@ -1,15 +1,15 @@
 ---
-title: Asynchronous Data Queries
-sidebar_label: Asynchronous Data Queries
+title: Requêtes de données asynchrones
+sidebar_label: requêtes de données asynchrones
 ---
 
-Recoil provides a way to map state and derived state to React components via a data-flow graph. What's really powerful is that the functions in the graph can also be asynchronous. This makes it easy to use asynchronous functions in synchronous React component render functions. Recoil allows you to seamlessly mix synchronous and asynchronous functions in your data-flow graph of selectors. Simply return a Promise to a value instead of the value itself from a selector `get` callback, the interface remains exactly the same. Because these are just selectors, other selectors can also depend on them to further transform the data.
+Recoil fournit un moyen de mapper état et état dérivé aux composants React via un graphe de flux de données. Ce qui est vraiment puissant, c'est que les fonctions du graphe peuvent également être asynchrones. Cela facilite l'utilisation de fonctions asynchrones au sein de fonctions synchrones de composants React. Recoil vous permet de mélanger de manière transparente des fonctions synchrones et asynchrones dans votre graphe de flux de données de sélecteurs. Renvoyez simplement une promesse de valeur au lieu de la valeur elle-même à partir d'un rappel de sélecteur `get`, l'interface reste exactement la même. Comme ce ne sont que des sélecteurs, d'autres sélecteurs peuvent également en dépendre pour transformer davantage les données.
 
-Selectors can be used as one way to incorporate asynchronous data into the Recoil data-flow graph.  Please keep in mind that selectors represent pure functions: For a given set of inputs they should always produce the same results (at least for the lifetime of the application).  This is important as selector evaluations may execute one or more times, may be restarted, and may be cached.  Because of this, selectors are a good way to model read-only DB queries where repeating a query provides consistent data.  If you are looking to synchronize local and server state, then please see [Asynchronous State Sync](asynchronous-state-sync) or [State Persistence](persistence).
+Les sélecteurs peuvent être utilisés comme un moyen d'incorporer des données asynchrones dans le graphe de flux de données Recoil. Veuillez garder à l'esprit que les sélecteurs représentent des fonctions "idempotentes": pour un ensemble donné d'entrées, ils doivent toujours produire les mêmes résultats (au moins pour la durée de vie de l'application). Ceci est important car les résultats de l'évaluations de ces sélecteurs peuvent être mises en cache, redémarrées ou exécutées plusieurs fois. Pour cette raison, les sélecteurs sont généralement un bon moyen de modéliser des requêtes de base de données en lecture seule. Pour les données mutables, vous pouvez utiliser une [Query Refresh](#query-refresh) (Actualisation de requête) ou pour synchroniser un état mutable, un état persistant ou pour d'autres effets secondaires, pensez à l'API expérimentale [Atom Effects](/docs_FR-fr/guides/atom-effects).
 
-## Synchronous Example
+## Exemple synchrone
 
-For example, here is a simple synchronous [atom](/docs/api-reference/core/atom) and [selector](/docs/api-reference/core/selector) to get a user name:
+Par exemple, voici un simple synchrone [atome](/docs_FR-fr/api-reference/core/atom) et [sélecteur](/docs_FR-fr/api-reference/core/selector) pour obtenir un nom d'utilisateur:
 
 ```jsx
 const currentUserIDState = atom({
@@ -29,7 +29,7 @@ function CurrentUserInfo() {
   return <div>{userName}</div>;
 }
 
-function MyApp() {
+function MonApplication() {
   return (
     <RecoilRoot>
       <CurrentUserInfo />
@@ -38,9 +38,9 @@ function MyApp() {
 }
 ```
 
-## Asynchronous Example
+## Exemple asynchrone
 
-If the user names were stored in some database we need to query, all we need to do is return a `Promise` or use an `async` function. If any dependencies change, the selector will be re-evaluated and execute a new query. The results are cached, so the query will only execute once per unique input.
+Si les noms d'utilisateur ont été stockés dans une base de données que nous devons interroger, tout ce que nous devons faire est de retourner une `Promise` ou d'utiliser une fonction` async`. Si des dépendances changent, le sélecteur sera réévalué et exécutera une nouvelle requête. Les résultats sont mis en cache, de sorte que la requête ne s'exécutera qu'une seule fois par entrée unique.
 
 ```jsx
 const currentUserNameQuery = selector({
@@ -59,15 +59,15 @@ function CurrentUserInfo() {
 }
 ```
 
-The interface of the selector is the same, so the component using this selector doesn't need to care if it was backed with synchronous atom state, derived selector state, or asynchronous queries!
+L'interface du sélecteur est la même, donc le composant utilisant ce sélecteur n'a pas besoin de se soucier si la value provient d'un état d'atome synchrone, d'un état de sélecteur dérivé ou de requêtes asynchrones!
 
-But, since React render functions are synchronous, what will it render before the promise resolves? Recoil is designed to work with [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) to handle pending data. Wrapping your component with a Suspense boundary will catch any descendants that are still pending and render a fallback UI:
+Mais, puisque les fonctions de rendu de React sont synchrones, que rendront-t-elles avant la résolution de la promesse? Recoil est conçu pour fonctionner avec [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) pour gérer les données en attente. Envelopper votre composant avec une limite `Suspense` interceptera tous les descendants qui sont toujours en attente et rendra une interface utilisateur de secours:
 
 ```jsx
-function MyApp() {
+function MonApplication() {
   return (
     <RecoilRoot>
-      <React.Suspense fallback={<div>Loading...</div>}>
+      <React.Suspense fallback={<div>Chargement...</div>}>
         <CurrentUserInfo />
       </React.Suspense>
     </RecoilRoot>
@@ -75,9 +75,9 @@ function MyApp() {
 }
 ```
 
-## Error Handling
+## La gestion d'erreurs
 
-But what if the request has an error? Recoil selectors can also throw errors which will then be thrown if a component tries to use that value. This can be caught with a React [`<ErrorBoundary>`](https://reactjs.org/docs/error-boundaries.html). For example:
+Mais que faire si la demande à échouée ou contient une erreur? Les sélecteurs Recoil peuvent également générer des erreurs qui seront ensuite lancées si un composant tente d'utiliser cette valeur. Cela peut être intercepté avec un React [`<ErrorBoundary>`] (https://reactjs.org/docs/error-boundaries.html). Par exemple:
 
 ```jsx
 const currentUserNameQuery = selector({
@@ -98,11 +98,11 @@ function CurrentUserInfo() {
   return <div>{userName}</div>;
 }
 
-function MyApp() {
+function MonApplication() {
   return (
     <RecoilRoot>
       <ErrorBoundary>
-        <React.Suspense fallback={<div>Loading...</div>}>
+        <React.Suspense fallback={<div>Chargement...</div>}>
           <CurrentUserInfo />
         </React.Suspense>
       </ErrorBoundary>
@@ -111,9 +111,9 @@ function MyApp() {
 }
 ```
 
-## Queries with Parameters
+## Requêtes avec paramètres
 
-Sometimes you want to be able to query based on parameters that aren't just based on derived state. For example, you may want to query based on the component props. You can do that using the [**`selectorFamily`**](/docs/api-reference/utils/selectorFamily) helper:
+Parfois, vous souhaitez pouvoir interroger en fonction de paramètres qui ne sont pas uniquement basés sur un état dérivé. Par exemple, vous souhaiterez peut-être effectuer une requête en fonction des "props" du composant. Vous pouvez le faire en utilisant l'assistant [**`selectorFamily`**](/docs_FR-fr/api-reference/utils/selectorFamily):
 
 ```jsx
 const userNameQuery = selectorFamily({
@@ -147,11 +147,11 @@ function MyApp() {
 }
 ```
 
-## Data-Flow Graph
+## Graphe de flux de données
 
-Remember, by modeling queries as selectors, we can build a data-flow graph mixing state, derived state, and queries!  This graph will automatically update and re-render React components as state is updated.
+N'oubliez pas qu'en modélisant les requêtes en tant que sélecteurs, nous pouvons créer un graphe de flux de données mélangeant l'état, l'état dérivé et les requêtes! Ce graphe se mettra à jour et re-rendra automatiquement les composants React à mesure que l'état est changé.
 
-The following example will render the current user's name and a list of their friends.  If a friend's name is clicked on, they will become the current user and the name and list will be automatically updated.
+L'exemple suivant rendra le nom de l'utilisateur actuel et une liste de ses amis. Si vous cliquez sur le nom d'un ami, il deviendra l'utilisateur actuel et le nom et la liste seront automatiquement mis à jour.
 
 ```jsx
 const currentUserIDState = atom({
@@ -179,12 +179,7 @@ const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
   get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
-    const friends = [];
-    for (const friendID of friendList) {
-      const friendInfo = get(userInfoQuery(friendID));
-      friends.push(friendInfo);
-    }
-    return friends;
+    return friendList.map(friendID => get(userInfoQuery(friendID)));
   },
 });
 
@@ -206,11 +201,11 @@ function CurrentUserInfo() {
   );
 }
 
-function MyApp() {
+function MonApplication() {
   return (
     <RecoilRoot>
       <ErrorBoundary>
-        <React.Suspense fallback={<div>Loading...</div>}>
+        <React.Suspense fallback={<div>Chargement...</div>}>
           <CurrentUserInfo />
         </React.Suspense>
       </ErrorBoundary>
@@ -219,9 +214,9 @@ function MyApp() {
 }
 ```
 
-## Concurrent Requests
+## Requêtes concomitantes
 
-If you notice in the above example, the `friendsInfoQuery` uses a query to get the info for each friend.  But, by doing this in a loop they are essentially serialized.  If the lookup is fast, maybe that's ok.  If it's expensive, you can use a concurrency helper such as [`waitForAll`](/docs/api-reference/utils/waitForAll) to run them in parallel.  This helper accepts both arrays and named objects of dependencies.
+Si vous remarquez dans l'exemple ci-dessus, `friendsInfoQuery` utilise une requête pour obtenir les informations de chaque ami. Mais, en faisant cela dans une boucle, ils sont essentiellement sérialisés. Si la recherche est rapide, c'est peut-être ok. Si le coût est cher, vous pouvez utiliser un assistant d'accès concurrentiel tel que [`waitForAll`](/docs_FR-fr/api-reference/utils/waitForAll) pour les exécuter en parallèle. Cet assistant accepte à la fois des tableaux et des objets nommés de dépendances.
 
 ```jsx
 const friendsInfoQuery = selector({
@@ -236,7 +231,7 @@ const friendsInfoQuery = selector({
 });
 ```
 
-You can use [`waitForNone`](/docs/api-reference/utils/waitForNone) to handle incremental updates to the UI with partial data
+Vous pouvez utiliser [`waitForNone`](/docs_FR-fr/api-reference/utils/waitForNone) pour gérer les mises à jour incrémentielles de l'interface utilisateur avec des données partielles
 
 ```jsx
 const friendsInfoQuery = selector({
@@ -246,18 +241,18 @@ const friendsInfoQuery = selector({
     const friendLoadables = get(waitForNone(
       friendList.map(friendID => userInfoQuery(friendID))
     ));
-    return friends
+    return friendLoadables
       .filter(({state}) => state === 'hasValue')
       .map(({contents}) => contents);
   },
 });
 ```
 
-## Pre-Fetching
+## Prélecture
 
-For performance reasons you may wish to kick off fetching *before* rendering.  That way the query can be going while we start rendering.  The [React docs](https://reactjs.org/docs/concurrent-mode-suspense.html#start-fetching-early) give some examples.  This pattern works with Recoil as well.
+Pour des raisons de performances, vous souhaitez peut-être lancer la récupération *avant* le rendu. De cette façon, la requête peut continuer pendant que le rendu commence. La [Documentation de React](https://reactjs.org/docs/concurrent-mode-suspense.html#start-fetching-early) donnent quelques exemples. Ce modèle fonctionne également avec Recoil.
 
-Let's change the above example to initiate a fetch for the next user info as soon as the user clicks the button to change users:
+Modifions l'exemple ci-dessus pour lancer une récupération des informations sur l'utilisateur suivant dès que l'utilisateur clique sur le bouton pour changer d'utilisateur:
 
 ```jsx
 function CurrentUserInfo() {
@@ -265,8 +260,8 @@ function CurrentUserInfo() {
   const friends = useRecoilValue(friendsInfoQuery);
 
   const changeUser = useRecoilCallback(({snapshot, set}) => userID => {
-    snapshot.getLoadable(userInfoQuery(userID)); // pre-fetch user info
-    set(currentUserIDState, userID); // change current user to start new render
+    snapshot.getLoadable(userInfoQuery(userID)); // prélit les informations utilisateur
+    set(currentUserIDState, userID); // change l'utilisateur courant pour commancer un nouveau rendu
   });
 
   return (
@@ -284,9 +279,25 @@ function CurrentUserInfo() {
 }
 ```
 
-## Without React Suspense
+## Requêter les valeurs par défaut de atomes 
 
-It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the status during rendering:
+Un modèle courant consiste à utiliser un atome pour représenter un état modifiable local, mais à utiliser un sélecteur pour interroger les valeurs par défaut:
+
+```jsx
+const currentUserIDState = atom({
+  key: 'CurrentUserID',
+  default: selector({
+    key: 'CurrentUserID/Default',
+    get: () => myFetchCurrentUserID(),
+  }),
+});
+```
+
+Si vous souhaitez une synchronisation bidirectionnelle des données, considérez [`Atom Effects`](/docs_FR-fr/guides/effets-d'atome)
+
+## Requêtes asynchrones sans React Suspense
+
+Il n'est pas nécessaire d'utiliser React Suspense pour gérer les sélecteurs asynchrones en attente. Vous pouvez également utiliser le hook [`useRecoilValueLoadable()`](/docs_FR-fr/api-reference/core/useRecoilValueLoadable) pour déterminer l'état pendant le rendu:
 
 ```jsx
 function UserInfo({userID}) {
@@ -295,9 +306,87 @@ function UserInfo({userID}) {
     case 'hasValue':
       return <div>{userNameLoadable.contents}</div>;
     case 'loading':
-      return <div>Loading...</div>;
+      return <div>Chargement...</div>;
     case 'hasError':
       throw userNameLoadable.contents;
   }
 }
 ```
+
+## Actualisation de requête
+
+Lorsque vous utilisez des sélecteurs pour modéliser des requêtes de données, il est important de se rappeler que l'évaluation des sélecteurs doit toujours fournir un résultat constante pour un état donné. Les sélecteurs représentent l'état dérivé d'autres états d'atomes et de sélecteurs. Ainsi, les fonctions d'évaluation des sélecteurs doivent être idempotentes pour une entrée donnée, car elles peuvent être mises en cache ou exécutées plusieurs fois. En pratique, cela signifie qu'un seul sélecteur ne doit pas être utilisé pour une requête dont vous vous attendez à ce que les résultats varient pendant la durée de vie de l'application.
+
+Il existe quelques modèles que vous pouvez utiliser pour travailler avec des données mutables:
+
+### Utiliser des requêtes identifiable
+L'évaluation du sélecteur doit fournir un résultat constant pour un état donné en entrée (état dépendant ou paramètres de famille). Ainsi, vous pouvez ajouter un identifiant de demande en tant que paramètre de famille ou en tant que dépendance à votre requête. Par exemple:
+
+```jsx
+const userInfoQueryRequestIDState = atomFamily({
+  key: 'UserInfoQueryRequestID',
+  default: 0,
+});
+
+const userInfoQuery = selectorFamily({
+  key: 'UserInfoQuery',
+  get: userID => async ({get}) => {
+    get(userInfoQueryRequestIDState(userID)); // Ajouter un identifiant de requête en tant que dépendence
+    const response = await myDBQuery({userID});
+    if (response.error) {
+      throw response.error;
+    }
+    return response;
+  },
+});
+
+function useRefreshUserInfo(userID) {
+  setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
+  return () => {
+    setUserInfoQueryRequestID(requestID => requestID + 1);
+  };
+}
+
+function CurrentUserInfo() {
+  const currentUserID = useRecoilValue(currentUserIDState);
+  const currentUserInfo = useRecoilValue(userInfoQuery(currentUserID));
+  const refreshUserInfo = useRefreshUserInfo(currentUserID);
+
+  return (
+    <div>
+      <h1>{currentUser.name}</h1>
+      <button onClick={refreshUserInfo}>Rafraîchir</button>
+    </div>
+  );
+}
+```
+
+### Utiliser un atome
+Une autre option consiste à utiliser un atome, au lieu d'un sélecteur, pour modéliser les résultats de la requête. Vous pouvez mettre à jour impérativement  l'état de l'atome avec les nouveaux résultats de la requête en fonction de votre stratégie d'actualisation.
+
+```jsx
+const userInfoState = atomFamily({
+  key: 'UserInfo',
+  default: userID => fetch(userInfoURL(userID)),
+});
+
+// React component to refresh query
+function RefreshUserInfo({userID}) {
+  const refreshUserInfo = useRecoilCallback(({set}) => async id => {
+    const userInfo = await myDBQuery({userID});
+    set(userInfoState(userID), userInfo);
+  }, [userID]);
+
+  // Refresh user info every second
+  useEffect(() => {
+    const intervalID = setInterval(refreshUserInfo, 1000);
+    return () => clearInterval(intervalID);
+  }, [refreshUserInfo]);
+
+  return null;
+}
+```
+
+Un inconvénient de cette approche est que les atomes ne supportent pas *pour l'instant* l'acceptation d'une `Promise` comme nouvelle valeur afin de profiter automatiquement de React Suspense pendant que l'actualisation de la requête est en attente, si tel est le comportement souhaité. Cependant, vous pouvez stocker un objet qui encode manuellement l'état de chargement ainsi que les résultats si vous le souhaitez.
+
+Tenez également compte des [Atom Effectts](/docs_FR-fr/guides/effets-d'atome) pour la synchronisation des requêtes d'atomes.

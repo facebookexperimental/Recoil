@@ -1,9 +1,9 @@
 ---
-title: atom(options)
+title: atome(options)
 sidebar_label: atom()
 ---
 
-An *atom* represents state in Recoil.  The `atom()` function returns a writeable `RecoilState` object.
+Un *atome* représente l'état dans Recoil. La fonction `atom()` renvoie un objet `RecoilState` inscriptible.
 
 ---
 
@@ -12,31 +12,35 @@ function atom<T>({
   key: string,
   default: T | Promise<T> | RecoilValue<T>,
 
+  effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>>,
+
   dangerouslyAllowMutability?: boolean,
 }): RecoilState<T>
 ```
 
-
-  - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-  - `default` - The initial value of the atom or a `Promise` or another atom or selector representing a value of the same type.
-  - `dangerouslyAllowMutability` - Recoil depends on atom state changes to know when to notify components that use the atoms to re-render.  If an atom's value were mutated, it may bypass this and cause state to change without properly notifying subscribing components.  To help protect against this all stored values are frozen.  In some cases it may be desireable to override this using this option.
+  - `key` - Une chaîne unique utilisée pour identifier l'atome en interne. Cette chaîne doit être unique par rapport aux autres atomes et sélecteurs dans l'ensemble de l'application.
+  - `default` - La valeur initiale de l'atome ou d'une` Promise` ou d'un autre atome ou sélecteur représentant une valeur du même type.
+  - `effects_UNSTABLE` - Un tableau optionnel d '[Atom Effects](/docs_FR-fr/guides/atom-effects) pour l'atome.
+  - `dangerouslyAllowMutability` - Dans certains cas, il peut être souhaitable d'autoriser la mutation d'objets stockés dans des atomes qui ne représentent pas des changements d'état. Utilisez cette option pour remplacer le gel des objets en mode développement.
 
 ---
 
-Most often, you'll use the following hooks to interact with atoms:
+Recoil gère les changements d'état de l'atome pour savoir quand notifier les composants souscrivant à cet atome pour un nouveau rendu, vous devez donc utiliser les hooks répertoriés ci-dessous pour changer l'état de l'atome. Si un objet stocké dans un atome a été muté directement, il peut le contourner et provoquer des changements d'état sans notifier correctement les composants abonnés. Pour aider à détecter les bogues, Recoil gèlera les objets stockés dans les atomes en mode développement.
 
-- [`useRecoilState()`](/docs/api-reference/core/useRecoilState): Use this hook when you intend on both reading and writing to the atom. This hook subscribes the component to the atom.
-- [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue): Use this hook when you intend on only reading the atom. This hook subscribes the component to the atom.
-- [`useSetRecoilState()`](/docs/api-reference/core/useSetRecoilState): Use this hook when you intend on only writing to the atom.
-- [`useResetRecoilState()`](/docs/api-reference/core/useResetRecoilState): Use this hook to reset an atom to its default value.
+Le plus souvent, vous utiliserez les crochets suivants pour interagir avec les atomes:
 
-For rare cases where you need to read an atom's value without subscribing to the component, see [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback).
+- [`useRecoilState()`](/docs_FR-fr/api-reference/core/useRecoilState): Utilisez ce hook lorsque vous avez l'intention de lire et d'écrire sur l'atome. Ce hook abonne le composant à l'atome.
+- [`useRecoilValue()`](/docs_FR-fr/api-reference/core/useRecoilValue): utilisez ce hook lorsque vous avez l'intention de lire uniquement l'atome. Ce hook abonne le composant à l'atome.
+- [`useSetRecoilState()`](/docs_FR-fr/api-reference/core/useSetRecoilState): utilisez ce hook lorsque vous avez l'intention d'écrire uniquement sur l'atome.
+- [`useResetRecoilState()`](/docs_FR-fr/api-reference/core/useResetRecoilState): utilisez ce hook pour réinitialiser un atome à sa valeur par défaut.
 
-You can initialize an atom either with a static value or with a `Promise` or a `RecoilValue` representing a value of the same type.  Because the `Promise` may be pending or the default selector may be asynchronous it means that the atom value may also be pending or throw an error when reading.  Note that you cannot currently assign a `Promise` when setting an atom.  Please use [selectors](/docs/api-reference/core/selector) for async functions.
+Pour les rares cas où vous devez lire la valeur d'un atome sans vous abonner au composant, consultez [`useRecoilCallback()`](/docs_FR-fr/api-reference/core/useRecoilCallback).
 
-Atoms cannot be used to store `Promise`s or `RecoilValues` directly, but they may be wrapped in an object.  Note that `Promises` may be mutable.
+Vous pouvez initialiser un atome soit avec une valeur statique, soit avec une `Promise` ou une` RecoilValue` représentant une valeur du même type. Parce que la `Promise` peut être en attente ou que le sélecteur par défaut peut être asynchrone, cela signifie que la valeur de l'atome peut également être en attente ou générer une erreur lors de la lecture. Notez que vous ne pouvez pas actuellement attribuer de `Promise` lors de la définition d'un atome. Veuillez utiliser des [sélecteurs](/docs_FR-fr/api-reference/core/selector) pour les fonctions asynchrones.
 
-### Example
+Les atomes ne peuvent pas être utilisés pour stocker directement les «Promise» ou «RecoilValue», mais ils peuvent être enveloppés dans un objet. Notez que les promesses peuvent être mutables. Les atomes peuvent être définis sur une `fonction`, tant qu'ils sont purs, mais pour ce faire, vous devrez peut-être utiliser la forme de mise à jour des setters. (par exemple `set (myAtom, () => myFunc);`).
+
+### Exemple
 
 ```jsx
 import {atom, useRecoilState} from 'recoil';

@@ -3,9 +3,9 @@ title: useRecoilState(state)
 sidebar_label: useRecoilState()
 ---
 
-Returns a tuple where the first element is the value of state and the second element is a setter function that will update the value of the given state when called.
+Renvoie un tuple où le premier élément est la valeur de l'état et le deuxième élément est une fonction de définition qui mettra à jour la valeur de l'état donné lorsqu'elle est appelée.
 
-This hook will implicitly subscribe the component to the given state.
+Ce hook abonnera implicitement le composant à l'état donné.
 
 ---
 
@@ -15,17 +15,17 @@ function useRecoilState<T>(state: RecoilState<T>): [T, SetterOrUpdater<T>];
 type SetterOrUpdater<T> = (T | (T => T)) => void;
 ```
 
-- `state`: an [`atom`](/docs/api-reference/core/atom) or a _writeable_ [`selector`](/docs/api-reference/core/selector). Writeable selectors are selectors that were have both a `get` and `set` in their definition while read-only selectors only have a `get`.
+- `state`: un [`atome`](/docs_FR-fr/api-reference/core/atom) ou un [`selecteur`](/docs_FR-fr/api-reference/core/selector) _inscriptible_. Les sélecteurs inscriptibles sont des sélecteurs qui ont à la fois un `get` et un `set` dans leur définition tandis que les sélecteurs en lecture seule n'ont qu'un `get`.
 
-This API is similar to the React (`useState()`)[https://reactjs.org/docs/hooks-reference.html#usestate] hook except it takes a Recoil state instead of a default value as an argument.  It returns a tuple of the current value of the state and a setter function.  The setter function may either take a new value as an argument or an updater function which receives the previous value as a parameter.
+Cette API est similaire au hook React [`useState()`](https://reactjs.org/docs/hooks-reference.html#usestate) sauf qu'il prend un état Recoil au lieu d'une valeur par défaut comme argument. Il retourne un tuple de la valeur actuelle de l'état et une fonction de définition. La fonction de définition peut prendre une nouvelle valeur comme argument ou une fonction de mise à jour qui reçoit la valeur précédente en tant que paramètre.
 
 ---
 
-This is the recommended hook to use when a component intends to read and write state.
+Il s'agit du hook recommandé à utiliser lorsqu'un composant a l'intention de lire et d'écrire l'état.
 
-Using this hook in a React component will subscribe the component to re-render when the state is updated.  This hook may throw if the state has an error or is pending asynchronous resolution.  Please see [this guide](/docs/guides/asynchronous-data-queries).
+L'utilisation de ce hook dans un composant React abonnera le composant à restituer lorsque l'état est mis à jour. Ce hook peut déclencher si l'état a une erreur ou est en attente de résolution asynchrone. Veuillez consulter [ce guide](/docs_FR-fr/guides/asynchronous-data-queries).
 
-### Example
+### Exemple
 
 ```jsx
 import {atom, selector, useRecoilState} from 'recoil';
@@ -35,28 +35,28 @@ const tempFahrenheit = atom({
   default: 32,
 });
 
-const tempCelcius = selector({
-  key: 'tempCelcius',
+const tempCelsius = selector({
+  key: 'tempCelsius',
   get: ({get}) => ((get(tempFahrenheit) - 32) * 5) / 9,
   set: ({set}, newValue) => set(tempFahrenheit, (newValue * 9) / 5 + 32),
 });
 
-function TempCelcius() {
+function TempCelsius() {
   const [tempF, setTempF] = useRecoilState(tempFahrenheit);
-  const [tempC, setTempC] = useRecoilState(tempCelcius);
+  const [tempC, setTempC] = useRecoilState(tempCelsius);
 
-  const addTenCelcius = () => setTempC(tempC + 10);
+  const addTenCelsius = () => setTempC(tempC + 10);
   const addTenFahrenheit = () => setTempF(tempF + 10);
 
   return (
     <div>
-      Temp (Celcius): {tempC}
+      Temp (Celsius): {tempC}
       <br />
       Temp (Fahrenheit): {tempF}
       <br />
-      <button onClick={addTenCelcius}>Add 10 Celcius</button>
+      <button onClick={addTenCelsius}>Ajouter 10 Celsius</button>
       <br />
-      <button onClick={addTenFahrenheit}>Add 10 Fahrenheit</button>
+      <button onClick={addTenFahrenheit}>Ajouter 10 Fahrenheit</button>
     </div>
   );
 }

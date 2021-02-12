@@ -3,23 +3,23 @@ title: useRecoilSnapshot()
 sidebar_label: useRecoilSnapshot()
 ---
 
-This hook synchronously returns a [`Snapshot`](/docs/api-reference/core/Snapshot) object during rendering and subscribes the calling component for all Recoil state changes.  You may want to use this hook for debug tools, or for server-side rendering where you need to synchronously have the state during the initial render.
+Ce hook renvoie de manière synchrone un objet [`Snapshot`](/docs_FR-fr/api-reference/core/Snapshot) pendant le rendu et souscrit au composant appelant pour tous les changements d'état Recoil. Vous souhaiterez peut-être utiliser ce hook pour les outils de débogage ou pour le rendu côté serveur où vous devez avoir l'état de manière synchrone lors du rendu initial.
 
 ```jsx
 function useRecoilSnapshot(): Snapshot
 ```
 
-Be careful using this hook because it will cause the component to re-render for *all* Recoil state changes.   In the future we hope to provide the ability to debounce for performance.
+Soyez prudent en utilisant ce hook car il entraînera le nouveau rendu du composant pour les changements d'état * all * Recoil. À l'avenir, nous espérons offrir la possibilité de rebondir pour la performance.
 
-### Link Example
-Define a `<LinkToNewView>` component that renders an `<a>` anchor with an `href` based on the current state with a mutation applied.  In this example `uriFromSnapshot()` is some user-defined function which encodes the current state in the URI which can be restored when loading the page.
+### Exemple de lien
+Définissez un composant `<LinkToNewView>` qui rend une ancre `<a>` avec un `href` basé sur l'état actuel avec une mutation appliquée. Dans cet exemple, `uriFromSnapshot()` est une fonction définie par l'utilisateur qui code l'état actuel dans l'URI qui peut être restauré lors du chargement de la page.
 
 ```jsx
 function LinkToNewView() {
   const snapshot = useRecoilSnapshot();
-  const newSnapshot = snapshot.map(({set}) => set(viewState, 'New View'));
-  return <a href={uriFromSnapshot(newSnapshot)}>Click Me!</a>;
+  const newSnapshot = snapshot.map(({set}) => set(viewState, 'Nouvelle Vue'));
+  return <a href={uriFromSnapshot(newSnapshot)}>Cliquez Moi!</a>;
 }
 ```
 
-This is a simplified example.  We provide a helper like this for generating links in our browser history persistence library coming soon which is more extensible and optimized.  For example, it will hijack the click handler to update local state replacing the browser history.
+Ceci est un exemple simplifié. Nous fournissons une aide comme celle-ci pour générer des liens dans notre bibliothèque de persistance d'historique de navigateur à venir, qui est plus extensible et optimisée. Par exemple, il détournera le gestionnaire de clics pour mettre à jour l'état local en remplaçant l'historique du navigateur.

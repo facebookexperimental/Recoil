@@ -1,10 +1,10 @@
 ---
-title: Atoms
+title: Atomes
 ---
 
-Atoms contain the source of truth for our application state. In our todo-list, the source of truth will be an array of objects, with each object representing a todo item.
+Les atomes contiennent la source de vérité de l'état de notre application. Dans notre liste de tâches, la source de vérité sera un tableau d'objets, chaque objet représentant une tâche.
 
-We'll call our list atom `todoListState` and create it using the `atom()` function:
+Nous appellerons notre liste atom `todoListState` et la créerons en utilisant la fonction `atom()`:
 
 ```javascript
 const todoListState = atom({
@@ -13,7 +13,7 @@ const todoListState = atom({
 });
 ```
 
-We give our atom a unique `key` and set the `default` value to an empty array. To read the contents of this atom, we can use the `useRecoilValue()` hook in our `TodoList` component:
+Nous donnons à notre atome une clé unique et définissons la valeur par `défaut` comment étant un tableau vide. Pour lire le contenu de cet atome, nous pouvons utiliser le hook `useRecoilValue()` dans notre composant `TodoList`:
 
 ```jsx
 function TodoList() {
@@ -33,9 +33,9 @@ function TodoList() {
 }
 ```
 
-The commented-out components will be implemented in the sections that follow.
+Les composants commentés seront implémentés dans les sections suivantes.
 
-To create new todo items, we need to access a setter function that will update the contents of the `todoListState`. We can use the `useSetRecoilState()` hook to get a setter function in our `TodoItemCreator` component:
+Pour créer de nouveaux éléments todo, nous devons accéder à une fonction setter qui mettra à jour le contenu de `todoListState`. Nous pouvons utiliser le hook `useSetRecoilState()` pour obtenir une fonction setter dans notre composant `TodoItemCreator`:
 
 ```jsx
 function TodoItemCreator() {
@@ -61,21 +61,21 @@ function TodoItemCreator() {
   return (
     <div>
       <input type="text" value={inputValue} onChange={onChange} />
-      <button onClick={addItem}>Add</button>
+      <button onClick={addItem}>Ajouter</button>
     </div>
   );
 }
 
-// utility for creating unique Id
+// utilitair pour créer un identifiant unique
 let id = 0;
 function getId() {
   return id++;
 }
 ```
 
-Notice we use the **updater** form of the setter function so that we can create a new todo list based on the old todo list.
+Notez que nous utilisons la forme **mise à jour** de la fonction s'assignement afin que nous puissions créer une nouvelle liste de tâches basée sur l'ancienne liste de tâches.
 
-The `TodoItem` component will display the value of the todo item while allowing you to change its text and delete the item. We use `useRecoilState()` to read `todoListState` and to get a setter function that we use to update the item text, mark it as completed, and delete it:
+Le composant `TodoItem` affichera la valeur de la tâche tout en permettant de changer son texte et de supprimer l'élément. Nous utilisons `useRecoilState()` pour lire `todoListState` et pour obtenir une fonction d'assignement que nous utilisons pour mettre à jour le texte de l'élément, le marquer comme terminé et le supprimer:
 
 ```jsx
 function TodoItem({item}) {
@@ -128,4 +128,4 @@ function removeItemAtIndex(arr, index) {
 }
 ```
 
-And with that we've got a fully functional todo list! In the next section we'll see how we can use selectors to take our list to the next level.
+Et avec cela, nous avons une liste de tâches entièrement fonctionnelle! Dans la section suivante, nous verrons comment utiliser les sélecteurs pour amener notre liste au niveau suivant.

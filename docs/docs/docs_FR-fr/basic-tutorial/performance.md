@@ -2,42 +2,42 @@
 title: 'Bonus: Performance'
 ---
 
-Our existing implementation is perfectly valid, but there are some important performance implications to consider as our app evolves from being a small toy project to a million-line corporate program.
+Notre implémentation existante est parfaitement valide, mais il y a des implications importantes sur les performances à prendre en compte à mesure que notre application évolue d'un petit projet à un programme d'entreprise d'un million de lignes.
 
-Let's think about what will cause each of our components to re-render:
+Pensons à ce qui provoquera le nouveau rendu de chacun de nos composants:
 
 ### `<TodoList />`
 
-This component is subscribed to `filteredTodoListState`, which is a selector that has a dependency on `todoListState` and `todoListFilterState`. This means `TodoList` will re-render when the following state changes:
+Ce composant est abonné à `filteredTodoListState`, qui est un sélecteur qui a une dépendance sur` todoListState` et `todoListFilterState`. Cela signifie que `TodoList` sera de nouveau rendu lorsque l'état suivant change:
 
 - `todoListState`
 - `todoListFilterState`
 
 ### `<TodoItem />`
 
-This component is subscribed to `todoListState`, so it will re-render whenever `todoListState` changes and whenever its parent component, `TodoList`, re-renders.
+Ce composant est abonné à `todoListState`, il sera donc à nouveau rendu chaque fois que `todoListState` change et chaque fois que son composant parent, `TodoList`, est à nouveau rendu.
 
 ### `<TodoItemCreator />`
 
-This component is not subscribed to Recoil state (`useSetRecoilState()` does not create a subscription), so it will only re-render when its parent component, `TodoList`, re-renders.
+Ce composant n'est pas abonné à l'état Recoil (`useSetRecoilState()` ne crée pas d'abonnement), il ne sera donc de nouveau rendu que lorsque son composant parent, `TodoList`, sera de nouveau rendu.
 
 ### `<TodoListFilters />`
 
-This component is subcribed to `todoListFilterState`, so it will re-render when either that state changes or when its parent component, `TodoList`, re-renders.
+Ce composant est souscrit à `todoListFilterState`, il sera donc à nouveau rendu lorsque cet état change ou lorsque son composant parent,`TodoList`, est à nouveau rendu.
 
 ### `<TodoListStats />`
 
-This component is subscribed to `filteredTodoListState`, so it will re-render whenever that state changes or when its parent component, `TodoList`, re-renders.
+Ce composant est abonné à `filteredTodoListState`, il sera donc à nouveau rendu chaque fois que cet état change ou lorsque son composant parent,`TodoList`, est à nouveau rendu.
 
-## Room for Improvement
+## Marge d'amélioration
 
-The existing implementation has a few drawbacks, mainly that fact that we are re-rendering the entire tree whenever we make any change to `todoListState` due to the fact that `<TodoList />` is the parent of all of our components, so when it re-renders so will all of its children.
+L'implémentation existante a quelques inconvénients, principalement le fait que nous sommes en train de refaire le rendu de l'arbre entier chaque fois que nous apportons une modification à `todoListState` en raison du fait que `<TodoList />` est le parent de tous nos composants, donc quand il re-rendra, tous ses enfants le seront aussi.
 
-Ideally, components would re-render only when they absolutely have to (when the data that they display on the screen has changed).
+Dans l'idéal, les composants ne seraient re-rendu que lorsqu'ils doivent absolument le faire (lorsque les données qu'ils affichent à l'écran auront changées).
 
-## Optimization #1: `React.memo()`
+## Optimisation # 1: `React.memo ()`
 
-To mitigate the issue of child components re-rendering unnecessarily, we can make use of [`React.memo()`](https://reactjs.org/docs/react-api.html#reactmemo), which memoizes a component based on the **props** passed to that component:
+Pour atténuer le problème du ré-rendu des composants enfants inutilement, nous pouvons utiliser [`React.memo()`] (https://reactjs.org/docs/react-api.html#reactmemo), qui mémorise un composant basé sur les **props** passés à ce composant:
 
 ```js
 const TodoItem = React.memo(({item}) => ...);
@@ -49,24 +49,24 @@ const TodoListFilters = React.memo(() => ...);
 const TodoListStats = React.memo(() => ...);
 ```
 
-That helps with the re-renders of `<TodoItemCreator />` and `<TodoListFilters />` as they no longer re-render in response to re-renders of their parent component, `<TodoList />`, but we still have the problem of `<TodoItem />` and `<TodoListStats />` re-rendering when individual todo items have their text changed as text changes will result in a new `todoListFilterState`, which both `<TodoItem />` and `<TodoListStats />` are subscribed to.
+Cela aide avec les ré-rendus de `<TodoItemCreator />` et `<TodoListFilters />` car ils ne sont plus re-rendu en réponse aux re-rendu de leur composant parent, `<TodoList />`, mais nous avons toujours le problème du re-rendu de `<TodoItem />` et `<TodoListStats />` lorsque des tâches individuelles voient leur texte changé car les modifications de texte entraîneront un nouveau `todoListFilterState`, qui à la fois `<TodoItem />` et `< TodoListStats />`sont abonnés.
 
-## Optimization #2: `atomFamily()`
+## Optimisation # 2: `atomFamily()`
 
-### Rethinking State Shape
+### Repenser la forme de l'état
 
-Thinking of a todo list as an array of objects is problematic because it forms a tight coupling between each individual todo item and the list of all todo items.
+Voir une liste de tâches comme un tableau d'objets est problématique car elle forme un couplage étroit entre chaque élément de tâche individuelle et la liste de toutes les tâches.
 
-To fix this issue, we need to rethink our state shape by thinking about **normalized state**. In the context of our todo-list app, this means storing the **list** of item ids separately from the **data** for each invididual item.
+Pour résoudre ce problème, nous devons repenser la forme de notre état en pensant à **l'état normalisé**. Dans le contexte de notre application, cela signifie stocker la **liste** des identifiants d'élément séparément des **données** pour chaque élément individuel.
 
-> For a more detailed discussion on how to think about normalized state, see [this page from the Redux documentation](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape).
+> Pour une discussion plus détaillée sur la façon de penser l'état normalisé, voir [`cette page de la documentation Redux`](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape).
 
-This ultimately means that we will be splitting our `todoListState` into two:
+Cela signifie finalement que nous allons diviser notre `todoListState` en deux:
 
-- An array of todo item IDs
-- A mapping of item ID to item data
+- Un tableau d'ID de tâche
+- Un mappage de l'ID de tâche aux données de ces tâches
 
-The array of todo item IDs can be implemented using an atom like so:
+Le tableau des ID des tâches peut être implémenté en utilisant un atome comme ceci:
 
 ```javascript
 const todoListItemIdsState = atom({
@@ -75,8 +75,8 @@ const todoListItemIdsState = atom({
 });
 ```
 
-For implementing a mapping of item ID to item data, Recoil provides a utility method that allows us to dynamically create a mapping from ID to atom. This utility is [`atomFamily()`](/docs/api-reference/utils/atomFamily).
+Pour implémenter un mappage de l'ID d'élément aux données de cet élément, Recoil fournit une méthode utilitaire qui nous permet de créer dynamiquement un mappage de l'ID à l'atome. Cet utilitaire est [`atomFamily()`](/docs_FR-fr/api-reference/utils/atomFamily).
 
-### `atomFamily()`
+### `atomFamily ()`
 
-We use the `atomFamily()` function
+Nous utilisons la fonction `atomFamily()`

@@ -1,15 +1,15 @@
 ---
-title: Selectors
+title: Sélecteurs
 ---
 
-A **selector** represents a piece of **derived state**. You can think of derived state as the output of passing state to a pure function that modifies the given state in some way.
+Un **sélecteur** représente une partie d'un **état dérivé**. Vous pouvez considérer un état dérivé comme la sortie d'un état passant à une fonction pure qui modifie l'état donné d'une manière ou d'une autre.
 
-Derived state is a powerful concept because it lets us build dynamic data that depends on other data. In the context of our todo list application, the following are considered derived state:
+Un état dérivé est un concept puissant car il nous permet de créer des données dynamiques qui dépendent d'autres données. Dans le contexte de notre application de liste de tâches, les éléments suivants sont considérés comme des états dérivés:
 
-- **Filtered todo list**: derived from the complete todo list by creating a new list that has certain items filtered out based on some criteria (such as filtering out items that are already completed).
-- **Todo list statistics**: derived from the complete todo list by calculating useful attributes of the list, such as the total number of items in the list, the number of completed items, and the percentage of items that are completed.
+- **Liste de tâches filtrée**: dérivée de la liste de tâches complète en créant une nouvelle liste dans laquelle certains éléments sont filtrés en fonction de certains critères (tels que le filtrage des éléments déjà terminés).
+- **Statistiques de la liste**: dérivée de la liste complète des tâches en calculant les attributs utiles de la liste, tels que le nombre total d'éléments dans la liste, le nombre d'éléments terminés et le pourcentage d'éléments terminés.
 
-To implement a filtered todo list, we need to choose a set of filter criteria whose value can be saved in an atom. The filter options we'll use are: "Show All", "Show Completed", and "Show Uncompleted". The default value will be "Show All":
+Pour implémenter une liste de tâches filtrée, nous devons choisir un ensemble de critères de filtrage dont la valeur peut être enregistrée dans un atome. Les options de filtrage que nous utiliserons sont: "Afficher tout", "Afficher terminés" et "Afficher non terminés". La valeur par défaut sera "Afficher tout":
 
 ```javascript
 const todoListFilterState = atom({
@@ -18,7 +18,7 @@ const todoListFilterState = atom({
 });
 ```
 
-Using `todoListFilterState` and `todoListState`, we can build a `filteredTodoListState` selector which derives a filtered list:
+En utilisant `todoListFilterState` et `todoListState`, nous pouvons construire un sélecteur `filteredTodoListState` qui dérive une liste filtrée:
 
 ```javascript
 const filteredTodoListState = selector({
@@ -39,15 +39,15 @@ const filteredTodoListState = selector({
 });
 ```
 
-The `filteredTodoListState` internally keeps track of two dependencies: `todoListFilterState` and `todoListState` so that it re-runs if either of those change.
+Le `filteredTodoListState` garde en interne la trace de deux dépendances:` todoListFilterState` et `todoListState` afin qu'il se réexécute si l'une de ces modifications change.
 
-> From a component's point of view, selectors can be read using the same hooks that are used to read atoms. However it's important to note that certain hooks only work with **writable state** (i.e `useRecoilState()`). All atoms are writable state, but only some selectors are considered writable state (selectors that have both a `get` and `set` property). See the [Core Concepts](/docs/introduction/core-concepts) page for more information on this topic.
+> Du point de vue d'un composant, les sélecteurs peuvent être lus à l'aide des mêmes crochets que ceux utilisés pour lire les atomes. Cependant, il est important de noter que certains hooks ne fonctionnent qu'avec **l'état inscriptible** (c'est-à-dire `useRecoilState()`). Tous les atomes sont à l'état inscriptible, mais seuls certains sélecteurs sont considérés comme un état inscriptible (sélecteurs qui ont à la fois une propriété `get` et` set`). Consultez la page [Concepts principaux](/docs_FR/introduction/core-concepts) pour plus d'informations sur ce sujet.
 
-Displaying our filtered todoList is as simple as changing one line in the `TodoList` component:
+Afficher notre todoList filtrée est aussi simple que de changer une ligne dans le composant `TodoList`:
 
 ```jsx
 function TodoList() {
-  // changed from todoListState to filteredTodoListState
+  // changée fr todoListState vers filteredTodoListState
   const todoList = useRecoilValue(filteredTodoListState);
 
   return (
@@ -64,7 +64,7 @@ function TodoList() {
 }
 ```
 
-Note the UI is showing every todo because `todoListFilterState` was given a default value of `"Show All"`. In order to change the filter, we need to implement the `TodoListFilters` component:
+Notez que l'interface utilisateur affiche chaque tâche car `todoListFilterState` a reçu la valeur par défaut `"Afficher tout"`. Afin de changer le filtre, nous devons implémenter le composant `TodoListFilters`:
 
 ```jsx
 function TodoListFilters() {
@@ -78,25 +78,25 @@ function TodoListFilters() {
     <>
       Filter:
       <select value={filter} onChange={updateFilter}>
-        <option value="Show All">All</option>
-        <option value="Show Completed">Completed</option>
-        <option value="Show Uncompleted">Uncompleted</option>
+        <option value="Afficher tout">Tout</option>
+        <option value="Afficher Terminés">Terminés</option>
+        <option value="Afficher Non-terminés">Non-terminés</option>
       </select>
     </>
   );
 }
 ```
 
-With a few lines of code we've managed to implement filtering! We'll use the same concepts to implement the `TodoListStats` component.
+Avec quelques lignes de code, nous avons réussi à implémenter le filtrage! Nous utiliserons les mêmes concepts pour implémenter le composant `TodoListStats`.
 
-We want to display the following stats:
+Nous voulons afficher les statistiques suivantes:
 
-- Total number of todo items
-- Total number of completed items
-- Total number of uncompleted items
-- Percentage of items completed
+- Nombre total de tâches à faire
+- Nombre total de tâches terminées
+- Nombre total de tâches non terminées
+- Pourcentage de tâches terminées
 
-While we could create a selector for each of the stats, an easier approach would be to create one selector that returns an object containing the data we need. We'll call this selector `todoListStatsState`:
+Bien que nous puissions créer un sélecteur pour chacune des statistiques, une approche plus simple serait de créer un sélecteur qui renvoie un objet contenant les données dont nous avons besoin. Nous appellerons ce sélecteur `todoListStatsState`:
 
 ```javascript
 const todoListStatsState = selector({
@@ -106,7 +106,7 @@ const todoListStatsState = selector({
     const totalNum = todoList.length;
     const totalCompletedNum = todoList.filter((item) => item.isComplete).length;
     const totalUncompletedNum = totalNum - totalCompletedNum;
-    const percentCompleted = totalNum === 0 ? 0 : totalCompletedNum / totalNum;
+    const percentCompleted = totalNum === 0 ? 0 : totalCompletedNum / totalNum * 100;
 
     return {
       totalNum,
@@ -118,7 +118,7 @@ const todoListStatsState = selector({
 });
 ```
 
-To read the value of `todoListStatsState`, we use `useRecoilValue()` once again:
+Pour lire la valeur de `todoListStatsState`, nous utilisons à nouveau `useRecoilValue()`:
 
 ```jsx
 function TodoListStats() {
@@ -129,7 +129,7 @@ function TodoListStats() {
     percentCompleted,
   } = useRecoilValue(todoListStatsState);
 
-  const formattedPercentCompleted = Math.round(percentCompleted * 100);
+  const formattedPercentCompleted = Math.round(percentCompleted);
 
   return (
     <ul>
@@ -142,10 +142,10 @@ function TodoListStats() {
 }
 ```
 
-To summarize, we've created a todo list app that meets all of our requirements:
+Pour résumer, nous avons créé une application de liste de tâches qui répond à toutes nos exigences:
 
-- Add todo items
-- Edit todo items
-- Delete todo items
-- Filter todo items
-- Display useful stats
+- Ajouter des tâches à faire
+- Modifier les tâches à faire
+- Supprimer les tâches à faire
+- Filtrer les tâches à faire
+- Afficher des statistiques utiles 
