@@ -1,6 +1,6 @@
 ---
-titre: noWait (état)
-étiquette_barre latérale: noWait ()
+title: noWait(state)
+sidebar_label: noWait()
 ---
 
 Un assistant de sélection qui renverra un [`Loadable`](/docs_FR-fr/api-reference/core/Loadable) pour l'état actuel de l'[`atome`](/docs_FR-fr/api-reference/core/atom)) ou [ `sélecteur`](/docs_FR-fr/api-reference/core/selector).

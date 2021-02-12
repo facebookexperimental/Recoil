@@ -1,6 +1,6 @@
 ---
-titre: useGotoRecoilSnapshot (instantané)
-sidebar_label: useGotoRecoilSnapshot ()
+title: useGotoRecoilSnapshot(snapshot)
+sidebar_label: useGotoRecoilSnapshot()
 ---
 
 Ce hook renvoie un callback qui prend un [`Snapshot`](/docs_FR-fr/api-reference/core/Snapshot) comme paramètre et mettra à jour le [`<RecoilRoot>`](/docs_FR-fr/api-reference/core/RecoilRoot) actuel pour correspondre à cet état d'atome.

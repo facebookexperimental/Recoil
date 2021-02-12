@@ -1,5 +1,5 @@
 ---
-titre: errorSelector(message)
+title: errorSelector(message)
 sidebar_label: errorSelector()
 ---
 
