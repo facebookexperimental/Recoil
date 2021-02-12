@@ -31,7 +31,7 @@ function UserInfo({userID}) {
     case 'hasValue':
       return <div>{userNameLoadable.contents}</div>;
     case 'loading':
-      return <div>Loading...</div>;
+      return <div>Chargement...</div>;
     case 'hasError':
       throw userNameLoadable.contents;
   }

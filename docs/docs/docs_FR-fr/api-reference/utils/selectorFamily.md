@@ -5,7 +5,7 @@ sidebar_label: selectorFamily()
 
 Renvoie une fonction qui renvoie un sélecteur en lecture seule `RecoilValueReadOnly` ou en écriture `RecoilState`.
 
-Un `selectorFamily` est un modèle puissant qui est similaire à un [`sélecteur`](/docs/api-reference/core/selector), mais vous permet de passer des paramètres aux callbacks `get` et` set` d'un ` sélecteur ». L'utilitaire `selectorFamily ()` retourne une fonction qui peut être appelée avec des paramètres définis par l'utilisateur et renvoie un sélecteur. Chaque valeur de paramètre unique renverra la même instance de sélecteur mémorisée.
+Un `selectorFamily` est un modèle puissant qui est similaire à un [`sélecteur`](/docs_FR-fr/api-reference/core/selector), mais vous permet de passer des paramètres aux callbacks `get` et` set` d'un ` sélecteur ». L'utilitaire `selectorFamily ()` retourne une fonction qui peut être appelée avec des paramètres définis par l'utilisateur et renvoie un sélecteur. Chaque valeur de paramètre unique renverra la même instance de sélecteur mémorisée.
 
 ---
 

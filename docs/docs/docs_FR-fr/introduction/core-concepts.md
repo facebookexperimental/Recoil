@@ -69,7 +69,7 @@ La propriété `get` est la fonction à calculer. Elle peut accéder à la valeu
 
 Dans cet exemple `fontSizeLabelState`, le sélecteur a une dépendance: l'atome `fontSizeState`. Conceptuellement, le sélecteur `fontSizeLabelState` se comporte comme une fonction pure qui prend `fontSizeState` en entrée et renvoie la de taille de police formatée en sortie.
 
-Les sélecteurs peuvent être lus à l'aide de `useRecoilValue()`, qui prend un atome ou un sélecteur comme argument et renvoie la valeur correspondante. Nous n'utilisons pas `useRecoilState()` car le sélecteur `fontSizeLabelState` n'est pas accessible en écriture (voir la [référence de l'API selector](/docs/api-reference/core/selector) pour plus d'informations sur les sélecteurs accessibles en écriture):
+Les sélecteurs peuvent être lus à l'aide de `useRecoilValue()`, qui prend un atome ou un sélecteur comme argument et renvoie la valeur correspondante. Nous n'utilisons pas `useRecoilState()` car le sélecteur `fontSizeLabelState` n'est pas accessible en écriture (voir la [référence de l'API selector](/docs_FR-fr/api-reference/core/selector) pour plus d'informations sur les sélecteurs accessibles en écriture):
 
 ```jsx
 function FontButton() {

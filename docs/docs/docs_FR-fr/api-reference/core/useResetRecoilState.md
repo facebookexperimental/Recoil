@@ -22,6 +22,6 @@ import {todoListState} from "../atoms/todoListState";
 
 const TodoResetButton = () => {
   const resetList = useResetRecoilState(todoListState);
-  return <button onClick={resetList}>Reset</button>;
+  return <button onClick={resetList}>Remettre à zéro</button>;
 };
 ```

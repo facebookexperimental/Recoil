@@ -41,7 +41,7 @@ function FormContent({setNamesState}) {
     </>
 )}
 
-// This component will be rendered once when mounting
+// Ce composant sera rendu une fois
 function Form() {
   const setNamesState = useSetRecoilState(namesState);
   

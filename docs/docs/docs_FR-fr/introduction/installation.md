@@ -31,7 +31,7 @@ Si vous utilisez [eslint-plugin-react-hooks](https://www.npmjs.com/package/eslin
 }
 ```
 
-Il est recommendé d'ajouter [`'useRecoilCallback'`](/docs/api-reference/core/useRecoilCallback) à la list des `additionalHooks`. Avec ce changement, ESLint prévient quand les dépendances passées à `useRecoilCallback()` sont incorrectes et sugggère une solution.  Le format de `additionalHooks` est une chaine de charactères regex.
+Il est recommendé d'ajouter [`'useRecoilCallback'`](/docs_FR-fr/api-reference/core/useRecoilCallback) à la list des `additionalHooks`. Avec ce changement, ESLint prévient quand les dépendances passées à `useRecoilCallback()` sont incorrectes et sugggère une solution.  Le format de `additionalHooks` est une chaine de charactères regex.
 
 ```json
 // Configuration .eslint après

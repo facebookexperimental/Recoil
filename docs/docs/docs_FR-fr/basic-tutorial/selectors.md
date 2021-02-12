@@ -41,7 +41,7 @@ const filteredTodoListState = selector({
 
 Le `filteredTodoListState` garde en interne la trace de deux dépendances:` todoListFilterState` et `todoListState` afin qu'il se réexécute si l'une de ces modifications change.
 
-> Du point de vue d'un composant, les sélecteurs peuvent être lus à l'aide des mêmes crochets que ceux utilisés pour lire les atomes. Cependant, il est important de noter que certains hooks ne fonctionnent qu'avec **l'état inscriptible** (c'est-à-dire `useRecoilState()`). Tous les atomes sont à l'état inscriptible, mais seuls certains sélecteurs sont considérés comme un état inscriptible (sélecteurs qui ont à la fois une propriété `get` et` set`). Consultez la page [Concepts principaux](/docs_FR/introduction/core-concepts) pour plus d'informations sur ce sujet.
+> Du point de vue d'un composant, les sélecteurs peuvent être lus à l'aide des mêmes crochets que ceux utilisés pour lire les atomes. Cependant, il est important de noter que certains hooks ne fonctionnent qu'avec **l'état inscriptible** (c'est-à-dire `useRecoilState()`). Tous les atomes sont à l'état inscriptible, mais seuls certains sélecteurs sont considérés comme un état inscriptible (sélecteurs qui ont à la fois une propriété `get` et` set`). Consultez la page [Concepts de base](/docs_FR/introduction/core-concepts) pour plus d'informations sur ce sujet.
 
 Afficher notre todoList filtrée est aussi simple que de changer une ligne dans le composant `TodoList`:
 

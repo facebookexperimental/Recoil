@@ -3,7 +3,7 @@ title: class Snapshot
 sidebar_label: Snapshot
 ---
 
-Un objet `Snapshot` (instané) représente un instantané immuable de l'état de Recoil [atomes](/docs/api-reference/core/atom). Il est destiné à normaliser l'API pour observer, inspecter et gérer l'état Recoil global. Il est surtout utile pour les outils de développement, la synchronisation globale de l'état, la navigation dans l'historique, etc.
+Un objet `Snapshot` (instané) représente un instantané immuable de l'état de Recoil [atomes](/docs_FR-fr/api-reference/core/atom). Il est destiné à normaliser l'API pour observer, inspecter et gérer l'état Recoil global. Il est surtout utile pour les outils de développement, la synchronisation globale de l'état, la navigation dans l'historique, etc.
 
 ```jsx
 class Snapshot {

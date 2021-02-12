@@ -3,7 +3,7 @@ title: waitForNone(dependencies)
 sidebar_label: waitForNone()
 ---
 
-Un assistant de concurrence qui renvoie un ensemble de [`Loadable`s] (/docs/api-reference/core/Loadable) pour l'état actuel des dépendances demandées.
+Un assistant de concurrence qui renvoie un ensemble de [`Loadable`s] (/docs_FR-fr/api-reference/core/Loadable) pour l'état actuel des dépendances demandées.
 
 Les dépendances peuvent être fournies sous forme de tableau de tuples ou de dépendances nommées dans un objet.
 
