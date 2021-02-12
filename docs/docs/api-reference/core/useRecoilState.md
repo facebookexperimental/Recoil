@@ -15,9 +15,9 @@ function useRecoilState<T>(state: RecoilState<T>): [T, SetterOrUpdater<T>];
 type SetterOrUpdater<T> = (T | (T => T)) => void;
 ```
 
-- `state`: an [`atom`](/docs/api-reference/core/atom) or a _writeable_ [`selector`](/docs/api-reference/core/selector). Writeable selectors are selectors that were have both a `get` and `set` in their definition while read-only selectors only have a `get`.
+- `state`: an [`atom`](/docs/api-reference/core/atom) or a _writeable_ [`selector`](/docs/api-reference/core/selector). Writeable selectors are selectors that have both a `get` and `set` in their definition while read-only selectors only have a `get`.
 
-This API is similar to the React (`useState()`)[https://reactjs.org/docs/hooks-reference.html#usestate] hook except it takes a Recoil state instead of a default value as an argument.  It returns a tuple of the current value of the state and a setter function.  The setter function may either take a new value as an argument or an updater function which receives the previous value as a parameter.
+This API is similar to the React [`useState()`](https://reactjs.org/docs/hooks-reference.html#usestate) hook except it takes a Recoil state instead of a default value as an argument.  It returns a tuple of the current value of the state and a setter function.  The setter function may either take a new value as an argument or an updater function which receives the previous value as a parameter.
 
 ---
 
@@ -35,26 +35,26 @@ const tempFahrenheit = atom({
   default: 32,
 });
 
-const tempCelcius = selector({
-  key: 'tempCelcius',
+const tempCelsius = selector({
+  key: 'tempCelsius',
   get: ({get}) => ((get(tempFahrenheit) - 32) * 5) / 9,
   set: ({set}, newValue) => set(tempFahrenheit, (newValue * 9) / 5 + 32),
 });
 
-function TempCelcius() {
+function TempCelsius() {
   const [tempF, setTempF] = useRecoilState(tempFahrenheit);
-  const [tempC, setTempC] = useRecoilState(tempCelcius);
+  const [tempC, setTempC] = useRecoilState(tempCelsius);
 
-  const addTenCelcius = () => setTempC(tempC + 10);
+  const addTenCelsius = () => setTempC(tempC + 10);
   const addTenFahrenheit = () => setTempF(tempF + 10);
 
   return (
     <div>
-      Temp (Celcius): {tempC}
+      Temp (Celsius): {tempC}
       <br />
       Temp (Fahrenheit): {tempF}
       <br />
-      <button onClick={addTenCelcius}>Add 10 Celcius</button>
+      <button onClick={addTenCelsius}>Add 10 Celsius</button>
       <br />
       <button onClick={addTenFahrenheit}>Add 10 Fahrenheit</button>
     </div>

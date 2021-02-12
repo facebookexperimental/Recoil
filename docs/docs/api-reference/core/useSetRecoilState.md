@@ -19,7 +19,7 @@ Returns a setter function which can be used asynchronously to change the state. 
 
 ---
 
-This is the recommended hook to use when a component intends to write to state without reading it. If a component used the [`useRecoilState()`](/docs/api-reference/core/useRecoilState) hook to get the setter, it would also subscribe to updates and re-render when the atom or selector updated. Using `useSetRecoilState()` allows a component to set the value without re-rendering when the value changes.
+This is the recommended hook to use when a component intends to write to state without reading it. If a component used the [`useRecoilState()`](/docs/api-reference/core/useRecoilState) hook to get the setter, it would also subscribe to updates and re-render when the atom or selector updated. Using `useSetRecoilState()` allows a component to set the value without subscribing the component to re-render when the value changes.
 
 ### Example
 
@@ -31,23 +31,20 @@ const namesState = atom({
   default: ['Ella', 'Chris', 'Paul'],
 });
 
-function NameInput() {
+function FormContent({setNamesState}) {
   const [name, setName] = useState('');
-  const setNamesState = useSetRecoilState(namesState);
-
-  const addName = () => {
-    setNamesState(existingNames => [...existingNames, name]);
-  };
-
-  const onChange = (e) => {
-    setName(e.target.value);
-  };
-
+  
   return (
     <>
-      <input type="text" value={name} onChange={onChange} />
-      <button onClick={addName}>Add Name</button>
+      <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+      <button onClick={() => setNamesState(names => [...names, name])}>Add Name</button>
     </>
-  );
+)}
+
+// This component will be rendered once when mounting
+function Form() {
+  const setNamesState = useSetRecoilState(namesState);
+  
+  return <FormContent setNamesState={setNamesState} />;
 }
 ```

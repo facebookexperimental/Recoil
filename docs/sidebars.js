@@ -8,7 +8,7 @@
  */
 
 module.exports = {
-  someSidebar: {
+  docs: {
     Introduction: [
       'introduction/motivation',
       'introduction/core-concepts',
@@ -30,61 +30,50 @@ module.exports = {
       //       'guides/migrating/from-mobx',
       //     ],
       //   },
-      //   'guides/usage-flow',
-      //   'guides/usage-typescript',
       'guides/asynchronous-data-queries',
-      'guides/asynchronous-state-sync',
-      'guides/persistence',
-      //   'guides/writing-test',
+      'guides/atom-effects',
+      'guides/testing',
+      'guides/dev-tools',
       //   'guides/code-splitting',
     ],
 
     'API Reference': [
+      'api-reference/core/RecoilRoot',
       {
-        Core: [
-          'api-reference/core/RecoilRoot',
-          {
-            State: [
-              'api-reference/core/atom',
-              'api-reference/core/selector',
-              'api-reference/core/Loadable',
-              'api-reference/core/isRecoilValue',
-              // 'api-reference/core/DefaultValue',
-              {
-                Hooks: [
-                  'api-reference/core/useRecoilState',
-                  'api-reference/core/useRecoilValue',
-                  'api-reference/core/useSetRecoilState',
-                  'api-reference/core/useResetRecoilState',
-                  'api-reference/core/useRecoilValueLoadable',
-                  'api-reference/core/useRecoilStateLoadable',
-                ],
-              },
-            ],
-            Snapshots: [
-              'api-reference/core/Snapshot',
-              {
-                Hooks: [
-                  'api-reference/core/useRecoilCallback',
-                  'api-reference/core/useRecoilTransactionObserver',
-                  'api-reference/core/useRecoilSnapshot',
-                  'api-reference/core/useGotoRecoilSnapshot',
-                ],
-              },
-            ]
-          },
+        'Recoil State': [
+          'api-reference/core/atom',
+          'api-reference/core/selector',
+          'api-reference/core/Loadable',
+          'api-reference/core/useRecoilState',
+          'api-reference/core/useRecoilValue',
+          'api-reference/core/useSetRecoilState',
+          'api-reference/core/useResetRecoilState',
+          'api-reference/core/useRecoilStateLoadable',
+          'api-reference/core/useRecoilValueLoadable',
+          'api-reference/core/isRecoilValue',
+          // 'api-reference/core/DefaultValue',
         ],
       },
+      'api-reference/core/useRecoilCallback',
       {
         Utils: [
           'api-reference/utils/atomFamily',
           'api-reference/utils/selectorFamily',
           'api-reference/utils/constSelector',
           'api-reference/utils/errorSelector',
-          'api-reference/utils/waitForAll',
-          'api-reference/utils/waitForAny',
-          'api-reference/utils/waitForNone',
           'api-reference/utils/noWait',
+          'api-reference/utils/waitForAll',
+          'api-reference/utils/waitForNone',
+          'api-reference/utils/waitForAny',
+        ],
+        Snapshots: [
+          'api-reference/core/Snapshot',
+          'api-reference/core/useRecoilTransactionObserver',
+          'api-reference/core/useRecoilSnapshot',
+          'api-reference/core/useGotoRecoilSnapshot',
+        ],
+        Misc: [
+          'api-reference/core/useRecoilBridgeAcrossReactRoots',
         ],
       },
     ],
