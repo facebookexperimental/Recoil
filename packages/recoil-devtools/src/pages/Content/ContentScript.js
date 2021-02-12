@@ -48,7 +48,10 @@ function initContentScriptListeners() {
       name: props?.name ?? '',
     });
 
-    send({action: RecoilDevToolsActions.INIT, data: {...props}});
+    send({
+      action: RecoilDevToolsActions.INIT,
+      props: props ? {...props} : undefined,
+    });
 
     bg.onDisconnect.addListener(() => {
       connected = false;

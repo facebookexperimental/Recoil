@@ -57,7 +57,9 @@ export default function memoize<Arg, Result>(fn: Arg => Result): Arg => Result {
       map = Immutable.Map();
     }
     const key = cacheKeyFromObject(arg);
+
     if (map.has(key)) {
+      // $FlowFixMe[incompatible-return]
       return map.get(key);
     } else {
       const result = fn(arg);

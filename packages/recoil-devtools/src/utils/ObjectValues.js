@@ -22,5 +22,6 @@ export default function objectValues<TValue>(obj: {
   +[key: mixed]: TValue,
   ...
 }): Array<TValue> {
+  //$FlowFixMe[unclear-type]
   return (Object.values(obj): any);
 }

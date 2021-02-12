@@ -8,13 +8,12 @@
 'use strict';
 
 import objectEntries from '../ObjectEntries';
+import type {Selection as D3Selection} from 'd3-selection';
 
 const d3 = {
   ...require('d3-selection'),
   ...require('d3-transition'),
 };
-
-type D3Selection = any;
 
 // Styles objects use CSS style names for the keys (not using camel case).
 // The values are either static values or a function that takes a data element

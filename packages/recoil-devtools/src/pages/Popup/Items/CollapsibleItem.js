@@ -9,6 +9,7 @@
  */
 'use strict';
 
+const {getStyle} = require('../../../utils/getStyle');
 const React = require('react');
 const {useState} = require('react');
 
@@ -63,8 +64,8 @@ type Props = {
   label: React.Node,
   collapsible?: boolean,
   startCollapsed?: ?boolean,
-  inContainer?: ?boolean,
-  isRoot?: ?boolean,
+  inContainer?: boolean,
+  isRoot?: boolean,
 };
 
 const noop = () => {};
@@ -82,32 +83,33 @@ function CollapsibleItem({
 
   return (
     <div
-      style={{
-        ...(inContainer ? {} : styles.holder),
-        ...(isHovered ? styles.hovered : {}),
-      }}
+      style={getStyle(styles, {
+        holder: !inContainer,
+        hovered: isHovered,
+      })}
       onMouseEnter={isRoot ? () => setIsHovered(true) : noop}
       onMouseLeave={isRoot ? () => setIsHovered(false) : noop}>
       <div
-        style={{
-          ...styles.labelHolder,
-          ...(isRoot ? styles.labelRoot : {}),
-          ...(isHovered ? styles.labelHovered : {}),
-        }}>
+        style={getStyle(styles, {
+          labelHolder: true,
+          labelRoot: isRoot,
+          labelHovered: isHovered,
+        })}>
         <span style={styles.selectorHolder}>
           {collapsible && (
             <span
-              style={{
-                ...styles.selector,
-                ...styles[collapsed ? 'collapsedSelector' : 'expandedSelector'],
-              }}
+              style={getStyle(styles, {
+                selector: true,
+                collapsedSelector: Boolean(collapsed),
+                expandedSelector: !collapsed,
+              })}
               onClick={() => setCollapsed(!collapsed)}
             />
           )}
         </span>
         {label}
       </div>
-      {!collapsed && children != null && (
+      {!Boolean(collapsed) && children != null && (
         <div style={styles.valueHolder}>{children}</div>
       )}
     </div>

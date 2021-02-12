@@ -14,12 +14,12 @@ const d3Array = require('d3-array');
 
 export type Key = string | number;
 
-export type Link<L = any> = {
-  data: L,
+export type Link<L, N> = {
+  data: L | Key,
   key: Key,
   value: number,
-  source?: Node<>,
-  target?: Node<>,
+  source?: Node<N, L>,
+  target?: Node<N, L>,
   visible: boolean,
   sourceDepth: number,
   sourcePosition: number,
@@ -30,22 +30,22 @@ export type Link<L = any> = {
   fadeTarget: boolean,
 };
 
-export type Node<N = any> = {
-  data: N,
+export type Node<N, L> = {
+  data: N | Key,
   +key: Key,
   +name: string,
   value: number,
   depth: number,
   visible: boolean,
   position: number,
-  +sourceLinks: Array<Link<>>,
-  +targetLinks: Array<Link<>>,
+  +sourceLinks: Array<Link<L, N>>,
+  +targetLinks: Array<Link<L, N>>,
   linkWeight: number,
 };
 
-export type Graph = $ReadOnly<{
-  links: $ReadOnlyArray<Link<>>,
-  nodes: $ReadOnlyArray<Node<>>,
+export type Graph<N, L> = $ReadOnly<{
+  links: $ReadOnlyArray<Link<L, N>>,
+  nodes: $ReadOnlyArray<Node<N, L>>,
 }>;
 
 // Utility functions
@@ -59,9 +59,9 @@ function generateGraph<N, L>({
 }: {
   nodeData?: NodeData<N>,
   linkData: LinkData<L>,
-}): Graph {
+}): Graph<N, L> {
   // Prepare the Nodesx
-  const nodesByKey: {[Key]: Node<N>} = {};
+  const nodesByKey: {[Key]: Node<N, L>} = {};
   if (nodeData != null) {
     for (const n of nodeData.data) {
       const key: Key = nodeData.getNodeKey(n);
@@ -94,9 +94,9 @@ function generateGraph<N, L>({
     for (const key of keys) {
       if (key != null) {
         nodesByKey[key] = {
-          data: (key: any),
+          data: key,
           key,
-          name: (key: any),
+          name: String(key),
           value: 0,
           visible: true,
           depth: 0,
@@ -110,12 +110,12 @@ function generateGraph<N, L>({
   }
 
   // Prepare the Links
-  const links: Array<Link<L>> = linkData.data.map(l => {
+  const links: Array<Link<L, N>> = linkData.data.map(l => {
     const sourceKey = linkData.getLinkSourceKey(l);
     const targetKey = linkData.getLinkTargetKey(l);
     const source = sourceKey != null ? nodesByKey[sourceKey] : undefined;
     const target = targetKey != null ? nodesByKey[targetKey] : undefined;
-    const link: Link<L> = {
+    const link = {
       data: l,
       key: `${sourceKey ?? ''}/${targetKey ?? ''}`,
       value: linkData.getLinkValue(l),
@@ -137,11 +137,11 @@ function generateGraph<N, L>({
 
   // Only include connected nodes
   const nodes = objectValues(nodesByKey).filter(
-    (node: Node<>) => node.sourceLinks.length || node.targetLinks.length,
+    node => node.sourceLinks.length || node.targetLinks.length,
   );
 
   // Compute the node values
-  for (const node: Node<> of nodes) {
+  for (const node of nodes) {
     const sourceWeight: number = d3Array.sum(node.sourceLinks, l => l.value);
     const targetWeight: number = d3Array.sum(node.targetLinks, l => l.value);
     node.value = Math.max(node.value, sourceWeight, targetWeight);
@@ -151,14 +151,15 @@ function generateGraph<N, L>({
   }
 
   // Detect Back Edges / Cycles
-  sortDesc(nodes, (node: Node<>) => node.value); // sort for deterministic back-edge detection
+  sortDesc(nodes, node => node.value); // sort for deterministic back-edge detection
   const visited: {[Key]: boolean} = {};
-  for (const node: Node<> of nodes) {
+  for (const node of nodes) {
     if (visited[node.key]) {
       continue;
     }
-    const stack: Array<Node<>> = [];
-    function detectBackedge(node: Node<>) {
+
+    const stack: Array<mixed> = [];
+    function detectBackedge(node) {
       visited[node.key] = true;
       stack.push(node);
       for (const link of node.targetLinks) {
@@ -176,7 +177,7 @@ function generateGraph<N, L>({
   return {links, nodes};
 }
 
-function updateVisibility(graph: Graph, nodesSet: Set<Node<>>) {
+function updateVisibility<N, L>(graph: Graph<N, L>, nodesSet: Set<Node<N, L>>) {
   // Update node visibility
   for (const node of graph.nodes) {
     node.visible = false;
