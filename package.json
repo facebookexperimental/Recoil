@@ -1,5 +1,6 @@
 {
   "name": "recoil",
+  "private": true,
   "version": "0.1.2",
   "description": "Recoil - A state management library for React",
   "main": "cjs/recoil.js",
@@ -89,5 +90,9 @@
   "lint-staged": {
     "*.{js,md,json}": "prettier --write",
     "*.{js}": "eslint --fix"
-  }
+  },
+  "workspaces": [
+    "src",
+    "packages/*"
+  ]
 }
