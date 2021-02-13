@@ -209,7 +209,11 @@ function peekNodeInfo<T>(
     isSet: type === 'selector' ? false : state.atomValues.has(key),
     isModified: state.dirtyAtoms.has(key),
     type,
+    // Report current dependencies.  If the node hasn't been evaluated, then
+    // dependencies may be missing based on the current state.
     deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
+    // Reportsall "current" subscribers.  Evaluating other nodes or
+    // previous in-progress async evaluations may introduce new subscribers.
     subscribers: {
       nodes: recoilValuesForKeys(downstreamNodes),
       components: mapIterable(

@@ -28,7 +28,6 @@ const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {batchUpdates} = require('./Recoil_Batching');
 const {
-  getDownstreamNodes,
   initializeNodeIfNewToStore,
   peekNodeInfo,
 } = require('./Recoil_FunctionalCore');
@@ -204,39 +203,6 @@ class Snapshot {
           recoilValues.values(),
           ({key}) => !knownAtoms.has(key) && !knownSelectors.has(key),
         );
-  };
-
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
-  getDeps_UNSTABLE: <T>(RecoilValue<T>) => Iterable<RecoilValue<mixed>> = <T>(
-    recoilValue: RecoilValue<T>,
-  ) => {
-    this.checkRefCount_INTERNAL();
-    this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
-    const deps = this._store
-      .getGraph(this._store.getState().currentTree.version)
-      .nodeDeps.get(recoilValue.key);
-    return recoilValuesForKeys(deps ?? []);
-  };
-
-  // This reports all "current" subscribers.  It does not report all possible
-  // downstream nodes.  Evaluating other nodes may introduce new subscribers.
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
-  getSubscribers_UNSTABLE: <T>(
-    RecoilValue<T>,
-  ) => {
-    nodes: Iterable<RecoilValue<mixed>>,
-    // TODO components, observers, and atom effects
-  } = <T>({key}: RecoilValue<T>) => {
-    this.checkRefCount_INTERNAL();
-    const state = this._store.getState().currentTree;
-    const downstreamNodes = filterIterable(
-      getDownstreamNodes(this._store, state, new Set([key])),
-      nodeKey => nodeKey !== key,
-    );
-
-    return {
-      nodes: recoilValuesForKeys(downstreamNodes),
-    };
   };
 
   // Report the current status of a node.
