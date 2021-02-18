@@ -1,0 +1,131 @@
+---
+title: Atoms
+---
+
+Atoms contain the source of truth for our application state. In our todo-list, the source of truth will be an array of objects, with each object representing a todo item.
+
+We'll call our list atom `todoListState` and create it using the `atom()` function:
+
+```javascript
+const todoListState = atom({
+  key: 'todoListState',
+  default: [],
+});
+```
+
+We give our atom a unique `key` and set the `default` value to an empty array. To read the contents of this atom, we can use the `useRecoilValue()` hook in our `TodoList` component:
+
+```jsx
+function TodoList() {
+  const todoList = useRecoilValue(todoListState);
+
+  return (
+    <>
+      {/* <TodoListStats /> */}
+      {/* <TodoListFilters /> */}
+      <TodoItemCreator />
+
+      {todoList.map((todoItem) => (
+        <TodoItem key={todoItem.id} item={todoItem} />
+      ))}
+    </>
+  );
+}
+```
+
+The commented-out components will be implemented in the sections that follow.
+
+To create new todo items, we need to access a setter function that will update the contents of the `todoListState`. We can use the `useSetRecoilState()` hook to get a setter function in our `TodoItemCreator` component:
+
+```jsx
+function TodoItemCreator() {
+  const [inputValue, setInputValue] = useState('');
+  const setTodoList = useSetRecoilState(todoListState);
+
+  const addItem = () => {
+    setTodoList((oldTodoList) => [
+      ...oldTodoList,
+      {
+        id: getId(),
+        text: inputValue,
+        isComplete: false,
+      },
+    ]);
+    setInputValue('');
+  };
+
+  const onChange = ({target: {value}}) => {
+    setInputValue(value);
+  };
+
+  return (
+    <div>
+      <input type="text" value={inputValue} onChange={onChange} />
+      <button onClick={addItem}>Add</button>
+    </div>
+  );
+}
+
+// utility for creating unique Id
+let id = 0;
+function getId() {
+  return id++;
+}
+```
+
+Notice we use the **updater** form of the setter function so that we can create a new todo list based on the old todo list.
+
+The `TodoItem` component will display the value of the todo item while allowing you to change its text and delete the item. We use `useRecoilState()` to read `todoListState` and to get a setter function that we use to update the item text, mark it as completed, and delete it:
+
+```jsx
+function TodoItem({item}) {
+  const [todoList, setTodoList] = useRecoilState(todoListState);
+  const index = todoList.findIndex((listItem) => listItem === item);
+
+  const editItemText = ({target: {value}}) => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      text: value,
+    });
+
+    setTodoList(newList);
+  };
+
+  const toggleItemCompletion = () => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      isComplete: !item.isComplete,
+    });
+
+    setTodoList(newList);
+  };
+
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(todoList, index);
+
+    setTodoList(newList);
+  };
+
+  return (
+    <div>
+      <input type="text" value={item.text} onChange={editItemText} />
+      <input
+        type="checkbox"
+        checked={item.isComplete}
+        onChange={toggleItemCompletion}
+      />
+      <button onClick={deleteItem}>X</button>
+    </div>
+  );
+}
+
+function replaceItemAtIndex(arr, index, newValue) {
+  return [...arr.slice(0, index), newValue, ...arr.slice(index + 1)];
+}
+
+function removeItemAtIndex(arr, index) {
+  return [...arr.slice(0, index), ...arr.slice(index + 1)];
+}
+```
+
+And with that we've got a fully functional todo list! In the next section we'll see how we can use selectors to take our list to the next level.
