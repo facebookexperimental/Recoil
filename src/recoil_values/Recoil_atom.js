@@ -223,12 +223,12 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
     // Setup async defaults to notify subscribers when they resolve
     if (defaultLoadable.state === 'loading') {
-      function notifyDefaultSubscribers() {
+      const notifyDefaultSubscribers = () => {
         const state = store.getState().nextTree ?? store.getState().currentTree;
         if (!state.atomValues.has(key)) {
           markRecoilValueModified(store, node);
         }
-      }
+      };
       defaultLoadable.contents
         .then(notifyDefaultSubscribers)
         .catch(notifyDefaultSubscribers);
