@@ -3,18 +3,18 @@ title: class Loadable
 sidebar_label: Loadable
 ---
 
-A `Loadable` object represents the current state of a Recoil [atom](/docs/api-reference/core/atom) or [selector](/docs/api-reference/core/selector).  This state may either have a value available, may be in an error state, or may still be pending asynchronous resolution.  A `Loadable` has the following interface:
+`Lodable` 객체는 Recoil [atom](/docs/api-reference/core/atom) 혹은 [selector](/docs/api-reference/core/selector)의 최신 상태를 대표합니다. 이 상태는 사용가능한 값을 가지고 있거나 에러 상태이거나 혹은 여전히 비동기 해결 보류 중일 수 있습니다. `Lodable` 은 다음의 인터페이스를 가집니다.
 
-- `state`: The current state of the atom or selector.  Possible values are `'hasValue'`, `'hasError'`, or `'loading'`.
-- `contents`: The value represented by this `Loadable`.  If the state is `hasValue`, it is the actual value, if the state is `hasError` it is the `Error` object that was thrown, and if the state is `loading`, then you can use `toPromise()` to get a `Promise` of the value.
+- `state`: atom 혹은 selector의 최신 상태입니다. 가능한 값은 '`hasValue`', '`hasError`', 혹은 '`loading`' 입니다.
+- `contents`: `Lodable`에 의해서 대표되는 값입니다. 만약 상태가 `hasValue` 라면, 이는 실제 값입니다. 만약 상태가 `hasError` 라면 이는 던져진 Error 객체입니다. 그리고 만약 상태가 'loading'이라면 `toPromise()`를 사용하여 값의 `Promise`를 얻을 수 있습니다.
 
-Loadables also contain helper methods for accessing the current state.  *Consider this API to be unstable*:
+Lodable은 최신 상태에 접근하기 위한 도우미 메서드를 가지고 있습니다. *이 API는 아직 불안정합니다:*
 
-- `getValue()` - Method to access the value that matches the semantics of React Suspense and Recoil selectors.  If the state has a value then it returns a value, if it has an error then it throws that error, and if it is still pending then it suspends execution or rendering to propagate the pending state.
-- `toPromise()`: returns a `Promise` that will resolve when the selector has resolved. If the selector is synchronous or has already resolved, it returns a `Promise` that resolves immediately.
-- `valueMaybe()` - Returns the value if available, otherwise returns `undefined`
-- `valueOrThrow()` - Returns the value if available or throws an Error.
-- `map()` - Takes a function to transform the value of the Loadable and returns a new Loadable with the transformed value.  The transformation function gets a parameter of the value and returns the new value; it can also propagate thrown errors or suspense.
+- `getValue()` - React Suspense와 Recoil selectors의 시맨틱에 매치되는 값에 접근하기 위한 메서드. 만약 상태가 값을 가지고 있다면 값을 리턴하며, error를 가지고 있다면 해당 error를 던집니다. 만약 여전히 보류중이라면 실행을 연기하거나 보류중인 상태를 전파하기 위해 리렌더링합니다.
+- `toPromise()`: selector가 resolve되면 resolve될 `Promise` 를 리턴합니다. selector가 동기이거나 이미 resolve된 상태라면, 즉시 resolve 되는 `Promise` 를 리턴합니다.
+- `valueMaybe()` - 가능하다면 값을 리턴하며 다른 경우에는 `undefined` 를 리턴합니다.
+- `valueOrThrow()` - 가능하다면 값을 리턴하거나 Error를 던집니다.
+- `map()` - Lodable의 값을 변형하기 위한 함수를 받으며 새로운 Lodable을 변형된 값과 함께 리턴합니다. 변형 함수는 값의 매개변수를 받아 새로운 값을 리턴합니다; 던져진 에러나 suspense를 전파할 수도 있습니다.
 
 ### Example
 
@@ -31,3 +31,4 @@ function UserInfo({userID}) {
   }
 }
 ```
+
