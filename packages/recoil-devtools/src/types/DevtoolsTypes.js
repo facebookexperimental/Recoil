@@ -11,11 +11,11 @@
 
 import type {SerializedValue} from '../utils/Serialization';
 import type Store from '../utils/Store';
+import type {Snapshot} from 'recoil';
 
 const RecoilDevToolsActions = require('../constants/Constants');
 
-// TODO: import snapshot type from recoil
-export type RecoilSnapshot = {[string]: any};
+export type RecoilSnapshot = Snapshot;
 
 export type SnapshotType = {
   [string]: SerializedValue,

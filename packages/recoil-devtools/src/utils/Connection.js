@@ -113,8 +113,8 @@ class Connection {
     });
   }
 
-  getNode(name: string): ?Node {
-    return this.nodes.get(name);
+  getNode(name: string | number): ?Node {
+    return this.nodes.get(String(name));
   }
 
   goToSnapshot(id: number): void {

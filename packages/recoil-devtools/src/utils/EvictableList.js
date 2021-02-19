@@ -61,7 +61,7 @@ class EvictableList<TType> {
   }
 
   get(id: ?number): ?TType {
-    if (id === null) {
+    if (id === null || id === undefined) {
       return null;
     }
     return this.list.get(id);

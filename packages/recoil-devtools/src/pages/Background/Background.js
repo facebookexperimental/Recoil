@@ -26,7 +26,7 @@ const getConnectionId = ({sender}: ConnectionPort): number => {
   return sender?.tab?.id ?? 0;
 };
 const getConnectionName = ({name}: ConnectionPort): string => {
-  let id = name || 'Recoil Connection';
+  let id = name ?? 'Recoil Connection';
   return id;
 };
 
@@ -62,7 +62,7 @@ function onConnect(port: ConnectionPort): void {
     } else if (msg.action === RecoilDevToolsActions.UPLOAD_CHUNK) {
       const chunkSoFar = (chunksBuffer.get(msg.txID) ?? '') + (msg.chunk ?? '');
       chunksBuffer.set(msg.txID, chunkSoFar);
-      if (msg.isFinalChunk) {
+      if (Boolean(msg.isFinalChunk)) {
         try {
           const data = JSON.parse(chunkSoFar);
           msgHandler(data);

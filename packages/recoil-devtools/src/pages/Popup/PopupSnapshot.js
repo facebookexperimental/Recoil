@@ -31,7 +31,7 @@ function SnapshotRenderer(): React.Node {
     const localSnapshot = connection?.tree?.getSnapshot(txID);
     return {
       snapshot: localSnapshot,
-      sortedKeys: Object.keys(localSnapshot).sort(),
+      sortedKeys: Object.keys(localSnapshot ?? {}).sort(),
     };
   }, [connection, txID]);
 

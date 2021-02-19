@@ -86,10 +86,10 @@ const sortDesc = <T>(array: Array<T>, accessor: T => number) =>
 // We could simply sort the nodes and slice the biggest ones.  However, that
 // can lead to graphs with disconnected fragments.  Instead, traverse the
 // graph from the roots and select nodes connected via the largest links.
-function limitNodes(
-  graph: Graph,
+function limitNodes<N, L>(
+  graph: Graph<N, L>,
   nodeLimit: ?number,
-  rootNodes: $ReadOnlyArray<Node<>> = graph.nodes.filter(
+  rootNodes: Array<Node<N, L>> = graph.nodes.filter(
     node => node.sourceLinks.length === 0,
   ),
 ) {
@@ -98,11 +98,11 @@ function limitNodes(
   }
   let nodesToAdd = nodeLimit;
 
-  const nodesSet: Set<Node<>> = new Set();
-  let nextLinks: Array<Link<>> = rootNodes.flatMap(node =>
+  const nodesSet: Set<Node<N, L>> = new Set();
+  let nextLinks = rootNodes.flatMap(node =>
     node.targetLinks.concat(node.sourceLinks),
   );
-  const consideredLinks: Set<Link<>> = new Set(nextLinks);
+  const consideredLinks: Set<Link<mixed, mixed>> = new Set(nextLinks);
 
   function addNode(node) {
     if (!nodesToAdd) {
@@ -132,8 +132,8 @@ function limitNodes(
 
 // Traditional Sankey flow layout.
 // Assign depths to each node based on how they flow
-function flowLayoutNodeDepths(
-  graph: Graph,
+function flowLayoutNodeDepths<N, L>(
+  graph: Graph<N, L>,
   layoutOptions: FlowLayoutOptions,
 ): [number, number] {
   const visibleNodes = graph.nodes.filter(node => node.visible);
@@ -142,7 +142,7 @@ function flowLayoutNodeDepths(
   let depth = 0;
   while (remainingNodes.length) {
     const nextNodes = [];
-    for (const node: Node<> of remainingNodes) {
+    for (const node of remainingNodes) {
       node.depth = depth;
       for (const targetLink of node.targetLinks.filter(l => !l.backedge)) {
         if (!targetLink.fadeTarget && targetLink.target != null) {
@@ -169,22 +169,22 @@ function flowLayoutNodeDepths(
 
 // Butterfly "caller / callee" style layout.
 // Place focal node in the center and fan out callers on the left and callees on the right
-function butterflyLayoutNodeDepths(
-  graph: Graph,
-  focalNode: Node<>,
+function butterflyLayoutNodeDepths<N = {}, L = {}>(
+  graph: Graph<N, L>,
+  focalNode: Node<N, L>,
   layoutOptions: ButterflyLayoutOptions,
 ): [number, number] {
-  const nodesSet: Set<Node<>> = new Set([focalNode]);
+  const nodesSet = new Set([focalNode]);
   const depthDomain = [0, 0];
 
   function addNeighbors(
-    node: Node<>,
+    node: Node<N, L>,
     direction: 'target' | 'source',
     depth: number,
   ) {
     const neighborLinks =
       direction === 'target' ? node.targetLinks : node.sourceLinks;
-    const neighbors: Array<Node<>> = compactArray(
+    const neighbors = compactArray(
       neighborLinks.map(link =>
         direction === 'target' ? link.target : link.source,
       ),
@@ -224,8 +224,8 @@ function butterflyLayoutNodeDepths(
 
 // After the nodes have been assigned depths use an iterative algorithm to adjust
 // their positions so they flow by trying to align connected nodes near each other.
-function layoutPositions(
-  graph: Graph,
+function layoutPositions<N, L>(
+  graph: Graph<N, L>,
   layoutOptions: PositionLayoutOptions,
   maxBreadth: number,
 ): [number, number] {
@@ -233,7 +233,7 @@ function layoutPositions(
 
   // Prepare set of depths
   const depths: Array<
-    Array<Node<>> & {paddingPercent: number, padding: number},
+    Array<Node<mixed, mixed>> & {paddingPercent: number, padding: number},
   > = d3Collection
     .nest()
     .key(n => n.depth)
@@ -478,8 +478,15 @@ function layoutPositions(
   return [0, maxPosition];
 }
 
-const memoizedFlowGraphLayout: FlowLayoutOptions => LayoutFunction = memoize(
-  layoutOptions => ({graph, positionRange}) => {
+const flowGraphLayout = <N, L>(
+  layoutOptions: $Shape<FlowLayoutOptions> = FLOW_LAYOUT_DEFAULT,
+): LayoutFunction<N, L> => {
+  const layoutOptionsConfig = {
+    ...FLOW_LAYOUT_DEFAULT,
+    ...layoutOptions,
+  };
+
+  return ({graph, positionRange}) => {
     limitNodes(graph, layoutOptions.nodeLimit);
     const depthDomain = flowLayoutNodeDepths(graph, layoutOptions);
     const positionDomain = layoutPositions(
@@ -488,47 +495,42 @@ const memoizedFlowGraphLayout: FlowLayoutOptions => LayoutFunction = memoize(
       positionRange[1],
     );
     return {graph, positionDomain, depthDomain};
-  },
-);
-const flowGraphLayout: (
-  layoutOptions?: $Shape<FlowLayoutOptions>,
-) => LayoutFunction = (layoutOptions = FLOW_LAYOUT_DEFAULT) =>
-  memoizedFlowGraphLayout({...FLOW_LAYOUT_DEFAULT, ...layoutOptions});
+  };
+};
 
-const memoizedButterflyGraphLayout: ({
-  ...ButterflyLayoutOptions,
+const butterflyGraphLayout = <N, L>(
   focalNodeKey: Key,
-  ...
-}) => LayoutFunction = memoize(layoutOptions => ({graph, positionRange}) => {
-  const focalNode = graph.nodes.find(n => n.key === layoutOptions.focalNodeKey);
-  if (focalNode == null) {
-    throw new Error(`Unable to find focal node: ${layoutOptions.focalNodeKey}`);
-  }
-  const depthDomain = butterflyLayoutNodeDepths(
-    graph,
-    focalNode,
-    layoutOptions,
-  );
-  limitNodes(graph, layoutOptions.nodeLimit, [focalNode]);
-  const positionDomain = layoutPositions(
-    graph,
-    layoutOptions,
-    positionRange[1],
-  );
-  return {graph, positionDomain, depthDomain};
-});
-const butterflyGraphLayout: (
-  focalNodeKey: Key,
-  layoutOptions?: $Shape<ButterflyLayoutOptions>,
-) => LayoutFunction = (
-  focalNodeKey,
-  layoutOptions = BUTTERFLY_LAYOUT_DEFAULT,
-) =>
-  memoizedButterflyGraphLayout({
+  layoutOptions: $Shape<ButterflyLayoutOptions> = BUTTERFLY_LAYOUT_DEFAULT,
+): LayoutFunction<N, L> => {
+  const layoutOptionsConfig = {
     ...BUTTERFLY_LAYOUT_DEFAULT,
     ...layoutOptions,
     focalNodeKey,
-  });
+  };
+
+  return ({graph, positionRange}) => {
+    const focalNode = graph.nodes.find(
+      n => n.key === layoutOptionsConfig.focalNodeKey,
+    );
+    if (focalNode == null) {
+      throw new Error(
+        `Unable to find focal node: ${layoutOptionsConfig.focalNodeKey}`,
+      );
+    }
+    const depthDomain = butterflyLayoutNodeDepths(
+      graph,
+      focalNode,
+      layoutOptionsConfig,
+    );
+    limitNodes(graph, layoutOptionsConfig.nodeLimit, [focalNode]);
+    const positionDomain = layoutPositions(
+      graph,
+      layoutOptionsConfig,
+      positionRange[1],
+    );
+    return {graph, positionDomain, depthDomain};
+  };
+};
 
 module.exports = {
   flowGraphLayout,

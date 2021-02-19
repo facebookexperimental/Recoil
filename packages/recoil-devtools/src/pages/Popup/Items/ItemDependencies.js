@@ -17,6 +17,7 @@ const CollapsibleItem = require('./CollapsibleItem');
 const ItemLabel = require('./ItemLabel');
 const ItemDescription = require('./ItemDescription');
 const {formatForDiff} = require('../../../utils/Serialization');
+const {SerializedValueType} = require('../../../utils/Serialization');
 const ConnectionContext = require('../ConnectionContext');
 const {useSelectedTransaction} = require('../useSelectionHooks');
 const nullthrows = require('nullthrows');
@@ -63,7 +64,11 @@ function ItemDependencies({name, isDiff = false}: Props): React.Node {
               key={dep}
               name={dep}
               startCollapsed={true}
-              content={connection?.tree?.get(dep, txID) ?? {type: 'undefined'}}
+              content={
+                connection?.tree?.get(dep, txID) ?? {
+                  t: SerializedValueType.undefined,
+                }
+              }
               isRoot={false}
             />
           ))}

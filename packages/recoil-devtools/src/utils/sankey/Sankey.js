@@ -35,42 +35,42 @@ export type NodeData<N> = $ReadOnly<{
   getNodeValue?: N => number, // If not provided, node value is based on max of incoming or outgoing links
 }>;
 
-type Layout = $ReadOnly<{
-  graph: Graph,
+type Layout<N, L> = $ReadOnly<{
+  graph: Graph<N, L>,
   depthDomain: [number, number],
   positionDomain: [number, number],
 }>;
 
-export type LayoutFunction = ({
-  graph: Graph,
+export type LayoutFunction<N, L> = ({
+  graph: Graph<N, L>,
   positionRange: [number, number],
   depthRange: [number, number],
-}) => Layout;
+}) => Layout<N, L>;
 
 type Props<N, L> = $ReadOnly<{
   height: number,
   width: number,
   margin?: number,
   orientation: 'horizontal' | 'vertical',
-  layout: LayoutFunction,
+  layout: LayoutFunction<N, L>,
   links: LinkData<L>, // Input link data
   nodes?: NodeData<N>, // If not provided, nodes are derived from link data
-  getNodeTooltip?: (Node<N>) => string,
-  nodeStyles?: Styles<Node<N>>,
-  nodeClass?: string | ((Node<N>) => string),
-  nodeLabelStyles?: Styles<Node<N>>,
-  nodeLabelClass?: string | ((Node<N>) => string),
-  nodeEvents?: Events<Node<N>>,
+  getNodeTooltip?: (Node<N, L>) => string,
+  nodeStyles?: Styles<Node<N, L>>,
+  nodeClass?: string | ((Node<N, L>) => string),
+  nodeLabelStyles?: Styles<Node<N, L>>,
+  nodeLabelClass?: string | ((Node<N, L>) => string),
+  nodeEvents?: Events<Node<N, L>>,
   // Height of a node in pixels (x-axis in horizontal, y-axis in vertical orientation)
   nodeThickness?: number,
   // Align node labels
   nodeLabelAlignment?: 'inward' | 'right',
   // Curvature for curved link paths (range 0-1, defaults to 0.5)
-  getLinkTooltip?: (Link<L>) => string,
+  getLinkTooltip?: (Link<L, N>) => string,
   linkColor: string | ((Link<L>) => string),
-  linkStyles?: Styles<Link<L>>,
-  linkClass?: string | ((Link<L>) => string),
-  linkEvents?: Events<Link<L>>,
+  linkStyles?: Styles<Link<L, N>>,
+  linkClass?: string | ((Link<L, N>) => string),
+  linkEvents?: Events<Link<L, N>>,
   linkCurvature?: number,
   // Threshold of link width to thickness when to switch between link path rendering approaches
   // using a spline with width for thin lines vs a filled in path for thick lines
@@ -136,10 +136,10 @@ function Sankey<N, L>({
   );
 
   // Generate Graph
-  const graph = useMemo(() => generateGraph({nodeData, linkData}), [
-    nodeData,
-    linkData,
-  ]);
+  const graph = useMemo(
+    () => generateGraph<N, L>({nodeData, linkData}),
+    [nodeData, linkData],
+  );
 
   // Layout Graph
   const layout = useMemo(
@@ -246,7 +246,7 @@ function Sankey<N, L>({
             }\n${valueFormatter(l.value)}`,
       );
 
-    const isThickCurve = (l: Link<L>) => {
+    const isThickCurve = (l: Link<L, N>) => {
       const depthDelta = depth(l.targetDepth) - depth(l.sourceDepth);
       return (
         depthDelta > nodeThickness &&

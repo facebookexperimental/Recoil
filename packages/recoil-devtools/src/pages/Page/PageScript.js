@@ -31,9 +31,9 @@ async function normalizeSnapshot(
   snapshot: ?RecoilSnapshot,
   onlyDirty: boolean,
   props: DevToolsConnnectProps,
-): Promise<{modifiedValues: {[string]: mixed}}> {
+): Promise<{modifiedValues?: {[string]: mixed}}> {
   if (snapshot == null) {
-    return {};
+    return {modifiedValues: undefined};
   }
 
   const dirtyNodes = snapshot.getNodes_UNSTABLE({isModified: onlyDirty});

@@ -36,14 +36,9 @@ const ValueSpan = ({children}: ValueSpanProps): React.Node => {
   return <span style={styles.value}>{children}</span>;
 };
 
-const ItemRenderers: {
-  [SupportedSerializedValueTypes]: ({
-    value: any,
-    startCollapsed?: ?boolean,
-  }) => React.Node,
-} = {
-  [SerializedValueType.null]: () => <ValueSpan>null</ValueSpan>,
-  [SerializedValueType.undefined]: () => <ValueSpan>undefined</ValueSpan>,
+const ItemRenderers = {
+  [SerializedValueType.null]: ({}) => <ValueSpan>null</ValueSpan>,
+  [SerializedValueType.undefined]: ({}) => <ValueSpan>undefined</ValueSpan>,
   [SerializedValueType.array]: ({
     value,
     startCollapsed,
@@ -68,7 +63,7 @@ const ItemRenderers: {
     value,
     startCollapsed,
   }: {
-    value: $ReadOnlyArray<any>,
+    value: $ReadOnlyArray<SerializedValue>,
     startCollapsed: ?boolean,
   }) => {
     return ItemRenderers[SerializedValueType.array]({value, startCollapsed});
@@ -103,7 +98,7 @@ const ItemRenderers: {
   [SerializedValueType.promise]: ({value}: {value: string}) => (
     <ValueSpan>Promise{'<Pending>'}</ValueSpan>
   ),
-  [SerializedValueType.primitive]: ({value}: {value: any}) => {
+  [SerializedValueType.primitive]: ({value}: {value: string | number}) => {
     if (typeof value === 'string') {
       return <ValueSpan>"{value}"</ValueSpan>;
     } else if (typeof value?.toString === 'function') {
@@ -128,7 +123,9 @@ function ItemValue({
   let markup =
     content == null
       ? 'undefined'
-      : ItemRenderers[content.t]({
+      : // $FlowFixMe
+        ItemRenderers[content.t]({
+          // $FlowFixMe
           value: content.v,
           startCollapsed,
         });

@@ -109,6 +109,18 @@ function PopupDependencyGraph(): React.Node {
     return createSankeyData(nodeDeps, nodeWeights);
   }, [txID]);
 
+  const layout = useMemo(() => {
+    return focalNodeKey == null
+      ? flowGraphLayout({
+          nodePadding: '30%',
+          nodeAlignment: 'entry',
+        })
+      : butterflyGraphLayout(focalNodeKey, {
+          nodePadding: '30%',
+          depthOfField: 1000,
+        });
+  }, [focalNodeKey]);
+
   return (
     <>
       <div style={styles.references}>
@@ -161,21 +173,7 @@ function PopupDependencyGraph(): React.Node {
           nodeEvents={{
             click: (_evt, node) => setFocalNodeKey(node?.key),
           }}
-          layout={flowGraphLayout({
-            nodePadding: '30%',
-            nodeAlignment: 'entry',
-          })}
-          layout={
-            focalNodeKey == null
-              ? flowGraphLayout({
-                  nodePadding: '30%',
-                  nodeAlignment: 'entry',
-                })
-              : butterflyGraphLayout(focalNodeKey, {
-                  nodePadding: '30%',
-                  depthOfField: 1000,
-                })
-          }
+          layout={layout}
           nodeThickness={20}
           linkStyles={{stroke: 'lightblue', opacity: 0.4}}
           linkColor={l => 'lightblue'}

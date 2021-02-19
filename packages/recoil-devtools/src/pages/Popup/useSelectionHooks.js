@@ -9,7 +9,7 @@
  */
 'use strict';
 
-import type {RecoilState} from 'Recoil';
+import type {RecoilState} from 'recoil';
 
 const {atom, useRecoilState} = require('recoil');
 
@@ -18,8 +18,8 @@ const FilterAtom = atom({
   default: '',
 });
 
-const useFilter = (): [string, (string) => void] => {
-  return useRecoilState(FilterAtom);
+const useFilter = () => {
+  return useRecoilState<string>(FilterAtom);
 };
 
 const SelectecTransactionAtom = atom({
@@ -27,8 +27,8 @@ const SelectecTransactionAtom = atom({
   default: 0,
 });
 
-const useSelectedTransaction = (): [number, (number) => void] => {
-  return useRecoilState(SelectecTransactionAtom);
+const useSelectedTransaction = () => {
+  return useRecoilState<number>(SelectecTransactionAtom);
 };
 
 module.exports = {useFilter, useSelectedTransaction};

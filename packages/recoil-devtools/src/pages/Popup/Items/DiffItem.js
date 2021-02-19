@@ -68,7 +68,7 @@ function DiffItem({
             node={connection.getNode(name)}
             isRoot={isRoot}
           />
-          <ItemDescription content={value} isDiff={true} previous={previous} />
+          <ItemDescription content={value} previous={previous} />
         </>
       }
       startCollapsed={startCollapsed}>

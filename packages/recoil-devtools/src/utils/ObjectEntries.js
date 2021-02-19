@@ -30,5 +30,6 @@ export default function objectEntries<TKey, TValue>(obj: {
       );
     }
   }
+  // $FlowFixMe[unclear-type]
   return (Object.entries(obj): any);
 }
