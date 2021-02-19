@@ -3,9 +3,9 @@ title: useRecoilState(state)
 sidebar_label: useRecoilState()
 ---
 
-Returns a tuple where the first element is the value of state and the second element is a setter function that will update the value of the given state when called.
+첫 요소가 상태의 값이며, 두번째 요소가 호출되었을 때 주어진 값을 업데이트하는 setter 함수인 튜플을 리턴합니다.
 
-This hook will implicitly subscribe the component to the given state.
+이 hook은 암묵적으로 주어진 상태에 컴포넌트를 구독합니다.
 
 ---
 
@@ -15,15 +15,15 @@ function useRecoilState<T>(state: RecoilState<T>): [T, SetterOrUpdater<T>];
 type SetterOrUpdater<T> = (T | (T => T)) => void;
 ```
 
-- `state`: an [`atom`](/docs/api-reference/core/atom) or a _writeable_ [`selector`](/docs/api-reference/core/selector). Writeable selectors are selectors that have both a `get` and `set` in their definition while read-only selectors only have a `get`.
+- `state`: [`atom`](/docs/api-reference/core/atom) 혹은 *쓰기가능*한 selector. 읽기 전용 [`selector`](/docs/api-reference/core/selector)가 `get`만 가지고 있을 때, *쓰기가능*한 selector는  `get` 과  `set` 를 정의에 가지고 있습니다.
 
-This API is similar to the React [`useState()`](https://reactjs.org/docs/hooks-reference.html#usestate) hook except it takes a Recoil state instead of a default value as an argument.  It returns a tuple of the current value of the state and a setter function.  The setter function may either take a new value as an argument or an updater function which receives the previous value as a parameter.
+이 API는 기본값 대신 React Recoil 상태를 인수로 받는 다는 점만 빼면 [`useState()`](https://reactjs.org/docs/hooks-reference.html#usestate) hook과 비슷합니다. 상태와 setter 함수의 최신 값의 튜플을 리턴합니다. setter 함수는 새로운 값을 인수로 받거나 이전 값을 매개변수로 받는 updater 함수를 취합니다.
 
 ---
 
-This is the recommended hook to use when a component intends to read and write state.
+이 hook은 컴포넌트가 상태를 읽고 쓰려고 할 때에 권장합니다
 
-Using this hook in a React component will subscribe the component to re-render when the state is updated.  This hook may throw if the state has an error or is pending asynchronous resolution.  Please see [this guide](/docs/guides/asynchronous-data-queries).
+이 hook을 React 컴포넌트에서 사용하면 상태가 업데이트 되었을 때 리렌더링을 하기 위해서 컴포넌트를 구독할 것입니다. 이 hook은 상태가 error를 가지고 있거나 비동기 resolution을 보류중일 때에 던져 줄 있습니다. 다음의 [가이드](/docs/guides/asynchronous-data-queries)를 참고해주세요.
 
 ### Example
 
