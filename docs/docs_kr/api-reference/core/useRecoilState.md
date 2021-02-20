@@ -23,7 +23,7 @@ type SetterOrUpdater<T> = (T | (T => T)) => void;
 
 이 hook은 컴포넌트가 상태를 읽고 쓰려고 할 때에 권장합니다
 
-이 hook을 React 컴포넌트에서 사용하면 상태가 업데이트 되었을 때 리렌더링을 하기 위해서 컴포넌트를 구독할 것입니다. 이 hook은 상태가 error를 가지고 있거나 비동기 resolution을 보류중일 때에 던져 줄 있습니다. 다음의 [가이드](/docs/guides/asynchronous-data-queries)를 참고해주세요.
+이 hook을 React 컴포넌트에서 사용하면 상태가 업데이트 되었을 때 리렌더링을 하도록 컴포넌트를 구독합니다. 이 hook은 상태가 error를 가지고 있거나 보류중인 비동기 resolution을 던져 줄 있습니다. 다음의 [가이드](/docs/guides/asynchronous-data-queries)를 참고해주세요.
 
 ### Example
 
