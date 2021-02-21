@@ -5,14 +5,14 @@ sidebar_label: useRecoilValueLoadable()
 
 이 hook은 비동기 selector의 값을 읽기 위해 사용합니다. 이 hook은 주어진 상태에 컴포넌트를 암묵적으로 구독합니다.
 
-[`useRecoilValue()`](/docs/api-reference/core/useRecoilValue)와는 다르게 이 hook은 비동기 selector에서 읽어올 때 ([React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html)와 함께 작동하기 위해) `Error` 혹은 `Promise` 를 던지지 않습니다. 대신 이 hook은 값에 대한 [`Loadable`](/docs/api-reference/core/Loadable) 객체를 setter 콜백과 함께 리턴합니다.
+[`useRecoilValue()`](/docs/api-reference/core/useRecoilValue)와는 다르게 이 hook은 비동기 selector에서 읽어올 때 ([React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html)와 함께 작동하기 위해) `Error` 혹은 `Promise` 를 던지지 않습니다. 대신 이 hook은 값에 대한 [`Loadable`](/docs/api-reference/core/Loadable) 객체를 리턴합니다.
 
 ---
 
 ```jsx
 function useRecoilValueLoadable<T>(state: RecoilValue<T>): Loadable<T>
 ```
-- `state`: 비동기 작업이 있을 수 있는 `쓰기 가능`한 [`atom`](/docs/api-reference/core/atom) 혹은 [`selector`](/docs/api-reference/core/selector). 리턴된 loadable의 상태(status)는 제공된 상태(state) selector의 상태(status)에 따라 다릅니다.
+- `state`: 비동기 작업이 있을 수 있는 [`atom`](/docs/api-reference/core/atom) 혹은 [`selector`](/docs/api-reference/core/selector). 리턴된 loadable의 상태(status)는 제공된 상태(state) selector의 상태(status)에 따라 다릅니다.
 
 인터페이스가 있는 현재 상태 [`Loadable`](/docs/api-reference/core/Loadable)을 리턴합니다:
 
