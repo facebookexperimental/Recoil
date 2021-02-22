@@ -54,7 +54,7 @@ function DiffItem({
       value: tree.get(name, txID),
       previous: tree.get(name, txID - 1),
     }),
-    [tree, txID],
+    [tree, txID, name],
   );
 
   return (

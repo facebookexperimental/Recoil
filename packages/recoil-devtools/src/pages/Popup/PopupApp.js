@@ -60,7 +60,7 @@ function PopupApp({store}: AppProps) {
         }
       }
     });
-  }, [selectedConnection]);
+  }, [selectedConnection, tabId]);
 
   return (
     <ConnectionContext.Provider value={store.getConnection(selectedConnection)}>

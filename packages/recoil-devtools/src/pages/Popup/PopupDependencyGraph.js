@@ -107,7 +107,7 @@ function PopupDependencyGraph(): React.Node {
     const nodeDeps = connection.dependencies.getSnapshot(txID);
     const nodeWeights = connection.nodesState.getSnapshot(txID);
     return createSankeyData(nodeDeps, nodeWeights);
-  }, [txID]);
+  }, [txID, connection.dependencies, connection.nodesState]);
 
   const layout = useMemo(() => {
     return focalNodeKey == null

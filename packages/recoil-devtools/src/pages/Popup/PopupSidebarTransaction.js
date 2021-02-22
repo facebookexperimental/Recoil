@@ -13,9 +13,8 @@ import type {TransactionType} from '../../types/DevtoolsTypes';
 import type Connection from '../../utils/Connection';
 
 const React = require('react');
-const {useRef, useEffect} = require('react');
+const {useRef, useEffect, useCallback, useContext} = require('react');
 const NodeName = require('./Items/NodeName');
-const {useContext} = require('react');
 const ConnectionContext = require('./ConnectionContext');
 
 const styles = {
@@ -77,12 +76,14 @@ const Transaction = ({
 
   // When creating a new TX that is selected
   // scroll to make it visible
-  const DOMNode = useRef(null);
-  useEffect(() => {
-    if (isSelected && DOMNode.current != null) {
-      DOMNode.current.scrollIntoView();
-    }
-  }, [DOMNode.current]);
+  const DOMNode = useCallback(
+    node => {
+      if (isSelected && node !== null) {
+        node.scrollIntoView();
+      }
+    },
+    [isSelected],
+  );
 
   const modifiedNodes: React.Node[] = [];
   const subscriberNodes: React.Node[] = [];

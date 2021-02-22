@@ -37,8 +37,12 @@ const ValueSpan = ({children}: ValueSpanProps): React.Node => {
 };
 
 const ItemRenderers = {
-  [SerializedValueType.null]: ({}) => <ValueSpan>null</ValueSpan>,
-  [SerializedValueType.undefined]: ({}) => <ValueSpan>undefined</ValueSpan>,
+  [SerializedValueType.null]: function SerializedValueTypeNull({}) {
+    return <ValueSpan>null</ValueSpan>;
+  },
+  [SerializedValueType.undefined]: function SerializedValueTypeUndefined({}) {
+    return <ValueSpan>undefined</ValueSpan>;
+  },
   [SerializedValueType.array]: ({
     value,
     startCollapsed,
@@ -84,23 +88,43 @@ const ItemRenderers = {
       />
     ));
   },
-  [SerializedValueType.date]: ({value}: {value: Date}) => {
+  [SerializedValueType.date]: function SerializedValueTypeDate({
+    value,
+  }: {
+    value: Date,
+  }) {
     return <ValueSpan>{new Date(value).toISOString()}</ValueSpan>;
   },
-  [SerializedValueType.function]: ({value}: {value: string}) => {
+  [SerializedValueType.function]: function SerializedValueTypeFunction({
+    value,
+  }: {
+    value: string,
+  }) {
     return <ValueSpan>{value}</ValueSpan>;
   },
-  [SerializedValueType.symbol]: ({value}: {value: string}) => {
+  [SerializedValueType.symbol]: function SerializedValueTypeSymbol({
+    value,
+  }: {
+    value: string,
+  }) {
     return <ValueSpan>Symbol({value})</ValueSpan>;
   },
   [SerializedValueType.error]: ({value}: {value: string}) =>
     ItemRenderers[SerializedValueType.primitive]({value}),
-  [SerializedValueType.promise]: ({value}: {value: string}) => (
-    <ValueSpan>Promise{'<Pending>'}</ValueSpan>
-  ),
-  [SerializedValueType.primitive]: ({value}: {value: string | number}) => {
+  [SerializedValueType.promise]: function SerializedValueTypePromise({
+    value,
+  }: {
+    value: string,
+  }) {
+    return <ValueSpan>Promise{'<Pending>'}</ValueSpan>;
+  },
+  [SerializedValueType.primitive]: function SerializedValueTypePrimitive({
+    value,
+  }: {
+    value: string | number,
+  }) {
     if (typeof value === 'string') {
-      return <ValueSpan>"{value}"</ValueSpan>;
+      return <ValueSpan>&#34;{value}&#34;</ValueSpan>;
     } else if (typeof value?.toString === 'function') {
       return <ValueSpan>{value.toString()}</ValueSpan>;
     }
