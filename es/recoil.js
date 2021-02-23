@@ -6879,7 +6879,7 @@ function baseAtom(options) {
     store.getState().knownAtoms.add(key); // Setup async defaults to notify subscribers when they resolve
 
     if (defaultLoadable.state === 'loading') {
-      function notifyDefaultSubscribers() {
+      const notifyDefaultSubscribers = () => {
         var _store$getState$nextT3;
 
         const state = (_store$getState$nextT3 = store.getState().nextTree) !== null && _store$getState$nextT3 !== void 0 ? _store$getState$nextT3 : store.getState().currentTree;
@@ -6887,7 +6887,7 @@ function baseAtom(options) {
         if (!state.atomValues.has(key)) {
           markRecoilValueModified$1(store, node);
         }
-      }
+      };
 
       defaultLoadable.contents.then(notifyDefaultSubscribers).catch(notifyDefaultSubscribers);
     } // Run Atom Effects
