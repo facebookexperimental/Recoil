@@ -54,14 +54,14 @@ const PopupComponent = ({maxTransactionId}: Props): React.Node => {
     if (maxTransactionId - 1 === selectedTX) {
       setSelectedTX(maxTransactionId);
     }
-  }, [maxTransactionId]);
+  }, [maxTransactionId, selectedTX, setSelectedTX]);
 
   // when switching connections, move to the last transaction
   useEffect(() => {
     if (connection != null) {
       setSelectedTX(connection.transactions.getLast());
     }
-  }, [connection]);
+  }, [connection, setSelectedTX]);
 
   const [selectedMainTab, setSelectedMainTab] = useState('Diff');
 

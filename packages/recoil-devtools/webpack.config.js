@@ -11,7 +11,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const fileSystem = require('fs-extra');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const WriteFilePlugin = require('write-file-webpack-plugin');
@@ -52,21 +52,21 @@ var options = {
       'src',
       'pages',
       'Devtools',
-      'DevtoolsScript.js'
+      'DevtoolsScript.js',
     ),
     background: path.join(
       __dirname,
       'src',
       'pages',
       'Background',
-      'Background.js'
+      'Background.js',
     ),
     contentScript: path.join(
       __dirname,
       'src',
       'pages',
       'Content',
-      'ContentScript.js'
+      'ContentScript.js',
     ),
     pageScript: path.join(__dirname, 'src', 'pages', 'Page', 'PageScript.js'),
   },
@@ -103,7 +103,7 @@ var options = {
   resolve: {
     alias: alias,
     extensions: fileExtensions
-      .map((extension) => '.' + extension)
+      .map(extension => '.' + extension)
       .concat(['.jsx', '.js', '.css']),
   },
   plugins: [
@@ -143,7 +143,7 @@ var options = {
                 description: process.env.npm_package_description,
                 version: process.env.npm_package_version,
                 ...JSON.parse(content.toString()),
-              })
+              }),
             );
           },
         },
@@ -151,7 +151,7 @@ var options = {
       {
         logLevel: 'info',
         copyUnmodified: true,
-      }
+      },
     ),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, 'src', 'pages', 'Popup', 'index.html'),
@@ -174,7 +174,7 @@ var options = {
         'src',
         'pages',
         'Background',
-        'index.html'
+        'index.html',
       ),
       filename: 'background.html',
       chunks: ['background'],
