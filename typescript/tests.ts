@@ -272,6 +272,12 @@ isRecoilValue(mySelector1);
     get: (param: ReadonlyArray<number>) => () => [...param, 9],
   });
   mySelectorFamArray([1, 2, 3]);
+
+  const myJsonSerializableSelectorFam = selectorFamily({
+    key: 'mySelectorFam1',
+    get: (param: {from: Date, to: Date}) => () => (+param.from) - (+param.to),
+  });
+  myJsonSerializableSelectorFam({ from: new Date(), to: new Date() });
 }
 
 /**

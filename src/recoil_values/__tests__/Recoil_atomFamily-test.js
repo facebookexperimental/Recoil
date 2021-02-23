@@ -148,6 +148,18 @@ testRecoil('Works with parameterized default', () => {
   expect(get(paramDefaultAtom({num: 2}))).toBe(2);
 });
 
+testRecoil('Works with date as parameter', () => {
+  const dateAtomFamily = atomFamily({
+    key: 'dateFamily',
+    default: date => 0,
+  });
+  expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(0);
+  expect(get(dateAtomFamily(new Date(2021, 2, 26)))).toBe(0);
+  set(dateAtomFamily(new Date(2021, 2, 25)), 1);
+  expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(1);
+  expect(get(dateAtomFamily(new Date(2021, 2, 26)))).toBe(0);
+});
+
 testRecoil('Works with parameterized fallback', () => {
   const fallbackAtom = atomFamily({
     key: 'parameterized fallback default',

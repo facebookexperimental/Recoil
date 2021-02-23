@@ -92,6 +92,25 @@ testRecoil('selectorFamily - object parameter', () => {
   expect(getValue(mySelector({multiplier: 100}))).toBe(200);
 });
 
+testRecoil('selectorFamily - date parameter', () => {
+  const mySelector = selectorFamily({
+    key: 'selectorFamily/date',
+    get: date => ({get}) => {
+      const daysToAdd = get(myAtom);
+      const returnDate = new Date(date);
+
+      returnDate.setDate(returnDate.getDate() + daysToAdd);
+
+      return returnDate;
+    },
+  });
+
+  set(myAtom, 1);
+  expect(getValue(mySelector(new Date(2021, 2, 25))).getDate()).toBe(26);
+  set(myAtom, 2);
+  expect(getValue(mySelector(new Date(2021, 2, 25))).getDate()).toBe(27);
+});
+
 testRecoil('Works with supersets', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/supersets',
