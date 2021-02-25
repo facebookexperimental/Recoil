@@ -31,8 +31,9 @@ const selectorFamily = require('./Recoil_selectorFamily');
 type Primitive = void | null | boolean | number | string;
 export type Parameter =
   | Primitive
+  | {toJSON: () => string, ...}
   | $ReadOnlyArray<Parameter>
-  | $ReadOnly<{[string]: Parameter, ...}>;
+  | $ReadOnly<{[string]: Parameter}>;
 
 // flowlint unclear-type:off
 export type ParameterizedScopeRules<P> = $ReadOnlyArray<
