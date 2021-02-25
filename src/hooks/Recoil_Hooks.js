@@ -812,8 +812,22 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       const snapshot = cloneSnapshot(storeRef.current);
       let ret = SENTINEL;
       batchUpdates(() => {
+        const errMsg =
+          'useRecoilCallback expects a function that returns a function: ' +
+          'it accepts a function of the type (RecoilInterface) => T = R ' +
+          'and returns a callback function T => R, where RecoilInterface is an ' +
+          'object {snapshot, set, ...} and T and R are the argument and return ' +
+          'types of the callback you want to create.  Please see the docs ' +
+          'at recoiljs.org for details.';
+        if (typeof fn !== 'function') {
+          throw new Error(errMsg);
+        }
         // flowlint-next-line unclear-type:off
-        ret = (fn: any)({set, reset, snapshot, gotoSnapshot})(...args);
+        const cb = (fn: any)({set, reset, snapshot, gotoSnapshot});
+        if (typeof cb !== 'function') {
+          throw new Error(errMsg);
+        }
+        ret = cb(...args);
       });
       invariant(
         !(ret instanceof Sentinel),
