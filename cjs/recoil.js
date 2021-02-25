@@ -665,7 +665,11 @@ function peekNodeInfo(store, state, key) {
     isSet: type === 'selector' ? false : state.atomValues.has(key),
     isModified: state.dirtyAtoms.has(key),
     type,
+    // Report current dependencies.  If the node hasn't been evaluated, then
+    // dependencies may be missing based on the current state.
     deps: recoilValuesForKeys$1((_graph$nodeDeps$get = graph.nodeDeps.get(key)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : []),
+    // Reportsall "current" subscribers.  Evaluating other nodes or
+    // previous in-progress async evaluations may introduce new subscribers.
     subscribers: {
       nodes: recoilValuesForKeys$1(downstreamNodes),
       components: Recoil_mapIterable((_storeState$nodeToCom = (_storeState$nodeToCom2 = storeState.nodeToComponentSubscriptions.get(key)) === null || _storeState$nodeToCom2 === void 0 ? void 0 : _storeState$nodeToCom2.values()) !== null && _storeState$nodeToCom !== void 0 ? _storeState$nodeToCom : [], ([name]) => ({
@@ -2969,7 +2973,6 @@ const {
 } = Recoil_Batching;
 
 const {
-  getDownstreamNodes: getDownstreamNodes$2,
   initializeNodeIfNewToStore: initializeNodeIfNewToStore$1,
   peekNodeInfo: peekNodeInfo$1
 } = Recoil_FunctionalCore;
@@ -3036,28 +3039,6 @@ class Snapshot {
       return (opt === null || opt === void 0 ? void 0 : opt.isInitialized) == null ? recoilValues$1.values() : opt.isInitialized === true ? recoilValuesForKeys$2(Recoil_concatIterables([this._store.getState().knownAtoms, this._store.getState().knownSelectors])) : Recoil_filterIterable(recoilValues$1.values(), ({
         key
       }) => !knownAtoms.has(key) && !knownSelectors.has(key));
-    });
-
-    _defineProperty(this, "getDeps_UNSTABLE", recoilValue => {
-      this.checkRefCount_INTERNAL();
-      this.getLoadable(recoilValue); // Evaluate node to ensure deps are up-to-date
-
-      const deps = this._store.getGraph(this._store.getState().currentTree.version).nodeDeps.get(recoilValue.key);
-
-      return recoilValuesForKeys$2(deps !== null && deps !== void 0 ? deps : []);
-    });
-
-    _defineProperty(this, "getSubscribers_UNSTABLE", ({
-      key
-    }) => {
-      this.checkRefCount_INTERNAL();
-
-      const state = this._store.getState().currentTree;
-
-      const downstreamNodes = Recoil_filterIterable(getDownstreamNodes$2(this._store, state, new Set([key])), nodeKey => nodeKey !== key);
-      return {
-        nodes: recoilValuesForKeys$2(downstreamNodes)
-      };
     });
 
     _defineProperty(this, "getInfo_UNSTABLE", ({
@@ -3318,7 +3299,7 @@ const {
 
 const {
   cleanUpNode: cleanUpNode$2,
-  getDownstreamNodes: getDownstreamNodes$3,
+  getDownstreamNodes: getDownstreamNodes$2,
   setNodeValue: setNodeValue$2,
   setUnvalidatedAtomValue_DEPRECATED: setUnvalidatedAtomValue_DEPRECATED$1
 } = Recoil_FunctionalCore;
@@ -3414,7 +3395,7 @@ function sendEndOfBatchNotifications(store) {
     } // Components that are subscribed to the dirty atom:
 
 
-    const dependentNodes = getDownstreamNodes$3(store, treeState, dirtyAtoms);
+    const dependentNodes = getDownstreamNodes$2(store, treeState, dirtyAtoms);
 
     for (const key of dependentNodes) {
       const comps = storeState.nodeToComponentSubscriptions.get(key);
@@ -4770,13 +4751,25 @@ function useRecoilCallback(fn, deps) {
     const snapshot = cloneSnapshot$1(storeRef.current);
     let ret = SENTINEL;
     batchUpdates$2(() => {
-      // flowlint-next-line unclear-type:off
-      ret = fn({
+      const errMsg = 'useRecoilCallback expects a function that returns a function: ' + 'it accepts a function of the type (RecoilInterface) => T = R ' + 'and returns a callback function T => R, where RecoilInterface is an ' + 'object {snapshot, set, ...} and T and R are the argument and return ' + 'types of the callback you want to create.  Please see the docs ' + 'at recoiljs.org for details.';
+
+      if (typeof fn !== 'function') {
+        throw new Error(errMsg);
+      } // flowlint-next-line unclear-type:off
+
+
+      const cb = fn({
         set,
         reset,
         snapshot,
         gotoSnapshot
-      })(...args);
+      });
+
+      if (typeof cb !== 'function') {
+        throw new Error(errMsg);
+      }
+
+      ret = cb(...args);
     });
     !!(ret instanceof Sentinel) ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'batchUpdates should return immediately') : Recoil_invariant(false) : void 0;
     return ret;

@@ -34,7 +34,6 @@ const {
 } = require('./Recoil_Batching');
 
 const {
-  getDownstreamNodes,
   initializeNodeIfNewToStore,
   peekNodeInfo
 } = require('./Recoil_FunctionalCore');
@@ -83,10 +82,6 @@ declare class Snapshot {
     isModified?: boolean,
     isInitialized?: boolean,
   } | void) => Iterable<RecoilValue<mixed>>,
-  getDeps_UNSTABLE: <T>(RecoilValue<T>) => Iterable<RecoilValue<mixed>>,
-  getSubscribers_UNSTABLE: <T>(RecoilValue<T>) => {
-    nodes: Iterable<RecoilValue<mixed>>
-  },
   getInfo_UNSTABLE: <T>(RecoilValue<T>) => RecoilValueInfo<T>,
   map: ((MutableSnapshot) => void) => Snapshot,
   asyncMap: ((MutableSnapshot) => Promise<void>) => Promise<Snapshot>,
