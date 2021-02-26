@@ -10,6 +10,7 @@
 'use strict';
 
 import type {Node} from '../../../types/DevtoolsTypes';
+
 const React = require('react');
 
 const styles = {

@@ -8,22 +8,22 @@
  * @format
  */
 'use strict';
-import type {SerializedValue} from '../../../utils/Serialization';
 import type {Node} from '../../../types/DevtoolsTypes';
+import type {SerializedValue} from '../../../utils/Serialization';
 
-import ItemValue from './ItemValue';
 import ItemDependencies from './ItemDependencies';
+import ItemValue from './ItemValue';
 
-const React = require('react');
-const ItemDescription = require('./ItemDescription');
-const {hasItemDescription} = require('./ItemDescription');
-const CollapsibleItem = require('./CollapsibleItem');
-const ItemLabel = require('./ItemLabel');
 const ConnectionContext = require('../ConnectionContext');
 const {useSelectedTransaction} = require('../useSelectionHooks');
-const nullthrows = require('nullthrows');
-const {useContext} = require('react');
+const CollapsibleItem = require('./CollapsibleItem');
+const ItemDescription = require('./ItemDescription');
+const {hasItemDescription} = require('./ItemDescription');
+const ItemLabel = require('./ItemLabel');
 const ItemMoreItems = require('./ItemMoreItems');
+const nullthrows = require('nullthrows');
+const React = require('react');
+const {useContext} = require('react');
 
 type KeyProps = {
   name: string | number,

@@ -9,20 +9,21 @@
  */
 'use strict';
 import type Connection from '../../../utils/Connection';
+
 import ItemDependencies from './ItemDependencies';
 
-const React = require('react');
-const {useMemo} = require('react');
-const JsonDiff = require('jsondiffpatch-for-react').default;
-const CollapsibleItem = require('./CollapsibleItem');
-const ItemLabel = require('./ItemLabel');
-const ItemDescription = require('./ItemDescription');
 const {formatForDiff} = require('../../../utils/Serialization');
-const {useContext} = require('react');
 const ConnectionContext = require('../ConnectionContext');
 const {useSelectedTransaction} = require('../useSelectionHooks');
-const nullthrows = require('nullthrows');
+const CollapsibleItem = require('./CollapsibleItem');
+const ItemDescription = require('./ItemDescription');
+const ItemLabel = require('./ItemLabel');
 const ItemMoreItems = require('./ItemMoreItems');
+const JsonDiff = require('jsondiffpatch-for-react').default;
+const nullthrows = require('nullthrows');
+const React = require('react');
+const {useMemo} = require('react');
+const {useContext} = require('react');
 
 const styles = {
   valuesHolder: {

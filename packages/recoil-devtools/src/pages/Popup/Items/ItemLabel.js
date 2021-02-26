@@ -11,8 +11,8 @@
 import type {Node} from '../../../types/DevtoolsTypes';
 
 const {getStyle} = require('../../../utils/getStyle');
-const React = require('react');
 const NodeName = require('./NodeName');
+const React = require('react');
 const styles = {
   label: {
     marginRight: 5,

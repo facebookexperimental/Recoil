@@ -9,18 +9,19 @@
  */
 'use strict';
 import type Connection from '../../../utils/Connection';
+
 import Item from './Item';
 
-const React = require('react');
-const JsonDiff = require('jsondiffpatch-for-react').default;
-const CollapsibleItem = require('./CollapsibleItem');
-const ItemLabel = require('./ItemLabel');
-const ItemDescription = require('./ItemDescription');
 const {formatForDiff} = require('../../../utils/Serialization');
 const {SerializedValueType} = require('../../../utils/Serialization');
 const ConnectionContext = require('../ConnectionContext');
 const {useSelectedTransaction} = require('../useSelectionHooks');
+const CollapsibleItem = require('./CollapsibleItem');
+const ItemDescription = require('./ItemDescription');
+const ItemLabel = require('./ItemLabel');
+const JsonDiff = require('jsondiffpatch-for-react').default;
 const nullthrows = require('nullthrows');
+const React = require('react');
 const {useContext} = require('react');
 
 const styles = {

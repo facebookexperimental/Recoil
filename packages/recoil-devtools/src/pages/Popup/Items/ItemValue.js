@@ -9,11 +9,12 @@
  */
 'use strict';
 
+import type {Node} from '../../../types/DevtoolsTypes';
 import type {
   SerializedValue,
   SupportedSerializedValueTypes,
 } from '../../../utils/Serialization';
-import type {Node} from '../../../types/DevtoolsTypes';
+
 import Item from './Item';
 
 const {SerializedValueType} = require('../../../utils/Serialization');
