@@ -3,9 +3,9 @@ title: useRecoilTransactionObserver_UNSTABLE(callback)
 sidebar_label: useRecoilTransactionObserver()
 ---
 
-## ***NOTE***: *Please consider this API as unstable*
+## ***NOTE***: *이 API는 불안정합니다.*
 
-This hook subscribes a callback to be executed every time there is a change to Recoil atom state.  Multiple updates may be batched together in a single transaction.  This hook is great for persisting state changes, dev tools, building history, &c.
+이 hook은 Recoil atom 상태에 변화가 생길 때마다 콜백이 실행되도록 구독합니다. 여러 업데이트를 단일 트랜젝션에서 일괄적으로 처리할 수 있습니다. 이 hook은 지속된 상태 변화, 개발 툴, 히스토리 빌드 등등에 좋습니다.
 
 ```jsx
 function useRecoilTransactionObserver_UNSTABLE(({
@@ -14,7 +14,7 @@ function useRecoilTransactionObserver_UNSTABLE(({
 }) => void)
 ```
 
-The callback provides a [`Snapshot`](/docs/api-reference/core/Snapshot) of the current and previous state for the React batch transaction.  If you would only like to subscribe to changes for individual atoms, consider effects instead.  In the future, we may allow the ability to subscribe to specific conditions or provide debouncing for performance.
+React 일괄 트랜젝션을 위한 현재와 이전 상태의 [`Snapshot`](/docs/api-reference/core/Snapshot) 을 제공하는 콜백입니다. 개별적인 atom에 대한 변경만 구독하고 싶다면 대신 effect를 고려해보는 것이 좋습니다. 향후에는 특정 조건에 구독하거나 성능을 위해 debouncing을 제공할 수 있는 기능을 허용할 수도 있습니다.
 
 ### Debug Example
 
