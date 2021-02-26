@@ -9,8 +9,8 @@
  */
 'use strict';
 import type {
-  DependenciesSnapshotType,
   DependenciesSetType,
+  DependenciesSnapshotType,
   NodesSnapshotType,
   SnapshotType,
 } from '../types/DevtoolsTypes';

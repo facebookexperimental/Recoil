@@ -11,20 +11,20 @@
 
 import type {
   BackgroundPostMessage,
-  TransactionType,
+  ConnectionPort,
   DependenciesSetType,
   Node,
   NodeState,
-  ConnectionPort,
+  TransactionType,
   ValuesMessageType,
 } from '../types/DevtoolsTypes';
 import type {SerializedValue} from './Serialization';
 
+const {RecoilDevToolsActions} = require('../constants/Constants');
 const {depsHaveChaged} = require('../utils/GraphUtils');
 const EvictableList = require('./EvictableList');
 const TXHashTable = require('./TXHashtable');
 const nullthrows = require('nullthrows');
-const {RecoilDevToolsActions} = require('../constants/Constants');
 
 class Connection {
   id: number;
