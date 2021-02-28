@@ -1,5 +1,6 @@
 {
   "name": "recoil",
+  "private": true,
   "version": "0.1.2",
   "description": "Recoil - A state management library for React",
   "main": "cjs/recoil.js",
@@ -18,7 +19,7 @@
   "scripts": {
     "prepare": "install-peers",
     "build": "rollup -c && node scripts/postbuild.js",
-    "test": "jest src/*",
+    "test": "jest",
     "format": "prettier --write \"./**/*.{js,md,json}\"",
     "flow": "flow --show-all-errors",
     "flow:restart": "flow stop && npm run flow",
@@ -89,5 +90,9 @@
   "lint-staged": {
     "*.{js,md,json}": "prettier --write",
     "*.{js}": "eslint --fix"
-  }
+  },
+  "workspaces": [
+    "src",
+    "packages/*"
+  ]
 }

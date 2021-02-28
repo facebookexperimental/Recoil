@@ -1,8 +1,6 @@
+const baseConfig = require('./jest.config.base');
+
 module.exports = {
-  timers: 'fake',
-  globals: {
-    __DEV__: true,
-  },
-  testPathIgnorePatterns: ['/node_modules/', '/packages/'],
-  setupFiles: ['./setupJestMock.js'],
+  ...baseConfig,
+  projects: ['<rootDir>/src', '<rootDir>/packages/*'],
 };
