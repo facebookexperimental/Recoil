@@ -3,7 +3,7 @@ title: useGotoRecoilSnapshot(snapshot)
 sidebar_label: useGotoRecoilSnapshot()
 ---
 
-This hook returns a callback which takes a [`Snapshot`](/docs/api-reference/core/Snapshot) as a parameter and will update the current [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) state to match this atom state.
+이 hook은 [`Snapshot`](/docs/api-reference/core/Snapshot) 을 매개변수로 받고 이 atom 상태에 일치하게 현재 [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) 상태를 업데이트하는 콜백을 리턴합니다. 
 
 ```jsx
 function useGotoRecoilSnapshot(): Snapshot => void
@@ -11,7 +11,7 @@ function useGotoRecoilSnapshot(): Snapshot => void
 
 ### Transaction Example
 
-**Important Note**: This example is not efficient because it will subscribe the component to re-render for *all* state changes.
+**Important Note**: 이 예제는 *모든* 상태 변화에 리렌더링을 하기 위해 컴포넌트를 구독하므로 효율적이지 않습니다.
 
 ```jsx
 function TransactionButton(): React.Node {
@@ -27,4 +27,4 @@ function TransactionButton(): React.Node {
 
 ### Time Travel Example
 
-See the [Time Travel Example](/docs/guides/dev-tools#time-travel)
+[Time Travel 예제](/docs/guides/dev-tools#time-travel)를 확인해주세요.
