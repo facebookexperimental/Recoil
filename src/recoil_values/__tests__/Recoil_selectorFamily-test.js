@@ -15,8 +15,6 @@ import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
 let atom,
-  cacheMostRecent,
-  cacheWithReferenceEquality,
   DefaultValue,
   selectorFamily,
   getRecoilValueAsLoadable,
@@ -28,8 +26,6 @@ const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
   atom = require('../Recoil_atom');
-  cacheMostRecent = require('../../caches/Recoil_cacheMostRecent');
-  cacheWithReferenceEquality = require('../../caches/Recoil_cacheWithReferenceEquality');
   ({DefaultValue} = require('../../core/Recoil_Node'));
   selectorFamily = require('../Recoil_selectorFamily');
   ({
@@ -164,7 +160,9 @@ testRecoil('selectorFamily - reference caching', () => {
       evals++;
       return get(myAtom) * multiplier;
     },
-    cacheImplementationForParams_UNSTABLE: cacheWithReferenceEquality,
+    cachePolicyForParams_UNSTABLE: {
+      equality: 'reference',
+    },
   });
 
   expect(evals).toBe(0);
@@ -225,7 +223,10 @@ testRecoil('selectorFamily - most recent caching', () => {
       evals++;
       return get(myAtom) * multiplier;
     },
-    cacheImplementationForParams_UNSTABLE: cacheMostRecent,
+    cachePolicyForParams_UNSTABLE: {
+      eviction: 'lru',
+      maxSize: 1,
+    },
   });
 
   const multiply10 = {multiplier: 10};

@@ -54,8 +54,11 @@
 'use strict';
 
 import type {Loadable, LoadablePromise} from '../adt/Recoil_Loadable';
-import type {CacheImplementation} from '../caches/Recoil_Cache';
-import type {NodeCache, NodeCacheRoute} from '../caches/Recoil_NodeCache';
+import type {CachePolicy} from '../caches/Recoil_CachePolicy';
+import type {
+  NodeCacheRoute,
+  TreeCacheImplementation,
+} from '../caches/Recoil_TreeCacheImplementationType';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
@@ -72,9 +75,7 @@ const {
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
-const nodeCacheMostRecent = require('../caches/Recoil_nodeCacheMostRecent');
-const treeCacheReferenceEquality = require('../caches/Recoil_treeCacheReferenceEquality');
-const treeCacheValueEquality = require('../caches/Recoil_treeCacheValueEquality');
+const treeCacheFromPolicy = require('../caches/Recoil_treeCacheFromPolicy');
 const {
   getNodeLoadable,
   peekNodeLoadable,
@@ -93,6 +94,7 @@ const {setRecoilValueLoadable} = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const gkx = require('../util/Recoil_gkx');
+const invariant = require('../util/Recoil_invariant');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
@@ -111,7 +113,7 @@ type ReadOnlySelectorOptions<T> = $ReadOnly<{
   get: ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
 
   retainedBy_UNSTABLE?: RetainedBy,
-  cacheImplementation_UNSTABLE?: CacheImplementation<Loadable<T>>,
+  cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
 }>;
 
@@ -190,23 +192,15 @@ function getInitialExecutionInfo<T>(): ExecutionInfo<T> {
 function selector<T>(
   options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>,
 ): RecoilValue<T> {
-  const {key, get, cacheImplementation_UNSTABLE: cacheImplementation} = options;
+  const {key, get, cachePolicy_UNSTABLE: cachePolicy} = options;
   const set = options.set != null ? options.set : undefined; // flow
 
-  /**
-   * HACK: doing this as a way to map given cache to corresponding tree cache.
-   * Current implementation does not allow custom cache implementations. Custom
-   * caches have a type 'custom' and fall back to reference equality.
-   */
-  const cache: NodeCache<T> = !cacheImplementation
-    ? treeCacheReferenceEquality()
-    : cacheImplementation.type === 'reference'
-    ? treeCacheReferenceEquality()
-    : cacheImplementation.type === 'value'
-    ? treeCacheValueEquality()
-    : cacheImplementation.type === 'mostRecent'
-    ? nodeCacheMostRecent()
-    : treeCacheReferenceEquality();
+  const cache: TreeCacheImplementation<Loadable<T>> = treeCacheFromPolicy(
+    cachePolicy ?? {
+      equality: 'reference',
+      eviction: 'none',
+    },
+  );
 
   const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
 
@@ -658,14 +652,20 @@ function selector<T>(
 
     const cachedVal = cache.get(
       nodeKey => {
+        invariant(typeof nodeKey === 'string', 'Cache nodeKey is type string');
+
         const loadable = getCachedNodeLoadable(store, state, nodeKey);
 
         return loadable.contents;
       },
       {
-        onCacheHit: nodeKey => {
-          if (nodeKey !== key) {
-            depsAfterCacheDone.add(nodeKey);
+        onNodeVisit: node => {
+          if (
+            node.type === 'branch' &&
+            node.nodeKey !== key &&
+            typeof node.nodeKey === 'string'
+          ) {
+            depsAfterCacheDone.add(node.nodeKey);
           }
         },
       },
@@ -970,6 +970,8 @@ function selector<T>(
 
   function selectorPeek(store: Store, state: TreeState): ?Loadable<T> {
     const cacheVal = cache.get(nodeKey => {
+      invariant(typeof nodeKey === 'string', 'Cache nodeKey is type string');
+
       const peek = peekNodeLoadable(store, state, nodeKey);
 
       return peek?.contents;
@@ -1056,7 +1058,6 @@ function selector<T>(
             )
           : new Error('Recoil: selector set should be a void function.');
       }
-
       syncSelectorSetFinished = true;
 
       return writes;
