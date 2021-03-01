@@ -311,5 +311,5 @@ testRecoil(
       ).toEqual([{name: 'ReadsAtom'}]);
     }
   },
-  // @fb-only: {gks: [['recoil_infer_component_names']]},
+  // @fb-only: {gks: [['recoil_infer_component_names', 'recoil_async_selector_refactor']]},
 );
