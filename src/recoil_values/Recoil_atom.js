@@ -176,9 +176,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       )
     : loadableWithValue(options.default);
 
-  let cachedAnswerForUnvalidatedValue:
-    | void
-    | [DependencyMap, Loadable<T>] = undefined;
+  let cachedAnswerForUnvalidatedValue: void | Loadable<T> = undefined;
 
   // Cleanup handlers for this atom
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
@@ -379,24 +377,22 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     );
   }
 
-  function getAtom(
-    _store: Store,
-    state: TreeState,
-  ): [DependencyMap, Loadable<T>] {
+  function getAtom(_store: Store, state: TreeState): Loadable<T> {
     if (state.atomValues.has(key)) {
       // Atom value is stored in state:
-      return [new Map(), nullthrows(state.atomValues.get(key))];
+      return nullthrows(state.atomValues.get(key));
     } else if (state.nonvalidatedAtoms.has(key)) {
       // Atom value is stored but needs validation before use.
       // We might have already validated it and have a cached validated value:
       if (cachedAnswerForUnvalidatedValue != null) {
         return cachedAnswerForUnvalidatedValue;
       }
+
       if (persistence == null) {
         expectationViolation(
           `Tried to restore a persisted value for atom ${key} but it has no persistence settings.`,
         );
-        return [new Map(), defaultLoadable];
+        return defaultLoadable;
       }
       const nonvalidatedValue = state.nonvalidatedAtoms.get(key);
       const validatorResult: T | DefaultValue = persistence.validator(
@@ -408,10 +404,12 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         validatorResult instanceof DefaultValue
           ? defaultLoadable
           : loadableWithValue(validatorResult);
-      cachedAnswerForUnvalidatedValue = [new Map(), validatedValueLoadable];
+
+      cachedAnswerForUnvalidatedValue = validatedValueLoadable;
+
       return cachedAnswerForUnvalidatedValue;
     } else {
-      return [new Map(), defaultLoadable];
+      return defaultLoadable;
     }
   }
 
@@ -423,19 +421,19 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     _store: Store,
     state: TreeState,
     newValue: T | DefaultValue,
-  ): [DependencyMap, AtomWrites] {
+  ): AtomWrites {
     // Bail out if we're being set to the existing value, or if we're being
     // reset but have no stored value (validated or unvalidated) to reset from:
     if (state.atomValues.has(key)) {
       const existing = nullthrows(state.atomValues.get(key));
       if (existing.state === 'hasValue' && newValue === existing.contents) {
-        return [new Map(), new Map()];
+        return new Map();
       }
     } else if (
       !state.nonvalidatedAtoms.has(key) &&
       newValue instanceof DefaultValue
     ) {
-      return [new Map(), new Map()];
+      return new Map();
     }
 
     if (__DEV__) {
@@ -445,7 +443,8 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     }
 
     cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
-    return [new Map(), new Map().set(key, loadableWithValue(newValue))];
+
+    return new Map().set(key, loadableWithValue(newValue));
   }
 
   function shouldDeleteConfigOnReleaseAtom() {

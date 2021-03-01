@@ -20,7 +20,6 @@ import type {
   TreeState,
 } from './Recoil_State';
 
-const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const Tracing = require('../util/Recoil_Tracing');
@@ -57,14 +56,7 @@ function getRecoilValueAsLoadable<T>(
     recoverableViolation('Tried to read from a discarded tree', 'recoil');
   }
 
-  const [dependencyMap, loadable] = getNodeLoadable(store, treeState, key);
-
-  if (!gkx('recoil_async_selector_refactor')) {
-    /**
-     * In selector_NEW, we take care of updating state deps within the selector
-     */
-    saveDependencyMapToStore(dependencyMap, store, treeState.version);
-  }
+  const loadable = getNodeLoadable(store, treeState, key);
 
   return loadable;
 }
@@ -94,8 +86,8 @@ function valueFromValueOrUpdater<T>(
     // Updater form: pass in the current value. Throw if the current value
     // is unavailable (namely when updating an async selector that's
     // pending or errored):
-    // NOTE: This will evaluate node, but not update state with node subscriptions!
-    const current = getNodeLoadable(store, state, key)[1];
+    const current = getNodeLoadable(store, state, key);
+
     if (current.state === 'loading') {
       throw new RecoilValueNotReady(key);
     } else if (current.state === 'hasError') {
@@ -135,13 +127,9 @@ function applyAction(store: Store, state: TreeState, action: Action<mixed>) {
       recoilValue,
       valueOrUpdater,
     );
-    const [depMap, writes] = setNodeValue(
-      store,
-      state,
-      recoilValue.key,
-      newValue,
-    );
-    saveDependencyMapToStore(depMap, store, state.version);
+
+    const writes = setNodeValue(store, state, recoilValue.key, newValue);
+
     for (const [key, loadable] of writes.entries()) {
       writeLoadableToTreeState(state, key, loadable);
     }
