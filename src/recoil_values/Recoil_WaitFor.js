@@ -21,7 +21,6 @@ const {
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
-const gkx = require('../util/Recoil_gkx');
 const isPromise = require('../util/Recoil_isPromise');
 const selectorFamily = require('./Recoil_selectorFamily');
 
@@ -182,44 +181,25 @@ const waitForAny: <
       return wrapLoadables(dependencies, results, exceptions);
     }
 
-    if (gkx('recoil_async_selector_refactor')) {
-      // Otherwise, return a promise that will resolve when the next result is
-      // available, whichever one happens to be next.  But, if all pending
-      // dependencies end up with errors, then reject the promise.
-      return new Promise(resolve => {
-        for (const [i, exp] of exceptions.entries()) {
-          if (isPromise(exp)) {
-            exp
-              .then(result => {
-                results[i] = getValueFromLoadablePromiseResult(result);
-                exceptions[i] = undefined;
-                resolve(wrapLoadables(dependencies, results, exceptions));
-              })
-              .catch(error => {
-                exceptions[i] = error;
-                resolve(wrapLoadables(dependencies, results, exceptions));
-              });
-          }
+    // Otherwise, return a promise that will resolve when the next result is
+    // available, whichever one happens to be next.  But, if all pending
+    // dependencies end up with errors, then reject the promise.
+    return new Promise(resolve => {
+      for (const [i, exp] of exceptions.entries()) {
+        if (isPromise(exp)) {
+          exp
+            .then(result => {
+              results[i] = getValueFromLoadablePromiseResult(result);
+              exceptions[i] = undefined;
+              resolve(wrapLoadables(dependencies, results, exceptions));
+            })
+            .catch(error => {
+              exceptions[i] = error;
+              resolve(wrapLoadables(dependencies, results, exceptions));
+            });
         }
-      });
-    } else {
-      throw new Promise(resolve => {
-        for (const [i, exp] of exceptions.entries()) {
-          if (isPromise(exp)) {
-            exp
-              .then(result => {
-                results[i] = result;
-                exceptions[i] = null;
-                resolve(wrapLoadables(dependencies, results, exceptions));
-              })
-              .catch(error => {
-                exceptions[i] = error;
-                resolve(wrapLoadables(dependencies, results, exceptions));
-              });
-          }
-        }
-      });
-    }
+      }
+    });
   },
 });
 
@@ -256,21 +236,15 @@ const waitForAll: <
       throw error;
     }
 
-    if (gkx('recoil_async_selector_refactor')) {
-      // Otherwise, return a promise that will resolve when all results are available
-      return Promise.all(exceptions).then(exceptionResults =>
-        wrapResults(
-          dependencies,
-          combineAsyncResultsWithSyncResults(results, exceptionResults).map(
-            getValueFromLoadablePromiseResult,
-          ),
+    // Otherwise, return a promise that will resolve when all results are available
+    return Promise.all(exceptions).then(exceptionResults =>
+      wrapResults(
+        dependencies,
+        combineAsyncResultsWithSyncResults(results, exceptionResults).map(
+          getValueFromLoadablePromiseResult,
         ),
-      );
-    } else {
-      throw Promise.all(exceptions).then(results =>
-        wrapResults(dependencies, results),
-      );
-    }
+      ),
+    );
   },
 });
 
@@ -300,47 +274,25 @@ const waitForAllSettled: <
     }
 
     // Wait for all results to settle
-    if (gkx('recoil_async_selector_refactor')) {
-      return (
-        Promise.all(
-          exceptions.map((exp, i) =>
-            isPromise(exp)
-              ? exp
-                  .then(result => {
-                    results[i] = getValueFromLoadablePromiseResult(result);
-                    exceptions[i] = undefined;
-                  })
-                  .catch(error => {
-                    results[i] = undefined;
-                    exceptions[i] = error;
-                  })
-              : null,
-          ),
-        )
-          // Then wrap them as loadables
-          .then(() => wrapLoadables(dependencies, results, exceptions))
-      );
-    } else {
-      throw (
-        Promise.all(
-          exceptions.map((exp, i) =>
-            isPromise(exp)
-              ? exp
-                  .then(result => {
-                    results[i] = getValueFromLoadablePromiseResult(result);
-                    exceptions[i] = undefined;
-                  })
-                  .catch(error => {
-                    results[i] = undefined;
-                    exceptions[i] = error;
-                  })
-              : null,
-          ),
-        )
-          // Then wrap them as loadables
-          .then(() => wrapLoadables(dependencies, results, exceptions))
-      );
-    }
+    return (
+      Promise.all(
+        exceptions.map((exp, i) =>
+          isPromise(exp)
+            ? exp
+                .then(result => {
+                  results[i] = getValueFromLoadablePromiseResult(result);
+                  exceptions[i] = undefined;
+                })
+                .catch(error => {
+                  results[i] = undefined;
+                  exceptions[i] = error;
+                })
+            : null,
+        ),
+      )
+        // Then wrap them as loadables
+        .then(() => wrapLoadables(dependencies, results, exceptions))
+    );
   },
 });
 

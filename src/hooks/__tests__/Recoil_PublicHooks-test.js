@@ -356,10 +356,6 @@ testRecoil('Async selectors can depend on async selectors', async () => {
 });
 
 testRecoil('Dep of upstream selector can change while pending', async gks => {
-  if (!gks.includes('recoil_async_selector_refactor')) {
-    return;
-  }
-
   const anAtom = counterAtom();
   const [
     upstreamSel,

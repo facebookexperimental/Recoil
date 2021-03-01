@@ -17,7 +17,6 @@
 
 import type {NodeKey} from '../core/Recoil_Keys';
 
-const gkx = require('../util/Recoil_gkx');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 
@@ -73,7 +72,7 @@ const loadableAccessors = {
    * Otherwise, throw the (unwrapped) promise or the error.
    */
   getValue() {
-    if (this.state === 'loading' && gkx('recoil_async_selector_refactor')) {
+    if (this.state === 'loading') {
       throw (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value);
     }
 
@@ -89,9 +88,7 @@ const loadableAccessors = {
       ? Promise.resolve(this.contents)
       : this.state === 'hasError'
       ? Promise.reject(this.contents)
-      : gkx('recoil_async_selector_refactor')
-      ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
-      : this.contents;
+      : (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value);
   },
 
   valueMaybe() {
@@ -128,9 +125,7 @@ const loadableAccessors = {
 
   promiseMaybe(): void | Promise<$FlowFixMe> {
     return this.state === 'loading'
-      ? gkx('recoil_async_selector_refactor')
-        ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
-        : this.contents
+      ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
       : undefined;
   },
 
@@ -144,9 +139,7 @@ const loadableAccessors = {
       throw error;
     }
 
-    return gkx('recoil_async_selector_refactor')
-      ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
-      : (this.contents: Promise<$FlowFixMe>);
+    return (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value);
   },
 
   is(other: Loadable<mixed>): boolean {
@@ -238,11 +231,9 @@ function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
         ).contents,
       )
     : loadableWithPromise(
-        gkx('recoil_async_selector_refactor')
-          ? Promise.all(inputs.map(i => i.contents)).then(value => ({
-              __value: value,
-            }))
-          : (Promise.all(inputs.map(i => i.contents)): $FlowFixMe),
+        Promise.all(inputs.map(i => i.contents)).then(value => ({
+          __value: value,
+        })),
       );
 }
 

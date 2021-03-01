@@ -228,10 +228,8 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
     // $FlowFixMe[escaped-generic]
     set: (atom, value) => {
       const state = initial.currentTree;
-      const [depMap, writes] = setNodeValue(store, state, atom.key, value);
+      const writes = setNodeValue(store, state, atom.key, value);
       const writtenNodes = new Set(writes.keys());
-
-      saveDependencyMapToStore(depMap, store, state.version);
 
       const nonvalidatedAtoms = state.nonvalidatedAtoms.clone();
       for (const n of writtenNodes) {
