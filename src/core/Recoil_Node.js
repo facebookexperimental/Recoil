@@ -11,7 +11,6 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {DependencyMap} from './Recoil_GraphTypes';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
@@ -49,7 +48,7 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   peek: (Store, TreeState) => ?Loadable<T>,
 
   // Returns the discovered deps and the loadable value of the node
-  get: (Store, TreeState) => [DependencyMap, Loadable<T>],
+  get: (Store, TreeState) => Loadable<T>,
 
   // Informs the node the first time it is used (either ever or since the node was
   // last released). Returns a cleanup function for when the store ceases to be or
@@ -83,7 +82,7 @@ export type ReadWriteNodeOptions<T> = $ReadOnly<{
     store: Store,
     state: TreeState,
     newValue: T | DefaultValue,
-  ) => [DependencyMap, AtomWrites],
+  ) => AtomWrites,
 }>;
 
 type Node<T> = ReadOnlyNodeOptions<T> | ReadWriteNodeOptions<T>;

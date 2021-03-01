@@ -11,7 +11,6 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {DependencyMap} from './Recoil_Graph';
 import type {DefaultValue, Trigger} from './Recoil_Node';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {RetainedBy} from './Recoil_RetainedBy';
@@ -117,7 +116,7 @@ function getNodeLoadable<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
-): [DependencyMap, Loadable<T>] {
+): Loadable<T> {
   initializeNodeIfNewToStore(store, state, key, 'get');
   return getNode(key).get(store, state);
 }
@@ -157,7 +156,7 @@ function setNodeValue<T>(
   state: TreeState,
   key: NodeKey,
   newValue: T | DefaultValue,
-): [DependencyMap, AtomWrites] {
+): AtomWrites {
   const node = getNode(key);
   if (node.set == null) {
     throw new ReadOnlyRecoilValueError(

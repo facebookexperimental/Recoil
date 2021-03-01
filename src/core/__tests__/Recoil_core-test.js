@@ -27,24 +27,15 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 testRecoil('read default value', () => {
-  expect(
-    getNodeLoadable(store, store.getState().currentTree, a)[1],
-  ).toMatchObject({
-    state: 'hasValue',
-    contents: 0,
-  });
+  expect(getNodeLoadable(store, store.getState().currentTree, a)).toMatchObject(
+    {
+      state: 'hasValue',
+      contents: 0,
+    },
+  );
 });
 
-testRecoil(
-  'setNodeValue returns empty deps and written value when writing atom',
-  () => {
-    const [depMap, writes] = setNodeValue(
-      store,
-      store.getState().currentTree,
-      a,
-      1,
-    );
-    expect(depMap.size).toBe(0);
-    expect(nullthrows(writes.get(a)).contents).toBe(1);
-  },
-);
+testRecoil('setNodeValue returns written value when writing atom', () => {
+  const writes = setNodeValue(store, store.getState().currentTree, a, 1);
+  expect(nullthrows(writes.get(a)).contents).toBe(1);
+});
