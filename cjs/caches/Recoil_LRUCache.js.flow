@@ -1,0 +1,42 @@
+/**
+ * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
+type CacheNode<K, V> = {
+  key: K,
+  value: V,
+  left: ?CacheNode<K, V>,
+  right: ?CacheNode<K, V>,
+};
+type Options<K> = {
+  maxSize: number,
+  mapKey?: (K) => mixed,
+};
+declare class LRUCache<K = mixed, V = mixed> {
+  _maxSize: number,
+  _size: number,
+  _head: ?CacheNode<K, V>,
+  _tail: ?CacheNode<K, V>,
+  _map: Map<mixed, CacheNode<K, V>>,
+  _keyMapper: (K) => mixed,
+  constructor(options: Options<K>): any,
+  head(): ?CacheNode<K, V>,
+  tail(): ?CacheNode<K, V>,
+  size(): number,
+  maxSize(): number,
+  has(key: K): boolean,
+  get(key: K): ?V,
+  set(key: K, val: V): void,
+  _maybeDeleteLRU(): any,
+  deleteLru(): void,
+  delete(key: K): void,
+  clear(): void,
+}
+module.exports = LRUCache;

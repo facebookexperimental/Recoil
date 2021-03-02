@@ -16,15 +16,13 @@ const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-let atom, cacheMostRecent, cacheWithReferenceEquality, DefaultValue, selectorFamily, getRecoilValueAsLoadable, setRecoilValue, store, myAtom;
+let atom, DefaultValue, selectorFamily, getRecoilValueAsLoadable, setRecoilValue, store, myAtom;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
   } = require('../../testing/Recoil_TestingUtils');
 
   atom = require('../Recoil_atom');
-  cacheMostRecent = require('../../caches/Recoil_cacheMostRecent');
-  cacheWithReferenceEquality = require('../../caches/Recoil_cacheWithReferenceEquality');
   ({
     DefaultValue
   } = require('../../core/Recoil_Node'));
@@ -87,6 +85,23 @@ testRecoil('selectorFamily - object parameter', () => {
   expect(getValue(mySelector({
     multiplier: 100
   }))).toBe(200);
+});
+testRecoil('selectorFamily - date parameter', () => {
+  const mySelector = selectorFamily({
+    key: 'selectorFamily/date',
+    get: date => ({
+      get
+    }) => {
+      const daysToAdd = get(myAtom);
+      const returnDate = new Date(date);
+      returnDate.setDate(returnDate.getDate() + daysToAdd);
+      return returnDate;
+    }
+  });
+  set(myAtom, 1);
+  expect(getValue(mySelector(new Date(2021, 2, 25))).getDate()).toBe(26);
+  set(myAtom, 2);
+  expect(getValue(mySelector(new Date(2021, 2, 25))).getDate()).toBe(27);
 });
 testRecoil('Works with supersets', () => {
   const mySelector = selectorFamily({
@@ -205,7 +220,9 @@ testRecoil('selectorFamily - reference caching', () => {
       evals++;
       return get(myAtom) * multiplier;
     },
-    cacheImplementationForParams_UNSTABLE: cacheWithReferenceEquality
+    cachePolicyForParams_UNSTABLE: {
+      equality: 'reference'
+    }
   });
   expect(evals).toBe(0);
   set(myAtom, 1);
@@ -285,7 +302,10 @@ testRecoil('selectorFamily - most recent caching', () => {
       evals++;
       return get(myAtom) * multiplier;
     },
-    cacheImplementationForParams_UNSTABLE: cacheMostRecent
+    cachePolicyForParams_UNSTABLE: {
+      eviction: 'lru',
+      maxSize: 1
+    }
   });
   const multiply10 = {
     multiplier: 10

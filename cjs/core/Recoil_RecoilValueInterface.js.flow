@@ -14,8 +14,6 @@ import type { Loadable } from '../adt/Recoil_Loadable';
 import type { ValueOrUpdater } from '../recoil_values/Recoil_selector';
 import type { AtomValues, AtomWrites, NodeKey, Store, TreeState } from './Recoil_State';
 
-const gkx = require('../util/Recoil_gkx');
-
 const nullthrows = require('../util/Recoil_nullthrows');
 
 const recoverableViolation = require('../util/Recoil_recoverableViolation');

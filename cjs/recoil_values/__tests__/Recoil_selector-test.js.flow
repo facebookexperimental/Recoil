@@ -443,16 +443,9 @@ testRecoil('useRecoilState - selector catching promise 2', async gks => {
       try {
         return get(resolvingSel);
       } catch (promise) {
-        expect(promise instanceof Promise).toBe(true);
+        expect(promise instanceof Promise).toBe(true); // eslint-disable-next-line jest/valid-expect
 
-        if (gks.includes('recoil_async_selector_refactor')) {
-          // eslint-disable-next-line jest/valid-expect
-          dependencyPromiseTest = expect(promise).resolves.toHaveProperty('__value', 'READY');
-        } else {
-          // eslint-disable-next-line jest/valid-expect
-          dependencyPromiseTest = expect(promise).resolves.toBe('READY');
-        }
-
+        dependencyPromiseTest = expect(promise).resolves.toHaveProperty('__value', 'READY');
         return promise.then(result => {
           expect(result).toBe('READY');
           return result.value + ' NOW';
@@ -503,11 +496,7 @@ testRecoil('Detect circular dependencies', () => {
   expect(getError(selectorC).message).toEqual(expect.stringContaining('circular/A'));
   window.__DEV__ = devStatus;
 });
-testRecoil('selector is able to track dependencies discovered asynchronously', async gks => {
-  if (!gks.includes('recoil_async_selector_refactor')) {
-    return;
-  }
-
+testRecoil('selector is able to track dependencies discovered asynchronously', async () => {
   const anAtom = atom({
     key: 'atomTrackedAsync',
     default: 'Async Dep Value'
@@ -542,11 +531,7 @@ testRecoil('selector is able to track dependencies discovered asynchronously', a
  * selector should run through the entire selector in response to those changes.
  */
 
-testRecoil('selector should rerun entire selector when a dep changes', async gks => {
-  if (!gks.includes('recoil_async_selector_refactor')) {
-    return;
-  }
-
+testRecoil('selector should rerun entire selector when a dep changes', async () => {
   const resolvingSel1 = resolvingAsyncSelector(1);
   const resolvingSel2 = resolvingAsyncSelector(2);
   const anAtom3 = atom({
@@ -692,11 +677,7 @@ testRecoil('Updating with changed selector', gks => {
  * more times than we have to or creating numerous promises that retry).
  */
 
-testRecoil('async selector runs the minimum number of times required', async gks => {
-  if (!gks.includes('recoil_async_selector_refactor')) {
-    return;
-  }
-
+testRecoil('async selector runs the minimum number of times required', async () => {
   const [asyncDep1, resolveAsyncDep1] = asyncSelector();
   const [asyncDep2, resolveAsyncDep2] = asyncSelector();
   let numTimesRan = 0;
@@ -720,11 +701,7 @@ testRecoil('async selector runs the minimum number of times required', async gks
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('"ab"');
 });
-testRecoil('async selector with changing dependencies finishes execution using original state', async gks => {
-  if (!gks.includes('recoil_async_selector_refactor')) {
-    return;
-  }
-
+testRecoil('async selector with changing dependencies finishes execution using original state', async () => {
   const [asyncDep, resolveAsyncDep] = asyncSelector();
   const anAtom = atom({
     key: 'atomChangingDeps',
@@ -756,11 +733,7 @@ testRecoil('async selector with changing dependencies finishes execution using o
   await flushPromisesAndTimers();
   await Promise.all([expect(loadableBeforeChangingAnything.toPromise()).resolves.toBe(3 + 3), expect(loadableAfterChangingAtom.toPromise()).resolves.toBe(10 + 10)]);
 });
-testRecoil('selector - dynamic getRecoilValue()', async gks => {
-  if (!gks.includes('recoil_async_selector_refactor')) {
-    return;
-  }
-
+testRecoil('selector - dynamic getRecoilValue()', async () => {
   const sel2 = selector({
     key: 'MySelector2',
     get: async () => 'READY'
@@ -916,11 +889,7 @@ describe('Async selector resolution notifies all stores that read pending', () =
     }
   });
 });
-testRecoil('selector - kite pattern runs only necessary selectors', async gks => {
-  if (!gks.includes('recoil_async_selector_refactor')) {
-    return;
-  }
-
+testRecoil('selector - kite pattern runs only necessary selectors', async () => {
   const aNode = atom({
     key: 'aNode',
     default: true
@@ -1056,11 +1025,7 @@ testRecoil('selectors with user-thrown loadable promises execute to completion a
   const val = await promise;
   expect(val).toBe('RESOLVED');
 });
-testRecoil('selectors with user-thrown loadable promises execute to completion as expected', async gks => {
-  if (!gks.includes('recoil_async_selector_refactor')) {
-    return;
-  }
-
+testRecoil('selectors with user-thrown loadable promises execute to completion as expected', async () => {
   const myAtomA = atom({
     key: 'myatoma selectors user-thrown promise',
     default: 'A'

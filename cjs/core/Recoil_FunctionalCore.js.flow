@@ -11,7 +11,6 @@
 'use strict';
 
 import type { Loadable } from '../adt/Recoil_Loadable';
-import type { DependencyMap } from './Recoil_Graph';
 import type { DefaultValue, Trigger } from './Recoil_Node';
 import type { RecoilValue } from './Recoil_RecoilValue';
 import type { RetainedBy } from './Recoil_RetainedBy';
@@ -46,7 +45,7 @@ declare function cleanUpNode(store: Store, key: NodeKey): any; // Get the curren
 // Update dependencies and subscriptions for selectors.
 // Update saved value validation for atoms.
 
-declare function getNodeLoadable<T>(store: Store, state: TreeState, key: NodeKey): [DependencyMap, Loadable<T>]; // Peek at the current value loadable for a node without any evaluation or state change
+declare function getNodeLoadable<T>(store: Store, state: TreeState, key: NodeKey): Loadable<T>; // Peek at the current value loadable for a node without any evaluation or state change
 
 declare function peekNodeLoadable<T>(store: Store, state: TreeState, key: NodeKey): ?Loadable<T>; // Write value directly to state bypassing the Node interface as the node
 // definitions may not have been loaded yet when processing the initial snapshot.
@@ -55,7 +54,7 @@ declare function setUnvalidatedAtomValue_DEPRECATED<T>(state: TreeState, key: No
 // a node value. (Multiple values may be written due to selectors getting to
 // set upstreams; deps may be discovered because of reads in updater functions.)
 
-declare function setNodeValue<T>(store: Store, state: TreeState, key: NodeKey, newValue: T | DefaultValue): [DependencyMap, AtomWrites];
+declare function setNodeValue<T>(store: Store, state: TreeState, key: NodeKey, newValue: T | DefaultValue): AtomWrites;
 type ComponentInfo = {
   name: string
 };

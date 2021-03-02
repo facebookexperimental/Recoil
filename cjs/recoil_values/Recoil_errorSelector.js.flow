@@ -12,8 +12,6 @@
 
 import type { RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 
-const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
-
 const selectorFamily = require('./Recoil_selectorFamily'); // flowlint-next-line unclear-type:off
 
 
@@ -22,7 +20,9 @@ const throwingSelector = selectorFamily<any, any>({
   get: message => () => {
     throw new Error(message);
   },
-  cacheImplementationForParams_UNSTABLE: cacheWithReferenceEquality
+  cachePolicyForParams_UNSTABLE: {
+    equality: 'reference'
+  }
 }); // Function that returns a selector which always throws an error
 // with the provided message.
 

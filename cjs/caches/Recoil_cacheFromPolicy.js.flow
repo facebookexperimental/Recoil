@@ -1,0 +1,29 @@
+/**
+ * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { CacheImplementation } from './Recoil_CacheImplementationType';
+import type { CachePolicy, EqualityPolicy, EvictionPolicy } from './Recoil_CachePolicy';
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
+const stableStringify = require('../util/Recoil_stableStringify');
+
+const LRUCache = require('./Recoil_LRUCache');
+
+const MapCache = require('./Recoil_MapCache');
+
+const defaultPolicy = {
+  equality: 'reference',
+  eviction: 'none',
+  maxSize: Infinity
+};
+declare function cacheFromPolicy<K, V>(arg0: CachePolicy): CacheImplementation<K, V>;
+declare function getValueMapper(equality: EqualityPolicy): (mixed) => mixed;
+declare function getCache<K, V>(eviction: EvictionPolicy, maxSize: ?number, mapKey: (mixed) => mixed): CacheImplementation<K, V>;
+module.exports = cacheFromPolicy;

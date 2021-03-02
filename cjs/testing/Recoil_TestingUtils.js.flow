@@ -101,7 +101,7 @@ type TestOptions = {
 };
 type TestFn = (string, AssertionsFn, TestOptions | void) => void;
 declare var testGKs: (reloadImports: ReloadImports, gks: Array<Array<string>>) => TestFn;
-const WWW_GKS_TO_TEST = [['recoil_async_selector_refactor'], ['recoil_suppress_rerender_in_callback'], ['recoil_async_selector_refactor', 'recoil_suppress_rerender_in_callback'], ['recoil_hamt_2020'], ['recoil_memory_managament_2020'], ['recoil_async_selector_refactor', 'recoil_memory_managament_2020'], ['recoil_async_selector_refactor', 'recoil_hamt_2020']];
+const WWW_GKS_TO_TEST = [['recoil_suppress_rerender_in_callback'], ['recoil_hamt_2020'], ['recoil_memory_managament_2020']];
 /**
  * GK combinations to exclude in OSS, presumably because these combinations pass
  * in FB internally but not in OSS. Ideally this array would be empty.

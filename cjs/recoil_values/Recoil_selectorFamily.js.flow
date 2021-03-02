@@ -10,14 +10,13 @@
  */
 'use strict';
 
-import type { Loadable } from '../adt/Recoil_Loadable';
-import type { CacheImplementation } from '../caches/Recoil_Cache';
+import type { CachePolicy } from '../caches/Recoil_CachePolicy';
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
 import type { GetRecoilValue, ResetRecoilState, SetRecoilState } from './Recoil_selector';
 
-const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
+const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
 
 const {
   setConfigDeletionHandler
@@ -29,14 +28,19 @@ const selector = require('./Recoil_selector'); // Keep in mind the parameter nee
 // using Recoil_stableStringify
 
 
-export type Parameter = void | null | boolean | number | string | $ReadOnly<{...}> | $ReadOnlyArray<mixed>;
+type Primitive = void | null | boolean | number | string;
+export type Parameter = Primitive | {
+  toJSON: () => string,
+  ...
+} | $ReadOnlyArray<Parameter> | $ReadOnly<{...}>; // | $ReadOnly<{[string]: Parameter}>; // TODO Better enforce object is serializable
+
 type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
   key: string,
   get: (P) => ({
     get: GetRecoilValue
   }) => Promise<T> | RecoilValue<T> | T,
-  cacheImplementation_UNSTABLE?: () => CacheImplementation<Loadable<T>>,
-  cacheImplementationForParams_UNSTABLE?: () => CacheImplementation<RecoilValue<T>>,
+  cachePolicyForParams_UNSTABLE?: CachePolicy,
+  cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
   retainedBy_UNSTABLE?: RetainedBy | ((P) => RetainedBy),
 }>;

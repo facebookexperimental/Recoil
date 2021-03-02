@@ -1,0 +1,41 @@
+/**
+ * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { GetHandlers, NodeCacheRoute, NodeValueGet, SetHandlers, TreeCacheBranch, TreeCacheLeaf, TreeCacheNode } from './Recoil_TreeCacheImplementationType';
+
+const invariant = require('../util/Recoil_invariant');
+
+const nullthrows = require('../util/Recoil_nullthrows');
+
+export type Options<T> = {
+  mapNodeValue?: (value: mixed) => mixed,
+  onHit?: (node: TreeCacheLeaf<T>) => void,
+  onSet?: (node: TreeCacheLeaf<T>) => void,
+};
+declare class TreeCache<T = mixed> {
+  _numLeafs: number,
+  _root: TreeCacheNode<T> | null,
+  _onHit: $NonMaybeType<$PropertyType<Options<T>, 'onHit'>>,
+  _onSet: $NonMaybeType<$PropertyType<Options<T>, 'onSet'>>,
+  _mapNodeValue: $NonMaybeType<$PropertyType<Options<T>, 'mapNodeValue'>>,
+  constructor(options?: Options<T>): any,
+  size(): number,
+  root(): TreeCacheNode<T> | null,
+  get(getNodeValue: NodeValueGet, handlers?: GetHandlers<T>): ?T,
+  getLeafNode(getNodeValue: NodeValueGet, handlers?: GetHandlers<T>): ?TreeCacheLeaf<T>,
+  set(route: NodeCacheRoute, value: T, handlers?: SetHandlers<T>): void,
+  delete(node: TreeCacheNode<T>): boolean,
+  clear(): void,
+}
+declare var findLeaf: <T>(root: ?TreeCacheNode<T>, getNodeValue: NodeValueGet, handlers?: GetHandlers<T>) => ?TreeCacheLeaf<T>;
+declare var addLeaf: <T>(root: ?TreeCacheNode<T>, route: NodeCacheRoute, parent: ?TreeCacheBranch<T>, value: T, branchKey: ?mixed, handlers?: SetHandlers<T>) => TreeCacheNode<T>;
+declare var pruneNodeFromTree: <T>(root: TreeCacheNode<T>, node: TreeCacheNode<T>, parent: ?TreeCacheBranch<T>) => boolean;
+declare var pruneUpstreamBranches: <T>(root: TreeCacheNode<T>, branchNode: TreeCacheBranch<T>, parent: ?TreeCacheBranch<T>) => boolean;
+declare var countDownstreamLeaves: <T>(node: TreeCacheNode<T>) => number;
+module.exports = TreeCache;

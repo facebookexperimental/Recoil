@@ -53,13 +53,146 @@
  */
 'use strict';
 
+import type { Loadable, LoadablePromise } from '../adt/Recoil_Loadable';
+import type { CachePolicy } from '../caches/Recoil_CachePolicy';
+import type { NodeCacheRoute, TreeCacheImplementation } from '../caches/Recoil_TreeCacheImplementationType';
+import type { DefaultValue } from '../core/Recoil_Node';
+import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
+import type { RetainedBy } from '../core/Recoil_RetainedBy';
+import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State';
+
+const {
+  CANCELED,
+  Canceled,
+  loadableWithError,
+  loadableWithPromise,
+  loadableWithValue
+} = require('../adt/Recoil_Loadable');
+
+const treeCacheFromPolicy = require('../caches/Recoil_treeCacheFromPolicy');
+
+const {
+  getNodeLoadable,
+  peekNodeLoadable,
+  setNodeValue
+} = require('../core/Recoil_FunctionalCore');
+
+const {
+  saveDependencyMapToStore
+} = require('../core/Recoil_Graph');
+
+const {
+  DEFAULT_VALUE,
+  RecoilValueNotReady,
+  getConfigDeletionHandler,
+  registerNode
+} = require('../core/Recoil_Node');
+
+const {
+  isRecoilValue
+} = require('../core/Recoil_RecoilValue');
+
+const {
+  AbstractRecoilValue
+} = require('../core/Recoil_RecoilValue');
+
+const {
+  setRecoilValueLoadable
+} = require('../core/Recoil_RecoilValueInterface');
+
+const {
+  retainedByOptionWithDefault
+} = require('../core/Recoil_Retention');
+
+const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+
 const gkx = require('../util/Recoil_gkx');
 
-const newSelector = require('./Recoil_selector_NEW');
+const invariant = require('../util/Recoil_invariant');
 
-const oldSelector = require('./Recoil_selector_OLD');
+const isPromise = require('../util/Recoil_isPromise');
 
-export type * from './Recoil_selector_NEW';
-type Selector = typeof newSelector;
-const selector: Selector = gkx('recoil_async_selector_refactor') ? newSelector : oldSelector;
+const nullthrows = require('../util/Recoil_nullthrows');
+
+const {
+  startPerfBlock
+} = require('../util/Recoil_PerformanceTimings');
+
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
+
+export type ValueOrUpdater<T> = T | DefaultValue | ((prevValue: T) => T | DefaultValue);
+export type GetRecoilValue = <T>(RecoilValue<T>) => T;
+export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
+export type ResetRecoilState = <T>(RecoilState<T>) => void;
+type ReadOnlySelectorOptions<T> = $ReadOnly<{
+  key: string,
+  get: ({
+    get: GetRecoilValue
+  }) => Promise<T> | RecoilValue<T> | T,
+  retainedBy_UNSTABLE?: RetainedBy,
+  cachePolicy_UNSTABLE?: CachePolicy,
+  dangerouslyAllowMutability?: boolean,
+}>;
+type ReadWriteSelectorOptions<T> = $ReadOnly<{ ...ReadOnlySelectorOptions<T>,
+  set: ({
+    set: SetRecoilState,
+    get: GetRecoilValue,
+    reset: ResetRecoilState,
+  }, newValue: T | DefaultValue) => void,
+}>;
+export type DepValues = Map<NodeKey, Loadable<mixed>>;
+/**
+ * An ExecutionId is an arbitrary ID that lets us distinguish executions from
+ * each other. This is necessary as we need a way of solving this problem:
+ * "given 3 async executions, only update state for the 'latest' execution when
+ * it finishes running regardless of when the other 2 finish". ExecutionIds
+ * provide a convenient way of identifying executions so that we can track and
+ * manage them over time.
+ */
+
+type ExecutionId = number;
+/**
+ * ExecutionInfo is useful for managing async work and resolving race
+ * conditions. It keeps track of the following:
+ *
+ * 1. The dep values found so far for the latest running execution. This is
+ *    useful for answering the question "given a new state, have any of the
+ *    async execution's discovered dep values changed?"
+ * 2. The latest loadable, which holds the loadable of the latest execution.
+ *    This is important because we need to return this loadable when the
+ *    selector's result is requested and there is a pending async execution. We
+ *    are essentially caching the latest loading loadable without using the
+ *    actual selector cache so that we can avoid creating cache keys that use
+ *    partial dependencies (we never want to cache based on partial
+ *    dependencies).
+ * 3. The latest execution ID, which is needed to know whether or not an async
+ *    execution is stale. At any point in time there may be any number of stale
+ *    executions running, but there is only one 'latest' execution, which
+ *    represents the execution that will make its way to the UI and make updates
+ *    to global state when it finishes.
+ */
+
+type ExecutionInfo<T> = {
+  depValuesDiscoveredSoFarDuringAsyncWork: ?DepValues,
+  latestLoadable: ?Loadable<T>,
+  latestExecutionId: ?ExecutionId,
+  stateVersion: ?number,
+};
+const dependencyStack = []; // for detecting circular dependencies.
+
+const waitingStores: Map<ExecutionId, Set<Store>> = new Map();
+/* eslint-disable no-redeclare */
+
+declare function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
+declare function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
+
+const getNewExecutionId: () => ExecutionId = (() => {
+  let executionId = 0;
+  return () => executionId++;
+})();
+
+declare function getInitialExecutionInfo<T>(): ExecutionInfo<T>;
+declare function selector<T>(options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>): RecoilValue<T>;
+/* eslint-enable no-redeclare */
+
 module.exports = selector;

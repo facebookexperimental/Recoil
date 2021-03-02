@@ -13,15 +13,15 @@
 import type { RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 import type { Parameter } from './Recoil_selectorFamily';
 
-const cacheWithReferenceEquality = require('../caches/Recoil_cacheWithReferenceEquality');
-
 const selectorFamily = require('./Recoil_selectorFamily'); // flowlint-next-line unclear-type:off
 
 
 const constantSelector = selectorFamily<any, any>({
   key: '__constant',
   get: constant => () => constant,
-  cacheImplementationForParams_UNSTABLE: cacheWithReferenceEquality
+  cachePolicyForParams_UNSTABLE: {
+    equality: 'reference'
+  }
 }); // Function that returns a selector which always produces the
 // same constant value.  It may be called multiple times with the
 // same value, based on reference equality, and will provide the
