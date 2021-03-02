@@ -3,9 +3,9 @@ title: waitForAll(dependencies)
 sidebar_label: waitForAll()
 ---
 
-A concurrency helper which allows us to concurrently evaluate multiple asynchronous dependencies.
+여러 비동기 종속성을 동시에 평가할 수 있는 동시성(concurrency) helper입니다.
 
-The dependencies may either be provided as a tuple array or as named dependencies in an object.
+종속성들은 튜플 배열 또는 객체에 명명된 종속성으로 제공됩니다.
 
 ---
 
@@ -20,7 +20,7 @@ function waitForAll(dependencies: {[string]: RecoilValue<>}):
 ```
 ---
 
-Because the concurrency helper is provided as a selector, it may be used by Recoil hooks in a React component, as a dependency in a Recoil selector, or anywhere a Recoil state is used.
+동시성 helper는 selector로 제공되기 때문에, React 컴포넌트에서 Recoil hook으로, Recoil selector의 종속성으로, Recoil state가 사용되는 모든 곳에서 사용될 수 있습니다.
 
 ### Examples
 
