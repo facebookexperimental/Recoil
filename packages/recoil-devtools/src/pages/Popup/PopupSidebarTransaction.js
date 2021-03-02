@@ -12,10 +12,10 @@
 import type {TransactionType} from '../../types/DevtoolsTypes';
 import type Connection from '../../utils/Connection';
 
-const React = require('react');
-const {useRef, useEffect, useCallback, useContext} = require('react');
-const NodeName = require('./Items/NodeName');
 const ConnectionContext = require('./ConnectionContext');
+const NodeName = require('./Items/NodeName');
+const React = require('react');
+const {useCallback, useContext, useEffect, useRef} = require('react');
 
 const styles = {
   transaction: {

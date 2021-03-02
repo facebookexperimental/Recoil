@@ -13,8 +13,8 @@ import type {MainTabsType} from '../../constants/Constants';
 
 const {MainTabs} = require('../../constants/Constants');
 const Tabs = require('./Tabs');
-const React = require('react');
 const {useFilter} = require('./useSelectionHooks');
+const React = require('react');
 
 const styles = {
   header: {

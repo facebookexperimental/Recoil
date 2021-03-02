@@ -12,14 +12,14 @@
 import type {TransactionType} from '../../types/DevtoolsTypes';
 
 const {RecoilDevToolsActions} = require('../../constants/Constants');
+const {debug} = require('../../utils/Logger');
+const ConnectionContext = require('./ConnectionContext');
 const Header = require('./PopupHeader');
 const Main = require('./PopupMainContent');
 const Sidebar = require('./PopupSidebar');
-const React = require('react');
-const {useEffect, useState, useContext} = require('react');
-const {debug} = require('../../utils/Logger');
-const ConnectionContext = require('./ConnectionContext');
 const {useSelectedTransaction} = require('./useSelectionHooks');
+const React = require('react');
+const {useContext, useEffect, useState} = require('react');
 
 const styles = {
   app: {

@@ -16,20 +16,20 @@ import type {
 
 const {
   createGraph,
-  flattenLevels,
   createSankeyData,
+  flattenLevels,
 } = require('../../utils/GraphUtils');
+const Sankey = require('../../utils/sankey/Sankey');
 const {
-  flowGraphLayout,
   butterflyGraphLayout,
+  flowGraphLayout,
 } = require('../../utils/sankey/SankeyGraphLayout');
-const React = require('react');
-const {useMemo, useState, useContext, useRef, useEffect} = require('react');
 const ConnectionContext = require('./ConnectionContext');
 const {useSelectedTransaction} = require('./useSelectionHooks');
-const nullthrows = require('nullthrows');
 const d3 = require('d3');
-const Sankey = require('../../utils/sankey/Sankey');
+const nullthrows = require('nullthrows');
+const React = require('react');
+const {useContext, useEffect, useMemo, useRef, useState} = require('react');
 
 const powerSourceColor = d3.scaleOrdinal(d3.schemeCategory10);
 

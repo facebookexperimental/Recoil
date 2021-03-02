@@ -9,17 +9,16 @@
  */
 'use strict';
 
-import type Connection from '../../utils/Connection';
 import type {TransactionType} from '../../types/DevtoolsTypes';
+import type Connection from '../../utils/Connection';
 
-const nullthrows = require('nullthrows');
+const ConnectionContext = require('./ConnectionContext');
 const Transaction = require('./PopupSidebarTransaction');
+const {useSelectedTransaction} = require('./useSelectionHooks');
+const {useFilter} = require('./useSelectionHooks');
+const nullthrows = require('nullthrows');
 const React = require('react');
 const {useContext, useMemo} = require('react');
-const ConnectionContext = require('./ConnectionContext');
-const {useSelectedTransaction} = require('./useSelectionHooks');
-
-const {useFilter} = require('./useSelectionHooks');
 const styles = {
   sidebar: {
     backgroundColor: 'white',

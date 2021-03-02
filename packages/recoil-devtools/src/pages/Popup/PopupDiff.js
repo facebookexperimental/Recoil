@@ -9,11 +9,11 @@
  */
 'use strict';
 
-const React = require('react');
-const DiffItem = require('./Items/DiffItem').default;
-const {useContext} = require('react');
 const ConnectionContext = require('./ConnectionContext');
+const DiffItem = require('./Items/DiffItem').default;
 const {useSelectedTransaction} = require('./useSelectionHooks');
+const React = require('react');
+const {useContext} = require('react');
 
 function PopupDiff(): React.Node {
   const connection = useContext(ConnectionContext);

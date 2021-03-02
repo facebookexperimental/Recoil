@@ -13,13 +13,11 @@ import type {TransactionType} from '../../types/DevtoolsTypes';
 import type Store from '../../utils/Store';
 
 const {RecoilDevToolsActions} = require('../../constants/Constants');
-
-const PopupComponent = require('./PopupComponent');
-
-const ConnectionContext = require('./ConnectionContext');
-const React = require('react');
-const {useEffect, useState, useRef} = require('react');
 const {debug} = require('../../utils/Logger');
+const ConnectionContext = require('./ConnectionContext');
+const PopupComponent = require('./PopupComponent');
+const React = require('react');
+const {useEffect, useRef, useState} = require('react');
 
 type AppProps = {
   store: Store,

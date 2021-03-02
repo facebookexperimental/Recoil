@@ -10,13 +10,13 @@
 'use strict';
 
 import type {SnapshotType} from '../../types/DevtoolsTypes';
+
 import Item from './Items/Item';
 
-const {useContext, useMemo} = require('react');
 const ConnectionContext = require('./ConnectionContext');
 const {useSelectedTransaction} = require('./useSelectionHooks');
-
 const React = require('react');
+const {useContext, useMemo} = require('react');
 
 const styles = {
   item: {

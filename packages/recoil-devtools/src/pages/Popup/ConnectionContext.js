@@ -10,6 +10,7 @@
 'use strict';
 
 import type Connection from '../../utils/Connection';
+
 const React = require('react');
 
 const ConnectionContext = React.createContext<?Connection>(null);

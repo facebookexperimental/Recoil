@@ -11,14 +11,14 @@
 
 import type {MainTabsType} from '../../constants/Constants';
 
+const {MainTabsTitle} = require('../../constants/Constants');
+const ConnectionContext = require('./ConnectionContext');
 const DependencyGraph = require('./PopupDependencyGraph');
 const Diff = require('./PopupDiff');
 const Snapshot = require('./PopupSnapshot').default;
 const Tabs = require('./Tabs');
 const React = require('react');
 const {useContext} = require('react');
-const ConnectionContext = require('./ConnectionContext');
-const {MainTabsTitle} = require('../../constants/Constants');
 
 const styles = {
   main: {
