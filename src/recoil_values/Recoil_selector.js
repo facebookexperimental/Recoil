@@ -993,7 +993,11 @@ function selector<T>(
   }
 
   if (set != null) {
-    function selectorSet(store, state, newValue): AtomWrites {
+    /**
+     * ES5 strict mode prohibits defining non-top-level function declarations,
+     * so don't use function declaration syntax here
+     */
+    const selectorSet = (store, state, newValue): AtomWrites => {
       let syncSelectorSetFinished = false;
       const writes: AtomWrites = new Map();
 
@@ -1065,7 +1069,7 @@ function selector<T>(
       syncSelectorSetFinished = true;
 
       return writes;
-    }
+    };
 
     return registerNode<T>({
       key,
