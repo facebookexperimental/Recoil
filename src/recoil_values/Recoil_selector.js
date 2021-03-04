@@ -604,6 +604,7 @@ function selector<T>(
       if (isPromise(result)) {
         result = wrapPendingPromise(
           store,
+          // $FlowFixMe[incompatible-call]
           result,
           state,
           depValues,
@@ -618,6 +619,7 @@ function selector<T>(
       if (isPromise(result)) {
         result = wrapPendingDependencyPromise(
           store,
+          // $FlowFixMe[incompatible-call]
           result,
           state,
           depValues,
@@ -632,8 +634,10 @@ function selector<T>(
     if (resultIsError) {
       loadable = loadableWithError(result);
     } else if (isPromise(result)) {
+      // $FlowFixMe[incompatible-call]
       loadable = loadableWithPromise<T>(result);
     } else {
+      // $FlowFixMe[incompatible-call]
       loadable = loadableWithValue<T>(result);
     }
 
