@@ -26,6 +26,7 @@ const {isSSR} = require('../util/Recoil_Environment');
 const filterIterable = require('../util/Recoil_filterIterable');
 const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const {batchUpdates} = require('./Recoil_Batching');
 const {
   initializeNodeIfNewToStore,
@@ -121,18 +122,27 @@ class Snapshot {
     }
     this._refCount--;
     if (this._refCount === 0) {
-      for (const fn of this._store.getState().nodeCleanupFunctions.values()) {
-        fn();
-      }
-      this._store.getState().nodeCleanupFunctions.clear();
+      // Temporarily nerfing this to allow us to find broken call sites without
+      // actually breaking anybody yet.
+      // for (const fn of this._store.getState().nodeCleanupFunctions.values()) {
+      //   fn();
+      // }
+      // this._store.getState().nodeCleanupFunctions.clear();
     }
   }
 
   checkRefCount_INTERNAL(): void {
     if (gkx('recoil_memory_managament_2020') && this._refCount <= 0) {
-      throw new Error(
-        'Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it).',
-      );
+      if (__DEV__) {
+        recoverableViolation(
+          'Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it). This is currently a DEV-only warning but will become a real error soon. Please reach out to Dave McCabe for help fixing this. To temporarily suppress this warning add gk_disable=recoil_memory_managament_2020 to the URL.',
+          'recoil',
+        );
+      }
+      // What we will ship later:
+      // throw new Error(
+      // 'Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it).',
+      // );
     }
   }
 
