@@ -279,6 +279,22 @@ function CurrentUserInfo() {
 }
 ```
 
+## Query Default Atom Values
+
+A common pattern is to use an atom to represent local editable state, but use a selector to query default values:
+
+```jsx
+const currentUserIDState = atom({
+  key: 'CurrentUserID',
+  default: selector({
+    key: 'CurrentUserID/Default',
+    get: () => myFetchCurrentUserID(),
+  }),
+});
+```
+
+If you would like bi-directional syncing of data, then consider [atom effects](/docs/guides/atom-effects)
+
 ## Async Queries Without React Suspense
 
 It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the status during rendering:
@@ -327,13 +343,13 @@ const userInfoQuery = selectorFamily({
 function useRefreshUserInfo(userID) {
   setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
   return () => {
-    setUserInfoQueryRequestID(requestID => requestID++);
+    setUserInfoQueryRequestID(requestID => requestID + 1);
   };
 }
 
 function CurrentUserInfo() {
   const currentUserID = useRecoilValue(currentUserIDState);
-  const currentUserInfo = userRecoilValue(userInfoQuery(currentUserID));
+  const currentUserInfo = useRecoilValue(userInfoQuery(currentUserID));
   const refreshUserInfo = useRefreshUserInfo(currentUserID);
 
   return (

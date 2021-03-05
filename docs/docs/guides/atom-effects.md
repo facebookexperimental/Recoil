@@ -212,7 +212,9 @@ const syncStorageEffect = userID => ({setSelf, onSet, trigger}) => {
 
 ## Local Storage Persistence
 
-Atom effects can be used to persist atom state with [browser local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).  Note that the following examples are simplified for illustrative purposes and do not cover all cases.
+Atom effects can be used to persist atom state with [browser local storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage). `localStorage` is synchronous, so we can retrieve the data directly without `async` `await` or a `Promise`.
+
+Note that the following examples are simplified for illustrative purposes and do not cover all cases.
 
 ```jsx
 const localStorageEffect = key => ({setSelf, onSet}) => {
@@ -239,9 +241,84 @@ const currentUserIDState = atom({
 });
 ```
 
-### Backward Compatibility
+## Asynchronous Storage Persistence
 
-What if you change the format for an atom?  Loading a page with the new format with a `localStorage` based on the old format could case a problem.  You could build effects to handle restoring and validating the value in a type safe way:
+If your persisted data needs to be retrieved asynchronously, you can either [use a `Promise`](#initialize-with-promise) in the `setSelf()` function or call it [asynchronously](#asynchronous-setself).
+
+Below we will use `AsyncLocalStorage` or `localForage` as an example of an asynchronous store.
+
+### Initialize with `Promise`
+
+By synchronously calling `setSelf()` with a `Promise`, you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback while waiting for `Recoil` to load the persisted values.  `<Suspense>` will show a fallback until the `Promise` provided to `setSelf()` resolves.  If the atom is set to a value before the `Promise` resolves then the initialized value will be ignored.
+
+Note that if the `atoms` later are "reset", they will revert to their default value, and not the initialized value.
+
+```jsx
+const localForageEffect = key => ({setSelf, onSet}) => {
+  setSelf(localForage.getItem(key).then(savedValue =>
+    savedValue != null
+      ? JSON.parse(savedValue)
+      : new DefaultValue() // Abort initialization if no value was stored
+  ));
+
+  onSet(newValue => {
+    if (newValue instanceof DefaultValue) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, JSON.stringify(newValue));
+    }
+  });
+};
+
+const currentUserIDState = atom({
+  key: 'CurrentUserID',
+  default: 1,
+  effects_UNSTABLE: [
+    localForageEffect('current_user'),
+  ]
+});
+```
+
+
+### Asynchronous setSelf()
+
+With this approach, you can asynchronously call `setSelf()` when the value is available.  Unlike initializing to a `Promise`, the atom's default value will be used initially, so `<Suspense>` will not show a fallback unless the atom's default is a `Promise` or async selector.  If the atom is set to a value before the `setSelf()` is called, then it will be overwritten by the `setSelf()`.  This approach isn't just limited to `await`, but for any asynchronous usage of `setSelf()`, such as `setTimeout()`.
+
+```jsx
+const localForageEffect = key => ({setSelf, onSet}) => {
+  /** If there's a persisted value - set it on load  */
+  const loadPersisted = async () => {
+    const savedValue = await localForage.getItem(key);
+
+    if (savedValue != null) {
+      setSelf(JSON.parse(savedValue));
+    }
+  };
+
+  // Load the persisted data
+  loadPersisted();
+
+  onSet(newValue => {
+    if (newValue instanceof DefaultValue) {
+      localForage.removeItem(key);
+    } else {
+      localForage.setItem(key, JSON.stringify(newValue));
+    }
+  });
+};
+
+const currentUserIDState = atom({
+  key: 'CurrentUserID',
+  default: 1,
+  effects_UNSTABLE: [
+    localForageEffect('current_user'),
+  ]
+});
+```
+
+## Backward Compatibility
+
+What if you change the format for an atom?  Loading a page with the new format with a `localStorage` based on the old format could cause a problem.  You could build effects to handle restoring and validating the value in a type safe way:
 
 ```jsx
 type PersistenceOptions<T>: {
