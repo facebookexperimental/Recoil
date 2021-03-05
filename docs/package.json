@@ -9,6 +9,7 @@
     "deploy": "docusaurus deploy",
     "ci": "yarn lint && yarn prettier:diff",
     "lint": "eslint --cache \"**/*.js\" && stylelint \"**/*.css\"",
+    "lint-docs": "alex .",
     "prettier": "prettier --config .prettierrc --write \"**/*.{js,md}\"",
     "prettier:diff": "prettier --config .prettierrc --list-different \"**/*.{js,md}\""
   },
@@ -21,6 +22,7 @@
     "recoil": "0.0.7"
   },
   "devDependencies": {
+    "alex": "^8.1.1",
     "babel-eslint": "^10.0.3",
     "eslint": "^6.7.1",
     "eslint-config-airbnb": "^18.0.1",
