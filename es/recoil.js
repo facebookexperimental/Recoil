@@ -2948,6 +2948,8 @@ const {
 
 
 
+
+
 const {
   batchUpdates: batchUpdates$1
 } = Recoil_Batching;
@@ -3108,18 +3110,18 @@ class Snapshot {
 
     this._refCount--;
 
-    if (this._refCount === 0) {
-      for (const fn of this._store.getState().nodeCleanupFunctions.values()) {
-        fn();
-      }
-
-      this._store.getState().nodeCleanupFunctions.clear();
-    }
+    if (this._refCount === 0) ;
   }
 
   checkRefCount_INTERNAL() {
     if (Recoil_gkx_1('recoil_memory_managament_2020') && this._refCount <= 0) {
-      throw new Error('Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it).');
+      if (process.env.NODE_ENV !== "production") {
+        Recoil_recoverableViolation('Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it). This is currently a DEV-only warning but will become a real error soon. Please reach out to Dave McCabe for help fixing this. To temporarily suppress this warning add gk_disable=recoil_memory_managament_2020 to the URL.');
+      } // What we will ship later:
+      // throw new Error(
+      // 'Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it).',
+      // );
+
     }
   }
 
