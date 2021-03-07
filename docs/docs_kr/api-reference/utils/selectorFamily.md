@@ -3,9 +3,9 @@ title: selectorFamily(options)
 sidebar_label: selectorFamily()
 ---
 
-Returns a function that returns a read-only `RecoilValueReadOnly` or writeable `RecoilState` selector.
+읽기 전용 `RecoilValueReadOnly` 또는 수정 가능한 `RecoilState` selector를 반환하는 함수를 반환합니다.
 
-A `selectorFamily` is a powerful pattern that is similar to a [`selector`](/docs/api-reference/core/selector), but allows you to pass parameters to the `get` and `set` callbacks of a `selector`.  The `selectorFamily()` utility returns a function which can be called with user-defined parameters and returns a selector. Each unique parameter value will return the same memoized selector instance.
+`selectorFamily`는 [`selector`](/docs/api-reference/core/selector)와 유사한 강력한 패턴입니다. 다만, `get`, `set`, `selector`의 콜백을 매개변수로 전달할 수 있다는 점이 다릅니다. `selectorFamily()` 유틸리티는 사용자 정의 매개변수로 호출 할 수 있는 함수를 반환하고 seletor를 반환합니다. 각 고유 매개 변수값은 메모이징된 동일한 selector 인스턴스를 반환합니다.
 
 ---
 
@@ -47,13 +47,13 @@ type SetRecoilValue = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilValue = <T>(RecoilState<T>) => void;
 ```
 
-- `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-- `get` - A function that is passed an object of named callbacks that returns the value of the selector, the same as the `selector()` interface. This is wrapped by a function which is passed the parameter from calling the selector family function.
-- `set?` - An optional function that will produce writeable selectors when provided. It should be a function that takes an object of named callbacks, same as the `selector()` interface. This is again wrapped by another function with gets the parameters from calling the selector family function.
+- `key` - 내부적으로 atom을 식별하는데 사용되는 고유한 문자열. 이 문자열은 어플리케이션 전체에서 다른 atom과 selector에 대해 고유해야 한다.
+- `get` - selector의 값을 반환하는 명명된 콜백들의 객체를 전달하는 함수입니다.`selector()` 인터페이스와 동일합니다. get은 selector family 함수 호출에서 매개변수를 전달하는 함수에 의해 래핑됩니다.
+- `set?` - 제공 될 때 쓰기 가능한 selector를 생성하는 선택적 함수입니다. `selector()` 인터페이스와 동일하게, 명명된 콜백의 객체를 취하는 함수여야 합니다. set은 seletor family 함수 호출에서 매개변수를 가져오는 다른 함수에 의해 다시 래핑됩니다.
 
 ---
 
-The `selectorFamily` essentially provides a map from the parameter to a selector.  Because the parameters are often generated at the callsites using the family, and we want equivalent parameters to re-use the same underlying selector, it uses value-equality by default instead of reference-equality.  (There is an unstable `cacheImplementationForParams` API to adjust this behavior).  This imposes restrictions on the types which can be used for the parameter.  Please use a primitive type or an object that can be serialized.  Recoil uses a custom serializer that can support objects and arrays, some containers (such as ES6 Sets and Maps), is invariant of object key ordering, supports Symbols, Iterables, and uses `toJSON` properties for custom serialization (such as provided with libraries like Immutable containers).  Using functions or mutable objects, such as Promises, in parameters is problematic.
+`selectorFamily`는 기본적으로 매개변수에서 selector로의 맵을 제공합니다. family를 사용하는 함수 호출 위치에서 매개 변수가 생성되는 경우가 많고, 동일한 파라미터를 동일한 selector에서 다시 사용하기를 원하기 때문에 참조 동등성 대신 값 동등성을 사용합니다.(이 동작을 조절하기 위한 불안정한 `cacheImplementationForParams` API가 존재합니다.) 이는 매개 변수에 사용할 수 있는 타입을 제한하게 됩니다. 원시 타입 혹은 직렬화 가능한 타입을 사용해주세요. Recoil은 커스텀 직렬 도구를 사용합니다. 이 직렬 도구는 객체와 배열, 일부 컨테이너(ES6의 Set과 Map)는 객체 키 순서에 불변하며, Symbols, Iterables를 지원합니다. 또한, 커스텀 직렬화를 위해 `toJSON`속성을 사용합니다. (불변 컨테이너와 같은 라이브러리와 함께 제공됩니다.) 매개 변수에서 Promise와 같은 함수나 변경 가능한 객체를 사용하는 것은 문제가 됩니다.
 
 ## Example
 
@@ -86,9 +86,9 @@ function MyComponent() {
 }
 ```
 
-## Async Query Example
+## 비동기 쿼리 Example
 
-Selector Families are also useful to use for passing parameters to queries.  Note that using a selector to abstract queries like this should still be "pure" functions which always return the same result for a given set of inputs and dependency values.  See [this guide](/docs/guides/asynchronous-data-queries) for more examples.
+Selector Family는 쿼리에 매개변수를 전달하는데에도 유용합니다. 지금 같이 쿼리를 추상화하는데 selector를 사용하는 것은 종속성 값들과 주어진 입력에 대해 항상 같은 결과를 반환하는 "순수" 함수여야 합니다. 더 많은 예시가 궁금하다면 [이 가이드](/docs/guides/asynchronous-data-queries)를 살펴보세요.
 
 ```jsx
 const myDataQuery = selectorFamily({
@@ -108,7 +108,7 @@ function MyComponent() {
 }
 ```
 
-## Destructuring Example
+## 디스트럭처링 Example
 
 ```jsx
 const formState = atom({
