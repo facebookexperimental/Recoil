@@ -81,6 +81,7 @@ module.exports = {
           'api-reference/utils/errorSelector',
           'api-reference/utils/noWait',
           'api-reference/utils/waitForAll',
+          'api-reference/utils/waitForAllSettled',
           'api-reference/utils/waitForNone',
           'api-reference/utils/waitForAny',
         ],
