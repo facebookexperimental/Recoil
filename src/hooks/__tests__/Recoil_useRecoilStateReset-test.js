@@ -23,7 +23,7 @@ let React,
   renderElements;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({act} = require('ReactTestUtils'));
 
   atom = require('../../recoil_values/Recoil_atom');

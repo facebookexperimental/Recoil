@@ -21,7 +21,7 @@ let React,
   useRecoilValueLoadable;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({act} = require('ReactTestUtils'));
   constSelector = require('../../recoil_values/Recoil_constSelector');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');

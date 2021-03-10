@@ -17,8 +17,6 @@ import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
-
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
 const {
@@ -56,6 +54,7 @@ const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
 const Tracing = require('../util/Recoil_Tracing');
 const useComponentName = require('../util/Recoil_useComponentName');
+const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
 
 // Components that aren't mounted after suspending for this long will be assumed
 // to be discarded and their resources released.

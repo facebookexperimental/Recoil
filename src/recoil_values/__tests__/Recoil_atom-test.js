@@ -33,8 +33,8 @@ let React,
 const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
-  React = require('React');
-  ({useState, Profiler} = require('React'));
+  React = require('react');
+  ({useState, Profiler} = require('react'));
   ReactDOM = require('ReactDOM');
   ({act} = require('ReactTestUtils'));
 

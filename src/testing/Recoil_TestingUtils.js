@@ -14,8 +14,6 @@ import type {RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {Store} from '../core/Recoil_State';
 
-const React = require('React');
-const {useEffect} = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
@@ -37,6 +35,8 @@ const selector = require('../recoil_values/Recoil_selector');
 const invariant = require('../util/Recoil_invariant');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
+const React = require('react');
+const {useEffect} = require('react');
 
 // TODO Use Snapshot for testing instead of this thunk?
 function makeStore(): Store {

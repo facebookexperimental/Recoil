@@ -24,7 +24,7 @@ let React,
   useStoreRef;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ReactDOM = require('ReactDOM');
   ({act} = require('ReactTestUtils'));
 

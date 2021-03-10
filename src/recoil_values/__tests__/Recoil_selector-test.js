@@ -44,8 +44,8 @@ let React,
 const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
-  React = require('React');
-  ({useEffect, useState, Profiler} = require('React'));
+  React = require('react');
+  ({useEffect, useState, Profiler} = require('react'));
   ({act} = require('ReactTestUtils'));
   atom = require('../Recoil_atom');
   ({

@@ -7,7 +7,6 @@
  */
 'use strict';
 
-const React = require('React');
 const {Simulate, act} = require('ReactTestUtils');
 
 const {freshSnapshot} = require('../../../core/Recoil_Snapshot');
@@ -21,6 +20,7 @@ const {
   LinkToRecoilSnapshot,
   LinkToRecoilStateChange,
 } = require('../Recoil_Link');
+const React = require('react');
 
 const myAtom = atom<string>({key: 'Link Snapshot', default: 'DEFAULT'});
 const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);

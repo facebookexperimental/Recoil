@@ -49,8 +49,8 @@ let React,
 let {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useEffect, useState, Profiler} = require('React'));
+  React = require('react');
+  ({useEffect, useState, Profiler} = require('react'));
   ({act} = require('ReactTestUtils'));
 
   Queue = require('../../adt/Recoil_Queue');

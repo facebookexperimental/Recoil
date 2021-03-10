@@ -25,7 +25,7 @@ let React,
   useRecoilTransactionObserver;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({act} = require('ReactTestUtils'));
 
   ({freshSnapshot} = require('../../core/Recoil_Snapshot'));

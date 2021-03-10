@@ -41,8 +41,8 @@ let store: Store,
 const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
-  React = require('React');
-  ({Profiler, useState} = require('React'));
+  React = require('react');
+  ({Profiler, useState} = require('react'));
   ReactDOM = require('ReactDOM');
   ({act} = require('ReactTestUtils'));
 

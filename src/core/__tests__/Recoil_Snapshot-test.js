@@ -27,7 +27,7 @@ let React,
   freshSnapshot;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({act} = require('ReactTestUtils'));
 
   ({

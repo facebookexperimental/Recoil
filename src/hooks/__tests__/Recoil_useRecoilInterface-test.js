@@ -22,8 +22,8 @@ let React,
   useRecoilInterface;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useRef, useState} = require('React'));
+  React = require('react');
+  ({useRef, useState} = require('react'));
   ({act} = require('ReactTestUtils'));
 
   atom = require('../../recoil_values/Recoil_atom');

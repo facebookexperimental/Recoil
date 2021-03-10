@@ -25,8 +25,8 @@ let React,
   useRecoilSnapshot;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useEffect} = require('React'));
+  React = require('react');
+  ({useEffect} = require('react'));
   ({act} = require('ReactTestUtils'));
 
   ({freshSnapshot} = require('../../core/Recoil_Snapshot'));

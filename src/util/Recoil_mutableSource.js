@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const React = require('React');
+const React = require('react');
 
 // FIXME T2710559282599660
 const useMutableSource: Function = // flowlint-line unclear-type:off

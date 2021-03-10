@@ -28,8 +28,8 @@ let React,
   invariant;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useRef, useState} = require('React'));
+  React = require('react');
+  ({useRef, useState} = require('react'));
   ({act} = require('ReactTestUtils'));
 
   ({useStoreRef} = require('../../core/Recoil_RecoilRoot.react'));
