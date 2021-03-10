@@ -14,6 +14,15 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState} from './Recoil_State';
 
+const React = require('React');
+const {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} = require('React');
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
@@ -35,13 +44,11 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue_DEPRECATED,
 } = require('./Recoil_FunctionalCore');
-const {graph, saveDependencyMapToStore} = require('./Recoil_Graph');
+const {graph} = require('./Recoil_Graph');
 const {cloneGraph} = require('./Recoil_Graph');
 const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
 const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
 const {freshSnapshot} = require('./Recoil_Snapshot');
-const React = require('react');
-const {useContext, useEffect, useMemo, useRef, useState} = require('react');
 
 type Props = {
   initializeState_DEPRECATED?: ({
@@ -173,11 +180,15 @@ function sendEndOfBatchNotifications(store: Store) {
  * setState on the batcher. Then we wait for that change to be committed, which
  * signifies the end of the batch. That's when we respond to the Recoil change.
  */
-function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
+function Batcher({
+  setNotifyBatcherOfChange,
+}: {
+  setNotifyBatcherOfChange: (() => void) => void,
+}) {
   const storeRef = useStoreRef();
 
   const [_, setState] = useState([]);
-  props.setNotifyBatcherOfChange(() => setState({}));
+  setNotifyBatcherOfChange(() => setState({}));
 
   useEffect(() => {
     // enqueueExecution runs this function immediately; it is only used to
@@ -210,6 +221,16 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
       }
     });
   });
+
+  // If an asynchronous selector resolves after the Batcher is unmounted,
+  // notifyBatcherOfChange will still be called. An error gets thrown whenever
+  // setState is called after a component is already unmounted, so this sets
+  // notifyBatcherOfChange to be a no-op.
+  useEffect(() => {
+    return () => {
+      setNotifyBatcherOfChange(() => {});
+    };
+  }, [setNotifyBatcherOfChange]);
 
   return null;
 }
@@ -367,9 +388,12 @@ function RecoilRoot({
   };
 
   const notifyBatcherOfChange = useRef<null | (mixed => void)>(null);
-  function setNotifyBatcherOfChange(x: mixed => void) {
-    notifyBatcherOfChange.current = x;
-  }
+  const setNotifyBatcherOfChange = useCallback(
+    (x: mixed => void) => {
+      notifyBatcherOfChange.current = x;
+    },
+    [notifyBatcherOfChange],
+  );
 
   // FIXME T2710559282599660
   const createMutableSource =
