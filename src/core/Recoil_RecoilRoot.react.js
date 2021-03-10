@@ -14,15 +14,6 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState} from './Recoil_State';
 
-const React = require('React');
-const {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} = require('React');
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
@@ -49,6 +40,15 @@ const {cloneGraph} = require('./Recoil_Graph');
 const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
 const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
 const {freshSnapshot} = require('./Recoil_Snapshot');
+const React = require('react');
+const {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} = require('react');
 
 type Props = {
   initializeState_DEPRECATED?: ({
