@@ -176,7 +176,7 @@ function sendEndOfBatchNotifications(store: Store) {
 function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
   const storeRef = useStoreRef();
 
-  const [_, setState] = useState([]);
+  const [_, setState] = useState({});
   props.setNotifyBatcherOfChange(() => setState({}));
 
   useEffect(() => {
