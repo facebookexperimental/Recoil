@@ -16,11 +16,11 @@ const {
 
 let React, useEffect, useRef, ReactDOM, act, RecoilRoot, atom, componentThatReadsAndWritesAtom, useRecoilBridgeAcrossReactRoots;
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({
     useEffect,
     useRef
-  } = require('React'));
+  } = require('react'));
   ReactDOM = require('ReactDOM');
   ({
     act

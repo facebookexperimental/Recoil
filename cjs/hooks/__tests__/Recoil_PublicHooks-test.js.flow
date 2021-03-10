@@ -26,12 +26,12 @@ let {
 } = require('../../util/Recoil_mutableSource');
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({
     useEffect,
     useState,
     Profiler
-  } = require('React'));
+  } = require('react'));
   ({
     act
   } = require('ReactTestUtils'));

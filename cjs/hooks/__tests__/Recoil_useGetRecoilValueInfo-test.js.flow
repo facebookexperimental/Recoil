@@ -13,7 +13,7 @@ const {
 
 let React, act, atom, selector, ReadsAtom, componentThatReadsAndWritesAtom, renderElements, useGetRecoilValueInfo;
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({
     act
   } = require('ReactTestUtils'));

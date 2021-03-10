@@ -16,10 +16,10 @@ const {
 
 let React, useState, act, freshSnapshot, useGotoRecoilSnapshot, useRecoilCallback, useRecoilValue, atom, constSelector, selector, ReadsAtom, asyncSelector, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements;
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({
     useState
-  } = require('React'));
+  } = require('react'));
   ({
     act
   } = require('ReactTestUtils'));

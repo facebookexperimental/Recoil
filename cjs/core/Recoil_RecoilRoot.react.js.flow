@@ -12,20 +12,9 @@
 
 import type { RecoilValue } from './Recoil_RecoilValue';
 import type { MutableSnapshot } from './Recoil_Snapshot';
-import type { Store, StoreRef, StoreState } from './Recoil_State';
-
-const React = require('React');
-
-const {
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} = require('React'); // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+import type { Store, StoreRef, StoreState } from './Recoil_State'; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
-
 
 const Queue = require('../adt/Recoil_Queue');
 
@@ -72,6 +61,16 @@ const {
 const {
   freshSnapshot
 } = require('./Recoil_Snapshot');
+
+const React = require('react');
+
+const {
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} = require('react');
 
 type Props = {
   initializeState_DEPRECATED?: ({

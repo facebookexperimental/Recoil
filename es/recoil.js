@@ -3250,17 +3250,9 @@ var Recoil_Snapshot$1 = /*#__PURE__*/Object.freeze({
   cloneSnapshot: Recoil_Snapshot_4
 });
 
-const {
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} = react; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+// @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
-
-
 
 
 const {
@@ -3306,6 +3298,16 @@ const {
 const {
   freshSnapshot: freshSnapshot$1
 } = Recoil_Snapshot$1;
+
+
+
+const {
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} = react;
 
 function notInAContext() {
   throw new Error('This component must be used inside a <RecoilRoot> component.');
@@ -3994,10 +3996,6 @@ const {
   useRef: useRef$1
 } = react;
 
-
-
-
-
 function useComponentName() {
   const nameRef = useRef$1();
 
@@ -4037,14 +4035,6 @@ function useComponentName() {
 }
 
 var Recoil_useComponentName = useComponentName;
-
-const {
-  useCallback,
-  useEffect: useEffect$1,
-  useMemo: useMemo$1,
-  useRef: useRef$2,
-  useState: useState$1
-} = react;
 
 const {
   batchUpdates: batchUpdates$2
@@ -4124,7 +4114,15 @@ const {
 
 
 
- // Components that aren't mounted after suspending for this long will be assumed
+
+
+const {
+  useCallback,
+  useEffect: useEffect$1,
+  useMemo: useMemo$1,
+  useRef: useRef$2,
+  useState: useState$1
+} = react; // Components that aren't mounted after suspending for this long will be assumed
 // to be discarded and their resources released.
 
 
@@ -4873,13 +4871,15 @@ function useGetRecoilValueInfo() {
 var Recoil_useGetRecoilValueInfo = useGetRecoilValueInfo;
 
 const {
-  useMemo: useMemo$2
-} = react;
-
-const {
   RecoilRoot: RecoilRoot$1,
   useStoreRef: useStoreRef$3
 } = Recoil_RecoilRoot_react;
+
+
+
+const {
+  useMemo: useMemo$2
+} = react;
 
 function useRecoilBridgeAcrossReactRoots() {
   const store = useStoreRef$3().current;

@@ -18,10 +18,10 @@ const {
 
 let React, act, atom, componentThatReadsAndWritesAtom, gkx, useRecoilValue, useRecoilValueLoadable, useRetain, useRecoilCallback, useState, selector, renderElements, retentionZone;
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({
     useState
-  } = require('React'));
+  } = require('react'));
   ({
     act
   } = require('ReactTestUtils'));

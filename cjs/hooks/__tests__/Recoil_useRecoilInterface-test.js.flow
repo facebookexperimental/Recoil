@@ -16,11 +16,11 @@ const {
 
 let React, useRef, useState, act, atom, counterAtom, renderElements, useRecoilInterface;
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({
     useRef,
     useState
-  } = require('React'));
+  } = require('react'));
   ({
     act
   } = require('ReactTestUtils'));

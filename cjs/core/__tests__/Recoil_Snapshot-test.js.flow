@@ -16,7 +16,7 @@ const {
 
 let React, act, useGotoRecoilSnapshot, useRecoilTransactionObserver, atom, constSelector, selector, ReadsAtom, asyncSelector, componentThatReadsAndWritesAtom, renderElements, Snapshot, freshSnapshot;
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({
     act
   } = require('ReactTestUtils'));

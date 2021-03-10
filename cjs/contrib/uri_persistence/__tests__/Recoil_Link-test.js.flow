@@ -7,8 +7,6 @@
  */
 'use strict';
 
-const React = require('React');
-
 const {
   Simulate,
   act
@@ -30,6 +28,8 @@ const {
   LinkToRecoilSnapshot,
   LinkToRecoilStateChange
 } = require('../Recoil_Link');
+
+const React = require('react');
 
 const myAtom = atom<string>({
   key: 'Link Snapshot',

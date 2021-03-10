@@ -15,7 +15,7 @@ const {
 
 let React, ReactDOM, act, useSetRecoilState, atom, constSelector, selector, ReadsAtom, renderElements, RecoilRoot, useStoreRef;
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ReactDOM = require('ReactDOM');
   ({
     act

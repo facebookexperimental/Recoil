@@ -10,16 +10,16 @@
  */
 'use strict';
 
-const React = require('React');
-
-const {
-  useMemo
-} = require('React');
-
 const {
   RecoilRoot,
   useStoreRef
 } = require('../core/Recoil_RecoilRoot.react');
+
+const React = require('react');
+
+const {
+  useMemo
+} = require('react');
 
 export type RecoilBridge = React.AbstractComponent<{
   children: React.Node
