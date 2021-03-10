@@ -7,8 +7,9 @@
  */
 'use strict';
 
-import objectEntries from '../ObjectEntries';
 import type {Selection as D3Selection} from 'd3-selection';
+
+import objectEntries from '../ObjectEntries';
 
 const d3 = {
   ...require('d3-selection'),
