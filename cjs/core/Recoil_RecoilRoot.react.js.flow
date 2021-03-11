@@ -42,8 +42,7 @@ const {
 } = require('./Recoil_FunctionalCore');
 
 const {
-  graph,
-  saveDependencyMapToStore
+  graph
 } = require('./Recoil_Graph');
 
 const {
@@ -65,6 +64,7 @@ const {
 const React = require('react');
 
 const {
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -106,7 +106,7 @@ declare function sendEndOfBatchNotifications(store: Store): any;
  * signifies the end of the batch. That's when we respond to the Recoil change.
  */
 
-declare function Batcher(props: {
+declare function Batcher(arg0: {
   setNotifyBatcherOfChange: (() => void) => void
 }): any;
 

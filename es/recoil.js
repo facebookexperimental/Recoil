@@ -3279,8 +3279,7 @@ const {
 } = Recoil_FunctionalCore;
 
 const {
-  graph: graph$3,
-  saveDependencyMapToStore: saveDependencyMapToStore$1
+  graph: graph$3
 } = Recoil_Graph;
 
 const {
@@ -3302,6 +3301,7 @@ const {
 
 
 const {
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -3419,10 +3419,12 @@ function sendEndOfBatchNotifications(store) {
  */
 
 
-function Batcher(props) {
+function Batcher({
+  setNotifyBatcherOfChange
+}) {
   const storeRef = useStoreRef();
   const [_, setState] = useState([]);
-  props.setNotifyBatcherOfChange(() => setState({}));
+  setNotifyBatcherOfChange(() => setState({}));
   useEffect(() => {
     // enqueueExecution runs this function immediately; it is only used to
     // manipulate the order of useEffects during tests, since React seems to
@@ -3452,7 +3454,16 @@ function Batcher(props) {
         releaseScheduledRetainablesNow$1(storeRef.current);
       }
     });
-  });
+  }); // If an asynchronous selector resolves after the Batcher is unmounted,
+  // notifyBatcherOfChange will still be called. An error gets thrown whenever
+  // setState is called after a component is already unmounted, so this sets
+  // notifyBatcherOfChange to be a no-op.
+
+  useEffect(() => {
+    return () => {
+      setNotifyBatcherOfChange(() => {});
+    };
+  }, [setNotifyBatcherOfChange]);
   return null;
 }
 
@@ -3620,11 +3631,9 @@ function RecoilRoot({
   };
 
   const notifyBatcherOfChange = useRef(null);
-
-  function setNotifyBatcherOfChange(x) {
+  const setNotifyBatcherOfChange = useCallback(x => {
     notifyBatcherOfChange.current = x;
-  } // FIXME T2710559282599660
-
+  }, [notifyBatcherOfChange]); // FIXME T2710559282599660
 
   const createMutableSource = (_createMutableSource = react.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : // flowlint-line unclear-type:off
   react.unstable_createMutableSource; // flowlint-line unclear-type:off
@@ -4117,7 +4126,7 @@ const {
 
 
 const {
-  useCallback,
+  useCallback: useCallback$1,
   useEffect: useEffect$1,
   useMemo: useMemo$1,
   useRef: useRef$2,
@@ -4164,7 +4173,7 @@ function useRecoilInterface_DEPRECATED() {
 
   const previousSubscriptions = useRef$2(new Set());
   const subscriptions = useRef$2(new Map());
-  const unsubscribeFrom = useCallback(key => {
+  const unsubscribeFrom = useCallback$1(key => {
     const sub = subscriptions.current.get(key);
 
     if (sub) {
@@ -4320,12 +4329,12 @@ function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
   }
 
   const storeRef = useStoreRef$1();
-  const getLoadable = useCallback(() => {
+  const getLoadable = useCallback$1(() => {
     const store = storeRef.current;
     const treeState = store.getState().currentTree;
     return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
   }, [storeRef, recoilValue]);
-  const getLoadableWithTesting = useCallback(() => {
+  const getLoadableWithTesting = useCallback$1(() => {
     if (process.env.NODE_ENV !== "production") {
       recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
     }
@@ -4333,7 +4342,7 @@ function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
     return getLoadable();
   }, [getLoadable]);
   const componentName = Recoil_useComponentName();
-  const subscribe = useCallback((_storeState, callback) => {
+  const subscribe = useCallback$1((_storeState, callback) => {
     const store = storeRef.current;
     const subscription = subscribeToRecoilValue$1(store, recoilValue, () => Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
       if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
@@ -4484,7 +4493,7 @@ function useSetRecoilState(recoilState) {
   }
 
   const storeRef = useStoreRef$1();
-  return useCallback(newValueOrUpdater => {
+  return useCallback$1(newValueOrUpdater => {
     setRecoilValue$2(storeRef.current, recoilState, newValueOrUpdater);
   }, [storeRef, recoilState]);
 }
@@ -4500,7 +4509,7 @@ function useResetRecoilState(recoilState) {
   }
 
   const storeRef = useStoreRef$1();
-  return useCallback(() => {
+  return useCallback$1(() => {
     setRecoilValue$2(storeRef.current, recoilState, DEFAULT_VALUE$2);
   }, [storeRef, recoilState]);
 }
@@ -4582,7 +4591,7 @@ function externallyVisibleAtomValuesInState(state) {
           transaction, to avoid loops.
 */
 function useTransactionObservation_DEPRECATED(callback) {
-  useTransactionSubscription(useCallback(store => {
+  useTransactionSubscription(useCallback$1(store => {
     let previousTree = store.getState().previousTree;
     const currentTree = store.getState().currentTree;
 
@@ -4618,7 +4627,7 @@ function useTransactionObservation_DEPRECATED(callback) {
 }
 
 function useRecoilTransactionObserver(callback) {
-  useTransactionSubscription(useCallback(store => {
+  useTransactionSubscription(useCallback$1(store => {
     const snapshot = cloneSnapshot$1(store, 'current');
     const previousSnapshot = cloneSnapshot$1(store, 'previous');
     callback({
@@ -4649,7 +4658,7 @@ function useRecoilSnapshot() {
 
     return snapshot.retain();
   }, [snapshot]);
-  useTransactionSubscription(useCallback(store => setSnapshot(cloneSnapshot$1(store)), []));
+  useTransactionSubscription(useCallback$1(store => setSnapshot(cloneSnapshot$1(store)), []));
 
   if (previousSnapshot !== snapshot && !isSSR$2) {
     if (timeoutID.current) {
@@ -4669,7 +4678,7 @@ function useRecoilSnapshot() {
 
 function useGotoRecoilSnapshot() {
   const storeRef = useStoreRef$1();
-  return useCallback(snapshot => {
+  return useCallback$1(snapshot => {
     var _storeState$nextTree;
 
     const storeState = storeRef.current.getState();
@@ -4717,7 +4726,7 @@ const SENTINEL = new Sentinel();
 function useRecoilCallback(fn, deps) {
   const storeRef = useStoreRef$1();
   const gotoSnapshot = useGotoRecoilSnapshot();
-  return useCallback((...args) => {
+  return useCallback$1((...args) => {
     function set(recoilState, newValueOrUpdater) {
       setRecoilValue$2(storeRef.current, recoilState, newValueOrUpdater);
     }
@@ -5429,7 +5438,7 @@ const {
 } = Recoil_FunctionalCore;
 
 const {
-  saveDependencyMapToStore: saveDependencyMapToStore$2
+  saveDependencyMapToStore: saveDependencyMapToStore$1
 } = Recoil_Graph;
 
 const {
@@ -5777,7 +5786,7 @@ function selector(options) {
     if (isLatestExecution(store, executionId) || state.version === ((_store$getState = store.getState()) === null || _store$getState === void 0 ? void 0 : (_store$getState$curre = _store$getState.currentTree) === null || _store$getState$curre === void 0 ? void 0 : _store$getState$curre.version) || state.version === ((_store$getState2 = store.getState()) === null || _store$getState2 === void 0 ? void 0 : (_store$getState2$next = _store$getState2.nextTree) === null || _store$getState2$next === void 0 ? void 0 : _store$getState2$next.version)) {
       var _store$getState$nextT, _store$getState3, _store$getState3$next;
 
-      saveDependencyMapToStore$2(new Map([[key, deps]]), store, (_store$getState$nextT = (_store$getState3 = store.getState()) === null || _store$getState3 === void 0 ? void 0 : (_store$getState3$next = _store$getState3.nextTree) === null || _store$getState3$next === void 0 ? void 0 : _store$getState3$next.version) !== null && _store$getState$nextT !== void 0 ? _store$getState$nextT : store.getState().currentTree.version);
+      saveDependencyMapToStore$1(new Map([[key, deps]]), store, (_store$getState$nextT = (_store$getState3 = store.getState()) === null || _store$getState3 === void 0 ? void 0 : (_store$getState3$next = _store$getState3.nextTree) === null || _store$getState3$next === void 0 ? void 0 : _store$getState3$next.version) !== null && _store$getState$nextT !== void 0 ? _store$getState$nextT : store.getState().currentTree.version);
     }
   }
 
