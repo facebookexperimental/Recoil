@@ -1,13 +1,17 @@
 # Change Log
 
-## NEXT
+## LATER
 
 - Performance optimization to suppress re-rendering components:
     - When subscribed selectors evaluate to the same value. (#749)
     - On initial render when not using React Concurrent Mode (#820)
+
+## NEXT
+
 - Added useGetRecoilValueInfo_UNSTABLE() hook for dev tools. (#713, #714)
 - Bug Fix: Ensuring that throwing non Error (and non Promise) objects is supported and puts the selector into a hasError state
 - Changed semantics of waitForAny() such that it will always return loadables unless everything is loading. This better aligns behaviour of waitForAny() and waitForNone()
+- Bug Fix: Ensured that the Batcher (within RecoilRoot) cannot have its state updated after it is unmounted. (#917)
 
 ## 0.1.2 (2020-10-30)
 
