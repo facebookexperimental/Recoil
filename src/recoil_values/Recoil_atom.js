@@ -63,7 +63,6 @@ import type {
   LoadablePromise,
   ResolvedLoadablePromiseInfo,
 } from '../adt/Recoil_Loadable';
-import type {DependencyMap} from '../core/Recoil_Graph';
 import type {
   PersistenceInfo,
   ReadWriteNodeOptions,
