@@ -58,7 +58,6 @@
 'use strict'; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 
 import type { Loadable, LoadablePromise, ResolvedLoadablePromiseInfo } from '../adt/Recoil_Loadable';
-import type { DependencyMap } from '../core/Recoil_Graph';
 import type { PersistenceInfo, ReadWriteNodeOptions, Trigger } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
