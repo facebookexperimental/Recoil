@@ -52,7 +52,6 @@ const {
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
-const Tracing = require('../util/Recoil_Tracing');
 const useComponentName = require('../util/Recoil_useComponentName');
 const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
 
@@ -150,43 +149,37 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
         store,
         new AbstractRecoilValue(key),
         state => {
-          Tracing.trace('RecoilValue subscription fired', key, () => {
-            updateState(state, key);
-          });
+          updateState(state, key);
         },
         componentName,
       );
       subscriptions.current.set(key, sub);
 
-      Tracing.trace('initial update on subscribing', key, () => {
-        /**
-         * Since we're subscribing in an effect we need to update to the latest
-         * value of the atom since it may have changed since we rendered. We can
-         * go ahead and do that now, unless we're in the middle of a batch --
-         * in which case we should do it at the end of the batch, due to the
-         * following edge case: Suppose an atom is updated in another useEffect
-         * of this same component. Then the following sequence of events occur:
-         * 1. Atom is updated and subs fired (but we may not be subscribed
-         *    yet depending on order of effects, so we miss this) Updated value
-         *    is now in nextTree, but not currentTree.
-         * 2. This effect happens. We subscribe and update.
-         * 3. From the update we re-render and read currentTree, with old value.
-         * 4. Batcher's effect sets currentTree to nextTree.
-         * In this sequence we miss the update. To avoid that, add the update
-         * to queuedComponentCallback if a batch is in progress.
-         */
-        // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
-        const state = store.getState();
-        if (state.nextTree) {
-          store.getState().queuedComponentCallbacks_DEPRECATED.push(
-            Tracing.wrap(() => {
-              updateState(store.getState(), key);
-            }),
-          );
-        } else {
+      /**
+       * Since we're subscribing in an effect we need to update to the latest
+       * value of the atom since it may have changed since we rendered. We can
+       * go ahead and do that now, unless we're in the middle of a batch --
+       * in which case we should do it at the end of the batch, due to the
+       * following edge case: Suppose an atom is updated in another useEffect
+       * of this same component. Then the following sequence of events occur:
+       * 1. Atom is updated and subs fired (but we may not be subscribed
+       *    yet depending on order of effects, so we miss this) Updated value
+       *    is now in nextTree, but not currentTree.
+       * 2. This effect happens. We subscribe and update.
+       * 3. From the update we re-render and read currentTree, with old value.
+       * 4. Batcher's effect sets currentTree to nextTree.
+       * In this sequence we miss the update. To avoid that, add the update
+       * to queuedComponentCallback if a batch is in progress.
+       */
+      // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
+      const state = store.getState();
+      if (state.nextTree) {
+        store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
           updateState(store.getState(), key);
-        }
-      });
+        });
+      } else {
+        updateState(store.getState(), key);
+      }
     });
 
     differenceSets(
@@ -319,23 +312,18 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
       const subscription = subscribeToRecoilValue(
         store,
         recoilValue,
-        () =>
-          Tracing.trace(
-            'RecoilValue subscription fired',
-            recoilValue.key,
-            () => {
-              if (!gkx('recoil_suppress_rerender_in_callback')) {
-                return callback();
-              }
-              // Only re-render if the value has changed.
-              // This will evaluate the atom/selector now as well as when the
-              // component renders, but that may help with prefetching.
-              const newLoadable = getLoadable();
-              if (!prevLoadableRef.current.is(newLoadable)) {
-                callback();
-              }
-            },
-          ),
+        () => {
+          if (!gkx('recoil_suppress_rerender_in_callback')) {
+            return callback();
+          }
+          // Only re-render if the value has changed.
+          // This will evaluate the atom/selector now as well as when the
+          // component renders, but that may help with prefetching.
+          const newLoadable = getLoadable();
+          if (!prevLoadableRef.current.is(newLoadable)) {
+            callback();
+          }
+        },
         componentName,
       );
       return subscription.release;
@@ -371,47 +359,6 @@ function useRecoilValueLoadable_LEGACY<T>(
       store,
       recoilValue,
       _state => {
-        Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
-          if (!gkx('recoil_suppress_rerender_in_callback')) {
-            return forceUpdate([]);
-          }
-          const newLoadable = getRecoilValueAsLoadable(
-            store,
-            recoilValue,
-            store.getState().currentTree,
-          );
-          if (!prevLoadableRef.current?.is(newLoadable)) {
-            forceUpdate(newLoadable);
-          }
-        });
-      },
-      componentName,
-    );
-    Tracing.trace('initial update on subscribing', recoilValue.key, () => {
-      /**
-       * Since we're subscribing in an effect we need to update to the latest
-       * value of the atom since it may have changed since we rendered. We can
-       * go ahead and do that now, unless we're in the middle of a batch --
-       * in which case we should do it at the end of the batch, due to the
-       * following edge case: Suppose an atom is updated in another useEffect
-       * of this same component. Then the following sequence of events occur:
-       * 1. Atom is updated and subs fired (but we may not be subscribed
-       *    yet depending on order of effects, so we miss this) Updated value
-       *    is now in nextTree, but not currentTree.
-       * 2. This effect happens. We subscribe and update.
-       * 3. From the update we re-render and read currentTree, with old value.
-       * 4. Batcher's effect sets currentTree to nextTree.
-       * In this sequence we miss the update. To avoid that, add the update
-       * to queuedComponentCallback if a batch is in progress.
-       */
-      if (storeState.nextTree) {
-        store.getState().queuedComponentCallbacks_DEPRECATED.push(
-          Tracing.wrap(() => {
-            prevLoadableRef.current = null;
-            forceUpdate([]);
-          }),
-        );
-      } else {
         if (!gkx('recoil_suppress_rerender_in_callback')) {
           return forceUpdate([]);
         }
@@ -423,8 +370,44 @@ function useRecoilValueLoadable_LEGACY<T>(
         if (!prevLoadableRef.current?.is(newLoadable)) {
           forceUpdate(newLoadable);
         }
+      },
+      componentName,
+    );
+
+    /**
+     * Since we're subscribing in an effect we need to update to the latest
+     * value of the atom since it may have changed since we rendered. We can
+     * go ahead and do that now, unless we're in the middle of a batch --
+     * in which case we should do it at the end of the batch, due to the
+     * following edge case: Suppose an atom is updated in another useEffect
+     * of this same component. Then the following sequence of events occur:
+     * 1. Atom is updated and subs fired (but we may not be subscribed
+     *    yet depending on order of effects, so we miss this) Updated value
+     *    is now in nextTree, but not currentTree.
+     * 2. This effect happens. We subscribe and update.
+     * 3. From the update we re-render and read currentTree, with old value.
+     * 4. Batcher's effect sets currentTree to nextTree.
+     * In this sequence we miss the update. To avoid that, add the update
+     * to queuedComponentCallback if a batch is in progress.
+     */
+    if (storeState.nextTree) {
+      store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
+        prevLoadableRef.current = null;
+        forceUpdate([]);
+      });
+    } else {
+      if (!gkx('recoil_suppress_rerender_in_callback')) {
+        return forceUpdate([]);
       }
-    });
+      const newLoadable = getRecoilValueAsLoadable(
+        store,
+        recoilValue,
+        store.getState().currentTree,
+      );
+      if (!prevLoadableRef.current?.is(newLoadable)) {
+        forceUpdate(newLoadable);
+      }
+    }
 
     return subscription.release;
   }, [componentName, recoilValue, storeRef]);

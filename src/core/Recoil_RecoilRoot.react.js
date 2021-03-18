@@ -27,7 +27,6 @@ const expectationViolation = require('../util/Recoil_expectationViolation');
 const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
 const {
   cleanUpNode,
@@ -156,13 +155,7 @@ function sendEndOfBatchNotifications(store: Store) {
     // a selector to change from asynchronous to synchronous, in which case there
     // would be no follow-up asynchronous resolution to wake us up.
     // TODO OPTIMIZATION Only wake up related downstream components
-    let nodeNames = '[available in dev build]';
-    if (__DEV__) {
-      nodeNames = Array.from(dirtyAtoms).join(', ');
-    }
-    storeState.suspendedComponentResolvers.forEach(cb =>
-      Tracing.trace('value became available, waking components', nodeNames, cb),
-    );
+    storeState.suspendedComponentResolvers.forEach(cb => cb());
   }
 
   // Special behavior ONLY invoked by useInterface.
