@@ -247,6 +247,8 @@ If your persisted data needs to be retrieved asynchronously, you can either [use
 
 Below we will use `AsyncLocalStorage` or `localForage` as an example of an asynchronous store.
 
+localForage is a wrapper library that smoothes the rough landscape of browser databases.
+
 ### Initialize with `Promise`
 
 By synchronously calling `setSelf()` with a `Promise`, you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback while waiting for `Recoil` to load the persisted values.  `<Suspense>` will show a fallback until the `Promise` provided to `setSelf()` resolves.  If the atom is set to a value before the `Promise` resolves then the initialized value will be ignored.
@@ -254,8 +256,8 @@ By synchronously calling `setSelf()` with a `Promise`, you'll be able to wrap th
 Note that if the `atoms` later are "reset", they will revert to their default value, and not the initialized value.
 
 ```jsx
-const localStorageEffect = key => ({setSelf, onSet}) => {
-  setSelf(localStorage.getItem(key).then(savedValue =>
+const localForageEffect = key => ({setSelf, onSet}) => {
+  setSelf(localForage.getItem(key).then(savedValue =>
     savedValue != null
       ? JSON.parse(savedValue)
       : new DefaultValue() // Abort initialization if no value was stored
@@ -274,7 +276,7 @@ const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
   effects_UNSTABLE: [
-    localStorageEffect('current_user'),
+    localForageEffect('current_user'),
   ]
 });
 ```
@@ -285,10 +287,10 @@ const currentUserIDState = atom({
 With this approach, you can asynchronously call `setSelf()` when the value is available.  Unlike initializing to a `Promise`, the atom's default value will be used initially, so `<Suspense>` will not show a fallback unless the atom's default is a `Promise` or async selector.  If the atom is set to a value before the `setSelf()` is called, then it will be overwritten by the `setSelf()`.  This approach isn't just limited to `await`, but for any asynchronous usage of `setSelf()`, such as `setTimeout()`.
 
 ```jsx
-const localStorageEffect = key => ({setSelf, onSet}) => {
+const localForageEffect = key => ({setSelf, onSet}) => {
   /** If there's a persisted value - set it on load  */
   const loadPersisted = async () => {
-    const savedValue = await localStorage.getItem(key);
+    const savedValue = await localForage.getItem(key);
 
     if (savedValue != null) {
       setSelf(JSON.parse(savedValue));
@@ -300,9 +302,9 @@ const localStorageEffect = key => ({setSelf, onSet}) => {
 
   onSet(newValue => {
     if (newValue instanceof DefaultValue) {
-      localStorage.removeItem(key);
+      localForage.removeItem(key);
     } else {
-      localStorage.setItem(key, JSON.stringify(newValue));
+      localForage.setItem(key, JSON.stringify(newValue));
     }
   });
 };
@@ -311,7 +313,7 @@ const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
   effects_UNSTABLE: [
-    localStorageEffect('current_user'),
+    localForageEffect('current_user'),
   ]
 });
 ```
