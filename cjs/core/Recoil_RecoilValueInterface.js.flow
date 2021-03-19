@@ -18,17 +18,11 @@ const nullthrows = require('../util/Recoil_nullthrows');
 
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
-const Tracing = require('../util/Recoil_Tracing');
-
 const {
   getDownstreamNodes,
   getNodeLoadable,
   setNodeValue
 } = require('./Recoil_FunctionalCore');
-
-const {
-  saveDependencyMapToStore
-} = require('./Recoil_Graph');
 
 const {
   getNodeMaybe
@@ -68,7 +62,7 @@ type Action<T> = {
 declare function applyAction(store: Store, state: TreeState, action: Action<mixed>): any;
 declare function writeLoadableToTreeState(state: TreeState, key: NodeKey, loadable: Loadable<mixed>): void;
 declare function applyActionsToStore(store: any, actions: any): any;
-declare function queueOrPerformStateUpdate(store: Store, action: Action<mixed>, key: NodeKey, message: string): void;
+declare function queueOrPerformStateUpdate(store: Store, action: Action<mixed>): void;
 const batchStack: Array<Map<Store, Array<Action<mixed>>>> = [];
 declare function batchStart(): () => void;
 declare function copyTreeState(state: any): any;

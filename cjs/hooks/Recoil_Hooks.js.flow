@@ -93,8 +93,6 @@ const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
 
-const Tracing = require('../util/Recoil_Tracing');
-
 const useComponentName = require('../util/Recoil_useComponentName');
 
 const {

@@ -62,72 +62,6 @@
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
    *
-   * Interface for `scheduler/tracing` to aid in profiling Recoil and Recoil apps.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  // flowlint-next-line untyped-import:off
-  // @fb-only: const SchedulerTracing = require('SchedulerTracing');
-  function trace(message, node, fn) {
-    // prettier-ignore
-    // @fb-only: if (__DEV__) {
-    // prettier-ignore
-    // @fb-only: if (
-    // prettier-ignore
-    // @fb-only: SchedulerTracing.unstable_trace !== undefined &&
-    // prettier-ignore
-    // @fb-only: window.performance !== undefined
-    // prettier-ignore
-    // @fb-only: ) {
-    // prettier-ignore
-    // @fb-only: return SchedulerTracing.unstable_trace(
-    // prettier-ignore
-    // @fb-only: `Recoil: ${message} for node: ${
-    // prettier-ignore
-    // @fb-only: typeof node === 'string' ? node : node.key
-    // prettier-ignore
-    // @fb-only: }`,
-    // prettier-ignore
-    // @fb-only: window.performance.now(),
-    // prettier-ignore
-    // @fb-only: fn,
-    // prettier-ignore
-    // @fb-only: );
-    // prettier-ignore
-    // @fb-only: }
-    // prettier-ignore
-    // @fb-only: }
-    return fn();
-  }
-
-  function wrap(fn) {
-    // prettier-ignore
-    // @fb-only: if (__DEV__) {
-    // prettier-ignore
-    // @fb-only: if (SchedulerTracing.unstable_wrap !== undefined) {
-    // prettier-ignore
-    // @fb-only: return SchedulerTracing.unstable_wrap(fn);
-    // prettier-ignore
-    // @fb-only: }
-    // prettier-ignore
-    // @fb-only: }
-    return fn;
-  }
-
-  var Recoil_Tracing = {
-    trace,
-    wrap
-  };
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
    * Utilities for working with built-in Maps and Sets without mutating them.
    *
    * @emails oncall+recoil
@@ -712,6 +646,411 @@
     initializeNodeIfNewToStore
   };
 
+  const {
+    getDownstreamNodes: getDownstreamNodes$1,
+    getNodeLoadable: getNodeLoadable$1,
+    setNodeValue: setNodeValue$1
+  } = Recoil_FunctionalCore;
+
+  const {
+    getNodeMaybe: getNodeMaybe$2
+  } = Recoil_Node;
+
+  const {
+    DefaultValue: DefaultValue$1,
+    RecoilValueNotReady: RecoilValueNotReady$1
+  } = Recoil_Node;
+
+  const {
+    AbstractRecoilValue: AbstractRecoilValue$1,
+    RecoilState: RecoilState$1,
+    RecoilValueReadOnly: RecoilValueReadOnly$1,
+    isRecoilValue: isRecoilValue$1
+  } = Recoil_RecoilValue$1;
+
+  function getRecoilValueAsLoadable(store, {
+    key
+  }, treeState = store.getState().currentTree) {
+    var _storeState$nextTree, _storeState$previousT;
+
+    // Reading from an older tree can cause bugs because the dependencies that we
+    // discover during the read are lost.
+    const storeState = store.getState();
+
+    if (!(treeState.version === storeState.currentTree.version || treeState.version === ((_storeState$nextTree = storeState.nextTree) === null || _storeState$nextTree === void 0 ? void 0 : _storeState$nextTree.version) || treeState.version === ((_storeState$previousT = storeState.previousTree) === null || _storeState$previousT === void 0 ? void 0 : _storeState$previousT.version))) {
+      Recoil_recoverableViolation('Tried to read from a discarded tree');
+    }
+
+    const loadable = getNodeLoadable$1(store, treeState, key);
+    return loadable;
+  }
+
+  function applyAtomValueWrites(atomValues, writes) {
+    const result = atomValues.clone();
+    writes.forEach((v, k) => {
+      if (v.state === 'hasValue' && v.contents instanceof DefaultValue$1) {
+        result.delete(k);
+      } else {
+        result.set(k, v);
+      }
+    });
+    return result;
+  }
+
+  function valueFromValueOrUpdater(store, state, {
+    key
+  }, valueOrUpdater) {
+    if (typeof valueOrUpdater === 'function') {
+      // Updater form: pass in the current value. Throw if the current value
+      // is unavailable (namely when updating an async selector that's
+      // pending or errored):
+      const current = getNodeLoadable$1(store, state, key);
+
+      if (current.state === 'loading') {
+        throw new RecoilValueNotReady$1(key);
+      } else if (current.state === 'hasError') {
+        throw current.contents;
+      } // T itself may be a function, so our refinement is not sufficient:
+
+
+      return valueOrUpdater(current.contents); // flowlint-line unclear-type:off
+    } else {
+      return valueOrUpdater;
+    }
+  }
+
+  function applyAction(store, state, action) {
+    if (action.type === 'set') {
+      const {
+        recoilValue,
+        valueOrUpdater
+      } = action;
+      const newValue = valueFromValueOrUpdater(store, state, recoilValue, valueOrUpdater);
+      const writes = setNodeValue$1(store, state, recoilValue.key, newValue);
+
+      for (const [key, loadable] of writes.entries()) {
+        writeLoadableToTreeState(state, key, loadable);
+      }
+    } else if (action.type === 'setLoadable') {
+      const {
+        recoilValue: {
+          key
+        },
+        loadable
+      } = action;
+      writeLoadableToTreeState(state, key, loadable);
+    } else if (action.type === 'markModified') {
+      const {
+        recoilValue: {
+          key
+        }
+      } = action;
+      state.dirtyAtoms.add(key);
+    } else if (action.type === 'setUnvalidated') {
+      var _node$invalidate;
+
+      // Write value directly to state bypassing the Node interface as the node
+      // definitions may not have been loaded yet when processing the initial snapshot.
+      const {
+        recoilValue: {
+          key
+        },
+        unvalidatedValue
+      } = action;
+      const node = getNodeMaybe$2(key);
+      node === null || node === void 0 ? void 0 : (_node$invalidate = node.invalidate) === null || _node$invalidate === void 0 ? void 0 : _node$invalidate.call(node, state);
+      state.atomValues.delete(key);
+      state.nonvalidatedAtoms.set(key, unvalidatedValue);
+      state.dirtyAtoms.add(key);
+    } else {
+      Recoil_recoverableViolation(`Unknown action ${action.type}`);
+    }
+  }
+
+  function writeLoadableToTreeState(state, key, loadable) {
+    if (loadable.state === 'hasValue' && loadable.contents instanceof DefaultValue$1) {
+      state.atomValues.delete(key);
+    } else {
+      state.atomValues.set(key, loadable);
+    }
+
+    state.dirtyAtoms.add(key);
+    state.nonvalidatedAtoms.delete(key);
+  }
+
+  function applyActionsToStore(store, actions) {
+    store.replaceState(state => {
+      const newState = copyTreeState(state);
+
+      for (const action of actions) {
+        applyAction(store, newState, action);
+      }
+
+      invalidateDownstreams(store, newState);
+      return newState;
+    });
+  }
+
+  function queueOrPerformStateUpdate(store, action) {
+    if (batchStack.length) {
+      const actionsByStore = batchStack[batchStack.length - 1];
+      let actions = actionsByStore.get(store);
+
+      if (!actions) {
+        actionsByStore.set(store, actions = []);
+      }
+
+      actions.push(action);
+    } else {
+      applyActionsToStore(store, [action]);
+    }
+  }
+
+  const batchStack = [];
+
+  function batchStart() {
+    const actionsByStore = new Map();
+    batchStack.push(actionsByStore);
+    return () => {
+      for (const [store, actions] of actionsByStore) {
+        applyActionsToStore(store, actions);
+      }
+
+      const popped = batchStack.pop();
+
+      if (popped !== actionsByStore) {
+        Recoil_recoverableViolation('Incorrect order of batch popping');
+      }
+    };
+  }
+
+  function copyTreeState(state) {
+    return { ...state,
+      atomValues: state.atomValues.clone(),
+      nonvalidatedAtoms: state.nonvalidatedAtoms.clone(),
+      dirtyAtoms: new Set(state.dirtyAtoms)
+    };
+  }
+
+  function invalidateDownstreams(store, state) {
+    // Inform any nodes that were changed or downstream of changes so that they
+    // can clear out any caches as needed due to the update:
+    const downstreams = getDownstreamNodes$1(store, state, state.dirtyAtoms);
+
+    for (const key of downstreams) {
+      var _getNodeMaybe, _getNodeMaybe$invalid;
+
+      (_getNodeMaybe = getNodeMaybe$2(key)) === null || _getNodeMaybe === void 0 ? void 0 : (_getNodeMaybe$invalid = _getNodeMaybe.invalidate) === null || _getNodeMaybe$invalid === void 0 ? void 0 : _getNodeMaybe$invalid.call(_getNodeMaybe, state);
+    }
+  }
+
+  function setRecoilValue(store, recoilValue, valueOrUpdater) {
+    queueOrPerformStateUpdate(store, {
+      type: 'set',
+      recoilValue,
+      valueOrUpdater
+    });
+  }
+
+  function setRecoilValueLoadable(store, recoilValue, loadable) {
+    if (loadable instanceof DefaultValue$1) {
+      return setRecoilValue(store, recoilValue, loadable);
+    }
+
+    queueOrPerformStateUpdate(store, {
+      type: 'setLoadable',
+      recoilValue,
+      loadable
+    });
+  }
+
+  function markRecoilValueModified(store, recoilValue) {
+    queueOrPerformStateUpdate(store, {
+      type: 'markModified',
+      recoilValue
+    });
+  }
+
+  function setUnvalidatedRecoilValue(store, recoilValue, unvalidatedValue) {
+    queueOrPerformStateUpdate(store, {
+      type: 'setUnvalidated',
+      recoilValue,
+      unvalidatedValue
+    });
+  }
+
+  let subscriptionID = 0;
+
+  function subscribeToRecoilValue(store, {
+    key
+  }, callback, componentDebugName = null) {
+    const subID = subscriptionID++;
+    const storeState = store.getState();
+
+    if (!storeState.nodeToComponentSubscriptions.has(key)) {
+      storeState.nodeToComponentSubscriptions.set(key, new Map());
+    }
+
+    Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]);
+    return {
+      release: () => {
+        const storeState = store.getState();
+        const subs = storeState.nodeToComponentSubscriptions.get(key);
+
+        if (subs === undefined || !subs.has(subID)) {
+          Recoil_recoverableViolation(`Subscription missing at release time for atom ${key}. This is a bug in Recoil.`);
+          return;
+        }
+
+        subs.delete(subID);
+
+        if (subs.size === 0) {
+          storeState.nodeToComponentSubscriptions.delete(key);
+        }
+      }
+    };
+  }
+
+  var Recoil_RecoilValueInterface = {
+    RecoilValueReadOnly: RecoilValueReadOnly$1,
+    AbstractRecoilValue: AbstractRecoilValue$1,
+    RecoilState: RecoilState$1,
+    getRecoilValueAsLoadable,
+    setRecoilValue,
+    setRecoilValueLoadable,
+    markRecoilValueModified,
+    setUnvalidatedRecoilValue,
+    subscribeToRecoilValue,
+    isRecoilValue: isRecoilValue$1,
+    applyAtomValueWrites,
+    // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
+    batchStart,
+    invalidateDownstreams_FOR_TESTING: invalidateDownstreams
+  };
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   *
+   * This is to export esstiential functions from react-dom
+   * for our web build
+   */
+  const {
+    unstable_batchedUpdates
+  } = reactDom;
+
+  var ReactBatchedUpdates = {
+    unstable_batchedUpdates
+  };
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   *
+   * This is to export esstiential functions from react-dom
+   * for our web build
+   */
+  // @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
+  const {
+    unstable_batchedUpdates: unstable_batchedUpdates$1
+  } = ReactBatchedUpdates; // @oss-only
+
+
+  var Recoil_ReactBatchedUpdates = {
+    unstable_batchedUpdates: unstable_batchedUpdates$1
+  };
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+  const {
+    batchStart: batchStart$1
+  } = Recoil_RecoilValueInterface;
+
+  const {
+    unstable_batchedUpdates: unstable_batchedUpdates$2
+  } = Recoil_ReactBatchedUpdates;
+
+  let batcher = unstable_batchedUpdates$2; // flowlint-next-line unclear-type:off
+
+  /**
+   * Sets the provided batcher function as the batcher function used by Recoil.
+   *
+   * Set the batcher to a custom batcher for your renderer,
+   * if you use a renderer other than React DOM or React Native.
+   */
+  const setBatcher = newBatcher => {
+    batcher = newBatcher;
+  };
+  /**
+   * Returns the current batcher function.
+   */
+
+
+  const getBatcher = () => batcher;
+  /**
+   * Calls the current batcher function and passes the
+   * provided callback function.
+   */
+
+
+  const batchUpdates = callback => {
+    batcher(() => {
+      let batchEnd = () => undefined;
+
+      try {
+        batchEnd = batchStart$1();
+        callback();
+      } finally {
+        batchEnd();
+      }
+    });
+  };
+
+  var Recoil_Batching = {
+    getBatcher,
+    setBatcher,
+    batchUpdates
+  };
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+
+  function enqueueExecution(s, f) {
+    f();
+  }
+
+  var Recoil_Queue = {
+    enqueueExecution
+  };
+
   /**
    * Copyright (c) Facebook, Inc. and its affiliates.
    *
@@ -891,411 +1230,6 @@
     graph,
     mergeDepsIntoDependencyMap,
     saveDependencyMapToStore
-  };
-
-  const {
-    getDownstreamNodes: getDownstreamNodes$1,
-    getNodeLoadable: getNodeLoadable$1,
-    setNodeValue: setNodeValue$1
-  } = Recoil_FunctionalCore;
-
-  const {
-    getNodeMaybe: getNodeMaybe$2
-  } = Recoil_Node;
-
-  const {
-    DefaultValue: DefaultValue$1,
-    RecoilValueNotReady: RecoilValueNotReady$1
-  } = Recoil_Node;
-
-  const {
-    AbstractRecoilValue: AbstractRecoilValue$1,
-    RecoilState: RecoilState$1,
-    RecoilValueReadOnly: RecoilValueReadOnly$1,
-    isRecoilValue: isRecoilValue$1
-  } = Recoil_RecoilValue$1;
-
-  function getRecoilValueAsLoadable(store, {
-    key
-  }, treeState = store.getState().currentTree) {
-    var _storeState$nextTree, _storeState$previousT;
-
-    // Reading from an older tree can cause bugs because the dependencies that we
-    // discover during the read are lost.
-    const storeState = store.getState();
-
-    if (!(treeState.version === storeState.currentTree.version || treeState.version === ((_storeState$nextTree = storeState.nextTree) === null || _storeState$nextTree === void 0 ? void 0 : _storeState$nextTree.version) || treeState.version === ((_storeState$previousT = storeState.previousTree) === null || _storeState$previousT === void 0 ? void 0 : _storeState$previousT.version))) {
-      Recoil_recoverableViolation('Tried to read from a discarded tree');
-    }
-
-    const loadable = getNodeLoadable$1(store, treeState, key);
-    return loadable;
-  }
-
-  function applyAtomValueWrites(atomValues, writes) {
-    const result = atomValues.clone();
-    writes.forEach((v, k) => {
-      if (v.state === 'hasValue' && v.contents instanceof DefaultValue$1) {
-        result.delete(k);
-      } else {
-        result.set(k, v);
-      }
-    });
-    return result;
-  }
-
-  function valueFromValueOrUpdater(store, state, {
-    key
-  }, valueOrUpdater) {
-    if (typeof valueOrUpdater === 'function') {
-      // Updater form: pass in the current value. Throw if the current value
-      // is unavailable (namely when updating an async selector that's
-      // pending or errored):
-      const current = getNodeLoadable$1(store, state, key);
-
-      if (current.state === 'loading') {
-        throw new RecoilValueNotReady$1(key);
-      } else if (current.state === 'hasError') {
-        throw current.contents;
-      } // T itself may be a function, so our refinement is not sufficient:
-
-
-      return valueOrUpdater(current.contents); // flowlint-line unclear-type:off
-    } else {
-      return valueOrUpdater;
-    }
-  }
-
-  function applyAction(store, state, action) {
-    if (action.type === 'set') {
-      const {
-        recoilValue,
-        valueOrUpdater
-      } = action;
-      const newValue = valueFromValueOrUpdater(store, state, recoilValue, valueOrUpdater);
-      const writes = setNodeValue$1(store, state, recoilValue.key, newValue);
-
-      for (const [key, loadable] of writes.entries()) {
-        writeLoadableToTreeState(state, key, loadable);
-      }
-    } else if (action.type === 'setLoadable') {
-      const {
-        recoilValue: {
-          key
-        },
-        loadable
-      } = action;
-      writeLoadableToTreeState(state, key, loadable);
-    } else if (action.type === 'markModified') {
-      const {
-        recoilValue: {
-          key
-        }
-      } = action;
-      state.dirtyAtoms.add(key);
-    } else if (action.type === 'setUnvalidated') {
-      var _node$invalidate;
-
-      // Write value directly to state bypassing the Node interface as the node
-      // definitions may not have been loaded yet when processing the initial snapshot.
-      const {
-        recoilValue: {
-          key
-        },
-        unvalidatedValue
-      } = action;
-      const node = getNodeMaybe$2(key);
-      node === null || node === void 0 ? void 0 : (_node$invalidate = node.invalidate) === null || _node$invalidate === void 0 ? void 0 : _node$invalidate.call(node, state);
-      state.atomValues.delete(key);
-      state.nonvalidatedAtoms.set(key, unvalidatedValue);
-      state.dirtyAtoms.add(key);
-    } else {
-      Recoil_recoverableViolation(`Unknown action ${action.type}`);
-    }
-  }
-
-  function writeLoadableToTreeState(state, key, loadable) {
-    if (loadable.state === 'hasValue' && loadable.contents instanceof DefaultValue$1) {
-      state.atomValues.delete(key);
-    } else {
-      state.atomValues.set(key, loadable);
-    }
-
-    state.dirtyAtoms.add(key);
-    state.nonvalidatedAtoms.delete(key);
-  }
-
-  function applyActionsToStore(store, actions) {
-    store.replaceState(state => {
-      const newState = copyTreeState(state);
-
-      for (const action of actions) {
-        applyAction(store, newState, action);
-      }
-
-      invalidateDownstreams(store, newState);
-      return newState;
-    });
-  }
-
-  function queueOrPerformStateUpdate(store, action, key, message) {
-    if (batchStack.length) {
-      const actionsByStore = batchStack[batchStack.length - 1];
-      let actions = actionsByStore.get(store);
-
-      if (!actions) {
-        actionsByStore.set(store, actions = []);
-      }
-
-      actions.push(action);
-    } else {
-      Recoil_Tracing.trace(message, key, () => applyActionsToStore(store, [action]));
-    }
-  }
-
-  const batchStack = [];
-
-  function batchStart() {
-    const actionsByStore = new Map();
-    batchStack.push(actionsByStore);
-    return () => {
-      for (const [store, actions] of actionsByStore) {
-        Recoil_Tracing.trace('Recoil batched updates', '-', () => applyActionsToStore(store, actions));
-      }
-
-      const popped = batchStack.pop();
-
-      if (popped !== actionsByStore) {
-        Recoil_recoverableViolation('Incorrect order of batch popping');
-      }
-    };
-  }
-
-  function copyTreeState(state) {
-    return { ...state,
-      atomValues: state.atomValues.clone(),
-      nonvalidatedAtoms: state.nonvalidatedAtoms.clone(),
-      dirtyAtoms: new Set(state.dirtyAtoms)
-    };
-  }
-
-  function invalidateDownstreams(store, state) {
-    // Inform any nodes that were changed or downstream of changes so that they
-    // can clear out any caches as needed due to the update:
-    const downstreams = getDownstreamNodes$1(store, state, state.dirtyAtoms);
-
-    for (const key of downstreams) {
-      var _getNodeMaybe, _getNodeMaybe$invalid;
-
-      (_getNodeMaybe = getNodeMaybe$2(key)) === null || _getNodeMaybe === void 0 ? void 0 : (_getNodeMaybe$invalid = _getNodeMaybe.invalidate) === null || _getNodeMaybe$invalid === void 0 ? void 0 : _getNodeMaybe$invalid.call(_getNodeMaybe, state);
-    }
-  }
-
-  function setRecoilValue(store, recoilValue, valueOrUpdater) {
-    queueOrPerformStateUpdate(store, {
-      type: 'set',
-      recoilValue,
-      valueOrUpdater
-    }, recoilValue.key, 'set Recoil value');
-  }
-
-  function setRecoilValueLoadable(store, recoilValue, loadable) {
-    if (loadable instanceof DefaultValue$1) {
-      return setRecoilValue(store, recoilValue, loadable);
-    }
-
-    queueOrPerformStateUpdate(store, {
-      type: 'setLoadable',
-      recoilValue,
-      loadable
-    }, recoilValue.key, 'set Recoil value');
-  }
-
-  function markRecoilValueModified(store, recoilValue) {
-    queueOrPerformStateUpdate(store, {
-      type: 'markModified',
-      recoilValue
-    }, recoilValue.key, 'mark RecoilValue modified');
-  }
-
-  function setUnvalidatedRecoilValue(store, recoilValue, unvalidatedValue) {
-    queueOrPerformStateUpdate(store, {
-      type: 'setUnvalidated',
-      recoilValue,
-      unvalidatedValue
-    }, recoilValue.key, 'set Recoil value');
-  }
-
-  let subscriptionID = 0;
-
-  function subscribeToRecoilValue(store, {
-    key
-  }, callback, componentDebugName = null) {
-    const subID = subscriptionID++;
-    const storeState = store.getState();
-
-    if (!storeState.nodeToComponentSubscriptions.has(key)) {
-      storeState.nodeToComponentSubscriptions.set(key, new Map());
-    }
-
-    Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]);
-    return {
-      release: () => {
-        const storeState = store.getState();
-        const subs = storeState.nodeToComponentSubscriptions.get(key);
-
-        if (subs === undefined || !subs.has(subID)) {
-          Recoil_recoverableViolation(`Subscription missing at release time for atom ${key}. This is a bug in Recoil.`);
-          return;
-        }
-
-        subs.delete(subID);
-
-        if (subs.size === 0) {
-          storeState.nodeToComponentSubscriptions.delete(key);
-        }
-      }
-    };
-  }
-
-  var Recoil_RecoilValueInterface = {
-    RecoilValueReadOnly: RecoilValueReadOnly$1,
-    AbstractRecoilValue: AbstractRecoilValue$1,
-    RecoilState: RecoilState$1,
-    getRecoilValueAsLoadable,
-    setRecoilValue,
-    setRecoilValueLoadable,
-    markRecoilValueModified,
-    setUnvalidatedRecoilValue,
-    subscribeToRecoilValue,
-    isRecoilValue: isRecoilValue$1,
-    applyAtomValueWrites,
-    // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
-    batchStart,
-    invalidateDownstreams_FOR_TESTING: invalidateDownstreams
-  };
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   *
-   * This is to export esstiential functions from react-dom
-   * for our web build
-   */
-  const {
-    unstable_batchedUpdates
-  } = reactDom;
-
-  var ReactBatchedUpdates = {
-    unstable_batchedUpdates
-  };
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   *
-   * This is to export esstiential functions from react-dom
-   * for our web build
-   */
-  // @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
-  const {
-    unstable_batchedUpdates: unstable_batchedUpdates$1
-  } = ReactBatchedUpdates; // @oss-only
-
-
-  var Recoil_ReactBatchedUpdates = {
-    unstable_batchedUpdates: unstable_batchedUpdates$1
-  };
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-  const {
-    batchStart: batchStart$1
-  } = Recoil_RecoilValueInterface;
-
-  const {
-    unstable_batchedUpdates: unstable_batchedUpdates$2
-  } = Recoil_ReactBatchedUpdates;
-
-  let batcher = unstable_batchedUpdates$2; // flowlint-next-line unclear-type:off
-
-  /**
-   * Sets the provided batcher function as the batcher function used by Recoil.
-   *
-   * Set the batcher to a custom batcher for your renderer,
-   * if you use a renderer other than React DOM or React Native.
-   */
-  const setBatcher = newBatcher => {
-    batcher = newBatcher;
-  };
-  /**
-   * Returns the current batcher function.
-   */
-
-
-  const getBatcher = () => batcher;
-  /**
-   * Calls the current batcher function and passes the
-   * provided callback function.
-   */
-
-
-  const batchUpdates = callback => {
-    batcher(() => {
-      let batchEnd = () => undefined;
-
-      try {
-        batchEnd = batchStart$1();
-        callback();
-      } finally {
-        batchEnd();
-      }
-    });
-  };
-
-  var Recoil_Batching = {
-    getBatcher,
-    setBatcher,
-    batchUpdates
-  };
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  function enqueueExecution(s, f) {
-    f();
-  }
-
-  var Recoil_Queue = {
-    enqueueExecution
   };
 
   function createCommonjsModule(fn, module) {
@@ -3275,8 +3209,6 @@
 
 
 
-
-
   const {
     cleanUpNode: cleanUpNode$2,
     getDownstreamNodes: getDownstreamNodes$2,
@@ -3403,13 +3335,7 @@
       // TODO OPTIMIZATION Only wake up related downstream components
 
 
-      let nodeNames = '[available in dev build]';
-
-      {
-        nodeNames = Array.from(dirtyAtoms).join(', ');
-      }
-
-      storeState.suspendedComponentResolvers.forEach(cb => Recoil_Tracing.trace('value became available, waking components', nodeNames, cb));
+      storeState.suspendedComponentResolvers.forEach(cb => cb());
     } // Special behavior ONLY invoked by useInterface.
     // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
 
@@ -4129,8 +4055,6 @@
 
 
 
-
-
   const {
     useCallback: useCallback$1,
     useEffect: useEffect$1,
@@ -4206,39 +4130,36 @@
         }
 
         const sub = subscribeToRecoilValue$1(store, new AbstractRecoilValue$3(key), state => {
-          Recoil_Tracing.trace('RecoilValue subscription fired', key, () => {
-            updateState(state, key);
-          });
+          updateState(state, key);
         }, componentName);
         subscriptions.current.set(key, sub);
-        Recoil_Tracing.trace('initial update on subscribing', key, () => {
-          /**
-           * Since we're subscribing in an effect we need to update to the latest
-           * value of the atom since it may have changed since we rendered. We can
-           * go ahead and do that now, unless we're in the middle of a batch --
-           * in which case we should do it at the end of the batch, due to the
-           * following edge case: Suppose an atom is updated in another useEffect
-           * of this same component. Then the following sequence of events occur:
-           * 1. Atom is updated and subs fired (but we may not be subscribed
-           *    yet depending on order of effects, so we miss this) Updated value
-           *    is now in nextTree, but not currentTree.
-           * 2. This effect happens. We subscribe and update.
-           * 3. From the update we re-render and read currentTree, with old value.
-           * 4. Batcher's effect sets currentTree to nextTree.
-           * In this sequence we miss the update. To avoid that, add the update
-           * to queuedComponentCallback if a batch is in progress.
-           */
-          // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
-          const state = store.getState();
+        /**
+         * Since we're subscribing in an effect we need to update to the latest
+         * value of the atom since it may have changed since we rendered. We can
+         * go ahead and do that now, unless we're in the middle of a batch --
+         * in which case we should do it at the end of the batch, due to the
+         * following edge case: Suppose an atom is updated in another useEffect
+         * of this same component. Then the following sequence of events occur:
+         * 1. Atom is updated and subs fired (but we may not be subscribed
+         *    yet depending on order of effects, so we miss this) Updated value
+         *    is now in nextTree, but not currentTree.
+         * 2. This effect happens. We subscribe and update.
+         * 3. From the update we re-render and read currentTree, with old value.
+         * 4. Batcher's effect sets currentTree to nextTree.
+         * In this sequence we miss the update. To avoid that, add the update
+         * to queuedComponentCallback if a batch is in progress.
+         */
+        // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
 
-          if (state.nextTree) {
-            store.getState().queuedComponentCallbacks_DEPRECATED.push(Recoil_Tracing.wrap(() => {
-              updateState(store.getState(), key);
-            }));
-          } else {
+        const state = store.getState();
+
+        if (state.nextTree) {
+          store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
             updateState(store.getState(), key);
-          }
-        });
+          });
+        } else {
+          updateState(store.getState(), key);
+        }
       });
       Recoil_differenceSets(previousSubscriptions.current, recoilValuesUsed.current).forEach(key => {
         unsubscribeFrom(key);
@@ -4350,7 +4271,7 @@
     const componentName = Recoil_useComponentName();
     const subscribe = useCallback$1((_storeState, callback) => {
       const store = storeRef.current;
-      const subscription = subscribeToRecoilValue$1(store, recoilValue, () => Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
+      const subscription = subscribeToRecoilValue$1(store, recoilValue, () => {
         if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
           return callback();
         } // Only re-render if the value has changed.
@@ -4363,7 +4284,7 @@
         if (!prevLoadableRef.current.is(newLoadable)) {
           callback();
         }
-      }), componentName);
+      }, componentName);
       return subscription.release;
     }, [storeRef, recoilValue, componentName, getLoadable]);
     const source = useRecoilMutableSource$1();
@@ -4388,56 +4309,54 @@
       const store = storeRef.current;
       const storeState = store.getState();
       const subscription = subscribeToRecoilValue$1(store, recoilValue, _state => {
-        Recoil_Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
-          var _prevLoadableRef$curr;
+        var _prevLoadableRef$curr;
 
-          if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
-            return forceUpdate([]);
-          }
-
-          const newLoadable = getRecoilValueAsLoadable$2(store, recoilValue, store.getState().currentTree);
-
-          if (!((_prevLoadableRef$curr = prevLoadableRef.current) === null || _prevLoadableRef$curr === void 0 ? void 0 : _prevLoadableRef$curr.is(newLoadable))) {
-            forceUpdate(newLoadable);
-          }
-        });
-      }, componentName);
-      Recoil_Tracing.trace('initial update on subscribing', recoilValue.key, () => {
-        /**
-         * Since we're subscribing in an effect we need to update to the latest
-         * value of the atom since it may have changed since we rendered. We can
-         * go ahead and do that now, unless we're in the middle of a batch --
-         * in which case we should do it at the end of the batch, due to the
-         * following edge case: Suppose an atom is updated in another useEffect
-         * of this same component. Then the following sequence of events occur:
-         * 1. Atom is updated and subs fired (but we may not be subscribed
-         *    yet depending on order of effects, so we miss this) Updated value
-         *    is now in nextTree, but not currentTree.
-         * 2. This effect happens. We subscribe and update.
-         * 3. From the update we re-render and read currentTree, with old value.
-         * 4. Batcher's effect sets currentTree to nextTree.
-         * In this sequence we miss the update. To avoid that, add the update
-         * to queuedComponentCallback if a batch is in progress.
-         */
-        if (storeState.nextTree) {
-          store.getState().queuedComponentCallbacks_DEPRECATED.push(Recoil_Tracing.wrap(() => {
-            prevLoadableRef.current = null;
-            forceUpdate([]);
-          }));
-        } else {
-          var _prevLoadableRef$curr2;
-
-          if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
-            return forceUpdate([]);
-          }
-
-          const newLoadable = getRecoilValueAsLoadable$2(store, recoilValue, store.getState().currentTree);
-
-          if (!((_prevLoadableRef$curr2 = prevLoadableRef.current) === null || _prevLoadableRef$curr2 === void 0 ? void 0 : _prevLoadableRef$curr2.is(newLoadable))) {
-            forceUpdate(newLoadable);
-          }
+        if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
+          return forceUpdate([]);
         }
-      });
+
+        const newLoadable = getRecoilValueAsLoadable$2(store, recoilValue, store.getState().currentTree);
+
+        if (!((_prevLoadableRef$curr = prevLoadableRef.current) === null || _prevLoadableRef$curr === void 0 ? void 0 : _prevLoadableRef$curr.is(newLoadable))) {
+          forceUpdate(newLoadable);
+        }
+      }, componentName);
+      /**
+       * Since we're subscribing in an effect we need to update to the latest
+       * value of the atom since it may have changed since we rendered. We can
+       * go ahead and do that now, unless we're in the middle of a batch --
+       * in which case we should do it at the end of the batch, due to the
+       * following edge case: Suppose an atom is updated in another useEffect
+       * of this same component. Then the following sequence of events occur:
+       * 1. Atom is updated and subs fired (but we may not be subscribed
+       *    yet depending on order of effects, so we miss this) Updated value
+       *    is now in nextTree, but not currentTree.
+       * 2. This effect happens. We subscribe and update.
+       * 3. From the update we re-render and read currentTree, with old value.
+       * 4. Batcher's effect sets currentTree to nextTree.
+       * In this sequence we miss the update. To avoid that, add the update
+       * to queuedComponentCallback if a batch is in progress.
+       */
+
+      if (storeState.nextTree) {
+        store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
+          prevLoadableRef.current = null;
+          forceUpdate([]);
+        });
+      } else {
+        var _prevLoadableRef$curr2;
+
+        if (!Recoil_gkx_1('recoil_suppress_rerender_in_callback')) {
+          return forceUpdate([]);
+        }
+
+        const newLoadable = getRecoilValueAsLoadable$2(store, recoilValue, store.getState().currentTree);
+
+        if (!((_prevLoadableRef$curr2 = prevLoadableRef.current) === null || _prevLoadableRef$curr2 === void 0 ? void 0 : _prevLoadableRef$curr2.is(newLoadable))) {
+          forceUpdate(newLoadable);
+        }
+      }
+
       return subscription.release;
     }, [componentName, recoilValue, storeRef]);
     const loadable = getRecoilValueAsLoadable$2(storeRef.current, recoilValue);

@@ -30,8 +30,6 @@ const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows'); // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 
-const Tracing = require('../util/Recoil_Tracing');
-
 const unionSets = require('../util/Recoil_unionSets');
 
 const {
