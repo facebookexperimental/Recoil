@@ -18,7 +18,7 @@ function Resources() {
               </a>{' '}
               has created a free Recoil video course, which takes you from setup
               to advanced usage. In the course you'll how to take full advantage
-              of powerful Recoil APIs.
+              of Recoil's powerful APIs.
             </p>
             <p>
               Learn how to do data fetching with Suspense, how to use Recoil to
