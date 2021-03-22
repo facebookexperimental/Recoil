@@ -15,6 +15,8 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
 
+import LogoImaage from '../../static/img/logo.svg';
+
 const features = [
   {
     title: <>Minimal and Reactish</>,
@@ -71,7 +73,7 @@ function Home() {
     <Layout description="A state management library for React.">
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
         <div className="container">
-          <h1 className="hero__title">{siteConfig.title}</h1>
+          <h1 className="hero__title"><LogoImaage /></h1>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
           <div className={styles.buttons}>
             <Link
