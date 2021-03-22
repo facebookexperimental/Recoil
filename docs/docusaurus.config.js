@@ -25,7 +25,13 @@ module.exports = {
     },
     image: 'img/og-image.png',
     navbar: {
-      title: 'Recoil',
+      logo: {
+        alt: 'Recoil',
+        src: 'img/logo.svg',
+        srcDark: 'img/logo--dark.svg',
+        href: 'https://recoiljs.org/',
+        target: '_self'
+      },
       items: [
         {
           to: 'docs/introduction/installation',
