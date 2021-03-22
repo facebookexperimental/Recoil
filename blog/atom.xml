@@ -6,14 +6,14 @@
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://recoiljs.org/blog"/>
     <subtitle>Recoil Blog</subtitle>
-    <icon>https://recoiljs.org/img/favicon.ico</icon>
+    <icon>https://recoiljs.org/img/favicon.png</icon>
     <rights>Copyright © 2021 Facebook, Inc.</rights>
     <entry>
         <title type="html"><![CDATA[Recoil 0.1.1]]></title>
         <id>Recoil 0.1.1</id>
         <link href="https://recoiljs.org/blog/2020/10/30/0.1.1-released"/>
         <updated>2020-10-30T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Welcome to Recoil version 0.1.1!  This release has performance improvements and introduces several *experimental* features such as support for React Native, working with Snapshots outside of React, and atom effects for managing side-effects of atoms such as logging, synchronization with external stores, persistence, etc.]]></summary>
+        <summary type="html"><![CDATA[Welcome to Recoil version 0.1.1!  This release has performance improvements and introduces several experimental features such as support for React Native, working with Snapshots outside of React, and atom effects for managing side-effects of atoms such as logging, synchronization with external stores, persistence, etc.]]></summary>
     </entry>
     <entry>
         <title type="html"><![CDATA[Recoil 0.0.11]]></title>
@@ -27,7 +27,7 @@
         <id>Recoil 0.0.10</id>
         <link href="https://recoiljs.org/blog/2020/06/18/0.0.10-released"/>
         <updated>2020-06-18T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Recoil 0.0.9 and 0.0.10 is being released with some bug fixes, [TypeScript support](#typescript-support), and a new API for [Recoil Snapshots](#recoil-snapshots) to observe, inspect, and manage global Recoil atom state.  Thanks again to everyone who helped make this possible and stay tuned for more exciting developments coming soon!]]></summary>
+        <summary type="html"><![CDATA[Recoil 0.0.9 and 0.0.10 is being released with some bug fixes, TypeScript support, and a new API for Recoil Snapshots to observe, inspect, and manage global Recoil atom state.  Thanks again to everyone who helped make this possible and stay tuned for more exciting developments coming soon!]]></summary>
     </entry>
     <entry>
         <title type="html"><![CDATA[Recoil 0.0.8]]></title>
