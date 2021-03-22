@@ -10,15 +10,20 @@
 import React from 'react';
 import classnames from 'classnames';
 import Layout from '@theme/Layout';
+import useThemeContext from '@theme/hooks/useThemeContext';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './styles.module.css';
 
+import WordMarkImaage from '../../static/img/wordmark.svg';
+
 const features = [
   {
     title: <>Minimal and Reactish</>,
-    // imageUrl: 'img/undraw_docusaurus_mountain.svg',
+    imageUrl: 'img/icons/icon-reactish.svg',
+    imageUrlDark: 'img/icons/icon-reactish--dark.svg',
+    imageAlt: 'React logo.',
     description: (
       <>
         Recoil works and thinks like React. Add some to your app and get fast
@@ -28,7 +33,9 @@ const features = [
   },
   {
     title: <>Data-Flow Graph</>,
-    // imageUrl: 'img/undraw_docusaurus_tree.svg',
+    imageUrl: 'img/icons/icon-functional.svg',
+    imageUrlDark: 'img/icons/icon-functional--dark.svg',
+    imageAlt: 'F at x, representing functional programming.',
     description: (
       <>
         Derived data and asynchronous queries are tamed with pure functions and
@@ -38,7 +45,9 @@ const features = [
   },
   {
     title: <>Cross-App Observation</>,
-    // imageUrl: 'img/undraw_docusaurus_react.svg',
+    imageUrl: 'img/icons/icon-observation.svg',
+    imageUrlDark: 'img/icons/icon-observation--dark.svg',
+    imageAlt: 'Connected dots, representing observation of values from various points in an application.',
     description: (
       <>
         Implement persistence, routing, time-travel debugging, or undo by
@@ -49,13 +58,14 @@ const features = [
   },
 ];
 
-function Feature({imageUrl, title, description}) {
-  const imgUrl = useBaseUrl(imageUrl);
+function Feature({ feature: { imageUrl, imageUrlDark, imageAlt, title, description } }) {
+  const {isDarkTheme} = useThemeContext();
+  const resolvedImgUrl = useBaseUrl(isDarkTheme ? imageUrlDark : imageUrl);
   return (
     <div className={classnames('col col--4', styles.feature)}>
-      {imgUrl && (
-        <div className="text--center">
-          <img className={styles.featureImage} src={imgUrl} alt={title} />
+      {resolvedImgUrl && (
+        <div>
+          <img className={styles.featureImage} src={resolvedImgUrl} alt={imageAlt} />
         </div>
       )}
       <h3>{title}</h3>
@@ -71,7 +81,10 @@ function Home() {
     <Layout description="A state management library for React.">
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
         <div className="container">
-          <h1 className="hero__title">{siteConfig.title}</h1>
+          <h1 className="hero__title">
+            <WordMarkImaage width="200" />
+            <div className={styles.hiddenText} aria-hidden="true">Recoil</div>
+          </h1>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
           <div className={styles.buttons}>
             <Link
@@ -90,12 +103,10 @@ function Home() {
           <section className={styles.features}>
             <div className="container">
               <div className="row">
-                {features.map(({title, imageUrl, description}) => (
+                {features.map(feature => (
                   <Feature
-                    key={title}
-                    title={title}
-                    imageUrl={imageUrl}
-                    description={description}
+                    key={feature.imageUrl}
+                    feature={feature}
                   />
                 ))}
               </div>
@@ -111,9 +122,9 @@ function Home() {
                     width="560"
                     height="315"
                     src="https://www.youtube-nocookie.com/embed/_ISAA_Jt9kI"
-                    frameborder="0"
+                    frameBorder="0"
                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
+                    allowFullScreen
                   />{' '}
                 </div>
               </div>

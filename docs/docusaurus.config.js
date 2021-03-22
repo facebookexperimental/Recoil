@@ -12,7 +12,7 @@ module.exports = {
   tagline: 'A state management library for React',
   url: 'https://recoiljs.org',
   baseUrl: '/',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.png',
   organizationName: 'facebookexperimental', // Usually your GitHub org/user name.
   projectName: 'Recoil', // Usually your repo name.
   themeConfig: {
@@ -25,8 +25,14 @@ module.exports = {
     },
     image: 'img/og-image.png',
     navbar: {
-      title: 'Recoil',
-      links: [
+      logo: {
+        alt: 'Recoil',
+        src: 'img/logo.svg',
+        srcDark: 'img/logo--dark.svg',
+        href: '/',
+        target: '_self'
+      },
+      items: [
         {
           to: 'docs/introduction/installation',
           activeBasePath: 'docs',
