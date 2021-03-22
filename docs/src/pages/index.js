@@ -78,7 +78,10 @@ function Home() {
     <Layout description="A state management library for React.">
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
         <div className="container">
-          <h1 className="hero__title"><WordMarkImaage width="200" /></h1>
+          <h1 className="hero__title">
+            <WordMarkImaage width="200" />
+            <div className={styles.hiddenText} aria-hidden="true">Recoil</div>
+          </h1>
           <p className="hero__subtitle">{siteConfig.tagline}</p>
           <div className={styles.buttons}>
             <Link

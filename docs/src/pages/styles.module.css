@@ -48,6 +48,10 @@
   margin-bottom: 1.5ex;
 }
 
+.hiddenText {
+  display: none;
+}
+
 @media only screen and (max-width: 996px) {
   .features {
     padding: 3rem calc(3rem - var(--ifm-spacing-horizontal));
