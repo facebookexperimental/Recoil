@@ -26,7 +26,7 @@ module.exports = {
     image: 'img/og-image.png',
     navbar: {
       title: 'Recoil',
-      links: [
+      items: [
         {
           to: 'docs/introduction/installation',
           activeBasePath: 'docs',
