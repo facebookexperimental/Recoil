@@ -17,6 +17,11 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  background-image: url('../../static/img/logo-symbol.svg');
+  background-repeat: no-repeat;
+  background-position: left calc(30vw - 150px) center;
+  background-size: 150px;
+  background-blend-mode: luminosity;
 }
 
 @media screen and (max-width: 966px) {
@@ -41,7 +46,4 @@
 .featureImage {
   width: 200px;
   margin-bottom: 1ex;
-}
-
-@media screen and (max-width: 996px) {
 }

@@ -29,7 +29,7 @@ module.exports = {
         alt: 'Recoil',
         src: 'img/logo.svg',
         srcDark: 'img/logo--dark.svg',
-        href: 'https://recoiljs.org/',
+        href: '/',
         target: '_self'
       },
       items: [
