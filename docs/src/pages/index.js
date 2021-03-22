@@ -23,6 +23,7 @@ const features = [
     title: <>Minimal and Reactish</>,
     imageUrl: 'img/icons/icon-reactish.svg',
     imageUrlDark: 'img/icons/icon-reactish--dark.svg',
+    imageAlt: 'React logo.',
     description: (
       <>
         Recoil works and thinks like React. Add some to your app and get fast
@@ -34,6 +35,7 @@ const features = [
     title: <>Data-Flow Graph</>,
     imageUrl: 'img/icons/icon-functional.svg',
     imageUrlDark: 'img/icons/icon-functional--dark.svg',
+    imageAlt: 'F at x, representing functional programming.',
     description: (
       <>
         Derived data and asynchronous queries are tamed with pure functions and
@@ -45,6 +47,7 @@ const features = [
     title: <>Cross-App Observation</>,
     imageUrl: 'img/icons/icon-observation.svg',
     imageUrlDark: 'img/icons/icon-observation--dark.svg',
+    imageAlt: 'Connected dots, representing observation of values from various points in an application.',
     description: (
       <>
         Implement persistence, routing, time-travel debugging, or undo by
@@ -55,14 +58,14 @@ const features = [
   },
 ];
 
-function Feature({ feature: { imageUrl, imageUrlDark, title, description } }) {
+function Feature({ feature: { imageUrl, imageUrlDark, imageAlt, title, description } }) {
   const {isDarkTheme} = useThemeContext();
   const resolvedImgUrl = useBaseUrl(isDarkTheme ? imageUrlDark : imageUrl);
   return (
     <div className={classnames('col col--4', styles.feature)}>
       {resolvedImgUrl && (
         <div>
-          <img className={styles.featureImage} src={resolvedImgUrl} alt={title} />
+          <img className={styles.featureImage} src={resolvedImgUrl} alt={imageAlt} />
         </div>
       )}
       <h3>{title}</h3>
