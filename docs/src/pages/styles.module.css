@@ -44,6 +44,20 @@
 }
 
 .featureImage {
-  width: 200px;
-  margin-bottom: 1ex;
+  width: 150px;
+  margin-bottom: 1.5ex;
+}
+
+@media only screen and (max-width: 996px) {
+  .features {
+    padding: 3rem calc(3rem - var(--ifm-spacing-horizontal));
+  }
+
+  .feature:not(:first-child) {
+    margin-top: 5ex;
+  }
+  
+  .featureImage {
+    width: 125px;
+  }
 }
