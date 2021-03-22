@@ -17,7 +17,7 @@ import type {TreeCacheImplementation} from './Recoil_TreeCacheImplementationType
 
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
-const TreeCache = require('./Recoil_TreeCache');
+const {TreeCache} = require('./Recoil_TreeCache');
 const treeCacheLRU = require('./Recoil_treeCacheLRU');
 
 const defaultPolicy = {

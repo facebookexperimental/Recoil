@@ -46,4 +46,4 @@ class MapCache<K, V> {
   }
 }
 
-module.exports = MapCache;
+module.exports = {MapCache};

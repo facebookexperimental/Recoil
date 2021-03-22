@@ -256,4 +256,4 @@ const countDownstreamLeaves = <T>(node: TreeCacheNode<T>): number =>
         0,
       );
 
-module.exports = TreeCache;
+module.exports = {TreeCache};

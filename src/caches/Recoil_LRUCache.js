@@ -154,4 +154,4 @@ class LRUCache<K = mixed, V = mixed> {
   }
 }
 
-module.exports = LRUCache;
+module.exports = {LRUCache};
