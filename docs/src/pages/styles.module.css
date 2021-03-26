@@ -17,6 +17,11 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  background-image: url('../../static/img/logo-symbol.svg');
+  background-repeat: no-repeat;
+  background-position: left calc(30vw - 150px) center;
+  background-size: 150px;
+  background-blend-mode: luminosity;
 }
 
 @media screen and (max-width: 966px) {
@@ -34,11 +39,29 @@
 .features {
   display: flex;
   align-items: center;
-  padding: 2rem 0;
+  padding: 3rem 0;
   width: 100%;
 }
 
 .featureImage {
-  height: 200px;
-  width: 200px;
+  width: 150px;
+  margin-bottom: 1.5ex;
+}
+
+.hiddenText {
+  display: none;
+}
+
+@media only screen and (max-width: 996px) {
+  .features {
+    padding: 3rem calc(3rem - var(--ifm-spacing-horizontal));
+  }
+
+  .feature:not(:first-child) {
+    margin-top: 5ex;
+  }
+  
+  .featureImage {
+    width: 125px;
+  }
 }
