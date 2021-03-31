@@ -16,7 +16,7 @@ const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 let TreeCache, loadableWithValue, nullthrows;
 
 const testRecoil = getRecoilTestFn(() => {
-  TreeCache = require('../Recoil_TreeCache');
+  ({TreeCache} = require('../Recoil_TreeCache'));
   nullthrows = require('../../util/Recoil_nullthrows');
   ({loadableWithValue} = require('../../adt/Recoil_Loadable'));
 });

@@ -10,8 +10,8 @@
 
 import type {TreeCacheImplementation} from './Recoil_TreeCacheImplementationType';
 
-const LRUCache = require('./Recoil_LRUCache');
-const TreeCache = require('./Recoil_TreeCache');
+const {LRUCache} = require('./Recoil_LRUCache');
+const {TreeCache} = require('./Recoil_TreeCache');
 
 function treeCacheLRU<T>(
   maxSize: number,

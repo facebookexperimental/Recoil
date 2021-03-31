@@ -16,7 +16,7 @@ const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 let LRUCache;
 
 const testRecoil = getRecoilTestFn(() => {
-  LRUCache = require('../Recoil_LRUCache');
+  ({LRUCache} = require('../Recoil_LRUCache'));
 });
 
 describe('LRUCache', () => {

@@ -11,7 +11,7 @@
 
 'use strict';
 
-const gks = new Map();
+const gks = new Map().set('recoil_hamt_2020', true);
 
 function Recoil_gkx(gk: string): boolean {
   return gks.get(gk) ?? false;

@@ -17,8 +17,8 @@ import type {
 
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
-const LRUCache = require('./Recoil_LRUCache');
-const MapCache = require('./Recoil_MapCache');
+const {LRUCache} = require('./Recoil_LRUCache');
+const {MapCache} = require('./Recoil_MapCache');
 
 const defaultPolicy = {
   equality: 'reference',
