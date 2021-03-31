@@ -24,7 +24,7 @@
 - Changed semantics of waitForAny() such that it will always return loadables unless everything is loading. This better aligns behaviour of waitForAny() and waitForNone()
 - Added a waitForAllSettled helper analogous to Promise.allSettled. (4c95591)
 - Friendly error message for misuse of useRecoilCallback (#870)
-- Friendly error message if you try to use an async function as a selector setter, which is not uspported. (#777)
+- Friendly error message if you try to use an async function as a selector setter, which is not supported. (#777)
 - Improved React Native support. (#748, #702)
 - Added useGetRecoilValueInfo_UNSTABLE() hook for dev tools. (#713, #714)
 
