@@ -21,4 +21,6 @@ declare class MapCache<K, V> {
   delete(key: K): void,
   clear(): void,
 }
-module.exports = MapCache;
+module.exports = {
+  MapCache
+};

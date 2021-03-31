@@ -13,7 +13,9 @@ const {
 
 let MapCache;
 const testRecoil = getRecoilTestFn(() => {
-  MapCache = require('../Recoil_MapCache');
+  ({
+    MapCache
+  } = require('../Recoil_MapCache'));
 });
 describe('MapCache', () => {
   testRecoil('setting and getting', () => {

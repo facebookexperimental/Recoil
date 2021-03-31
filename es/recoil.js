@@ -147,7 +147,7 @@ var Recoil_filterIterable = filterIterable;
  * @format
  */
 
-const gks = new Map();
+const gks = new Map().set('recoil_hamt_2020', true);
 
 function Recoil_gkx(gk) {
   var _gks$get;
@@ -5245,19 +5245,362 @@ function stableStringify(x, opt = {
 
 var Recoil_stableStringify = stableStringify;
 
-var Recoil_TreeCache = /*#__PURE__*/Object.freeze({
-  __proto__: null
+class TreeCache {
+  constructor(options) {
+    var _options$onHit, _options$onSet, _options$mapNodeValue;
+
+    _defineProperty(this, "_numLeafs", void 0);
+
+    _defineProperty(this, "_root", void 0);
+
+    _defineProperty(this, "_onHit", void 0);
+
+    _defineProperty(this, "_onSet", void 0);
+
+    _defineProperty(this, "_mapNodeValue", void 0);
+
+    this._numLeafs = 0;
+    this._root = null;
+    this._onHit = (_options$onHit = options === null || options === void 0 ? void 0 : options.onHit) !== null && _options$onHit !== void 0 ? _options$onHit : () => {};
+    this._onSet = (_options$onSet = options === null || options === void 0 ? void 0 : options.onSet) !== null && _options$onSet !== void 0 ? _options$onSet : () => {};
+    this._mapNodeValue = (_options$mapNodeValue = options === null || options === void 0 ? void 0 : options.mapNodeValue) !== null && _options$mapNodeValue !== void 0 ? _options$mapNodeValue : val => val;
+  }
+
+  size() {
+    return this._numLeafs;
+  } // TODO: nodeCount(): number
+
+
+  root() {
+    return this._root;
+  }
+
+  get(getNodeValue, handlers) {
+    var _this$getLeafNode;
+
+    return (_this$getLeafNode = this.getLeafNode(getNodeValue, handlers)) === null || _this$getLeafNode === void 0 ? void 0 : _this$getLeafNode.value;
+  }
+
+  getLeafNode(getNodeValue, handlers) {
+    return findLeaf(this.root(), nodeKey => this._mapNodeValue(getNodeValue(nodeKey)), {
+      onNodeVisit: node => {
+        handlers === null || handlers === void 0 ? void 0 : handlers.onNodeVisit(node);
+
+        if (node.type === 'leaf') {
+          this._onHit(node);
+        }
+      }
+    });
+  }
+
+  set(route, value, handlers) {
+    let leafNode;
+    const newRoot = addLeaf(this.root(), route.map(([nodeKey, nodeValue]) => [nodeKey, this._mapNodeValue(nodeValue)]), null, value, null, {
+      onNodeVisit: node => {
+        handlers === null || handlers === void 0 ? void 0 : handlers.onNodeVisit(node);
+
+        if (node.type === 'leaf') {
+          leafNode = node;
+        }
+      }
+    });
+
+    if (!this.root()) {
+      this._root = newRoot;
+    }
+
+    this._numLeafs++;
+
+    this._onSet(Recoil_nullthrows(leafNode));
+  }
+
+  delete(node) {
+    if (!this.root()) {
+      return false;
+    }
+
+    const root = Recoil_nullthrows(this.root());
+    const existsInTree = pruneNodeFromTree(root, node, node.parent);
+
+    if (!existsInTree) {
+      return false;
+    }
+
+    if (node === root || root.type === 'branch' && !root.branches.size) {
+      this._root = null;
+      this._numLeafs = 0;
+      return true;
+    }
+
+    this._numLeafs -= countDownstreamLeaves(node);
+    return true;
+  }
+
+  clear() {
+    this._numLeafs = 0;
+    this._root = null;
+  }
+
+}
+
+const findLeaf = (root, getNodeValue, handlers) => {
+  var _handlers$onNodeVisit;
+
+  if (root == null) {
+    return undefined;
+  }
+
+  handlers === null || handlers === void 0 ? void 0 : (_handlers$onNodeVisit = handlers.onNodeVisit) === null || _handlers$onNodeVisit === void 0 ? void 0 : _handlers$onNodeVisit.call(handlers, root);
+
+  if (root.type === 'leaf') {
+    return root;
+  }
+
+  const nodeValue = getNodeValue(root.nodeKey);
+  return findLeaf(root.branches.get(nodeValue), getNodeValue, handlers);
+};
+
+const addLeaf = (root, route, parent, value, branchKey, handlers) => {
+  var _handlers$onNodeVisit2;
+
+  let node;
+
+  if (root == null) {
+    if (route.length === 0) {
+      node = {
+        type: 'leaf',
+        value,
+        parent,
+        branchKey
+      };
+    } else {
+      const [path, ...rest] = route;
+      const [nodeKey, nodeValue] = path;
+      node = {
+        type: 'branch',
+        nodeKey,
+        parent,
+        branches: new Map(),
+        branchKey
+      };
+      node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers));
+    }
+  } else {
+    node = root;
+
+    if (route.length) {
+      const [path, ...rest] = route;
+      const [nodeKey, nodeValue] = path;
+      !(root.type === 'branch' && root.nodeKey === nodeKey) ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Existing cache must have a branch midway through the route with matching node key') : Recoil_invariant(false) : void 0;
+      root.branches.set(nodeValue, addLeaf(root.branches.get(nodeValue), rest, root, value, nodeValue, handlers));
+    }
+  }
+
+  handlers === null || handlers === void 0 ? void 0 : (_handlers$onNodeVisit2 = handlers.onNodeVisit) === null || _handlers$onNodeVisit2 === void 0 ? void 0 : _handlers$onNodeVisit2.call(handlers, node);
+  return node;
+};
+
+const pruneNodeFromTree = (root, node, parent) => {
+  if (!parent) {
+    return root === node;
+  }
+
+  parent.branches.delete(node.branchKey);
+  return pruneUpstreamBranches(root, parent, parent.parent);
+};
+
+const pruneUpstreamBranches = (root, branchNode, parent) => {
+  if (!parent) {
+    return root === branchNode;
+  }
+
+  if (branchNode.branches.size === 0) {
+    parent.branches.delete(branchNode.branchKey);
+  }
+
+  return pruneUpstreamBranches(root, parent, parent.parent);
+};
+
+const countDownstreamLeaves = node => node.type === 'leaf' ? 1 : Array.from(node.branches.values()).reduce((sum, currNode) => sum + countDownstreamLeaves(currNode), 0);
+
+var Recoil_TreeCache = {
+  TreeCache
+};
+
+var Recoil_TreeCache_1 = Recoil_TreeCache.TreeCache;
+
+var Recoil_TreeCache$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  TreeCache: Recoil_TreeCache_1
 });
 
-var Recoil_LRUCache = /*#__PURE__*/Object.freeze({
-  __proto__: null
+class LRUCache {
+  constructor(options) {
+    var _options$mapKey;
+
+    _defineProperty(this, "_maxSize", void 0);
+
+    _defineProperty(this, "_size", void 0);
+
+    _defineProperty(this, "_head", void 0);
+
+    _defineProperty(this, "_tail", void 0);
+
+    _defineProperty(this, "_map", void 0);
+
+    _defineProperty(this, "_keyMapper", void 0);
+
+    this._maxSize = options.maxSize;
+    this._size = 0;
+    this._head = null;
+    this._tail = null;
+    this._map = new Map();
+    this._keyMapper = (_options$mapKey = options.mapKey) !== null && _options$mapKey !== void 0 ? _options$mapKey : v => v;
+  }
+
+  head() {
+    return this._head;
+  }
+
+  tail() {
+    return this._tail;
+  }
+
+  size() {
+    return this._size;
+  }
+
+  maxSize() {
+    return this._maxSize;
+  }
+
+  has(key) {
+    return this._map.has(this._keyMapper(key));
+  }
+
+  get(key) {
+    const mappedKey = this._keyMapper(key);
+
+    const node = this._map.get(mappedKey);
+
+    if (!node) {
+      return undefined;
+    }
+
+    this.set(key, node.value);
+    return node.value;
+  }
+
+  set(key, val) {
+    const mappedKey = this._keyMapper(key);
+
+    const existingNode = this._map.get(mappedKey);
+
+    if (existingNode) {
+      this.delete(key);
+    }
+
+    const head = this.head();
+    const node = {
+      key,
+      right: head,
+      left: null,
+      value: val
+    };
+
+    if (head) {
+      head.left = node;
+    } else {
+      this._tail = node;
+    }
+
+    this._map.set(mappedKey, node);
+
+    this._head = node;
+    this._size++;
+
+    this._maybeDeleteLRU();
+  }
+
+  _maybeDeleteLRU() {
+    if (this.size() > this.maxSize()) {
+      this.deleteLru();
+    }
+  }
+
+  deleteLru() {
+    const tail = this.tail();
+
+    if (tail) {
+      this.delete(tail.key);
+    }
+  }
+
+  delete(key) {
+    const mappedKey = this._keyMapper(key);
+
+    if (!this._size || !this._map.has(mappedKey)) {
+      return;
+    }
+
+    const node = Recoil_nullthrows(this._map.get(mappedKey));
+    const right = node.right;
+    const left = node.left;
+
+    if (right) {
+      right.left = node.left;
+    }
+
+    if (left) {
+      left.right = node.right;
+    }
+
+    if (node === this.head()) {
+      this._head = right;
+    }
+
+    if (node === this.tail()) {
+      this._tail = left;
+    }
+
+    this._map.delete(mappedKey);
+
+    this._size--;
+  }
+
+  clear() {
+    this._size = 0;
+    this._head = null;
+    this._tail = null;
+    this._map = new Map();
+  }
+
+}
+
+var Recoil_LRUCache = {
+  LRUCache
+};
+
+var Recoil_LRUCache_1 = Recoil_LRUCache.LRUCache;
+
+var Recoil_LRUCache$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  LRUCache: Recoil_LRUCache_1
 });
+
+const {
+  LRUCache: LRUCache$1
+} = Recoil_LRUCache$1;
+
+const {
+  TreeCache: TreeCache$1
+} = Recoil_TreeCache$1;
 
 function treeCacheLRU(maxSize, mapNodeValue = v => v) {
-  const lruCache = new Recoil_LRUCache({
+  const lruCache = new LRUCache$1({
     maxSize
   });
-  const cache = new Recoil_TreeCache({
+  const cache = new TreeCache$1({
     mapNodeValue,
     onHit: node => {
       lruCache.set(node, true);
@@ -5275,6 +5618,12 @@ function treeCacheLRU(maxSize, mapNodeValue = v => v) {
 }
 
 var Recoil_treeCacheLRU = treeCacheLRU;
+
+const {
+  TreeCache: TreeCache$2
+} = Recoil_TreeCache$1;
+
+
 
 const defaultPolicy = {
   equality: 'reference',
@@ -5307,7 +5656,7 @@ function getValueMapper(equality) {
 function getTreeCache(eviction, maxSize, mapNodeValue) {
   switch (eviction) {
     case 'none':
-      return new Recoil_TreeCache({
+      return new TreeCache$2({
         mapNodeValue
       });
 
@@ -6516,9 +6865,62 @@ var Recoil_atom = atom;
  * @format
  */
 
-var Recoil_MapCache = /*#__PURE__*/Object.freeze({
-  __proto__: null
+class MapCache {
+  constructor(options) {
+    var _options$mapKey;
+
+    _defineProperty(this, "_map", void 0);
+
+    _defineProperty(this, "_keyMapper", void 0);
+
+    this._map = new Map();
+    this._keyMapper = (_options$mapKey = options === null || options === void 0 ? void 0 : options.mapKey) !== null && _options$mapKey !== void 0 ? _options$mapKey : v => v;
+  }
+
+  size() {
+    return this._map.size;
+  }
+
+  has(key) {
+    return this._map.has(this._keyMapper(key));
+  }
+
+  get(key) {
+    return this._map.get(this._keyMapper(key));
+  }
+
+  set(key, val) {
+    this._map.set(this._keyMapper(key), val);
+  }
+
+  delete(key) {
+    this._map.delete(this._keyMapper(key));
+  }
+
+  clear() {
+    this._map.clear();
+  }
+
+}
+
+var Recoil_MapCache = {
+  MapCache
+};
+
+var Recoil_MapCache_1 = Recoil_MapCache.MapCache;
+
+var Recoil_MapCache$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  MapCache: Recoil_MapCache_1
 });
+
+const {
+  LRUCache: LRUCache$2
+} = Recoil_LRUCache$1;
+
+const {
+  MapCache: MapCache$1
+} = Recoil_MapCache$1;
 
 const defaultPolicy$1 = {
   equality: 'reference',
@@ -6551,12 +6953,12 @@ function getValueMapper$1(equality) {
 function getCache(eviction, maxSize, mapKey) {
   switch (eviction) {
     case 'none':
-      return new Recoil_MapCache({
+      return new MapCache$1({
         mapKey
       });
 
     case 'lru':
-      return new Recoil_LRUCache({
+      return new LRUCache$2({
         mapKey,
         maxSize: Recoil_nullthrows(maxSize)
       });

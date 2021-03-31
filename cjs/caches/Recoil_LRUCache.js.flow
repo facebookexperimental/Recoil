@@ -39,4 +39,6 @@ declare class LRUCache<K = mixed, V = mixed> {
   delete(key: K): void,
   clear(): void,
 }
-module.exports = LRUCache;
+module.exports = {
+  LRUCache
+};

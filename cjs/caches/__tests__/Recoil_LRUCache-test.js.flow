@@ -16,7 +16,9 @@ const {
 
 let LRUCache;
 const testRecoil = getRecoilTestFn(() => {
-  LRUCache = require('../Recoil_LRUCache');
+  ({
+    LRUCache
+  } = require('../Recoil_LRUCache'));
 });
 describe('LRUCache', () => {
   testRecoil('setting and getting (without hitting max size)', () => {

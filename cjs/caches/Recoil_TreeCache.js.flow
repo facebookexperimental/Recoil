@@ -38,4 +38,6 @@ declare var addLeaf: <T>(root: ?TreeCacheNode<T>, route: NodeCacheRoute, parent:
 declare var pruneNodeFromTree: <T>(root: TreeCacheNode<T>, node: TreeCacheNode<T>, parent: ?TreeCacheBranch<T>) => boolean;
 declare var pruneUpstreamBranches: <T>(root: TreeCacheNode<T>, branchNode: TreeCacheBranch<T>, parent: ?TreeCacheBranch<T>) => boolean;
 declare var countDownstreamLeaves: <T>(node: TreeCacheNode<T>) => number;
-module.exports = TreeCache;
+module.exports = {
+  TreeCache
+};
