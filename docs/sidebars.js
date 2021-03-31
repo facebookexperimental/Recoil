@@ -40,18 +40,36 @@ module.exports = {
     'API Reference': [
       'api-reference/core/RecoilRoot',
       {
-        'Recoil State': [
-          'api-reference/core/atom',
-          'api-reference/core/selector',
-          'api-reference/core/Loadable',
-          'api-reference/core/useRecoilState',
-          'api-reference/core/useRecoilValue',
-          'api-reference/core/useSetRecoilState',
-          'api-reference/core/useResetRecoilState',
-          'api-reference/core/useRecoilStateLoadable',
-          'api-reference/core/useRecoilValueLoadable',
-          'api-reference/core/isRecoilValue',
-          // 'api-reference/core/DefaultValue',
+        Core: [
+          'api-reference/core/RecoilRoot',
+          {
+            State: [
+              'api-reference/core/atom',
+              'api-reference/core/selector',
+              'api-reference/core/Loadable',
+              'api-reference/core/useRecoilState',
+              'api-reference/core/useRecoilValue',
+              'api-reference/core/useSetRecoilState',
+              'api-reference/core/useResetRecoilState',
+              'api-reference/core/useRecoilStateLoadable',
+              'api-reference/core/useRecoilValueLoadable',
+              'api-reference/core/useGetRecoilValueInfo',
+              'api-reference/core/isRecoilValue',
+              // 'api-reference/core/DefaultValue',
+            ],
+            Snapshots: [
+              'api-reference/core/Snapshot',
+              'api-reference/core/useRecoilTransactionObserver',
+              'api-reference/core/useRecoilSnapshot',
+              'api-reference/core/useGotoRecoilSnapshot',
+            ],
+          },
+          'api-reference/core/useRecoilCallback',
+          {
+            Misc: [
+              'api-reference/core/useRecoilBridgeAcrossReactRoots',
+            ],
+          },
         ],
       },
       'api-reference/core/useRecoilCallback',
@@ -63,6 +81,7 @@ module.exports = {
           'api-reference/utils/errorSelector',
           'api-reference/utils/noWait',
           'api-reference/utils/waitForAll',
+          'api-reference/utils/waitForAllSettled',
           'api-reference/utils/waitForNone',
           'api-reference/utils/waitForAny',
         ],
