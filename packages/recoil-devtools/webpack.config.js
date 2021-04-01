@@ -8,14 +8,14 @@
  */
 'use strict';
 
-const webpack = require('webpack');
-const path = require('path');
-const fileSystem = require('fs-extra');
+const env = require('./utils/env');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const fileSystem = require('fs-extra');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
 const WriteFilePlugin = require('write-file-webpack-plugin');
-const env = require('./utils/env');
 
 // load the secrets
 var alias = {
