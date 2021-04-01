@@ -8,11 +8,11 @@
  */
 'use strict';
 
-const WebpackDevServer = require('webpack-dev-server');
-const webpack = require('webpack');
 const config = require('../webpack.config');
 const env = require('./env');
 const path = require('path');
+const webpack = require('webpack');
+const WebpackDevServer = require('webpack-dev-server');
 
 var options = config.chromeExtensionBoilerplate || {};
 var excludeEntriesToHotReload = options.notHotReload || [];

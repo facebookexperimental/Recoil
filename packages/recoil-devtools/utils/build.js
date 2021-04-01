@@ -8,8 +8,8 @@
  */
 'use strict';
 
-const webpack = require('webpack');
 const config = require('../webpack.config');
+const webpack = require('webpack');
 
 delete config.chromeExtensionBoilerplate;
 
