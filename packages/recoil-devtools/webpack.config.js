@@ -101,7 +101,7 @@ var options = {
     ],
   },
   resolve: {
-    alias: alias,
+    alias,
     extensions: fileExtensions
       .map(extension => '.' + extension)
       .concat(['.jsx', '.js', '.css']),
@@ -136,7 +136,7 @@ var options = {
           from: 'src/manifest.json',
           to: path.join(__dirname, buildFolder),
           force: true,
-          transform: function (content, path) {
+          transform(content, path) {
             // generates the manifest file using the package.json informations
             return Buffer.from(
               JSON.stringify({
