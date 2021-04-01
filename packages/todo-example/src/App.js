@@ -6,11 +6,10 @@
  * @format
  */
 
+import './App.css';
+import {TodoList} from './components/Todo/TodoList';
 import React from 'react';
 import {RecoilRoot} from 'recoil';
-
-import {TodoList} from './components/Todo/TodoList';
-import './App.css';
 
 function App() {
   return (
