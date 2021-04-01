@@ -20,4 +20,4 @@ function waitForAny(dependencies: {[string]: RecoilValue<>}):
 ```
 ---
 
-`waitForAny()` est similaire à [`waitForNone()`](/docs_FR-fr/api-reference/utils/waitForNone), sauf qu'il attend qu'au moins une dépendance ait une valeur disponible au lieu de retourner immédiatement. 
+`waitForAny()` est similaire à [`waitForNone()`](/docs_FR-fr/api-reference/utils/waitForNone), sauf qu'il attend qu'au moins une dépendance ait une valeur (ou une erreur) disponible au lieu de retourner immédiatement. 

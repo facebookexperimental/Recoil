@@ -341,7 +341,7 @@ const userInfoQuery = selectorFamily({
 });
 
 function useRefreshUserInfo(userID) {
-  setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
+  const setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
   return () => {
     setUserInfoQueryRequestID(requestID => requestID + 1);
   };

@@ -100,6 +100,8 @@ La méthode `getInfo_UNSTABLE ()` fournit des informations de débogage supplém
 * `deps` - Un itérateur sur les atomes ou sélecteurs dont dépend ce nœud.
 * `abonnés` - Informations sur ce qui s'abonne à ce nœud pour cet instantané. Détails en cours de développement.
 
+Ceci est similaire au hook [`useGetRecoilValueInfo_UNSTABLE()`](/docs_FR-fr/api-reference/core/useGetRecoilValueInfo), mais les informations fournies sont basées sur l'état du `Snapshot` en place de l'état courant. Il n'est pas possible d'obtenir des informations non-associées à un snapshot Recoil, tel que souscrire à un composant React.
+
 ## Initialisation de l'état
 
 Le composant [`<RecoilRoot>`](/docs_FR-fr/api-reference/core/RecoilRoot) et l'usine `snapshot_UNSTABLE ()` prennent un accessoire optionnel `initializeState` pour initialiser l'état via un` MutableSnapshot`. Cela peut être utile pour charger l'état persistant lorsque vous connaissez tous les atomes à l'avance et est compatible avec le rendu côté serveur où l'état doit être configuré de manière synchrone avec le rendu initial. Pour l'initialisation / la persistance par atome et la facilité de travailler avec des atomes dynamiques, considérez [Atom Effectrs](/docs_FR-fr/guides/atom-effects)
