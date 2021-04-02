@@ -11,7 +11,7 @@ function makeDocsEditUrl(locale, docPath) {
   if (locale === 'en')
     return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/docs/${docPath}`
   else
-    return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/i18n/${locale}/docusaurus-plugin-content-docs/${docPath}`
+    return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/i18n/${locale}/docusaurus-plugin-content-docs/current/${docPath}`
 }
 
 module.exports = {
