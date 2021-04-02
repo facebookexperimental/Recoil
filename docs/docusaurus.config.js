@@ -7,6 +7,13 @@
  * @format
  */
 
+function makeDocsEditUrl(locale, docPath) {
+  if (locale === 'en')
+    return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/docs/${docPath}`
+  else
+    return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/i18n/${locale}/docusaurus-plugin-content-docs/${docPath}`
+}
+
 module.exports = {
   title: 'Recoil',
   tagline: 'A state management library for React',
@@ -15,8 +22,20 @@ module.exports = {
   favicon: 'img/favicon.png',
   organizationName: 'facebookexperimental', // Usually your GitHub org/user name.
   projectName: 'Recoil', // Usually your repo name.
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'fr'],
+    localeConfigs: {
+      en: {
+        label: 'English',
+      },
+      fr: {
+        label: 'Français',
+      },
+    },
+  },
   themeConfig: {
-     algolia: {
+    algolia: {
       apiKey: '9c5a009951e793525603922b8ca66628',
       indexName: 'recoiljs'
     },
@@ -39,14 +58,18 @@ module.exports = {
           label: 'Docs',
           position: 'left',
         },
-        {to: 'blog', label: 'Blog', position: 'left'},
-        {to: 'resources', label: 'External Resources', position: 'left'},
+        { to: 'blog', label: 'Blog', position: 'left' },
+        { to: 'resources', label: 'External Resources', position: 'left' },
         // Please keep GitHub link to the right for consistency.
         {
           href: 'https://github.com/facebookexperimental/Recoil',
           label: 'GitHub',
           position: 'right',
         },
+        {
+          type: 'localeDropdown',
+          position: 'right',
+        }
       ],
     },
     footer: {
@@ -129,14 +152,13 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl:
-            'https://github.com/facebookexperimental/Recoil/edit/docs/docs/',
+          editUrl: ({ locale, docPath }) => makeDocsEditUrl(locale, docPath),
         },
         blog: {
           showReadingTime: true,
           editUrl:
             'https://github.com/facebookexperimental/Recoil/edit/docs/docs/blog/',
-           feedOptions: {
+          feedOptions: {
             type: 'all',
             copyright: `Copyright © ${new Date().getFullYear()} Facebook, Inc.`,
           },
