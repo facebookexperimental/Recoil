@@ -77,7 +77,7 @@ The following hook can be used for navigating the current Recoil state to the pr
 
 ## Developer Tools
 
-Snapshots provide some methods useful for building developer tools or debugging capabilities with Recoil.  This API is still evolving, and thus marked as `_UNSTABLE`, as we work on the initial dev tools.
+Snapshots provide some methods useful for [building developer tools](/docs/guides/dev-tools) or debugging capabilities with Recoil.  This API is still evolving, and thus marked as `_UNSTABLE`, as we work on the initial dev tools.
 
 ### Snapshot IDs
 
@@ -100,6 +100,22 @@ The `getInfo_UNSTABLE()` method provides additional debug information for atoms 
 * `deps` - An iterator over the atoms or selectors this node depends on.
 * `subscribers` - Information about what is subscribing to this node for this snapshot.  Details under development.
 
+This is similar to the [`useGetRecoilValueInfo_UNSTABLE()`](/docs/api-reference/core/useGetRecoilValueInfo) hook, but provides information based on the state in the `Snapshot` instead of the current state.  It cannot provide information not associated with a snapshot of Recoil state, such as subscribing React components.
+
 ## State Initialization
 
 The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component and `snapshot_UNSTABLE()` factory take an optional `initializeState` prop for initializing the state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For per-atom initialization/persistence and ease of working with dynamic atoms, consider [atom effects](/docs/guides/atom-effects)
+
+```jsx
+function MyApp() {
+  function initializeState({set}) {
+    set(myAtom, 'foo');
+  }
+
+  return (
+    <RecoilRoot initializeState={initializeState}>
+      ...
+    </RecoilRoot>
+  );
+}
+```

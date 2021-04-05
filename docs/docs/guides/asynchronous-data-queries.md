@@ -341,15 +341,15 @@ const userInfoQuery = selectorFamily({
 });
 
 function useRefreshUserInfo(userID) {
-  setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
+  const setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
   return () => {
-    setUserInfoQueryRequestID(requestID => requestID++);
+    setUserInfoQueryRequestID(requestID => requestID + 1);
   };
 }
 
 function CurrentUserInfo() {
   const currentUserID = useRecoilValue(currentUserIDState);
-  const currentUserInfo = userRecoilValue(userInfoQuery(currentUserID));
+  const currentUserInfo = useRecoilValue(userInfoQuery(currentUserID));
   const refreshUserInfo = useRefreshUserInfo(currentUserID);
 
   return (

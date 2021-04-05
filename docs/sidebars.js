@@ -34,11 +34,11 @@ module.exports = {
       'guides/atom-effects',
       'guides/testing',
       'guides/dev-tools',
-      //   'guides/writing-test',
       //   'guides/code-splitting',
     ],
 
     'API Reference': [
+      'api-reference/core/RecoilRoot',
       {
         Core: [
           'api-reference/core/RecoilRoot',
@@ -51,8 +51,9 @@ module.exports = {
               'api-reference/core/useRecoilValue',
               'api-reference/core/useSetRecoilState',
               'api-reference/core/useResetRecoilState',
-              'api-reference/core/useRecoilValueLoadable',
               'api-reference/core/useRecoilStateLoadable',
+              'api-reference/core/useRecoilValueLoadable',
+              'api-reference/core/useGetRecoilValueInfo',
               'api-reference/core/isRecoilValue',
               // 'api-reference/core/DefaultValue',
             ],
@@ -71,16 +72,27 @@ module.exports = {
           },
         ],
       },
+      'api-reference/core/useRecoilCallback',
       {
         Utils: [
           'api-reference/utils/atomFamily',
           'api-reference/utils/selectorFamily',
           'api-reference/utils/constSelector',
           'api-reference/utils/errorSelector',
-          'api-reference/utils/waitForAll',
-          'api-reference/utils/waitForAny',
-          'api-reference/utils/waitForNone',
           'api-reference/utils/noWait',
+          'api-reference/utils/waitForAll',
+          'api-reference/utils/waitForAllSettled',
+          'api-reference/utils/waitForNone',
+          'api-reference/utils/waitForAny',
+        ],
+        Snapshots: [
+          'api-reference/core/Snapshot',
+          'api-reference/core/useRecoilTransactionObserver',
+          'api-reference/core/useRecoilSnapshot',
+          'api-reference/core/useGotoRecoilSnapshot',
+        ],
+        Misc: [
+          'api-reference/core/useRecoilBridgeAcrossReactRoots',
         ],
       },
     ],
