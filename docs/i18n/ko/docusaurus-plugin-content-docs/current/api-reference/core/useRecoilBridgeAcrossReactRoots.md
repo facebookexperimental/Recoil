@@ -3,13 +3,13 @@ title: useRecoilBridgeAcrossReactRoots()
 sidebar_label: useRecoilBridgeAcrossReactRoots()
 ---
 
-A hook to help with bridging Recoil state with a nested React root and renderer.
+중첩된 React 루트 및 렌더러로 Recoil 상태를 연결하는데 도움이 되는 hook입니다.
 
 ```jsx
 function useRecoilBridgeAcrossReactRoots_UNSTABLE():
   React.AbstractComponent<{children: React.Node}>;
 ```
-If a nested React root is created with `ReactDOM.render()`, or a nested custom renderer is used, React will not propagate context state to the child root.  This hook is useful if you would like to "bridge" and share Recoil state with a nested React root.  The hook returns a React component which you can use instead of `<RecoilRoot>` in your nested React root to share the same consistent Recoil store state. As with any state sharing across React roots, changes may not be perfectly synchronized in all cases.
+중첩된 React 루트가 `ReactDOM.render()`로 생성되거나, 중천된 커스텀 렌더러로 사용된 경우 React는 context 상태를 자식 루트로 전파하지 않습니다. 이 hook은 중첩된 React root와 Recoil 상태를 "연결"하고 공유하는데 유용합니다. hook은 중첩된 React 루트에서 `<RecoilRoot>` 대신 사용할 수 있는 React 컴포넌트를 반환해 동일하고 일관된 Recoil 저장소 상태를 공유합니다. React 루트에서 공유되는 모든 상태와 마찬가지로 모든 경우에 완벽하게 동기화되지 않을 수 있습니다. 
 
 ### Example
 
