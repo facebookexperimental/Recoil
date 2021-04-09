@@ -3,7 +3,7 @@ title: atomFamily(options)
 sidebar_label: atomFamily()
 ---
 
-Returns a function that returns a writeable `RecoilState` [atom](/docs/api-reference/core/atom).
+작성 가능한 `RecoilState` [atom](/docs/api-reference/core/atom)를 반환하는 함수를 반환합니다.
 
 ---
 
@@ -25,16 +25,17 @@ function atomFamily<T, Parameter>({
 }): Parameter => RecoilState<T>
 ```
 
-- `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-- `default` - The initial value of the atom. It may either be a value directly, a `RecoilValue` or `Promise` that represents the default value, or a function to get the default value. The callback function is passed a copy of the parameter used when the `atomFamily` function is called.
-- `effects_UNSTABLE` - An optional array, or callback to get the array based on the family parameter, of [Atom Effects](/docs/guides/atom-effects).
-- `dangerouslyAllowMutability` - Recoil depends on atom state changes to know when to notify components that use the atoms to re-render.  If an atom's value were mutated, it may bypass this and cause state to change without properly notifying subscribing components.  To help protect against this all stored values are frozen.  In some cases it may be desireable to override this using this option.
+- `key` - 내부적으로 atom을 식별하는데 사용되는 고유한 문자열. 이 문자열은 어플리케이션 전체에서 다른 atom과 selector에 대해 고유해야 한다.
+- `default` - atom의 초기값. 직접 값을 입력하거나, 기본 값을 나타내는 `RecoilValue`, `Promise`, 또는 기본값을 가져오는 함수일 수 있습니다. 콜백 함수는 `atomFamily`함수가 호출될 떄 사용되는 매개변수의 복사값을 전달 받습니다.
+- `effects_UNSTABLE` - [Atom Effects](/docs/guides/atom-effects)의 family 매개변수를 기반으로 배열을 가져오는 선택적 배열 또는 콜백입니다.
+- `dangerouslyAllowMutability` - Recoil은 atom 상태 변경에 따라 리렌더링에 atom을 이용하는 컴포넌트에 언제 알릴지를 알 수 있습니다. 만약 atom의 값이 변경된 경우, 원자의 값은 구독하고 있는 컴포넌트에게 제대로 알리지 않고 우회하여 상태가 변경될 수 있습니다. 이 문제를 방지하기 위해 모든 저장된 값은 동결됩니다. 경우에 따라 이 옵션을 사용해 재정의하는 것이 바람직할 수 있습니다.
+
 
 ---
 
-An `atom` represents a piece of state with _Recoil_. An atom is created and registered per `<RecoilRoot>` by your app. But, what if your state isn’t global? What if your state is associated with a particular instance of a control, or with a particular element? For example, maybe your app is a UI prototyping tool where the user can dynamically add elements and each element has state, such as its position. Ideally, each element would get its own atom of state. You could implement this yourself via a memoization pattern. But, _Recoil_ provides this pattern for you with the `atomFamily` utility. An Atom Family represents a collection of atoms. When you call `atomFamily` it will return a function which provides the `RecoilState` atom based on the parameters you pass in.
+`atom`은 _Recoil_ 의 상태를 나타냅니다. 앱에서 `<RecoilRoot>`별로 atom을 만들고 등록합니다. 하지만 상태가 전역이 아니라면 어떨까요? 상태가 control의 인스턴스 또는 특정 요소와 연관된 경우 어떻게 될까요? 예를 들어, 사용자가 요소를 동적으로 추가하고 각 요소가 위치를 갖는 UI 프로토타이핑 도구를 만들 수 있습니다. 이상적으로, 각각의 요소들은 각각의 상태 `atom`을 가질 것 입니다. 당신은 메모이제이션 패턴으로 이를 구현할 수 있습니다. 그러나 _Recoil_ 은 이 패턴을 `atomFamly` 유틸리티로 제공합니다. Atom Family는 atom 모음을 의미합니다. `atomFamily`를 호출하면 전달한 매개변수에 따라 `RecoilState`를 제공하는 함수를 반환합니다.
 
-The `atomFamily` essentially provides a map from the parameter to an atom.  You only need to provide a single key for the `atomFamily` and it will generate a unique key for each underlying atom.  These atom keys can be used for persistence, and so must be stable across application executions.  The parameters may also be generated at different callsites and we want equivalent parameters to use the same underlying atom.  Therefore, value-equality is used instead of reference-equality for `atomFamily` parameters.  This imposes restrictions on the types which can be used for the parameter.  `atomFamily` accepts primitive types, or arrays or objects which can contain arrays, objects, or primitive types.
+`atomFamily`는 기본적으로 매개변수에서 `atom`으로의 맵을 제공합니다. `atomFamily`에 단일 키만을 제공하면, 각 기본 atom에 대해 고유한 키가 생성됩니다. 이 atom 키는 지속성을 사용될 수 있으므로 어플리케이션 실행 전반에 걸쳐 안정적이여야 합니다. 매개 변수는 다른 호출 지점에서도 생성될 수 있으며 동일한 매개변수가 동일한 기본 atom을 갖기를 원합니다. 그래서, `atomFamily`에서는 참조 동등성 대신 값 동등성을 사용합니다. 이는 매개 변수에 사용할 수 있는 타입을 제한하게 됩니다.  `atomFamily`는 원시 타입, 배열, 또는 배열, 원시 타입을 갖는 객체를 허용합니다. 
 
 ## Example
 
@@ -55,7 +56,7 @@ function ElementListItem({elementID}) {
 }
 ```
 
-An `atomFamily()` takes almost the same options as a simple [`atom()`](/docs/api-reference/core/atom).  However, the default value can also be parameterized. That means you could provide a function which takes the parameter value and returns the actual default value.  For example:
+`atomFamily()`는 간단한 [`atom()`](/docs/api-reference/core/atom)으로써 거의 동일한 옵션을 사용합니다. 그러나 기본값을 매개변수화 할 수도 있습니다. 즉, 매개 변수값을 받아 실제 기본값을 반환하는 함수를 제공할 수 있습니다. 예제를 살펴보겠습니다.
 
 ```jsx
 const myAtomFamily = atomFamily({
@@ -64,7 +65,7 @@ const myAtomFamily = atomFamily({
 });
 ```
 
-or using [`selectorFamily`](/docs/api-reference/utils/selectorFamily) instead of `selector`, you can also access the parameter value in a `default` selector as well.
+또는, `selector` 대신 [`selectorFamily`](/docs/api-reference/utils/selectorFamily)를 사용하면 `default` selector에서도 매개 변수 값에 접근할 수 있습니다.  
 
 ```jsx
 const myAtomFamily = atomFamily({
@@ -78,12 +79,12 @@ const myAtomFamily = atomFamily({
 });
 ```
 
-## Subscriptions
+## 구독
 
-One advantage of using this pattern for separate atoms for each element over trying to store a single atom with a map of state for all elements is that they all maintain their own individual subscriptions. So, updating the value for one element will only cause React components that have subscribed to just that atom to update.
+모든 요소에 대한 상태 맵이 있는 단일 atom을 저장하는 것보다 각 요소에 대해 분리된 atom을 갖는 이 패턴을 사용하면 모두 자체 개별 구독을 유지한다는 장점을 얻을 수 있습니다. 따라서, 한 요소의 값을 업데이트하면 해당 atom를 구독하는 React 컴포넌트만 업데이트 됩니다.
 
-## Persistence
+## 지속성(Persistence)
 
-Persistence observers will persist the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to only use parameters which are primitives or simple compound objects containing primitives. Custom classes or functions are not allowed.
+지속성 옵저버는 사용 된 매개변수 값의 직렬화에 따라 고유한 키를 사용해 각 매개 변수의 상태를 고유한 atom으로 유지합니다. 따라서, 원시 혹은 원시 타입을 포함하는 단순한 복합 객체 매개 변수만을 사용하는 것이 중요합니다. 커스텀 클래스 또는 함수는 허용되지 않습니다.
 
-It is allowed to “upgrade” a simple `atom` to be an `atomFamily` in a newer version of your app based on the same key. If you do this, then any persisted values with the old simple key can still be read and all parameter values of the new `atomFamily` will default to the persisted state of the simple atom. If you change the format of the parameter in an `atomFamily`, however, it will not automatically read the previous values that were persisted before the change. However, you can add logic in a default selector or validator to lookup values based on previous parameter formats. We hope to help automate this pattern in the future.
+동일한 키를 기반으로 한 최신버전의 앱에서 간단한 `atom`을 `atomFamily`로 "업그레이드" 할 수 있습니다. 이렇게 하면, 이전 키로 지속된 값을 읽을 수 있으며 새 `atomFamily`의 모든 매개 변수 값은 기본적으로 단순 atom의 지속된 상태로 설정됩니다. 그러나, `atomFamily`에서 매개 변수의 형식을 변경하면 변경 전의 값을 자동으로 읽을 수 없습니다. 하지만, selector 혹은 validator에 로직을 추가해 이전 매개변수 형식을 기반으로 조회할 수 있습니다. 향후 이 패턴을 자동화 할 수 있기를 바랍니다.

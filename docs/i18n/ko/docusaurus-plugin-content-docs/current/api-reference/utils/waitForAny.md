@@ -3,9 +3,9 @@ title: waitForAny(dependencies)
 sidebar_label: waitForAny()
 ---
 
-A concurrency helper that returns a set of [`Loadable`s](/docs/api-reference/core/Loadable) for the current state of the requested dependencies.  It waits until at least one of the dependencies are available.
+요청된 종속성의 현재 상태에 대한 [`Loadable`](/docs/api-reference/core/Loadable) 집합을 반환하는 동시성(concurrency) helper 입니다. 종속성 중 하나 이상을 사용할 수 있을 때까지 기다립니다.
 
-The dependencies may either be provided as a tuple array or as named dependencies in an object.
+종속성들은 튜플 배열 또는 객체에 명명된 종속성으로 제공됩니다.
 
 ---
 
@@ -20,4 +20,4 @@ function waitForAny(dependencies: {[string]: RecoilValue<>}):
 ```
 ---
 
-`waitForAny()` is similar to [`waitForNone()`](/docs/api-reference/utils/waitForNone), except that it waits until at least one dependency has a value (or an error) available instead of returning immediately.
+`waitForAny()`는 [`waitForNone()`](/docs/api-reference/utils/waitForNone)와 비슷하지만, 적어도 하나의 종속성이 즉시 반환되지 않고 사용 가능한 값을 가질 때까지 기다린다는 점에서 다릅니다.
