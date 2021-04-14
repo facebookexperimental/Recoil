@@ -1,18 +1,18 @@
 {
   "item.label.Docs": {
-    "message": "Docs",
+    "message": "문서",
     "description": "Navbar item with label Docs"
   },
   "item.label.Blog": {
-    "message": "Blog",
+    "message": "블로그",
     "description": "Navbar item with label Blog"
   },
   "item.label.External Resources": {
-    "message": "Resources Externes",
+    "message": "외부 자원",
     "description": "Navbar item with label External Resources"
   },
   "item.label.GitHub": {
     "message": "GitHub",
     "description": "Navbar item with label GitHub"
   }
-} 
+}
