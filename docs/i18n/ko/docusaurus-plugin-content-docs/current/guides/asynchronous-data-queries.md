@@ -1,6 +1,6 @@
 ---
-title: Asynchronous Data Queries
-sidebar_label: Asynchronous Data Queries
+title: 비동기 데이터 쿼리
+sidebar_label: 비동기 데이터 쿼리
 ---
 
 Recoil은 데이터 플로우 그래프를 통해 상태를 매핑하는 방법과 파생된 상태를 리액트 컴포넌트에 제공합니다. 가장 강력한 점은 graph에 속한 함수들도 비동기가 될 수 있다는 것입니다. 이는 비동기 함수들을 동기 리액트 컴포넌트 렌더 함수에서 사용하기 쉽게 해줍니다. Recoil은 동기와 비동기 함수들을 selector의 데이터 플로우 그래프에서 균일하게 혼합하게 해줍니다. Selector `get`콜백에서 나온 값 그 자체 대신 프로미스를 리턴하면 인터페이스는 정확하게 그대로 유지됩니다. 이들은 Selector일 뿐이므로 다른 selector들에 의존하여 데이터를 추가로 변환 할 수도 있습니다.
@@ -113,12 +113,12 @@ function MyApp() {
 
 ## Queries with Parameters (매개변수가 있는 쿼리)
 
-가끔 파생된 상태만이 아닌 매개변수를 기반으로 쿼리를 하고싶을 때가 있을 수 있습니다.  예를 들어 컴포넌트 props를 기반으로 쿼리를 하고 싶다고 해봅시다. 이 때 [**`selectorFamily`**](/docs/api-reference/utils/selectorFamily) helper를 사용할 수 있습니다:
+가끔 파생된 상태만이 아닌 매개변수를 기반으로 쿼리를 하고싶을 때가 있을 수 있습니다. 예를 들어 컴포넌트 props를 기반으로 쿼리를 하고 싶다고 해봅시다. 이 때 [**`selectorFamily`**](/docs/api-reference/utils/selectorFamily) helper를 사용할 수 있습니다:
 
 ```jsx
 const userNameQuery = selectorFamily({
   key: 'UserName',
-  get: userID => async () => {
+  get: (userID) => async () => {
     const response = await myDBQuery({userID});
     if (response.error) {
       throw response.error;
@@ -137,9 +137,9 @@ function MyApp() {
     <RecoilRoot>
       <ErrorBoundary>
         <React.Suspense fallback={<div>Loading...</div>}>
-          <UserInfo userID={1}/>
-          <UserInfo userID={2}/>
-          <UserInfo userID={3}/>
+          <UserInfo userID={1} />
+          <UserInfo userID={2} />
+          <UserInfo userID={3} />
         </React.Suspense>
       </ErrorBoundary>
     </RecoilRoot>
@@ -161,7 +161,7 @@ const currentUserIDState = atom({
 
 const userInfoQuery = selectorFamily({
   key: 'UserInfoQuery',
-  get: userID => async () => {
+  get: (userID) => async () => {
     const response = await myDBQuery({userID});
     if (response.error) {
       throw response.error;
@@ -179,7 +179,7 @@ const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
   get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
-    return friendList.map(friendID => get(userInfoQuery(friendID)));
+    return friendList.map((friendID) => get(userInfoQuery(friendID)));
   },
 });
 
@@ -191,11 +191,11 @@ function CurrentUserInfo() {
     <div>
       <h1>{currentUser.name}</h1>
       <ul>
-        {friends.map(friend =>
+        {friends.map((friend) => (
           <li key={friend.id} onClick={() => setCurrentUserID(friend.id)}>
             {friend.name}
           </li>
-        )}
+        ))}
       </ul>
     </div>
   );
@@ -223,9 +223,9 @@ const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
   get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
-    const friends = get(waitForAll(
-      friendList.map(friendID => userInfoQuery(friendID))
-    ));
+    const friends = get(
+      waitForAll(friendList.map((friendID) => userInfoQuery(friendID))),
+    );
     return friends;
   },
 });
@@ -238,9 +238,9 @@ const friendsInfoQuery = selector({
   key: 'FriendsInfoQuery',
   get: ({get}) => {
     const {friendList} = get(currentUserInfoQuery);
-    const friendLoadables = get(waitForNone(
-      friendList.map(friendID => userInfoQuery(friendID))
-    ));
+    const friendLoadables = get(
+      waitForNone(friendList.map((friendID) => userInfoQuery(friendID))),
+    );
     return friendLoadables
       .filter(({state}) => state === 'hasValue')
       .map(({contents}) => contents);
@@ -259,7 +259,7 @@ function CurrentUserInfo() {
   const currentUser = useRecoilValue(currentUserInfoQuery);
   const friends = useRecoilValue(friendsInfoQuery);
 
-  const changeUser = useRecoilCallback(({snapshot, set}) => userID => {
+  const changeUser = useRecoilCallback(({snapshot, set}) => (userID) => {
     snapshot.getLoadable(userInfoQuery(userID)); // pre-fetch user info
     set(currentUserIDState, userID); // change current user to start new render
   });
@@ -268,11 +268,11 @@ function CurrentUserInfo() {
     <div>
       <h1>{currentUser.name}</h1>
       <ul>
-        {friends.map(friend =>
+        {friends.map((friend) => (
           <li key={friend.id} onClick={() => changeUser(friend.id)}>
             {friend.name}
           </li>
-        )}
+        ))}
       </ul>
     </div>
   );
@@ -320,6 +320,7 @@ selector를 사용하여 데이터 쿼리를 모델링 할 때, selector 평가�
 변경가능한 데이터를 다루기위해서 몇 가지 패턴을 사용할 수 있습니다.
 
 ### Use a Request ID (요청 ID 사용하기)
+
 Selector 평가는 인풋을 바탕으로 주어진 상태에 일관된 값을 제공해야합니다(종속된 상태, 혹은 패밀리 매개변수). 따라서 요청 ID를 패밀리 매개변수 혹은 쿼리에 대한 종속성으로 추가할 수 있습니다. 예를 들면 다음과 같습니다:
 
 ```jsx
@@ -330,7 +331,7 @@ const userInfoQueryRequestIDState = atomFamily({
 
 const userInfoQuery = selectorFamily({
   key: 'UserInfoQuery',
-  get: userID => async ({get}) => {
+  get: (userID) => async ({get}) => {
     get(userInfoQueryRequestIDState(userID)); // Add request ID as a dependency
     const response = await myDBQuery({userID});
     if (response.error) {
@@ -341,9 +342,11 @@ const userInfoQuery = selectorFamily({
 });
 
 function useRefreshUserInfo(userID) {
-  setUserInfoQueryRequestID = useSetRecoilState(userInfoQueryRequestIDState(userID));
+  setUserInfoQueryRequestID = useSetRecoilState(
+    userInfoQueryRequestIDState(userID),
+  );
   return () => {
-    setUserInfoQueryRequestID(requestID => requestID + 1);
+    setUserInfoQueryRequestID((requestID) => requestID + 1);
   };
 }
 
@@ -362,20 +365,24 @@ function CurrentUserInfo() {
 ```
 
 ### Use an Atom (Atom 사용하기)
+
 또 다른 방법은 selector 대신 atom을 사용하여 쿼리 결과를 모델링하는 것입니다. Atom 상태를 새로운 쿼리 결과를 독자적인 새로고침 방침에 맞추어 명령적으로(imperatively) 업데이트 할 수 있습니다.
 
 ```jsx
 const userInfoState = atomFamily({
   key: 'UserInfo',
-  default: userID => fetch(userInfoURL(userID)),
+  default: (userID) => fetch(userInfoURL(userID)),
 });
 
 // React component to refresh query
 function RefreshUserInfo({userID}) {
-  const refreshUserInfo = useRecoilCallback(({set}) => async id => {
-    const userInfo = await myDBQuery({userID});
-    set(userInfoState(userID), userInfo);
-  }, [userID]);
+  const refreshUserInfo = useRecoilCallback(
+    ({set}) => async (id) => {
+      const userInfo = await myDBQuery({userID});
+      set(userInfoState(userID), userInfo);
+    },
+    [userID],
+  );
 
   // Refresh user info every second
   useEffect(() => {

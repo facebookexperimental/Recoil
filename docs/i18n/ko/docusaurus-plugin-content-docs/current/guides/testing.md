@@ -1,5 +1,5 @@
 ---
-title: Testing
+title: 테스팅
 ---
 
 ## Testing Recoil Selectors outside of React (Recoil Selectors를 리액트 외부에서 테스트하기)
@@ -22,6 +22,5 @@ test('Test multipliedState', () => {
 
   const testSnapshot = snapshot_UNSTABLE(({set}) => set(numberState, 1));
   expect(testSnapshot.getLoadable(multipliedState).valueOrThrow()).toBe(100);
-})
+});
 ```
-
