@@ -67,7 +67,7 @@ class MutableSnapshot {
 }
 ```
 
-`set()` 과 `reset()`은 쓰기 가능한 selector의 set 프로퍼티에 제공된 콜백과 같은 시그니쳐를 가집니다. 하지만 현재 상태가 아닌 새로운 스냅샷에만 영향을 줍니다.
+`set()` 과 `reset()`은 쓰기 가능한 selector의 set 프로퍼티에 제공된 콜백과 같은 시그니처를 가집니다. 하지만 현재 상태가 아닌 새로운 스냅샷에만 영향을 줍니다.
 
 ## Going to a Snapshot
 
