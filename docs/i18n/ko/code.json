@@ -1,4 +1,43 @@
 {
+  "homePage.head.tagline": {
+    "message": "Librairie de gestion d'état pour React"
+  },
+  "homePage.head.start": {
+    "message": "Commencer"
+  },
+  "homePage.minimal.title": {
+    "message": "Minimal et tout comme React"
+  },
+  "homePage.minimal.text": {
+    "message": "Recoil fonctionne et pense comme React. Ajoutez-le à votre application et obtenez un état partagé rapide et flexible."
+  },
+  "homePage.flow.title": {
+    "message": "Graphe de flux de données "
+  },
+  "homePage.flow.text": {
+    "message": "Données dérivées et requêtes asynchrones sont apprivoisées avec des fonctions pures et des un système d'abonnement efficace."
+  },
+  "homePage.cross.title": {
+    "message": "Observation inter-applications"
+  },
+  "homePage.cross.text": {
+    "message": "Implementez persistance, routage, débogage dans le temps ou retour arrière en observant tous les changements d'état dans votre application, sans nuire au fractionnement du code."
+  },
+  "resourcePage.head.title": {
+    "message": "Ressources Externes"
+  },
+  "resourcePage.learn.title": {
+    "message": "Apprendre Recoil"
+  },
+  "resourcePage.learn.course": {
+    "message": "a créé un cours vidéo Recoil gratuit (en anglais), qui vous emmène de la configuration à l'utilisation avancée. Dans le cours, vous apprendrez à tirer pleinement parti des APIs puissantes de Recoil."
+  },
+  "resourcePage.learn.more": {
+    "message": "Apprenez à récupérer des données avec Suspense, à utiliser Recoil pour résoudre les goulots d'étranglement courants de React, et bien plus encore."
+  },
+  "resourcePage.learn.watch": {
+    "message": "Regarder le cours"
+  },
   "theme.NotFound.title": {
     "message": "페이지를 찾을 수 없습니다.",
     "description": "The title of the 404 page"
