@@ -1,42 +1,42 @@
 {
   "homePage.head.tagline": {
-    "message": "Librairie de gestion d'état pour React"
+    "message": "React를 위한 상태관리 라이브러리"
   },
   "homePage.head.start": {
-    "message": "Commencer"
+    "message": "시작하기"
   },
   "homePage.minimal.title": {
-    "message": "Minimal et tout comme React"
+    "message": "작고 반응적인"
   },
   "homePage.minimal.text": {
-    "message": "Recoil fonctionne et pense comme React. Ajoutez-le à votre application et obtenez un état partagé rapide et flexible."
+    "message": "Recoil은 React처럼 작동하고 생각합니다. 앱에 추가하고 빠르고 유연한 공유 상태를 얻으세요."
   },
   "homePage.flow.title": {
-    "message": "Graphe de flux de données "
+    "message": "데이터 흐름 그래프"
   },
   "homePage.flow.text": {
-    "message": "Données dérivées et requêtes asynchrones sont apprivoisées avec des fonctions pures et des un système d'abonnement efficace."
+    "message": "파생 데이터와 비동기 쿼리는 순수 함수와 효율적인 구독으로 길들집니다."
   },
   "homePage.cross.title": {
-    "message": "Observation inter-applications"
+    "message": "교차하는 앱 관찰"
   },
   "homePage.cross.text": {
-    "message": "Implementez persistance, routage, débogage dans le temps ou retour arrière en observant tous les changements d'état dans votre application, sans nuire au fractionnement du code."
+    "message": "코드 분할을 손상시키지 않고 앱 전체의 모든 상태 변경을 관찰하여 지속성, 라우팅, 시간 이동 디버깅 또는 실행 취소를 구현합니다."
   },
   "resourcePage.head.title": {
-    "message": "Ressources Externes"
+    "message": "외부 자원"
   },
   "resourcePage.learn.title": {
-    "message": "Apprendre Recoil"
+    "message": "Recoil 배우기"
   },
   "resourcePage.learn.course": {
-    "message": "a créé un cours vidéo Recoil gratuit (en anglais), qui vous emmène de la configuration à l'utilisation avancée. Dans le cours, vous apprendrez à tirer pleinement parti des APIs puissantes de Recoil."
+    "message": "은 설정에서 고급 사용까지 안내하는 무료 Recoil 비디오 강의를 만들었습니다. 이 과정에서는 Recoil의 강력한 API를 최대한 활용하는 방법을 배우게됩니다."
   },
   "resourcePage.learn.more": {
-    "message": "Apprenez à récupérer des données avec Suspense, à utiliser Recoil pour résoudre les goulots d'étranglement courants de React, et bien plus encore."
+    "message": "Suspense로 데이터 가져 오기를 수행하는 방법, Recoil을 사용하여 일반적인 React 성능 병목 현상을 해결하는 방법 등을 알아보십시오."
   },
   "resourcePage.learn.watch": {
-    "message": "Regarder le cours"
+    "message": "강의 보기"
   },
   "theme.NotFound.title": {
     "message": "페이지를 찾을 수 없습니다.",
