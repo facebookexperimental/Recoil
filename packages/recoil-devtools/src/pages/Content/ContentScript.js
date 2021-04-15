@@ -15,8 +15,8 @@ import type {DevToolsOptions, PostMessageData} from '../../types/DevtoolsTypes';
 const {
   ExtensionSource,
   ExtensionSourceContentScript,
-  RecoilDevToolsActions,
   MessageChunkSize,
+  RecoilDevToolsActions,
 } = require('../../constants/Constants');
 const {debug, warn} = require('../../utils/Logger');
 const nullthrows = require('nullthrows');
