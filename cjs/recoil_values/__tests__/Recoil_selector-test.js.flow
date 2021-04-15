@@ -1065,3 +1065,54 @@ testRecoil('selectors with user-thrown loadable promises execute to completion a
   const val = await promise;
   expect(val).toBe('AB');
 });
+testRecoil('selectors cannot mutate values in get() or set()', () => {
+  const devStatus = window.__DEV__;
+  window.__DEV__ = true;
+  const userState = atom({
+    key: 'userState',
+    default: {
+      name: 'john',
+      address: {
+        road: '103 road',
+        nested: {
+          value: 'someNestedValue'
+        }
+      }
+    }
+  });
+  const userSelector = selector({
+    key: 'userSelector',
+    get: ({
+      get
+    }) => {
+      const user = get(userState);
+      user.address.road = '301 road';
+      return user;
+    },
+    set: ({
+      set,
+      get
+    }) => {
+      const user = get(userState);
+      user.address.road = 'narrow road';
+      return set(userState, user);
+    }
+  });
+  const testSnapshot = freshSnapshot();
+  testSnapshot.retain();
+  expect(() => testSnapshot.map(({
+    set
+  }) => {
+    set(userSelector, {
+      name: 'matt',
+      address: {
+        road: '103 road',
+        nested: {
+          value: 'someNestedValue'
+        }
+      }
+    });
+  })).toThrow();
+  expect(testSnapshot.getLoadable(userSelector).state).toBe('hasError');
+  window.__DEV__ = devStatus;
+});

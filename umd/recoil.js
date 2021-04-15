@@ -6096,6 +6096,7 @@
         } = recoilValue;
         setNewDepInStore(store, state, deps, depKey, executionId);
         const depLoadable = bypassSelectorDepCache ? getNodeLoadable$2(store, state, depKey) : getCachedNodeLoadable(store, state, depKey);
+        maybeFreezeLoadableContents(depLoadable);
         depValues.set(depKey, depLoadable);
 
         if (depLoadable.state === 'hasValue') {
@@ -6402,7 +6403,11 @@
     }
 
     if (set != null) {
-      function selectorSet(store, state, newValue) {
+      /**
+       * ES5 strict mode prohibits defining non-top-level function declarations,
+       * so don't use function declaration syntax here
+       */
+      const selectorSet = (store, state, newValue) => {
         let syncSelectorSetFinished = false;
         const writes = new Map();
 
@@ -6414,6 +6419,7 @@
           }
 
           const loadable = getCachedNodeLoadable(store, state, key);
+          maybeFreezeLoadableContents(loadable);
 
           if (loadable.state === 'hasValue') {
             return loadable.contents;
@@ -6453,7 +6459,7 @@
 
         syncSelectorSetFinished = true;
         return writes;
-      }
+      };
 
       return registerNode$1({
         key,
