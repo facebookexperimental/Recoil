@@ -588,6 +588,8 @@ function selector<T>(
         ? getNodeLoadable(store, state, depKey)
         : getCachedNodeLoadable(store, state, depKey);
 
+      maybeFreezeLoadableContents(depLoadable);
+
       depValues.set(depKey, depLoadable);
 
       if (depLoadable.state === 'hasValue') {
@@ -1007,6 +1009,8 @@ function selector<T>(
         }
 
         const loadable = getCachedNodeLoadable(store, state, key);
+
+        maybeFreezeLoadableContents(loadable);
 
         if (loadable.state === 'hasValue') {
           return loadable.contents;
