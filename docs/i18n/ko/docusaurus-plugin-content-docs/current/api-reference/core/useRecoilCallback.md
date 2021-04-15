@@ -28,7 +28,7 @@ function useRecoilCallback<Args, ReturnValue>(
 ): (...Args) => ReturnValue
 ```
 
-* **`callback`** - 콜백 인터페이스를 제공하는 래퍼 함수가 있는 유저 콜백 함수. 상태를 변경하는 콜백은 현재 Recoil 상태를 비동기로 업데이트 하기 위해 대기합니다. 래핑된 함수의 타입 시그니쳐는 리턴된 콜백의 타입 시그니쳐와 일치합니다.
+* **`callback`** - 콜백 인터페이스를 제공하는 래퍼 함수가 있는 유저 콜백 함수. 상태를 변경하는 콜백은 현재 Recoil 상태를 비동기로 업데이트 하기 위해 대기합니다. 래핑된 함수의 타입 시그니처는 리턴된 콜백의 타입 시그니처와 일치합니다.
 * **`deps`** - 콜백을 메모하기 위한 선택적 의존성 모음입니다. `useCallback()`처럼, 생성된 콜백은 기본적으로 메모되지 않고 렌더링 할 때마다 새로운 함수를 생성합니다. 빈 배열을 넘겨 항상 동일한 함수 인스턴스를 반환하게 할 수도 있습니다. 만약 `deps` 배열에 값을 전달하고 dep의 참조 동등성이 변경되면 새로운 함수가 사용됩니다. 그러면 그 값들은 콜백의 몸체 내에서 오래되지 않게 사용될 수 있습니다. ([`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback) 을 확인해주세요) [eslint를 업데이트](/docs/introduction/installation#eslint) 하여 이것이 올바르게 사용되고 있는지 확인할 수 있습니다.
 
 콜백 인터페이스:
