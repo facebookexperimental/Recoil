@@ -14,52 +14,53 @@ import useThemeContext from '@theme/hooks/useThemeContext';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
+import Translate from '@docusaurus/Translate';
 import styles from './styles.module.css';
 
 import WordMarkImaage from '../../static/img/wordmark.svg';
 
 const features = [
   {
-    title: <>Minimal and Reactish</>,
+    title: <Translate id="homePage.minimal.title">Minimal and Reactish</Translate>,
     imageUrl: 'img/icons/icon-reactish.svg',
     imageUrlDark: 'img/icons/icon-reactish--dark.svg',
     imageAlt: 'React logo.',
     description: (
-      <>
+      <Translate id="homePage.minimal.text">
         Recoil works and thinks like React. Add some to your app and get fast
         and flexible shared state.
-      </>
+      </Translate>
     ),
   },
   {
-    title: <>Data-Flow Graph</>,
+    title: <Translate id="homePage.flow.title">Data-Flow Graph</Translate>,
     imageUrl: 'img/icons/icon-functional.svg',
     imageUrlDark: 'img/icons/icon-functional--dark.svg',
     imageAlt: 'F at x, representing functional programming.',
     description: (
-      <>
+      <Translate id="homePage.flow.text">
         Derived data and asynchronous queries are tamed with pure functions and
         efficient subscriptions.
-      </>
+      </Translate>
     ),
   },
   {
-    title: <>Cross-App Observation</>,
+    title: <Translate id="homePage.cross.title">Cross-App Observation</Translate>,
     imageUrl: 'img/icons/icon-observation.svg',
     imageUrlDark: 'img/icons/icon-observation--dark.svg',
     imageAlt: 'Connected dots, representing observation of values from various points in an application.',
     description: (
-      <>
+      <Translate id="homePage.cross.text">
         Implement persistence, routing, time-travel debugging, or undo by
         observing all state changes across your app, without impairing
         code-splitting.
-      </>
+      </Translate>
     ),
   },
 ];
 
 function Feature({ feature: { imageUrl, imageUrlDark, imageAlt, title, description } }) {
-  const {isDarkTheme} = useThemeContext();
+  const { isDarkTheme } = useThemeContext();
   const resolvedImgUrl = useBaseUrl(isDarkTheme ? imageUrlDark : imageUrl);
   return (
     <div className={classnames('col col--4', styles.feature)}>
@@ -76,7 +77,7 @@ function Feature({ feature: { imageUrl, imageUrlDark, imageAlt, title, descripti
 
 function Home() {
   const context = useDocusaurusContext();
-  const {siteConfig = {}} = context;
+  const { siteConfig = {} } = context;
   return (
     <Layout description="A state management library for React.">
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
@@ -85,7 +86,7 @@ function Home() {
             <WordMarkImaage width="200" />
             <div className={styles.hiddenText} aria-hidden="true">Recoil</div>
           </h1>
-          <p className="hero__subtitle">{siteConfig.tagline}</p>
+          <p className="hero__subtitle"><Translate id="homePage.head.tagline">{siteConfig.tagline}</Translate></p>
           <div className={styles.buttons}>
             <Link
               className={classnames(
@@ -93,7 +94,7 @@ function Home() {
                 styles.getStarted,
               )}
               to={useBaseUrl('docs/introduction/getting-started')}>
-              Get Started
+              <Translate id="homePage.head.start">Get Started</Translate>
             </Link>
           </div>
         </div>
@@ -117,7 +118,7 @@ function Home() {
           <div className="container">
             <div className="row">
               <div className="container">
-                <div className="row" style={{justifyContent: 'center'}}>
+                <div className="row" style={{ justifyContent: 'center' }}>
                   <iframe
                     width="560"
                     height="315"
