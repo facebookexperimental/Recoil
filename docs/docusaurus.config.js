@@ -14,6 +14,14 @@ function makeDocsEditUrl(locale, docPath) {
     return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/i18n/${locale}/docusaurus-plugin-content-docs/current/${docPath}`;
 }
 
+const isDeployPreview =
+  process.env.NETLIFY && process.env.CONTEXT === 'deploy-preview';
+
+// Special deployment for staging locales until they get enough translations
+// https://app.netlify.com/sites/docusaurus-i18n-staging
+// https://docusaurus-i18n-staging.netlify.app/
+const isI18nStaging = process.env.I18N_STAGING === 'true';
+
 module.exports = {
   title: 'Recoil',
   tagline: 'A state management library for React',
@@ -24,13 +32,22 @@ module.exports = {
   projectName: 'Recoil', // Usually your repo name.
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'fr', 'ko'],
+    // locales: ['en', 'fr', 'ko'],
+    locales: isDeployPreview
+      ? // Deploy preview: keep it fast!
+        ['en']
+      : isI18nStaging
+      ? // Staging locales: https://docusaurus-i18n-staging.netlify.app/
+        ['en', 'fr']
+      : // Production locales
+        ['en', 'fr', 'ko'],
     localeConfigs: {
       en: {
         label: 'English',
       },
       ko: {
         label: '한국어',
+      },
       fr: {
         label: 'Français',
       },
