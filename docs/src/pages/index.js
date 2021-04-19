@@ -21,7 +21,9 @@ import WordMarkImaage from '../../static/img/wordmark.svg';
 
 const features = [
   {
-    title: <Translate id="homePage.minimal.title">Minimal and Reactish</Translate>,
+    title: (
+      <Translate id="homePage.minimal.title">Minimal and Reactish</Translate>
+    ),
     imageUrl: 'img/icons/icon-reactish.svg',
     imageUrlDark: 'img/icons/icon-reactish--dark.svg',
     imageAlt: 'React logo.',
@@ -45,10 +47,13 @@ const features = [
     ),
   },
   {
-    title: <Translate id="homePage.cross.title">Cross-App Observation</Translate>,
+    title: (
+      <Translate id="homePage.cross.title">Cross-App Observation</Translate>
+    ),
     imageUrl: 'img/icons/icon-observation.svg',
     imageUrlDark: 'img/icons/icon-observation--dark.svg',
-    imageAlt: 'Connected dots, representing observation of values from various points in an application.',
+    imageAlt:
+      'Connected dots, representing observation of values from various points in an application.',
     description: (
       <Translate id="homePage.cross.text">
         Implement persistence, routing, time-travel debugging, or undo by
@@ -59,14 +64,20 @@ const features = [
   },
 ];
 
-function Feature({ feature: { imageUrl, imageUrlDark, imageAlt, title, description } }) {
-  const { isDarkTheme } = useThemeContext();
+function Feature({
+  feature: {imageUrl, imageUrlDark, imageAlt, title, description},
+}) {
+  const {isDarkTheme} = useThemeContext();
   const resolvedImgUrl = useBaseUrl(isDarkTheme ? imageUrlDark : imageUrl);
   return (
     <div className={classnames('col col--4', styles.feature)}>
       {resolvedImgUrl && (
         <div>
-          <img className={styles.featureImage} src={resolvedImgUrl} alt={imageAlt} />
+          <img
+            className={styles.featureImage}
+            src={resolvedImgUrl}
+            alt={imageAlt}
+          />
         </div>
       )}
       <h3>{title}</h3>
@@ -84,9 +95,15 @@ function Home() {
         <div className="container">
           <h1 className="hero__title">
             <WordMarkImaage width="200" />
-            <div className={styles.hiddenText} aria-hidden="true">Recoil</div>
+            <div className={styles.hiddenText} aria-hidden="true">
+              Recoil
+            </div>
           </h1>
-          <p className="hero__subtitle"><Translate id="homePage.head.tagline">{siteConfig.tagline}</Translate></p>
+          <p className="hero__subtitle">
+            <Translate id="homePage.head.tagline">
+              {siteConfig.tagline}
+            </Translate>
+          </p>
           <div className={styles.buttons}>
             <Link
               className={classnames(
@@ -104,11 +121,8 @@ function Home() {
           <section className={styles.features}>
             <div className="container">
               <div className="row">
-                {features.map(feature => (
-                  <Feature
-                    key={feature.imageUrl}
-                    feature={feature}
-                  />
+                {features.map((feature) => (
+                  <Feature key={feature.imageUrl} feature={feature} />
                 ))}
               </div>
             </div>

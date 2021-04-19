@@ -57,7 +57,7 @@ That helps with the re-renders of `<TodoItemCreator />` and `<TodoListFilters />
 
 Thinking of a todo list as an array of objects is problematic because it forms a tight coupling between each individual todo item and the list of all todo items.
 
-To fix this issue, we need to rethink our state shape by thinking about **normalized state**. In the context of our todo-list app, this means storing the **list** of item ids separately from the **data** for each invididual item.
+To fix this issue, we need to rethink our state shape by thinking about **normalized state**. In the context of our todo-list app, this means storing the **list** of item ids separately from the **data** for each individual item.
 
 > For a more detailed discussion on how to think about normalized state, see [this page from the Redux documentation](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape).
 

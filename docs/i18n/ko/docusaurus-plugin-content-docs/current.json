@@ -1,0 +1,42 @@
+{
+  "version.label": {
+    "message": "버전",
+    "description": "The label for version current"
+  },
+  "sidebar.docs.category.Introduction": {
+    "message": "소개",
+    "description": "The label for category Introduction in sidebar docs"
+  },
+  "sidebar.docs.category.Basic Tutorial": {
+    "message": "기본 자습서",
+    "description": "The label for category Basic Tutorial in sidebar docs"
+  },
+  "sidebar.docs.category.Guides": {
+    "message": "가이드",
+    "description": "The label for category Guides in sidebar docs"
+  },
+  "sidebar.docs.category.API Reference": {
+    "message": "레퍼런스 API",
+    "description": "The label for category API Reference in sidebar docs"
+  },
+  "sidebar.docs.category.Core": {
+    "message": "주요 개념",
+    "description": "The label for category Core in sidebar docs"
+  },
+  "sidebar.docs.category.State": {
+    "message": "상태",
+    "description": "The label for category State in sidebar docs"
+  },
+  "sidebar.docs.category.Snapshots": {
+    "message": "스냅샷",
+    "description": "The label for category Snapshots in sidebar docs"
+  },
+  "sidebar.docs.category.Misc": {
+    "message": "기타",
+    "description": "The label for category Misc in sidebar docs"
+  },
+  "sidebar.docs.category.Utils": {
+    "message": "유틸",
+    "description": "The label for category Utils in sidebar docs"
+  }
+}

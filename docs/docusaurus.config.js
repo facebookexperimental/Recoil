@@ -9,9 +9,9 @@
 
 function makeDocsEditUrl(locale, docPath) {
   if (locale === 'en')
-    return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/docs/${docPath}`
+    return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/docs/${docPath}`;
   else
-    return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/i18n/${locale}/docusaurus-plugin-content-docs/current/${docPath}`
+    return `https://github.com/facebookexperimental/Recoil/edit/docs/docs/i18n/${locale}/docusaurus-plugin-content-docs/current/${docPath}`;
 }
 
 module.exports = {
@@ -24,11 +24,13 @@ module.exports = {
   projectName: 'Recoil', // Usually your repo name.
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'fr'],
+    locales: ['en', 'fr', 'ko'],
     localeConfigs: {
       en: {
         label: 'English',
       },
+      ko: {
+        label: '한국어',
       fr: {
         label: 'Français',
       },
@@ -37,7 +39,7 @@ module.exports = {
   themeConfig: {
     algolia: {
       apiKey: '9c5a009951e793525603922b8ca66628',
-      indexName: 'recoiljs'
+      indexName: 'recoiljs',
     },
     googleAnalytics: {
       trackingID: 'UA-44373548-46',
@@ -49,7 +51,7 @@ module.exports = {
         src: 'img/logo.svg',
         srcDark: 'img/logo--dark.svg',
         href: '/',
-        target: '_self'
+        target: '_self',
       },
       items: [
         {
@@ -69,7 +71,7 @@ module.exports = {
         {
           type: 'localeDropdown',
           position: 'right',
-        }
+        },
       ],
     },
     footer: {
@@ -152,7 +154,7 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: ({ locale, docPath }) => makeDocsEditUrl(locale, docPath),
+          editUrl: ({locale, docPath}) => makeDocsEditUrl(locale, docPath),
         },
         blog: {
           showReadingTime: true,
