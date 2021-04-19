@@ -1,0 +1,131 @@
+---
+title: Atomes
+---
+
+Les atomes contiennent la source de vérité de l'état de notre application. Dans notre liste de tâches, la source de vérité sera un tableau d'objets, chaque objet représentant une tâche.
+
+Nous appellerons notre liste atom `todoListState` et la créerons en utilisant la fonction `atom()`:
+
+```javascript
+const todoListState = atom({
+  key: 'todoListState',
+  default: [],
+});
+```
+
+Nous donnons à notre atome une clé unique et définissons la valeur par `défaut` comment étant un tableau vide. Pour lire le contenu de cet atome, nous pouvons utiliser le hook `useRecoilValue()` dans notre composant `TodoList`:
+
+```jsx
+function TodoList() {
+  const todoList = useRecoilValue(todoListState);
+
+  return (
+    <>
+      {/* <TodoListStats /> */}
+      {/* <TodoListFilters /> */}
+      <TodoItemCreator />
+
+      {todoList.map((todoItem) => (
+        <TodoItem key={todoItem.id} item={todoItem} />
+      ))}
+    </>
+  );
+}
+```
+
+Les composants commentés seront implémentés dans les sections suivantes.
+
+Pour créer de nouveaux éléments todo, nous devons accéder à une fonction setter qui mettra à jour le contenu de `todoListState`. Nous pouvons utiliser le hook `useSetRecoilState()` pour obtenir une fonction setter dans notre composant `TodoItemCreator`:
+
+```jsx
+function TodoItemCreator() {
+  const [inputValue, setInputValue] = useState('');
+  const setTodoList = useSetRecoilState(todoListState);
+
+  const addItem = () => {
+    setTodoList((oldTodoList) => [
+      ...oldTodoList,
+      {
+        id: getId(),
+        text: inputValue,
+        isComplete: false,
+      },
+    ]);
+    setInputValue('');
+  };
+
+  const onChange = ({target: {value}}) => {
+    setInputValue(value);
+  };
+
+  return (
+    <div>
+      <input type="text" value={inputValue} onChange={onChange} />
+      <button onClick={addItem}>Ajouter</button>
+    </div>
+  );
+}
+
+// utilitair pour créer un identifiant unique
+let id = 0;
+function getId() {
+  return id++;
+}
+```
+
+Notez que nous utilisons la forme **mise à jour** de la fonction s'assignement afin que nous puissions créer une nouvelle liste de tâches basée sur l'ancienne liste de tâches.
+
+Le composant `TodoItem` affichera la valeur de la tâche tout en permettant de changer son texte et de supprimer l'élément. Nous utilisons `useRecoilState()` pour lire `todoListState` et pour obtenir une fonction d'assignement que nous utilisons pour mettre à jour le texte de l'élément, le marquer comme terminé et le supprimer:
+
+```jsx
+function TodoItem({item}) {
+  const [todoList, setTodoList] = useRecoilState(todoListState);
+  const index = todoList.findIndex((listItem) => listItem === item);
+
+  const editItemText = ({target: {value}}) => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      text: value,
+    });
+
+    setTodoList(newList);
+  };
+
+  const toggleItemCompletion = () => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      isComplete: !item.isComplete,
+    });
+
+    setTodoList(newList);
+  };
+
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(todoList, index);
+
+    setTodoList(newList);
+  };
+
+  return (
+    <div>
+      <input type="text" value={item.text} onChange={editItemText} />
+      <input
+        type="checkbox"
+        checked={item.isComplete}
+        onChange={toggleItemCompletion}
+      />
+      <button onClick={deleteItem}>X</button>
+    </div>
+  );
+}
+
+function replaceItemAtIndex(arr, index, newValue) {
+  return [...arr.slice(0, index), newValue, ...arr.slice(index + 1)];
+}
+
+function removeItemAtIndex(arr, index) {
+  return [...arr.slice(0, index), ...arr.slice(index + 1)];
+}
+```
+
+Et avec cela, nous avons une liste de tâches entièrement fonctionnelle! Dans la section suivante, nous verrons comment utiliser les sélecteurs pour amener notre liste au niveau suivant.

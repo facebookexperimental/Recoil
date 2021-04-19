@@ -24,13 +24,15 @@ module.exports = {
   projectName: 'Recoil', // Usually your repo name.
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'ko'],
+    locales: ['en', 'fr', 'ko'],
     localeConfigs: {
       en: {
         label: 'English',
       },
       ko: {
         label: '한국어',
+      fr: {
+        label: 'Français',
       },
     },
   },
@@ -58,8 +60,8 @@ module.exports = {
           label: 'Docs',
           position: 'left',
         },
-        {to: 'blog', label: 'Blog', position: 'left'},
-        {to: 'resources', label: 'External Resources', position: 'left'},
+        { to: 'blog', label: 'Blog', position: 'left' },
+        { to: 'resources', label: 'External Resources', position: 'left' },
         // Please keep GitHub link to the right for consistency.
         {
           href: 'https://github.com/facebookexperimental/Recoil',

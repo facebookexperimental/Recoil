@@ -88,7 +88,7 @@ function Feature({
 
 function Home() {
   const context = useDocusaurusContext();
-  const {siteConfig = {}} = context;
+  const { siteConfig = {} } = context;
   return (
     <Layout description="A state management library for React.">
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
@@ -132,7 +132,7 @@ function Home() {
           <div className="container">
             <div className="row">
               <div className="container">
-                <div className="row" style={{justifyContent: 'center'}}>
+                <div className="row" style={{ justifyContent: 'center' }}>
                   <iframe
                     width="560"
                     height="315"
