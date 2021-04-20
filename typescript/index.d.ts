@@ -17,9 +17,10 @@ export class DefaultValue {
 }
 
 // recoilRoot.d.ts
-export interface RecoilRootProps {
-  initializeState?: (mutableSnapshot: MutableSnapshot) => void;
-}
+export type RecoilRootProps = {
+  initializeState?: (mutableSnapshot: MutableSnapshot) => void,
+  override?: true,
+} | {override: false}
 
 export const RecoilRoot: React.FC<RecoilRootProps>;
 
