@@ -43,11 +43,8 @@ type Accessors<T> = $ReadOnly<{
   toPromise: () => Promise<T>,
 
   // Convenience accessors
-  valueMaybe: () => T | void,
   valueOrThrow: () => T,
-  errorMaybe: () => mixed | void,
   errorOrThrow: () => mixed,
-  promiseMaybe: () => Promise<T> | void,
   promiseOrThrow: () => Promise<T>,
 
   is: (Loadable<mixed>) => boolean,
@@ -55,91 +52,88 @@ type Accessors<T> = $ReadOnly<{
   map: <T, S>(map: (T) => Promise<S> | S) => Loadable<S>,
 }>;
 
-export type Loadable<+T> =
-  | $ReadOnly<{state: 'hasValue', contents: T, ...Accessors<T>}>
-  | $ReadOnly<{state: 'hasError', contents: mixed, ...Accessors<T>}>
-  | $ReadOnly<{
-      state: 'loading',
-      contents: LoadablePromise<T>,
-      ...Accessors<T>,
-    }>;
+type ValueAccessors<T> = $ReadOnly<{
+  ...Accessors<T>,
+  valueMaybe: () => T,
+  errorMaybe: () => void,
+  promiseMaybe: () => void,
+}>;
 
-type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
+type ErrorAccessors<T> = $ReadOnly<{
+  ...Accessors<T>,
+  valueMaybe: () => void,
+  errorMaybe: () => mixed,
+  promiseMaybe: () => void,
+}>;
+
+type LoadingAccessors<T> = $ReadOnly<{
+  ...Accessors<T>,
+  valueMaybe: () => void,
+  errorMaybe: () => void,
+  promiseMaybe: () => Promise<T>,
+}>;
+
+type ValueLoadable<+T> = $ReadOnly<{
+  state: 'hasValue',
+  contents: T,
+  ...ValueAccessors<T>,
+}>;
+
+type ErrorLoadable<+T> = $ReadOnly<{
+  state: 'hasError',
+  contents: mixed,
+  ...ErrorAccessors<T>,
+}>;
+
+type LoadingLoadable<+T> = $ReadOnly<{
+  state: 'loading',
+  contents: LoadablePromise<T>,
+  ...LoadingAccessors<T>,
+}>;
+
+export type Loadable<+T> =
+  | ValueLoadable<T>
+  | ErrorLoadable<T>
+  | LoadingLoadable<T>;
 
 const loadableAccessors = {
-  /**
-   * if loadable has a value (state === 'hasValue'), return that value.
-   * Otherwise, throw the (unwrapped) promise or the error.
-   */
-  getValue() {
-    if (this.state === 'loading') {
-      throw (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value);
-    }
-
-    if (this.state !== 'hasValue') {
-      throw this.contents;
-    }
-
-    return this.contents;
-  },
-
-  toPromise(): Promise<$FlowFixMe> {
-    return this.state === 'hasValue'
-      ? Promise.resolve(this.contents)
-      : this.state === 'hasError'
-      ? Promise.reject(this.contents)
-      : (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value);
-  },
-
   valueMaybe() {
-    return this.state === 'hasValue' ? this.contents : undefined;
+    return undefined;
   },
 
   valueOrThrow() {
-    if (this.state !== 'hasValue') {
-      const error = new Error(
-        `Loadable expected value, but in "${this.state}" state`,
-      );
-      // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-      error.stack;
-      throw error;
-    }
-    return this.contents;
+    const error = new Error(
+      `Loadable expected value, but in "${this.state}" state`,
+    );
+    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    error.stack;
+    throw error;
   },
 
   errorMaybe() {
-    return this.state === 'hasError' ? this.contents : undefined;
+    return undefined;
   },
 
   errorOrThrow() {
-    if (this.state !== 'hasError') {
-      const error = new Error(
-        `Loadable expected error, but in "${this.state}" state`,
-      );
-      // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-      error.stack;
-      throw error;
-    }
-    return this.contents;
+    const error = new Error(
+      `Loadable expected error, but in "${this.state}" state`,
+    );
+    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    error.stack;
+    throw error;
   },
 
-  promiseMaybe(): void | Promise<$FlowFixMe> {
-    return this.state === 'loading'
-      ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
-      : undefined;
+  promiseMaybe() {
+    return undefined;
   },
 
-  promiseOrThrow(): Promise<$FlowFixMe> {
-    if (this.state !== 'loading') {
-      const error = new Error(
-        `Loadable expected promise, but in "${this.state}" state`,
-      );
-      // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-      error.stack;
-      throw error;
-    }
-
-    return (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value);
+  promiseOrThrow() {
+    const error = new Error(
+      `Loadable expected promise, but in "${this.state}" state`,
+    );
+    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    error.stack;
+    throw error;
   },
 
   is(other: Loadable<mixed>): boolean {
@@ -189,34 +183,74 @@ const loadableAccessors = {
   },
 };
 
-function loadableWithValue<T>(value: T): Loadable<T> {
+function loadableWithValue<T>(value: T): ValueLoadable<T> {
   // Build objects this way since Flow doesn't support disjoint unions for class properties
   return Object.freeze({
     state: 'hasValue',
     contents: value,
     ...loadableAccessors,
+    getValue() {
+      return this.contents;
+    },
+    toPromise() {
+      return Promise.resolve(this.contents);
+    },
+    valueMaybe() {
+      return this.contents;
+    },
+    valueOrThrow() {
+      return this.contents;
+    },
   });
 }
 
-function loadableWithError<T>(error: mixed): Loadable<T> {
+function loadableWithError<T>(error: mixed): ErrorLoadable<T> {
   return Object.freeze({
     state: 'hasError',
     contents: error,
     ...loadableAccessors,
+    getValue() {
+      throw this.contents;
+    },
+    toPromise() {
+      return Promise.reject(this.contents);
+    },
+    errorMaybe() {
+      return this.contents;
+    },
+    errorOrThrow() {
+      return this.contents;
+    },
   });
 }
 
-function loadableWithPromise<T>(promise: LoadablePromise<T>): Loadable<T> {
+function loadableWithPromise<T>(
+  promise: LoadablePromise<T>,
+): LoadingLoadable<T> {
   return Object.freeze({
     state: 'loading',
     contents: promise,
     ...loadableAccessors,
+    getValue() {
+      throw this.contents.then(({__value}) => __value);
+    },
+    toPromise() {
+      return this.contents.then(({__value}) => __value);
+    },
+    promiseMaybe() {
+      return this.contents.then(({__value}) => __value);
+    },
+    promiseOrThrow() {
+      return this.contents.then(({__value}) => __value);
+    },
   });
 }
 
 function loadableLoading<T>(): Loadable<T> {
   return loadableWithPromise(new Promise(() => {}));
 }
+
+type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
 
 function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
   inputs: Inputs,

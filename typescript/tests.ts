@@ -16,7 +16,8 @@ import {
   useRecoilTransactionObserver_UNSTABLE, useRecoilValue,
   useRecoilValueLoadable,
   useResetRecoilState, useSetRecoilState,
-  waitForAll, waitForAllSettled, waitForAny, waitForNone
+  waitForAll, waitForAllSettled, waitForAny, waitForNone,
+  Loadable,
 } from 'recoil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -87,6 +88,49 @@ RecoilRoot({
     set(writeableSelector, new DefaultValue());
   },
 });
+
+// Loadable
+function loadableTest(loadable: Loadable<number>) {
+  switch (loadable.state) {
+    case 'hasValue':
+      loadable.contents; // $ExpectType number
+      loadable.getValue(); // $ExpectType number
+      loadable.toPromise(); // $ExpectType Promise<number>
+      loadable.valueMaybe(); // $ExpectType number
+      loadable.valueOrThrow(); // $ExpectType number
+      loadable.errorMaybe(); // $ExpectType undefined
+      loadable.errorOrThrow(); // $ExpectType any
+      loadable.promiseMaybe(); // $ExpectType undefined
+      loadable.promiseOrThrow(); // $ExpectType Promise<number>
+      break;
+    case 'hasError':
+      loadable.contents; // $ExpectType number
+      loadable.getValue(); // $ExpectType number
+      loadable.toPromise(); // $ExpectType Promise<number>
+      loadable.valueMaybe(); // $ExpectType undefined
+      loadable.valueOrThrow(); // $ExpectType number
+      loadable.errorMaybe(); // $ExpectType any
+      loadable.errorOrThrow(); // $ExpectType any
+      loadable.promiseMaybe(); // $ExpectType undefined
+      loadable.promiseOrThrow(); // $ExpectType Promise<number>
+      break;
+    case 'loading':
+      loadable.contents; // $ExpectType number
+      loadable.getValue(); // $ExpectType number
+      loadable.toPromise(); // $ExpectType Promise<number>
+      loadable.valueMaybe(); // $ExpectType undefined
+      loadable.valueOrThrow(); // $ExpectType number
+      loadable.errorMaybe(); // $ExpectType undefined
+      loadable.errorOrThrow(); // $ExpectType any
+      loadable.promiseMaybe(); // $ExpectType Promise<number>
+      loadable.promiseOrThrow(); // $ExpectType Promise<number>
+      break;
+  }
+
+  loadable.valueMaybe()?.toString();
+  loadable.errorMaybe()?.toString();
+  loadable.is(loadable); // $ExpectType boolean
+}
 
 // Hooks
 const roAtom: RecoilValueReadOnly<string> = {} as any;
