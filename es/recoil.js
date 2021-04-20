@@ -4855,71 +4855,31 @@ class Canceled {}
 
 const CANCELED = new Canceled();
 const loadableAccessors = {
-  /**
-   * if loadable has a value (state === 'hasValue'), return that value.
-   * Otherwise, throw the (unwrapped) promise or the error.
-   */
-  getValue() {
-    if (this.state === 'loading') {
-      throw this.contents.then(({
-        __value
-      }) => __value);
-    }
-
-    if (this.state !== 'hasValue') {
-      throw this.contents;
-    }
-
-    return this.contents;
-  },
-
-  toPromise() {
-    return this.state === 'hasValue' ? Promise.resolve(this.contents) : this.state === 'hasError' ? Promise.reject(this.contents) : this.contents.then(({
-      __value
-    }) => __value);
-  },
-
   valueMaybe() {
-    return this.state === 'hasValue' ? this.contents : undefined;
+    return undefined;
   },
 
   valueOrThrow() {
-    if (this.state !== 'hasValue') {
-      const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-      throw error;
-    }
-
-    return this.contents;
+    const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
   },
 
   errorMaybe() {
-    return this.state === 'hasError' ? this.contents : undefined;
+    return undefined;
   },
 
   errorOrThrow() {
-    if (this.state !== 'hasError') {
-      const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-      throw error;
-    }
-
-    return this.contents;
+    const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
   },
 
   promiseMaybe() {
-    return this.state === 'loading' ? this.contents.then(({
-      __value
-    }) => __value) : undefined;
+    return undefined;
   },
 
   promiseOrThrow() {
-    if (this.state !== 'loading') {
-      const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-      throw error;
-    }
-
-    return this.contents.then(({
-      __value
-    }) => __value);
+    const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
   },
 
   is(other) {
@@ -4969,7 +4929,24 @@ function loadableWithValue(value) {
   return Object.freeze({
     state: 'hasValue',
     contents: value,
-    ...loadableAccessors
+    ...loadableAccessors,
+
+    getValue() {
+      return this.contents;
+    },
+
+    toPromise() {
+      return Promise.resolve(this.contents);
+    },
+
+    valueMaybe() {
+      return this.contents;
+    },
+
+    valueOrThrow() {
+      return this.contents;
+    }
+
   });
 }
 
@@ -4977,7 +4954,24 @@ function loadableWithError(error) {
   return Object.freeze({
     state: 'hasError',
     contents: error,
-    ...loadableAccessors
+    ...loadableAccessors,
+
+    getValue() {
+      throw this.contents;
+    },
+
+    toPromise() {
+      return Promise.reject(this.contents);
+    },
+
+    errorMaybe() {
+      return this.contents;
+    },
+
+    errorOrThrow() {
+      return this.contents;
+    }
+
   });
 }
 
@@ -4985,7 +4979,32 @@ function loadableWithPromise(promise) {
   return Object.freeze({
     state: 'loading',
     contents: promise,
-    ...loadableAccessors
+    ...loadableAccessors,
+
+    getValue() {
+      throw this.contents.then(({
+        __value
+      }) => __value);
+    },
+
+    toPromise() {
+      return this.contents.then(({
+        __value
+      }) => __value);
+    },
+
+    promiseMaybe() {
+      return this.contents.then(({
+        __value
+      }) => __value);
+    },
+
+    promiseOrThrow() {
+      return this.contents.then(({
+        __value
+      }) => __value);
+    }
+
   });
 }
 

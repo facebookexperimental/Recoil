@@ -11,6 +11,7 @@
 ## NEXT
 
 - (Add new changes here as they land)
+- Improved TypeScript and Flow typing for `Loadable`s (#966)
 
 ## 0.2.0 (2021-3-18)
 

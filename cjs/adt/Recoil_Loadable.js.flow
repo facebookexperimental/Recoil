@@ -37,101 +37,75 @@ type Accessors<T> = $ReadOnly<{
   getValue: () => T,
   toPromise: () => Promise<T>,
   // Convenience accessors
-  valueMaybe: () => T | void,
   valueOrThrow: () => T,
-  errorMaybe: () => mixed | void,
   errorOrThrow: () => mixed,
-  promiseMaybe: () => Promise<T> | void,
   promiseOrThrow: () => Promise<T>,
   is: (Loadable<mixed>) => boolean,
   map: <T, S>(map: (T) => Promise<S> | S) => Loadable<S>,
 }>;
-export type Loadable<+T> = $ReadOnly<{
+type ValueAccessors<T> = $ReadOnly<{ ...Accessors<T>,
+  valueMaybe: () => T,
+  errorMaybe: () => void,
+  promiseMaybe: () => void,
+}>;
+type ErrorAccessors<T> = $ReadOnly<{ ...Accessors<T>,
+  valueMaybe: () => void,
+  errorMaybe: () => mixed,
+  promiseMaybe: () => void,
+}>;
+type LoadingAccessors<T> = $ReadOnly<{ ...Accessors<T>,
+  valueMaybe: () => void,
+  errorMaybe: () => void,
+  promiseMaybe: () => Promise<T>,
+}>;
+type ValueLoadable<+T> = $ReadOnly<{
   state: 'hasValue',
   contents: T,
-  ...Accessors<T>,
-}> | $ReadOnly<{
+  ...ValueAccessors<T>,
+}>;
+type ErrorLoadable<+T> = $ReadOnly<{
   state: 'hasError',
   contents: mixed,
-  ...Accessors<T>,
-}> | $ReadOnly<{
+  ...ErrorAccessors<T>,
+}>;
+type LoadingLoadable<+T> = $ReadOnly<{
   state: 'loading',
   contents: LoadablePromise<T>,
-  ...Accessors<T>,
+  ...LoadingAccessors<T>,
 }>;
-type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
+export type Loadable<+T> = ValueLoadable<T> | ErrorLoadable<T> | LoadingLoadable<T>;
 const loadableAccessors = {
-  /**
-   * if loadable has a value (state === 'hasValue'), return that value.
-   * Otherwise, throw the (unwrapped) promise or the error.
-   */
-  getValue() {
-    if (this.state === 'loading') {
-      throw (this.contents: Promise<$FlowFixMe>).then(({
-        __value
-      }) => __value);
-    }
-
-    if (this.state !== 'hasValue') {
-      throw this.contents;
-    }
-
-    return this.contents;
-  },
-
-  toPromise(): Promise<$FlowFixMe> {
-    return this.state === 'hasValue' ? Promise.resolve(this.contents) : this.state === 'hasError' ? Promise.reject(this.contents) : (this.contents: Promise<$FlowFixMe>).then(({
-      __value
-    }) => __value);
-  },
-
   valueMaybe() {
-    return this.state === 'hasValue' ? this.contents : undefined;
+    return undefined;
   },
 
   valueOrThrow() {
-    if (this.state !== 'hasValue') {
-      const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
 
-      error.stack;
-      throw error;
-    }
-
-    return this.contents;
+    error.stack;
+    throw error;
   },
 
   errorMaybe() {
-    return this.state === 'hasError' ? this.contents : undefined;
+    return undefined;
   },
 
   errorOrThrow() {
-    if (this.state !== 'hasError') {
-      const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
 
-      error.stack;
-      throw error;
-    }
-
-    return this.contents;
+    error.stack;
+    throw error;
   },
 
-  promiseMaybe(): void | Promise<$FlowFixMe> {
-    return this.state === 'loading' ? (this.contents: Promise<$FlowFixMe>).then(({
-      __value
-    }) => __value) : undefined;
+  promiseMaybe() {
+    return undefined;
   },
 
-  promiseOrThrow(): Promise<$FlowFixMe> {
-    if (this.state !== 'loading') {
-      const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+  promiseOrThrow() {
+    const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
 
-      error.stack;
-      throw error;
-    }
-
-    return (this.contents: Promise<$FlowFixMe>).then(({
-      __value
-    }) => __value);
+    error.stack;
+    throw error;
   },
 
   is(other: Loadable<mixed>): boolean {
@@ -177,10 +151,11 @@ const loadableAccessors = {
   }
 
 };
-declare function loadableWithValue<T>(value: T): Loadable<T>;
-declare function loadableWithError<T>(error: mixed): Loadable<T>;
-declare function loadableWithPromise<T>(promise: LoadablePromise<T>): Loadable<T>;
+declare function loadableWithValue<T>(value: T): ValueLoadable<T>;
+declare function loadableWithError<T>(error: mixed): ErrorLoadable<T>;
+declare function loadableWithPromise<T>(promise: LoadablePromise<T>): LoadingLoadable<T>;
 declare function loadableLoading<T>(): Loadable<T>;
+type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
 declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
 module.exports = {
   loadableWithValue,

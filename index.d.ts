@@ -214,28 +214,35 @@ type LoadablePromise<T> = Promise<LoadablePromiseValue>;
 interface BaseLoadable<T> {
   getValue: () => T;
   toPromise: () => Promise<T>;
-  valueMaybe: () => T | void;
   valueOrThrow: () => T;
-  errorMaybe: () => Error | void;
-  errorOrThrow: () => Error;
-  promiseMaybe: () => Promise<T> | void;
+  errorOrThrow: () => any;
   promiseOrThrow: () => Promise<T>;
+  is: (other: Loadable<any>) => boolean;
   map: <S>(map: (from: T) => Promise<S> | S) => Loadable<S>;
 }
 
 interface ValueLoadable<T> extends BaseLoadable<T> {
   state: 'hasValue';
   contents: T;
+  valueMaybe: () => T;
+  errorMaybe: () => undefined;
+  promiseMaybe: () => undefined;
 }
 
 interface LoadingLoadable<T> extends BaseLoadable<T> {
   state: 'loading';
   contents: LoadablePromise<T>;
+  valueMaybe: () => undefined;
+  errorMaybe: () => any;
+  promiseMaybe: () => undefined;
 }
 
 interface ErrorLoadable<T> extends BaseLoadable<T> {
   state: 'hasError';
   contents: Error;
+  valueMaybe: () => undefined;
+  errorMaybe: () => undefined;
+  promiseMaybe: () => Promise<T>;
 }
 
 export type Loadable<T> =
