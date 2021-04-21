@@ -10,9 +10,9 @@
 'use strict';
 
 const {
-  serialize,
-  deserialize,
   SerializedValueType,
+  deserialize,
+  serialize,
 } = require('../Serialization');
 
 describe('Preparing objects to be sent via postMessage', () => {
