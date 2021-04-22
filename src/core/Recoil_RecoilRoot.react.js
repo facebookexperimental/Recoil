@@ -49,7 +49,7 @@ const {
   useState,
 } = require('react');
 
-type Props = {
+type InternalProps = {
   initializeState_DEPRECATED?: ({
     set: <T>(RecoilValue<T>, T) => void,
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
@@ -277,12 +277,12 @@ function initialStoreState(initializeState): StoreState {
 }
 
 let nextID = 0;
-function RecoilRoot({
+function RecoilRoot_INTERNAL({
   initializeState_DEPRECATED,
   initializeState,
   store_INTERNAL: storeProp, // For use with React "context bridging"
   children,
-}: Props): ReactElement {
+}: InternalProps): ReactElement {
   // prettier-ignore
   // @fb-only: useEffect(() => {
     // @fb-only: if (gkx('recoil_usage_logging')) {
@@ -439,6 +439,43 @@ function RecoilRoot({
       </MutableSourceContext.Provider>
     </AppContext.Provider>
   );
+}
+
+type Props =
+  | {
+      initializeState_DEPRECATED?: ({
+        set: <T>(RecoilValue<T>, T) => void,
+        setUnvalidatedAtomValues: (Map<string, mixed>) => void,
+      }) => void,
+      initializeState?: MutableSnapshot => void,
+      store_INTERNAL?: Store,
+      override?: true,
+      children: React.Node,
+    }
+  | {
+      store_INTERNAL?: Store,
+      /**
+       * Defaults to true. If override is true, this RecoilRoot will create a
+       * new Recoil scope. If override is false and this RecoilRoot is nested
+       * within another RecoilRoot, this RecoilRoot will perform no function.
+       * Children of this RecoilRoot will access the Recoil values of the
+       * nearest ancestor RecoilRoot.
+       */
+      override: false,
+      children: React.Node,
+    };
+
+function RecoilRoot(props: Props): ReactElement {
+  const {override, ...propsExceptOverride} = props;
+
+  const ancestorStoreRef = useStoreRef();
+  if (override === false && ancestorStoreRef.current !== defaultStore) {
+    // If ancestorStoreRef.current !== defaultStore, it means that this
+    // RecoilRoot is not nested within another.
+    return <>{props.children}</>;
+  }
+
+  return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
 }
 
 module.exports = {
