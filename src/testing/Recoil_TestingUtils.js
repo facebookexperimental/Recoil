@@ -60,7 +60,9 @@ function makeStore(): Store {
       return newGraph;
     },
     subscribeToTransactions: () => {
-      throw new Error('not tested at this level');
+      throw new Error(
+        'This functionality, should not tested at this level. Use a component to test this functionality: e.g. componentThatReadsAndWritesAtom',
+      );
     },
     addTransactionMetadata: () => {
       throw new Error('not implemented');

@@ -306,6 +306,43 @@ describe('Effects', () => {
     expect(get(myAtom)).toEqual('EFFECT 2');
   });
 
+  testRecoil(
+    'when setSelf is called in onSet, then onSet is not triggered again',
+    () => {
+      let inited = false;
+      let set1 = false;
+      const valueToSet1 = 'value#1';
+      const transformedBySetSelf = 'transformed after value#1';
+
+      const myAtom = atom({
+        key: 'atom setSelf with set-updater',
+        default: 'DEFAULT',
+        effects_UNSTABLE: [
+          ({setSelf, onSet}) => {
+            onSet((newValue, oldValue) => {
+              expect(set1).toBe(false);
+              if (newValue === valueToSet1) {
+                setSelf(transformedBySetSelf);
+                set1 = true;
+              }
+            });
+          },
+          () => {},
+        ],
+      });
+
+      const [ReadsWritesAtom, set, reset] = componentThatReadsAndWritesAtom(
+        myAtom,
+      );
+
+      const c = renderElements(<ReadsWritesAtom />);
+      expect(c.textContent).toEqual('"DEFAULT"');
+      act(() => set(valueToSet1));
+      console.log(c.textContent);
+      expect(c.textContent).toEqual(`"${transformedBySetSelf}"`);
+    },
+  );
+
   testRecoil('reset during init', () => {
     const myAtom = atom({
       key: 'atom effect reset',
