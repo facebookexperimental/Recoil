@@ -322,10 +322,9 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               pendingSetSelf?.value !== newValue
             ) {
               handler(newValue, oldValue);
+            } else if (pendingSetSelf?.effect === effect) {
+              pendingSetSelf = null;
             }
-          }
-          if (pendingSetSelf?.effect === effect) {
-            pendingSetSelf = null;
           }
         }, key);
       };
