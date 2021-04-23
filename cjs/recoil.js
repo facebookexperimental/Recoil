@@ -3445,7 +3445,7 @@ function initialStoreState(initializeState) {
 
 let nextID = 0;
 
-function RecoilRoot({
+function RecoilRoot_INTERNAL({
   initializeState_DEPRECATED,
   initializeState,
   store_INTERNAL: storeProp,
@@ -3593,6 +3593,22 @@ function RecoilRoot({
   }, /*#__PURE__*/react.createElement(Batcher, {
     setNotifyBatcherOfChange: setNotifyBatcherOfChange
   }), children));
+}
+
+function RecoilRoot(props) {
+  const {
+    override,
+    ...propsExceptOverride
+  } = props;
+  const ancestorStoreRef = useStoreRef();
+
+  if (override === false && ancestorStoreRef.current !== defaultStore) {
+    // If ancestorStoreRef.current !== defaultStore, it means that this
+    // RecoilRoot is not nested within another.
+    return /*#__PURE__*/react.createElement(react.Fragment, null, props.children);
+  }
+
+  return /*#__PURE__*/react.createElement(RecoilRoot_INTERNAL, propsExceptOverride);
 }
 
 var Recoil_RecoilRoot_react = {
