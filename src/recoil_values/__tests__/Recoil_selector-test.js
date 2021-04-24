@@ -36,6 +36,7 @@ let React,
   ReadsAtom,
   renderElements,
   resolvingAsyncSelector,
+  loadingAsyncSelector,
   flushPromisesAndTimers,
   DefaultValue,
   mutableSourceExists,
@@ -70,6 +71,7 @@ const testRecoil = getRecoilTestFn(() => {
     ReadsAtom,
     renderElements,
     resolvingAsyncSelector,
+    loadingAsyncSelector,
     flushPromisesAndTimers,
   } = require('../../testing/Recoil_TestingUtils'));
   ({noWait} = require('../Recoil_WaitFor'));
@@ -772,6 +774,34 @@ testRecoil('Updating with changed selector', gks => {
   // When we swap back to atomA it now has the same value as atomB.
   act(() => setSide('A'));
   expect(c.textContent).toEqual('FOO');
+});
+
+testRecoil('Change component prop to suspend and wake', () => {
+  const awakeSelector = constSelector('WAKE');
+  const suspendedSelector = loadingAsyncSelector();
+
+  function TestComponent({side}) {
+    return (
+      useRecoilValue(side === 'AWAKE' ? awakeSelector : suspendedSelector) ??
+      'LOADING'
+    );
+  }
+
+  let setSide;
+  const SelectorComponent = function () {
+    const [side, setSideState] = useState('AWAKE');
+    setSide = setSideState;
+    return <TestComponent side={side} />;
+  };
+  const c = renderElements(<SelectorComponent />);
+
+  expect(c.textContent).toEqual('WAKE');
+
+  act(() => setSide('SLEEP'));
+  expect(c.textContent).toEqual('loading');
+
+  act(() => setSide('AWAKE'));
+  expect(c.textContent).toEqual('WAKE');
 });
 
 /**

@@ -159,7 +159,7 @@ const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
     get: () => Promise.resolve(value),
   });
 
-const loadingAsyncSelector: () => RecoilValue<void> = () =>
+const loadingAsyncSelector: () => RecoilValueReadOnly<void> = () =>
   selector({
     key: `LoadingSelector${id++}`,
     get: () => new Promise(() => {}),

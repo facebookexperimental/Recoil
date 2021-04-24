@@ -2,15 +2,15 @@
 
 ## LATER
 
-- Performance optimization to suppress re-rendering components:
-    - When subscribed selectors evaluate to the same value. (#749)
-    - On initial render when not using React Concurrent Mode (#820)
 - Memory management
 - Selector cache configuration
 
 ## NEXT
 
 - (Add new changes here as they land)
+- Performance optimization to suppress re-rendering components:
+    - When subscribed selectors evaluate to the same value. (#749, #952)
+    - On initial render when not using React Concurrent Mode (#820)
 - Improved TypeScript and Flow typing for `Loadable`s (#966)
 - Added override prop to RecoilRoot
 - Fix not calling onSet() handler triggered from a setSelf() in onSet() for Atom Effects (#974, #979)

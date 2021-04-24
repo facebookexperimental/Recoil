@@ -323,6 +323,12 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
           if (!prevLoadableRef.current.is(newLoadable)) {
             callback();
           }
+          // If the component is suspended then the effect setting prevLoadableRef
+          // will not run.  So, set the previous value here when its subscription
+          // is fired to wake it up.  We can't just rely on this, though, because
+          // this only executes when an atom/selector is dirty and the atom/selector
+          // passed to the hook can dynamically change.
+          prevLoadableRef.current = newLoadable;
         },
         componentName,
       );
@@ -370,6 +376,7 @@ function useRecoilValueLoadable_LEGACY<T>(
         if (!prevLoadableRef.current?.is(newLoadable)) {
           forceUpdate(newLoadable);
         }
+        prevLoadableRef.current = newLoadable;
       },
       componentName,
     );
@@ -407,6 +414,7 @@ function useRecoilValueLoadable_LEGACY<T>(
       if (!prevLoadableRef.current?.is(newLoadable)) {
         forceUpdate(newLoadable);
       }
+      prevLoadableRef.current = newLoadable;
     }
 
     return subscription.release;
