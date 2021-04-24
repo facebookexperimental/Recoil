@@ -24,70 +24,6 @@ export type RecoilRootProps = {
 
 export const RecoilRoot: React.FC<RecoilRootProps>;
 
-// Effect is called the first time a node is used with a <RecoilRoot>
-export type AtomEffect<T> = (param: {
-  node: RecoilState<T>,
-  trigger: 'set' | 'get',
-
-  // Call synchronously to initialize value or async to change it later
-  setSelf: (param:
-    | T
-    | DefaultValue
-    | Promise<T | DefaultValue>
-    | ((param: T | DefaultValue) => T | DefaultValue),
-  ) => void,
-  resetSelf: () => void,
-
-  // Subscribe callbacks to events.
-  // Atom effect observers are called before global transaction observers
-  onSet: (
-    param: (newValue: T | DefaultValue, oldValue: T | DefaultValue) => void,
-  ) => void,
-}) => void | (() => void);
-
-// atom.d.ts
-export interface AtomOptions<T> {
-  key: NodeKey;
-  default: RecoilValue<T> | Promise<T> | T;
-  effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
-  dangerouslyAllowMutability?: boolean;
-}
-
-/**
- * Creates an atom, which represents a piece of writeable state
- */
-export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
-
-// selector.d.ts
-export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
-
-export type SetRecoilState = <T>(
-    recoilVal: RecoilState<T>,
-    newVal: T | DefaultValue | ((prevValue: T) => T | DefaultValue),
-) => void;
-
-export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
-
-export interface ReadOnlySelectorOptions<T> {
-    key: string;
-    get: (opts: { get: GetRecoilValue }) => Promise<T> | RecoilValue<T> | T;
-    dangerouslyAllowMutability?: boolean;
-}
-
-export interface ReadWriteSelectorOptions<T> extends ReadOnlySelectorOptions<T> {
-  set: (
-    opts: {
-      set: SetRecoilState;
-      get: GetRecoilValue;
-      reset: ResetRecoilState;
-    },
-    newValue: T | DefaultValue,
-  ) => void;
-}
-
-export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
-export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
-
 // Snapshot.d.ts
 declare const SnapshotID_OPAQUE: unique symbol;
 export interface SnapshotID {
@@ -125,6 +61,73 @@ export class MutableSnapshot extends Snapshot {
   set: SetRecoilState;
   reset: ResetRecoilState;
 }
+
+// Effect is called the first time a node is used with a <RecoilRoot>
+export type AtomEffect<T> = (param: {
+  node: RecoilState<T>,
+  trigger: 'set' | 'get',
+
+  // Call synchronously to initialize value or async to change it later
+  setSelf: (param:
+    | T
+    | DefaultValue
+    | Promise<T | DefaultValue>
+    | ((param: T | DefaultValue) => T | DefaultValue),
+  ) => void,
+  resetSelf: () => void,
+
+  // Subscribe callbacks to events.
+  // Atom effect observers are called before global transaction observers
+  onSet: (
+    param: (newValue: T | DefaultValue, oldValue: T | DefaultValue) => void,
+  ) => void,
+}) => void | (() => void);
+
+// atom.d.ts
+export interface AtomOptions<T> {
+  key: NodeKey;
+  default: RecoilValue<T> | Promise<T> | T;
+  effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
+  dangerouslyAllowMutability?: boolean;
+}
+
+/**
+ * Creates an atom, which represents a piece of writeable state
+ */
+export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+
+// selector.d.ts
+export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
+export type GetCallback = <Args extends ReadonlyArray<unknown>, Return>(
+  fn: (interface: Readonly<{snapshot: Snapshot}>) => (...args: Args) => Return,
+) => (...args: Args) => Return;
+
+export type SetRecoilState = <T>(
+    recoilVal: RecoilState<T>,
+    newVal: T | DefaultValue | ((prevValue: T) => T | DefaultValue),
+) => void;
+
+export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+export interface ReadOnlySelectorOptions<T> {
+    key: string;
+    get: (opts: { get: GetRecoilValue, getCallback: GetCallback }) => Promise<T> | RecoilValue<T> | T;
+    dangerouslyAllowMutability?: boolean;
+}
+
+export interface ReadWriteSelectorOptions<T> extends ReadOnlySelectorOptions<T> {
+  set: (
+    opts: {
+      set: SetRecoilState;
+      get: GetRecoilValue;
+      reset: ResetRecoilState;
+    },
+    newValue: T | DefaultValue,
+  ) => void;
+}
+
+export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
+export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
 
 // hooks.d.ts
 export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;

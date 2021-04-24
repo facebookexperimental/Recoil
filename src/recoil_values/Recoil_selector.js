@@ -66,6 +66,7 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
+import type {Snapshot} from '../core/Recoil_Snapshot';
 import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {
@@ -92,6 +93,7 @@ const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
 const {setRecoilValueLoadable} = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
+const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 const gkx = require('../util/Recoil_gkx');
 const invariant = require('../util/Recoil_invariant');
@@ -107,10 +109,16 @@ export type ValueOrUpdater<T> =
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
 export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 export type ResetRecoilState = <T>(RecoilState<T>) => void;
+export type GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(
+  fn: ($ReadOnly<{snapshot: Snapshot}>) => (...Args) => Return,
+) => (...Args) => Return;
 
 type ReadOnlySelectorOptions<T> = $ReadOnly<{
   key: string,
-  get: ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
+  get: ({get: GetRecoilValue, getCallback: GetCallback}) =>
+    | Promise<T>
+    | RecoilValue<T>
+    | T,
 
   retainedBy_UNSTABLE?: RetainedBy,
   cachePolicy_UNSTABLE?: CachePolicy,
@@ -599,9 +607,33 @@ function selector<T>(
       throw depLoadable.contents;
     }
 
+    let gateCallback = false;
+    const getCallback: GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(
+      fn: ($ReadOnly<{snapshot: Snapshot}>) => (...Args) => Return,
+    ) => {
+      return (...args) => {
+        if (!gateCallback) {
+          throw new Error(
+            'getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can obtain the current Recoil state without a subscription.',
+          );
+        }
+        const snapshot = cloneSnapshot(store);
+        const cb = fn({snapshot});
+        if (typeof cb !== 'function') {
+          throw new Error(
+            'getCallback() expects a function that returns a function.',
+          );
+        }
+        // $FlowFixMe[escaped-generic]
+        // $FlowFixMe[incompatible-call]
+        return cb(...args);
+      };
+    };
+
     try {
-      result = get({get: getRecoilValue});
+      result = get({get: getRecoilValue, getCallback});
       result = isRecoilValue(result) ? getRecoilValue(result) : result;
+      gateCallback = true;
 
       if (isPromise(result)) {
         result = wrapPendingPromise(

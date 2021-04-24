@@ -19,6 +19,7 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {
+  GetCallback,
   GetRecoilValue,
   ResetRecoilState,
   SetRecoilState,
@@ -41,7 +42,10 @@ export type Parameter =
 
 type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
   key: string,
-  get: P => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
+  get: P => ({get: GetRecoilValue, getCallback: GetCallback}) =>
+    | Promise<T>
+    | RecoilValue<T>
+    | T,
   cachePolicyForParams_UNSTABLE?: CachePolicy,
   cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
