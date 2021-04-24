@@ -10,43 +10,42 @@
  */
 'use strict';
 
-import type {Loadable} from '../adt/Recoil_Loadable';
-import type {CacheImplementation} from '../caches/Recoil_Cache';
+import type {CachePolicy} from '../caches/Recoil_CachePolicy';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
   RecoilValue,
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
+import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {
   GetRecoilValue,
   ResetRecoilState,
   SetRecoilState,
 } from './Recoil_selector';
 
-const cacheWithValueEquality = require('../caches/Recoil_cacheWithValueEquality');
+const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
+const {setConfigDeletionHandler} = require('../core/Recoil_Node');
 const stableStringify = require('../util/Recoil_stableStringify');
 const selector = require('./Recoil_selector');
 
 // Keep in mind the parameter needs to be serializable as a cahche key
 // using Recoil_stableStringify
+type Primitive = void | null | boolean | number | string;
 export type Parameter =
-  | void
-  | null
-  | boolean
-  | number
-  | string
-  | $ReadOnly<{...}>
-  | $ReadOnlyArray<mixed>;
+  | Primitive
+  | {toJSON: () => string, ...}
+  | $ReadOnlyArray<Parameter>
+  | $ReadOnly<{...}>;
+// | $ReadOnly<{[string]: Parameter}>; // TODO Better enforce object is serializable
 
 type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
   key: string,
   get: P => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
-  cacheImplementation_UNSTABLE?: () => CacheImplementation<Loadable<T>>,
-  cacheImplementationForParams_UNSTABLE?: () => CacheImplementation<
-    RecoilValue<T>,
-  >,
+  cachePolicyForParams_UNSTABLE?: CachePolicy,
+  cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
+  retainedBy_UNSTABLE?: RetainedBy | (P => RetainedBy),
 }>;
 
 export type ReadWriteSelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
@@ -90,12 +89,19 @@ function selectorFamily<T, Params: Parameter>(
     | ReadOnlySelectorFamilyOptions<T, Params>
     | ReadWriteSelectorFamilyOptions<T, Params>,
 ): Params => RecoilValue<T> {
-  let selectorCache =
-    options.cacheImplementationForParams_UNSTABLE?.() ??
-    cacheWithValueEquality();
+  const selectorCache = cacheFromPolicy<
+    Params,
+    RecoilState<T> | RecoilValueReadOnly<T>,
+  >(
+    options.cachePolicyForParams_UNSTABLE ?? {
+      equality: 'value',
+      eviction: 'none',
+    },
+  );
 
   return (params: Params) => {
     const cachedSelector = selectorCache.get(params);
+
     if (cachedSelector != null) {
       return cachedSelector;
     }
@@ -107,8 +113,14 @@ function selectorFamily<T, Params: Parameter>(
         allowFunctions: true,
       }) ?? 'void'
     }/${nextIndex++}`; // Append index in case values serialize to the same key string
+
     const myGet = callbacks => options.get(params)(callbacks);
-    const myCacheImplementation = options.cacheImplementation_UNSTABLE?.();
+    const myCachePolicy = options.cachePolicy_UNSTABLE;
+
+    const retainedBy =
+      typeof options.retainedBy_UNSTABLE === 'function'
+        ? options.retainedBy_UNSTABLE(params)
+        : options.retainedBy_UNSTABLE;
 
     let newSelector;
     if (options.set != null) {
@@ -118,18 +130,26 @@ function selectorFamily<T, Params: Parameter>(
         key: myKey,
         get: myGet,
         set: mySet,
-        cacheImplementation_UNSTABLE: myCacheImplementation,
+        cachePolicy_UNSTABLE: myCachePolicy,
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+        retainedBy_UNSTABLE: retainedBy,
       });
     } else {
       newSelector = selector<T>({
         key: myKey,
         get: myGet,
-        cacheImplementation_UNSTABLE: myCacheImplementation,
+        cachePolicy_UNSTABLE: myCachePolicy,
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+        retainedBy_UNSTABLE: retainedBy,
       });
     }
-    selectorCache = selectorCache.set(params, newSelector);
+
+    selectorCache.set(params, newSelector);
+
+    setConfigDeletionHandler(newSelector.key, () => {
+      selectorCache.delete(params);
+    });
+
     return newSelector;
   };
 }

@@ -1,0 +1,32 @@
+{
+  "name": "Recoil DevTools",
+  "background": {
+    "scripts": ["background.bundle.js"],
+    "persistent": false
+  },
+  "page_action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon-34.png"
+  },
+  "icons": {
+    "128": "icon-128.png"
+  },
+  "devtools_page": "devtools.html",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.bundle.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    "pageScript.bundle.js",
+    "icon-128.png",
+    "icon-34.png"
+  ],
+  "manifest_version": 2,
+  "version": "0.1.1",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+  "update_url": "https://www.internalfb.com/intern/browser_extensions/chrome/update.xml"
+}

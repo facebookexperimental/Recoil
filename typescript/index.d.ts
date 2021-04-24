@@ -17,9 +17,10 @@ export class DefaultValue {
 }
 
 // recoilRoot.d.ts
-export interface RecoilRootProps {
-  initializeState?: (mutableSnapshot: MutableSnapshot) => void;
-}
+export type RecoilRootProps = {
+  initializeState?: (mutableSnapshot: MutableSnapshot) => void,
+  override?: true,
+} | {override: false}
 
 export const RecoilRoot: React.FC<RecoilRootProps>;
 
@@ -214,28 +215,35 @@ type LoadablePromise<T> = Promise<LoadablePromiseValue>;
 interface BaseLoadable<T> {
   getValue: () => T;
   toPromise: () => Promise<T>;
-  valueMaybe: () => T | void;
   valueOrThrow: () => T;
-  errorMaybe: () => Error | void;
-  errorOrThrow: () => Error;
-  promiseMaybe: () => Promise<T> | void;
+  errorOrThrow: () => any;
   promiseOrThrow: () => Promise<T>;
+  is: (other: Loadable<any>) => boolean;
   map: <S>(map: (from: T) => Promise<S> | S) => Loadable<S>;
 }
 
 interface ValueLoadable<T> extends BaseLoadable<T> {
   state: 'hasValue';
   contents: T;
+  valueMaybe: () => T;
+  errorMaybe: () => undefined;
+  promiseMaybe: () => undefined;
 }
 
 interface LoadingLoadable<T> extends BaseLoadable<T> {
   state: 'loading';
   contents: LoadablePromise<T>;
+  valueMaybe: () => undefined;
+  errorMaybe: () => any;
+  promiseMaybe: () => undefined;
 }
 
 interface ErrorLoadable<T> extends BaseLoadable<T> {
   state: 'hasError';
   contents: Error;
+  valueMaybe: () => undefined;
+  errorMaybe: () => undefined;
+  promiseMaybe: () => Promise<T>;
 }
 
 export type Loadable<T> =
@@ -270,7 +278,11 @@ export function isRecoilValue(val: unknown): val is RecoilValue<any>; // eslint-
 // bigint not supported yet
 type Primitive = undefined | null | boolean | number | symbol | string;
 
-export type SerializableParam = Primitive | ReadonlyArray<SerializableParam> | Readonly<{[key: string]: SerializableParam}>;
+export type SerializableParam =
+  | Primitive
+  | {toJSON: () => string}
+  | ReadonlyArray<SerializableParam>
+  | Readonly<{[key: string]: SerializableParam}>;
 
 export interface AtomFamilyOptions<T, P extends SerializableParam> {
   key: NodeKey;
@@ -359,6 +371,14 @@ export function waitForAll<RecoilValues extends Array<RecoilValue<any>> | [Recoi
 export function waitForAll<RecoilValues extends { [key: string]: RecoilValue<any> }>(
   param: RecoilValues,
 ): RecoilValueReadOnly<UnwrapRecoilValues<RecoilValues>>;
+
+export function waitForAllSettled<RecoilValues extends Array<RecoilValue<any>> | [RecoilValue<any>]>(
+  param: RecoilValues,
+): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+
+export function waitForAllSettled<RecoilValues extends { [key: string]: RecoilValue<any> }>(
+  param: RecoilValues,
+): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
 

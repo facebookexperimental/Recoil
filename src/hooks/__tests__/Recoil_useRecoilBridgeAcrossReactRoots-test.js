@@ -23,8 +23,8 @@ let React,
   useRecoilBridgeAcrossReactRoots;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useEffect, useRef} = require('React'));
+  React = require('react');
+  ({useEffect, useRef} = require('react'));
   ReactDOM = require('ReactDOM');
   ({act} = require('ReactTestUtils'));
 

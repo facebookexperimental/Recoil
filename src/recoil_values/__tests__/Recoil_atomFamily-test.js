@@ -41,8 +41,8 @@ let store: Store,
 const testRecoil = getRecoilTestFn(() => {
   const {makeStore} = require('../../testing/Recoil_TestingUtils');
 
-  React = require('React');
-  ({Profiler, useState} = require('React'));
+  React = require('react');
+  ({Profiler, useState} = require('react'));
   ReactDOM = require('ReactDOM');
   ({act} = require('ReactTestUtils'));
 
@@ -146,6 +146,18 @@ testRecoil('Works with parameterized default', () => {
   set(paramDefaultAtom({num: 1}), 3);
   expect(get(paramDefaultAtom({num: 1}))).toBe(3);
   expect(get(paramDefaultAtom({num: 2}))).toBe(2);
+});
+
+testRecoil('Works with date as parameter', () => {
+  const dateAtomFamily = atomFamily({
+    key: 'dateFamily',
+    default: date => 0,
+  });
+  expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(0);
+  expect(get(dateAtomFamily(new Date(2021, 2, 26)))).toBe(0);
+  set(dateAtomFamily(new Date(2021, 2, 25)), 1);
+  expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(1);
+  expect(get(dateAtomFamily(new Date(2021, 2, 26)))).toBe(0);
 });
 
 testRecoil('Works with parameterized fallback', () => {
@@ -432,7 +444,13 @@ testRecoil(
   },
 );
 
-testRecoil('Independent atom subscriptions', () => {
+testRecoil('Independent atom subscriptions', gks => {
+  const BASE_CALLS =
+    mutableSourceExists() ||
+    gks.includes('recoil_suppress_rerender_in_callback')
+      ? 0
+      : 1;
+
   const myAtom = atomFamily({
     key: 'atomFamily/independent subscriptions',
     default: 'DEFAULT',
@@ -467,23 +485,22 @@ testRecoil('Independent atom subscriptions', () => {
     </>,
   );
 
-  const baseUpdates = mutableSourceExists() ? 0 : 1;
   // Initial:
   expect(container.textContent).toBe('"DEFAULT""DEFAULT"');
-  expect(getNumUpdatesA()).toBe(baseUpdates + 1);
-  expect(getNumUpdatesB()).toBe(baseUpdates + 1);
+  expect(getNumUpdatesA()).toBe(BASE_CALLS + 1);
+  expect(getNumUpdatesB()).toBe(BASE_CALLS + 1);
 
   // After setting at parameter A, component A should update:
   act(() => setValueA(1));
   expect(container.textContent).toBe('1"DEFAULT"');
-  expect(getNumUpdatesA()).toBe(baseUpdates + 2);
-  expect(getNumUpdatesB()).toBe(baseUpdates + 1);
+  expect(getNumUpdatesA()).toBe(BASE_CALLS + 2);
+  expect(getNumUpdatesB()).toBe(BASE_CALLS + 1);
 
   // After setting at parameter B, component B should update:
   act(() => setValueB(2));
   expect(container.textContent).toBe('12');
-  expect(getNumUpdatesA()).toBe(baseUpdates + 2);
-  expect(getNumUpdatesB()).toBe(baseUpdates + 2);
+  expect(getNumUpdatesA()).toBe(BASE_CALLS + 2);
+  expect(getNumUpdatesB()).toBe(BASE_CALLS + 2);
 });
 
 describe('Effects', () => {

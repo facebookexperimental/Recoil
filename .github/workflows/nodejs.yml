@@ -26,6 +26,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm i -g yarn
+    - run: cd packages/recoil-devtools && yarn install --frozen-lockfile
     - run: yarn install --frozen-lockfile
     - run: yarn flow
     - run: yarn test

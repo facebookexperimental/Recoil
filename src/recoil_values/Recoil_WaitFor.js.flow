@@ -65,6 +65,17 @@ declare function waitForAll<
   RecoilValues,
 ): RecoilValueReadOnly<UnwrapObjRecoilValues<RecoilValues>>;
 
+declare function waitForAllSettled<
+  RecoilValues: $ReadOnlyArray<RecoilValue<any>>, // flowlint-line unclear-type:off
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
+declare function waitForAllSettled<
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any>, ...}>, // flowlint-line unclear-type:off
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
+
 /* eslint-enable no-redeclare */
 
 declare function noWait<T>(RecoilValue<T>): RecoilValueReadOnly<Loadable<T>>;
@@ -73,5 +84,6 @@ module.exports = {
   waitForNone,
   waitForAny,
   waitForAll,
+  waitForAllSettled,
   noWait,
 };

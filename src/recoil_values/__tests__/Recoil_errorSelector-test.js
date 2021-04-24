@@ -25,8 +25,12 @@ const testRecoil = getRecoilTestFn(() => {
   store = makeStore();
 });
 
-function getError(recoilValue) {
-  return getRecoilValueAsLoadable(store, recoilValue).errorOrThrow();
+function getError(recoilValue): Error {
+  const error = getRecoilValueAsLoadable(store, recoilValue).errorOrThrow();
+  if (!(error instanceof Error)) {
+    throw new Error('Expected error to be an instance of Error');
+  }
+  return error;
 }
 
 testRecoil('errorSelector - string', () => {

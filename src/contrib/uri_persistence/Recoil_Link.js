@@ -12,13 +12,12 @@
 
 import type {MutableSnapshot, Snapshot} from '../../core/Recoil_Snapshot';
 
-const React = require('React');
-const {useCallback} = require('React');
-
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
 } = require('../../hooks/Recoil_Hooks');
+const React = require('react');
+const {useCallback} = require('react');
 
 type AnchorProps = {
   download?: true | string,

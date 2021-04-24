@@ -14,8 +14,6 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState} from './Recoil_State';
 
-const React = require('React');
-const {useContext, useEffect, useMemo, useRef, useState} = require('React');
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
@@ -25,11 +23,10 @@ const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
 } = require('../core/Recoil_State');
-const {mapByDeletingMultipleFromMap} = require('../util/Recoil_CopyOnWrite');
 const expectationViolation = require('../util/Recoil_expectationViolation');
+const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const Tracing = require('../util/Recoil_Tracing');
 const unionSets = require('../util/Recoil_unionSets');
 const {
   cleanUpNode,
@@ -37,13 +34,22 @@ const {
   setNodeValue,
   setUnvalidatedAtomValue_DEPRECATED,
 } = require('./Recoil_FunctionalCore');
-const {graph, saveDependencyMapToStore} = require('./Recoil_Graph');
+const {graph} = require('./Recoil_Graph');
 const {cloneGraph} = require('./Recoil_Graph');
 const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
+const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
 const {freshSnapshot} = require('./Recoil_Snapshot');
-// @fb-only: const gkx = require('gkx');
+const React = require('react');
+const {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} = require('react');
 
-type Props = {
+type InternalProps = {
   initializeState_DEPRECATED?: ({
     set: <T>(RecoilValue<T>, T) => void,
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
@@ -149,13 +155,7 @@ function sendEndOfBatchNotifications(store: Store) {
     // a selector to change from asynchronous to synchronous, in which case there
     // would be no follow-up asynchronous resolution to wake us up.
     // TODO OPTIMIZATION Only wake up related downstream components
-    let nodeNames = '[available in dev build]';
-    if (__DEV__) {
-      nodeNames = Array.from(dirtyAtoms).join(', ');
-    }
-    storeState.suspendedComponentResolvers.forEach(cb =>
-      Tracing.trace('value became available, waking components', nodeNames, cb),
-    );
+    storeState.suspendedComponentResolvers.forEach(cb => cb());
   }
 
   // Special behavior ONLY invoked by useInterface.
@@ -173,11 +173,15 @@ function sendEndOfBatchNotifications(store: Store) {
  * setState on the batcher. Then we wait for that change to be committed, which
  * signifies the end of the batch. That's when we respond to the Recoil change.
  */
-function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
+function Batcher({
+  setNotifyBatcherOfChange,
+}: {
+  setNotifyBatcherOfChange: (() => void) => void,
+}) {
   const storeRef = useStoreRef();
 
   const [_, setState] = useState([]);
-  props.setNotifyBatcherOfChange(() => setState({}));
+  setNotifyBatcherOfChange(() => setState({}));
 
   useEffect(() => {
     // enqueueExecution runs this function immediately; it is only used to
@@ -204,8 +208,22 @@ function Batcher(props: {setNotifyBatcherOfChange: (() => void) => void}) {
       const discardedVersion = nullthrows(storeState.previousTree).version;
       storeState.graphsByVersion.delete(discardedVersion);
       storeState.previousTree = null;
+
+      if (gkx('recoil_memory_managament_2020')) {
+        releaseScheduledRetainablesNow(storeRef.current);
+      }
     });
   });
+
+  // If an asynchronous selector resolves after the Batcher is unmounted,
+  // notifyBatcherOfChange will still be called. An error gets thrown whenever
+  // setState is called after a component is already unmounted, so this sets
+  // notifyBatcherOfChange to be a no-op.
+  useEffect(() => {
+    return () => {
+      setNotifyBatcherOfChange(() => {});
+    };
+  }, [setNotifyBatcherOfChange]);
 
   return null;
 }
@@ -224,10 +242,8 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
     // $FlowFixMe[escaped-generic]
     set: (atom, value) => {
       const state = initial.currentTree;
-      const [depMap, writes] = setNodeValue(store, state, atom.key, value);
+      const writes = setNodeValue(store, state, atom.key, value);
       const writtenNodes = new Set(writes.keys());
-
-      saveDependencyMapToStore(depMap, store, state.version);
 
       const nonvalidatedAtoms = state.nonvalidatedAtoms.clone();
       for (const n of writtenNodes) {
@@ -261,12 +277,12 @@ function initialStoreState(initializeState): StoreState {
 }
 
 let nextID = 0;
-function RecoilRoot({
+function RecoilRoot_INTERNAL({
   initializeState_DEPRECATED,
   initializeState,
   store_INTERNAL: storeProp, // For use with React "context bridging"
   children,
-}: Props): ReactElement {
+}: InternalProps): ReactElement {
   // prettier-ignore
   // @fb-only: useEffect(() => {
     // @fb-only: if (gkx('recoil_usage_logging')) {
@@ -365,9 +381,12 @@ function RecoilRoot({
   };
 
   const notifyBatcherOfChange = useRef<null | (mixed => void)>(null);
-  function setNotifyBatcherOfChange(x: mixed => void) {
-    notifyBatcherOfChange.current = x;
-  }
+  const setNotifyBatcherOfChange = useCallback(
+    (x: mixed => void) => {
+      notifyBatcherOfChange.current = x;
+    },
+    [notifyBatcherOfChange],
+  );
 
   // FIXME T2710559282599660
   const createMutableSource =
@@ -420,6 +439,43 @@ function RecoilRoot({
       </MutableSourceContext.Provider>
     </AppContext.Provider>
   );
+}
+
+type Props =
+  | {
+      initializeState_DEPRECATED?: ({
+        set: <T>(RecoilValue<T>, T) => void,
+        setUnvalidatedAtomValues: (Map<string, mixed>) => void,
+      }) => void,
+      initializeState?: MutableSnapshot => void,
+      store_INTERNAL?: Store,
+      override?: true,
+      children: React.Node,
+    }
+  | {
+      store_INTERNAL?: Store,
+      /**
+       * Defaults to true. If override is true, this RecoilRoot will create a
+       * new Recoil scope. If override is false and this RecoilRoot is nested
+       * within another RecoilRoot, this RecoilRoot will perform no function.
+       * Children of this RecoilRoot will access the Recoil values of the
+       * nearest ancestor RecoilRoot.
+       */
+      override: false,
+      children: React.Node,
+    };
+
+function RecoilRoot(props: Props): ReactElement {
+  const {override, ...propsExceptOverride} = props;
+
+  const ancestorStoreRef = useStoreRef();
+  if (override === false && ancestorStoreRef.current !== defaultStore) {
+    // If ancestorStoreRef.current !== defaultStore, it means that this
+    // RecoilRoot is not nested within another.
+    return <>{props.children}</>;
+  }
+
+  return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
 }
 
 module.exports = {

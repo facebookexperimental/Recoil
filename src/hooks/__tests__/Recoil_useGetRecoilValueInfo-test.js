@@ -19,7 +19,7 @@ let React,
   useGetRecoilValueInfo;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({act} = require('ReactTestUtils'));
 
   atom = require('../../recoil_values/Recoil_atom');
@@ -311,5 +311,5 @@ testRecoil(
       ).toEqual([{name: 'ReadsAtom'}]);
     }
   },
-  // @fb-only: {gks: [['recoil_infer_component_names']]},
+  // @fb-only: {gks: [['recoil_infer_component_names', 'recoil_async_selector_refactor']]},
 );

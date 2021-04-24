@@ -1,0 +1,22 @@
+# dependencies
+/yarn.lock
+/package-lock.json
+/node_modules
+
+#build
+/build
+/recoil_devtools_ext
+recoil_devtools_ext.*
+
+# testing
+/coverage
+.watchmanconfig
+
+.watchmand
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

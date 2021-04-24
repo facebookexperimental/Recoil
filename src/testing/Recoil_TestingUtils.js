@@ -14,8 +14,6 @@ import type {RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {Store} from '../core/Recoil_State';
 
-const React = require('React');
-const {useEffect} = require('React');
 const ReactDOM = require('ReactDOM');
 const {act} = require('ReactTestUtils');
 
@@ -34,10 +32,11 @@ const {
   useSetRecoilState,
 } = require('../hooks/Recoil_Hooks');
 const selector = require('../recoil_values/Recoil_selector');
-const gkx = require('../util/Recoil_gkx');
 const invariant = require('../util/Recoil_invariant');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
+const React = require('react');
+const {useEffect} = require('react');
 
 // TODO Use Snapshot for testing instead of this thunk?
 function makeStore(): Store {
@@ -61,7 +60,9 @@ function makeStore(): Store {
       return newGraph;
     },
     subscribeToTransactions: () => {
-      throw new Error('not tested at this level');
+      throw new Error(
+        'This functionality, should not tested at this level. Use a component to test this functionality: e.g. componentThatReadsAndWritesAtom',
+      );
     },
     addTransactionMetadata: () => {
       throw new Error('not implemented');
@@ -227,7 +228,7 @@ function flushPromisesAndTimers(): Promise<void> {
   );
 }
 
-type ReloadImports = () => void;
+type ReloadImports = () => void | (() => void);
 type AssertionsFn = (gks: Array<string>) => ?Promise<mixed>;
 type TestOptions = {
   gks?: Array<Array<string>>,
@@ -243,7 +244,6 @@ const testGKs = (
   {gks: additionalGKs = []}: TestOptions = {},
 ) => {
   test.each([
-    [testDescription, []],
     ...[...gks, ...additionalGKs].map(gks => [
       !gks.length ? testDescription : `${testDescription} [${gks.join(', ')}]`,
       gks,
@@ -251,24 +251,38 @@ const testGKs = (
   ])('%s', async (_title, gks) => {
     jest.resetModules();
 
+    const gkx = require('../util/Recoil_gkx');
+
     gks.forEach(gkx.setPass);
 
-    reloadImports();
+    const after = reloadImports();
     await assertionsFn(gks);
 
     gks.forEach(gkx.setFail);
+
+    after?.();
   });
 };
 
 const WWW_GKS_TO_TEST = [
-  ['recoil_async_selector_refactor'],
   ['recoil_suppress_rerender_in_callback'],
-  ['recoil_async_selector_refactor', 'recoil_suppress_rerender_in_callback'],
+  ['recoil_hamt_2020'],
+  ['recoil_memory_managament_2020'],
 ];
 
-// TODO Disable testing GKs in OSS until that infra is fixed
+/**
+ * GK combinations to exclude in OSS, presumably because these combinations pass
+ * in FB internally but not in OSS. Ideally this array would be empty.
+ */
+const OSS_GK_COMBINATION_EXCLUSIONS = [];
+
 // eslint-disable-next-line no-unused-vars
-const OSS_GKS_TO_TEST = [];
+const OSS_GKS_TO_TEST = WWW_GKS_TO_TEST.filter(
+  gkCombination =>
+    !OSS_GK_COMBINATION_EXCLUSIONS.some(exclusion =>
+      exclusion.every(gk => gkCombination.includes(gk)),
+    ),
+);
 
 const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
   testGKs(

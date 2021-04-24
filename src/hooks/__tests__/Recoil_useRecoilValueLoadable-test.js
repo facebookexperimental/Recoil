@@ -21,7 +21,7 @@ let React,
   useRecoilValueLoadable;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
+  React = require('react');
   ({act} = require('ReactTestUtils'));
   constSelector = require('../../recoil_values/Recoil_constSelector');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');
@@ -70,9 +70,9 @@ testRecoil('useRecoilValueLoadable - loadable with error', async () => {
     promise = expect(loadable.toPromise()).rejects.toBeInstanceOf(Error);
     expect(loadable.valueMaybe()).toBe(undefined);
     expect(() => loadable.valueOrThrow()).toThrow(Error);
-    expect((loadable.errorMaybe() ?? {}).toString()).toContain('ERROR');
+    expect(String(loadable.errorMaybe() ?? {})).toContain('ERROR');
     expect(loadable.errorOrThrow()).toBeInstanceOf(Error);
-    expect(loadable.errorOrThrow().toString()).toContain('ERROR');
+    expect(String(loadable.errorOrThrow())).toContain('ERROR');
     expect(loadable.promiseMaybe()).toBe(undefined);
     expect(() => loadable.promiseOrThrow()).toThrow(Error);
     return 'VALUE';

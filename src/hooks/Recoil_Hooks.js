@@ -17,8 +17,6 @@ import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-const {useCallback, useEffect, useMemo, useRef, useState} = require('React');
-
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
 const {
@@ -34,9 +32,12 @@ const {
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
 } = require('../core/Recoil_RecoilValueInterface');
+const {updateRetainCount} = require('../core/Recoil_Retention');
+const {RetentionZone} = require('../core/Recoil_RetentionZone');
 const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const differenceSets = require('../util/Recoil_differenceSets');
+const {isSSR} = require('../util/Recoil_Environment');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const filterMap = require('../util/Recoil_filterMap');
 const filterSet = require('../util/Recoil_filterSet');
@@ -50,8 +51,13 @@ const {
 } = require('../util/Recoil_mutableSource');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const Tracing = require('../util/Recoil_Tracing');
+const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
 const useComponentName = require('../util/Recoil_useComponentName');
+const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
+
+// Components that aren't mounted after suspending for this long will be assumed
+// to be discarded and their resources released.
+const SUSPENSE_TIMEOUT_MS = 120000;
 
 function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -87,11 +93,17 @@ export type RecoilInterface = {
   getRecoilValue: <T>(RecoilValue<T>) => T,
   getRecoilValueLoadable: <T>(RecoilValue<T>) => Loadable<T>,
   getRecoilState: <T>(RecoilState<T>) => [T, SetterOrUpdater<T>],
-  getRecoilStateLoadable<T>(RecoilState<T>): [Loadable<T>, SetterOrUpdater<T>],
+  getRecoilStateLoadable: <T>(
+    RecoilState<T>,
+  ) => [Loadable<T>, SetterOrUpdater<T>],
   getSetRecoilState: <T>(RecoilState<T>) => SetterOrUpdater<T>,
   getResetRecoilState: <T>(RecoilState<T>) => Resetter,
 };
 
+/**
+ * Various things are broken with useRecoilInterface, particularly concurrent mode
+ * and memory management. They will not be fixed.
+ * */
 function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const storeRef = useStoreRef();
   const [_, forceUpdate] = useState([]);
@@ -137,43 +149,37 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
         store,
         new AbstractRecoilValue(key),
         state => {
-          Tracing.trace('RecoilValue subscription fired', key, () => {
-            updateState(state, key);
-          });
+          updateState(state, key);
         },
         componentName,
       );
       subscriptions.current.set(key, sub);
 
-      Tracing.trace('initial update on subscribing', key, () => {
-        /**
-         * Since we're subscribing in an effect we need to update to the latest
-         * value of the atom since it may have changed since we rendered. We can
-         * go ahead and do that now, unless we're in the middle of a batch --
-         * in which case we should do it at the end of the batch, due to the
-         * following edge case: Suppose an atom is updated in another useEffect
-         * of this same component. Then the following sequence of events occur:
-         * 1. Atom is updated and subs fired (but we may not be subscribed
-         *    yet depending on order of effects, so we miss this) Updated value
-         *    is now in nextTree, but not currentTree.
-         * 2. This effect happens. We subscribe and update.
-         * 3. From the update we re-render and read currentTree, with old value.
-         * 4. Batcher's effect sets currentTree to nextTree.
-         * In this sequence we miss the update. To avoid that, add the update
-         * to queuedComponentCallback if a batch is in progress.
-         */
-        // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
-        const state = store.getState();
-        if (state.nextTree) {
-          store.getState().queuedComponentCallbacks_DEPRECATED.push(
-            Tracing.wrap(() => {
-              updateState(store.getState(), key);
-            }),
-          );
-        } else {
+      /**
+       * Since we're subscribing in an effect we need to update to the latest
+       * value of the atom since it may have changed since we rendered. We can
+       * go ahead and do that now, unless we're in the middle of a batch --
+       * in which case we should do it at the end of the batch, due to the
+       * following edge case: Suppose an atom is updated in another useEffect
+       * of this same component. Then the following sequence of events occur:
+       * 1. Atom is updated and subs fired (but we may not be subscribed
+       *    yet depending on order of effects, so we miss this) Updated value
+       *    is now in nextTree, but not currentTree.
+       * 2. This effect happens. We subscribe and update.
+       * 3. From the update we re-render and read currentTree, with old value.
+       * 4. Batcher's effect sets currentTree to nextTree.
+       * In this sequence we miss the update. To avoid that, add the update
+       * to queuedComponentCallback if a batch is in progress.
+       */
+      // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
+      const state = store.getState();
+      if (state.nextTree) {
+        store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
           updateState(store.getState(), key);
-        }
-      });
+        });
+      } else {
+        updateState(store.getState(), key);
+      }
     });
 
     differenceSets(
@@ -306,23 +312,18 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
       const subscription = subscribeToRecoilValue(
         store,
         recoilValue,
-        () =>
-          Tracing.trace(
-            'RecoilValue subscription fired',
-            recoilValue.key,
-            () => {
-              if (!gkx('recoil_suppress_rerender_in_callback')) {
-                return callback();
-              }
-              // Only re-render if the value has changed.
-              // This will evaluate the atom/selector now as well as when the
-              // component renders, but that may help with prefetching.
-              const newLoadable = getLoadable();
-              if (!prevLoadableRef.current.is(newLoadable)) {
-                callback();
-              }
-            },
-          ),
+        () => {
+          if (!gkx('recoil_suppress_rerender_in_callback')) {
+            return callback();
+          }
+          // Only re-render if the value has changed.
+          // This will evaluate the atom/selector now as well as when the
+          // component renders, but that may help with prefetching.
+          const newLoadable = getLoadable();
+          if (!prevLoadableRef.current.is(newLoadable)) {
+            callback();
+          }
+        },
         componentName,
       );
       return subscription.release;
@@ -358,50 +359,55 @@ function useRecoilValueLoadable_LEGACY<T>(
       store,
       recoilValue,
       _state => {
-        Tracing.trace('RecoilValue subscription fired', recoilValue.key, () => {
-          if (!gkx('recoil_suppress_rerender_in_callback')) {
-            return forceUpdate([]);
-          }
-          const newLoadable = getRecoilValueAsLoadable(
-            store,
-            recoilValue,
-            store.getState().currentTree,
-          );
-          if (!prevLoadableRef.current?.is(newLoadable)) {
-            forceUpdate(newLoadable);
-          }
-        });
+        if (!gkx('recoil_suppress_rerender_in_callback')) {
+          return forceUpdate([]);
+        }
+        const newLoadable = getRecoilValueAsLoadable(
+          store,
+          recoilValue,
+          store.getState().currentTree,
+        );
+        if (!prevLoadableRef.current?.is(newLoadable)) {
+          forceUpdate(newLoadable);
+        }
       },
       componentName,
     );
-    Tracing.trace('initial update on subscribing', recoilValue.key, () => {
-      /**
-       * Since we're subscribing in an effect we need to update to the latest
-       * value of the atom since it may have changed since we rendered. We can
-       * go ahead and do that now, unless we're in the middle of a batch --
-       * in which case we should do it at the end of the batch, due to the
-       * following edge case: Suppose an atom is updated in another useEffect
-       * of this same component. Then the following sequence of events occur:
-       * 1. Atom is updated and subs fired (but we may not be subscribed
-       *    yet depending on order of effects, so we miss this) Updated value
-       *    is now in nextTree, but not currentTree.
-       * 2. This effect happens. We subscribe and update.
-       * 3. From the update we re-render and read currentTree, with old value.
-       * 4. Batcher's effect sets currentTree to nextTree.
-       * In this sequence we miss the update. To avoid that, add the update
-       * to queuedComponentCallback if a batch is in progress.
-       */
-      if (storeState.nextTree) {
-        store.getState().queuedComponentCallbacks_DEPRECATED.push(
-          Tracing.wrap(() => {
-            prevLoadableRef.current = null;
-            forceUpdate([]);
-          }),
-        );
-      } else {
+
+    /**
+     * Since we're subscribing in an effect we need to update to the latest
+     * value of the atom since it may have changed since we rendered. We can
+     * go ahead and do that now, unless we're in the middle of a batch --
+     * in which case we should do it at the end of the batch, due to the
+     * following edge case: Suppose an atom is updated in another useEffect
+     * of this same component. Then the following sequence of events occur:
+     * 1. Atom is updated and subs fired (but we may not be subscribed
+     *    yet depending on order of effects, so we miss this) Updated value
+     *    is now in nextTree, but not currentTree.
+     * 2. This effect happens. We subscribe and update.
+     * 3. From the update we re-render and read currentTree, with old value.
+     * 4. Batcher's effect sets currentTree to nextTree.
+     * In this sequence we miss the update. To avoid that, add the update
+     * to queuedComponentCallback if a batch is in progress.
+     */
+    if (storeState.nextTree) {
+      store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
+        prevLoadableRef.current = null;
         forceUpdate([]);
+      });
+    } else {
+      if (!gkx('recoil_suppress_rerender_in_callback')) {
+        return forceUpdate([]);
       }
-    });
+      const newLoadable = getRecoilValueAsLoadable(
+        store,
+        recoilValue,
+        store.getState().currentTree,
+      );
+      if (!prevLoadableRef.current?.is(newLoadable)) {
+        forceUpdate(newLoadable);
+      }
+    }
 
     return subscription.release;
   }, [componentName, recoilValue, storeRef]);
@@ -419,6 +425,10 @@ function useRecoilValueLoadable_LEGACY<T>(
   just undefined if not available for any reason, such as pending or error.
 */
 function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
+  if (gkx('recoil_memory_managament_2020')) {
+    // eslint-disable-next-line fb-www/react-hooks
+    useRetain(recoilValue);
+  }
   if (mutableSourceExists()) {
     // eslint-disable-next-line fb-www/react-hooks
     return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
@@ -635,14 +645,24 @@ function useRecoilTransactionObserver(
   useTransactionSubscription(
     useCallback(
       store => {
+        const snapshot = cloneSnapshot(store, 'current');
+        const previousSnapshot = cloneSnapshot(store, 'previous');
         callback({
-          snapshot: cloneSnapshot(store, 'current'),
-          previousSnapshot: cloneSnapshot(store, 'previous'),
+          snapshot,
+          previousSnapshot,
         });
       },
       [callback],
     ),
   );
+}
+
+function usePrevious<T>(value: T): T | void {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
 }
 
 // Return a snapshot of the current state and subscribe to all state changes
@@ -651,9 +671,32 @@ function useRecoilSnapshot(): Snapshot {
   const [snapshot, setSnapshot] = useState(() =>
     cloneSnapshot(storeRef.current),
   );
+  const previousSnapshot = usePrevious(snapshot);
+  const timeoutID = useRef();
+
+  useEffect(() => {
+    if (timeoutID.current && !isSSR) {
+      window.clearTimeout(timeoutID.current);
+    }
+    return snapshot.retain();
+  }, [snapshot]);
+
   useTransactionSubscription(
     useCallback(store => setSnapshot(cloneSnapshot(store)), []),
   );
+
+  if (previousSnapshot !== snapshot && !isSSR) {
+    if (timeoutID.current) {
+      previousSnapshot?.release();
+      window.clearTimeout(timeoutID.current);
+    }
+    snapshot.retain();
+    timeoutID.current = window.setTimeout(() => {
+      snapshot.release();
+      timeoutID.current = null;
+    }, SUSPENSE_TIMEOUT_MS);
+  }
+
   return snapshot;
 }
 
@@ -736,9 +779,6 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
 
   return useCallback(
     (...args): Return => {
-      // Use currentTree for the snapshot to show the currently committed state
-      const snapshot = cloneSnapshot(storeRef.current);
-
       function set<T>(
         recoilState: RecoilState<T>,
         newValueOrUpdater: (T => T) | T,
@@ -750,10 +790,26 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
         setRecoilValue(storeRef.current, recoilState, DEFAULT_VALUE);
       }
 
+      // Use currentTree for the snapshot to show the currently committed state
+      const snapshot = cloneSnapshot(storeRef.current);
       let ret = SENTINEL;
       batchUpdates(() => {
+        const errMsg =
+          'useRecoilCallback expects a function that returns a function: ' +
+          'it accepts a function of the type (RecoilInterface) => T = R ' +
+          'and returns a callback function T => R, where RecoilInterface is an ' +
+          'object {snapshot, set, ...} and T and R are the argument and return ' +
+          'types of the callback you want to create.  Please see the docs ' +
+          'at recoiljs.org for details.';
+        if (typeof fn !== 'function') {
+          throw new Error(errMsg);
+        }
         // flowlint-next-line unclear-type:off
-        ret = (fn: any)({set, reset, snapshot, gotoSnapshot})(...args);
+        const cb = (fn: any)({set, reset, snapshot, gotoSnapshot});
+        if (typeof cb !== 'function') {
+          throw new Error(errMsg);
+        }
+        ret = cb(...args);
       });
       invariant(
         !(ret instanceof Sentinel),
@@ -763,6 +819,86 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
     },
     deps != null ? [...deps, storeRef] : undefined, // eslint-disable-line fb-www/react-hooks-deps
   );
+}
+
+// I don't see a way to avoid the any type here because we want to accept readable
+// and writable values with any type parameter, but normally with writable ones
+// RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
+type ToRetain =
+  | RecoilValue<any> // flowlint-line unclear-type:off
+  | RetentionZone
+  | $ReadOnlyArray<RecoilValue<any> | RetentionZone>; // flowlint-line unclear-type:off
+
+function useRetain(toRetain: ToRetain): void {
+  if (!gkx('recoil_memory_managament_2020')) {
+    return;
+  }
+  // eslint-disable-next-line fb-www/react-hooks
+  return useRetain_ACTUAL(toRetain);
+}
+
+function useRetain_ACTUAL(toRetain: ToRetain): void {
+  const array = Array.isArray(toRetain) ? toRetain : [toRetain];
+  const retainables = array.map(a => (a instanceof RetentionZone ? a : a.key));
+  const storeRef = useStoreRef();
+  useEffect(() => {
+    if (!gkx('recoil_memory_managament_2020')) {
+      return;
+    }
+    const store = storeRef.current;
+    if (timeoutID.current && !isSSR) {
+      // Already performed a temporary retain on render, simply cancel the release
+      // of that temporary retain.
+      window.clearTimeout(timeoutID.current);
+      timeoutID.current = null;
+    } else {
+      // Log this since it's not clear that there's any scenario where it should happen.
+      recoverableViolation(
+        'Did not retain recoil value on render, or committed after timeout elapsed. This is fine, but odd.',
+        'recoil',
+      );
+      for (const r of retainables) {
+        updateRetainCount(store, r, 1);
+      }
+    }
+    return () => {
+      for (const r of retainables) {
+        updateRetainCount(store, r, -1);
+      }
+    };
+    // eslint-disable-next-line fb-www/react-hooks-deps
+  }, [storeRef, ...retainables]);
+
+  // We want to retain if the component suspends. This is terrible but the Suspense
+  // API affords us no better option. If we suspend and never commit after some
+  // seconds, then release. The 'actual' retain/release in the effect above
+  // cancels this.
+  const timeoutID = useRef();
+  const previousRetainables = usePrevious(retainables);
+  if (
+    !isSSR &&
+    (previousRetainables === undefined ||
+      !shallowArrayEqual(previousRetainables, retainables))
+  ) {
+    const store = storeRef.current;
+    for (const r of retainables) {
+      updateRetainCount(store, r, 1);
+    }
+    if (previousRetainables) {
+      for (const r of previousRetainables) {
+        updateRetainCount(store, r, -1);
+      }
+    }
+    if (timeoutID.current) {
+      window.clearTimeout(timeoutID.current);
+    }
+    timeoutID.current = window.setTimeout(() => {
+      timeoutID.current = null;
+      for (const r of retainables) {
+        updateRetainCount(store, r, -1);
+      }
+    }, SUSPENSE_TIMEOUT_MS);
+  }
 }
 
 module.exports = {
@@ -776,6 +912,7 @@ module.exports = {
   useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
+  useRetain,
   useResetRecoilState,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,

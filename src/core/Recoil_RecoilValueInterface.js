@@ -20,16 +20,13 @@ import type {
   TreeState,
 } from './Recoil_State';
 
-const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const Tracing = require('../util/Recoil_Tracing');
 const {
   getDownstreamNodes,
   getNodeLoadable,
   setNodeValue,
 } = require('./Recoil_FunctionalCore');
-const {saveDependencyMapToStore} = require('./Recoil_Graph');
 const {getNodeMaybe} = require('./Recoil_Node');
 const {DefaultValue, RecoilValueNotReady} = require('./Recoil_Node');
 const {
@@ -57,14 +54,7 @@ function getRecoilValueAsLoadable<T>(
     recoverableViolation('Tried to read from a discarded tree', 'recoil');
   }
 
-  const [dependencyMap, loadable] = getNodeLoadable(store, treeState, key);
-
-  if (!gkx('recoil_async_selector_refactor')) {
-    /**
-     * In selector_NEW, we take care of updating state deps within the selector
-     */
-    saveDependencyMapToStore(dependencyMap, store, treeState.version);
-  }
+  const loadable = getNodeLoadable(store, treeState, key);
 
   return loadable;
 }
@@ -94,8 +84,8 @@ function valueFromValueOrUpdater<T>(
     // Updater form: pass in the current value. Throw if the current value
     // is unavailable (namely when updating an async selector that's
     // pending or errored):
-    // NOTE: This will evaluate node, but not update state with node subscriptions!
-    const current = getNodeLoadable(store, state, key)[1];
+    const current = getNodeLoadable(store, state, key);
+
     if (current.state === 'loading') {
       throw new RecoilValueNotReady(key);
     } else if (current.state === 'hasError') {
@@ -135,13 +125,9 @@ function applyAction(store: Store, state: TreeState, action: Action<mixed>) {
       recoilValue,
       valueOrUpdater,
     );
-    const [depMap, writes] = setNodeValue(
-      store,
-      state,
-      recoilValue.key,
-      newValue,
-    );
-    saveDependencyMapToStore(depMap, store, state.version);
+
+    const writes = setNodeValue(store, state, recoilValue.key, newValue);
+
     for (const [key, loadable] of writes.entries()) {
       writeLoadableToTreeState(state, key, loadable);
     }
@@ -201,12 +187,7 @@ function applyActionsToStore(store, actions) {
   });
 }
 
-function queueOrPerformStateUpdate(
-  store: Store,
-  action: Action<mixed>,
-  key: NodeKey,
-  message: string,
-): void {
+function queueOrPerformStateUpdate(store: Store, action: Action<mixed>): void {
   if (batchStack.length) {
     const actionsByStore = batchStack[batchStack.length - 1];
     let actions = actionsByStore.get(store);
@@ -215,7 +196,7 @@ function queueOrPerformStateUpdate(
     }
     actions.push(action);
   } else {
-    Tracing.trace(message, key, () => applyActionsToStore(store, [action]));
+    applyActionsToStore(store, [action]);
   }
 }
 
@@ -225,9 +206,7 @@ function batchStart(): () => void {
   batchStack.push(actionsByStore);
   return () => {
     for (const [store, actions] of actionsByStore) {
-      Tracing.trace('Recoil batched updates', '-', () =>
-        applyActionsToStore(store, actions),
-      );
+      applyActionsToStore(store, actions);
     }
     const popped = batchStack.pop();
     if (popped !== actionsByStore) {
@@ -259,16 +238,11 @@ function setRecoilValue<T>(
   recoilValue: AbstractRecoilValue<T>,
   valueOrUpdater: T | DefaultValue | (T => T | DefaultValue),
 ): void {
-  queueOrPerformStateUpdate(
-    store,
-    {
-      type: 'set',
-      recoilValue,
-      valueOrUpdater,
-    },
-    recoilValue.key,
-    'set Recoil value',
-  );
+  queueOrPerformStateUpdate(store, {
+    type: 'set',
+    recoilValue,
+    valueOrUpdater,
+  });
 }
 
 function setRecoilValueLoadable<T>(
@@ -279,31 +253,21 @@ function setRecoilValueLoadable<T>(
   if (loadable instanceof DefaultValue) {
     return setRecoilValue(store, recoilValue, loadable);
   }
-  queueOrPerformStateUpdate(
-    store,
-    {
-      type: 'setLoadable',
-      recoilValue,
-      loadable,
-    },
-    recoilValue.key,
-    'set Recoil value',
-  );
+  queueOrPerformStateUpdate(store, {
+    type: 'setLoadable',
+    recoilValue,
+    loadable,
+  });
 }
 
 function markRecoilValueModified<T>(
   store: Store,
   recoilValue: AbstractRecoilValue<T>,
 ): void {
-  queueOrPerformStateUpdate(
-    store,
-    {
-      type: 'markModified',
-      recoilValue,
-    },
-    recoilValue.key,
-    'mark RecoilValue modified',
-  );
+  queueOrPerformStateUpdate(store, {
+    type: 'markModified',
+    recoilValue,
+  });
 }
 
 function setUnvalidatedRecoilValue<T>(
@@ -311,16 +275,11 @@ function setUnvalidatedRecoilValue<T>(
   recoilValue: AbstractRecoilValue<T>,
   unvalidatedValue: T,
 ): void {
-  queueOrPerformStateUpdate(
-    store,
-    {
-      type: 'setUnvalidated',
-      recoilValue,
-      unvalidatedValue,
-    },
-    recoilValue.key,
-    'set Recoil value',
-  );
+  queueOrPerformStateUpdate(store, {
+    type: 'setUnvalidated',
+    recoilValue,
+    unvalidatedValue,
+  });
 }
 
 export type ComponentSubscription = {release: () => void};

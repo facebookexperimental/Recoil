@@ -25,8 +25,8 @@ let React,
   useRecoilSnapshot;
 
 const testRecoil = getRecoilTestFn(() => {
-  React = require('React');
-  ({useEffect} = require('React'));
+  React = require('react');
+  ({useEffect} = require('react'));
   ({act} = require('ReactTestUtils'));
 
   ({freshSnapshot} = require('../../core/Recoil_Snapshot'));
@@ -59,6 +59,7 @@ testRecoil('useRecoilSnapshot - subscribe to updates', () => {
   const snapshots = [];
   function RecoilSnapshotAndSubscribe() {
     const snapshot = useRecoilSnapshot();
+    snapshot.retain();
     snapshots.push(snapshot);
     return null;
   }
@@ -110,6 +111,7 @@ testRecoil('useRecoilSnapshot - goto snapshots', () => {
   function RecoilSnapshotAndSubscribe() {
     gotoSnapshot = useGotoRecoilSnapshot();
     const snapshot = useRecoilSnapshot();
+    snapshot.retain();
     snapshots.push(snapshot);
     return null;
   }
@@ -149,6 +151,7 @@ testRecoil('useRecoilSnapshot - async selectors', async () => {
   const snapshots = [];
   function RecoilSnapshotAndSubscribe() {
     const snapshot = useRecoilSnapshot();
+    snapshot.retain();
     useEffect(() => {
       snapshots.push(snapshot);
     });
@@ -175,21 +178,21 @@ testRecoil('useRecoilSnapshot - async selectors', async () => {
   expect(snapshots[0].getLoadable(mySelector).contents).toEqual('RESOLVE');
 });
 
-testRecoil('getSubscriptions', async () => {
+testRecoil('Subscriptions', async () => {
   const myAtom = atom<string>({
-    key: 'useRecoilSnapshot getSubscriptions atom',
+    key: 'useRecoilSnapshot Subscriptions atom',
     default: 'ATOM',
   });
   const selectorA = selector({
-    key: 'useRecoilSnapshot getSubscriptions A',
+    key: 'useRecoilSnapshot Subscriptions A',
     get: ({get}) => get(myAtom),
   });
   const selectorB = selector({
-    key: 'useRecoilSnapshot getSubscriptions B',
+    key: 'useRecoilSnapshot Subscriptions B',
     get: ({get}) => get(selectorA) + get(myAtom),
   });
   const selectorC = selector({
-    key: 'useRecoilSnapshot getSubscriptions C',
+    key: 'useRecoilSnapshot Subscriptions C',
     get: async ({get}) => {
       const ret = get(selectorA) + get(selectorB);
       await Promise.resolve();
@@ -214,27 +217,27 @@ testRecoil('getSubscriptions', async () => {
   expect(c.textContent).toBe('"ATOMATOMATOM"');
 
   expect(
-    Array.from(snapshot.getSubscribers_UNSTABLE(myAtom).nodes).length,
+    Array.from(snapshot.getInfo_UNSTABLE(myAtom).subscribers.nodes).length,
   ).toBe(3);
-  expect(Array.from(snapshot.getSubscribers_UNSTABLE(myAtom).nodes)).toEqual(
-    expect.arrayContaining([selectorA, selectorB, selectorC]),
-  );
   expect(
-    Array.from(snapshot.getSubscribers_UNSTABLE(selectorA).nodes).length,
+    Array.from(snapshot.getInfo_UNSTABLE(myAtom).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorA, selectorB, selectorC]));
+  expect(
+    Array.from(snapshot.getInfo_UNSTABLE(selectorA).subscribers.nodes).length,
   ).toBe(2);
-  expect(Array.from(snapshot.getSubscribers_UNSTABLE(selectorA).nodes)).toEqual(
-    expect.arrayContaining([selectorB, selectorC]),
-  );
   expect(
-    Array.from(snapshot.getSubscribers_UNSTABLE(selectorB).nodes).length,
+    Array.from(snapshot.getInfo_UNSTABLE(selectorA).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorB, selectorC]));
+  expect(
+    Array.from(snapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes).length,
   ).toBe(1);
-  expect(Array.from(snapshot.getSubscribers_UNSTABLE(selectorB).nodes)).toEqual(
-    expect.arrayContaining([selectorC]),
-  );
   expect(
-    Array.from(snapshot.getSubscribers_UNSTABLE(selectorC).nodes).length,
+    Array.from(snapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([selectorC]));
+  expect(
+    Array.from(snapshot.getInfo_UNSTABLE(selectorC).subscribers.nodes).length,
   ).toBe(0);
-  expect(Array.from(snapshot.getSubscribers_UNSTABLE(selectorC).nodes)).toEqual(
-    expect.arrayContaining([]),
-  );
+  expect(
+    Array.from(snapshot.getInfo_UNSTABLE(selectorC).subscribers.nodes),
+  ).toEqual(expect.arrayContaining([]));
 });

@@ -8,14 +8,20 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
-import type {RecoilState} from 'Recoil_RecoilValue';
+import type {RecoilState} from '../../core/Recoil_RecoilValue';
 
 const {useRecoilValue} = require('../../hooks/Recoil_Hooks');
 const atom = require('../Recoil_atom');
 const readOnlySelector = require('../Recoil_readOnlySelector');
-const {noWait, waitForAll, waitForNone} = require('../Recoil_WaitFor');
+const {
+  noWait,
+  waitForAll,
+  waitForAllSettled,
+  waitForNone,
+} = require('../Recoil_WaitFor');
 
 const numberAtom: RecoilState<number> = atom({key: 'number', default: 0});
 const stringAtom: RecoilState<string> = atom({key: 'string', default: ''});
@@ -84,6 +90,40 @@ str = objResultsNone.str.valueOrThrow();
 num = objResultsNone.str.valueOrThrow();
 // $FlowExpectedError
 str = objResultsNone.num.valueOrThrow();
+
+//////////////
+// waitForAllSettled
+//////////////
+
+// Test tuple unwrapping of types
+// eslint-disable-next-line fb-www/react-hooks
+const arrayResultsAllSettled = useRecoilValue(
+  waitForAllSettled([
+    // $FlowExpectedError
+    readOnlySelector(numberAtom),
+    // $FlowExpectedError
+    readOnlySelector(stringAtom),
+  ]),
+);
+num = arrayResultsAllSettled[0].valueOrThrow();
+str = arrayResultsAllSettled[1].valueOrThrow();
+// $FlowExpectedError
+num = arrayResultsAllSettled[1].valueOrThrow();
+// $FlowExpectedError
+str = arrayResultsAllSettled[0].valueOrThrow();
+
+// Test object unwrapping of types
+// eslint-disable-next-line fb-www/react-hooks
+const objResultsAllSettled = useRecoilValue(
+  // $FlowExpectedError
+  waitForAllSettled({num: numberAtom, str: stringAtom}),
+);
+num = objResultsAllSettled.num.valueOrThrow();
+str = objResultsAllSettled.str.valueOrThrow();
+// $FlowExpectedError
+num = objResultsAllSettled.str.valueOrThrow();
+// $FlowExpectedError
+str = objResultsAllSettled.num.valueOrThrow();
 
 //////////////
 // noWait

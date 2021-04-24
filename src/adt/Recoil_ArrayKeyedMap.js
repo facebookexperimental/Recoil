@@ -15,8 +15,7 @@
  */
 'use strict';
 
-// eslint-disable-next-line fb-www/no-symbol
-const LEAF = Symbol('ArrayKeyedMap');
+const LEAF = {};
 
 const emptyMap = new Map();
 
@@ -52,13 +51,16 @@ class ArrayKeyedMap<V> {
     let map = this._base;
     let next = map;
     ks.forEach(k => {
+      // $FlowFixMe[incompatible-use]
       next = map.get(k);
       if (!next) {
         next = new Map();
+        // $FlowFixMe[incompatible-use]
         map.set(k, next);
       }
       map = next;
     });
+    // $FlowFixMe[incompatible-use]
     next.set(LEAF, value);
     return this;
   }
@@ -68,13 +70,16 @@ class ArrayKeyedMap<V> {
     let map = this._base;
     let next = map;
     ks.forEach(k => {
+      // $FlowFixMe[incompatible-use]
       next = map.get(k);
       if (!next) {
         next = new Map();
+        // $FlowFixMe[incompatible-use]
         map.set(k, next);
       }
       map = next;
     });
+    // $FlowFixMe[incompatible-use]
     next.delete(LEAF);
     // TODO We could cleanup empty maps
     return this;

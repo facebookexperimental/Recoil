@@ -17,7 +17,6 @@
 
 import type {NodeKey} from '../core/Recoil_Keys';
 
-const gkx = require('../util/Recoil_gkx');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 
@@ -29,7 +28,12 @@ export type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
   __key?: NodeKey,
 }>;
 
-export type LoadablePromise<+T> = Promise<ResolvedLoadablePromiseInfo<T>>;
+class Canceled {}
+const CANCELED: Canceled = new Canceled();
+
+export type LoadablePromise<+T> = Promise<
+  ResolvedLoadablePromiseInfo<T> | Canceled,
+>;
 
 type Accessors<T> = $ReadOnly<{
   // Attempt to get the value.
@@ -39,11 +43,8 @@ type Accessors<T> = $ReadOnly<{
   toPromise: () => Promise<T>,
 
   // Convenience accessors
-  valueMaybe: () => T | void,
   valueOrThrow: () => T,
-  errorMaybe: () => Error | void,
-  errorOrThrow: () => Error,
-  promiseMaybe: () => Promise<T> | void,
+  errorOrThrow: () => mixed,
   promiseOrThrow: () => Promise<T>,
 
   is: (Loadable<mixed>) => boolean,
@@ -51,84 +52,88 @@ type Accessors<T> = $ReadOnly<{
   map: <T, S>(map: (T) => Promise<S> | S) => Loadable<S>,
 }>;
 
-export type Loadable<+T> =
-  | $ReadOnly<{state: 'hasValue', contents: T, ...Accessors<T>}>
-  | $ReadOnly<{state: 'hasError', contents: Error, ...Accessors<T>}>
-  | $ReadOnly<{
-      state: 'loading',
-      contents: LoadablePromise<T>,
-      ...Accessors<T>,
-    }>;
+type ValueAccessors<T> = $ReadOnly<{
+  ...Accessors<T>,
+  valueMaybe: () => T,
+  errorMaybe: () => void,
+  promiseMaybe: () => void,
+}>;
 
-type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
+type ErrorAccessors<T> = $ReadOnly<{
+  ...Accessors<T>,
+  valueMaybe: () => void,
+  errorMaybe: () => mixed,
+  promiseMaybe: () => void,
+}>;
+
+type LoadingAccessors<T> = $ReadOnly<{
+  ...Accessors<T>,
+  valueMaybe: () => void,
+  errorMaybe: () => void,
+  promiseMaybe: () => Promise<T>,
+}>;
+
+type ValueLoadable<+T> = $ReadOnly<{
+  state: 'hasValue',
+  contents: T,
+  ...ValueAccessors<T>,
+}>;
+
+type ErrorLoadable<+T> = $ReadOnly<{
+  state: 'hasError',
+  contents: mixed,
+  ...ErrorAccessors<T>,
+}>;
+
+type LoadingLoadable<+T> = $ReadOnly<{
+  state: 'loading',
+  contents: LoadablePromise<T>,
+  ...LoadingAccessors<T>,
+}>;
+
+export type Loadable<+T> =
+  | ValueLoadable<T>
+  | ErrorLoadable<T>
+  | LoadingLoadable<T>;
 
 const loadableAccessors = {
-  /**
-   * if loadable has a value (state === 'hasValue'), return that value.
-   * Otherwise, throw the (unwrapped) promise or the error.
-   */
-  getValue() {
-    if (this.state === 'loading' && gkx('recoil_async_selector_refactor')) {
-      throw (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value);
-    }
-
-    if (this.state !== 'hasValue') {
-      throw this.contents;
-    }
-
-    return this.contents;
-  },
-
-  toPromise(): Promise<$FlowFixMe> {
-    return this.state === 'hasValue'
-      ? Promise.resolve(this.contents)
-      : this.state === 'hasError'
-      ? Promise.reject(this.contents)
-      : gkx('recoil_async_selector_refactor')
-      ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
-      : this.contents;
-  },
-
   valueMaybe() {
-    return this.state === 'hasValue' ? this.contents : undefined;
+    return undefined;
   },
 
   valueOrThrow() {
-    if (this.state !== 'hasValue') {
-      throw new Error(`Loadable expected value, but in "${this.state}" state`);
-    }
-    return this.contents;
+    const error = new Error(
+      `Loadable expected value, but in "${this.state}" state`,
+    );
+    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    error.stack;
+    throw error;
   },
 
   errorMaybe() {
-    return this.state === 'hasError' ? this.contents : undefined;
+    return undefined;
   },
 
   errorOrThrow() {
-    if (this.state !== 'hasError') {
-      throw new Error(`Loadable expected error, but in "${this.state}" state`);
-    }
-    return this.contents;
+    const error = new Error(
+      `Loadable expected error, but in "${this.state}" state`,
+    );
+    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    error.stack;
+    throw error;
   },
 
-  promiseMaybe(): void | Promise<$FlowFixMe> {
-    return this.state === 'loading'
-      ? gkx('recoil_async_selector_refactor')
-        ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
-        : this.contents
-      : undefined;
+  promiseMaybe() {
+    return undefined;
   },
 
-  promiseOrThrow(): Promise<$FlowFixMe> {
-    if (this.state !== 'loading') {
-      throw new Error(
-        `Loadable expected promise, but in "${this.state}" state`,
-      );
-    }
-
-    return gkx('recoil_async_selector_refactor')
-      ? (this.contents: Promise<$FlowFixMe>).then(({__value}) => __value)
-      : (this.contents: Promise<$FlowFixMe>);
+  promiseOrThrow() {
+    const error = new Error(
+      `Loadable expected promise, but in "${this.state}" state`,
+    );
+    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    error.stack;
+    throw error;
   },
 
   is(other: Loadable<mixed>): boolean {
@@ -171,38 +176,81 @@ const loadableAccessors = {
           }),
       );
     }
-    throw new Error('Invalid Loadable state');
+    const error = new Error('Invalid Loadable state');
+    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    error.stack;
+    throw error;
   },
 };
 
-function loadableWithValue<T>(value: T): Loadable<T> {
+function loadableWithValue<T>(value: T): ValueLoadable<T> {
   // Build objects this way since Flow doesn't support disjoint unions for class properties
   return Object.freeze({
     state: 'hasValue',
     contents: value,
     ...loadableAccessors,
+    getValue() {
+      return this.contents;
+    },
+    toPromise() {
+      return Promise.resolve(this.contents);
+    },
+    valueMaybe() {
+      return this.contents;
+    },
+    valueOrThrow() {
+      return this.contents;
+    },
   });
 }
 
-function loadableWithError<T>(error: Error): Loadable<T> {
+function loadableWithError<T>(error: mixed): ErrorLoadable<T> {
   return Object.freeze({
     state: 'hasError',
     contents: error,
     ...loadableAccessors,
+    getValue() {
+      throw this.contents;
+    },
+    toPromise() {
+      return Promise.reject(this.contents);
+    },
+    errorMaybe() {
+      return this.contents;
+    },
+    errorOrThrow() {
+      return this.contents;
+    },
   });
 }
 
-function loadableWithPromise<T>(promise: LoadablePromise<T>): Loadable<T> {
+function loadableWithPromise<T>(
+  promise: LoadablePromise<T>,
+): LoadingLoadable<T> {
   return Object.freeze({
     state: 'loading',
     contents: promise,
     ...loadableAccessors,
+    getValue() {
+      throw this.contents.then(({__value}) => __value);
+    },
+    toPromise() {
+      return this.contents.then(({__value}) => __value);
+    },
+    promiseMaybe() {
+      return this.contents.then(({__value}) => __value);
+    },
+    promiseOrThrow() {
+      return this.contents.then(({__value}) => __value);
+    },
   });
 }
 
 function loadableLoading<T>(): Loadable<T> {
   return loadableWithPromise(new Promise(() => {}));
 }
+
+type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
 
 function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
   inputs: Inputs,
@@ -211,18 +259,15 @@ function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
     ? loadableWithValue(inputs.map(i => i.contents))
     : inputs.some(i => i.state === 'hasError')
     ? loadableWithError(
-        // $FlowIssue[incompatible-call] #44070740 Array.find should refine parameter
         nullthrows(
           inputs.find(i => i.state === 'hasError'),
           'Invalid loadable passed to loadableAll',
         ).contents,
       )
     : loadableWithPromise(
-        gkx('recoil_async_selector_refactor')
-          ? Promise.all(inputs.map(i => i.contents)).then(value => ({
-              __value: value,
-            }))
-          : (Promise.all(inputs.map(i => i.contents)): $FlowFixMe),
+        Promise.all(inputs.map(i => i.contents)).then(value => ({
+          __value: value,
+        })),
       );
 }
 
@@ -232,4 +277,6 @@ module.exports = {
   loadableWithPromise,
   loadableLoading,
   loadableAll,
+  Canceled,
+  CANCELED,
 };
