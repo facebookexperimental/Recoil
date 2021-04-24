@@ -4294,7 +4294,14 @@ function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
 
       if (!prevLoadableRef.current.is(newLoadable)) {
         callback();
-      }
+      } // If the component is suspended then the effect setting prevLoadableRef
+      // will not run.  So, set the previous value here when its subscription
+      // is fired to wake it up.  We can't just rely on this, though, because
+      // this only executes when an atom/selector is dirty and the atom/selector
+      // passed to the hook can dynamically change.
+
+
+      prevLoadableRef.current = newLoadable;
     }, componentName);
     return subscription.release;
   }, [storeRef, recoilValue, componentName, getLoadable]);
@@ -4331,6 +4338,8 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
       if (!((_prevLoadableRef$curr = prevLoadableRef.current) === null || _prevLoadableRef$curr === void 0 ? void 0 : _prevLoadableRef$curr.is(newLoadable))) {
         forceUpdate(newLoadable);
       }
+
+      prevLoadableRef.current = newLoadable;
     }, componentName);
     /**
      * Since we're subscribing in an effect we need to update to the latest
@@ -4366,6 +4375,8 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
       if (!((_prevLoadableRef$curr2 = prevLoadableRef.current) === null || _prevLoadableRef$curr2 === void 0 ? void 0 : _prevLoadableRef$curr2.is(newLoadable))) {
         forceUpdate(newLoadable);
       }
+
+      prevLoadableRef.current = newLoadable;
     }
 
     return subscription.release;
@@ -6677,8 +6688,6 @@ function baseAtom(options) {
 
       const onSet = effect => handler => {
         store.subscribeToTransactions(currentStore => {
-          var _pendingSetSelf3;
-
           // eslint-disable-next-line prefer-const
           let {
             currentTree,
@@ -6693,7 +6702,7 @@ function baseAtom(options) {
           const newLoadable = currentTree.atomValues.get(key);
 
           if (newLoadable == null || newLoadable.state === 'hasValue') {
-            var _previousTree$atomVal, _pendingSetSelf, _pendingSetSelf2;
+            var _previousTree$atomVal, _pendingSetSelf, _pendingSetSelf2, _pendingSetSelf3;
 
             const newValue = newLoadable != null ? newLoadable.contents : DEFAULT_VALUE$4;
             const oldLoadable = (_previousTree$atomVal = previousTree.atomValues.get(key)) !== null && _previousTree$atomVal !== void 0 ? _previousTree$atomVal : defaultLoadable;
@@ -6708,11 +6717,9 @@ function baseAtom(options) {
 
             if (((_pendingSetSelf = pendingSetSelf) === null || _pendingSetSelf === void 0 ? void 0 : _pendingSetSelf.effect) !== effect || ((_pendingSetSelf2 = pendingSetSelf) === null || _pendingSetSelf2 === void 0 ? void 0 : _pendingSetSelf2.value) !== newValue) {
               handler(newValue, oldValue);
+            } else if (((_pendingSetSelf3 = pendingSetSelf) === null || _pendingSetSelf3 === void 0 ? void 0 : _pendingSetSelf3.effect) === effect) {
+              pendingSetSelf = null;
             }
-          }
-
-          if (((_pendingSetSelf3 = pendingSetSelf) === null || _pendingSetSelf3 === void 0 ? void 0 : _pendingSetSelf3.effect) === effect) {
-            pendingSetSelf = null;
           }
         }, key);
       };

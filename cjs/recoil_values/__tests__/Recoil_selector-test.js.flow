@@ -14,7 +14,7 @@ const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-let React, store, atom, nullthrows, useEffect, useState, Profiler, noWait, act, useRecoilCallback, useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useResetRecoilState, constSelector, errorSelector, getRecoilValueAsLoadable, setRecoilValue, selector, asyncSelector, ReadsAtom, renderElements, resolvingAsyncSelector, flushPromisesAndTimers, DefaultValue, mutableSourceExists, freshSnapshot;
+let React, store, atom, nullthrows, useEffect, useState, Profiler, noWait, act, useRecoilCallback, useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useResetRecoilState, constSelector, errorSelector, getRecoilValueAsLoadable, setRecoilValue, selector, asyncSelector, ReadsAtom, renderElements, resolvingAsyncSelector, loadingAsyncSelector, flushPromisesAndTimers, DefaultValue, mutableSourceExists, freshSnapshot;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
@@ -54,6 +54,7 @@ const testRecoil = getRecoilTestFn(() => {
     ReadsAtom,
     renderElements,
     resolvingAsyncSelector,
+    loadingAsyncSelector,
     flushPromisesAndTimers
   } = require('../../testing/Recoil_TestingUtils'));
   ({
@@ -670,6 +671,25 @@ testRecoil('Updating with changed selector', gks => {
 
   act(() => setSide('A'));
   expect(c.textContent).toEqual('FOO');
+});
+testRecoil('Change component prop to suspend and wake', () => {
+  const awakeSelector = constSelector('WAKE');
+  const suspendedSelector = loadingAsyncSelector();
+  declare function TestComponent(arg0: any): any;
+  let setSide;
+
+  const SelectorComponent = function () {
+    const [side, setSideState] = useState('AWAKE');
+    setSide = setSideState;
+    return <TestComponent side={side} />;
+  };
+
+  const c = renderElements(<SelectorComponent />);
+  expect(c.textContent).toEqual('WAKE');
+  act(() => setSide('SLEEP'));
+  expect(c.textContent).toEqual('loading');
+  act(() => setSide('AWAKE'));
+  expect(c.textContent).toEqual('WAKE');
 });
 /**
  * This test ensures that we are not running the selector's get() an unnecessary

@@ -981,6 +981,71 @@ testRecoil('Resolution of suspense causes render just once', async gks => {
   expect(suspense).toHaveBeenCalledTimes(2);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
 });
+testRecoil('Wakeup from Suspense to previous value', async gks => {
+  const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
+  const myAtom = atom({
+    key: `atom${nextID++}`,
+    default: {
+      value: 0
+    }
+  });
+  const mySelector = selector({
+    key: `selector${nextID++}`,
+    get: ({
+      get
+    }) => get(myAtom).value
+  });
+  jest.useFakeTimers();
+  const [Component, updateValue] = componentThatWritesAtom(myAtom);
+  const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(mySelector);
+  const [container, suspense] = renderElementsWithSuspenseCount(<>
+      <Component />
+      <ReadComp />
+    </>); // Render initial state "0"
+
+  act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('0');
+  expect(suspense).toHaveBeenCalledTimes(0);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1); // Set selector to a pending state should cause component to suspend
+
+  act(() => updateValue({
+    value: new Promise(() => {})
+  }));
+  act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('loading');
+  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1); // Setting selector back to the previous state before it was pending should
+  // wake it up and render in previous state
+
+  act(() => updateValue({
+    value: 0
+  }));
+  act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('0');
+  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2); // Setting selector to a new state "1" should update and re-render
+
+  act(() => updateValue({
+    value: 1
+  }));
+  act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('1');
+  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3); // Setting selector to the same value "1" should avoid a re-render
+
+  act(() => updateValue({
+    value: 1
+  }));
+  act(() => jest.runAllTimers());
+  await flushPromisesAndTimers();
+  expect(container.textContent).toEqual('1');
+  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3 + (gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1));
+});
 testRecoil('useTransactionObservation_DEPRECATED: Transaction dirty atoms are set', async () => {
   const anAtom = counterAtom({
     type: 'url',
