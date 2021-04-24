@@ -30,6 +30,7 @@ let React,
   atom,
   errorSelector,
   selector,
+  selectorFamily,
   ReadsAtom,
   asyncSelector,
   errorThrowingAsyncSelector,
@@ -58,6 +59,7 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../../recoil_values/Recoil_atom');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');
   selector = require('../../recoil_values/Recoil_selector');
+  selectorFamily = require('../../recoil_values/Recoil_selectorFamily');
   ({
     ReadsAtom,
     asyncSelector,
@@ -811,7 +813,12 @@ testRecoil(
     expect(container.textContent).toEqual('1');
     expect(Component).toHaveBeenCalledTimes(baseCalls + 2);
 
-    if (!mutableSourceExists()) {
+    if (
+      !(
+        mutableSourceExists() ||
+        gks.includes('recoil_suppress_rerender_in_callback')
+      )
+    ) {
       baseCalls += 1;
     }
 
@@ -1700,5 +1707,56 @@ testRecoil(
     act(() => updateValue(1));
     expect(values.size).toBe(2);
     expect(values.get('someNonvalidatedAtom')).toBe(123);
+  },
+);
+
+testRecoil(
+  'Components re-render only one time if selectorFamily changed',
+  gks => {
+    const BASE_CALLS =
+      mutableSourceExists() ||
+      gks.includes('recoil_suppress_rerender_in_callback')
+        ? 0
+        : 1;
+
+    const atomA = counterAtom();
+
+    const selectAFakeId = selectorFamily({
+      key: 'selectItem',
+      get: id => ({get}) => get(atomA),
+    });
+
+    const Component = (jest.fn(function ReadFromSelector({id}) {
+      return useRecoilValue(selectAFakeId(id));
+    }): any);
+
+    let increment;
+
+    const App = () => {
+      const [state, setState] = useRecoilState(atomA);
+      increment = () => setState(s => s + 1);
+      return <Component id={state} />;
+    };
+
+    const container = renderElements(<App />);
+
+    let baseCalls = BASE_CALLS;
+
+    expect(container.textContent).toEqual('0');
+    expect(Component).toHaveBeenCalledTimes(baseCalls + 1);
+
+    act(() => increment());
+
+    if (
+      !(
+        mutableSourceExists() ||
+        gks.includes('recoil_suppress_rerender_in_callback')
+      )
+    ) {
+      baseCalls += 1;
+    }
+
+    expect(container.textContent).toEqual('1');
+    expect(Component).toHaveBeenCalledTimes(baseCalls + 2);
   },
 );
