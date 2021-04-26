@@ -18,23 +18,23 @@ yarn add recoil
 
 ### Bundler
 
-Recoil installed via NPM pairs nicely with module bundlers such as [Webpack](https://webpack.js.org/) or [Rollup](https://rollupjs.org/).
+NPM을 통해 설치된 Recoil은 [Webpack](https://webpack.js.org/)이나 [Rollup](https://rollupjs.org/)같은 모듈 번들러와도 잘 맞는다.
 
-### ES5 support
+### ES5 지원
 
-Recoil builds are not transpiled to ES5, and we do not support the use of Recoil with ES5. If you need to support browsers that do not provide ES6 features natively, you can do so by compiling your code with [Babel](https://babeljs.io/) and using preset [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env). However, we do not support this and you may run into problems.
+Recoil 빌드는 ES5로 변환(transpile)되지 않으며 ES5에서 Recoil 사용을 지원하지 않는다. ES6 기능을 기본적으로 제공하지 않는 브라우저를 지원해야하는 경우에는 [Babel](https://babeljs.io/)로 컴파일하고 preset [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env)을 이용하면 된다. 그러나 우리는 이런 기능을 직접 제공하고 있지 않으며, 이는 문제가 될 수 있다.
 
-In particular, [just like React](https://reactjs.org/docs/javascript-environment-requirements.html), Recoil depends on the `Map` and `Set` types and other features of ES6. Emulation of these features using polyfills may result in far worse performance.
+특히 [React와 마찬가지로](https://reactjs.org/docs/javascript-environment-requirements.html), Recoil은 `Map` 및 `Set` 유형과 ES6의 기타 기능에 의존한다. polyfill을 사용하여 이러한 기능을 에뮬레이션하면 성능이 훨씬 저하 될 수 있다.
 
 ## CDN
 
-Since version 0.0.11, Recoil offers a UMD build that can be directly used in a `<script>` tag and exposes the symbol `Recoil` to the global namespace. We recommend linking to a specific version number and build to avoid unexpected breakage from newer versions:
+버전 0.0.11부터 Recoil은 `<script>` 태그에서 직접 사용할 수있는 UMD 빌드를 제공하고 `Recoil` 기호를 전역 네임스페이스에 노출한다. 최신 버전에서 예기치 않은 손상을 방지하기 위해 특정 버전의 번호와 연결하고 빌드하기를 추천한다.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/recoil@0.0.11/umd/recoil.production.js"></script>
 ```
 
-You can browse all Recoil files on the CDN at [jsdelivr](https://www.jsdelivr.com/package/npm/recoil).
+[jsdelivr](https://www.jsdelivr.com/package/npm/recoil)에서 CDN에 있는 모든 Recoil 파일을 확인할 수 있다.
 
 ## ESLint
 
@@ -71,7 +71,7 @@ You can browse all Recoil files on the CDN at [jsdelivr](https://www.jsdelivr.co
 
 ## Nightly Builds
 
-We build a package once every day based on the current `master` branch and publish it as the `nightly` branch on GitHub.  You can use this branch via `npm`:
+매일 한 번씩 `master` 브랜치를 기준으로 빌드하여 Github의 `nightly` 브랜치로 배포된다. `npm`을 통해 해당 브랜치를 사용할 수 있다:
 
 ```shell
 npm install https://github.com/facebookexperimental/Recoil.git#nightly
