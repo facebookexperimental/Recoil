@@ -258,6 +258,13 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               ? // cast to any because we can't restrict T from being a function without losing support for opaque types
                 (valueOrUpdater: any)(currentValue) // flowlint-line unclear-type:off
               : valueOrUpdater;
+          // Avoid calling onSet() when setSelf() initializes with a Promise
+          if (isPromise(initValue)) {
+            initValue = initValue.then(value => {
+              pendingSetSelf = {effect, value};
+              return value;
+            });
+          }
         } else {
           if (isPromise(valueOrUpdater)) {
             throw new Error(

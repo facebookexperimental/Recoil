@@ -408,6 +408,7 @@ describe('Effects', () => {
   testRecoil('set promise', async () => {
     let resolveAtom;
     let validated;
+    const onSetForSameEffect = jest.fn(() => {});
     const myAtom = atom({
       key: 'atom effect init set promise',
       default: 'DEFAULT',
@@ -418,6 +419,9 @@ describe('Effects', () => {
               resolveAtom = resolve;
             }),
           );
+          onSet(onSetForSameEffect);
+        },
+        ({onSet}) => {
           onSet(value => {
             expect(value).toEqual('RESOLVE');
             validated = true;
@@ -434,7 +438,42 @@ describe('Effects', () => {
     act(() => undefined);
     expect(c.textContent).toEqual('"RESOLVE"');
     expect(validated).toEqual(true);
+
+    // onSet() should not be called for this hook's setSelf()
+    expect(onSetForSameEffect).toHaveBeenCalledTimes(0);
   });
+
+  testRecoil(
+    'when setSelf is called in onSet, then onSet is not triggered again',
+    () => {
+      let set1 = false;
+      const valueToSet1 = 'value#1';
+      const transformedBySetSelf = 'transformed after value#1';
+
+      const myAtom = atom({
+        key: 'atom setSelf with set-updater',
+        default: 'DEFAULT',
+        effects_UNSTABLE: [
+          ({setSelf, onSet}) => {
+            onSet(newValue => {
+              expect(set1).toBe(false);
+              if (newValue === valueToSet1) {
+                setSelf(transformedBySetSelf);
+                set1 = true;
+              }
+            });
+          },
+        ],
+      });
+
+      const [ReadsWritesAtom, set] = componentThatReadsAndWritesAtom(myAtom);
+
+      const c = renderElements(<ReadsWritesAtom />);
+      expect(c.textContent).toEqual('"DEFAULT"');
+      act(() => set(valueToSet1));
+      expect(c.textContent).toEqual(`"${transformedBySetSelf}"`);
+    },
+  );
 
   // NOTE: This test throws an expected error
   testRecoil('reject promise', async () => {
@@ -708,38 +747,6 @@ describe('Effects', () => {
     act(() => history.pop()());
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
-
-  testRecoil(
-    'when setSelf is called in onSet, then onSet is not triggered again',
-    () => {
-      let set1 = false;
-      const valueToSet1 = 'value#1';
-      const transformedBySetSelf = 'transformed after value#1';
-
-      const myAtom = atom({
-        key: 'atom setSelf with set-updater',
-        default: 'DEFAULT',
-        effects_UNSTABLE: [
-          ({setSelf, onSet}) => {
-            onSet(newValue => {
-              expect(set1).toBe(false);
-              if (newValue === valueToSet1) {
-                setSelf(transformedBySetSelf);
-                set1 = true;
-              }
-            });
-          },
-        ],
-      });
-
-      const [ReadsWritesAtom, set] = componentThatReadsAndWritesAtom(myAtom);
-
-      const c = renderElements(<ReadsWritesAtom />);
-      expect(c.textContent).toEqual('"DEFAULT"');
-      act(() => set(valueToSet1));
-      expect(c.textContent).toEqual(`"${transformedBySetSelf}"`);
-    },
-  );
 
   testRecoil('Cleanup Handlers - when root unmounted', () => {
     const refCounts = [0, 0];
