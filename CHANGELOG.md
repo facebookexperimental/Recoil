@@ -13,7 +13,7 @@
     - On initial render when not using React Concurrent Mode (#820)
 - Improved TypeScript and Flow typing for `Loadable`s (#966)
 - Added override prop to RecoilRoot
-- Fix not calling onSet() handler triggered from a setSelf() in onSet() for Atom Effects (#974, #979)
+- Fix for Atom Effects onSet() not being called when triggered from setSelf() initializing a Promise or from the same onSet() handler.  (#974, #979, #953, #986)
 
 ## 0.2.0 (2021-3-18)
 

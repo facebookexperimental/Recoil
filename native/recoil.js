@@ -6658,7 +6658,17 @@ function baseAtom(options) {
           const currentValue = initValue instanceof DefaultValue$2 || Recoil_isPromise(initValue) ? defaultLoadable.state === 'hasValue' ? defaultLoadable.contents : DEFAULT_VALUE$4 : initValue;
           initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict T from being a function without losing support for opaque types
           valueOrUpdater(currentValue) // flowlint-line unclear-type:off
-          : valueOrUpdater;
+          : valueOrUpdater; // Avoid calling onSet() when setSelf() initializes with a Promise
+
+          if (Recoil_isPromise(initValue)) {
+            initValue = initValue.then(value => {
+              pendingSetSelf = {
+                effect,
+                value
+              };
+              return value;
+            });
+          }
         } else {
           if (Recoil_isPromise(valueOrUpdater)) {
             throw new Error('Setting atoms to async values is not implemented.');
