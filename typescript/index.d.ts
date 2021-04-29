@@ -127,10 +127,10 @@ export class MutableSnapshot extends Snapshot {
 }
 
 // hooks.d.ts
-export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
+export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T | void) => void;
 export type Resetter = () => void;
 export type CallbackInterface = Readonly<{
-  set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
+  set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T | void) => void;
   reset: (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   snapshot: Snapshot,
   gotoSnapshot: (snapshot: Snapshot) => void,
