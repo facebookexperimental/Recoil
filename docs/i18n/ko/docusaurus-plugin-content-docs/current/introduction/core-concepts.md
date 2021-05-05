@@ -4,11 +4,11 @@ title: 주요 개념
 
 ## 개요
 
-Recoil을 사용하면 _atoms_ (공유 상태)에서 _selectors_ (순수 함수)를 거쳐 React 컴포넌트로 내려가는 데이터 흐름 그래프를 생성할 수 있다. Atoms는 컴포넌트가 구독할 수 있는 상태의 단위다. Selectors 는 이 atoms state를 동기 또는 비동기식으로 변환한다.
+Recoil을 사용하면 _atoms_ (공유 상태)에서 _selectors_ (순수 함수)를 거쳐 React 컴포넌트로 내려가는 data-flow graph를 만들 수 있다. Atoms는 컴포넌트가 구독할 수 있는 상태의 단위다. Selectors는 atoms 상태값을 동기 또는 비동기 방식을 통해 변환한다.
 
 ## Atoms
 
-Atoms는 상태의 단위다. 그것들은 업데이트와 구독이 가능하다. atom이 업데이트되면 각각의 구독된 컴포넌트는 새로운 값을 반영하여 다시 렌더링 된다. atoms는 런타임에서 생성될 수도 있다. Atoms는 React의 로컬 컴포넌트의 상태 대신 사용할 수 있다. 동일한 atom이 여러 컴포넌트에서 사용되는 경우 모든 컴포넌트는 상태를 공유한다.
+Atoms는 상태의 단위이며, 업데이트와 구독이 가능하다. atom이 업데이트되면 각각의 구독된 컴포넌트는 새로운 값을 반영하여 다시 렌더링 된다. atoms는 런타임에서 생성될 수도 있다. Atoms는 React의 로컬 컴포넌트의 상태 대신 사용할 수 있다. 동일한 atom이 여러 컴포넌트에서 사용되는 경우 모든 컴포넌트는 상태를 공유한다.
 
 Atoms는 `atom`함수를 사용해 생성한다.
 
@@ -50,7 +50,7 @@ function Text() {
 
 Selectors는 상태를 기반으로 하는 파생 데이터를 계산하는 데 사용된다. 최소한의 상태 집합만 atoms에 저장하고 다른 모든 파생되는 데이터는 selectors에 명시한 함수를 통해 효율적으로 계산함으로써 쓸모없는 상태의 보존을 방지한다.
 
-Selectors는 어떤 컴포넌트가 필요한지, 어떤 상태에 의존하는지 추적하기 때문에 이러한 함수적인 접근방식을 매우 효율적으로 만든다.
+Selectors는 어떤 컴포넌트가 자신을 필요로하는지, 또 자신은 어떤 상태에 의존하는지를 추적하기 때문에 이러한 함수적인 접근방식을 매우 효율적으로 만든다.
 
 컴포넌트의 관점에서 보면 selectors와 atoms는 동일한 인터페이스를 가지므로 서로 대체할 수 있다.
 
@@ -68,11 +68,11 @@ const fontSizeLabelState = selector({
 });
 ```
 
-`get` 속성은 계산될 함수다. 전달되는 `get` 인자를 통해 atoms와 다른 selectors에 접근할 수 있다. 다른 atoms나 selectors에 접근하면 자동으로 종속 관계가 생성되므로, 참조했던 다른 atoms나 selectors가 업데이트되면 이 함수도 다시 수행된다.
+`get` 속성은 계산될 함수다. 전달되는 `get` 인자를 통해 atoms와 다른 selectors에 접근할 수 있다. 다른 atoms나 selectors에 접근하면 자동으로 종속 관계가 생성되므로, 참조했던 다른 atoms나 selectors가 업데이트되면 이 함수도 다시 실행된다.
 
-이 `fontSizeLabelState` 예시에서 selector는 `fontSizeState` atom에 대한 하나의 의존성을 갖는다. 개념적으로 `fontSizeLabelState` selector는 `fontSizeState`를 입력으로 사용하고 형식화된 글꼴 크기 레이블을 출력으로 반환하는 순수 함수처럼 동작한다.
+이 `fontSizeLabelState` 예시에서 selector는 `fontSizeState`라는 하나의 atom에 의존성을 갖는다. 개념적으로 `fontSizeLabelState` selector는 `fontSizeState`를 입력으로 사용하고 형식화된 글꼴 크기 레이블을 출력으로 반환하는 순수 함수처럼 동작한다.
 
-Selectors는 `useRecoilValue()`를 사용해 읽을 수 있다. `useRecoilValue()`는 하나의 atom이나 selector를 인자로 받아 대응하는 값을 반환한다. `fontSizeLabelState` selector는 writable하지 않기 때문에 `useRecoilState()`를 이용하지 않는다. (writable한 selectors의 더 많은 정보를 보려면 [selector API reference](/docs/api-reference/core/selector)를 봐라.)
+Selectors는 `useRecoilValue()`를 사용해 읽을 수 있다. `useRecoilValue()`는 하나의 atom이나 selector를 인자로 받아 대응하는 값을 반환한다. `fontSizeLabelState` selector는 writable하지 않기 때문에 `useRecoilState()`를 이용하지 않는다. (writable한 selectors에 대한 더 많은 정보는 [selector API reference](/docs/api-reference/core/selector)에 자세히 기술되어 있다.)
 
 ```jsx
 function FontButton() {
