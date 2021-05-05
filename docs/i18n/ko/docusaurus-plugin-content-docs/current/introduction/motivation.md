@@ -14,7 +14,7 @@ title: 동기
 Recoil은 직교하지만 본질적인 방향 그래프를 정의하고 React 트리에 붙인다. 
 상태 변화는 이 그래프의 뿌리(atoms라고 부르는)로부터 순수함수(selectors라고 부르는 것)를 거쳐 컴포넌트로 흐르며, 다음과 같은 접근 방식을 따른다.
 
-- 우리는 shared state도 React의 local state처럼 간단한 get/set 인터페이스로 사용할 수 있도록 boilerplate-free API를 제공한다.(필요한 경우 reducers 등으로 캡슐화할 수도 있다.)
+- 우리는 공유상태(shared state)도 React의 내부상태(local state)처럼 간단한 get/set 인터페이스로 사용할 수 있도록 boilerplate-free API를 제공한다. (필요한 경우 reducers 등으로 캡슐화할 수도 있다.)
 - 우리는 동시성 모드(Concurrent Mode)를 비롯한 다른 새로운 React의 기능들과의 호환 가능성도 갖는다.
 - 상태 정의는 증분 및 분산되므로 코드 분할이 가능하다.
 - 상태를 사용하는 컴포넌트를 수정하지 않고도 상태를 파생된 데이터로 대체할 수 있다.
