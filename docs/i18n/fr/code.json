@@ -15,7 +15,7 @@
     "message": "Graphe de flux de données "
   },
   "homePage.flow.text": {
-    "message": "Données dérivées et requêtes asynchrones sont apprivoisées avec des fonctions pures et des un système d'abonnement efficace."
+    "message": "Données dérivées et requêtes asynchrones sont apprivoisées avec des fonctions pures et un système d'abonnement efficace."
   },
   "homePage.cross.title": {
     "message": "Observation inter-applications"
