@@ -12,4 +12,4 @@ In this tutorial, we'll be building a simple todo-list application. Our app will
 - Filter todo items
 - Display useful stats
 
-Along the way, we'll cover atoms, selectors, atom families, and the hooks exposed by the Recoil API. We'll also cover optimization
+Along the way, we'll cover atoms, selectors, atom families, and the hooks exposed by the Recoil API. We'll also cover optimization.
