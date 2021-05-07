@@ -32,7 +32,7 @@ export type {
   GetRecoilValue,
   SetRecoilState,
   ResetRecoilState,
-} from './recoil_values/Recoil_selector';
+} from './recoil_values/Recoil_callbackTypes';
 export type {
   Parameter,
   SelectorFamilyOptions,

@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+obviz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
@@ -15,7 +15,7 @@ import type {
   ResetRecoilState,
   SetRecoilState,
   ValueOrUpdater,
-} from '../recoil_values/Recoil_selector';
+} from '../recoil_values/Recoil_callbackTypes';
 import type {RecoilValueInfo} from './Recoil_FunctionalCore';
 import type {NodeKey} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';

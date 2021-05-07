@@ -10,6 +10,9 @@
  */
 'use strict';
 
+import type {Loadable} from '../../adt/Recoil_Loadable';
+import type {RecoilValue} from '../../core/Recoil_RecoilValue';
+
 const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
 let React,
@@ -81,12 +84,12 @@ const testRecoil = getRecoilTestFn(() => {
   store = makeStore();
 });
 
-function getLoadable(recoilValue) {
+function getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   return getRecoilValueAsLoadable(store, recoilValue);
 }
 
-function get(recoilValue) {
-  return getLoadable(recoilValue).contents;
+function get<T>(recoilValue: RecoilValue<T>): T {
+  return (getLoadable(recoilValue).contents: any); // flowlint-line unclear-type:off
 }
 
 function getError(recoilValue): Error {
@@ -646,6 +649,39 @@ testRecoil(
     expect(container.textContent).toEqual('7');
   },
 );
+
+testRecoil('Selector getCallback', async () => {
+  const myAtom = atom({
+    key: 'selector - getCallback atom',
+    default: 'DEFAULT',
+  });
+  const mySelector = selector({
+    key: 'selector - getCallback',
+    get: ({getCallback}) => {
+      return {
+        onClick: getCallback(({snapshot}) => async () =>
+          await snapshot.getPromise(myAtom),
+        ),
+      };
+    },
+  });
+
+  const menuItem = get(mySelector);
+  await expect(menuItem.onClick()).resolves.toEqual('DEFAULT');
+  act(() => set(myAtom, 'SET'));
+  await expect(menuItem.onClick()).resolves.toEqual('SET');
+});
+
+testRecoil("Selector can't call getCallback during evaluation", () => {
+  const mySelector = selector({
+    key: 'selector - getCallback throws',
+    get: ({getCallback}) => {
+      const callback = getCallback(() => () => {});
+      callback();
+    },
+  });
+  getError(mySelector);
+});
 
 testRecoil("Updating with same value doesn't rerender", gks => {
   if (!gks.includes('recoil_suppress_rerender_in_callback')) {
@@ -1278,7 +1314,7 @@ testRecoil(
 
     await flushPromisesAndTimers();
 
-    const val = await promise;
+    const val: mixed = await promise;
 
     expect(val).toBe('RESOLVED');
   },
@@ -1331,7 +1367,7 @@ testRecoil(
 
     await flushPromisesAndTimers();
 
-    const val = await promise;
+    const val: mixed = await promise;
 
     expect(val).toBe('AB');
   },

@@ -75,6 +75,16 @@ const writeableSelector = selector({
   },
 });
 
+const callbackSelector = selector({
+  key: 'CallbackSelector',
+  get: ({ getCallback }) => {
+    return getCallback(({snapshot}) => () => {
+      return snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
+    });
+  }
+});
+useRecoilValue(callbackSelector); // $ExpectType () => Promise<number>
+
 // RecoilRoot
 RecoilRoot({});
 RecoilRoot({

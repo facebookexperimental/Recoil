@@ -18,11 +18,12 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
+import type {GetCallback} from '../recoil_values/Recoil_selector';
 import type {
   GetRecoilValue,
   ResetRecoilState,
   SetRecoilState,
-} from './Recoil_selector';
+} from './Recoil_callbackTypes';
 
 const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
 const {setConfigDeletionHandler} = require('../core/Recoil_Node');
@@ -41,7 +42,10 @@ export type Parameter =
 
 type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
   key: string,
-  get: P => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
+  get: P => ({get: GetRecoilValue, getCallback: GetCallback}) =>
+    | Promise<T>
+    | RecoilValue<T>
+    | T,
   cachePolicyForParams_UNSTABLE?: CachePolicy,
   cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
