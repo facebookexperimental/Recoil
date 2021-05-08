@@ -14,7 +14,8 @@ function selector<T>({
   key: string,
 
   get: ({
-    get: GetRecoilValue
+    get: GetRecoilValue,
+    getCallback: GetCallback,
   }) => T | Promise<T> | RecoilValue<T>,
 
   set?: (
@@ -32,6 +33,11 @@ function selector<T>({
 
 ```jsx
 type ValueOrUpdater<T> = T | DefaultValue | ((prevValue: T) => T | DefaultValue);
+type GetCallback =
+  <Args, Return>(
+    fn: ({snapshot: Snapshot}) => (...Args) => Return,
+  ) => (...Args) => Return;
+
 type GetRecoilValue = <T>(RecoilValue<T>) => T;
 type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilState = <T>(RecoilState<T>) => void;
@@ -39,10 +45,11 @@ type ResetRecoilState = <T>(RecoilState<T>) => void;
 
 - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.  It needs to be stable across executions if used for persistence.
 - `get` - A function that evaluates the value for the derived state.  It may return either a value directly or an asynchronous `Promise` or another atom or selector representing the same type.  It is passed an object as the first parameter containing the following properties:
-  - `get` - a function used to retrieve values from other atoms/selectors. All atoms/selectors passed to this function will be implicitly added to a list of **dependencies** for the selector. If any of the selector's dependencies change, the selector will re-evaluate.
+  - `get()` - a function used to retrieve values from other atoms/selectors. All atoms/selectors passed to this function will be implicitly added to a list of **dependencies** for the selector. If any of the selector's dependencies change, the selector will re-evaluate.
+  - `getCallback()` - a function for creating Recoil-aware callbacks.  See [example](/docs/api-reference/core/selector#returning-objects-with-callbacks) below.
 - `set?` - If this property is set, the selector will return **writeable** state. A function that is passed an object of callbacks as the first parameter and the new incoming value.  The incoming value may be a value of type `T` or maybe an object of type `DefaultValue` if the user reset the selector.  The callbacks include:
-  - `get` - a function used to retrieve values from other atoms/selectors. This function will not subscribe the selector to the given atoms/selectors.
-  - `set` - a function used to set the values of upstream Recoil state. The first parameter is the Recoil state and the second parameter is the new value.  The new value may be an updater function or a `DefaultValue` object to propagate reset actions.
+  - `get()` - a function used to retrieve values from other atoms/selectors. This function will not subscribe the selector to the given atoms/selectors.
+  - `set()` - a function used to set the values of upstream Recoil state. The first parameter is the Recoil state and the second parameter is the new value.  The new value may be an updater function or a `DefaultValue` object to propagate reset actions.
 - `dangerouslyAllowMutability` - In some cases it may be desireable allow mutating of objects stored in selectors that don't represent state changes.  Use this option to override freezing objects in development mode.
 
 ---
@@ -189,5 +196,27 @@ function ResultsSection() {
   );
 }
 ```
-
 Please see [this guide](/docs/guides/asynchronous-data-queries) for more complex examples.
+
+### Returning objects with callbacks
+
+Sometimes selectors can be used to return objects that contain callbacks.  It may be helpful for these callbacks to access Recoil state, such as for querying typeahead values or click handlers.  The following example uses a selector to generate menu items with a click handler that accesses Recoil state.  This can be useful when passing these objects to frameworks or logic outside the context of a React component.
+
+There is symmetry between this callback and using [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback).  Note that the callback returned by `getCallback()` can be used as an async callback to access Recoil state later, it should not be called during the evaluation of the selector value itself.
+
+```jsx
+const menuItemState = selectorFamily({
+  key: 'MenuItem',
+  get: itemID => ({get, getCallback}) => {
+    const name = get(itemNameQuery(itemID));
+    const onClick = getCallback(({snapshot}) => async () => {
+      const info = await snapshot.getPromise(itemInfoQuery(itemID));
+      displayInfoModal(info);
+    });
+    return {
+      title: `Show info for ${name}`,
+      onClick,
+    };
+  },
+});
+```
