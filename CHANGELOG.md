@@ -14,6 +14,7 @@
 - Improved TypeScript and Flow typing for `Loadable`s (#966)
 - Added override prop to RecoilRoot
 - Fix for Atom Effects onSet() not being called when triggered from setSelf() initializing a Promise or from the same onSet() handler.  (#974, #979, #953, #986)
+- Add getCallback() to selector evaluation interface (#989)
 
 ## 0.2.0 (2021-3-18)
 

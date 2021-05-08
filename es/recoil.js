@@ -5778,6 +5778,10 @@ const {
   retainedByOptionWithDefault: retainedByOptionWithDefault$1
 } = Recoil_Retention;
 
+const {
+  cloneSnapshot: cloneSnapshot$2
+} = Recoil_Snapshot$1;
+
 
 
 
@@ -6146,11 +6150,34 @@ function selector(options) {
       throw depLoadable.contents;
     }
 
+    let gateCallback = false;
+
+    const getCallback = fn => {
+      return (...args) => {
+        if (!gateCallback) {
+          throw new Error('getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can obtain the current Recoil state without a subscription.');
+        }
+
+        const snapshot = cloneSnapshot$2(store);
+        const cb = fn({
+          snapshot
+        });
+
+        if (typeof cb !== 'function') {
+          throw new Error('getCallback() expects a function that returns a function.');
+        }
+
+        return cb(...args);
+      };
+    };
+
     try {
       result = get({
-        get: getRecoilValue
+        get: getRecoilValue,
+        getCallback
       });
       result = isRecoilValue$3(result) ? getRecoilValue(result) : result;
+      gateCallback = true;
 
       if (Recoil_isPromise(result)) {
         result = wrapPendingPromise(store, // $FlowFixMe[incompatible-call]

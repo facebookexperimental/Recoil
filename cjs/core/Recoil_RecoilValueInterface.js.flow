@@ -11,7 +11,7 @@
 'use strict';
 
 import type { Loadable } from '../adt/Recoil_Loadable';
-import type { ValueOrUpdater } from '../recoil_values/Recoil_selector';
+import type { ValueOrUpdater } from '../recoil_values/Recoil_callbackTypes';
 import type { AtomValues, AtomWrites, NodeKey, Store, TreeState } from './Recoil_State';
 
 const nullthrows = require('../util/Recoil_nullthrows');

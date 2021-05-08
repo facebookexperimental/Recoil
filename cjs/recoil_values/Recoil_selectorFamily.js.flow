@@ -14,7 +14,8 @@ import type { CachePolicy } from '../caches/Recoil_CachePolicy';
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
-import type { GetRecoilValue, ResetRecoilState, SetRecoilState } from './Recoil_selector';
+import type { GetCallback } from '../recoil_values/Recoil_selector';
+import type { GetRecoilValue, ResetRecoilState, SetRecoilState } from './Recoil_callbackTypes';
 
 const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
 
@@ -37,7 +38,8 @@ export type Parameter = Primitive | {
 type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
   key: string,
   get: (P) => ({
-    get: GetRecoilValue
+    get: GetRecoilValue,
+    getCallback: GetCallback,
   }) => Promise<T> | RecoilValue<T> | T,
   cachePolicyForParams_UNSTABLE?: CachePolicy,
   cachePolicy_UNSTABLE?: CachePolicy,

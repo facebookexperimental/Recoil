@@ -59,7 +59,9 @@ import type { NodeCacheRoute, TreeCacheImplementation } from '../caches/Recoil_T
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
+import type { Snapshot } from '../core/Recoil_Snapshot';
 import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State';
+import type { GetRecoilValue, ResetRecoilState, SetRecoilState } from './Recoil_callbackTypes';
 
 const {
   CANCELED,
@@ -104,6 +106,10 @@ const {
   retainedByOptionWithDefault
 } = require('../core/Recoil_Retention');
 
+const {
+  cloneSnapshot
+} = require('../core/Recoil_Snapshot');
+
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 
 const gkx = require('../util/Recoil_gkx');
@@ -120,18 +126,18 @@ const {
 
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
-export type ValueOrUpdater<T> = T | DefaultValue | ((prevValue: T) => T | DefaultValue);
-export type GetRecoilValue = <T>(RecoilValue<T>) => T;
-export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
-export type ResetRecoilState = <T>(RecoilState<T>) => void;
+export type GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(fn: ($ReadOnly<{
+  snapshot: Snapshot
+}>) => (...Args) => Return) => (...Args) => Return;
 type ReadOnlySelectorOptions<T> = $ReadOnly<{
   key: string,
   get: ({
-    get: GetRecoilValue
+    get: GetRecoilValue,
+    getCallback: GetCallback,
   }) => Promise<T> | RecoilValue<T> | T,
+  dangerouslyAllowMutability?: boolean,
   retainedBy_UNSTABLE?: RetainedBy,
   cachePolicy_UNSTABLE?: CachePolicy,
-  dangerouslyAllowMutability?: boolean,
 }>;
 type ReadWriteSelectorOptions<T> = $ReadOnly<{ ...ReadOnlySelectorOptions<T>,
   set: ({

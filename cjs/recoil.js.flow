@@ -17,7 +17,7 @@ export type { SetterOrUpdater } from './hooks/Recoil_Hooks';
 export type { RecoilBridge } from './hooks/Recoil_useRecoilBridgeAcrossReactRoots';
 export type { Loadable } from './adt/Recoil_Loadable';
 export type { AtomEffect, PersistenceSettings } from './recoil_values/Recoil_atom';
-export type { GetRecoilValue, SetRecoilState, ResetRecoilState } from './recoil_values/Recoil_selector';
+export type { GetRecoilValue, SetRecoilState, ResetRecoilState } from './recoil_values/Recoil_callbackTypes';
 export type { Parameter, SelectorFamilyOptions } from './recoil_values/Recoil_selectorFamily';
 
 const {

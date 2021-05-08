@@ -10,6 +10,9 @@
  */
 'use strict';
 
+import type { Loadable } from '../../adt/Recoil_Loadable';
+import type { RecoilValue } from '../../core/Recoil_RecoilValue';
+
 const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
@@ -68,8 +71,8 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('../../util/Recoil_mutableSource'));
   store = makeStore();
 });
-declare function getLoadable(recoilValue: any): any;
-declare function get(recoilValue: any): any;
+declare function getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+declare function get<T>(recoilValue: RecoilValue<T>): T;
 declare function getError(recoilValue: any): Error;
 declare function set(recoilState: any, value: any): any;
 declare function reset(recoilState: any): any;
@@ -570,6 +573,40 @@ testRecoil('selector should rerun entire selector when a dep changes', async () 
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('7');
 });
+testRecoil('Selector getCallback', async () => {
+  const myAtom = atom({
+    key: 'selector - getCallback atom',
+    default: 'DEFAULT'
+  });
+  const mySelector = selector({
+    key: 'selector - getCallback',
+    get: ({
+      getCallback
+    }) => {
+      return {
+        onClick: getCallback(({
+          snapshot
+        }) => async () => await snapshot.getPromise(myAtom))
+      };
+    }
+  });
+  const menuItem = get(mySelector);
+  await expect(menuItem.onClick()).resolves.toEqual('DEFAULT');
+  act(() => set(myAtom, 'SET'));
+  await expect(menuItem.onClick()).resolves.toEqual('SET');
+});
+testRecoil("Selector can't call getCallback during evaluation", () => {
+  const mySelector = selector({
+    key: 'selector - getCallback throws',
+    get: ({
+      getCallback
+    }) => {
+      const callback = getCallback(() => () => {});
+      callback();
+    }
+  });
+  getError(mySelector);
+});
 testRecoil("Updating with same value doesn't rerender", gks => {
   if (!gks.includes('recoil_suppress_rerender_in_callback')) {
     return;
@@ -1042,7 +1079,7 @@ testRecoil('selectors with user-thrown loadable promises execute to completion a
   expect(loadable.state).toBe('loading');
   resolveAsyncDep('RESOLVED');
   await flushPromisesAndTimers();
-  const val = await promise;
+  const val: mixed = await promise;
   expect(val).toBe('RESOLVED');
 });
 testRecoil('selectors with user-thrown loadable promises execute to completion as expected', async () => {
@@ -1082,7 +1119,7 @@ testRecoil('selectors with user-thrown loadable promises execute to completion a
   expect(loadable.state).toBe('loading');
   resolve();
   await flushPromisesAndTimers();
-  const val = await promise;
+  const val: mixed = await promise;
   expect(val).toBe('AB');
 });
 testRecoil('selectors cannot mutate values in get() or set()', () => {
