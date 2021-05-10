@@ -30,10 +30,10 @@ module.exports = {
       description: 'disallow @fb-only style comments',
     },
   },
-  create: function (context) {
+  create(context) {
     return {
       // Only match the top level `Program` AST node that represents the entire file.
-      Program: function (node) {
+      Program(node) {
         const lines = context.getSourceCode().text.split('\n');
         const filename = context.getFilename();
 
