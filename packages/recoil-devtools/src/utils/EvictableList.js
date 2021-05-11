@@ -14,11 +14,13 @@ class EvictableList<TType> {
   list: Map<number, TType>;
   capacity: number;
   index: number;
+  onEvict: ?(TType) => void;
 
-  constructor(maxCapacity: number = 50) {
+  constructor(maxCapacity: number = 50, onEvict?: TType => void) {
     this.list = new Map();
-    this.capacity = maxCapacity;
     this.index = 0;
+    this.capacity = maxCapacity;
+    this.onEvict = onEvict;
   }
 
   add(elm: TType) {
@@ -32,6 +34,13 @@ class EvictableList<TType> {
   evict() {
     const keyToEvict = this.list.keys().next().value;
     if (keyToEvict != null) {
+      const onEvict = this.onEvict;
+      if (onEvict) {
+        const value = this.list.get(keyToEvict);
+        if (value !== undefined) {
+          onEvict(value);
+        }
+      }
       this.list.delete(keyToEvict);
     }
   }

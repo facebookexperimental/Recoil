@@ -35,49 +35,53 @@ async function normalizeSnapshot(
   if (snapshot == null) {
     return {modifiedValues: undefined};
   }
-
-  const dirtyNodes = snapshot.getNodes_UNSTABLE({isModified: onlyDirty});
-  const customSerialize = props.serializeFn ?? DefaultCustomSerialize;
   const modifiedValues = {};
-  const subscribers = new Set();
+  const release = snapshot.retain();
+  try {
+    const dirtyNodes = snapshot.getNodes_UNSTABLE({isModified: onlyDirty});
+    const customSerialize = props.serializeFn ?? DefaultCustomSerialize;
+    const subscribers = new Set();
 
-  // We wrap this loop into a promise to defer the execution
-  // of the second (subscribers) loop, so selector
-  // can settle before we check their values
-  await new Promise(resolve => {
-    for (const node of dirtyNodes) {
-      const info = snapshot.getInfo_UNSTABLE(node);
-      // We only accumulate subscribers if we are looking at only dirty nodes
-      if (onlyDirty) {
-        subscribers.add(...Array.from(info.subscribers.nodes));
+    // We wrap this loop into a promise to defer the execution
+    // of the second (subscribers) loop, so selector
+    // can settle before we check their values
+    await new Promise(resolve => {
+      for (const node of dirtyNodes) {
+        const info = snapshot.getInfo_UNSTABLE(node);
+        // We only accumulate subscribers if we are looking at only dirty nodes
+        if (onlyDirty) {
+          subscribers.add(...Array.from(info.subscribers.nodes));
+        }
+        modifiedValues[node.key] = {
+          content: serialize(
+            customSerialize(info.loadable?.contents, node.key),
+            props.maxDepth,
+            props.maxItems,
+          ),
+          nodeType: info.type,
+          deps: Array.from(info.deps).map(n => n.key),
+        };
       }
-      modifiedValues[node.key] = {
-        content: serialize(
-          customSerialize(info.loadable?.contents, node.key),
-          props.maxDepth,
-          props.maxItems,
-        ),
-        nodeType: info.type,
-        deps: Array.from(info.deps).map(n => n.key),
-      };
-    }
-    resolve();
-  });
+      resolve();
+    });
 
-  for (const node of subscribers) {
-    if (node != null) {
-      const info = snapshot.getInfo_UNSTABLE(node);
-      modifiedValues[node.key] = {
-        content: serialize(
-          customSerialize(info.loadable?.contents, node.key),
-          props.maxDepth,
-          props.maxItems,
-        ),
-        nodeType: info.type,
-        isSubscriber: true,
-        deps: Array.from(info.deps).map(n => n.key),
-      };
+    for (const node of subscribers) {
+      if (node != null) {
+        const info = snapshot.getInfo_UNSTABLE(node);
+        modifiedValues[node.key] = {
+          content: serialize(
+            customSerialize(info.loadable?.contents, node.key),
+            props.maxDepth,
+            props.maxItems,
+          ),
+          nodeType: info.type,
+          isSubscriber: true,
+          deps: Array.from(info.deps).map(n => n.key),
+        };
+      }
     }
+  } finally {
+    release();
   }
 
   return {
@@ -98,20 +102,29 @@ const __RECOIL_DEVTOOLS_EXTENSION__ = {
     debug('CONNECT_PAGE', props);
     initConnection(props);
     const {devMode, goToSnapshot, initialSnapshot} = props;
-    const previousSnapshots = new EvictableList<RecoilSnapshot>(
+    const previousSnapshots = new EvictableList<[RecoilSnapshot, () => void]>(
       props.persistenceLimit,
+      ([_, release]) => release(),
     );
     if (devMode && initialSnapshot != null) {
-      previousSnapshots.add(initialSnapshot);
+      previousSnapshots.add([initialSnapshot, initialSnapshot.retain()]);
     }
 
-    let loadedSnapshot = initialSnapshot;
+    let loadedSnapshot, releaseLoadedSnapshot;
+    function setLoadedSnapshot(s) {
+      releaseLoadedSnapshot?.();
+      [loadedSnapshot, releaseLoadedSnapshot] = [s, s?.retain()];
+    }
+    setLoadedSnapshot(initialSnapshot);
+
     const backgroundMessageListener = (message: MessageEventFromBackground) => {
       if (message.data?.source === ExtensionSourceContentScript) {
         if (message.data?.action === RecoilDevToolsActions.GO_TO_SNAPSHOT) {
-          loadedSnapshot = previousSnapshots.get(message.data?.snapshotId);
-          if (loadedSnapshot != null) {
-            goToSnapshot(loadedSnapshot);
+          const [snapshot] =
+            previousSnapshots.get(message.data?.snapshotId) ?? [];
+          setLoadedSnapshot(snapshot);
+          if (snapshot != null) {
+            goToSnapshot(snapshot);
           }
         }
       }
@@ -136,11 +149,11 @@ const __RECOIL_DEVTOOLS_EXTENSION__ = {
           return;
         }
         // reset the just loaded snapshot
-        loadedSnapshot = null;
+        setLoadedSnapshot(null);
         // On devMode we accumulate the list of rpevious snapshots
         // to be able to time travel
         if (devMode) {
-          previousSnapshots.add(snapshot);
+          previousSnapshots.add([snapshot, snapshot.retain()]);
         }
 
         window.postMessage(
