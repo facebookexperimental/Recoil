@@ -262,11 +262,19 @@ function updateRetainCount(
   const map = store.getState().retention.referenceCounts;
   const newCount = (map.get(retainable) ?? 0) + delta;
   if (newCount === 0) {
-    map.delete(retainable);
-    scheduleOrPerformPossibleReleaseOfRetainable(store, retainable);
+    updateRetainCountToZero(store, retainable);
   } else {
     map.set(retainable, newCount);
   }
+}
+
+function updateRetainCountToZero(store: Store, retainable: Retainable): void {
+  if (!gkx('recoil_memory_managament_2020')) {
+    return;
+  }
+  const map = store.getState().retention.referenceCounts;
+  map.delete(retainable);
+  scheduleOrPerformPossibleReleaseOfRetainable(store, retainable);
 }
 
 function releaseScheduledRetainablesNow(store: Store) {
@@ -288,6 +296,7 @@ function retainedByOptionWithDefault(r: RetainedBy | void): RetainedBy {
 
 module.exports = {
   updateRetainCount,
+  updateRetainCountToZero,
   releaseScheduledRetainablesNow,
   retainedByOptionWithDefault,
 };

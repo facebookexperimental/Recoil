@@ -45,6 +45,10 @@ const {
   setUnvalidatedRecoilValue,
 } = require('./Recoil_RecoilValueInterface');
 const {
+  updateRetainCount,
+  updateRetainCountToZero,
+} = require('./Recoil_Retention');
+const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
 } = require('./Recoil_State');
@@ -88,6 +92,7 @@ class Snapshot {
         nodeKey,
         'get',
       );
+      updateRetainCount(this._store, nodeKey, 1);
     }
     this.retain();
     this.autorelease();
@@ -124,10 +129,9 @@ class Snapshot {
     if (this._refCount === 0) {
       // Temporarily nerfing this to allow us to find broken call sites without
       // actually breaking anybody yet.
-      // for (const fn of this._store.getState().nodeCleanupFunctions.values()) {
-      //   fn();
+      // for (const k of this._store.getState().nodeCleanupFunctions.keys()) {
+      //   updateRetainCountToZero(this._store, k);
       // }
-      // this._store.getState().nodeCleanupFunctions.clear();
     }
   }
 
@@ -321,11 +325,13 @@ class MutableSnapshot extends Snapshot {
     newValueOrUpdater: ValueOrUpdater<T>,
   ) => {
     this.checkRefCount_INTERNAL();
+    const store = this.getStore_INTERNAL();
     // This batchUpdates ensures this `set` is applied immediately and you can
     // read the written value after calling `set`. I would like to remove this
     // behavior and only batch in `Snapshot.map`, but this would be a breaking
     // change potentially.
     batchUpdates(() => {
+      updateRetainCount(store, recoilState.key, 1);
       setRecoilValue(this.getStore_INTERNAL(), recoilState, newValueOrUpdater);
     });
   };
@@ -334,10 +340,12 @@ class MutableSnapshot extends Snapshot {
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   reset: ResetRecoilState = <T>(recoilState: RecoilState<T>) => {
     this.checkRefCount_INTERNAL();
+    const store = this.getStore_INTERNAL();
     // See note at `set` about batched updates.
-    batchUpdates(() =>
-      setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE),
-    );
+    batchUpdates(() => {
+      updateRetainCount(store, recoilState.key, 1);
+      setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE);
+    });
   };
 
   // We want to allow the methods to be destructured and used as accessors
@@ -347,8 +355,10 @@ class MutableSnapshot extends Snapshot {
   ) => {
     this.checkRefCount_INTERNAL();
     const store = this.getStore_INTERNAL();
+    // See note at `set` about batched updates.
     batchUpdates(() => {
       for (const [k, v] of values.entries()) {
+        updateRetainCount(store, k, 1);
         setUnvalidatedRecoilValue(store, new AbstractRecoilValue(k), v);
       }
     });
