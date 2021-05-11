@@ -88,7 +88,7 @@ const defaultStore: Store = Object.freeze({
   addTransactionMetadata: notInAContext
 });
 let stateReplacerIsBeingExecuted: boolean = false;
-declare function startNextTreeIfNeeded(storeState: StoreState): void;
+declare function startNextTreeIfNeeded(store: Store): void;
 const AppContext = React.createContext<StoreRef>({
   current: defaultStore
 });

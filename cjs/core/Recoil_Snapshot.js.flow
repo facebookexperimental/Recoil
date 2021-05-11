@@ -58,6 +58,11 @@ const {
 } = require('./Recoil_RecoilValueInterface');
 
 const {
+  updateRetainCount,
+  updateRetainCountToZero
+} = require('./Recoil_Retention');
+
+const {
   getNextTreeStateVersion,
   makeEmptyStoreState
 } = require('./Recoil_State'); // Opaque at this surface because it's part of the public API from here.

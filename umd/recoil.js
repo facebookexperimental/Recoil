@@ -2474,6 +2474,7 @@
       currentTree,
       nextTree: null,
       previousTree: null,
+      commitDepth: 0,
       knownAtoms: new Set(),
       knownSelectors: new Set(),
       transactionSubscriptions: new Map(),
@@ -2799,11 +2800,20 @@
     const newCount = ((_map$get = map.get(retainable)) !== null && _map$get !== void 0 ? _map$get : 0) + delta;
 
     if (newCount === 0) {
-      map.delete(retainable);
-      scheduleOrPerformPossibleReleaseOfRetainable(store, retainable);
+      updateRetainCountToZero(store, retainable);
     } else {
       map.set(retainable, newCount);
     }
+  }
+
+  function updateRetainCountToZero(store, retainable) {
+    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
+      return;
+    }
+
+    const map = store.getState().retention.referenceCounts;
+    map.delete(retainable);
+    scheduleOrPerformPossibleReleaseOfRetainable(store, retainable);
   }
 
   function releaseScheduledRetainablesNow(store) {
@@ -2823,6 +2833,7 @@
 
   var Recoil_Retention = {
     updateRetainCount,
+    updateRetainCountToZero,
     releaseScheduledRetainablesNow,
     retainedByOptionWithDefault
   };
@@ -2915,6 +2926,11 @@
     setRecoilValue: setRecoilValue$1,
     setUnvalidatedRecoilValue: setUnvalidatedRecoilValue$1
   } = Recoil_RecoilValueInterface;
+
+  const {
+    updateRetainCount: updateRetainCount$1,
+    updateRetainCountToZero: updateRetainCountToZero$1
+  } = Recoil_Retention;
 
   const {
     getNextTreeStateVersion: getNextTreeStateVersion$1,
@@ -3012,6 +3028,7 @@
 
       for (const nodeKey of this._store.getState().nodeCleanupFunctions.keys()) {
         initializeNodeIfNewToStore$1(this._store, storeState.currentTree, nodeKey, 'get');
+        updateRetainCount$1(this._store, nodeKey, 1);
       }
 
       this.retain();
@@ -3099,6 +3116,7 @@
         atomValues: treeState.atomValues.clone(),
         nonvalidatedAtoms: treeState.nonvalidatedAtoms.clone()
       } : treeState,
+      commitDepth: 0,
       nextTree: null,
       previousTree: null,
       knownAtoms: new Set(storeState.knownAtoms),
@@ -3139,27 +3157,35 @@
       super(cloneStoreState(snapshot.getStore_INTERNAL(), snapshot.getStore_INTERNAL().getState().currentTree, true));
 
       _defineProperty(this, "set", (recoilState, newValueOrUpdater) => {
-        this.checkRefCount_INTERNAL(); // This batchUpdates ensures this `set` is applied immediately and you can
+        this.checkRefCount_INTERNAL();
+        const store = this.getStore_INTERNAL(); // This batchUpdates ensures this `set` is applied immediately and you can
         // read the written value after calling `set`. I would like to remove this
         // behavior and only batch in `Snapshot.map`, but this would be a breaking
         // change potentially.
 
         batchUpdates$1(() => {
+          updateRetainCount$1(store, recoilState.key, 1);
           setRecoilValue$1(this.getStore_INTERNAL(), recoilState, newValueOrUpdater);
         });
       });
 
       _defineProperty(this, "reset", recoilState => {
-        this.checkRefCount_INTERNAL(); // See note at `set` about batched updates.
+        this.checkRefCount_INTERNAL();
+        const store = this.getStore_INTERNAL(); // See note at `set` about batched updates.
 
-        batchUpdates$1(() => setRecoilValue$1(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE$1));
+        batchUpdates$1(() => {
+          updateRetainCount$1(store, recoilState.key, 1);
+          setRecoilValue$1(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE$1);
+        });
       });
 
       _defineProperty(this, "setUnvalidatedAtomValues_DEPRECATED", values => {
         this.checkRefCount_INTERNAL();
-        const store = this.getStore_INTERNAL();
+        const store = this.getStore_INTERNAL(); // See note at `set` about batched updates.
+
         batchUpdates$1(() => {
           for (const [k, v] of values.entries()) {
+            updateRetainCount$1(store, k, 1);
             setUnvalidatedRecoilValue$1(store, new AbstractRecoilValue$2(k), v);
           }
         });
@@ -3260,12 +3286,24 @@
   });
   let stateReplacerIsBeingExecuted = false;
 
-  function startNextTreeIfNeeded(storeState) {
+  function startNextTreeIfNeeded(store) {
     if (stateReplacerIsBeingExecuted) {
       throw new Error('An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.');
     }
 
+    const storeState = store.getState();
+
     if (storeState.nextTree === null) {
+      if (Recoil_gkx_1('recoil_memory_managament_2020') && Recoil_gkx_1('recoil_release_on_cascading_update_killswitch_2021')) {
+        // If this is a cascading update (that is, rendering due to one state change
+        // invokes a second state change), we won't have cleaned up retainables yet
+        // because this normally happens after notifying components. Do it before
+        // proceeding with the cascading update so that it remains predictable:
+        if (storeState.commitDepth > 0) {
+          releaseScheduledRetainablesNow$1(store);
+        }
+      }
+
       const version = storeState.currentTree.version;
       const nextVersion = getNextTreeStateVersion$2();
       storeState.nextTree = { ...storeState.currentTree,
@@ -3363,27 +3401,33 @@
       // call useEffect in an unpredictable order sometimes.
       Recoil_Queue.enqueueExecution('Batcher', () => {
         const storeState = storeRef.current.getState();
-        const {
-          nextTree
-        } = storeState; // Ignore commits that are not because of Recoil transactions -- namely,
-        // because something above RecoilRoot re-rendered:
+        storeState.commitDepth++;
 
-        if (nextTree === null) {
-          return;
-        } // nextTree is now committed -- note that copying and reset occurs when
-        // a transaction begins, in startNextTreeIfNeeded:
+        try {
+          const {
+            nextTree
+          } = storeState; // Ignore commits that are not because of Recoil transactions -- namely,
+          // because something above RecoilRoot re-rendered:
+
+          if (nextTree === null) {
+            return;
+          } // nextTree is now committed -- note that copying and reset occurs when
+          // a transaction begins, in startNextTreeIfNeeded:
 
 
-        storeState.previousTree = storeState.currentTree;
-        storeState.currentTree = nextTree;
-        storeState.nextTree = null;
-        sendEndOfBatchNotifications(storeRef.current);
-        const discardedVersion = Recoil_nullthrows(storeState.previousTree).version;
-        storeState.graphsByVersion.delete(discardedVersion);
-        storeState.previousTree = null;
+          storeState.previousTree = storeState.currentTree;
+          storeState.currentTree = nextTree;
+          storeState.nextTree = null;
+          sendEndOfBatchNotifications(storeRef.current);
+          const discardedVersion = Recoil_nullthrows(storeState.previousTree).version;
+          storeState.graphsByVersion.delete(discardedVersion);
+          storeState.previousTree = null;
 
-        if (Recoil_gkx_1('recoil_memory_managament_2020')) {
-          releaseScheduledRetainablesNow$1(storeRef.current);
+          if (Recoil_gkx_1('recoil_memory_managament_2020')) {
+            releaseScheduledRetainablesNow$1(storeRef.current);
+          }
+        } finally {
+          storeState.commitDepth--;
         }
       });
     }); // If an asynchronous selector resolves after the Batcher is unmounted,
@@ -3526,7 +3570,7 @@
     };
 
     const addTransactionMetadata = metadata => {
-      startNextTreeIfNeeded(storeRef.current.getState());
+      startNextTreeIfNeeded(storeRef.current);
 
       for (const k of Object.keys(metadata)) {
         Recoil_nullthrows(storeRef.current.getState().nextTree).transactionMetadata[k] = metadata[k];
@@ -3535,7 +3579,7 @@
 
     const replaceState = replacer => {
       const storeState = storeRef.current.getState();
-      startNextTreeIfNeeded(storeState); // Use replacer to get the next state:
+      startNextTreeIfNeeded(storeRef.current); // Use replacer to get the next state:
 
       const nextTree = Recoil_nullthrows(storeState.nextTree);
       let replaced;
@@ -4022,7 +4066,7 @@
   } = Recoil_RecoilValueInterface;
 
   const {
-    updateRetainCount: updateRetainCount$1
+    updateRetainCount: updateRetainCount$2
   } = Recoil_Retention;
 
   const {
@@ -4751,13 +4795,13 @@
         Recoil_recoverableViolation('Did not retain recoil value on render, or committed after timeout elapsed. This is fine, but odd.');
 
         for (const r of retainables) {
-          updateRetainCount$1(store, r, 1);
+          updateRetainCount$2(store, r, 1);
         }
       }
 
       return () => {
         for (const r of retainables) {
-          updateRetainCount$1(store, r, -1);
+          updateRetainCount$2(store, r, -1);
         }
       }; // eslint-disable-next-line fb-www/react-hooks-deps
     }, [storeRef, ...retainables]); // We want to retain if the component suspends. This is terrible but the Suspense
@@ -4772,12 +4816,12 @@
       const store = storeRef.current;
 
       for (const r of retainables) {
-        updateRetainCount$1(store, r, 1);
+        updateRetainCount$2(store, r, 1);
       }
 
       if (previousRetainables) {
         for (const r of previousRetainables) {
-          updateRetainCount$1(store, r, -1);
+          updateRetainCount$2(store, r, -1);
         }
       }
 
@@ -4789,7 +4833,7 @@
         timeoutID.current = null;
 
         for (const r of retainables) {
-          updateRetainCount$1(store, r, -1);
+          updateRetainCount$2(store, r, -1);
         }
       }, SUSPENSE_TIMEOUT_MS);
     }

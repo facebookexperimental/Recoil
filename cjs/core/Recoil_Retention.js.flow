@@ -45,10 +45,12 @@ declare function nodesRetainedByZone(storeState: StoreState, zone: RetentionZone
 declare function zonesThatCouldRetainNode(node: NodeKey): Array<RetentionZone>;
 declare function scheduleOrPerformPossibleReleaseOfRetainable(store: Store, retainable: Retainable): any;
 declare function updateRetainCount(store: Store, retainable: Retainable, delta: 1 | -1): void;
+declare function updateRetainCountToZero(store: Store, retainable: Retainable): void;
 declare function releaseScheduledRetainablesNow(store: Store): any;
 declare function retainedByOptionWithDefault(r: RetainedBy | void): RetainedBy;
 module.exports = {
   updateRetainCount,
+  updateRetainCountToZero,
   releaseScheduledRetainablesNow,
   retainedByOptionWithDefault
 };

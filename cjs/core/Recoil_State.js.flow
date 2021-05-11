@@ -62,6 +62,8 @@ export type StoreState = {
   // This TreeState exists only during the time that components and observers
   // are being notified of a newly-committed tree:
   previousTree: null | TreeState,
+  // Incremented when finishing a batch; used to detect cascading updates.
+  commitDepth: number,
   // Node lifetimes
   knownAtoms: Set<NodeKey>,
   knownSelectors: Set<NodeKey>,
