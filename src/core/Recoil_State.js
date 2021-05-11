@@ -68,6 +68,9 @@ export type StoreState = {
   // are being notified of a newly-committed tree:
   previousTree: null | TreeState,
 
+  // Incremented when finishing a batch; used to detect cascading updates.
+  commitDepth: number,
+
   // Node lifetimes
   knownAtoms: Set<NodeKey>,
   knownSelectors: Set<NodeKey>,
@@ -158,6 +161,7 @@ function makeEmptyStoreState(): StoreState {
     currentTree,
     nextTree: null,
     previousTree: null,
+    commitDepth: 0,
     knownAtoms: new Set(),
     knownSelectors: new Set(),
     transactionSubscriptions: new Map(),

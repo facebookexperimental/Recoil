@@ -75,13 +75,26 @@ const defaultStore: Store = Object.freeze({
 
 let stateReplacerIsBeingExecuted: boolean = false;
 
-function startNextTreeIfNeeded(storeState: StoreState): void {
+function startNextTreeIfNeeded(store: Store): void {
   if (stateReplacerIsBeingExecuted) {
     throw new Error(
       'An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.',
     );
   }
+  const storeState = store.getState();
   if (storeState.nextTree === null) {
+    if (
+      gkx('recoil_memory_managament_2020') &&
+      gkx('recoil_release_on_cascading_update_killswitch_2021')
+    ) {
+      // If this is a cascading update (that is, rendering due to one state change
+      // invokes a second state change), we won't have cleaned up retainables yet
+      // because this normally happens after notifying components. Do it before
+      // proceeding with the cascading update so that it remains predictable:
+      if (storeState.commitDepth > 0) {
+        releaseScheduledRetainablesNow(store);
+      }
+    }
     const version = storeState.currentTree.version;
     const nextVersion = getNextTreeStateVersion();
     storeState.nextTree = {
@@ -189,28 +202,33 @@ function Batcher({
     // call useEffect in an unpredictable order sometimes.
     Queue.enqueueExecution('Batcher', () => {
       const storeState = storeRef.current.getState();
-      const {nextTree} = storeState;
+      storeState.commitDepth++;
+      try {
+        const {nextTree} = storeState;
 
-      // Ignore commits that are not because of Recoil transactions -- namely,
-      // because something above RecoilRoot re-rendered:
-      if (nextTree === null) {
-        return;
-      }
+        // Ignore commits that are not because of Recoil transactions -- namely,
+        // because something above RecoilRoot re-rendered:
+        if (nextTree === null) {
+          return;
+        }
 
-      // nextTree is now committed -- note that copying and reset occurs when
-      // a transaction begins, in startNextTreeIfNeeded:
-      storeState.previousTree = storeState.currentTree;
-      storeState.currentTree = nextTree;
-      storeState.nextTree = null;
+        // nextTree is now committed -- note that copying and reset occurs when
+        // a transaction begins, in startNextTreeIfNeeded:
+        storeState.previousTree = storeState.currentTree;
+        storeState.currentTree = nextTree;
+        storeState.nextTree = null;
 
-      sendEndOfBatchNotifications(storeRef.current);
+        sendEndOfBatchNotifications(storeRef.current);
 
-      const discardedVersion = nullthrows(storeState.previousTree).version;
-      storeState.graphsByVersion.delete(discardedVersion);
-      storeState.previousTree = null;
+        const discardedVersion = nullthrows(storeState.previousTree).version;
+        storeState.graphsByVersion.delete(discardedVersion);
+        storeState.previousTree = null;
 
-      if (gkx('recoil_memory_managament_2020')) {
-        releaseScheduledRetainablesNow(storeRef.current);
+        if (gkx('recoil_memory_managament_2020')) {
+          releaseScheduledRetainablesNow(storeRef.current);
+        }
+      } finally {
+        storeState.commitDepth--;
       }
     });
   });
@@ -346,7 +364,7 @@ function RecoilRoot_INTERNAL({
   };
 
   const addTransactionMetadata = (metadata: {...}) => {
-    startNextTreeIfNeeded(storeRef.current.getState());
+    startNextTreeIfNeeded(storeRef.current);
     for (const k of Object.keys(metadata)) {
       nullthrows(storeRef.current.getState().nextTree).transactionMetadata[k] =
         metadata[k];
@@ -355,7 +373,7 @@ function RecoilRoot_INTERNAL({
 
   const replaceState = replacer => {
     const storeState = storeRef.current.getState();
-    startNextTreeIfNeeded(storeState);
+    startNextTreeIfNeeded(storeRef.current);
     // Use replacer to get the next state:
     const nextTree = nullthrows(storeState.nextTree);
     let replaced;

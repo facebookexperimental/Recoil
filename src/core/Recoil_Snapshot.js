@@ -268,6 +268,7 @@ function cloneStoreState(
           nonvalidatedAtoms: treeState.nonvalidatedAtoms.clone(),
         }
       : treeState,
+    commitDepth: 0,
     nextTree: null,
     previousTree: null,
     knownAtoms: new Set(storeState.knownAtoms), // FIXME here's a copy

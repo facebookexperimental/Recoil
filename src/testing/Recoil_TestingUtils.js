@@ -267,7 +267,15 @@ const testGKs = (
 const WWW_GKS_TO_TEST = [
   ['recoil_suppress_rerender_in_callback'],
   ['recoil_hamt_2020'],
-  ['recoil_memory_managament_2020'],
+  [
+    'recoil_memory_managament_2020',
+    'recoil_release_on_cascading_update_killswitch_2021',
+  ],
+  [
+    'recoil_hamt_2020',
+    'recoil_memory_managament_2020',
+    'recoil_release_on_cascading_update_killswitch_2021',
+  ],
 ];
 
 /**
