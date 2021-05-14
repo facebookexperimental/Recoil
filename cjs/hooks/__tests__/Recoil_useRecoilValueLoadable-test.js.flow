@@ -14,7 +14,7 @@ const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-let React, act, constSelector, errorSelector, asyncSelector, renderElements, useRecoilValueLoadable;
+let React, act, selector, constSelector, errorSelector, asyncSelector, renderElements, useRecoilValueLoadable, flushPromisesAndTimers;
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({
@@ -22,9 +22,11 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('ReactTestUtils'));
   constSelector = require('../../recoil_values/Recoil_constSelector');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');
+  selector = require('../../recoil_values/Recoil_selector');
   ({
     asyncSelector,
-    renderElements
+    renderElements,
+    flushPromisesAndTimers
   } = require('../../testing/Recoil_TestingUtils'));
   ({
     useRecoilValueLoadable
@@ -69,4 +71,16 @@ testRecoil('useRecoilValueLoadable - loading loadable', async () => {
     const val = typeof res === 'string' ? res : res.__value;
     expect(val).toBe('VALUE');
   }));
+});
+testRecoil('useRecoilValueLoadable() with an async throwing selector results in a loadable in error state', async () => {
+  const asyncError = selector({
+    key: 'asyncError',
+    get: async () => {
+      throw new Error('Test Error');
+    }
+  });
+  declare var Test: () => any;
+  const c = renderElements(<Test />);
+  await act(() => flushPromisesAndTimers());
+  expect(c.textContent).toEqual('Has error');
 });

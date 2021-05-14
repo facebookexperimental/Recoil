@@ -12,6 +12,27 @@ import react from 'react';
  * @format
  */
 
+// Split declaration and implementation to allow this function to pretend to
+// check for actual instance of Promise instead of something with a `then`
+// method.
+// eslint-disable-next-line no-redeclare
+function isPromise(p) {
+  return !!p && typeof p.then === 'function';
+}
+
+var Recoil_isPromise = isPromise;
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
 function nullthrows(x, message) {
   if (x != null) {
     return x;
@@ -21,6 +42,187 @@ function nullthrows(x, message) {
 }
 
 var Recoil_nullthrows = nullthrows;
+
+// TODO Convert Loadable to a Class to allow for runtime type detection.
+// Containing static factories of withValue(), withError(), withPromise(), and all()
+
+
+class Canceled {}
+
+const CANCELED = new Canceled();
+const loadableAccessors = {
+  valueMaybe() {
+    return undefined;
+  },
+
+  valueOrThrow() {
+    const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
+  },
+
+  errorMaybe() {
+    return undefined;
+  },
+
+  errorOrThrow() {
+    const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
+  },
+
+  promiseMaybe() {
+    return undefined;
+  },
+
+  promiseOrThrow() {
+    const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
+  },
+
+  is(other) {
+    return other.state === this.state && other.contents === this.contents;
+  },
+
+  // TODO Unit tests
+  // TODO Convert Loadable to a Class to better support chaining
+  //      by returning a Loadable from a map function
+  map(map) {
+    if (this.state === 'hasError') {
+      return this;
+    }
+
+    if (this.state === 'hasValue') {
+      try {
+        const next = map(this.contents); // TODO if next instanceof Loadable, then return next
+
+        return Recoil_isPromise(next) ? loadableWithPromise(next) : loadableWithValue(next);
+      } catch (e) {
+        return Recoil_isPromise(e) ? // If we "suspended", then try again.
+        // errors and subsequent retries will be handled in 'loading' case
+        loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
+      }
+    }
+
+    if (this.state === 'loading') {
+      return loadableWithPromise(this.contents // TODO if map returns a loadable, then return the value or promise or throw the error
+      .then(map).catch(e => {
+        if (Recoil_isPromise(e)) {
+          // we were "suspended," try again
+          return e.then(() => map(this.contents));
+        }
+
+        throw e;
+      }));
+    }
+
+    const error = new Error('Invalid Loadable state'); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
+  }
+
+};
+
+function loadableWithValue(value) {
+  // Build objects this way since Flow doesn't support disjoint unions for class properties
+  return Object.freeze({
+    state: 'hasValue',
+    contents: value,
+    ...loadableAccessors,
+
+    getValue() {
+      return this.contents;
+    },
+
+    toPromise() {
+      return Promise.resolve(this.contents);
+    },
+
+    valueMaybe() {
+      return this.contents;
+    },
+
+    valueOrThrow() {
+      return this.contents;
+    }
+
+  });
+}
+
+function loadableWithError(error) {
+  return Object.freeze({
+    state: 'hasError',
+    contents: error,
+    ...loadableAccessors,
+
+    getValue() {
+      throw this.contents;
+    },
+
+    toPromise() {
+      return Promise.reject(this.contents);
+    },
+
+    errorMaybe() {
+      return this.contents;
+    },
+
+    errorOrThrow() {
+      return this.contents;
+    }
+
+  });
+}
+
+function loadableWithPromise(promise) {
+  return Object.freeze({
+    state: 'loading',
+    contents: promise,
+    ...loadableAccessors,
+
+    getValue() {
+      throw this.contents.then(({
+        __value
+      }) => __value);
+    },
+
+    toPromise() {
+      return this.contents.then(({
+        __value
+      }) => __value);
+    },
+
+    promiseMaybe() {
+      return this.contents.then(({
+        __value
+      }) => __value);
+    },
+
+    promiseOrThrow() {
+      return this.contents.then(({
+        __value
+      }) => __value);
+    }
+
+  });
+}
+
+function loadableLoading() {
+  return loadableWithPromise(new Promise(() => {}));
+}
+
+function loadableAll(inputs) {
+  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)).then(value => ({
+    __value: value
+  })));
+}
+
+var Recoil_Loadable = {
+  loadableWithValue,
+  loadableWithError,
+  loadableWithPromise,
+  loadableLoading,
+  loadableAll,
+  Canceled,
+  CANCELED
+};
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -147,7 +349,7 @@ var Recoil_filterIterable = filterIterable;
  * @format
  */
 
-const gks = new Map().set('recoil_hamt_2020', true);
+const gks = new Map().set('recoil_hamt_2020', true).set('recoil_memory_managament_2020', true);
 
 function Recoil_gkx(gk) {
   var _gks$get;
@@ -641,6 +843,14 @@ var Recoil_FunctionalCore = {
 };
 
 const {
+  CANCELED: CANCELED$1
+} = Recoil_Loadable;
+
+
+
+
+
+const {
   getDownstreamNodes: getDownstreamNodes$1,
   getNodeLoadable: getNodeLoadable$1,
   setNodeValue: setNodeValue$1
@@ -676,6 +886,17 @@ function getRecoilValueAsLoadable(store, {
   }
 
   const loadable = getNodeLoadable$1(store, treeState, key);
+
+  if (loadable.state === 'loading') {
+    loadable.contents.catch(() => {
+      /**
+       * HACK: intercept thrown error here to prevent an uncaught promise exception. Ideally this would happen closer to selector
+       * execution (perhaps introducing a new ERROR class to be resolved by async selectors that are in an error state)
+       */
+      return CANCELED$1;
+    });
+  }
+
   return loadable;
 }
 
@@ -2933,9 +3154,21 @@ const {
 } = Recoil_State; // Opaque at this surface because it's part of the public API from here.
 
 
-// A "Snapshot" is "read-only" and captures a specific set of values of atoms.
+const retainWarning = `
+Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, do this:
+
+  const release = snapshot.retain();
+  try {
+    await useTheSnapshotAsynchronously(snapshot);
+  } finally {
+    release();
+  }
+
+This is currently a DEV-only warning but will become a thrown exception in the next release of Recoil.
+`; // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
 // evaluation functions are executed and async selectors resolve.
+
 class Snapshot {
   constructor(storeState) {
     _defineProperty(this, "_store", void 0);
@@ -3027,7 +3260,7 @@ class Snapshot {
     }
 
     this.retain();
-    this.autorelease();
+    this.autorelease_INTERNAL();
   }
 
   retain() {
@@ -3040,22 +3273,22 @@ class Snapshot {
     return () => {
       if (!released) {
         released = true;
-        this.release();
+        this.release_INTERNAL();
       }
     };
   }
 
-  autorelease() {
+  autorelease_INTERNAL() {
     if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
       return;
     }
 
     if (!isSSR$1) {
-      window.setTimeout(() => this.release(), 0);
+      window.setTimeout(() => this.release_INTERNAL(), 0);
     }
   }
 
-  release() {
+  release_INTERNAL() {
     if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
       return;
     }
@@ -3068,11 +3301,9 @@ class Snapshot {
   checkRefCount_INTERNAL() {
     if (Recoil_gkx_1('recoil_memory_managament_2020') && this._refCount <= 0) {
       if (process.env.NODE_ENV !== "production") {
-        Recoil_recoverableViolation('Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it). This is currently a DEV-only warning but will become a real error soon. Please reach out to Dave McCabe for help fixing this. To temporarily suppress this warning add gk_disable=recoil_memory_managament_2020 to the URL.');
+        Recoil_recoverableViolation(retainWarning);
       } // What we will ship later:
-      // throw new Error(
-      // 'Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it).',
-      // );
+      // throw new Error(retainWarning);
 
     }
   }
@@ -4653,13 +4884,13 @@ function useRecoilSnapshot() {
 
   if (previousSnapshot !== snapshot && !isSSR$2) {
     if (timeoutID.current) {
-      previousSnapshot === null || previousSnapshot === void 0 ? void 0 : previousSnapshot.release();
+      previousSnapshot === null || previousSnapshot === void 0 ? void 0 : previousSnapshot.release_INTERNAL();
       window.clearTimeout(timeoutID.current);
     }
 
     snapshot.retain();
     timeoutID.current = window.setTimeout(() => {
-      snapshot.release();
+      snapshot.release_INTERNAL();
       timeoutID.current = null;
     }, SUSPENSE_TIMEOUT_MS);
   }
@@ -4897,208 +5128,6 @@ function useRecoilBridgeAcrossReactRoots() {
 }
 
 var Recoil_useRecoilBridgeAcrossReactRoots = useRecoilBridgeAcrossReactRoots;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-// Split declaration and implementation to allow this function to pretend to
-// check for actual instance of Promise instead of something with a `then`
-// method.
-// eslint-disable-next-line no-redeclare
-function isPromise(p) {
-  return !!p && typeof p.then === 'function';
-}
-
-var Recoil_isPromise = isPromise;
-
-// TODO Convert Loadable to a Class to allow for runtime type detection.
-// Containing static factories of withValue(), withError(), withPromise(), and all()
-
-
-class Canceled {}
-
-const CANCELED = new Canceled();
-const loadableAccessors = {
-  valueMaybe() {
-    return undefined;
-  },
-
-  valueOrThrow() {
-    const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
-  },
-
-  errorMaybe() {
-    return undefined;
-  },
-
-  errorOrThrow() {
-    const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
-  },
-
-  promiseMaybe() {
-    return undefined;
-  },
-
-  promiseOrThrow() {
-    const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
-  },
-
-  is(other) {
-    return other.state === this.state && other.contents === this.contents;
-  },
-
-  // TODO Unit tests
-  // TODO Convert Loadable to a Class to better support chaining
-  //      by returning a Loadable from a map function
-  map(map) {
-    if (this.state === 'hasError') {
-      return this;
-    }
-
-    if (this.state === 'hasValue') {
-      try {
-        const next = map(this.contents); // TODO if next instanceof Loadable, then return next
-
-        return Recoil_isPromise(next) ? loadableWithPromise(next) : loadableWithValue(next);
-      } catch (e) {
-        return Recoil_isPromise(e) ? // If we "suspended", then try again.
-        // errors and subsequent retries will be handled in 'loading' case
-        loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
-      }
-    }
-
-    if (this.state === 'loading') {
-      return loadableWithPromise(this.contents // TODO if map returns a loadable, then return the value or promise or throw the error
-      .then(map).catch(e => {
-        if (Recoil_isPromise(e)) {
-          // we were "suspended," try again
-          return e.then(() => map(this.contents));
-        }
-
-        throw e;
-      }));
-    }
-
-    const error = new Error('Invalid Loadable state'); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
-  }
-
-};
-
-function loadableWithValue(value) {
-  // Build objects this way since Flow doesn't support disjoint unions for class properties
-  return Object.freeze({
-    state: 'hasValue',
-    contents: value,
-    ...loadableAccessors,
-
-    getValue() {
-      return this.contents;
-    },
-
-    toPromise() {
-      return Promise.resolve(this.contents);
-    },
-
-    valueMaybe() {
-      return this.contents;
-    },
-
-    valueOrThrow() {
-      return this.contents;
-    }
-
-  });
-}
-
-function loadableWithError(error) {
-  return Object.freeze({
-    state: 'hasError',
-    contents: error,
-    ...loadableAccessors,
-
-    getValue() {
-      throw this.contents;
-    },
-
-    toPromise() {
-      return Promise.reject(this.contents);
-    },
-
-    errorMaybe() {
-      return this.contents;
-    },
-
-    errorOrThrow() {
-      return this.contents;
-    }
-
-  });
-}
-
-function loadableWithPromise(promise) {
-  return Object.freeze({
-    state: 'loading',
-    contents: promise,
-    ...loadableAccessors,
-
-    getValue() {
-      throw this.contents.then(({
-        __value
-      }) => __value);
-    },
-
-    toPromise() {
-      return this.contents.then(({
-        __value
-      }) => __value);
-    },
-
-    promiseMaybe() {
-      return this.contents.then(({
-        __value
-      }) => __value);
-    },
-
-    promiseOrThrow() {
-      return this.contents.then(({
-        __value
-      }) => __value);
-    }
-
-  });
-}
-
-function loadableLoading() {
-  return loadableWithPromise(new Promise(() => {}));
-}
-
-function loadableAll(inputs) {
-  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)).then(value => ({
-    __value: value
-  })));
-}
-
-var Recoil_Loadable = {
-  loadableWithValue,
-  loadableWithError,
-  loadableWithPromise,
-  loadableLoading,
-  loadableAll,
-  Canceled,
-  CANCELED
-};
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -5781,7 +5810,7 @@ var Recoil_PerformanceTimings = {
 };
 
 const {
-  CANCELED: CANCELED$1,
+  CANCELED: CANCELED$2,
   Canceled: Canceled$1,
   loadableWithError: loadableWithError$1,
   loadableWithPromise: loadableWithPromise$1,
@@ -5979,7 +6008,7 @@ function selector(options) {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
         clearExecutionInfo(store, executionId);
-        return CANCELED$1;
+        return CANCELED$2;
       }
 
       const loadable = loadableWithValue$1(value);
@@ -5995,7 +6024,7 @@ function selector(options) {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
         clearExecutionInfo(store, executionId);
-        return CANCELED$1;
+        return CANCELED$2;
       }
 
       if (isLatestExecution(store, executionId)) {
@@ -6051,12 +6080,12 @@ function selector(options) {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
         clearExecutionInfo(store, executionId);
-        return CANCELED$1;
+        return CANCELED$2;
       }
 
       if (resolvedDep instanceof Canceled$1) {
         Recoil_recoverableViolation('Selector was released while it had dependencies');
-        return CANCELED$1;
+        return CANCELED$2;
       }
 
       const {
@@ -6124,7 +6153,7 @@ function selector(options) {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
         clearExecutionInfo(store, executionId);
-        return CANCELED$1;
+        return CANCELED$2;
       }
 
       const loadable = loadableWithError$1(error);
@@ -7102,6 +7131,73 @@ var Recoil_cacheFromPolicy = cacheFromPolicy;
 const {
   setConfigDeletionHandler: setConfigDeletionHandler$2
 } = Recoil_Node;
+/*
+A function which returns an atom based on the input parameter.
+
+Each unique parameter returns a unique atom. E.g.,
+
+  const f = atomFamily(...);
+  f({a: 1}) => an atom
+  f({a: 2}) => a different atom
+
+This allows components to persist local, private state using atoms.  Each
+instance of the component may have a different key, which it uses as the
+parameter for a family of atoms; in this way, each component will have
+its own atom not shared by other instances.  These state keys may be composed
+into children's state keys as well.
+*/
+
+
+function atomFamily(options) {
+  var _options$cachePolicyF;
+
+  const atomCache = Recoil_cacheFromPolicy((_options$cachePolicyF = options.cachePolicyForParams_UNSTABLE) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : {
+    equality: 'value',
+    eviction: 'none'
+  }); // Simple atomFamily implementation to cache individual atoms based
+  // on the parameter value equality.
+
+  return params => {
+    var _stableStringify;
+
+    const cachedAtom = atomCache.get(params);
+
+    if (cachedAtom != null) {
+      return cachedAtom;
+    }
+
+    const {
+      cachePolicyForParams_UNSTABLE,
+      ...atomOptions
+    } = options;
+    const newAtom = Recoil_atom({ ...atomOptions,
+      key: `${options.key}__${(_stableStringify = Recoil_stableStringify(params)) !== null && _stableStringify !== void 0 ? _stableStringify : 'void'}`,
+      default: typeof options.default === 'function' ? // The default was parameterized
+      // Flow doesn't know that T isn't a function, so we need to case to any
+      options.default(params) // flowlint-line unclear-type:off
+      : // Default may be a static value, promise, or RecoilValue
+      options.default,
+      retainedBy_UNSTABLE: typeof options.retainedBy_UNSTABLE === 'function' ? options.retainedBy_UNSTABLE(params) : options.retainedBy_UNSTABLE,
+      effects_UNSTABLE: typeof options.effects_UNSTABLE === 'function' ? options.effects_UNSTABLE(params) : options.effects_UNSTABLE // prettier-ignore
+      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
+      // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+      // @fb-only: params,
+      // @fb-only: ),
+
+    });
+    atomCache.set(params, newAtom);
+    setConfigDeletionHandler$2(newAtom.key, () => {
+      atomCache.delete(params);
+    });
+    return newAtom;
+  };
+}
+
+var Recoil_atomFamily = atomFamily;
+
+const {
+  setConfigDeletionHandler: setConfigDeletionHandler$3
+} = Recoil_Node;
 
 
 
@@ -7178,7 +7274,7 @@ function selectorFamily(options) {
     }
 
     selectorCache.set(params, newSelector);
-    setConfigDeletionHandler$2(newSelector.key, () => {
+    setConfigDeletionHandler$3(newSelector.key, () => {
       selectorCache.delete(params);
     });
     return newSelector;
@@ -7188,117 +7284,6 @@ function selectorFamily(options) {
 
 
 var Recoil_selectorFamily = selectorFamily;
-
-// @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
-
-
-const {
-  DEFAULT_VALUE: DEFAULT_VALUE$5,
-  DefaultValue: DefaultValue$3,
-  setConfigDeletionHandler: setConfigDeletionHandler$3
-} = Recoil_Node;
-/*
-A function which returns an atom based on the input parameter.
-
-Each unique parameter returns a unique atom. E.g.,
-
-  const f = atomFamily(...);
-  f({a: 1}) => an atom
-  f({a: 2}) => a different atom
-
-This allows components to persist local, private state using atoms.  Each
-instance of the component may have a different key, which it uses as the
-parameter for a family of atoms; in this way, each component will have
-its own atom not shared by other instances.  These state keys may be composed
-into children's state keys as well.
-*/
-
-
-function atomFamily(options) {
-  var _options$cachePolicyF;
-
-  const atomCache = Recoil_cacheFromPolicy((_options$cachePolicyF = options.cachePolicyForParams_UNSTABLE) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : {
-    equality: 'value',
-    eviction: 'none'
-  }); // An atom to represent any legacy atoms that we can upgrade to an atomFamily
-
-  const legacyAtomOptions = {
-    key: options.key,
-    // Legacy atoms just used the plain key directly
-    default: DEFAULT_VALUE$5,
-    persistence_UNSTABLE: options.persistence_UNSTABLE
-  };
-  let legacyAtom; // prettier-ignore
-  // @fb-only: if (
-  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
-  // @fb-only: ) {
-  // @fb-only: legacyAtom = parameterizedScopedAtomLegacy<T | DefaultValue, P>({
-  // @fb-only: ...legacyAtomOptions,
-  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
-  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-  // @fb-only: });
-  // @fb-only: } else {
-
-  legacyAtom = Recoil_atom(legacyAtomOptions); // @fb-only: }
-  // Selector to calculate the default value based on any persisted legacy atoms
-  // that were upgraded to a atomFamily
-
-  const atomFamilyDefault = Recoil_selectorFamily({
-    key: `${options.key}__atomFamily/Default`,
-    get: param => ({
-      get
-    }) => {
-      const legacyValue = get(typeof legacyAtom === 'function' ? legacyAtom(param) : legacyAtom); // Atom was upgraded from a non-parameterized atom
-
-      if (!(legacyValue instanceof DefaultValue$3)) {
-        return legacyValue;
-      } // There's no legacy atom value, so use the user-specified default
-
-
-      return typeof options.default === 'function' ? // The default was parameterized
-      // Flow doesn't know that T isn't a function, so we need to case to any
-      options.default(param) // flowlint-line unclear-type:off
-      : // Default may be a static value, promise, or RecoilValue
-      options.default;
-    },
-    dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-    retainedBy_UNSTABLE: options.retainedBy_UNSTABLE
-  }); // Simple atomFamily implementation to cache individual atoms based
-  // on the parameter value equality.
-
-  return params => {
-    var _stableStringify;
-
-    const cachedAtom = atomCache.get(params);
-
-    if (cachedAtom != null) {
-      return cachedAtom;
-    }
-
-    const {
-      cachePolicyForParams_UNSTABLE,
-      ...atomOptions
-    } = options;
-    const newAtom = Recoil_atom({ ...atomOptions,
-      key: `${options.key}__${(_stableStringify = Recoil_stableStringify(params)) !== null && _stableStringify !== void 0 ? _stableStringify : 'void'}`,
-      default: atomFamilyDefault(params),
-      retainedBy_UNSTABLE: typeof options.retainedBy_UNSTABLE === 'function' ? options.retainedBy_UNSTABLE(params) : options.retainedBy_UNSTABLE,
-      effects_UNSTABLE: typeof options.effects_UNSTABLE === 'function' ? options.effects_UNSTABLE(params) : options.effects_UNSTABLE // prettier-ignore
-      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
-      // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-      // @fb-only: params,
-      // @fb-only: ),
-
-    });
-    atomCache.set(params, newAtom);
-    setConfigDeletionHandler$3(newAtom.key, () => {
-      atomCache.delete(params);
-    });
-    return newAtom;
-  };
-}
-
-var Recoil_atomFamily = atomFamily;
 
 // flowlint-next-line unclear-type:off
 
@@ -7567,7 +7552,7 @@ const {
 } = Recoil_Batching;
 
 const {
-  DefaultValue: DefaultValue$4
+  DefaultValue: DefaultValue$3
 } = Recoil_Node;
 
 const {
@@ -7630,7 +7615,7 @@ const {
 
 var Recoil_index = {
   // Types
-  DefaultValue: DefaultValue$4,
+  DefaultValue: DefaultValue$3,
   // Components
   RecoilRoot: RecoilRoot$2,
   useRecoilBridgeAcrossReactRoots_UNSTABLE: Recoil_useRecoilBridgeAcrossReactRoots,

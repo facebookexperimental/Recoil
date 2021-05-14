@@ -13,21 +13,17 @@
 import type { CachePolicy } from '../caches/Recoil_CachePolicy';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
-import type { AtomEffect, AtomOptions } from './Recoil_atom'; // @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
+import type { AtomEffect, AtomOptions } from './Recoil_atom';
 
 const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
 
 const {
-  DEFAULT_VALUE,
-  DefaultValue,
   setConfigDeletionHandler
 } = require('../core/Recoil_Node');
 
 const stableStringify = require('../util/Recoil_stableStringify');
 
 const atom = require('./Recoil_atom');
-
-const selectorFamily = require('./Recoil_selectorFamily');
 
 type Primitive = void | null | boolean | number | string;
 export type Parameter = Primitive | {

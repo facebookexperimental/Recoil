@@ -14,6 +14,10 @@ import type { Loadable } from '../adt/Recoil_Loadable';
 import type { ValueOrUpdater } from '../recoil_values/Recoil_callbackTypes';
 import type { AtomValues, AtomWrites, NodeKey, Store, TreeState } from './Recoil_State';
 
+const {
+  CANCELED
+} = require('../adt/Recoil_Loadable');
+
 const nullthrows = require('../util/Recoil_nullthrows');
 
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
