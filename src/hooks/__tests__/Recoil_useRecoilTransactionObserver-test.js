@@ -83,12 +83,12 @@ testRecoil('getNodes', () => {
     Array.from(snapshot.getNodes_UNSTABLE({isInitialized: true})).length,
   ).toEqual(0);
   act(() => setAtomA('A'));
-  // Greater than 3 because we expect at least nodes for atom's A and B from
-  // the family and selectorA.  In reality we currenlty get 8 due to internal
+  // >= 3 because we expect at least nodes for atom's A and B from
+  // the family and selectorA.  In reality we could get more due to internal
   // helper selectors and default fallback atoms.
   expect(
     Array.from(snapshot.getNodes_UNSTABLE({isInitialized: true})).length,
-  ).toBeGreaterThan(3);
+  ).toBeGreaterThanOrEqual(3);
   const nodes = Array.from(snapshot.getNodes_UNSTABLE({isInitialized: true}));
   expect(nodes).toEqual(
     expect.arrayContaining([atoms('A'), atoms('B'), selectorA]),

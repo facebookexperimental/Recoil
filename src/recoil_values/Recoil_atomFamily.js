@@ -16,17 +16,10 @@ import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomEffect, AtomOptions} from './Recoil_atom';
 
-// @fb-only: const {parameterizedScopedAtomLegacy} = require('Recoil_ScopedAtom');
-
 const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
-const {
-  DEFAULT_VALUE,
-  DefaultValue,
-  setConfigDeletionHandler,
-} = require('../core/Recoil_Node');
+const {setConfigDeletionHandler} = require('../core/Recoil_Node');
 const stableStringify = require('../util/Recoil_stableStringify');
 const atom = require('./Recoil_atom');
-const selectorFamily = require('./Recoil_selectorFamily');
 
 type Primitive = void | null | boolean | number | string;
 export type Parameter =
@@ -95,52 +88,6 @@ function atomFamily<T, P: Parameter>(
     },
   );
 
-  // An atom to represent any legacy atoms that we can upgrade to an atomFamily
-  const legacyAtomOptions = {
-    key: options.key, // Legacy atoms just used the plain key directly
-    default: DEFAULT_VALUE,
-    persistence_UNSTABLE: options.persistence_UNSTABLE,
-  };
-  let legacyAtom;
-  // prettier-ignore
-  // @fb-only: if (
-  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS
-  // @fb-only: ) {
-  // @fb-only: legacyAtom = parameterizedScopedAtomLegacy<T | DefaultValue, P>({
-  // @fb-only: ...legacyAtomOptions,
-  // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS:
-  // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
-  // @fb-only: });
-  // @fb-only: } else {
-  legacyAtom = atom<T | DefaultValue>(legacyAtomOptions);
-  // @fb-only: }
-
-  // Selector to calculate the default value based on any persisted legacy atoms
-  // that were upgraded to a atomFamily
-  const atomFamilyDefault = selectorFamily<T, P>({
-    key: `${options.key}__atomFamily/Default`,
-    get: param => ({get}) => {
-      const legacyValue = get(
-        typeof legacyAtom === 'function' ? legacyAtom(param) : legacyAtom,
-      );
-
-      // Atom was upgraded from a non-parameterized atom
-      if (!(legacyValue instanceof DefaultValue)) {
-        return legacyValue;
-      }
-
-      // There's no legacy atom value, so use the user-specified default
-      return typeof options.default === 'function'
-        ? // The default was parameterized
-          // Flow doesn't know that T isn't a function, so we need to case to any
-          (options.default: any)(param) // flowlint-line unclear-type:off
-        : // Default may be a static value, promise, or RecoilValue
-          options.default;
-    },
-    dangerouslyAllowMutability: options.dangerouslyAllowMutability,
-    retainedBy_UNSTABLE: options.retainedBy_UNSTABLE,
-  });
-
   // Simple atomFamily implementation to cache individual atoms based
   // on the parameter value equality.
   return (params: P) => {
@@ -154,7 +101,13 @@ function atomFamily<T, P: Parameter>(
     const newAtom = atom<T>({
       ...atomOptions,
       key: `${options.key}__${stableStringify(params) ?? 'void'}`,
-      default: atomFamilyDefault(params),
+      default:
+        typeof options.default === 'function'
+          ? // The default was parameterized
+            // Flow doesn't know that T isn't a function, so we need to case to any
+            (options.default: any)(params) // flowlint-line unclear-type:off
+          : // Default may be a static value, promise, or RecoilValue
+            options.default,
 
       retainedBy_UNSTABLE:
         typeof options.retainedBy_UNSTABLE === 'function'

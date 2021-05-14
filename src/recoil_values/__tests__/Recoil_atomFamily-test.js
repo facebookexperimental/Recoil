@@ -109,19 +109,6 @@ testRecoil('Works with non-overlapping sets', () => {
   expect(get(pAtom({y: 'y'}))).toBe('yValue');
 });
 
-testRecoil('Upgrades non-parameterized atoms', () => {
-  let upgrade = atom({
-    key: 'upgrade',
-    default: 'default',
-  });
-  set(upgrade, '123');
-  upgrade = atomFamily({
-    key: 'upgrade', // Intentially same key as above
-    default: 'default',
-  });
-  expect(get(upgrade({x: 'x'}))).toBe('123');
-});
-
 testRecoil('Works with atom default', () => {
   const fallbackAtom = atom({key: 'fallback', default: 0});
   const hasFallback = atomFamily({
