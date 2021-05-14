@@ -122,7 +122,7 @@ export interface ReadWriteSelectorOptions<T> extends ReadOnlySelectorOptions<T> 
       get: GetRecoilValue;
       reset: ResetRecoilState;
     },
-    newValue: T | DefaultValue,
+    newValue: T | (T & DefaultValue),
   ) => void;
 }
 
