@@ -1,21 +1,32 @@
 # Change Log
 
-## LATER
+## UPCOMING
 
-- Memory management
-- Selector cache configuration
+* Add new changes here as they land*
 
-## NEXT
-
-- (Add new changes here as they land)
 - Performance optimization to suppress re-rendering components:
     - When subscribed selectors evaluate to the same value. (#749, #952)
     - On initial render when not using React Concurrent Mode (#820)
-- Improved TypeScript and Flow typing for `Loadable`s (#966)
-- Added override prop to RecoilRoot
-- Fix for Atom Effects onSet() not being called when triggered from setSelf() initializing a Promise or from the same onSet() handler.  (#974, #979, #953, #986)
-- Add getCallback() to selector evaluation interface (#989)
-- Removed some undocumented legacy features.
+- Memory management
+- Selector cache configuration
+
+## 0.3.0 (2021-5-14)
+
+In the future to support garbage collection, there is a slight breaking change that `Snapshot`'s will only be valid for the duration of the callback or render.  A new `retain()` API can be used to persist them longer.  This is not enforced yet, but Recoil will now provide a warning in dev-mode if a `Snapshot` is used past its lifetime. (#1006)
+
+### New Features / Improvements
+- Add `override` prop to `<RecoilRoot>` (#973)
+- Add `getCallback()` to selector evaluation interface (#989)
+- Improved TypeScript and Flow typing for `Loadable`s (#966, #1022)
+
+### Performance Optimizations
+- Improve scalability (time and memory) of Atom families by cleaning up a legacy feature.
+
+### Bug Fixes
+- Throwing an error in an async selector should be properly caught by `<ErrorBoundary>`'s (#998, #1017)
+- Fix for Atom Effects `onSet()` should not be called when triggered from `setSelf()` initializing with a Promise or from the same `onSet()` handler.  (#974, #979, #953, #986)
+- Improved support for Safari (#967, #609)
+- Objects stored in selectors are properly frozen in dev mode (#911)
 
 ## 0.2.0 (2021-3-18)
 
