@@ -11,7 +11,9 @@
 
 'use strict';
 
-const gks = new Map().set('recoil_hamt_2020', true);
+const gks = new Map()
+  .set('recoil_hamt_2020', true)
+  .set('recoil_memory_managament_2020', true);
 
 function Recoil_gkx(gk: string): boolean {
   return gks.get(gk) ?? false;

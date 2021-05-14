@@ -695,12 +695,12 @@ function useRecoilSnapshot(): Snapshot {
 
   if (previousSnapshot !== snapshot && !isSSR) {
     if (timeoutID.current) {
-      previousSnapshot?.release();
+      previousSnapshot?.release_INTERNAL();
       window.clearTimeout(timeoutID.current);
     }
     snapshot.retain();
     timeoutID.current = window.setTimeout(() => {
-      snapshot.release();
+      snapshot.release_INTERNAL();
       timeoutID.current = null;
     }, SUSPENSE_TIMEOUT_MS);
   }

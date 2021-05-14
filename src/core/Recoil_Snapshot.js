@@ -56,6 +56,19 @@ const {
 // Opaque at this surface because it's part of the public API from here.
 export opaque type SnapshotID = StateID;
 
+const retainWarning = `
+Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, do this:
+
+  const release = snapshot.retain();
+  try {
+    await useTheSnapshotAsynchronously(snapshot);
+  } finally {
+    release();
+  }
+
+This is currently a DEV-only warning but will become a thrown exception in the next release of Recoil.
+`;
+
 // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
 // evaluation functions are executed and async selectors resolve.
@@ -95,7 +108,7 @@ class Snapshot {
       updateRetainCount(this._store, nodeKey, 1);
     }
     this.retain();
-    this.autorelease();
+    this.autorelease_INTERNAL();
   }
 
   retain(): () => void {
@@ -107,21 +120,21 @@ class Snapshot {
     return () => {
       if (!released) {
         released = true;
-        this.release();
+        this.release_INTERNAL();
       }
     };
   }
 
-  autorelease(): void {
+  autorelease_INTERNAL(): void {
     if (!gkx('recoil_memory_managament_2020')) {
       return;
     }
     if (!isSSR) {
-      window.setTimeout(() => this.release(), 0);
+      window.setTimeout(() => this.release_INTERNAL(), 0);
     }
   }
 
-  release(): void {
+  release_INTERNAL(): void {
     if (!gkx('recoil_memory_managament_2020')) {
       return;
     }
@@ -138,15 +151,10 @@ class Snapshot {
   checkRefCount_INTERNAL(): void {
     if (gkx('recoil_memory_managament_2020') && this._refCount <= 0) {
       if (__DEV__) {
-        recoverableViolation(
-          'Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it). This is currently a DEV-only warning but will become a real error soon. Please reach out to Dave McCabe for help fixing this. To temporarily suppress this warning add gk_disable=recoil_memory_managament_2020 to the URL.',
-          'recoil',
-        );
+        recoverableViolation(retainWarning, 'recoil');
       }
       // What we will ship later:
-      // throw new Error(
-      // 'Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, call its retain() method (and then call release() when you are done with it).',
-      // );
+      // throw new Error(retainWarning);
     }
   }
 
