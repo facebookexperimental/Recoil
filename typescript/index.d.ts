@@ -20,7 +20,7 @@ export class DefaultValue {
 export type RecoilRootProps = {
   initializeState?: (mutableSnapshot: MutableSnapshot) => void,
   override?: true,
-} | {override: false}
+} | {override: false};
 
 export const RecoilRoot: React.FC<RecoilRootProps>;
 
@@ -237,16 +237,16 @@ interface LoadingLoadable<T> extends BaseLoadable<T> {
   state: 'loading';
   contents: LoadablePromise<T>;
   valueMaybe: () => undefined;
-  errorMaybe: () => any;
-  promiseMaybe: () => undefined;
+  errorMaybe: () => undefined;
+  promiseMaybe: () => Promise<T>;
 }
 
 interface ErrorLoadable<T> extends BaseLoadable<T> {
   state: 'hasError';
-  contents: Error;
+  contents: any;
   valueMaybe: () => undefined;
-  errorMaybe: () => undefined;
-  promiseMaybe: () => Promise<T>;
+  errorMaybe: () => any;
+  promiseMaybe: () => undefined;
 }
 
 export type Loadable<T> =

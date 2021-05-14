@@ -79,7 +79,8 @@ const callbackSelector = selector({
   key: 'CallbackSelector',
   get: ({ getCallback }) => {
     return getCallback(({snapshot}) => () => {
-      return snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
+      const ret = snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
+      return ret;
     });
   }
 });
@@ -116,7 +117,7 @@ function loadableTest(loadable: Loadable<number>) {
       loadable.promiseOrThrow(); // $ExpectType Promise<number>
       break;
     case 'hasError':
-      loadable.contents; // $ExpectType number
+      loadable.contents; // $ExpectType any
       loadable.getValue(); // $ExpectType number
       loadable.toPromise(); // $ExpectType Promise<number>
       loadable.valueMaybe(); // $ExpectType undefined
@@ -127,7 +128,7 @@ function loadableTest(loadable: Loadable<number>) {
       loadable.promiseOrThrow(); // $ExpectType Promise<number>
       break;
     case 'loading':
-      loadable.contents; // $ExpectType number
+      loadable.contents; // $ExpectType LoadablePromise<number>
       loadable.getValue(); // $ExpectType number
       loadable.toPromise(); // $ExpectType Promise<number>
       loadable.valueMaybe(); // $ExpectType undefined
@@ -207,8 +208,8 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   gotoSnapshot(3); // $ExpectError
   gotoSnapshot(myAtom); // $ExpectError
 
-  loadable.contents; // $ExpectType number | LoadablePromise<number> | Error
   loadable.state; // $ExpectType "hasValue" | "loading" | "hasError"
+  loadable.contents; // $ExpectType any
 
   set(myAtom, 5);
   set(myAtom, 'hello'); // $ExpectError
