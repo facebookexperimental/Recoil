@@ -54,12 +54,6 @@ module.exports = {
           'api-reference/core/isRecoilValue',
           // 'api-reference/core/DefaultValue',
         ],
-        Snapshots: [
-          'api-reference/core/Snapshot',
-          'api-reference/core/useRecoilTransactionObserver',
-          'api-reference/core/useRecoilSnapshot',
-          'api-reference/core/useGotoRecoilSnapshot',
-        ],
       },
       'api-reference/core/useRecoilCallback',
       {
