@@ -214,6 +214,9 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   set(myAtom, 5);
   set(myAtom, 'hello'); // $ExpectError
   reset(myAtom);
+
+  const release = snapshot.retain();
+  release();
 });
 
 /**
