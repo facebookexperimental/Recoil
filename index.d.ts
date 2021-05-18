@@ -55,6 +55,7 @@ export class Snapshot {
   getInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): AtomInfo<T>;
   map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
   asyncMap(cb: (mutableSnapshot: MutableSnapshot) => Promise<void>): Promise<Snapshot>;
+  retain(): () => void;
 }
 
 export class MutableSnapshot extends Snapshot {
