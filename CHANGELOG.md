@@ -10,9 +10,13 @@
 - Memory management
 - Selector cache configuration
 
+## 0.3.1 (2021-5-18)
+
+- Fix TypeScript exports
+
 ## 0.3.0 (2021-5-14)
 
-In the future to support garbage collection, there is a slight breaking change that `Snapshot`'s will only be valid for the duration of the callback or render.  A new `retain()` API can be used to persist them longer.  This is not enforced yet, but Recoil will now provide a warning in dev-mode if a `Snapshot` is used past its lifetime. (#1006)
+For supporting garbage collection in the future there is a slight breaking change that `Snapshot`'s will only be valid for the duration of the callback or render.   A new `retain()` API can be used to persist them longer.  This is not enforced yet, but Recoil will now provide a warning in dev-mode if a `Snapshot` is used past its lifetime. (#1006)
 
 ### New Features / Improvements
 - Add `override` prop to `<RecoilRoot>` (#973)
