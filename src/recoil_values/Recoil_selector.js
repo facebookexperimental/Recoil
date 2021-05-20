@@ -459,6 +459,34 @@ function selector<T>(
           bypassSelectorDepCacheOnReevaluation = false;
         }
 
+        /**
+         * Optimization: Now that the dependency has resolved, let's try hitting
+         * the cache in case the dep resolved to a value we have previously seen.
+         *
+         * TODO:
+         * Note this optimization is not perfect because it only prevents re-executions
+         * _after_ the point where an async dependency is found. Any code leading
+         * up to the async dependency may have run unnecessarily. The ideal case
+         * would be to wait for the async dependency to resolve first, check the
+         * cache, and prevent _any_ execution of the selector if the resulting
+         * value of the dependency leads to a path that is found in the cache.
+         * The ideal case is more difficult to implement as it would require that
+         * we capture and wait for the the async dependency right after checking
+         * the cache. The current approach takes advantage of the fact that running
+         * the selector already has a code path that lets use exit early when
+         * an async dep resolves.
+         */
+        const cachedLoadable = getValFromCacheAndUpdatedDownstreamDeps(
+          store,
+          state,
+        );
+
+        if (cachedLoadable && cachedLoadable.state === 'hasValue') {
+          setExecutionInfo(cachedLoadable, store);
+
+          return {__value: cachedLoadable.contents, __key: key};
+        }
+
         const [loadable, depValues] = evaluateSelectorGetter(
           store,
           state,
