@@ -240,8 +240,18 @@ class Snapshot {
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
     this.checkRefCount_INTERNAL();
-    const mutableSnapshot = new MutableSnapshot(this);
+    const mutableSnapshot = new MutableSnapshot(this, batchUpdates);
     mapper(mutableSnapshot); // if removing batchUpdates from `set` add it here
+    return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
+  };
+
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  mapBatched_UNSTABLE: ((MutableSnapshot) => void) => Snapshot = mapper => {
+    this.checkRefCount_INTERNAL();
+    const mutableSnapshot = new MutableSnapshot(this, cb => cb());
+    batchUpdates(() => {
+      mapper(mutableSnapshot);
+    });
     return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
   };
 
@@ -250,7 +260,7 @@ class Snapshot {
     (MutableSnapshot) => Promise<void>,
   ) => Promise<Snapshot> = async mapper => {
     this.checkRefCount_INTERNAL();
-    const mutableSnapshot = new MutableSnapshot(this);
+    const mutableSnapshot = new MutableSnapshot(this, batchUpdates);
     await mapper(mutableSnapshot);
     return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
   };
@@ -317,7 +327,9 @@ function cloneSnapshot(
 }
 
 class MutableSnapshot extends Snapshot {
-  constructor(snapshot: Snapshot) {
+  _batch: (() => void) => void;
+
+  constructor(snapshot: Snapshot, batch: (() => void) => void) {
     super(
       cloneStoreState(
         snapshot.getStore_INTERNAL(),
@@ -325,6 +337,7 @@ class MutableSnapshot extends Snapshot {
         true,
       ),
     );
+    this._batch = batch;
   }
 
   // We want to allow the methods to be destructured and used as accessors
@@ -339,7 +352,7 @@ class MutableSnapshot extends Snapshot {
     // read the written value after calling `set`. I would like to remove this
     // behavior and only batch in `Snapshot.map`, but this would be a breaking
     // change potentially.
-    batchUpdates(() => {
+    this._batch(() => {
       updateRetainCount(store, recoilState.key, 1);
       setRecoilValue(this.getStore_INTERNAL(), recoilState, newValueOrUpdater);
     });
@@ -351,8 +364,9 @@ class MutableSnapshot extends Snapshot {
     this.checkRefCount_INTERNAL();
     const store = this.getStore_INTERNAL();
     // See note at `set` about batched updates.
-    batchUpdates(() => {
+    this._batch(() => {
       updateRetainCount(store, recoilState.key, 1);
+
       setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE);
     });
   };
