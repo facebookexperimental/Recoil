@@ -3221,15 +3221,24 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
       _defineProperty(this, "map", mapper => {
         this.checkRefCount_INTERNAL();
-        const mutableSnapshot = new MutableSnapshot(this);
+        const mutableSnapshot = new MutableSnapshot(this, batchUpdates$1);
         mapper(mutableSnapshot); // if removing batchUpdates from `set` add it here
 
         return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
       });
 
+      _defineProperty(this, "mapBatched_UNSTABLE", mapper => {
+        this.checkRefCount_INTERNAL();
+        const mutableSnapshot = new MutableSnapshot(this, cb => cb());
+        batchUpdates$1(() => {
+          mapper(mutableSnapshot);
+        });
+        return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
+      });
+
       _defineProperty(this, "asyncMap", async mapper => {
         this.checkRefCount_INTERNAL();
-        const mutableSnapshot = new MutableSnapshot(this);
+        const mutableSnapshot = new MutableSnapshot(this, batchUpdates$1);
         await mapper(mutableSnapshot);
         return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
       });
@@ -3384,8 +3393,10 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   }
 
   class MutableSnapshot extends Snapshot {
-    constructor(snapshot) {
+    constructor(snapshot, batch) {
       super(cloneStoreState(snapshot.getStore_INTERNAL(), snapshot.getStore_INTERNAL().getState().currentTree, true));
+
+      _defineProperty(this, "_batch", void 0);
 
       _defineProperty(this, "set", (recoilState, newValueOrUpdater) => {
         this.checkRefCount_INTERNAL();
@@ -3394,7 +3405,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         // behavior and only batch in `Snapshot.map`, but this would be a breaking
         // change potentially.
 
-        batchUpdates$1(() => {
+        this._batch(() => {
           updateRetainCount$1(store, recoilState.key, 1);
           setRecoilValue$1(this.getStore_INTERNAL(), recoilState, newValueOrUpdater);
         });
@@ -3404,7 +3415,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         this.checkRefCount_INTERNAL();
         const store = this.getStore_INTERNAL(); // See note at `set` about batched updates.
 
-        batchUpdates$1(() => {
+        this._batch(() => {
           updateRetainCount$1(store, recoilState.key, 1);
           setRecoilValue$1(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE$1);
         });
@@ -3421,6 +3432,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           }
         });
       });
+
+      this._batch = batch;
     } // We want to allow the methods to be destructured and used as accessors
     // eslint-disable-next-line fb-www/extra-arrow-initializer
 
@@ -6120,6 +6133,34 @@ This is currently a DEV-only warning but will become a thrown exception in the n
            */
 
           bypassSelectorDepCacheOnReevaluation = false;
+        }
+        /**
+         * Optimization: Now that the dependency has resolved, let's try hitting
+         * the cache in case the dep resolved to a value we have previously seen.
+         *
+         * TODO:
+         * Note this optimization is not perfect because it only prevents re-executions
+         * _after_ the point where an async dependency is found. Any code leading
+         * up to the async dependency may have run unnecessarily. The ideal case
+         * would be to wait for the async dependency to resolve first, check the
+         * cache, and prevent _any_ execution of the selector if the resulting
+         * value of the dependency leads to a path that is found in the cache.
+         * The ideal case is more difficult to implement as it would require that
+         * we capture and wait for the the async dependency right after checking
+         * the cache. The current approach takes advantage of the fact that running
+         * the selector already has a code path that lets use exit early when
+         * an async dep resolves.
+         */
+
+
+        const cachedLoadable = getValFromCacheAndUpdatedDownstreamDeps(store, state);
+
+        if (cachedLoadable && cachedLoadable.state === 'hasValue') {
+          setExecutionInfo(cachedLoadable, store);
+          return {
+            __value: cachedLoadable.contents,
+            __key: key
+          };
         }
 
         const [loadable, depValues] = evaluateSelectorGetter(store, state, executionId, bypassSelectorDepCacheOnReevaluation);

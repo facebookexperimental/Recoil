@@ -103,6 +103,7 @@ declare class Snapshot {
   } | void) => Iterable<RecoilValue<mixed>>,
   getInfo_UNSTABLE: <T>(RecoilValue<T>) => RecoilValueInfo<T>,
   map: ((MutableSnapshot) => void) => Snapshot,
+  mapBatched_UNSTABLE: ((MutableSnapshot) => void) => Snapshot,
   asyncMap: ((MutableSnapshot) => Promise<void>) => Promise<Snapshot>,
 }
 declare function cloneStoreState(store: Store, treeState: TreeState, bumpVersion: boolean): StoreState; // Factory to build a fresh snapshot
@@ -111,7 +112,8 @@ declare function freshSnapshot(initializeState?: (MutableSnapshot) => void): Sna
 
 declare function cloneSnapshot(store: Store, version: 'current' | 'previous'): Snapshot;
 declare class MutableSnapshot extends Snapshot {
-  constructor(snapshot: Snapshot): any,
+  _batch: (() => void) => void,
+  constructor(snapshot: Snapshot, batch: (() => void) => void): any,
   set: SetRecoilState,
   reset: ResetRecoilState,
   setUnvalidatedAtomValues_DEPRECATED: (Map<NodeKey, mixed>) => void,

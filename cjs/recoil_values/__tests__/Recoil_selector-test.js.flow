@@ -1173,3 +1173,89 @@ testRecoil('selectors cannot mutate values in get() or set()', () => {
   expect(testSnapshot.getLoadable(userSelector).state).toBe('hasError');
   window.__DEV__ = devStatus;
 });
+testRecoil('selector does not re-run to completion when one of its async deps resolves to a previously cached value', async () => {
+  const testSnapshot = freshSnapshot();
+  testSnapshot.retain();
+  const atomA = atom({
+    key: 'atomc-rerun-opt-test',
+    default: -3
+  });
+  const selectorB = selector({
+    key: 'selb-rerun-opt-test',
+    get: async ({
+      get
+    }) => {
+      await Promise.resolve();
+      return Math.abs(get(atomA));
+    }
+  });
+  let numTimesCStartedToRun = 0;
+  let numTimesCRanToCompletion = 0;
+  const selectorC = selector({
+    key: 'sela-rerun-opt-test',
+    get: ({
+      get
+    }) => {
+      numTimesCStartedToRun++;
+      const ret = get(selectorB);
+      /**
+       * The placement of numTimesCRan is important as this optimization
+       * prevents the execution of selectorC _after_ the point where the
+       * selector execution hits a known path of dependencies. In other words,
+       * the lines prior to the get(selectorB) will run twice, but the lines
+       * following get(selectorB) should only run once given that we are
+       * setting up this test so that selectorB resolves to a previously seen
+       * value the second time that it runs.
+       */
+
+      numTimesCRanToCompletion++;
+      return ret;
+    }
+  });
+  testSnapshot.getLoadable(selectorC);
+  /**
+   * Run selector chain so that selectorC is cached with a dep of selectorB
+   * set to "3"
+   */
+
+  await flushPromisesAndTimers();
+  const loadableA = testSnapshot.getLoadable(selectorC);
+  expect(loadableA.contents).toBe(3);
+  expect(numTimesCRanToCompletion).toBe(1);
+  /**
+   * It's expected that C started to run twice so far (the first is the first
+   * time that the selector was called and suspended, the second was when B
+   * resolved and C re-ran because of the async dep resolution)
+   */
+
+  expect(numTimesCStartedToRun).toBe(2);
+  const mappedSnapshot = testSnapshot.map(({
+    set
+  }) => {
+    set(atomA, 3);
+  });
+  mappedSnapshot.getLoadable(selectorC);
+  /**
+   * Run selector chain so that selectorB recalculates as a result of atomA
+   * being changed to "3"
+   */
+
+  await flushPromisesAndTimers();
+  const loadableB = mappedSnapshot.getLoadable(selectorC);
+  expect(loadableB.contents).toBe(3);
+  /**
+   * If selectors are correctly optimized, selectorC will not re-run because
+   * selectorB resolved to "3", which is a value that selectorC has previously
+   * cached for its selectorB dependency.
+   */
+
+  expect(numTimesCRanToCompletion).toBe(1);
+  /**
+   * TODO:
+   * in the ideal case this should be:
+   *
+   * expect(numTimesCStartedToRun).toBe(2);
+   */
+
+  expect(numTimesCStartedToRun).toBe(3);
+});
