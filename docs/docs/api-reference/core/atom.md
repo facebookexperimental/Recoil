@@ -34,7 +34,7 @@ Most often, you'll use the following hooks to interact with atoms:
 - [`useSetRecoilState()`](/docs/api-reference/core/useSetRecoilState): Use this hook when you intend on only writing to the atom.
 - [`useResetRecoilState()`](/docs/api-reference/core/useResetRecoilState): Use this hook to reset an atom to its default value.
 
-For rare cases where you need to read an atom's value without subscribing to the component, see [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback).
+For rare cases where you need to read an atom's value without subscribing the component, see [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback).
 
 You can initialize an atom either with a static value or with a `Promise` or a `RecoilValue` representing a value of the same type.  Because the `Promise` may be pending or the default selector may be asynchronous it means that the atom value may also be pending or throw an error when reading.  Note that you cannot currently assign a `Promise` when setting an atom.  Please use [selectors](/docs/api-reference/core/selector) for async functions.
 
