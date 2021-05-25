@@ -1,5 +1,5 @@
 ---
-title: Teste
+title: Test
 ---
 
 ## Tester des sélecteur Recoil en dehors de React
@@ -16,7 +16,7 @@ const multipliedState = selector({
   get: ({get}) => get(numberState) * 100,
 });
 
-test('Teste multipliedState', () => {
+test('Test multipliedState', () => {
   const initialSnapshot = snapshot_UNSTABLE();
   expect(initialSnapshot.getLoadable(multipliedState).valueOrThrow()).toBe(0);
 
