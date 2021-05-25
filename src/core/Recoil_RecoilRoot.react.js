@@ -490,7 +490,7 @@ function RecoilRoot(props: Props): ReactElement {
   if (override === false && ancestorStoreRef.current !== defaultStore) {
     // If ancestorStoreRef.current !== defaultStore, it means that this
     // RecoilRoot is not nested within another.
-    return <>{props.children}</>;
+    return props.children;
   }
 
   return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
