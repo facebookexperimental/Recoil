@@ -231,7 +231,7 @@ const friendsInfoQuery = selector({
 });
 ```
 
-You can use [`waitForNone`](/docs/api-reference/utils/waitForNone) to handle incremental updates to the UI with partial data
+[`waitForNone`](/docs/api-reference/utils/waitForNone)을 사용하여 일부 데이터로 추가적인 UI 업데이트를 할 수 있습니다.
 
 ```jsx
 const friendsInfoQuery = selector({
