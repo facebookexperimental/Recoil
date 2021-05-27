@@ -137,6 +137,7 @@ const waitForNone: <
 ) => RecoilValueReadOnly<
   $ReadOnlyArray<Loadable<mixed>> | $ReadOnly<{[string]: Loadable<mixed>, ...}>,
   // $FlowFixMe[incompatible-type-arg]
+  // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 > = selectorFamily({
   key: '__waitForNone',
   get: (
@@ -164,6 +165,7 @@ const waitForAny: <
   RecoilValues,
 ) => RecoilValueReadOnly<
   $ReadOnlyArray<mixed> | $ReadOnly<{[string]: mixed, ...}>,
+  // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 > = selectorFamily({
   key: '__waitForAny',
   get: (
@@ -213,6 +215,7 @@ const waitForAll: <
   RecoilValues,
 ) => RecoilValueReadOnly<
   $ReadOnlyArray<mixed> | $ReadOnly<{[string]: mixed, ...}>,
+  // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 > = selectorFamily({
   key: '__waitForAll',
   get: (
@@ -256,6 +259,7 @@ const waitForAllSettled: <
   RecoilValues,
 ) => RecoilValueReadOnly<
   $ReadOnlyArray<mixed> | $ReadOnly<{[string]: mixed, ...}>,
+  // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 > = selectorFamily({
   key: '__waitForAllSettled',
   get: (
@@ -298,6 +302,7 @@ const waitForAllSettled: <
 
 const noWait: (
   RecoilValue<mixed>,
+  // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 ) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
   key: '__noWait',
   get: dependency => ({get}) => {

@@ -50,6 +50,7 @@ describe('initializeState', () => {
       key: 'RecoilRoot - initializeState - atom',
       default: 'DEFAULT',
     });
+    // $FlowFixMe[incompatible-call] added when improving typing for this parameters
     const mySelector = constSelector(myAtom);
 
     function initializeState({set, getLoadable}) {

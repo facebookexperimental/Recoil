@@ -54,6 +54,7 @@ testRecoil('useRecoilSnapshot - subscribe to updates', () => {
     resetAtom,
   ] = componentThatReadsAndWritesAtom(myAtom);
 
+  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   const mySelector = constSelector(myAtom);
 
   const snapshots = [];
