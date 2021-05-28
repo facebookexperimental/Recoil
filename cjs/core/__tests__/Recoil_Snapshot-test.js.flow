@@ -126,7 +126,8 @@ testRecoil('State ID after going to snapshot matches the ID of the snapshot', ()
   const myAtom = atom({
     key: 'Snapshot ID atom',
     default: 0
-  });
+  }); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
+
   const mySelector = constSelector(myAtom); // For read-only testing below
 
   declare var transactionObserver: (arg0: any) => any;
@@ -175,7 +176,8 @@ testRecoil('Read default loadable from snapshot', () => {
   });
   const atomLoadable = snapshot.getLoadable(myAtom);
   expect(atomLoadable.state).toEqual('hasValue');
-  expect(atomLoadable.contents).toEqual('DEFAULT');
+  expect(atomLoadable.contents).toEqual('DEFAULT'); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
+
   const mySelector = constSelector(myAtom);
   const selectorLoadable = snapshot.getLoadable(mySelector);
   expect(selectorLoadable.state).toEqual('hasValue');
@@ -185,7 +187,8 @@ testRecoil('Read async selector from snapshot', async () => {
   const snapshot = freshSnapshot();
   const otherA = freshSnapshot();
   const otherB = freshSnapshot();
-  const [asyncSel, resolve] = asyncSelector();
+  const [asyncSel, resolve] = asyncSelector(); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
+
   const nestSel = constSelector(asyncSel);
   expect(snapshot.getLoadable(asyncSel).state).toEqual('loading');
   expect(snapshot.getLoadable(nestSel).state).toEqual('loading');
@@ -207,7 +210,8 @@ testRecoil('Sync map of snapshot', () => {
   const myAtom = atom({
     key: 'Snapshot Map Sync',
     default: 'DEFAULT'
-  });
+  }); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
+
   const mySelector = constSelector(myAtom);
   const atomLoadable = snapshot.getLoadable(myAtom);
   expect(atomLoadable.state).toEqual('hasValue');

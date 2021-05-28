@@ -46,7 +46,8 @@ describe('initializeState', () => {
     const myAtom = atom({
       key: 'RecoilRoot - initializeState - atom',
       default: 'DEFAULT'
-    });
+    }); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
+
     const mySelector = constSelector(myAtom);
     declare function initializeState(arg0: any): any;
     const container = document.createElement('div');

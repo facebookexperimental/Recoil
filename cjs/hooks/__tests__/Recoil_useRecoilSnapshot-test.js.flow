@@ -43,7 +43,8 @@ testRecoil('useRecoilSnapshot - subscribe to updates', () => {
     key: 'useRecoilSnapshot - subscribe',
     default: 'DEFAULT'
   });
-  const [ReadsAndWritesAtom, setAtom, resetAtom] = componentThatReadsAndWritesAtom(myAtom);
+  const [ReadsAndWritesAtom, setAtom, resetAtom] = componentThatReadsAndWritesAtom(myAtom); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
+
   const mySelector = constSelector(myAtom);
   const snapshots = [];
   declare function RecoilSnapshotAndSubscribe(): any;

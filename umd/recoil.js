@@ -5238,6 +5238,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     Object.freeze(value); // Make all properties read-only
 
     for (const key in value) {
+      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
       if (Object.prototype.hasOwnProperty.call(value, key)) {
         const prop = value[key]; // Prevent infinite recurssion for circular references.
 

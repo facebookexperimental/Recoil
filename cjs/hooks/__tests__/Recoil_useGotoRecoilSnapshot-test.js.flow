@@ -49,7 +49,8 @@ testRecoil('Goto mapped snapshot', async () => {
     key: 'Goto Snapshot Atom',
     default: 'DEFAULT'
   });
-  const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+  const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
+
   const mySelector = constSelector(myAtom);
   const updatedSnapshot = snapshot.map(({
     set
@@ -81,7 +82,8 @@ testRecoil('Goto callback snapshot', () => {
     key: 'Goto Snapshot From Callback',
     default: 'DEFAULT'
   });
-  const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+  const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
+
   const mySelector = constSelector(myAtom);
   let cb;
   declare function RecoilCallback(): any;

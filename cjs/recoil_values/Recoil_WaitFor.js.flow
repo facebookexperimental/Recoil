@@ -183,7 +183,8 @@ const waitForAllSettled: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed
     .then(() => wrapLoadables(dependencies, results, exceptions));
   }
 });
-const noWait: (RecoilValue<mixed>) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
+const noWait: (RecoilValue<mixed> // $FlowFixMe[incompatible-type] added when improving typing for this parameters
+) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
   key: '__noWait',
   get: dependency => ({
     get
