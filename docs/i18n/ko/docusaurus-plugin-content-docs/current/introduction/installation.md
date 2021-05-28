@@ -20,7 +20,7 @@ yarn add recoil
 
 Recoil은 [Webpack](https://webpack.js.org/) 또는 [Rollup](https://rollupjs.org/)과 같은 모듈 번들러와도 문제없이 호환된다.
 
-### ES5 support
+### ES5 지원
 
 Recoil 빌드는 ES5로 트랜스파일 되지 않으므로, Recoil을 ES5와 사용하는 것은 지원하지 않는다. ES6 기능을 natively하게 제공하지 않는 브라우저를 지원해야 하는 경우 [Babel](https://babeljs.io/)로 코드를 컴파일하고 preset [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env)을 이용하여 이를 수행할 수는 있지만 문제가 발생할 수도 있다.
 
