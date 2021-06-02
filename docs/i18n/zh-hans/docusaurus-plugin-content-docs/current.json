@@ -1,42 +1,42 @@
 {
   "version.label": {
-    "message": "Suivant",
-    "description": "The label for version current"
+    "message": "标签",
+    "description": "当前版本的标签"
   },
   "sidebar.docs.category.Introduction": {
-    "message": "Introduction",
-    "description": "The label for category Introduction in sidebar docs"
+    "message": "简介",
+    "description": "侧边栏文档中类别介绍的标签"
   },
   "sidebar.docs.category.Basic Tutorial": {
-    "message": "Tutoriel de base",
-    "description": "The label for category Basic Tutorial in sidebar docs"
+    "message": "基础教程",
+    "description": "侧边栏文档中类别基础教程的标签"
   },
   "sidebar.docs.category.Guides": {
-    "message": "Guides",
-    "description": "The label for category Guides in sidebar docs"
+    "message": "指南",
+    "description": "侧边栏文档中类别指南的标签"
   },
   "sidebar.docs.category.API Reference": {
-    "message": "Référence API",
-    "description": "The label for category API Reference in sidebar docs"
+    "message": "API Reference",
+    "description": "侧边栏文档中类别 API 参考的标签"
   },
   "sidebar.docs.category.Core": {
-    "message": "Concepts clés",
-    "description": "The label for category Core in sidebar docs"
+    "message": "Core",
+    "description": "侧边栏文档中 Core 类别的标签"
   },
   "sidebar.docs.category.State": {
-    "message": "État",
-    "description": "The label for category State in sidebar docs"
+    "message": "状态",
+    "description": "侧边栏文档中状态类别的标签"
   },
   "sidebar.docs.category.Snapshots": {
-    "message": "Instantané",
-    "description": "The label for category Snapshots in sidebar docs"
+    "message": "Snapshots",
+    "description": "侧边栏文档中 snapshot 类别的标签"
   },
   "sidebar.docs.category.Misc": {
-    "message": "Divers",
-    "description": "The label for category Misc in sidebar docs"
+    "message": "杂项",
+    "description": "侧边栏文档中杂项类别的标签"
   },
   "sidebar.docs.category.Utils": {
-    "message": "Outils",
-    "description": "The label for category Utils in sidebar docs"
+    "message": "Utils",
+    "description": "侧边栏文档中 Util 类别的标签"
   }
 }
