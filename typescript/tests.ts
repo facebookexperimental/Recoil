@@ -470,7 +470,7 @@ isRecoilValue(mySelector1);
         setSelf('a'); // $ExpectError
 
         onSet(val => {
-          val; // $ExpectType number | DefaultValue
+          val; // $ExpectType number
         });
         onSet('a'); // $ExpectError
 
@@ -496,7 +496,7 @@ isRecoilValue(mySelector1);
         setSelf('a'); // $ExpectError
 
         onSet(val => {
-          val; // $ExpectType number | DefaultValue
+          val; // $ExpectType number
         });
         onSet('a'); // $ExpectError
 
