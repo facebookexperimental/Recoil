@@ -13,7 +13,7 @@
     "native",
     "index.d.ts"
   ],
-  "repository": "https://github.com/facebookexperimental/recoil.git",
+  "repository": "https://github.com/facebookexperimental/Recoil.git",
   "license": "MIT",
   "scripts": {
     "prepare": "install-peers",
