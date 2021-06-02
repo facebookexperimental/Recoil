@@ -1,0 +1,18 @@
+{
+  "item.label.Docs": {
+    "message": "文档",
+    "description": "文档的标题导航"
+  },
+  "item.label.Blog": {
+    "message": "Blog",
+    "description": "博客的标题导航"
+  },
+  "item.label.External Resources": {
+    "message": "外部资源",
+    "description": "外部资源的导航标题"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Github 的导航标题"
+  }
+}
