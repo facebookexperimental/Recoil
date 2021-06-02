@@ -44,7 +44,7 @@ let str: string; //////////////
 // Test tuple unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 
-const arrayResults = useRecoilValue( // $FlowExpectedError
+const arrayResults = useRecoilValue( // $FlowIssue[invalid-tuple-map]
 waitForAll([readOnlySelector(numberAtom), readOnlySelector(stringAtom)]));
 num = arrayResults[0];
 str = arrayResults[1]; // $FlowExpectedError
@@ -54,7 +54,8 @@ num = arrayResults[1]; // $FlowExpectedError
 str = arrayResults[0]; // Test object unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 
-const objResults = useRecoilValue( // $FlowExpectedError
+const objResults = useRecoilValue( // $FlowIssue[invalid-tuple-map]
+// $FlowIssue[incompatible-call]
 waitForAll({
   num: numberAtom,
   str: stringAtom
@@ -70,7 +71,7 @@ str = objResults.num; //////////////
 // Test tuple unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 
-const arrayResultsNone = useRecoilValue( // $FlowExpectedError
+const arrayResultsNone = useRecoilValue( // $FlowIssue[invalid-tuple-map]
 waitForNone([readOnlySelector(numberAtom), readOnlySelector(stringAtom)]));
 num = arrayResultsNone[0].valueOrThrow();
 str = arrayResultsNone[1].valueOrThrow(); // $FlowExpectedError
@@ -80,7 +81,7 @@ num = arrayResultsNone[1].valueOrThrow(); // $FlowExpectedError
 str = arrayResultsNone[0].valueOrThrow(); // Test object unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 
-const objResultsNone = useRecoilValue( // $FlowExpectedError
+const objResultsNone = useRecoilValue( // $FlowIssue[incompatible-call]
 waitForNone({
   num: numberAtom,
   str: stringAtom
@@ -96,8 +97,8 @@ str = objResultsNone.num.valueOrThrow(); //////////////
 // Test tuple unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 
-const arrayResultsAllSettled = useRecoilValue(waitForAllSettled([// $FlowExpectedError
-readOnlySelector(numberAtom), // $FlowExpectedError
+const arrayResultsAllSettled = useRecoilValue(waitForAllSettled([// $FlowIssue[invalid-tuple-map]
+readOnlySelector(numberAtom), // $FlowIssue[invalid-tuple-map]
 readOnlySelector(stringAtom)]));
 num = arrayResultsAllSettled[0].valueOrThrow();
 str = arrayResultsAllSettled[1].valueOrThrow(); // $FlowExpectedError
@@ -107,7 +108,8 @@ num = arrayResultsAllSettled[1].valueOrThrow(); // $FlowExpectedError
 str = arrayResultsAllSettled[0].valueOrThrow(); // Test object unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 
-const objResultsAllSettled = useRecoilValue( // $FlowExpectedError
+const objResultsAllSettled = useRecoilValue( // $FlowIssue[invalid-tuple-map]
+// $FlowIssue[incompatible-call]
 waitForAllSettled({
   num: numberAtom,
   str: stringAtom
