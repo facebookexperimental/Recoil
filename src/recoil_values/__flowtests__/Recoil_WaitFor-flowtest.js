@@ -38,7 +38,7 @@ let str: string;
 // Test tuple unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 const arrayResults = useRecoilValue(
-  // $FlowExpectedError
+  // $FlowIssue[invalid-tuple-map]
   waitForAll([readOnlySelector(numberAtom), readOnlySelector(stringAtom)]),
 );
 num = arrayResults[0];
@@ -51,7 +51,8 @@ str = arrayResults[0];
 // Test object unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 const objResults = useRecoilValue(
-  // $FlowExpectedError
+  // $FlowIssue[invalid-tuple-map]
+  // $FlowIssue[incompatible-call]
   waitForAll({num: numberAtom, str: stringAtom}),
 );
 num = objResults.num;
@@ -68,7 +69,7 @@ str = objResults.num;
 // Test tuple unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 const arrayResultsNone = useRecoilValue(
-  // $FlowExpectedError
+  // $FlowIssue[invalid-tuple-map]
   waitForNone([readOnlySelector(numberAtom), readOnlySelector(stringAtom)]),
 );
 num = arrayResultsNone[0].valueOrThrow();
@@ -81,7 +82,7 @@ str = arrayResultsNone[0].valueOrThrow();
 // Test object unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 const objResultsNone = useRecoilValue(
-  // $FlowExpectedError
+  // $FlowIssue[incompatible-call]
   waitForNone({num: numberAtom, str: stringAtom}),
 );
 num = objResultsNone.num.valueOrThrow();
@@ -99,9 +100,9 @@ str = objResultsNone.num.valueOrThrow();
 // eslint-disable-next-line fb-www/react-hooks
 const arrayResultsAllSettled = useRecoilValue(
   waitForAllSettled([
-    // $FlowExpectedError
+    // $FlowIssue[invalid-tuple-map]
     readOnlySelector(numberAtom),
-    // $FlowExpectedError
+    // $FlowIssue[invalid-tuple-map]
     readOnlySelector(stringAtom),
   ]),
 );
@@ -115,7 +116,8 @@ str = arrayResultsAllSettled[0].valueOrThrow();
 // Test object unwrapping of types
 // eslint-disable-next-line fb-www/react-hooks
 const objResultsAllSettled = useRecoilValue(
-  // $FlowExpectedError
+  // $FlowIssue[invalid-tuple-map]
+  // $FlowIssue[incompatible-call]
   waitForAllSettled({num: numberAtom, str: stringAtom}),
 );
 num = objResultsAllSettled.num.valueOrThrow();
