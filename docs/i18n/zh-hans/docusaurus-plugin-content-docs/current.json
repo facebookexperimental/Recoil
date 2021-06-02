@@ -1,6 +1,6 @@
 {
   "version.label": {
-    "message": "标签",
+    "message": "版本",
     "description": "当前版本的标签"
   },
   "sidebar.docs.category.Introduction": {
@@ -28,8 +28,8 @@
     "description": "侧边栏文档中状态类别的标签"
   },
   "sidebar.docs.category.Snapshots": {
-    "message": "Snapshots",
-    "description": "侧边栏文档中 snapshot 类别的标签"
+    "message": "快照",
+    "description": "侧边栏文档中快照类别的标签"
   },
   "sidebar.docs.category.Misc": {
     "message": "杂项",
