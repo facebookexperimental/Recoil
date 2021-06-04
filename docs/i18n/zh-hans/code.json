@@ -6,10 +6,10 @@
     "message": "开始"
   },
   "homePage.minimal.title": {
-    "message": "最小且具有响应式"
+    "message": "极简的 React 风格设计"
   },
   "homePage.minimal.text": {
-    "message": "Recoil 拥有与 React 一样的工作方式与原理。将其添加到您的应用中可快速获得灵活的状态共享。"
+    "message": "Recoil 拥有与 React 一样的工作方式与原理。将其添加到您的应用中可获得快速、灵活的状态共享。"
   },
   "homePage.flow.title": {
     "message": "数据流图"
