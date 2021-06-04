@@ -65,11 +65,11 @@ const fontSizeLabelState = selector({
 });
 ```
 
-`get` 属性是要计算的函数。它可以使用 get 的入参来访问 atom 以及其他 selector 的值。每当它访问另一个 atom 或 selector 时，就会创建相应的依赖关系，以便更新另一个 atom 或 selector 时，导致该 atom 或 selector 重新计算。
+`get` 属性是用于计算的函数。它可以使用名为 get 的入参来访问 atom 以及其他 selector 的值。每当它访问另一个 atom 或 selector 时，就会创建相应的依赖关系，以便在更新另一个 atom 或 selector 时，该 atom 或 selector 也会被重新计算。
 
 在这个 `fontSizeLabelState` 示例中，selector 包含一个依赖项：`fontSizeState` atom. 从概念上讲，`fontSizeLabelState` selector的行为与纯函数类似，该函数将 `fontSizeState` 作为输入，并将格式化后的字体大小的 label 值作为返回值。
 
-可以使用 `useRecoilValue()` 读取 selector。它使用 atom 或 selector 作为参数，并返回相应的值。我们不使用 `useRecoilState()`，因为`fontSizeLabelState` selector 不可写。（请参阅 [selector API 参考资料](/docs/api-reference/core/selector) 了解更多关于可写 selector）：
+可以使用 `useRecoilValue()` 读取 selector。它使用 atom 或 selector 作为参数，并返回相应的值。我们在这里不使用 `useRecoilState()`，因为`fontSizeLabelState` selector 不可写。（关于可写 selector，请参阅 [selector API 参考资料](/docs/api-reference/core/selector) ）：
 
 ```jsx
 function FontButton() {
