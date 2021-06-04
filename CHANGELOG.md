@@ -10,6 +10,10 @@
 - Memory management
 - Selector cache configuration
 
+## NEXT
+
+- Fix TypeScript typeing for `selectorFamily()` and `getCallback()` (#989)
+
 ## 0.3.1 (2021-5-18)
 
 - Fix TypeScript exports
