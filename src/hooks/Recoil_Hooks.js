@@ -860,11 +860,6 @@ function useRetain_ACTUAL(toRetain: ToRetain): void {
       window.clearTimeout(timeoutID.current);
       timeoutID.current = null;
     } else {
-      // Log this since it's not clear that there's any scenario where it should happen.
-      recoverableViolation(
-        'Did not retain recoil value on render, or committed after timeout elapsed. This is fine, but odd.',
-        'recoil',
-      );
       for (const r of retainables) {
         updateRetainCount(store, r, 1);
       }
