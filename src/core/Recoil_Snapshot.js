@@ -44,10 +44,7 @@ const {
   setRecoilValue,
   setUnvalidatedRecoilValue,
 } = require('./Recoil_RecoilValueInterface');
-const {
-  updateRetainCount,
-  updateRetainCountToZero,
-} = require('./Recoil_Retention');
+const {updateRetainCount} = require('./Recoil_Retention');
 const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
