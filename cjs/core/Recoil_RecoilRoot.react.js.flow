@@ -142,7 +142,7 @@ type Props = {
   override: false,
   children: React.Node,
 };
-declare function RecoilRoot(props: Props): ReactElement;
+declare function RecoilRoot(props: Props): React.Node;
 module.exports = {
   useStoreRef,
   useRecoilMutableSource,

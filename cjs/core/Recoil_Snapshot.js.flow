@@ -58,8 +58,7 @@ const {
 } = require('./Recoil_RecoilValueInterface');
 
 const {
-  updateRetainCount,
-  updateRetainCountToZero
+  updateRetainCount
 } = require('./Recoil_Retention');
 
 const {

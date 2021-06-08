@@ -3149,8 +3149,7 @@
   } = Recoil_RecoilValueInterface;
 
   const {
-    updateRetainCount: updateRetainCount$1,
-    updateRetainCountToZero: updateRetainCountToZero$1
+    updateRetainCount: updateRetainCount$1
   } = Recoil_Retention;
 
   const {
@@ -3893,7 +3892,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     if (override === false && ancestorStoreRef.current !== defaultStore) {
       // If ancestorStoreRef.current !== defaultStore, it means that this
       // RecoilRoot is not nested within another.
-      return /*#__PURE__*/react.createElement(react.Fragment, null, props.children);
+      return props.children;
     }
 
     return /*#__PURE__*/react.createElement(RecoilRoot_INTERNAL, propsExceptOverride);
@@ -5035,9 +5034,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         window.clearTimeout(timeoutID.current);
         timeoutID.current = null;
       } else {
-        // Log this since it's not clear that there's any scenario where it should happen.
-        Recoil_recoverableViolation('Did not retain recoil value on render, or committed after timeout elapsed. This is fine, but odd.');
-
         for (const r of retainables) {
           updateRetainCount$2(store, r, 1);
         }
