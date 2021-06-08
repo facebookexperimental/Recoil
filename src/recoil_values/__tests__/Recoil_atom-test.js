@@ -258,9 +258,8 @@ describe('Effects', () => {
         ({setSelf, onSet}) => {
           inited = true;
           setSelf('INIT');
-          // This only fires on the reset action, not the default promise resolving
           onSet(newValue => {
-            expect(newValue).toBeInstanceOf(DefaultValue);
+            expect(newValue).toBe('RESOLVE');
           });
         },
       ],
@@ -443,6 +442,47 @@ describe('Effects', () => {
     expect(onSetForSameEffect).toHaveBeenCalledTimes(0);
   });
 
+  testRecoil('set default promise', async () => {
+    let setValue = 'RESOLVE_DEFAULT';
+    const onSetHandler = jest.fn(newValue => {
+      expect(newValue).toBe(setValue);
+    });
+
+    let resolveDefault;
+    const myAtom = atom({
+      key: 'atom effect default promise',
+      default: new Promise(resolve => {
+        resolveDefault = resolve;
+      }),
+      effects_UNSTABLE: [
+        ({onSet}) => {
+          onSet(onSetHandler);
+        },
+      ],
+    });
+
+    const [ReadsWritesAtom, set, reset] = componentThatReadsAndWritesAtom(
+      myAtom,
+    );
+    const c = renderElements(<ReadsWritesAtom />);
+    expect(c.textContent).toEqual('loading');
+
+    act(() => resolveDefault?.('RESOLVE_DEFAULT'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"RESOLVE_DEFAULT"');
+    expect(onSetHandler).toHaveBeenCalledTimes(1);
+
+    setValue = 'SET';
+    act(() => set('SET'));
+    expect(c.textContent).toEqual('"SET"');
+    expect(onSetHandler).toHaveBeenCalledTimes(2);
+
+    setValue = 'RESOLVE_DEFAULT';
+    act(reset);
+    expect(c.textContent).toEqual('"RESOLVE_DEFAULT"');
+    expect(onSetHandler).toHaveBeenCalledTimes(3);
+  });
+
   testRecoil(
     'when setSelf is called in onSet, then onSet is not triggered again',
     () => {
@@ -556,7 +596,7 @@ describe('Effects', () => {
             }),
           );
           onSet(value => {
-            expect(value).toBeInstanceOf(DefaultValue);
+            expect(value).toBe('DEFAULT');
             validated = true;
           });
         },

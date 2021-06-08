@@ -128,9 +128,7 @@ export type AtomEffect<T> = ({
 
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
-  onSet: (
-    (newValue: T | DefaultValue, oldValue: T | DefaultValue) => void,
-  ) => void,
+  onSet: ((newValue: T, oldValue: T | DefaultValue) => void) => void,
 }) => void | (() => void);
 
 export type AtomOptions<T> = $ReadOnly<{
@@ -293,9 +291,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       };
       const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE);
 
-      const onSet = effect => (
-        handler: (T | DefaultValue, T | DefaultValue) => void,
-      ) => {
+      const onSet = effect => (handler: (T, T | DefaultValue) => void) => {
         store.subscribeToTransactions(currentStore => {
           // eslint-disable-next-line prefer-const
           let {currentTree, previousTree} = currentStore.getState();
@@ -306,10 +302,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
             );
             previousTree = currentTree; // attempt to trundle on
           }
-          const newLoadable = currentTree.atomValues.get(key);
-          if (newLoadable == null || newLoadable.state === 'hasValue') {
-            const newValue: T | DefaultValue =
-              newLoadable != null ? newLoadable.contents : DEFAULT_VALUE;
+          const newLoadable =
+            currentTree.atomValues.get(key) ?? defaultLoadable;
+          if (newLoadable.state === 'hasValue') {
+            const newValue: T = newLoadable.contents;
             const oldLoadable =
               previousTree.atomValues.get(key) ?? defaultLoadable;
             const oldValue: T | DefaultValue =

@@ -13,6 +13,7 @@
 ## NEXT
 
 - Fix TypeScript typeing for `selectorFamily()` and `getCallback()` (#1060)
+- Fix onSet() handler to get the proper new value when atom is reset or has an async default Promise that resolves (#1059, #1050, #738) (Slightly breaking change)
 
 ## 0.3.1 (2021-5-18)
 
