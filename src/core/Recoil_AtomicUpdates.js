@@ -12,9 +12,10 @@
 
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
+import type {ValueOrUpdater} from '../recoil_values/Recoil_callbackTypes';
 
 const {loadableWithValue} = require('../adt/Recoil_Loadable');
-const {getNode} = require('../core/Recoil_Node');
+const {DEFAULT_VALUE, getNode} = require('../core/Recoil_Node');
 const {
   copyTreeState,
   getRecoilValueAsLoadable,
@@ -25,6 +26,7 @@ const {
 export interface AtomicUpdateInterface {
   get<T>(RecoilValue<T>): T;
   set<T>(RecoilState<T>, T): void;
+  reset<T>(RecoilState<T>): void;
 }
 
 function isAtom<T>(recoilValue: RecoilValue<T>): boolean {
@@ -70,11 +72,25 @@ class AtomicUpdateInterfaceImpl {
 
   // Allow destructing
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  set = <T>(recoilState: RecoilState<T>, value: T): void => {
+  set = <T>(
+    recoilState: RecoilState<T>,
+    valueOrUpdater: ValueOrUpdater<T>,
+  ): void => {
     if (!isAtom(recoilState)) {
       throw new Error('Setting selectors within atomicUpdate is not supported');
     }
-    this._changes.set(recoilState.key, value);
+    if (typeof valueOrUpdater === 'function') {
+      const current = this.get(recoilState);
+      this._changes.set(recoilState.key, (valueOrUpdater: any)(current)); // flowlint-line unclear-type:off
+    } else {
+      this._changes.set(recoilState.key, valueOrUpdater);
+    }
+  };
+
+  // Allow destructing
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  reset = <T>(recoilState: RecoilState<T>): void => {
+    this.set(recoilState, DEFAULT_VALUE);
   };
 
   newTreeState_INTERNAL(): TreeState {
