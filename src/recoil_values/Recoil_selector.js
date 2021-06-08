@@ -1134,6 +1134,7 @@ function selector<T>(
 
     return registerNode<T>({
       key,
+      nodeType: 'selector',
       peek: selectorPeek,
       get: selectorGet,
       set: selectorSet,
@@ -1147,6 +1148,7 @@ function selector<T>(
   } else {
     return registerNode<T>({
       key,
+      nodeType: 'selector',
       peek: selectorPeek,
       get: selectorGet,
       init: selectorInit,

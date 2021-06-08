@@ -41,8 +41,11 @@ export type PersistenceInfo = $ReadOnly<{
 
 export type Trigger = 'get' | 'set';
 
+type NodeType = 'atom' | 'selector';
+
 export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   key: NodeKey,
+  nodeType: NodeType,
 
   // Returns the current value without evaluating or modifying state
   peek: (Store, TreeState) => ?Loadable<T>,

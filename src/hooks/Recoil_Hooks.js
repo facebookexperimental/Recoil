@@ -11,12 +11,13 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {DefaultValue} from '../core/Recoil_Node';
-import type {PersistenceType} from '../core/Recoil_Node';
+import type {AtomicUpdateInterface} from '../core/Recoil_AtomicUpdates';
+import type {DefaultValue, PersistenceType} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
+const {atomicUpdater} = require('../core/Recoil_AtomicUpdates');
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
 const {
@@ -768,18 +769,19 @@ function useSetUnvalidatedAtomValues(): (
   };
 }
 
-type CallbackInterface = $ReadOnly<{
+export type RecoilCallbackInterface = $ReadOnly<{
   set: <T>(RecoilState<T>, (T => T) | T) => void,
   reset: <T>(RecoilState<T>) => void,
   snapshot: Snapshot,
   gotoSnapshot: Snapshot => void,
+  atomicUpdate_UNSTABLE: ((AtomicUpdateInterface) => void) => void,
 }>;
 
 class Sentinel {}
 const SENTINEL = new Sentinel();
 
 function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
-  fn: CallbackInterface => (...Args) => Return,
+  fn: RecoilCallbackInterface => (...Args) => Return,
   deps?: $ReadOnlyArray<mixed>,
 ): (...Args) => Return {
   const storeRef = useStoreRef();
@@ -799,7 +801,10 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
       }
 
       // Use currentTree for the snapshot to show the currently committed state
-      const snapshot = cloneSnapshot(storeRef.current);
+      const snapshot = cloneSnapshot(storeRef.current); // FIXME massive gains from doing this lazily
+
+      const atomicUpdate = atomicUpdater(storeRef.current);
+
       let ret = SENTINEL;
       batchUpdates(() => {
         const errMsg =
@@ -813,7 +818,13 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
           throw new Error(errMsg);
         }
         // flowlint-next-line unclear-type:off
-        const cb = (fn: any)({set, reset, snapshot, gotoSnapshot});
+        const cb = (fn: any)({
+          set,
+          reset,
+          snapshot,
+          gotoSnapshot,
+          atomicUpdate_UNSTABLE: atomicUpdate,
+        });
         if (typeof cb !== 'function') {
           throw new Error(errMsg);
         }

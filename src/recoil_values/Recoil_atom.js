@@ -459,6 +459,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const node = registerNode(
     ({
       key,
+      nodeType: 'atom',
       peek: peekAtom,
       get: getAtom,
       set: setAtom,

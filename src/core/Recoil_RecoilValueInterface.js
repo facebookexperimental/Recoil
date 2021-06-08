@@ -226,7 +226,7 @@ function batchStart(): () => void {
   };
 }
 
-function copyTreeState(state) {
+function copyTreeState(state: TreeState): TreeState {
   return {
     ...state,
     atomValues: state.atomValues.clone(),
@@ -343,5 +343,8 @@ module.exports = {
   isRecoilValue,
   applyAtomValueWrites, // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
   batchStart,
+  writeLoadableToTreeState,
+  invalidateDownstreams,
+  copyTreeState,
   invalidateDownstreams_FOR_TESTING: invalidateDownstreams,
 };

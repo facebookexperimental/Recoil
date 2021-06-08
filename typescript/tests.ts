@@ -216,7 +216,7 @@ useGetRecoilValueInfo_UNSTABLE(myAtom); // $ExpectType AtomInfo<number>
 useGetRecoilValueInfo_UNSTABLE(mySelector2); // $ExpectType AtomInfo<string>
 useGetRecoilValueInfo_UNSTABLE({}); // $ExpectError
 
-useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
+useRecoilCallback(({ snapshot, set, reset, gotoSnapshot, atomicUpdate_UNSTABLE }) => async () => {
   snapshot; // $ExpectType Snapshot
   snapshot.getID(); // $ExpectType SnapshotID
   await snapshot.getPromise(mySelector1); // $ExpectType number
@@ -236,6 +236,13 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
 
   const release = snapshot.retain(); // $ExpectType () => void
   release(); // $ExpectType void
+
+  atomicUpdate_UNSTABLE(({get, set, reset}) => {
+    const x: number = get(myAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
+    set(myAtom, 1);
+    set(myAtom, x => x + 1);
+    reset(myAtom);
+  })
 });
 
 /**

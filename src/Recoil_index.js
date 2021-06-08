@@ -21,7 +21,10 @@ export type {
   Snapshot,
   SnapshotID,
 } from './core/Recoil_Snapshot';
-export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
+export type {
+  RecoilCallbackInterface,
+  SetterOrUpdater,
+} from './hooks/Recoil_Hooks';
 export type {RecoilBridge} from './hooks/Recoil_useRecoilBridgeAcrossReactRoots';
 export type {Loadable} from './adt/Recoil_Loadable';
 export type {
