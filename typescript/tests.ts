@@ -86,6 +86,25 @@ const callbackSelector = selector({
 });
 useRecoilValue(callbackSelector); // $ExpectType () => Promise<number>
 
+const selectorError1 = selector({ // $ExpectError
+  key: 'SelectorError1',
+  // Missing get()
+});
+selectorError1;
+
+const selectorError2 = selector({
+  key: 'SelectorError2',
+  get: () => null,
+  extraProp: 'error', // $ExpectError
+});
+selectorError2;
+
+const selectorError3 = selector({
+  key: 'SelectorError3',
+  get: ({badCallback}) => null, // $ExpectError
+});
+selectorError3;
+
 // RecoilRoot
 RecoilRoot({});
 RecoilRoot({
@@ -215,8 +234,8 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot }) => async () => {
   set(myAtom, 'hello'); // $ExpectError
   reset(myAtom);
 
-  const release = snapshot.retain();
-  release();
+  const release = snapshot.retain(); // $ExpectType () => void
+  release(); // $ExpectType void
 });
 
 /**
@@ -338,6 +357,40 @@ isRecoilValue(mySelector1);
     get: (param: {from: Date, to: Date}) => () => (+param.from) - (+param.to),
   });
   myJsonSerializableSelectorFam({ from: new Date(), to: new Date() });
+
+  const callbackSelectorFamily = selectorFamily({
+    key: 'CallbackSelector',
+    get: (param: number) => ({ getCallback }) => {
+      return getCallback(({snapshot}) => async (num: number) => {
+        num; // $ExpectType number
+        const ret = await snapshot.getPromise(mySelectorFamWritable(param + num)); // $ExpectType number
+        return ret;
+      });
+    }
+  });
+  useRecoilValue(callbackSelectorFamily('hi')); // $ExpectError
+  const cb = useRecoilValue(callbackSelectorFamily(1)); // $ExpectType (num: number) => Promise<number>
+  cb('hi'); // $ExpectError
+  cb(2); // $ExpectType
+
+  const selectorFamilyError1 = selector({ // $ExpectError
+    key: 'SelectorFamilyError1',
+    // Missing get()
+  });
+  selectorFamilyError1;
+
+  const selectorFamilyError2 = selectorFamily({
+    key: 'SelectorFamilyError2',
+    get: () => () => null,
+    extraProp: 'error', // $ExpectError
+  });
+  selectorFamilyError2;
+
+  const selectorFamilyError3 = selector({
+    key: 'SelectorFamilyError3',
+    get: () => ({badCallback}) => null, // $ExpectError
+  });
+  selectorFamilyError3;
 }
 
 /**

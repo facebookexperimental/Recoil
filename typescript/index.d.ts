@@ -112,7 +112,10 @@ export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-
 
 export interface ReadOnlySelectorOptions<T> {
     key: string;
-    get: (opts: { get: GetRecoilValue, getCallback: GetCallback }) => Promise<T> | RecoilValue<T> | T;
+    get: (opts: {
+      get: GetRecoilValue,
+      getCallback: GetCallback,
+    }) => Promise<T> | RecoilValue<T> | T;
     dangerouslyAllowMutability?: boolean;
 }
 
@@ -301,7 +304,10 @@ export function atomFamily<T, P extends SerializableParam>(
 
 export interface ReadOnlySelectorFamilyOptions<T, P extends SerializableParam> {
   key: string;
-  get: (param: P) => (opts: { get: GetRecoilValue }) => Promise<T> | RecoilValue<T> | T;
+  get: (param: P) => (opts: {
+    get: GetRecoilValue,
+    getCallback: GetCallback,
+  }) => Promise<T> | RecoilValue<T> | T;
   // cacheImplementation_UNSTABLE?: () => CacheImplementation<Loadable<T>>,
   // cacheImplementationForParams_UNSTABLE?: () => CacheImplementation<
   //   RecoilValue<T>,
@@ -311,7 +317,10 @@ export interface ReadOnlySelectorFamilyOptions<T, P extends SerializableParam> {
 
 export interface ReadWriteSelectorFamilyOptions<T, P extends SerializableParam> {
   key: string;
-  get: (param: P) => (opts: { get: GetRecoilValue }) => Promise<T> | RecoilValue<T> | T;
+  get: (param: P) => (opts: {
+    get: GetRecoilValue,
+    getCallback: GetCallback,
+  }) => Promise<T> | RecoilValue<T> | T;
   set: (
       param: P,
   ) => (
