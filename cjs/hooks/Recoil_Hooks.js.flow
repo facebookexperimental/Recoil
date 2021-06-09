@@ -11,11 +11,15 @@
 'use strict';
 
 import type { Loadable } from '../adt/Recoil_Loadable';
-import type { DefaultValue } from '../core/Recoil_Node';
-import type { PersistenceType } from '../core/Recoil_Node';
+import type { AtomicUpdateInterface } from '../core/Recoil_AtomicUpdates';
+import type { DefaultValue, PersistenceType } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
 import type { ComponentSubscription } from '../core/Recoil_RecoilValueInterface';
 import type { NodeKey, Store, TreeState } from '../core/Recoil_State';
+
+const {
+  atomicUpdater
+} = require('../core/Recoil_AtomicUpdates');
 
 const {
   batchUpdates
@@ -224,15 +228,16 @@ declare function usePrevious<T>(value: T): T | void; // Return a snapshot of the
 declare function useRecoilSnapshot(): Snapshot;
 declare function useGotoRecoilSnapshot(): (Snapshot) => void;
 declare function useSetUnvalidatedAtomValues(): (values: Map<NodeKey, mixed>, transactionMetadata?: {...}) => void;
-type CallbackInterface = $ReadOnly<{
+export type RecoilCallbackInterface = $ReadOnly<{
   set: <T>(RecoilState<T>, ((T) => T) | T) => void,
   reset: <T>(RecoilState<T>) => void,
   snapshot: Snapshot,
   gotoSnapshot: (Snapshot) => void,
+  atomicUpdate_UNSTABLE: ((AtomicUpdateInterface) => void) => void,
 }>;
 declare class Sentinel {}
 const SENTINEL = new Sentinel();
-declare function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(fn: (CallbackInterface) => (...Args) => Return, deps?: $ReadOnlyArray<mixed>): (...Args) => Return; // I don't see a way to avoid the any type here because we want to accept readable
+declare function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(fn: (RecoilCallbackInterface) => (...Args) => Return, deps?: $ReadOnlyArray<mixed>): (...Args) => Return; // I don't see a way to avoid the any type here because we want to accept readable
 // and writable values with any type parameter, but normally with writable ones
 // RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
 

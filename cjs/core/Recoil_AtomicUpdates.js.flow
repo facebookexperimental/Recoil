@@ -1,0 +1,52 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
+import type { NodeKey, Store, TreeState } from '../core/Recoil_State';
+import type { ValueOrUpdater } from '../recoil_values/Recoil_callbackTypes';
+
+const {
+  loadableWithValue
+} = require('../adt/Recoil_Loadable');
+
+const {
+  DEFAULT_VALUE,
+  getNode
+} = require('../core/Recoil_Node');
+
+const {
+  copyTreeState,
+  getRecoilValueAsLoadable,
+  invalidateDownstreams,
+  writeLoadableToTreeState
+} = require('../core/Recoil_RecoilValueInterface');
+
+export interface AtomicUpdateInterface {
+  get<T>(RecoilValue<T>): T,
+  set<T>(RecoilState<T>, T): void,
+  reset<T>(RecoilState<T>): void,
+}
+declare function isAtom<T>(recoilValue: RecoilValue<T>): boolean;
+declare class AtomicUpdateInterfaceImpl {
+  _store: Store,
+  _treeState: TreeState,
+  _changes: Map<NodeKey, mixed>,
+  constructor(store: any, treeState: any): any,
+  get: any,
+  set: any,
+  reset: any,
+  newTreeState_INTERNAL(): TreeState,
+}
+declare function atomicUpdater(store: Store): ((AtomicUpdateInterface) => void) => void;
+module.exports = {
+  atomicUpdater
+};

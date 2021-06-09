@@ -80,7 +80,7 @@ export type AtomEffect<T> = (param: {
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
   onSet: (
-    param: (newValue: T | DefaultValue, oldValue: T | DefaultValue) => void,
+    param: (newValue: T, oldValue: T | DefaultValue) => void,
   ) => void,
 }) => void | (() => void);
 
@@ -136,11 +136,17 @@ export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueRea
 // hooks.d.ts
 export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
 export type Resetter = () => void;
+export interface AtomicUpdateInterface_UNSTABLE {
+  get<T>(a: RecoilValue<T>): T;
+  set<T>(s: RecoilState<T>, u: ((currVal: T) => T) | T): void;
+  reset<T>(s: RecoilState<T>): void;
+}
 export type CallbackInterface = Readonly<{
   set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
   reset: (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   snapshot: Snapshot,
   gotoSnapshot: (snapshot: Snapshot) => void,
+  atomicUpdate_UNSTABLE: (cb: (i: AtomicUpdateInterface_UNSTABLE) => void) => void;
 }>;
 
 /**

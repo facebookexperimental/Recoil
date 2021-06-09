@@ -117,7 +117,7 @@ export type AtomEffect<T> = ({
   resetSelf: () => void,
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
-  onSet: ((newValue: T | DefaultValue, oldValue: T | DefaultValue) => void) => void,
+  onSet: ((newValue: T, oldValue: T | DefaultValue) => void) => void,
 }) => void | (() => void);
 export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,

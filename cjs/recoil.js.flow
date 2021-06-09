@@ -13,7 +13,7 @@
 export type { PersistenceType } from './core/Recoil_Node';
 export type { RecoilValue, RecoilState, RecoilValueReadOnly } from './core/Recoil_RecoilValue';
 export type { MutableSnapshot, Snapshot, SnapshotID } from './core/Recoil_Snapshot';
-export type { SetterOrUpdater } from './hooks/Recoil_Hooks';
+export type { RecoilCallbackInterface, SetterOrUpdater } from './hooks/Recoil_Hooks';
 export type { RecoilBridge } from './hooks/Recoil_useRecoilBridgeAcrossReactRoots';
 export type { Loadable } from './adt/Recoil_Loadable';
 export type { AtomEffect, PersistenceSettings } from './recoil_values/Recoil_atom';
