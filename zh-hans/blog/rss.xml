@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>Recoil Blog</title>
+        <link>https://recoiljs.org/blog</link>
+        <description>Recoil Blog</description>
+        <lastBuildDate>Fri, 14 May 2021 00:00:00 GMT</lastBuildDate>
+        <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
+        <generator>https://github.com/jpmonette/feed</generator>
+        <copyright>Copyright © 2021 Facebook, Inc.</copyright>
+        <item>
+            <title><![CDATA[Recoil 0.3.0]]></title>
+            <link>https://recoiljs.org/zh-hans/blog/2021/05/14/0.3.0-released</link>
+            <guid>Recoil 0.3.0</guid>
+            <pubDate>Fri, 14 May 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[We are pleased to announce the release of Recoil 0.3.0.]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Recoil 0.2.0]]></title>
+            <link>https://recoiljs.org/zh-hans/blog/2021/03/22/0.2.0-released</link>
+            <guid>Recoil 0.2.0</guid>
+            <pubDate>Mon, 22 Mar 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[We are pleased to announce the release of Recoil 0.2.0. This release has a new, more reliable implementation of async selectors, greatly improved performance, and many bug fixes and improvements.]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Recoil 0.1.1]]></title>
+            <link>https://recoiljs.org/zh-hans/blog/2020/10/30/0.1.1-released</link>
+            <guid>Recoil 0.1.1</guid>
+            <pubDate>Fri, 30 Oct 2020 00:00:00 GMT</pubDate>
+            <description><![CDATA[Welcome to Recoil version 0.1.1!  This release has performance improvements and introduces several experimental features such as support for React Native, working with Snapshots outside of React, and atom effects for managing side-effects of atoms such as logging, synchronization with external stores, persistence, etc.]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Recoil 0.0.11]]></title>
+            <link>https://recoiljs.org/zh-hans/blog/2020/09/15/0.0.11-released</link>
+            <guid>Recoil 0.0.11</guid>
+            <pubDate>Tue, 15 Sep 2020 00:00:00 GMT</pubDate>
+            <description><![CDATA[Today we are releasing Recoil 0.0.11. It contains bug fixes, new features, better performance, and experimental compatibility with Concurrent Mode. Thank you so much to everyone who contributed to this release!]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Recoil 0.0.10]]></title>
+            <link>https://recoiljs.org/zh-hans/blog/2020/06/18/0.0.10-released</link>
+            <guid>Recoil 0.0.10</guid>
+            <pubDate>Thu, 18 Jun 2020 00:00:00 GMT</pubDate>
+            <description><![CDATA[Recoil 0.0.9 and 0.0.10 is being released with some bug fixes, TypeScript support, and a new API for Recoil Snapshots to observe, inspect, and manage global Recoil atom state.  Thanks again to everyone who helped make this possible and stay tuned for more exciting developments coming soon!]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Recoil 0.0.8]]></title>
+            <link>https://recoiljs.org/zh-hans/blog/2020/05/30/0.0.8-released</link>
+            <guid>Recoil 0.0.8</guid>
+            <pubDate>Sat, 30 May 2020 00:00:00 GMT</pubDate>
+            <description><![CDATA[Today we are releasing Recoil 0.0.8. It contains bug fixes and new features. Thanks so much to everyone who contributed to this release! It's been amazing to see so many people contribute.]]></description>
+        </item>
+    </channel>
+</rss>
