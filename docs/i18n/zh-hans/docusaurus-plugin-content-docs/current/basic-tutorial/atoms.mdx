@@ -1,0 +1,131 @@
+---
+title: Atom
+---
+
+Atom 包含我们应用中状态的来源。在我们的 Todo List 中，来源将会是一个对象数组，每个对象代表一个 Todo Item。
+
+我们将列表的 atom 称为 `todoListState`，并使用 `atom()` 函数创建它：
+
+```javascript
+const todoListState = atom({
+  key: 'todoListState',
+  default: [],
+});
+```
+
+我们为该 atom 设定一个唯一的 `key`，并将`默认值`设置为一个空数组。要读取该 atom 的内容，我们可以在 `TodoList` 组件中使用 `useRecoilValue()` hook：
+
+```jsx
+function TodoList() {
+  const todoList = useRecoilValue(todoListState);
+
+  return (
+    <>
+      {/* <TodoListStats /> */}
+      {/* <TodoListFilters /> */}
+      <TodoItemCreator />
+
+      {todoList.map((todoItem) => (
+        <TodoItem key={todoItem.id} item={todoItem} />
+      ))}
+    </>
+  );
+}
+```
+
+注释里的组件将在后面的章节中实现。
+
+要创建新的 Todo Item，我们需要访问一个 setter 函数，该函数将更新 `todoListState` 的内容。我们可以使用 `useSetRecoilState()` hook 在 `TodoItemCreator` 组件中获取一个 setter 函数：
+
+```jsx
+function TodoItemCreator() {
+  const [inputValue, setInputValue] = useState('');
+  const setTodoList = useSetRecoilState(todoListState);
+
+  const addItem = () => {
+    setTodoList((oldTodoList) => [
+      ...oldTodoList,
+      {
+        id: getId(),
+        text: inputValue,
+        isComplete: false,
+      },
+    ]);
+    setInputValue('');
+  };
+
+  const onChange = ({target: {value}}) => {
+    setInputValue(value);
+  };
+
+  return (
+    <div>
+      <input type="text" value={inputValue} onChange={onChange} />
+      <button onClick={addItem}>Add</button>
+    </div>
+  );
+}
+
+// 用于创建唯一 id 的工具函数
+let id = 0;
+function getId() {
+  return id++;
+}
+```
+
+注意，我们在 setter 函数中使用**更新器（updater）**的形式，以便我们可以基于旧的 Todo List 创建新的 Todo List。
+
+`TodoItem` 组件将显示 Todo Item 的值，同时允许你更改其文本和删除它。我们使用 `useRecoilState()` 读取 `todoListState` 并获取一个 setter 函数，该函数用于更新 Item 的文本，将其标记为完成并删除它：
+
+```jsx
+function TodoItem({item}) {
+  const [todoList, setTodoList] = useRecoilState(todoListState);
+  const index = todoList.findIndex((listItem) => listItem === item);
+
+  const editItemText = ({target: {value}}) => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      text: value,
+    });
+
+    setTodoList(newList);
+  };
+
+  const toggleItemCompletion = () => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      isComplete: !item.isComplete,
+    });
+
+    setTodoList(newList);
+  };
+
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(todoList, index);
+
+    setTodoList(newList);
+  };
+
+  return (
+    <div>
+      <input type="text" value={item.text} onChange={editItemText} />
+      <input
+        type="checkbox"
+        checked={item.isComplete}
+        onChange={toggleItemCompletion}
+      />
+      <button onClick={deleteItem}>X</button>
+    </div>
+  );
+}
+
+function replaceItemAtIndex(arr, index, newValue) {
+  return [...arr.slice(0, index), newValue, ...arr.slice(index + 1)];
+}
+
+function removeItemAtIndex(arr, index) {
+  return [...arr.slice(0, index), ...arr.slice(index + 1)];
+}
+```
+
+有了它，我们就有了函数式的 Todo List！在下一节中，我们将看到如何使用 selector 让 Todo List 更进一步。
