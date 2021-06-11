@@ -84,7 +84,7 @@ One advantage of using this pattern for separate atoms for each element over try
 
 ## Scoped Atoms
 
-Sometimes you may want to "scope" atom state by some other prop or piece of state.  For example:
+Sometimes you may want to "scope" atom state by some other prop, React Context, or piece of state.  For example:
 
 ```jsx
 const viewWidthForPaneState = atomFamily<number, PaneID>({
@@ -92,7 +92,8 @@ const viewWidthForPaneState = atomFamily<number, PaneID>({
   default: 42,
 });
 
-function PaneView({paneID}) {
+function PaneView() {
+  const paneID = useContext(PaneIDContext);
   const viewWidth = useRecoilValue(viewWidthForPaneState(paneID));
   ...
 }
