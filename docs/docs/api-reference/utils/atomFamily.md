@@ -55,6 +55,8 @@ function ElementListItem({elementID}) {
 }
 ```
 
+## Family Defaults
+
 An `atomFamily()` takes almost the same options as a simple [`atom()`](/docs/api-reference/core/atom).  However, the default value can also be parameterized. That means you could provide a function which takes the parameter value and returns the actual default value.  For example:
 
 ```jsx
@@ -64,7 +66,7 @@ const myAtomFamily = atomFamily({
 });
 ```
 
-or using [`selectorFamily()`](/docs/api-reference/utils/selectorFamily) you can have a dynamic `default` with access to the parameter value.  Don't just use `selector()` for `atomFamily()` defaults, as it would produce duplicate keys.
+For dynamic defaults based on other state use a [`selectorFamily()`](/docs/api-reference/utils/selectorFamily), which also has access to the parameter value.  Don't just use `selector()` for `atomFamily()` defaults, as it would produce duplicate keys.
 
 ```jsx
 const myAtomFamily = atomFamily({
@@ -72,7 +74,8 @@ const myAtomFamily = atomFamily({
   default: selectorFamily({
     key: 'MyAtom/Default',
     get: param => ({get}) => {
-      return computeDefaultUsingParam(param);
+      const otherAtomValue = get(otherState);
+      return computeDefaultUsingParam(otherAtomValue, param);
     },
   }),
 });
@@ -99,7 +102,7 @@ function PaneView() {
 }
 ```
 
-If you want to scope by some other Recoil state and wish to avoid needing to look it up at every call site it can be a useful pattern to create a wrapper [`selector()`](/docs/api-reference/core/selector):
+If you want to scope by some other Recoil state and wish to avoid looking up the scope parameter at every call site, it can be a useful pattern to use a wrapper [`selector()`](/docs/api-reference/core/selector):
 
 ```jsx
 const viewWidthState = selector({

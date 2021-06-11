@@ -64,6 +64,6 @@ function Counter() {
 }
 ```
 
-## Scoped Atoms
+## Atom Families
 
-See [atomFamily()](/docs/api-reference/utils/atomFamily#scoped-atoms) for scoping your atom state.
+[atomFamily()](/docs/api-reference/utils/atomFamily) can be useful for storing a collection of related states or [scoping your atom state](/docs/api-reference/utils/atomFamily#scoped-atoms).
