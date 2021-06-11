@@ -66,4 +66,4 @@ function Counter() {
 
 ## Atom Families
 
-[atomFamily()](/docs/api-reference/utils/atomFamily) can be useful for storing a collection of related states or [scoping your atom state](/docs/api-reference/utils/atomFamily#scoped-atoms).
+[`atomFamily()`](/docs/api-reference/utils/atomFamily) can be useful for storing a collection of related states or [scoping your atom state](/docs/api-reference/utils/atomFamily#scoped-atoms).
