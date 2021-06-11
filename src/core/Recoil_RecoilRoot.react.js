@@ -12,7 +12,7 @@
 
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
-import type {Store, StoreRef, StoreState} from './Recoil_State';
+import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
 
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
@@ -127,6 +127,26 @@ function useRecoilMutableSource(): mixed {
   return mutableSource;
 }
 
+function notifyComponents(
+  store: Store,
+  storeState: StoreState,
+  treeState: TreeState,
+): void {
+  const dependentNodes = getDownstreamNodes(
+    store,
+    treeState,
+    treeState.dirtyAtoms,
+  );
+  for (const key of dependentNodes) {
+    const comps = storeState.nodeToComponentSubscriptions.get(key);
+    if (comps) {
+      for (const [_subID, [_debugName, callback]] of comps) {
+        callback(treeState);
+      }
+    }
+  }
+}
+
 function sendEndOfBatchNotifications(store: Store) {
   const storeState = store.getState();
   const treeState = storeState.currentTree;
@@ -150,25 +170,22 @@ function sendEndOfBatchNotifications(store: Store) {
       subscription(store);
     }
 
-    // Components that are subscribed to the dirty atom:
-    const dependentNodes = getDownstreamNodes(store, treeState, dirtyAtoms);
-
-    for (const key of dependentNodes) {
-      const comps = storeState.nodeToComponentSubscriptions.get(key);
-      if (comps) {
-        for (const [_subID, [_debugName, callback]] of comps) {
-          callback(treeState);
-        }
-      }
+    if (
+      !gkx('recoil_early_rendering_2021') ||
+      storeState.suspendedComponentResolvers.size
+    ) {
+      // Notifying components is needed to wake from suspense, even when using
+      // early rendering.
+      notifyComponents(store, storeState, treeState);
+      // Wake all suspended components so the right one(s) can try to re-render.
+      // We need to wake up components not just when some asynchronous selector
+      // resolved, but also when changing synchronous values because this may cause
+      // a selector to change from asynchronous to synchronous, in which case there
+      // would be no follow-up asynchronous resolution to wake us up.
+      // TODO OPTIMIZATION Only wake up related downstream components
+      storeState.suspendedComponentResolvers.forEach(cb => cb());
+      storeState.suspendedComponentResolvers.clear();
     }
-
-    // Wake all suspended components so the right one(s) can try to re-render.
-    // We need to wake up components not just when some asynchronous selector
-    // resolved, but also when changing synchronous values because this may cause
-    // a selector to change from asynchronous to synchronous, in which case there
-    // would be no follow-up asynchronous resolution to wake us up.
-    // TODO OPTIMIZATION Only wake up related downstream components
-    storeState.suspendedComponentResolvers.forEach(cb => cb());
   }
 
   // Special behavior ONLY invoked by useInterface.
@@ -178,6 +195,38 @@ function sendEndOfBatchNotifications(store: Store) {
     0,
     storeState.queuedComponentCallbacks_DEPRECATED.length,
   );
+}
+
+function endBatch(storeRef) {
+  const storeState = storeRef.current.getState();
+  storeState.commitDepth++;
+  try {
+    const {nextTree} = storeState;
+
+    // Ignore commits that are not because of Recoil transactions -- namely,
+    // because something above RecoilRoot re-rendered:
+    if (nextTree === null) {
+      return;
+    }
+
+    // nextTree is now committed -- note that copying and reset occurs when
+    // a transaction begins, in startNextTreeIfNeeded:
+    storeState.previousTree = storeState.currentTree;
+    storeState.currentTree = nextTree;
+    storeState.nextTree = null;
+
+    sendEndOfBatchNotifications(storeRef.current);
+
+    const discardedVersion = nullthrows(storeState.previousTree).version;
+    storeState.graphsByVersion.delete(discardedVersion);
+    storeState.previousTree = null;
+
+    if (gkx('recoil_memory_managament_2020')) {
+      releaseScheduledRetainablesNow(storeRef.current);
+    }
+  } finally {
+    storeState.commitDepth--;
+  }
 }
 
 /*
@@ -201,35 +250,7 @@ function Batcher({
     // manipulate the order of useEffects during tests, since React seems to
     // call useEffect in an unpredictable order sometimes.
     Queue.enqueueExecution('Batcher', () => {
-      const storeState = storeRef.current.getState();
-      storeState.commitDepth++;
-      try {
-        const {nextTree} = storeState;
-
-        // Ignore commits that are not because of Recoil transactions -- namely,
-        // because something above RecoilRoot re-rendered:
-        if (nextTree === null) {
-          return;
-        }
-
-        // nextTree is now committed -- note that copying and reset occurs when
-        // a transaction begins, in startNextTreeIfNeeded:
-        storeState.previousTree = storeState.currentTree;
-        storeState.currentTree = nextTree;
-        storeState.nextTree = null;
-
-        sendEndOfBatchNotifications(storeRef.current);
-
-        const discardedVersion = nullthrows(storeState.previousTree).version;
-        storeState.graphsByVersion.delete(discardedVersion);
-        storeState.previousTree = null;
-
-        if (gkx('recoil_memory_managament_2020')) {
-          releaseScheduledRetainablesNow(storeRef.current);
-        }
-      } finally {
-        storeState.commitDepth--;
-      }
+      endBatch(storeRef);
     });
   });
 
@@ -395,6 +416,9 @@ function RecoilRoot_INTERNAL({
 
     // Save changes to nextTree and schedule a React update:
     storeState.nextTree = replaced;
+    if (gkx('recoil_early_rendering_2021')) {
+      notifyComponents(store, storeState, replaced);
+    }
     nullthrows(notifyBatcherOfChange.current)();
   };
 
@@ -500,5 +524,6 @@ module.exports = {
   useStoreRef,
   useRecoilMutableSource,
   RecoilRoot,
+  notifyComponents_FOR_TESTING: notifyComponents,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,
 };

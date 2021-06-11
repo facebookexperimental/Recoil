@@ -1191,19 +1191,12 @@ testRecoil(
       return null;
     }
 
-    const [Comp] = componentThatWritesAtom(anAtom);
-
     const container = renderElements(
       <>
         <SetsDuringEffect />
         <ReadsAtom atom={anAtom} />
-        <Comp />
       </>,
     );
-    act(() => undefined);
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
-    await flushPromisesAndTimers();
 
     expect(container.textContent).toEqual('1');
   },

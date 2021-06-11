@@ -145,7 +145,6 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
         expectationViolation(`Double subscription to RecoilValue "${key}"`);
         return;
       }
-
       const sub = subscribeToRecoilValue(
         store,
         new AbstractRecoilValue(key),
@@ -235,7 +234,14 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
         );
       }
       // TODO Restore optimization to memoize lookup
-      return getRecoilValueAsLoadable(storeRef.current, recoilValue);
+      const storeState = storeRef.current.getState();
+      return getRecoilValueAsLoadable(
+        storeRef.current,
+        recoilValue,
+        gkx('recoil_early_rendering_2021')
+          ? storeState.nextTree ?? storeState.currentTree
+          : storeState.currentTree,
+      );
     }
 
     function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
@@ -295,7 +301,10 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
 
   const getLoadable = useCallback(() => {
     const store = storeRef.current;
-    const treeState = store.getState().currentTree;
+    const storeState = store.getState();
+    const treeState = gkx('recoil_early_rendering_2021')
+      ? storeState.nextTree ?? storeState.currentTree
+      : storeState.currentTree;
     return getRecoilValueAsLoadable(store, recoilValue, treeState);
   }, [storeRef, recoilValue]);
   const getLoadableWithTesting = useCallback(() => {

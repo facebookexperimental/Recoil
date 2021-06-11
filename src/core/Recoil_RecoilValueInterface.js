@@ -21,6 +21,7 @@ import type {
 } from './Recoil_State';
 
 const {CANCELED} = require('../adt/Recoil_Loadable');
+const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const {
@@ -310,6 +311,15 @@ function subscribeToRecoilValue<T>(
     componentDebugName ?? '<not captured>',
     callback,
   ]);
+
+  // Handle the case that, during the same tick that we are subscribing, an atom
+  // has been updated by some effect handler. Otherwise we will miss the update.
+  if (gkx('recoil_early_rendering_2021')) {
+    const nextTree = store.getState().nextTree;
+    if (nextTree && nextTree.dirtyAtoms.has(key)) {
+      callback(nextTree);
+    }
+  }
 
   return {
     release: () => {
