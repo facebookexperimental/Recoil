@@ -281,7 +281,7 @@ function CurrentUserInfo() {
 
 ## Query Default Atom Values (기본 Atom 값 쿼리)
 
-Atom을 사용하여 변경 가능한 로컬 상태를 나타내지만, seledtor를 사용하여 기본값을 쿼리하는 것이 일반적인 패턴입니다:
+Atom을 사용하여 변경 가능한 로컬 상태를 나타내지만, selector를 사용하여 기본값을 쿼리하는 것이 일반적인 패턴입니다:
 
 ```jsx
 const currentUserIDState = atom({
