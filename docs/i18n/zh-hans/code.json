@@ -1,0 +1,233 @@
+{
+  "homePage.head.tagline": {
+    "message": "React 状态管理库"
+  },
+  "homePage.head.start": {
+    "message": "开始"
+  },
+  "homePage.minimal.title": {
+    "message": "极简的 React 风格设计"
+  },
+  "homePage.minimal.text": {
+    "message": "Recoil 拥有与 React 一样的工作方式与原理。将其添加到您的应用中可获得快速、灵活的状态共享。"
+  },
+  "homePage.flow.title": {
+    "message": "数据流图"
+  },
+  "homePage.flow.text": {
+    "message": "针对派生数据（Derived data）和异步查询采用纯函数以及高效订阅的方式进行处理。"
+  },
+  "homePage.cross.title": {
+    "message": "应用程序全局监听"
+  },
+  "homePage.cross.text": {
+    "message": "通过监听应用程序中所有状态的变化来实现持久化存储，路由，时间旅行调试或撤消，并且不会影响代码分割。"
+  },
+  "resourcePage.head.title": {
+    "message": "外部资源"
+  },
+  "resourcePage.learn.title": {
+    "message": "学习 Recoil"
+  },
+  "resourcePage.learn.course": {
+    "message": "我们已经创建了一个免费的 Recoil 视频课程，此课程将带领你从基本设置到高级使用。在该课程中，你将了解如何充分使用 Recoil 的强大 API。"
+  },
+  "resourcePage.learn.more": {
+    "message": "了解如何使用 Suspense 进行数据获取，如何使用 Recoil 来解决常见的 React 性能瓶颈问题，等。"
+  },
+  "resourcePage.learn.watch": {
+    "message": "观看课程"
+  },
+  "theme.NotFound.title": {
+    "message": "页面未找到",
+    "description": "404 页面的标题"
+  },
+  "theme.NotFound.p1": {
+    "message": "我们无法找到你要找的东西",
+    "description": "404 页面的第一段内容"
+  },
+  "theme.NotFound.p2": {
+    "message": "请与网站的所有者联系，让他们知道链接损坏了",
+    "description": "404 页面的第二段"
+  },
+  "theme.AnnouncementBar.closeButtonAriaLabel": {
+    "message": "关闭",
+    "description": "公告栏的关闭按钮的 ARIA 标签"
+  },
+  "theme.blog.paginator.navAriaLabel": {
+    "message": "博客文章列表的分页",
+    "description": "博客分页的 ARIA 标签"
+  },
+  "theme.blog.paginator.newerEntries": {
+    "message": "上一篇",
+    "description": "用于导航到较新的博客文章页面（上一篇）的标签"
+  },
+  "theme.blog.paginator.olderEntries": {
+    "message": "下一篇",
+    "description": "用于导航到较旧的博客文章页面（下一篇）的标签"
+  },
+  "theme.blog.post.readingTime.plurals": {
+    "message": "阅读时间为 {readingTime} 分钟",
+    "description": "\"{readingTime} 分钟阅读\" 的标签。(详见 https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.tags.tagsListLabel": {
+    "message": "标记：",
+    "description": "标签旁边的标记列表"
+  },
+  "theme.blog.post.readMore": {
+    "message": "阅读更多",
+    "description": "在 Blog 页面中使用的标签，用于跳转到完整的 Blog"
+  },
+  "theme.blog.post.paginator.navAriaLabel": {
+    "message": "Pagination des blog posts",
+    "description": "博客分页的 ARIA 标签"
+  },
+  "theme.blog.post.paginator.newerPost": {
+    "message": "上一篇",
+    "description": "博客按钮标签，用于导航到较新/上一篇文章"
+  },
+  "theme.blog.post.paginator.olderPost": {
+    "message": "下一篇",
+    "description": "博客按钮标签，用于导航到较旧/下一篇文章"
+  },
+  "theme.tags.tagsPageTitle": {
+    "message": "标签",
+    "description": "标签列表页的标题"
+  },
+  "theme.blog.post.plurals": {
+    "message": "共 {count} 篇文章",
+    "description": "\"{count} 篇文章\" 的标签。(详见 https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.blog.tagTitle": {
+    "message": "{nPosts} 标记为 « {tagName} »",
+    "description": "Blog 标签的页面标题"
+  },
+  "theme.tags.tagsPageLink": {
+    "message": "查看所有标签",
+    "description": "针对标签列表页的链接标签"
+  },
+  "theme.CodeBlock.copyButtonAriaLabel": {
+    "message": "复制代码",
+    "description": "复制代码块按钮的 ARIA 标签"
+  },
+  "theme.CodeBlock.copied": {
+    "message": "已复制",
+    "description": "代码块上的复制按钮标签"
+  },
+  "theme.CodeBlock.copy": {
+    "message": "复制",
+    "description": "代码块上的复制按钮标签The copy button label on code blocks"
+  },
+  "theme.docs.sidebar.expandButtonTitle": {
+    "message": "展开左侧菜单",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.sidebar.expandButtonAriaLabel": {
+    "message": "展开左侧菜单",
+    "description": "The ARIA label and title attribute for expand button of doc sidebar"
+  },
+  "theme.docs.paginator.navAriaLabel": {
+    "message": "文档分页",
+    "description": "The ARIA label for the docs pagination"
+  },
+  "theme.docs.paginator.previous": {
+    "message": "上一篇",
+    "description": "The label used to navigate to the previous doc"
+  },
+  "theme.docs.paginator.next": {
+    "message": "下一篇",
+    "description": "The label used to navigate to the next doc"
+  },
+  "theme.docs.sidebar.responsiveCloseButtonLabel": {
+    "message": "关闭侧面菜单",
+    "description": "The ARIA label for close button of mobile doc sidebar"
+  },
+  "theme.docs.sidebar.responsiveOpenButtonLabel": {
+    "message": "打开侧面菜单",
+    "description": "The ARIA label for open button of mobile doc sidebar"
+  },
+  "theme.docs.sidebar.collapseButtonTitle": {
+    "message": "折叠侧面菜单",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.sidebar.collapseButtonAriaLabel": {
+    "message": "折叠侧面菜单",
+    "description": "The title attribute for collapse button of doc sidebar"
+  },
+  "theme.docs.versions.unreleasedVersionLabel": {
+    "message": "此处问 {siteTitle} 的下一个版本 {versionLabel} 的文档",
+    "description": "The label used to tell the user that he's browsing an unreleased doc version"
+  },
+  "theme.docs.versions.unmaintainedVersionLabel": {
+    "message": "此处未 {siteTitle} {versionLabel} 的文档，它已不再维护。",
+    "description": "The label used to tell the user that he's browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionSuggestionLabel": {
+    "message": "有关最新的文档，请参见 {latestVersionLink} ({versionLabel})。",
+    "description": "The label userd to tell the user that he's browsing an unmaintained doc version"
+  },
+  "theme.docs.versions.latestVersionLinkLabel": {
+    "message": "最新版本",
+    "description": "The label used for the latest version suggestion link label"
+  },
+  "theme.common.editThisPage": {
+    "message": "编辑此页面",
+    "description": "The link label to edit the current page"
+  },
+  "theme.common.headingLinkTitle": {
+    "message": "链接到头部的标签",
+    "description": "Title for link to heading"
+  },
+  "theme.lastUpdated.atDate": {
+    "message": "时间 {date}",
+    "description": "The words used to describe on which date a page has been last updated"
+  },
+  "theme.lastUpdated.byUser": {
+    "message": " By {user}",
+    "description": "The words used to describe by who the page has been last updated"
+  },
+  "theme.lastUpdated.lastUpdatedAtBy": {
+    "message": "最后更新 {atDate}{byUser}",
+    "description": "The sentence used to display when a page has been last updated, and by who"
+  },
+  "theme.common.skipToMainContent": {
+    "message": "跳转到主要内容",
+    "description": "The skip to content label used for accessibility, allowing to rapidly navigate to main content with keyboard tab/enter navigation"
+  },
+  "theme.SearchPage.documentsFound.plurals": {
+    "message": "发现 {count} 篇文档",
+    "description": "Pluralized label for \"{count} documents found\". Use as much plural forms (separated by \"|\") as your language support (see https://www.unicode.org/cldr/cldr-aux/charts/34/supplemental/language_plural_rules.html)"
+  },
+  "theme.SearchPage.existingResultsTitle": {
+    "message": "搜索结果为 « {query} »",
+    "description": "The search page title for non-empty query"
+  },
+  "theme.SearchPage.emptyResultsTitle": {
+    "message": "在文档中搜索",
+    "description": "The search page title for empty query"
+  },
+  "theme.SearchPage.inputPlaceholder": {
+    "message": "在此处输入你要搜索的内容",
+    "description": "The placeholder for search page input"
+  },
+  "theme.SearchPage.inputLabel": {
+    "message": "搜索",
+    "description": "The ARIA label for search page input"
+  },
+  "theme.SearchPage.algoliaLabel": {
+    "message": "Algolia",
+    "description": "The ARIA label for Algolia mention"
+  },
+  "theme.SearchPage.noResultsText": {
+    "message": "没有发现结果",
+    "description": "The paragraph for empty search result"
+  },
+  "theme.SearchPage.fetchingNewResults": {
+    "message": "正在加载新的结果...",
+    "description": "The paragraph for fetching new search results"
+  },
+  "theme.SearchBar.label": {
+    "message": "搜索",
+    "description": "The ARIA label and placeholder for search button"
+  }
+}

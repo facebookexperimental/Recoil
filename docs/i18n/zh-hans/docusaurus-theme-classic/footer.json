@@ -1,30 +1,30 @@
 {
   "link.title.Learn": {
-    "message": "학습하기",
+    "message": "学习",
     "description": "The title of the footer links column with title=Learn in the footer"
   },
   "link.title.Community": {
-    "message": "커뮤니티",
+    "message": "社区",
     "description": "The title of the footer links column with title=Community in the footer"
   },
   "link.title.More": {
-    "message": "더보기",
+    "message": "更多",
     "description": "The title of the footer links column with title=More in the footer"
   },
   "link.title.Legal": {
-    "message": "정책",
+    "message": "法律",
     "description": "The title of the footer links column with title=Legal in the footer"
   },
   "link.item.label.Getting Started": {
-    "message": "시작하기",
+    "message": "快速上手",
     "description": "The label of footer link with label=Getting Started linking to docs/introduction/getting-started"
   },
   "link.item.label.Core Concepts": {
-    "message": "주요 개념",
+    "message": "核心概念",
     "description": "The label of footer link with label=Core Concepts linking to docs/introduction/core-concepts"
   },
   "link.item.label.Twitter": {
-    "message": "Twitter",
+    "message": "推特",
     "description": "The label of footer link with label=Twitter linking to https://twitter.com/recoiljs"
   },
   "link.item.label.GitHub": {
@@ -32,15 +32,15 @@
     "description": "The label of footer link with label=GitHub linking to https://github.com/facebookexperimental/Recoil"
   },
   "link.item.label.Privacy": {
-    "message": "개인정보 취급방침",
+    "message": "隐私",
     "description": "The label of footer link with label=Privacy linking to https://opensource.facebook.com/legal/privacy/"
   },
   "link.item.label.Terms": {
-    "message": "이용 약관",
+    "message": "条款",
     "description": "The label of footer link with label=Terms linking to https://opensource.facebook.com/legal/terms/"
   },
   "copyright": {
-    "message": "Copyright © 2021 Facebook, Inc. Built with Docusaurus.",
+    "message": "版权所有 © 2021 Facebook, Inc. 使用 Docusaurus 构建.",
     "description": "The footer copyright"
   }
 }

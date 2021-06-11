@@ -1,0 +1,133 @@
+---
+title: 快速上手
+---
+
+## Create React App
+
+Recoil 是 React 的状态管理库，因此你需要在 React 工程中安装并使用 Recoil。创建 React 项目最为推荐的方式是使用 [Create React App](https://github.com/facebook/create-react-app#creating-an-app)：
+
+```shell
+npx create-react-app my-app
+```
+
+> [`npx`](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) 是 npm 5.2 版本之后支持的 package 运行工具，请参阅 [npm 相关文档的介绍](https://gist.github.com/gaearon/4064d3c23a77c74a3614c498a8bb1c5f)。
+
+有很多种方式安装 Create React App，具体参见[官方文档](https://github.com/facebook/create-react-app#creating-an-app)。
+
+## 安装
+
+使用 <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a> 安装 Recoil 的最新版本。执行如下命令：
+
+```shell
+npm install recoil
+```
+
+或者使用 <a href="https://classic.yarnpkg.com/en/docs/install/" target="_blank">yarn</a>：
+
+```shell
+yarn add recoil
+```
+
+或者使用 <a href="https://cloud.google.com/community/tutorials/install-bower-dependencies-on-google-app-engine" target="_blank">bower</a>：
+
+```shell
+bower install --save recoil
+```
+
+## RecoilRoot
+
+如需在组件中使用 Recoil，则可以将 `RecoilRoot` 放置在父组件的某个位置。将他设为根组件为最佳：
+
+```jsx
+import React from 'react';
+import {
+  RecoilRoot,
+  atom,
+  selector,
+  useRecoilState,
+  useRecoilValue,
+} from 'recoil';
+
+function App() {
+  return (
+    <RecoilRoot>
+      <CharacterCounter />
+    </RecoilRoot>
+  );
+}
+```
+
+接下来，我们将实现 `CharacterCounter` 组件。
+
+## Atom
+
+一个 **atom** 代表一个**状态**。Atom 可在任意组件中进行读写。读取 atom 值的组件隐式订阅了该 atom，因此任何 atom 的更新都将致使使用对应 atom 的组件重新渲染：
+
+```javascript
+const textState = atom({
+  key: 'textState', // unique ID (with respect to other atoms/selectors)
+  default: '', // default value (aka initial value)
+});
+```
+
+在需要使用的组件中，你应该引入并使用 `useRecoilState()`，如下所示：
+
+```jsx
+function CharacterCounter() {
+  return (
+    <div>
+      <TextInput />
+      <CharacterCount />
+    </div>
+  );
+}
+
+function TextInput() {
+  const [text, setText] = useRecoilState(textState);
+
+  const onChange = (event) => {
+    setText(event.target.value);
+  };
+
+  return (
+    <div>
+      <input type="text" value={text} onChange={onChange} />
+      <br />
+      Echo: {text}
+    </div>
+  );
+}
+```
+
+## Selector
+
+**selector** 代表一个**派生状态**，派生状态是状态的**转换**。你可以将派生状态视为将状态传递给以某种方式修改给定状态的纯函数的输出：
+
+```jsx
+const charCountState = selector({
+  key: 'charCountState', // unique ID (with respect to other atoms/selectors)
+  get: ({get}) => {
+    const text = get(textState);
+
+    return text.length;
+  },
+});
+```
+
+我们可以使用 `useRecoilValue()` 的 hook，来读取 `charCountState` 的值：
+
+```jsx
+function CharacterCount() {
+  const count = useRecoilValue(charCountState);
+
+  return <>Character Count: {count}</>;
+}
+```
+
+## 示例
+
+这是一个完整项目示例。
+
+import GettingStarted from '../../../../../src/components/introduction/GettingStarted.jsx';
+
+<GettingStarted />

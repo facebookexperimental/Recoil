@@ -1,0 +1,42 @@
+{
+  "version.label": {
+    "message": "版本",
+    "description": "当前版本的标签"
+  },
+  "sidebar.docs.category.Introduction": {
+    "message": "简介",
+    "description": "侧边栏文档中类别介绍的标签"
+  },
+  "sidebar.docs.category.Basic Tutorial": {
+    "message": "基础教程",
+    "description": "侧边栏文档中类别基础教程的标签"
+  },
+  "sidebar.docs.category.Guides": {
+    "message": "指南",
+    "description": "侧边栏文档中类别指南的标签"
+  },
+  "sidebar.docs.category.API Reference": {
+    "message": "API Reference",
+    "description": "侧边栏文档中类别 API 参考的标签"
+  },
+  "sidebar.docs.category.Core": {
+    "message": "Core",
+    "description": "侧边栏文档中 Core 类别的标签"
+  },
+  "sidebar.docs.category.State": {
+    "message": "状态",
+    "description": "侧边栏文档中状态类别的标签"
+  },
+  "sidebar.docs.category.Snapshots": {
+    "message": "快照",
+    "description": "侧边栏文档中快照类别的标签"
+  },
+  "sidebar.docs.category.Misc": {
+    "message": "杂项",
+    "description": "侧边栏文档中杂项类别的标签"
+  },
+  "sidebar.docs.category.Utils": {
+    "message": "Utils",
+    "description": "侧边栏文档中 Util 类别的标签"
+  }
+}
