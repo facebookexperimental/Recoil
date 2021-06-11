@@ -63,3 +63,7 @@ function Counter() {
   );
 }
 ```
+
+## Scoped Atoms
+
+See [atomFamily()](/docs/api-reference/utils/atomFamily#scoped-atoms) for scoping your atom state.
