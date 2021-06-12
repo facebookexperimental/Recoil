@@ -18,6 +18,8 @@ const {
   CANCELED
 } = require('../adt/Recoil_Loadable');
 
+const gkx = require('../util/Recoil_gkx');
+
 const nullthrows = require('../util/Recoil_nullthrows');
 
 const recoverableViolation = require('../util/Recoil_recoverableViolation');

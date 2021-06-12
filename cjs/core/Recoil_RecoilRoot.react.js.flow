@@ -12,7 +12,7 @@
 
 import type { RecoilValue } from './Recoil_RecoilValue';
 import type { MutableSnapshot } from './Recoil_Snapshot';
-import type { Store, StoreRef, StoreState } from './Recoil_State'; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+import type { Store, StoreRef, StoreState, TreeState } from './Recoil_State'; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
 
@@ -96,7 +96,9 @@ declare var useStoreRef: () => StoreRef;
 const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
 
 declare function useRecoilMutableSource(): mixed;
+declare function notifyComponents(store: Store, storeState: StoreState, treeState: TreeState): void;
 declare function sendEndOfBatchNotifications(store: Store): any;
+declare function endBatch(storeRef: any): any;
 /*
  * The purpose of the Batcher is to observe when React batches end so that
  * Recoil state changes can be batched. Whenever Recoil state changes, we call
@@ -147,5 +149,6 @@ module.exports = {
   useStoreRef,
   useRecoilMutableSource,
   RecoilRoot,
+  notifyComponents_FOR_TESTING: notifyComponents,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications
 };

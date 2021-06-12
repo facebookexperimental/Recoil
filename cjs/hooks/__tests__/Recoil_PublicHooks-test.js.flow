@@ -728,16 +728,10 @@ testRecoil('Can set atom during post-atom-setting effect (NOT during initial ren
   const anAtom = counterAtom();
   let done = false;
   declare function SetsDuringEffect(): any;
-  const [Comp] = componentThatWritesAtom(anAtom);
   const container = renderElements(<>
         <SetsDuringEffect />
         <ReadsAtom atom={anAtom} />
-        <Comp />
       </>);
-  act(() => undefined);
-  await flushPromisesAndTimers();
-  await flushPromisesAndTimers();
-  await flushPromisesAndTimers();
   expect(container.textContent).toEqual('1');
 });
 testRecoil('Can set atom during post-atom-setting effect regardless of effect order', async () => {

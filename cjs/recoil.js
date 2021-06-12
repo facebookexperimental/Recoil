@@ -4,8 +4,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var reactDom = _interopDefault(require('react-dom'));
 var react = _interopDefault(require('react'));
+var reactDom = _interopDefault(require('react-dom'));
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -230,6 +230,49 @@ var Recoil_Loadable = {
   CANCELED
 };
 
+var _useMutableSource;
+
+ // FIXME T2710559282599660
+
+
+const useMutableSource = // flowlint-line unclear-type:off
+(_useMutableSource = react.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react.unstable_useMutableSource; // flowlint-line unclear-type:off
+
+function mutableSourceExists() {
+  return useMutableSource && !(typeof window !== 'undefined' && window.$disableRecoilValueMutableSource_TEMP_HACK_DO_NOT_USE);
+}
+
+var Recoil_mutableSource = {
+  mutableSourceExists,
+  useMutableSource
+};
+
+const {
+  mutableSourceExists: mutableSourceExists$1
+} = Recoil_mutableSource;
+
+const gks = new Map().set('recoil_hamt_2020', true).set('recoil_memory_managament_2020', true);
+
+function Recoil_gkx(gk) {
+  var _gks$get;
+
+  if (gk === 'recoil_early_rendering_2021' && !mutableSourceExists$1()) {
+    return false;
+  }
+
+  return (_gks$get = gks.get(gk)) !== null && _gks$get !== void 0 ? _gks$get : false;
+}
+
+Recoil_gkx.setPass = gk => {
+  gks.set(gk, true);
+};
+
+Recoil_gkx.setFail = gk => {
+  gks.set(gk, false);
+};
+
+var Recoil_gkx_1 = Recoil_gkx; // @oss-only
+
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -343,35 +386,6 @@ function* filterIterable(iterable, predicate) {
 }
 
 var Recoil_filterIterable = filterIterable;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-const gks = new Map().set('recoil_hamt_2020', true).set('recoil_memory_managament_2020', true);
-
-function Recoil_gkx(gk) {
-  var _gks$get;
-
-  return (_gks$get = gks.get(gk)) !== null && _gks$get !== void 0 ? _gks$get : false;
-}
-
-Recoil_gkx.setPass = gk => {
-  gks.set(gk, true);
-};
-
-Recoil_gkx.setFail = gk => {
-  gks.set(gk, false);
-};
-
-var Recoil_gkx_1 = Recoil_gkx; // @oss-only
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -856,6 +870,8 @@ const {
 
 
 
+
+
 const {
   getDownstreamNodes: getDownstreamNodes$1,
   getNodeLoadable: getNodeLoadable$1,
@@ -1112,7 +1128,17 @@ function subscribeToRecoilValue(store, {
     storeState.nodeToComponentSubscriptions.set(key, new Map());
   }
 
-  Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]);
+  Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]); // Handle the case that, during the same tick that we are subscribing, an atom
+  // has been updated by some effect handler. Otherwise we will miss the update.
+
+  if (Recoil_gkx_1('recoil_early_rendering_2021')) {
+    const nextTree = store.getState().nextTree;
+
+    if (nextTree && nextTree.dirtyAtoms.has(key)) {
+      callback(nextTree);
+    }
+  }
+
   return {
     release: () => {
       const storeState = store.getState();
@@ -3580,6 +3606,20 @@ function useRecoilMutableSource() {
   return mutableSource;
 }
 
+function notifyComponents(store, storeState, treeState) {
+  const dependentNodes = getDownstreamNodes$2(store, treeState, treeState.dirtyAtoms);
+
+  for (const key of dependentNodes) {
+    const comps = storeState.nodeToComponentSubscriptions.get(key);
+
+    if (comps) {
+      for (const [_subID, [_debugName, callback]] of comps) {
+        callback(treeState);
+      }
+    }
+  }
+}
+
 function sendEndOfBatchNotifications(store) {
   const storeState = store.getState();
   const treeState = storeState.currentTree; // Inform transaction subscribers of the transaction:
@@ -3598,34 +3638,59 @@ function sendEndOfBatchNotifications(store) {
 
     for (const [_, subscription] of storeState.transactionSubscriptions) {
       subscription(store);
-    } // Components that are subscribed to the dirty atom:
+    }
 
+    if (!Recoil_gkx_1('recoil_early_rendering_2021') || storeState.suspendedComponentResolvers.size) {
+      // Notifying components is needed to wake from suspense, even when using
+      // early rendering.
+      notifyComponents(store, storeState, treeState); // Wake all suspended components so the right one(s) can try to re-render.
+      // We need to wake up components not just when some asynchronous selector
+      // resolved, but also when changing synchronous values because this may cause
+      // a selector to change from asynchronous to synchronous, in which case there
+      // would be no follow-up asynchronous resolution to wake us up.
+      // TODO OPTIMIZATION Only wake up related downstream components
 
-    const dependentNodes = getDownstreamNodes$2(store, treeState, dirtyAtoms);
-
-    for (const key of dependentNodes) {
-      const comps = storeState.nodeToComponentSubscriptions.get(key);
-
-      if (comps) {
-        for (const [_subID, [_debugName, callback]] of comps) {
-          callback(treeState);
-        }
-      }
-    } // Wake all suspended components so the right one(s) can try to re-render.
-    // We need to wake up components not just when some asynchronous selector
-    // resolved, but also when changing synchronous values because this may cause
-    // a selector to change from asynchronous to synchronous, in which case there
-    // would be no follow-up asynchronous resolution to wake us up.
-    // TODO OPTIMIZATION Only wake up related downstream components
-
-
-    storeState.suspendedComponentResolvers.forEach(cb => cb());
+      storeState.suspendedComponentResolvers.forEach(cb => cb());
+      storeState.suspendedComponentResolvers.clear();
+    }
   } // Special behavior ONLY invoked by useInterface.
   // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
 
 
   storeState.queuedComponentCallbacks_DEPRECATED.forEach(cb => cb(treeState));
   storeState.queuedComponentCallbacks_DEPRECATED.splice(0, storeState.queuedComponentCallbacks_DEPRECATED.length);
+}
+
+function endBatch(storeRef) {
+  const storeState = storeRef.current.getState();
+  storeState.commitDepth++;
+
+  try {
+    const {
+      nextTree
+    } = storeState; // Ignore commits that are not because of Recoil transactions -- namely,
+    // because something above RecoilRoot re-rendered:
+
+    if (nextTree === null) {
+      return;
+    } // nextTree is now committed -- note that copying and reset occurs when
+    // a transaction begins, in startNextTreeIfNeeded:
+
+
+    storeState.previousTree = storeState.currentTree;
+    storeState.currentTree = nextTree;
+    storeState.nextTree = null;
+    sendEndOfBatchNotifications(storeRef.current);
+    const discardedVersion = Recoil_nullthrows(storeState.previousTree).version;
+    storeState.graphsByVersion.delete(discardedVersion);
+    storeState.previousTree = null;
+
+    if (Recoil_gkx_1('recoil_memory_managament_2020')) {
+      releaseScheduledRetainablesNow$1(storeRef.current);
+    }
+  } finally {
+    storeState.commitDepth--;
+  }
 }
 /*
  * The purpose of the Batcher is to observe when React batches end so that
@@ -3646,35 +3711,7 @@ function Batcher({
     // manipulate the order of useEffects during tests, since React seems to
     // call useEffect in an unpredictable order sometimes.
     Recoil_Queue.enqueueExecution('Batcher', () => {
-      const storeState = storeRef.current.getState();
-      storeState.commitDepth++;
-
-      try {
-        const {
-          nextTree
-        } = storeState; // Ignore commits that are not because of Recoil transactions -- namely,
-        // because something above RecoilRoot re-rendered:
-
-        if (nextTree === null) {
-          return;
-        } // nextTree is now committed -- note that copying and reset occurs when
-        // a transaction begins, in startNextTreeIfNeeded:
-
-
-        storeState.previousTree = storeState.currentTree;
-        storeState.currentTree = nextTree;
-        storeState.nextTree = null;
-        sendEndOfBatchNotifications(storeRef.current);
-        const discardedVersion = Recoil_nullthrows(storeState.previousTree).version;
-        storeState.graphsByVersion.delete(discardedVersion);
-        storeState.previousTree = null;
-
-        if (Recoil_gkx_1('recoil_memory_managament_2020')) {
-          releaseScheduledRetainablesNow$1(storeRef.current);
-        }
-      } finally {
-        storeState.commitDepth--;
-      }
+      endBatch(storeRef);
     });
   }); // If an asynchronous selector resolves after the Batcher is unmounted,
   // notifyBatcherOfChange will still be called. An error gets thrown whenever
@@ -3849,6 +3886,11 @@ function RecoilRoot_INTERNAL({
 
 
     storeState.nextTree = replaced;
+
+    if (Recoil_gkx_1('recoil_early_rendering_2021')) {
+      notifyComponents(store, storeState, replaced);
+    }
+
     Recoil_nullthrows(notifyBatcherOfChange.current)();
   };
 
@@ -3905,6 +3947,7 @@ var Recoil_RecoilRoot_react = {
   useStoreRef,
   useRecoilMutableSource,
   RecoilRoot,
+  notifyComponents_FOR_TESTING: notifyComponents,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications
 };
 
@@ -4135,23 +4178,6 @@ function mergeMaps(...maps) {
 }
 
 var Recoil_mergeMaps = mergeMaps;
-
-var _useMutableSource;
-
- // FIXME T2710559282599660
-
-
-const useMutableSource = // flowlint-line unclear-type:off
-(_useMutableSource = react.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react.unstable_useMutableSource; // flowlint-line unclear-type:off
-
-function mutableSourceExists() {
-  return useMutableSource && !(typeof window !== 'undefined' && window.$disableRecoilValueMutableSource_TEMP_HACK_DO_NOT_USE);
-}
-
-var Recoil_mutableSource = {
-  mutableSourceExists,
-  useMutableSource
-};
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -4466,7 +4492,7 @@ const {
 
 
 const {
-  mutableSourceExists: mutableSourceExists$1,
+  mutableSourceExists: mutableSourceExists$2,
   useMutableSource: useMutableSource$1
 } = Recoil_mutableSource;
 
@@ -4615,6 +4641,8 @@ function useRecoilInterface_DEPRECATED() {
     }
 
     function useRecoilValueLoadable(recoilValue) {
+      var _storeState$nextTree;
+
       if (process.env.NODE_ENV !== "production") {
         // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
@@ -4625,7 +4653,8 @@ function useRecoilInterface_DEPRECATED() {
       } // TODO Restore optimization to memoize lookup
 
 
-      return getRecoilValueAsLoadable$3(storeRef.current, recoilValue);
+      const storeState = storeRef.current.getState();
+      return getRecoilValueAsLoadable$3(storeRef.current, recoilValue, Recoil_gkx_1('recoil_early_rendering_2021') ? (_storeState$nextTree = storeState.nextTree) !== null && _storeState$nextTree !== void 0 ? _storeState$nextTree : storeState.currentTree : storeState.currentTree);
     }
 
     function useRecoilValue(recoilValue) {
@@ -4680,8 +4709,11 @@ function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
 
   const storeRef = useStoreRef$1();
   const getLoadable = useCallback$1(() => {
+    var _storeState$nextTree2;
+
     const store = storeRef.current;
-    const treeState = store.getState().currentTree;
+    const storeState = store.getState();
+    const treeState = Recoil_gkx_1('recoil_early_rendering_2021') ? (_storeState$nextTree2 = storeState.nextTree) !== null && _storeState$nextTree2 !== void 0 ? _storeState$nextTree2 : storeState.currentTree : storeState.currentTree;
     return getRecoilValueAsLoadable$3(store, recoilValue, treeState);
   }, [storeRef, recoilValue]);
   const getLoadableWithTesting = useCallback$1(() => {
@@ -4812,7 +4844,7 @@ function useRecoilValueLoadable(recoilValue) {
     useRetain(recoilValue);
   }
 
-  if (mutableSourceExists$1()) {
+  if (mutableSourceExists$2()) {
     // eslint-disable-next-line fb-www/react-hooks
     return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
   } else {
@@ -5038,10 +5070,10 @@ function useRecoilSnapshot() {
 function useGotoRecoilSnapshot() {
   const storeRef = useStoreRef$1();
   return useCallback$1(snapshot => {
-    var _storeState$nextTree;
+    var _storeState$nextTree3;
 
     const storeState = storeRef.current.getState();
-    const prev = (_storeState$nextTree = storeState.nextTree) !== null && _storeState$nextTree !== void 0 ? _storeState$nextTree : storeState.currentTree;
+    const prev = (_storeState$nextTree3 = storeState.nextTree) !== null && _storeState$nextTree3 !== void 0 ? _storeState$nextTree3 : storeState.currentTree;
     const next = snapshot.getStore_INTERNAL().getState().currentTree;
     batchUpdates$2(() => {
       const keysToUpdate = new Set();
