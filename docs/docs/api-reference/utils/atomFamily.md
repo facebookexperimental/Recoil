@@ -55,6 +55,8 @@ function ElementListItem({elementID}) {
 }
 ```
 
+## Family Defaults
+
 An `atomFamily()` takes almost the same options as a simple [`atom()`](/docs/api-reference/core/atom).  However, the default value can also be parameterized. That means you could provide a function which takes the parameter value and returns the actual default value.  For example:
 
 ```jsx
@@ -64,7 +66,7 @@ const myAtomFamily = atomFamily({
 });
 ```
 
-or using [`selectorFamily`](/docs/api-reference/utils/selectorFamily) instead of `selector`, you can also access the parameter value in a `default` selector as well.
+For dynamic defaults based on other state use a [`selectorFamily()`](/docs/api-reference/utils/selectorFamily), which also has access to the parameter value.  Don't just use `selector()` for `atomFamily()` defaults, as it would produce duplicate keys.
 
 ```jsx
 const myAtomFamily = atomFamily({
@@ -72,7 +74,8 @@ const myAtomFamily = atomFamily({
   default: selectorFamily({
     key: 'MyAtom/Default',
     get: param => ({get}) => {
-      return computeDefaultUsingParam(param);
+      const otherAtomValue = get(otherState);
+      return computeDefaultUsingParam(otherAtomValue, param);
     },
   }),
 });
@@ -81,6 +84,38 @@ const myAtomFamily = atomFamily({
 ## Subscriptions
 
 One advantage of using this pattern for separate atoms for each element over trying to store a single atom with a map of state for all elements is that they all maintain their own individual subscriptions. So, updating the value for one element will only cause React components that have subscribed to just that atom to update.
+
+## Scoped Atoms
+
+Sometimes you may want to "scope" atom state by some other prop, React Context, or piece of state.  For example:
+
+```jsx
+const viewWidthForPaneState = atomFamily<number, PaneID>({
+  key: 'ViewWidthForPane',
+  default: 42,
+});
+
+function PaneView() {
+  const paneID = useContext(PaneIDContext);
+  const viewWidth = useRecoilValue(viewWidthForPaneState(paneID));
+  ...
+}
+```
+
+If you want to scope by some other Recoil state and wish to avoid looking up the scope parameter at every call site, it can be a useful pattern to use a wrapper [`selector()`](/docs/api-reference/core/selector):
+
+```jsx
+const viewWidthState = selector({
+  key: 'ViewWidth',
+  get: ({get}) => viewWidthForPane(get(currentPaneState)),
+  set: ({get, set}, newValue) => set(viewWidthForPane(get(currentPaneState)), newValue),
+});
+
+function PaneView() {
+  const viewWidth = useRecoilValue(viewWidthState);
+  ...
+}
+```
 
 ## Persistence
 
