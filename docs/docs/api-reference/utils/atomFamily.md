@@ -120,5 +120,3 @@ function PaneView() {
 ## Persistence
 
 Persistence observers will persist the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to only use parameters which are primitives or simple compound objects containing primitives. Custom classes or functions are not allowed.
-
-It is allowed to “upgrade” a simple `atom` to be an `atomFamily` in a newer version of your app based on the same key. If you do this, then any persisted values with the old simple key can still be read and all parameter values of the new `atomFamily` will default to the persisted state of the simple atom. If you change the format of the parameter in an `atomFamily`, however, it will not automatically read the previous values that were persisted before the change. However, you can add logic in a default selector or validator to lookup values based on previous parameter formats. We hope to help automate this pattern in the future.
