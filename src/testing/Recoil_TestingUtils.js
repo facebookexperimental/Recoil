@@ -18,6 +18,7 @@ import type {
 import type {Store} from '../core/Recoil_State';
 
 const ReactDOM = require('ReactDOM');
+const ReactDOMComet = require('ReactDOMComet');
 const {act} = require('ReactTestUtils');
 
 const {graph} = require('../core/Recoil_Graph');
@@ -99,8 +100,7 @@ function createLegacyReactRoot(container, contents) {
 }
 
 function createConcurrentReactRoot(container, contents) {
-  // $FlowFixMe[unclear-type] Our type defs don't include React 18 stuff yet
-  (ReactDOM: any).createRoot(container).render(contents);
+  ReactDOMComet.createRoot(container).render(contents);
 }
 
 function renderElementsInternal(
