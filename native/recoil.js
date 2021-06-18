@@ -6447,8 +6447,7 @@ function selector(options) {
       gateCallback = true;
 
       if (Recoil_isPromise(result)) {
-        result = wrapPendingPromise(store, // $FlowFixMe[incompatible-call]
-        result, state, depValues, executionId).finally(endPerfBlock);
+        result = wrapPendingPromise(store, result, state, depValues, executionId).finally(endPerfBlock);
       } else {
         endPerfBlock();
       }
@@ -6456,8 +6455,7 @@ function selector(options) {
       result = errorOrDepPromise;
 
       if (Recoil_isPromise(result)) {
-        result = wrapPendingDependencyPromise(store, // $FlowFixMe[incompatible-call]
-        result, state, depValues, executionId).finally(endPerfBlock);
+        result = wrapPendingDependencyPromise(store, result, state, depValues, executionId).finally(endPerfBlock);
       } else {
         resultIsError = true;
         endPerfBlock();
@@ -6467,10 +6465,8 @@ function selector(options) {
     if (resultIsError) {
       loadable = loadableWithError$1(result);
     } else if (Recoil_isPromise(result)) {
-      // $FlowFixMe[incompatible-call]
       loadable = loadableWithPromise$1(result);
     } else {
-      // $FlowFixMe[incompatible-call]
       loadable = loadableWithValue$2(result);
     }
 
