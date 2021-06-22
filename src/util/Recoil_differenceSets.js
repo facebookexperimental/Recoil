@@ -21,7 +21,7 @@
 function differenceSets<TValue>(
   set: $ReadOnlySet<TValue>,
   ...setsWithValuesToRemove: $ReadOnlyArray<$ReadOnlySet<TValue>>
-): Set<TValue> {
+): $ReadOnlySet<TValue> {
   const ret = new Set();
   FIRST: for (const value of set) {
     for (const otherSet of setsWithValuesToRemove) {

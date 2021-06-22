@@ -109,9 +109,9 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const storeRef = useStoreRef();
   const [_, forceUpdate] = useState([]);
 
-  const recoilValuesUsed = useRef<Set<NodeKey>>(new Set());
+  const recoilValuesUsed = useRef<$ReadOnlySet<NodeKey>>(new Set());
   recoilValuesUsed.current = new Set(); // Track the RecoilValues used just during this render
-  const previousSubscriptions = useRef<Set<NodeKey>>(new Set());
+  const previousSubscriptions = useRef<$ReadOnlySet<NodeKey>>(new Set());
   const subscriptions = useRef<Map<NodeKey, ComponentSubscription>>(new Map());
 
   const unsubscribeFrom = useCallback(
@@ -607,7 +607,7 @@ function useTransactionObservation_DEPRECATED(
     atomValues: Map<NodeKey, mixed>,
     previousAtomValues: Map<NodeKey, mixed>,
     atomInfo: Map<NodeKey, ExternallyVisibleAtomInfo>,
-    modifiedAtoms: Set<NodeKey>,
+    modifiedAtoms: $ReadOnlySet<NodeKey>,
     transactionMetadata: {[NodeKey]: mixed, ...},
   }) => void,
 ) {
