@@ -14,6 +14,9 @@
 
 - Fix TypeScript typeing for `selectorFamily()` and `getCallback()` (#1060)
 - Fix onSet() handler to get the proper new value when atom is reset or has an async default Promise that resolves (#1059, #1050, #738) (Slightly breaking change)
+- useRecoilTransaction_UNSTABLE
+- useTransition compatibility
+- Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
 
 ## 0.3.1 (2021-5-18)
 

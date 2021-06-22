@@ -11,7 +11,7 @@
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
-import type {AtomicUpdateInterface} from '../core/Recoil_AtomicUpdates';
+import type {TransactionInterface} from '../core/Recoil_AtomicUpdates';
 import type {DefaultValue, PersistenceType} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
@@ -783,7 +783,7 @@ export type RecoilCallbackInterface = $ReadOnly<{
   reset: <T>(RecoilState<T>) => void,
   snapshot: Snapshot,
   gotoSnapshot: Snapshot => void,
-  atomicUpdate_UNSTABLE: ((AtomicUpdateInterface) => void) => void,
+  transact_UNSTABLE: ((TransactionInterface) => void) => void,
 }>;
 
 class Sentinel {}
@@ -832,7 +832,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
           reset,
           snapshot,
           gotoSnapshot,
-          atomicUpdate_UNSTABLE: atomicUpdate,
+          transact_UNSTABLE: atomicUpdate,
         });
         if (typeof cb !== 'function') {
           throw new Error(errMsg);
@@ -924,6 +924,22 @@ function useRetain_ACTUAL(toRetain: ToRetain): void {
   }
 }
 
+function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(
+  fn: TransactionInterface => (...Arguments) => void,
+  deps?: $ReadOnlyArray<mixed>,
+): (...Arguments) => void {
+  const storeRef = useStoreRef();
+  return useMemo(
+    () => (...args: Arguments): void => {
+      const atomicUpdate = atomicUpdater(storeRef.current);
+      atomicUpdate(transactionInterface => {
+        fn(transactionInterface)(...args);
+      });
+    },
+    deps != null ? [...deps, storeRef] : undefined, // eslint-disable-line fb-www/react-hooks-deps
+  );
+}
+
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
   useGotoRecoilSnapshot,
@@ -932,6 +948,7 @@ module.exports = {
   useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
+  useRecoilTransaction,
   useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
