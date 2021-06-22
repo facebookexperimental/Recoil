@@ -31,6 +31,7 @@ export type {
   AtomEffect,
   PersistenceSettings,
 } from './recoil_values/Recoil_atom';
+export type {TransactionInterface} from './core/Recoil_AtomicUpdates';
 export type {
   GetRecoilValue,
   SetRecoilState,
@@ -53,6 +54,7 @@ const {
   useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
+  useRecoilTransaction,
   useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
@@ -111,8 +113,9 @@ module.exports = {
   useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
   useRetain,
 
-  // Hooks for asynchronous Recoil
+  // Hooks for complex operations with RecoilValues
   useRecoilCallback,
+  useRecoilTransaction_UNSTABLE: useRecoilTransaction,
 
   // Hooks for Snapshots
   useGotoRecoilSnapshot,

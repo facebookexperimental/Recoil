@@ -136,7 +136,7 @@ export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueRea
 // hooks.d.ts
 export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
 export type Resetter = () => void;
-export interface AtomicUpdateInterface_UNSTABLE {
+export interface TransactionInterface_UNSTABLE {
   get<T>(a: RecoilValue<T>): T;
   set<T>(s: RecoilState<T>, u: ((currVal: T) => T) | T): void;
   reset<T>(s: RecoilState<T>): void;
@@ -146,7 +146,7 @@ export type CallbackInterface = Readonly<{
   reset: (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   snapshot: Snapshot,
   gotoSnapshot: (snapshot: Snapshot) => void,
-  atomicUpdate_UNSTABLE: (cb: (i: AtomicUpdateInterface_UNSTABLE) => void) => void;
+  transact_UNSTABLE: (cb: (i: TransactionInterface_UNSTABLE) => void) => void;
 }>;
 
 /**
@@ -202,6 +202,11 @@ export function useRecoilCallback<Args extends ReadonlyArray<unknown>, Return>(
   fn: (interface: CallbackInterface) => (...args: Args) => Return,
   deps?: ReadonlyArray<unknown>,
 ): (...args: Args) => Return;
+
+export function useRecoilTransaction_UNSTABLE<Args extends ReadonlyArray<unknown>>(
+  fn: (interface: TransactionInterface_UNSTABLE) => (...args: Args) => void,
+  deps?: ReadonlyArray<unknown>,
+): (...args: Args) => void;
 
 export function useRecoilTransactionObserver_UNSTABLE(
   callback: (opts: {
