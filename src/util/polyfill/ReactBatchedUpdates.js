@@ -12,6 +12,6 @@
  * for our web build
  */
 
-const {unstable_batchedUpdates} = require('ReactDOM');
+const {unstable_batchedUpdates} = require('ReactDOMLegacy_DEPRECATED');
 
 module.exports = {unstable_batchedUpdates};

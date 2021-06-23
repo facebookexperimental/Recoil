@@ -1,6 +1,6 @@
-import nodeResolve from '@rollup/plugin-node-resolve';
 import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
+import nodeResolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
 
@@ -27,7 +27,7 @@ const commonPlugins = [
       if (source === 'React') {
         return {id: 'react', external: true};
       }
-      if (source === 'ReactDOM') {
+      if (source === 'ReactDOMLegacy_DEPRECATED') {
         return {id: 'react-dom', external: true};
       }
       if (source === 'ReactNative') {
