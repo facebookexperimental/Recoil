@@ -17,5 +17,5 @@
  * use in tight loops.
  */
 
-declare function differenceSets<TValue>(set: $ReadOnlySet<TValue>, ...setsWithValuesToRemove: $ReadOnlyArray<$ReadOnlySet<TValue>>): Set<TValue>;
+declare function differenceSets<TValue>(set: $ReadOnlySet<TValue>, ...setsWithValuesToRemove: $ReadOnlyArray<$ReadOnlySet<TValue>>): $ReadOnlySet<TValue>;
 module.exports = differenceSets;

@@ -14,5 +14,5 @@
  * the given callback returned true.
  */
 
-declare function filterSet<TValue>(set: $ReadOnlySet<TValue>, callback: (value: TValue) => boolean): Set<TValue>;
+declare function filterSet<TValue>(set: $ReadOnlySet<TValue>, callback: (value: TValue) => boolean): $ReadOnlySet<TValue>;
 module.exports = filterSet;

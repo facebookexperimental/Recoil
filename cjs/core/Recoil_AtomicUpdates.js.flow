@@ -30,13 +30,13 @@ const {
   writeLoadableToTreeState
 } = require('../core/Recoil_RecoilValueInterface');
 
-export interface AtomicUpdateInterface {
-  get<T>(RecoilValue<T>): T,
-  set<T>(RecoilState<T>, T): void,
-  reset<T>(RecoilState<T>): void,
+export interface TransactionInterface {
+  get: <T>(RecoilValue<T>) => T,
+  set: <T>(RecoilState<T>, ValueOrUpdater<T>) => void,
+  reset: <T>(RecoilState<T>) => void,
 }
 declare function isAtom<T>(recoilValue: RecoilValue<T>): boolean;
-declare class AtomicUpdateInterfaceImpl {
+declare class TransactionInterfaceImpl {
   _store: Store,
   _treeState: TreeState,
   _changes: Map<NodeKey, mixed>,
@@ -46,7 +46,7 @@ declare class AtomicUpdateInterfaceImpl {
   reset: any,
   newTreeState_INTERNAL(): TreeState,
 }
-declare function atomicUpdater(store: Store): ((AtomicUpdateInterface) => void) => void;
+declare function atomicUpdater(store: Store): ((TransactionInterface) => void) => void;
 module.exports = {
   atomicUpdater
 };
