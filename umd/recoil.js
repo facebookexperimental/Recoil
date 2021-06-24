@@ -5915,7 +5915,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           cache.delete(lruNode.key);
         }
       }
-    });
+    }); // $FlowFixMe[method-unbinding]
+
     return cache;
   }
 
@@ -5958,6 +5959,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   function getTreeCache(eviction, maxSize, mapNodeValue) {
     switch (eviction) {
       case 'none':
+        // $FlowFixMe[method-unbinding]
         return new TreeCache$2({
           mapNodeValue
         });
@@ -7323,11 +7325,13 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   function getCache(eviction, maxSize, mapKey) {
     switch (eviction) {
       case 'none':
+        // $FlowFixMe[method-unbinding]
         return new MapCache$1({
           mapKey
         });
 
       case 'lru':
+        // $FlowFixMe[method-unbinding]
         return new LRUCache$2({
           mapKey,
           maxSize: Recoil_nullthrows(maxSize)

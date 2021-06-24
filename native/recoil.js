@@ -5910,7 +5910,8 @@ function treeCacheLRU(maxSize, mapNodeValue = v => v) {
         cache.delete(lruNode.key);
       }
     }
-  });
+  }); // $FlowFixMe[method-unbinding]
+
   return cache;
 }
 
@@ -5953,6 +5954,7 @@ function getValueMapper(equality) {
 function getTreeCache(eviction, maxSize, mapNodeValue) {
   switch (eviction) {
     case 'none':
+      // $FlowFixMe[method-unbinding]
       return new TreeCache$2({
         mapNodeValue
       });
@@ -7318,11 +7320,13 @@ function getValueMapper$1(equality) {
 function getCache(eviction, maxSize, mapKey) {
   switch (eviction) {
     case 'none':
+      // $FlowFixMe[method-unbinding]
       return new MapCache$1({
         mapKey
       });
 
     case 'lru':
+      // $FlowFixMe[method-unbinding]
       return new LRUCache$2({
         mapKey,
         maxSize: Recoil_nullthrows(maxSize)
