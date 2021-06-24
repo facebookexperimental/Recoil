@@ -55,8 +55,10 @@ function getCache<K, V>(
 ): CacheImplementation<K, V> {
   switch (eviction) {
     case 'none':
+      // $FlowFixMe[method-unbinding]
       return new MapCache<K, V>({mapKey});
     case 'lru':
+      // $FlowFixMe[method-unbinding]
       return new LRUCache<K, V>({mapKey, maxSize: nullthrows(maxSize)});
   }
 
