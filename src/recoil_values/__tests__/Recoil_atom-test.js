@@ -35,7 +35,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   React = require('react');
   ({useState, Profiler} = require('react'));
-  ReactDOM = require('ReactDOM');
+  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({act} = require('ReactTestUtils'));
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));

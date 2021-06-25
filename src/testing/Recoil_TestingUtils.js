@@ -17,8 +17,8 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {Store} from '../core/Recoil_State';
 
-const ReactDOM = require('ReactDOM');
 const ReactDOMComet = require('ReactDOMComet');
+const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
 const {act} = require('ReactTestUtils');
 
 const {graph} = require('../core/Recoil_Graph');

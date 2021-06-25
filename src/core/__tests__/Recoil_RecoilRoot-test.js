@@ -28,7 +28,7 @@ let React,
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({useState} = require('react'));
-  ReactDOM = require('ReactDOM');
+  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({act} = require('ReactTestUtils'));
 
   ({useSetRecoilState} = require('../../hooks/Recoil_Hooks'));

@@ -13,6 +13,6 @@
  * https://github.com/flowtype/flow-typed
  */
 
-declare module 'ReactDOM' {
+declare module 'ReactDOMLegacy_DEPRECATED' {
   declare module.exports: any;
 }
