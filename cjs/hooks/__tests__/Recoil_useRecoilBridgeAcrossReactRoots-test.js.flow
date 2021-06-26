@@ -21,7 +21,7 @@ const testRecoil = getRecoilTestFn(() => {
     useEffect,
     useRef
   } = require('react'));
-  ReactDOM = require('ReactDOM');
+  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({
     act
   } = require('ReactTestUtils'));

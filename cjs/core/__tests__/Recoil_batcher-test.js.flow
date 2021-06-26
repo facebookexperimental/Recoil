@@ -18,7 +18,7 @@ let unstable_batchedUpdates, batchUpdates, getBatcher, setBatcher;
 const testRecoil = getRecoilTestFn(() => {
   ({
     unstable_batchedUpdates
-  } = require('ReactDOM'));
+  } = require('ReactDOMLegacy_DEPRECATED'));
   ({
     batchUpdates,
     getBatcher,
