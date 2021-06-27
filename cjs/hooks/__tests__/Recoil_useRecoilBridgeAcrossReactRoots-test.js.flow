@@ -34,7 +34,7 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('../../testing/Recoil_TestingUtils'));
   useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 });
-testRecoil('useRecoilBridgeAcrossReactRoots - create a context bridge', () => {
+testRecoil('useRecoilBridgeAcrossReactRoots - create a context bridge', async () => {
   const myAtom = atom({
     key: 'useRecoilBridgeAcrossReactRoots - context bridge',
     default: 'DEFAULT'
@@ -43,14 +43,14 @@ testRecoil('useRecoilBridgeAcrossReactRoots - create a context bridge', () => {
   const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
   declare function NestedReactRoot(arg0: any): any;
   const container = document.createElement('div');
-  act(() => {
+  await act(() => {
     ReactDOM.render(<RecoilRoot initializeState={initializeState}>
-        <ReadWriteAtom />
-
-        <NestedReactRoot>
           <ReadWriteAtom />
-        </NestedReactRoot>
-      </RecoilRoot>, container);
+
+          <NestedReactRoot>
+            <ReadWriteAtom />
+          </NestedReactRoot>
+        </RecoilRoot>, container);
   });
   expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
   act(() => setAtom('SET'));

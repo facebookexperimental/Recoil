@@ -53,8 +53,10 @@ test('Link - snapshot', async () => {
   expect(c.textContent).toEqual('"SET"LINK-MAP'); // flowlint-next-line unclear-type:off
 
   expect(((c.children[0]: any): HTMLAnchorElement).href).toEqual('https://test.com/test?atom=%22MAP');
-  Simulate.click(c.children[0], {
-    button: 0
+  act(() => {
+    Simulate.click(c.children[0], {
+      button: 0
+    });
   });
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"MAP"LINK-MAP');
@@ -73,8 +75,10 @@ test('Link - stateChange', async () => {
   expect(c.textContent).toEqual('"SET"LINK'); // flowlint-next-line unclear-type:off
 
   expect(((c.children[0]: any): HTMLAnchorElement).href).toEqual('https://test.com/test?atom=%22MAP');
-  Simulate.click(c.children[0], {
-    button: 0
+  act(() => {
+    Simulate.click(c.children[0], {
+      button: 0
+    });
   });
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"MAP"LINK');
@@ -93,8 +97,10 @@ test('Link - state update', async () => {
   expect(c.textContent).toEqual('"SET"LINK'); // flowlint-next-line unclear-type:off
 
   expect(((c.children[0]: any): HTMLAnchorElement).href).toEqual('https://test.com/test?atom=%22MAP%20SET');
-  Simulate.click(c.children[0], {
-    button: 0
+  act(() => {
+    Simulate.click(c.children[0], {
+      button: 0
+    });
   });
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"MAP SET"LINK');
