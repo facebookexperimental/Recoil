@@ -71,7 +71,9 @@ test('Link - snapshot', async () => {
     'https://test.com/test?atom=%22MAP',
   );
 
-  Simulate.click(c.children[0], {button: 0});
+  act(() => {
+    Simulate.click(c.children[0], {button: 0});
+  });
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"MAP"LINK-MAP');
 });
@@ -95,7 +97,9 @@ test('Link - stateChange', async () => {
     'https://test.com/test?atom=%22MAP',
   );
 
-  Simulate.click(c.children[0], {button: 0});
+  act(() => {
+    Simulate.click(c.children[0], {button: 0});
+  });
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"MAP"LINK');
 });
@@ -120,7 +124,9 @@ test('Link - state update', async () => {
     'https://test.com/test?atom=%22MAP%20SET',
   );
 
-  Simulate.click(c.children[0], {button: 0});
+  act(() => {
+    Simulate.click(c.children[0], {button: 0});
+  });
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('"MAP SET"LINK');
 });

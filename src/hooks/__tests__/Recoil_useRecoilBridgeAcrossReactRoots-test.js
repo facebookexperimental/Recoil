@@ -36,52 +36,53 @@ const testRecoil = getRecoilTestFn(() => {
   useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 });
 
-testRecoil('useRecoilBridgeAcrossReactRoots - create a context bridge', () => {
-  const myAtom = atom({
-    key: 'useRecoilBridgeAcrossReactRoots - context bridge',
-    default: 'DEFAULT',
-  });
+testRecoil(
+  'useRecoilBridgeAcrossReactRoots - create a context bridge',
+  async () => {
+    const myAtom = atom({
+      key: 'useRecoilBridgeAcrossReactRoots - context bridge',
+      default: 'DEFAULT',
+    });
 
-  function initializeState({set, getLoadable}) {
-    expect(getLoadable(myAtom).contents).toEqual('DEFAULT');
-    set(myAtom, 'INITIALIZE');
-    expect(getLoadable(myAtom).contents).toEqual('INITIALIZE');
-  }
+    function initializeState({set, getLoadable}) {
+      expect(getLoadable(myAtom).contents).toEqual('DEFAULT');
+      set(myAtom, 'INITIALIZE');
+      expect(getLoadable(myAtom).contents).toEqual('INITIALIZE');
+    }
 
-  const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+    const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
-  function NestedReactRoot({children}) {
-    const ref = useRef();
-    const RecoilBridge = useRecoilBridgeAcrossReactRoots();
+    function NestedReactRoot({children}) {
+      const ref = useRef();
+      const RecoilBridge = useRecoilBridgeAcrossReactRoots();
 
-    useEffect(() => {
-      act(() => {
+      useEffect(() => {
         ReactDOM.render(
           <RecoilBridge>{children}</RecoilBridge>,
           ref.current ?? document.createElement('div'),
         );
-      });
-    }, [children]);
+      }, [children]);
 
-    return <div ref={ref} />;
-  }
+      return <div ref={ref} />;
+    }
 
-  const container = document.createElement('div');
-  act(() => {
-    ReactDOM.render(
-      <RecoilRoot initializeState={initializeState}>
-        <ReadWriteAtom />
-
-        <NestedReactRoot>
+    const container = document.createElement('div');
+    await act(() => {
+      ReactDOM.render(
+        <RecoilRoot initializeState={initializeState}>
           <ReadWriteAtom />
-        </NestedReactRoot>
-      </RecoilRoot>,
-      container,
-    );
-  });
 
-  expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
+          <NestedReactRoot>
+            <ReadWriteAtom />
+          </NestedReactRoot>
+        </RecoilRoot>,
+        container,
+      );
+    });
 
-  act(() => setAtom('SET'));
-  expect(container.textContent).toEqual('"SET""SET"');
-});
+    expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
+
+    act(() => setAtom('SET'));
+    expect(container.textContent).toEqual('"SET""SET"');
+  },
+);
