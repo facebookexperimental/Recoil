@@ -110,7 +110,9 @@ export type SetRecoilState = <T>(
 
 export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-export type EqualityPolicy = 'reference' | 'value';
+
+// export type EqualityPolicy = 'reference' | 'value'; TODO: removing while we discuss long term API
+
 export type EvictionPolicy = 'lru' | 'none';
 
 // TODO: removing while we discuss long term API
