@@ -110,6 +110,18 @@ export type SetRecoilState = <T>(
 
 export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
 
+export type EqualityPolicy = 'reference' | 'value';
+export type EvictionPolicy = 'lru' | 'none';
+
+export type CachePolicy =
+  | {eviction: 'lru', maxSize: number, equality?: EqualityPolicy}
+  | {eviction: 'none', equality?: EqualityPolicy}
+  | {eviction?: undefined, equality: EqualityPolicy};
+
+export interface CachePolicyWithoutEviction {
+  equality: EqualityPolicy;
+}
+
 export interface ReadOnlySelectorOptions<T> {
     key: string;
     get: (opts: {
@@ -117,6 +129,7 @@ export interface ReadOnlySelectorOptions<T> {
       getCallback: GetCallback,
     }) => Promise<T> | RecoilValue<T> | T;
     dangerouslyAllowMutability?: boolean;
+    cachePolicy_UNSTABLE?: CachePolicy;
 }
 
 export interface ReadWriteSelectorOptions<T> extends ReadOnlySelectorOptions<T> {
@@ -139,7 +152,7 @@ export type Resetter = () => void;
 export interface TransactionInterface_UNSTABLE {
   get<T>(a: RecoilValue<T>): T;
   set<T>(s: RecoilState<T>, u: ((currVal: T) => T) | T): void;
-  reset<T>(s: RecoilState<T>): void;
+  reset(s: RecoilState<any>): void;
 }
 export type CallbackInterface = Readonly<{
   set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
@@ -307,6 +320,7 @@ export interface AtomFamilyOptions<T, P extends SerializableParam> {
   dangerouslyAllowMutability?: boolean;
   default: RecoilValue<T> | Promise<T> | T | ((param: P) => T | RecoilValue<T> | Promise<T>);
   effects_UNSTABLE?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
+  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction;
 }
 
 export function atomFamily<T, P extends SerializableParam>(
@@ -319,10 +333,8 @@ export interface ReadOnlySelectorFamilyOptions<T, P extends SerializableParam> {
     get: GetRecoilValue,
     getCallback: GetCallback,
   }) => Promise<T> | RecoilValue<T> | T;
-  // cacheImplementation_UNSTABLE?: () => CacheImplementation<Loadable<T>>,
-  // cacheImplementationForParams_UNSTABLE?: () => CacheImplementation<
-  //   RecoilValue<T>,
-  // >,
+  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction;
+  cachePolicy_UNSTABLE?: CachePolicy;
   dangerouslyAllowMutability?: boolean;
 }
 
@@ -338,10 +350,8 @@ export interface ReadWriteSelectorFamilyOptions<T, P extends SerializableParam> 
       opts: { set: SetRecoilState; get: GetRecoilValue; reset: ResetRecoilState },
       newValue: T | DefaultValue,
   ) => void;
-  // cacheImplementation_UNSTABLE?: () => CacheImplementation<Loadable<T>>,
-  // cacheImplementationForParams_UNSTABLE?: () => CacheImplementation<
-  //   RecoilValue<T>,
-  // >,
+  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction;
+  cachePolicy_UNSTABLE?: CachePolicy;
   dangerouslyAllowMutability?: boolean;
 }
 

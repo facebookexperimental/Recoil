@@ -243,7 +243,7 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot, transact_UNSTABLE }) =>
     set(myAtom, 1);
     set(myAtom, x => x + 1);
     reset(myAtom);
-  })
+  });
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -593,6 +593,122 @@ isRecoilValue(mySelector1);
   )
   .getLoadable(mySelector1)
   .valueOrThrow();
+}
+
+/**
+ * cachePolicy_UNSTABLE on selector() and selectorFamily()
+ */
+{
+  selector({
+    key: 'ReadOnlySelectorSel_cachePolicy1',
+    get: () => {},
+    cachePolicy_UNSTABLE: {
+      equality: 'reference',
+    }
+  });
+
+  selector({
+    key: 'ReadOnlySelectorSel_cachePolicy2',
+    get: () => {},
+    cachePolicy_UNSTABLE: {
+      equality: 'reference',
+      eviction: 'none',
+    }
+  });
+
+  selector({
+    key: 'ReadOnlySelectorSel_cachePolicy3',
+    get: () => {},
+    cachePolicy_UNSTABLE: {
+      equality: 'reference',
+      eviction: 'lru', // $ExpectError
+    }
+  });
+
+  selector({
+    key: 'ReadOnlySelectorSel_cachePolicy4',
+    get: () => {},
+    cachePolicy_UNSTABLE: {
+      equality: 'reference',
+      eviction: 'lru',
+      maxSize: 10,
+    }
+  });
+
+  selectorFamily({
+    key: 'ReadOnlySelectorFSel_cachePolicy1',
+    get: () => () => {},
+    cachePolicy_UNSTABLE: {
+      equality: 'reference',
+    }
+  });
+
+  selectorFamily({
+    key: 'ReadOnlySelectorFSel_cachePolicy2',
+    get: () => () => {},
+    cachePolicy_UNSTABLE: {
+      equality: 'reference',
+      eviction: 'none',
+    }
+  });
+
+  selectorFamily({
+    key: 'ReadOnlySelectorFSel_cachePolicy3',
+    get: () => () => {},
+    cachePolicy_UNSTABLE: {
+      equality: 'reference',
+      eviction: 'lru', // $ExpectError
+    }
+  });
+
+  selectorFamily({
+    key: 'ReadOnlySelectorFSel_cachePolicy4',
+    get: () => () => {},
+    cachePolicy_UNSTABLE: {
+      equality: 'reference',
+      eviction: 'lru',
+      maxSize: 10,
+    }
+  });
+}
+
+/**
+ * cachePolicyForParams_UNSTABLE on atomFamily() and selectorFamily()
+ */
+{
+  atomFamily({
+    key: 'cachePolicyForParams_atomFamily1',
+    default: 5,
+    cachePolicyForParams_UNSTABLE: {
+      equality: 'reference',
+    },
+  });
+
+  atomFamily({
+    key: 'cachePolicyForParams_atomFamily2',
+    default: 5,
+    cachePolicyForParams_UNSTABLE: {
+      equality: 'reference',
+      eviction: 'none', // $ExpectError
+    },
+  });
+
+  selectorFamily({
+    key: 'cachePolicyForParams_selFamily1',
+    get: () => () => {},
+    cachePolicyForParams_UNSTABLE: {
+      equality: 'reference',
+    },
+  });
+
+  selectorFamily({
+    key: 'cachePolicyForParams_selFamily2',
+    get: () => () => {},
+    cachePolicyForParams_UNSTABLE: {
+      equality: 'reference',
+      eviction: 'none', // $ExpectError
+    },
+  });
 }
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
