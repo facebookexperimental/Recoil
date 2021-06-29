@@ -113,14 +113,18 @@ export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-
 export type EqualityPolicy = 'reference' | 'value';
 export type EvictionPolicy = 'lru' | 'none';
 
-export type CachePolicy =
-  | {eviction: 'lru', maxSize: number, equality?: EqualityPolicy}
-  | {eviction: 'none', equality?: EqualityPolicy}
-  | {eviction?: undefined, equality: EqualityPolicy};
+// TODO: removing while we discuss long term API
+// export type CachePolicy =
+//   | {eviction: 'lru', maxSize: number, equality?: EqualityPolicy}
+//   | {eviction: 'none', equality?: EqualityPolicy}
+//   | {eviction?: undefined, equality: EqualityPolicy};
 
-export interface CachePolicyWithoutEviction {
-  equality: EqualityPolicy;
-}
+// TODO: removing while we discuss long term API
+// export interface CachePolicyWithoutEviction {
+//   equality: EqualityPolicy;
+// }
+
+export type CachePolicyWithoutEquality = {eviction: 'lru', maxSize: number} | {eviction: 'none'};
 
 export interface ReadOnlySelectorOptions<T> {
     key: string;
@@ -129,7 +133,7 @@ export interface ReadOnlySelectorOptions<T> {
       getCallback: GetCallback,
     }) => Promise<T> | RecoilValue<T> | T;
     dangerouslyAllowMutability?: boolean;
-    cachePolicy_UNSTABLE?: CachePolicy;
+    cachePolicy_UNSTABLE?: CachePolicyWithoutEquality; // TODO: using the more restrictive CachePolicyWithoutEquality while we discuss long term API
 }
 
 export interface ReadWriteSelectorOptions<T> extends ReadOnlySelectorOptions<T> {
@@ -320,7 +324,7 @@ export interface AtomFamilyOptions<T, P extends SerializableParam> {
   dangerouslyAllowMutability?: boolean;
   default: RecoilValue<T> | Promise<T> | T | ((param: P) => T | RecoilValue<T> | Promise<T>);
   effects_UNSTABLE?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
-  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction;
+  // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
 }
 
 export function atomFamily<T, P extends SerializableParam>(
@@ -333,8 +337,8 @@ export interface ReadOnlySelectorFamilyOptions<T, P extends SerializableParam> {
     get: GetRecoilValue,
     getCallback: GetCallback,
   }) => Promise<T> | RecoilValue<T> | T;
-  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction;
-  cachePolicy_UNSTABLE?: CachePolicy;
+  // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
+  cachePolicy_UNSTABLE?: CachePolicyWithoutEquality; // TODO: using the more restrictive CachePolicyWithoutEquality while we discuss long term API
   dangerouslyAllowMutability?: boolean;
 }
 
@@ -350,8 +354,8 @@ export interface ReadWriteSelectorFamilyOptions<T, P extends SerializableParam> 
       opts: { set: SetRecoilState; get: GetRecoilValue; reset: ResetRecoilState },
       newValue: T | DefaultValue,
   ) => void;
-  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction;
-  cachePolicy_UNSTABLE?: CachePolicy;
+  // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
+  cachePolicy_UNSTABLE?: CachePolicyWithoutEquality; // TODO: using the more restrictive CachePolicyWithoutEquality while we discuss long term API
   dangerouslyAllowMutability?: boolean;
 }
 
