@@ -148,10 +148,10 @@ const waitForNone: <
     // Issue requests for all dependencies in parallel.
     const deps = unwrapDependencies(dependencies);
     const [results, exceptions] = concurrentRequests(get, deps);
-
     // Always return the current status of the results; never block.
     return wrapLoadables(dependencies, results, exceptions);
   },
+  dangerouslyAllowMutability: true,
 });
 
 // Selector that requests all dependencies in parallel and waits for at least
@@ -203,6 +203,7 @@ const waitForAny: <
       }
     });
   },
+  dangerouslyAllowMutability: true,
 });
 
 // Selector that requests all dependencies in parallel and waits for all to be
@@ -249,6 +250,7 @@ const waitForAll: <
       ),
     );
   },
+  dangerouslyAllowMutability: true,
 });
 
 const waitForAllSettled: <
@@ -298,6 +300,7 @@ const waitForAllSettled: <
         .then(() => wrapLoadables(dependencies, results, exceptions))
     );
   },
+  dangerouslyAllowMutability: true,
 });
 
 const noWait: (
@@ -314,6 +317,7 @@ const noWait: (
         : loadableWithError(exception);
     }
   },
+  dangerouslyAllowMutability: true,
 });
 
 module.exports = {
