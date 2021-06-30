@@ -74,11 +74,21 @@ function handleLoadable<T>(
     const promise = new Promise(resolve => {
       storeRef.current.getState().suspendedComponentResolvers.add(resolve);
     });
+
+    // $FlowFixMe Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
+    // @fb-only: promise.displayName = `Recoil Value: ${recoilValue.key}`;
+
     throw promise;
   } else if (loadable.state === 'hasError') {
     throw loadable.contents;
   } else {
-    throw new Error(`Invalid value of loadable atom "${recoilValue.key}"`);
+    const err = new Error(
+      `Invalid value of loadable atom "${recoilValue.key}"`,
+    );
+
+    err.stack; // In V8, Error objects keep closures alive until the error.stack property is accessed
+
+    throw err;
   }
 }
 
