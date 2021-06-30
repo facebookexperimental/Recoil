@@ -10,7 +10,10 @@
  */
 'use strict';
 
-import type {CachePolicy} from '../caches/Recoil_CachePolicy';
+import type {
+  CachePolicy,
+  CachePolicyWithoutEviction,
+} from '../caches/Recoil_CachePolicy';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
@@ -46,7 +49,7 @@ type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
     | Promise<T>
     | RecoilValue<T>
     | T,
-  cachePolicyForParams_UNSTABLE?: CachePolicy,
+  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction,
   cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
   retainedBy_UNSTABLE?: RetainedBy | (P => RetainedBy),
@@ -96,12 +99,10 @@ function selectorFamily<T, Params: Parameter>(
   const selectorCache = cacheFromPolicy<
     Params,
     RecoilState<T> | RecoilValueReadOnly<T>,
-  >(
-    options.cachePolicyForParams_UNSTABLE ?? {
-      equality: 'value',
-      eviction: 'none',
-    },
-  );
+  >({
+    equality: options.cachePolicyForParams_UNSTABLE?.equality ?? 'value',
+    eviction: 'none',
+  });
 
   return (params: Params) => {
     const cachedSelector = selectorCache.get(params);

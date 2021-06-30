@@ -236,6 +236,8 @@ testRecoil('selectorFamily - reference caching', () => {
   expect(evals).toBe(13);
 });
 
+/**
+ * At this time configurtable family params are not possible through configs
 testRecoil('selectorFamily - most recent caching', () => {
   let evals = 0;
   const mySelector = selectorFamily({
@@ -269,6 +271,7 @@ testRecoil('selectorFamily - most recent caching', () => {
   expect(getValue(mySelector(multiply10))).toBe(10);
   expect(evals).toBe(3);
 });
+*/
 
 // Parameterized selector results should be frozen unless
 // dangerouslyAllowMutability is set
