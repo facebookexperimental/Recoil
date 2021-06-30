@@ -60,7 +60,11 @@ const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
 // to be discarded and their resources released.
 const SUSPENSE_TIMEOUT_MS = 120000;
 
-function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
+function handleLoadable<T>(
+  loadable: Loadable<T>,
+  recoilValue: RecoilValue<T>,
+  storeRef,
+): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
   // upstream dependencies change it may produce a state in which the component
   // can render, but it would still be suspended on a Promise that may never resolve.
@@ -74,7 +78,13 @@ function handleLoadable<T>(loadable: Loadable<T>, atom, storeRef): T {
   } else if (loadable.state === 'hasError') {
     throw loadable.contents;
   } else {
-    throw new Error(`Invalid value of loadable atom "${atom.key}"`);
+    const err = new Error(
+      `Invalid value of loadable atom "${recoilValue.key}"`,
+    );
+
+    err.stack; // In V8, Error objects keep closures alive until the error.stack property is accessed
+
+    throw err;
   }
 }
 
