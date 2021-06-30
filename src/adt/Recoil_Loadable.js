@@ -103,6 +103,7 @@ const loadableAccessors = {
 
   valueOrThrow() {
     const error = new Error(
+      // $FlowFixMe[object-this-reference]
       `Loadable expected value, but in "${this.state}" state`,
     );
     // V8 keeps closures alive until stack is accessed, this prevents a memory leak
@@ -116,6 +117,7 @@ const loadableAccessors = {
 
   errorOrThrow() {
     const error = new Error(
+      // $FlowFixMe[object-this-reference]
       `Loadable expected error, but in "${this.state}" state`,
     );
     // V8 keeps closures alive until stack is accessed, this prevents a memory leak
@@ -129,6 +131,7 @@ const loadableAccessors = {
 
   promiseOrThrow() {
     const error = new Error(
+      // $FlowFixMe[object-this-reference]
       `Loadable expected promise, but in "${this.state}" state`,
     );
     // V8 keeps closures alive until stack is accessed, this prevents a memory leak
@@ -137,6 +140,7 @@ const loadableAccessors = {
   },
 
   is(other: Loadable<mixed>): boolean {
+    // $FlowFixMe[object-this-reference]
     return other.state === this.state && other.contents === this.contents;
   },
 
@@ -144,11 +148,15 @@ const loadableAccessors = {
   // TODO Convert Loadable to a Class to better support chaining
   //      by returning a Loadable from a map function
   map<T, S>(map: T => LoadablePromise<S> | S): Loadable<S> {
+    // $FlowFixMe[object-this-reference]
     if (this.state === 'hasError') {
+      // $FlowFixMe[object-this-reference]
       return this;
     }
+    // $FlowFixMe[object-this-reference]
     if (this.state === 'hasValue') {
       try {
+        // $FlowFixMe[object-this-reference]
         const next = map(this.contents);
         // TODO if next instanceof Loadable, then return next
         return isPromise(next)
@@ -158,18 +166,22 @@ const loadableAccessors = {
         return isPromise(e)
           ? // If we "suspended", then try again.
             // errors and subsequent retries will be handled in 'loading' case
+            // $FlowFixMe[object-this-reference]
             loadableWithPromise(e.next(() => map(this.contents)))
           : loadableWithError(e);
       }
     }
+    // $FlowFixMe[object-this-reference]
     if (this.state === 'loading') {
       return loadableWithPromise(
+        // $FlowFixMe[object-this-reference]
         this.contents
           // TODO if map returns a loadable, then return the value or promise or throw the error
           .then(map)
           .catch(e => {
             if (isPromise(e)) {
               // we were "suspended," try again
+              // $FlowFixMe[object-this-reference]
               return e.then(() => map(this.contents));
             }
             throw e;
