@@ -11,7 +11,7 @@
 'use strict';
 
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
-import type {CachePolicy} from '../caches/Recoil_CachePolicy';
+import type {CachePolicyWithoutEviction} from '../caches/Recoil_CachePolicy';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomEffect, AtomOptions} from './Recoil_atom';
@@ -46,7 +46,7 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
     | $ReadOnlyArray<AtomEffect<T>>
     | (P => $ReadOnlyArray<AtomEffect<T>>),
   retainedBy_UNSTABLE?: RetainedBy | (P => RetainedBy),
-  cachePolicyForParams_UNSTABLE?: CachePolicy,
+  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction,
 
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ParameterizedScopeRules<P>,
 }>;
@@ -81,12 +81,10 @@ into children's state keys as well.
 function atomFamily<T, P: Parameter>(
   options: AtomFamilyOptions<T, P>,
 ): P => RecoilState<T> {
-  const atomCache = cacheFromPolicy<P, RecoilState<T>>(
-    options.cachePolicyForParams_UNSTABLE ?? {
-      equality: 'value',
-      eviction: 'none',
-    },
-  );
+  const atomCache = cacheFromPolicy<P, RecoilState<T>>({
+    equality: options.cachePolicyForParams_UNSTABLE?.equality ?? 'value',
+    eviction: 'none',
+  });
 
   // Simple atomFamily implementation to cache individual atoms based
   // on the parameter value equality.

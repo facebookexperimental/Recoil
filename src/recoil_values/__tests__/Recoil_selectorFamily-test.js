@@ -236,40 +236,6 @@ testRecoil('selectorFamily - reference caching', () => {
   expect(evals).toBe(13);
 });
 
-testRecoil('selectorFamily - most recent caching', () => {
-  let evals = 0;
-  const mySelector = selectorFamily({
-    key: 'selectorFamily/most recent caching',
-    get: ({multiplier}) => ({get}) => {
-      evals++;
-      return get(myAtom) * multiplier;
-    },
-    cachePolicyForParams_UNSTABLE: {
-      eviction: 'lru',
-      maxSize: 1,
-    },
-  });
-
-  const multiply10 = {multiplier: 10};
-  const multiply100 = {multiplier: 100};
-
-  expect(evals).toBe(0);
-
-  set(myAtom, 1);
-  expect(getValue(mySelector(multiply10))).toBe(10);
-  expect(evals).toBe(1);
-  expect(getValue(mySelector(multiply10))).toBe(10);
-  expect(evals).toBe(1);
-  expect(getValue(mySelector(multiply100))).toBe(100);
-  expect(evals).toBe(2);
-  expect(getValue(mySelector(multiply100))).toBe(100);
-  expect(evals).toBe(2);
-  expect(getValue(mySelector(multiply10))).toBe(10);
-  expect(evals).toBe(3);
-  expect(getValue(mySelector(multiply10))).toBe(10);
-  expect(evals).toBe(3);
-});
-
 // Parameterized selector results should be frozen unless
 // dangerouslyAllowMutability is set
 testRecoil('selectorFamily - mutability', () => {
