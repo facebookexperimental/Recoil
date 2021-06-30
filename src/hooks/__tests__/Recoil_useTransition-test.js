@@ -11,7 +11,10 @@
 
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {
+  IS_INTERNAL,
+  getRecoilTestFn,
+} = require('../../testing/Recoil_TestingUtils');
 
 let React,
   act,
@@ -43,6 +46,10 @@ const testRecoil = getRecoilTestFn(() => {
 let nextID = 0;
 
 testRecoil('Works with useTransition', async () => {
+  if (!IS_INTERNAL) {
+    return; // FIXME: these tests do not work in OSS, possibly due to differing ReactDOM in OSS and internal
+  }
+
   const indexAtom = atom({
     key: `index${nextID++}`,
     default: 0,
