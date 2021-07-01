@@ -18,3 +18,5 @@ export type CachePolicy =
   | {eviction: 'lru', maxSize: number, equality?: EqualityPolicy}
   | {eviction: 'none', equality?: EqualityPolicy}
   | {equality: EqualityPolicy};
+
+export type CachePolicyWithoutEviction = {equality: EqualityPolicy};

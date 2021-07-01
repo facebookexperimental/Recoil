@@ -17,7 +17,7 @@ import type {
 } from '../core/Recoil_RecoilValue';
 import type {Store} from '../core/Recoil_State';
 
-const ReactDOMComet = require('ReactDOMComet');
+// @fb-only: const ReactDOMComet = require('ReactDOMComet');
 const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
 const {act} = require('ReactTestUtils');
 
@@ -42,6 +42,11 @@ const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
 const React = require('react');
 const {useEffect} = require('react');
+
+const ReactDOMComet = require('ReactDOMLegacy_DEPRECATED'); // @oss-only
+
+// @fb-only: const IS_INTERNAL = true;
+const IS_INTERNAL = false; // @oss-only
 
 // TODO Use Snapshot for testing instead of this thunk?
 function makeStore(): Store {
@@ -100,7 +105,8 @@ function createLegacyReactRoot(container, contents) {
 }
 
 function createConcurrentReactRoot(container, contents) {
-  ReactDOMComet.createRoot(container).render(contents);
+  // @fb-only: ReactDOMComet.createRoot(container).render(contents);
+  // @oss-only ReactDOMComet.unstable_createRoot(container).render(contents);
 }
 
 function renderElementsInternal(
@@ -337,4 +343,5 @@ module.exports = {
   asyncSelector,
   flushPromisesAndTimers,
   getRecoilTestFn,
+  IS_INTERNAL,
 };
