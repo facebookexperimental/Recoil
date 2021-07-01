@@ -110,7 +110,7 @@ const {
 
 
 const SUSPENSE_TIMEOUT_MS = 120000;
-declare function handleLoadable<T>(loadable: Loadable<T>, atom: any, storeRef: any): T;
+declare function handleLoadable<T>(loadable: Loadable<T>, recoilValue: RecoilValue<T>, storeRef: any): T;
 declare function validateRecoilValue(recoilValue: any, hookName: any): any;
 export type SetterOrUpdater<T> = (((T) => T) | T) => void;
 export type Resetter = () => void;

@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type { CachePolicy } from '../caches/Recoil_CachePolicy';
+import type { CachePolicy, CachePolicyWithoutEviction } from '../caches/Recoil_CachePolicy';
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
@@ -41,7 +41,7 @@ type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
     get: GetRecoilValue,
     getCallback: GetCallback,
   }) => Promise<T> | RecoilValue<T> | T,
-  cachePolicyForParams_UNSTABLE?: CachePolicy,
+  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction,
   cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
   retainedBy_UNSTABLE?: RetainedBy | ((P) => RetainedBy),

@@ -69,7 +69,8 @@ const waitForNone: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $
     const [results, exceptions] = concurrentRequests(get, deps); // Always return the current status of the results; never block.
 
     return wrapLoadables(dependencies, results, exceptions);
-  }
+  },
+  dangerouslyAllowMutability: true
 }); // Selector that requests all dependencies in parallel and waits for at least
 // one to be available before returning results.  It will only error if all
 // dependencies have errors.
@@ -113,7 +114,8 @@ const waitForAny: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $R
         }
       }
     });
-  }
+  },
+  dangerouslyAllowMutability: true
 }); // Selector that requests all dependencies in parallel and waits for all to be
 // available before returning a value.  It will error if any dependencies error.
 
@@ -148,7 +150,8 @@ const waitForAll: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $R
 
 
     return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults).map(getValueFromLoadablePromiseResult)));
-  }
+  },
+  dangerouslyAllowMutability: true
 });
 const waitForAllSettled: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $ReadOnly<{
   [string]: RecoilValueReadOnly<mixed>,
@@ -181,7 +184,8 @@ const waitForAllSettled: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed
       exceptions[i] = error;
     }) : null)) // Then wrap them as loadables
     .then(() => wrapLoadables(dependencies, results, exceptions));
-  }
+  },
+  dangerouslyAllowMutability: true
 });
 const noWait: (RecoilValue<mixed> // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 ) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
@@ -194,7 +198,8 @@ const noWait: (RecoilValue<mixed> // $FlowFixMe[incompatible-type] added when im
     } catch (exception) {
       return isPromise(exception) ? loadableWithPromise(exception) : loadableWithError(exception);
     }
-  }
+  },
+  dangerouslyAllowMutability: true
 });
 module.exports = {
   waitForNone,

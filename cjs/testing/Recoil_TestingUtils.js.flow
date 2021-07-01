@@ -11,9 +11,7 @@
 'use strict';
 
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
-import type { Store } from '../core/Recoil_State';
-
-const ReactDOMComet = require('ReactDOMComet');
+import type { Store } from '../core/Recoil_State'; // @fb-only: const ReactDOMComet = require('ReactDOMComet');
 
 const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
 
@@ -57,8 +55,14 @@ const React = require('react');
 
 const {
   useEffect
-} = require('react'); // TODO Use Snapshot for testing instead of this thunk?
+} = require('react');
 
+const ReactDOMComet = require('ReactDOMLegacy_DEPRECATED'); // @oss-only
+// @fb-only: const IS_INTERNAL = true;
+
+
+const IS_INTERNAL = false; // @oss-only
+// TODO Use Snapshot for testing instead of this thunk?
 
 declare function makeStore(): Store;
 declare class ErrorBoundary extends React.Component<{
@@ -128,5 +132,6 @@ module.exports = {
   loadingAsyncSelector,
   asyncSelector,
   flushPromisesAndTimers,
-  getRecoilTestFn
+  getRecoilTestFn,
+  IS_INTERNAL
 };

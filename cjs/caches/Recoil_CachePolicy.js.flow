@@ -22,3 +22,6 @@ export type CachePolicy = {
 } | {
   equality: EqualityPolicy
 };
+export type CachePolicyWithoutEviction = {
+  equality: EqualityPolicy
+};

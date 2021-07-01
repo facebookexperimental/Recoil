@@ -56,7 +56,8 @@ const loadableAccessors = {
   },
 
   valueOrThrow() {
-    const error = new Error(`Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    const error = new Error( // $FlowFixMe[object-this-reference]
+    `Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
     throw error;
   },
 
@@ -65,7 +66,8 @@ const loadableAccessors = {
   },
 
   errorOrThrow() {
-    const error = new Error(`Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    const error = new Error( // $FlowFixMe[object-this-reference]
+    `Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
     throw error;
   },
 
@@ -74,11 +76,13 @@ const loadableAccessors = {
   },
 
   promiseOrThrow() {
-    const error = new Error(`Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    const error = new Error( // $FlowFixMe[object-this-reference]
+    `Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
     throw error;
   },
 
   is(other) {
+    // $FlowFixMe[object-this-reference]
     return other.state === this.state && other.contents === this.contents;
   },
 
@@ -86,27 +90,35 @@ const loadableAccessors = {
   // TODO Convert Loadable to a Class to better support chaining
   //      by returning a Loadable from a map function
   map(map) {
+    // $FlowFixMe[object-this-reference]
     if (this.state === 'hasError') {
+      // $FlowFixMe[object-this-reference]
       return this;
-    }
+    } // $FlowFixMe[object-this-reference]
+
 
     if (this.state === 'hasValue') {
       try {
+        // $FlowFixMe[object-this-reference]
         const next = map(this.contents); // TODO if next instanceof Loadable, then return next
 
         return Recoil_isPromise(next) ? loadableWithPromise(next) : loadableWithValue(next);
       } catch (e) {
         return Recoil_isPromise(e) ? // If we "suspended", then try again.
         // errors and subsequent retries will be handled in 'loading' case
+        // $FlowFixMe[object-this-reference]
         loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
       }
-    }
+    } // $FlowFixMe[object-this-reference]
+
 
     if (this.state === 'loading') {
-      return loadableWithPromise(this.contents // TODO if map returns a loadable, then return the value or promise or throw the error
+      return loadableWithPromise( // $FlowFixMe[object-this-reference]
+      this.contents // TODO if map returns a loadable, then return the value or promise or throw the error
       .then(map).catch(e => {
         if (Recoil_isPromise(e)) {
           // we were "suspended," try again
+          // $FlowFixMe[object-this-reference]
           return e.then(() => map(this.contents));
         }
 
@@ -4510,7 +4522,7 @@ const {
 
 const SUSPENSE_TIMEOUT_MS = 120000;
 
-function handleLoadable(loadable, atom, storeRef) {
+function handleLoadable(loadable, recoilValue, storeRef) {
   // We can't just throw the promise we are waiting on to Suspense.  If the
   // upstream dependencies change it may produce a state in which the component
   // can render, but it would still be suspended on a Promise that may never resolve.
@@ -4519,12 +4531,16 @@ function handleLoadable(loadable, atom, storeRef) {
   } else if (loadable.state === 'loading') {
     const promise = new Promise(resolve => {
       storeRef.current.getState().suspendedComponentResolvers.add(resolve);
-    });
+    }); // $FlowFixMe Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
+    // @fb-only: promise.displayName = `Recoil State: ${recoilValue.key}`;
+
     throw promise;
   } else if (loadable.state === 'hasError') {
     throw loadable.contents;
   } else {
-    throw new Error(`Invalid value of loadable atom "${atom.key}"`);
+    const err = new Error(`Invalid value of loadable atom "${recoilValue.key}"`);
+
+    throw err;
   }
 }
 
@@ -7358,10 +7374,10 @@ into children's state keys as well.
 
 
 function atomFamily(options) {
-  var _options$cachePolicyF;
+  var _options$cachePolicyF, _options$cachePolicyF2;
 
-  const atomCache = Recoil_cacheFromPolicy((_options$cachePolicyF = options.cachePolicyForParams_UNSTABLE) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : {
-    equality: 'value',
+  const atomCache = Recoil_cacheFromPolicy({
+    equality: (_options$cachePolicyF = (_options$cachePolicyF2 = options.cachePolicyForParams_UNSTABLE) === null || _options$cachePolicyF2 === void 0 ? void 0 : _options$cachePolicyF2.equality) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : 'value',
     eviction: 'none'
   }); // Simple atomFamily implementation to cache individual atoms based
   // on the parameter value equality.
@@ -7432,10 +7448,10 @@ let nextIndex = 0;
 // duplicate cache entries.  This behavior may be overridden with the
 // cacheImplementationForParams option.
 function selectorFamily(options) {
-  var _options$cachePolicyF;
+  var _options$cachePolicyF, _options$cachePolicyF2;
 
-  const selectorCache = Recoil_cacheFromPolicy((_options$cachePolicyF = options.cachePolicyForParams_UNSTABLE) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : {
-    equality: 'value',
+  const selectorCache = Recoil_cacheFromPolicy({
+    equality: (_options$cachePolicyF = (_options$cachePolicyF2 = options.cachePolicyForParams_UNSTABLE) === null || _options$cachePolicyF2 === void 0 ? void 0 : _options$cachePolicyF2.equality) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : 'value',
     eviction: 'none'
   });
   return params => {
@@ -7645,7 +7661,8 @@ const waitForNone = Recoil_selectorFamily({
     const [results, exceptions] = concurrentRequests(get, deps); // Always return the current status of the results; never block.
 
     return wrapLoadables(dependencies, results, exceptions);
-  }
+  },
+  dangerouslyAllowMutability: true
 }); // Selector that requests all dependencies in parallel and waits for at least
 // one to be available before returning results.  It will only error if all
 // dependencies have errors.
@@ -7681,7 +7698,8 @@ const waitForAny = Recoil_selectorFamily({
         }
       }
     });
-  }
+  },
+  dangerouslyAllowMutability: true
 }); // Selector that requests all dependencies in parallel and waits for all to be
 // available before returning a value.  It will error if any dependencies error.
 
@@ -7708,7 +7726,8 @@ const waitForAll = Recoil_selectorFamily({
 
 
     return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults).map(getValueFromLoadablePromiseResult)));
-  }
+  },
+  dangerouslyAllowMutability: true
 });
 const waitForAllSettled = Recoil_selectorFamily({
   key: '__waitForAllSettled',
@@ -7733,7 +7752,8 @@ const waitForAllSettled = Recoil_selectorFamily({
       exceptions[i] = error;
     }) : null)) // Then wrap them as loadables
     .then(() => wrapLoadables(dependencies, results, exceptions));
-  }
+  },
+  dangerouslyAllowMutability: true
 });
 const noWait = Recoil_selectorFamily({
   key: '__noWait',
@@ -7745,7 +7765,8 @@ const noWait = Recoil_selectorFamily({
     } catch (exception) {
       return Recoil_isPromise(exception) ? loadableWithPromise$3(exception) : loadableWithError$3(exception);
     }
-  }
+  },
+  dangerouslyAllowMutability: true
 });
 var Recoil_WaitFor = {
   waitForNone,

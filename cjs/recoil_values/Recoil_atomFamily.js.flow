@@ -10,7 +10,7 @@
  */
 'use strict'; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 
-import type { CachePolicy } from '../caches/Recoil_CachePolicy';
+import type { CachePolicyWithoutEviction } from '../caches/Recoil_CachePolicy';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
 import type { AtomEffect, AtomOptions } from './Recoil_atom';
@@ -39,7 +39,7 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{ ...AtomOptions<T>,
   default: RecoilValue<T> | Promise<T> | T | ((P) => T | RecoilValue<T> | Promise<T>),
   effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>> | ((P) => $ReadOnlyArray<AtomEffect<T>>),
   retainedBy_UNSTABLE?: RetainedBy | ((P) => RetainedBy),
-  cachePolicyForParams_UNSTABLE?: CachePolicy,
+  cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction,
 }>; // Process scopeRules to handle any entries which are functions taking parameters
 
 declare function mapScopeRules<P>(scopeRules?: ParameterizedScopeRules<P>, param: P): ScopeRules | void;
