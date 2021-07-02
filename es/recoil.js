@@ -3508,7 +3508,8 @@ const {
 
 
 
- // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
+
+
 
 
 
@@ -3687,8 +3688,13 @@ function endBatch(storeRef) {
     storeState.currentTree = nextTree;
     storeState.nextTree = null;
     sendEndOfBatchNotifications(storeRef.current);
-    const discardedVersion = Recoil_nullthrows(storeState.previousTree).version;
-    storeState.graphsByVersion.delete(discardedVersion);
+
+    if (storeState.previousTree != null) {
+      storeState.graphsByVersion.delete(storeState.previousTree.version);
+    } else {
+      Recoil_recoverableViolation('Ended batch with no previous state, which is unexpected', 'recoil');
+    }
+
     storeState.previousTree = null;
 
     if (Recoil_gkx_1('recoil_memory_managament_2020')) {

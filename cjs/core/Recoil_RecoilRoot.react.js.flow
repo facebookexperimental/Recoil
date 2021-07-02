@@ -27,8 +27,9 @@ const expectationViolation = require('../util/Recoil_expectationViolation');
 
 const gkx = require('../util/Recoil_gkx');
 
-const nullthrows = require('../util/Recoil_nullthrows'); // @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const nullthrows = require('../util/Recoil_nullthrows');
 
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 const unionSets = require('../util/Recoil_unionSets');
 
