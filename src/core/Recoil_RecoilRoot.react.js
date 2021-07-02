@@ -26,7 +26,7 @@ const {
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
-// @fb-only: const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const unionSets = require('../util/Recoil_unionSets');
 const {
   cleanUpNode,
@@ -217,8 +217,14 @@ function endBatch(storeRef) {
 
     sendEndOfBatchNotifications(storeRef.current);
 
-    const discardedVersion = nullthrows(storeState.previousTree).version;
-    storeState.graphsByVersion.delete(discardedVersion);
+    if (storeState.previousTree != null) {
+      storeState.graphsByVersion.delete(storeState.previousTree.version);
+    } else {
+      recoverableViolation(
+        'Ended batch with no previous state, which is unexpected',
+        'recoil',
+      );
+    }
     storeState.previousTree = null;
 
     if (gkx('recoil_memory_managament_2020')) {
