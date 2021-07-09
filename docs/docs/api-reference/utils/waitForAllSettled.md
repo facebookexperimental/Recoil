@@ -3,7 +3,7 @@ title: waitForAllSettled(dependencies)
 sidebar_label: waitForAllSettled()
 ---
 
-A concurrency helper that returns a set of [`Loadable`s](/docs/api-reference/core/Loadable) for the current state of the requested dependencies.  It waits until at least all of the dependencies are either in a value state, or an error state.
+A concurrency helper that returns a set of [`Loadable`s](/docs/api-reference/core/Loadable) for the current state of the requested dependencies.  It waits until all of the dependencies are either in a value state, or an error state.
 
 The dependencies may either be provided as a tuple array or as named dependencies in an object.
 
