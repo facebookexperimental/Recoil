@@ -264,7 +264,6 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
         validateRecoilValue(recoilValue, 'useRecoilValue');
       }
       const loadable = useRecoilValueLoadable(recoilValue);
-      // $FlowFixMe[escaped-generic]
       return handleLoadable(loadable, recoilValue, storeRef);
     }
 
@@ -483,7 +482,6 @@ function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
   }
   const storeRef = useStoreRef();
   const loadable = useRecoilValueLoadable(recoilValue);
-  // $FlowFixMe[escaped-generic]
   return handleLoadable(loadable, recoilValue, storeRef);
 }
 
