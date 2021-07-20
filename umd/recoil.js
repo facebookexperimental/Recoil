@@ -4685,8 +4685,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           validateRecoilValue(recoilValue, 'useRecoilValue');
         }
 
-        const loadable = useRecoilValueLoadable(recoilValue); // $FlowFixMe[escaped-generic]
-
+        const loadable = useRecoilValueLoadable(recoilValue);
         return handleLoadable(loadable, recoilValue, storeRef);
       }
 
@@ -4889,8 +4888,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     }
 
     const storeRef = useStoreRef$1();
-    const loadable = useRecoilValueLoadable(recoilValue); // $FlowFixMe[escaped-generic]
-
+    const loadable = useRecoilValueLoadable(recoilValue);
     return handleLoadable(loadable, recoilValue, storeRef);
   }
   /**

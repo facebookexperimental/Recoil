@@ -4680,8 +4680,7 @@ function useRecoilInterface_DEPRECATED() {
         validateRecoilValue(recoilValue, 'useRecoilValue');
       }
 
-      const loadable = useRecoilValueLoadable(recoilValue); // $FlowFixMe[escaped-generic]
-
+      const loadable = useRecoilValueLoadable(recoilValue);
       return handleLoadable(loadable, recoilValue, storeRef);
     }
 
@@ -4884,8 +4883,7 @@ function useRecoilValue(recoilValue) {
   }
 
   const storeRef = useStoreRef$1();
-  const loadable = useRecoilValueLoadable(recoilValue); // $FlowFixMe[escaped-generic]
-
+  const loadable = useRecoilValueLoadable(recoilValue);
   return handleLoadable(loadable, recoilValue, storeRef);
 }
 /**
