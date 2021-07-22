@@ -213,9 +213,10 @@ useResetRecoilState(writeableSelector); // $ExpectType Resetter
 useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
 
-useGetRecoilValueInfo_UNSTABLE(myAtom); // $ExpectType AtomInfo<number>
-useGetRecoilValueInfo_UNSTABLE(mySelector2); // $ExpectType AtomInfo<string>
-useGetRecoilValueInfo_UNSTABLE({}); // $ExpectError
+useGetRecoilValueInfo_UNSTABLE(myAtom); // $ExpectError
+useGetRecoilValueInfo_UNSTABLE()(myAtom); // $ExpectType AtomInfo<number>
+useGetRecoilValueInfo_UNSTABLE()(mySelector2); // $ExpectType AtomInfo<string>
+useGetRecoilValueInfo_UNSTABLE()({}); // $ExpectError
 
 useRecoilCallback(({ snapshot, set, reset, gotoSnapshot, transact_UNSTABLE }) => async () => {
   snapshot; // $ExpectType Snapshot
@@ -610,9 +611,7 @@ isRecoilValue(mySelector1);
   selector({
     key: 'ReadOnlySelectorSel_cachePolicy3',
     get: () => {},
-    cachePolicy_UNSTABLE: {
-      eviction: 'lru', // $ExpectError
-    }
+    cachePolicy_UNSTABLE: { eviction: 'lru' }, // $ExpectError
   });
 
   selector({
@@ -635,9 +634,7 @@ isRecoilValue(mySelector1);
   selectorFamily({
     key: 'ReadOnlySelectorFSel_cachePolicy3',
     get: () => () => {},
-    cachePolicy_UNSTABLE: {
-      eviction: 'lru', // $ExpectError
-    }
+    cachePolicy_UNSTABLE: { eviction: 'lru' }, // $ExpectError
   });
 
   selectorFamily({
