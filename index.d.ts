@@ -51,7 +51,7 @@ export class Snapshot {
   getID(): SnapshotID;
   getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
   getPromise<T>(recoilValue: RecoilValue<T>): Promise<T>;
-  getNodes_UNSTABLE(opts?: { isModified?: boolean }): Iterable<RecoilValue<unknown>>;
+  getNodes_UNSTABLE(opts?: { isModified?: boolean, isInitialized?: boolean }): Iterable<RecoilValue<unknown>>;
   getInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): AtomInfo<T>;
   map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
   asyncMap(cb: (mutableSnapshot: MutableSnapshot) => Promise<void>): Promise<Snapshot>;
@@ -109,7 +109,6 @@ export type SetRecoilState = <T>(
 ) => void;
 
 export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
-
 
 // export type EqualityPolicy = 'reference' | 'value'; TODO: removing while we discuss long term API
 
@@ -210,7 +209,7 @@ export function useResetRecoilState(recoilState: RecoilState<any>): Resetter; //
 /**
  * Returns current info about an atom
  */
-export function useGetRecoilValueInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): AtomInfo<T>;
+export function useGetRecoilValueInfo_UNSTABLE(): <T>(recoilValue: RecoilValue<T>) => AtomInfo<T>;
 
 /**
  * Returns a function that will run the callback that was passed when

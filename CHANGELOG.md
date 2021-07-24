@@ -12,7 +12,7 @@
 
 ## NEXT
 
-- Fix TypeScript typeing for `selectorFamily()` and `getCallback()` (#1060)
+- Fix TypeScript typing for `selectorFamily()`, `getCallback()`, `useGetRecoilValueInfo()`, and `Snapshot#getNodes()` (#1060, #1116, #1123)
 - Fix onSet() handler to get the proper new value when atom is reset or has an async default Promise that resolves (#1059, #1050, #738) (Slightly breaking change)
 - useRecoilTransaction_UNSTABLE
 - useTransition compatibility
