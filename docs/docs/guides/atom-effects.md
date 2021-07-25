@@ -3,7 +3,7 @@ title: Atom Effects
 sidebar_label: Atom Effects
 ---
 
-Atom Effects are a new experimental API for managing side-effects and initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are defined as part of the atom definition, so each atom can specify and compose their own policies.  This API is still evolving, and thus marked as `_UNSTABLE`.
+Atom Effects are a new experimental API for managing side-effects and initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, etc.  They are defined as part of the atom definition, so each atom can specify and compose their own policies.  This API is still evolving, and thus marked as `_UNSTABLE`.
 
 ----
 ## *IMPORTANT NOTE*
