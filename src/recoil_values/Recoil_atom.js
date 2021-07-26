@@ -177,7 +177,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
   // Cleanup handlers for this atom
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
-  const cleanupEffectsByStore: Map<Store, () => void> = new Map();
+  const cleanupEffectsByStore: Map<Store, Array<() => void>> = new Map();
 
   function wrapPendingPromise(
     store: Store,
@@ -341,7 +341,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           onSet: onSet(effect),
         });
         if (cleanup != null) {
-          cleanupEffectsByStore.set(store, cleanup);
+          cleanupEffectsByStore.set(store, [
+            ...(cleanupEffectsByStore.get(store) ?? []),
+            cleanup,
+          ]);
         }
       }
 
@@ -364,7 +367,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
     return () => {
       liveStoresCount--;
-      cleanupEffectsByStore.get(store)?.();
+      cleanupEffectsByStore.get(store)?.forEach(cleanup => cleanup());
       cleanupEffectsByStore.delete(store);
       store.getState().knownAtoms.delete(key); // FIXME remove knownAtoms?
     };

@@ -789,16 +789,23 @@ describe('Effects', () => {
   });
 
   testRecoil('Cleanup Handlers - when root unmounted', () => {
-    const refCounts = [0, 0];
+    const refCountsA = [0, 0];
+    const refCountsB = [0, 0];
 
     const atomA = atom({
       key: 'atom effect cleanup - A',
       default: 'A',
       effects_UNSTABLE: [
         () => {
-          refCounts[0]++;
+          refCountsA[0]++;
           return () => {
-            refCounts[0]--;
+            refCountsA[0]--;
+          };
+        },
+        () => {
+          refCountsA[1]++;
+          return () => {
+            refCountsA[1]--;
           };
         },
       ],
@@ -809,9 +816,15 @@ describe('Effects', () => {
       default: 'B',
       effects_UNSTABLE: [
         () => {
-          refCounts[1]++;
+          refCountsB[0]++;
           return () => {
-            refCounts[1]--;
+            refCountsB[0]--;
+          };
+        },
+        () => {
+          refCountsB[1]++;
+          return () => {
+            refCountsB[1]--;
           };
         },
       ],
@@ -841,23 +854,28 @@ describe('Effects', () => {
     });
 
     expect(c.textContent).toBe('');
-    expect(refCounts).toEqual([0, 0]);
+    expect(refCountsA).toEqual([0, 0]);
+    expect(refCountsB).toEqual([0, 0]);
 
     act(() => setNumRoots(1));
     expect(c.textContent).toBe('"A""B"');
-    expect(refCounts).toEqual([1, 1]);
+    expect(refCountsA).toEqual([1, 1]);
+    expect(refCountsB).toEqual([1, 1]);
 
     act(() => setNumRoots(2));
     expect(c.textContent).toBe('"A""B""A""B"');
-    expect(refCounts).toEqual([2, 2]);
+    expect(refCountsA).toEqual([2, 2]);
+    expect(refCountsB).toEqual([2, 2]);
 
     act(() => setNumRoots(1));
     expect(c.textContent).toBe('"A""B"');
-    expect(refCounts).toEqual([1, 1]);
+    expect(refCountsA).toEqual([1, 1]);
+    expect(refCountsB).toEqual([1, 1]);
 
     act(() => setNumRoots(0));
     expect(c.textContent).toBe('');
-    expect(refCounts).toEqual([0, 0]);
+    expect(refCountsA).toEqual([0, 0]);
+    expect(refCountsB).toEqual([0, 0]);
   });
 
   // Test that effects can initialize state when an atom is first used after an
