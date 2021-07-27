@@ -7078,7 +7078,9 @@ function baseAtom(options) {
         });
 
         if (cleanup != null) {
-          cleanupEffectsByStore.set(store, cleanup);
+          var _cleanupEffectsByStor;
+
+          cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor !== void 0 ? _cleanupEffectsByStor : []), cleanup]);
         }
       }
 
@@ -7099,10 +7101,10 @@ function baseAtom(options) {
     }
 
     return () => {
-      var _cleanupEffectsByStor;
+      var _cleanupEffectsByStor2;
 
       liveStoresCount--;
-      (_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor === void 0 ? void 0 : _cleanupEffectsByStor();
+      (_cleanupEffectsByStor2 = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor2 === void 0 ? void 0 : _cleanupEffectsByStor2.forEach(cleanup => cleanup());
       cleanupEffectsByStore.delete(store);
       store.getState().knownAtoms.delete(key); // FIXME remove knownAtoms?
     };
