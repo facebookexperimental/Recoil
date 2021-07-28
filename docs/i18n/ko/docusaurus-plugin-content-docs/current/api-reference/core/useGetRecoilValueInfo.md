@@ -46,10 +46,10 @@ function ButtonToShowCurrentSubscriptions() {
     const {subscribers} = getRecoilValueInfo(myAtom);
     console.debug(
       'Current Subscriber Nodes:',
-      Array.from(subscribers.nodes).map(({key})=>key),
+      Array.from(subscribers.nodes).map(({key}) => key),
     );
   }
 
-  return <button onClick={onClick} >See Current Subscribers</button>;
+  return <button onClick={onClick}>See Current Subscribers</button>;
 }
 ```
