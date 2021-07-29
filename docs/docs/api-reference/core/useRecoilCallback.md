@@ -20,6 +20,7 @@ type CallbackInterface = {
   gotoSnapshot: Snapshot => void,
   set: <T>(RecoilState<T>, (T => T) | T) => void,
   reset: <T>(RecoilState<T>) => void,
+  transact_UNSTABLE: ((TransactionInterface) => void) => void,
 };
 
 function useRecoilCallback<Args, ReturnValue>(
@@ -36,6 +37,7 @@ Callback Interface:
 * **`gotoSnapshot`** - Enqueue updating the global state to match the provided [`Snapshot`](/docs/api-reference/core/Snapshot).
 * **`set`** - Enqueue setting the value of an atom or selector.  Like elsewhere, you may either provide the new value directly or an updater function that returns the new value and takes the current value as a parameter.  The current value represents all other enqueued state changes to date in the current transaction.
 * **`reset`** - Reset the value of an atom or selector to its default.
+* **`transact_UNSTABLE`** - Execute a transaction.  See the [`useRecoilTransaction_UNSTABLE()` documentation](/docs/api-reference/core/useRecoilTransaction).
 
 ### Lazy Read Example
 

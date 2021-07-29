@@ -32,7 +32,7 @@ type AtomEffect<T> = ({
   // Subscribe to changes in the atom value.
   // The callback is not called due to changes from this effect's own setSelf().
   onSet: (
-    (newValue: T | DefaultValue, oldValue: T | DefaultValue) => void,
+    (newValue: T, oldValue: T | DefaultValue) => void,
   ) => void,
 
 }) => void | () => void; // Optionally return a cleanup handler
@@ -262,11 +262,7 @@ const localForageEffect = key => ({setSelf, onSet}) => {
   ));
 
   onSet(newValue => {
-    if (newValue instanceof DefaultValue) {
-      localStorage.removeItem(key);
-    } else {
-      localStorage.setItem(key, JSON.stringify(newValue));
-    }
+    localStorage.setItem(key, JSON.stringify(newValue));
   });
 };
 
@@ -286,7 +282,7 @@ With this approach, you can asynchronously call `setSelf()` when the value is av
 
 ```jsx
 const localForageEffect = key => ({setSelf, onSet}) => {
-  /** If there's a persisted value - set it on load  */
+  // If there's a persisted value - set it on load
   const loadPersisted = async () => {
     const savedValue = await localForage.getItem(key);
 
@@ -298,12 +294,9 @@ const localForageEffect = key => ({setSelf, onSet}) => {
   // Load the persisted data
   loadPersisted();
 
+  // Subscribe to state changes and persist them to localForage
   onSet(newValue => {
-    if (newValue instanceof DefaultValue) {
-      localForage.removeItem(key);
-    } else {
-      localForage.setItem(key, JSON.stringify(newValue));
-    }
+    localForage.setItem(key, JSON.stringify(newValue));
   });
 };
 
@@ -333,11 +326,7 @@ const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onS
   }
 
   onSet(newValue => {
-    if (newValue instanceof DefaultValue) {
-      localStorage.removeItem(options.key);
-    } else {
-      localStorage.setItem(options.key, JSON.stringify(newValue));
-    }
+    localStorage.setItem(options.key, JSON.stringify(newValue));
   });
 };
 
@@ -377,11 +366,7 @@ const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onS
   );
 
   onSet(newValue => {
-    if (newValue instanceof DefaultValue) {
-      localStorage.removeItem(options.key);
-    } else {
-      localStorage.setItem(options.key, JSON.stringify(newValue));
-    }
+    localStorage.setItem(options.key, JSON.stringify(newValue));
   });
 };
 
