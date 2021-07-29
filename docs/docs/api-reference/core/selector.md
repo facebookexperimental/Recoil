@@ -61,8 +61,8 @@ type CachePolicy =
 - `dangerouslyAllowMutability` - In some cases it may be desireable allow mutating of objects stored in selectors that don't represent state changes.  Use this option to override freezing objects in development mode.
 - `cachePolicy_UNSTABLE` - Defines the behavior of the internal selector cache. Can be useful to control the memory footprint in apps that have selectors with many changing dependencies.
   - `eviction` - can be set to `lru` (which requires that a `maxSize` is set), `keep-all` (default), or `most-recent`. An `lru` cache will evict the least-recently-used value from the selector cache when the size of the cache exceeds `maxSize`. A `keep-all` policy will mean all selector dependencies and their values will be indefinitely stored in the selector cache. A `most-recent` policy will use a cache of size 1 and will retain only the most recently saved set of dependencies and their values.
-  - Note the cache key in a selector's internal cache is a chain of dependencies and their values, and that key points to the output of the full run of the selector given that chain of dependencies. This means the size of the internal selector cache is a function of both the number of dependencies and the number of values for each dependency.
-  - This is an unstable API and may change in the future.
+  - Note the cache stores the values of the selector based on a key containing all dependencies and their values. This means the size of the internal selector cache depends on both the size of the selector values as well as the number of unique values of all dependencies.
+  - Note the default eviction policy (currently `keep-all`) may change in the future.
 
 ---
 
