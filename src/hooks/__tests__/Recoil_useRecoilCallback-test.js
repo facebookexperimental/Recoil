@@ -21,6 +21,7 @@ let React,
   atomFamily,
   selector,
   useRecoilCallback,
+  useRecoilValue,
   useSetRecoilState,
   ReadsAtom,
   flushPromisesAndTimers,
@@ -39,6 +40,7 @@ const testRecoil = getRecoilTestFn(() => {
     selector,
     useRecoilCallback,
     useSetRecoilState,
+    useRecoilValue,
   } = require('../../Recoil_index'));
   ({
     ReadsAtom,
@@ -363,3 +365,77 @@ testRecoil('Consistent callback function', () => {
   act(() => setIteration(1)); // Force a re-render of the Component
   expect(out.textContent).toBe('1');
 });
+
+testRecoil(
+  'Atom effects are initialized twice if first seen on snapshot and then on root store',
+  () => {
+    let numTimesEffectInit = 0;
+
+    const atomWithEffect = atom({
+      key: 'atomWithEffect',
+      default: 0,
+      effects_UNSTABLE: [
+        () => {
+          numTimesEffectInit++;
+        },
+      ],
+    });
+
+    const Component = () => {
+      const readAtomFromSnapshot = useRecoilCallback(({snapshot}) => () => {
+        snapshot.getLoadable(atomWithEffect);
+      });
+
+      readAtomFromSnapshot(); // first initialization
+
+      expect(numTimesEffectInit).toBe(1);
+
+      useRecoilValue(atomWithEffect); // second initialization
+
+      expect(numTimesEffectInit).toBe(2);
+    };
+
+    renderElements(<Component />);
+
+    expect(numTimesEffectInit).toBe(2);
+  },
+);
+
+testRecoil(
+  'Atom effects are initialized once if first seen on root store and then on snapshot',
+  () => {
+    let numTimesEffectInit = 0;
+
+    const atomWithEffect = atom({
+      key: 'atomWithEffect2',
+      default: 0,
+      effects_UNSTABLE: [
+        () => {
+          numTimesEffectInit++;
+        },
+      ],
+    });
+
+    const Component = () => {
+      const readAtomFromSnapshot = useRecoilCallback(({snapshot}) => () => {
+        snapshot.getLoadable(atomWithEffect);
+      });
+
+      useRecoilValue(atomWithEffect); // first initialization
+
+      expect(numTimesEffectInit).toBe(1);
+
+      /**
+       * should not re-initialize b/c snapshot should inherit from latest state,
+       * wherein atom was already initialized
+       */
+      readAtomFromSnapshot();
+
+      expect(numTimesEffectInit).toBe(1);
+    };
+
+    renderElements(<Component />);
+
+    expect(numTimesEffectInit).toBe(1);
+  },
+);
