@@ -3,14 +3,7 @@ title: useRecoilTransaction_UNSTABLE(callback, deps)
 sidebar_label: useRecoilTransaction()
 ---
 
-pending dependencies
-selectors
-selector set
-async
-useRecoilCallback transact
-Promise return value
-
-Create a transaction callback which can be used to atomically update multiple atoms in a safe, easy, and performant way.  Provide a callback which executes the transaction and can `get()` or `set()` multiple atoms.  A transaction is similar to the "updater" form of setting Recoil state, but over multiple atoms.  Writes are visible to subsequent reads from within the same transaction.
+Create a transaction callback which can be used to atomically update multiple atoms in a safe, easy, and efficient way.  Provide a callback for the transaction as a pure function which can `get()` or `set()` multiple atoms.  A transaction is similar to the "updater" form of setting Recoil state, but can operate over multiple atoms.  Writes are visible to subsequent reads from within the same transaction.
 
 In addition to transactions, this hook is also useful to:
 * Implement reducer patterns to perform actions on multiple atoms.
