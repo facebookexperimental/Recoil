@@ -48,7 +48,7 @@ type GetRecoilValue = <T>(RecoilValue<T>) => T;
 type SetRecoilValue = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilValue = <T>(RecoilState<T>) => void;
 
-type CachePolicy = 
+type CachePolicy =
   | {eviction: 'lru', maxSize: number}
   | {eviction: 'keep-all'}
   | {eviction: 'most-recent'};
@@ -59,7 +59,7 @@ type CachePolicy =
 - `set?` - An optional function that will produce writeable selectors when provided. It should be a function that takes an object of named callbacks, same as the `selector()` interface. This is again wrapped by another function with gets the parameters from calling the selector family function.
 - `cachePolicy_UNSTABLE` - Defines the behavior of the internal selector cache for **the invidual selectors** that make up the family (it does not control the number of selectors that are stored in the family). Can be useful to control the memory footprint in apps that have selectors with many changing dependencies.
   - `eviction` - can be set to `lru` (which requires that a `maxSize` is set), `keep-all` (default), or `most-recent`. An `lru` cache will evict the least-recently-used value from the selector cache when the size of the cache exceeds `maxSize`. A `keep-all` policy will mean all selector dependencies and their values will be indefinitely stored in the selector cache. A `most-recent` policy will use a cache of size 1 and will retain only the most recently saved set of dependencies and their values.
-  - Note the `maxSize` property used alongside `lru` does not control the max size of the family itself, it only controls the eviction policy used in the invidiual selectors that make up the family. 
+  - Note the `maxSize` property used alongside `lru` does not control the max size of the family itself, it only controls the eviction policy used in the invidiual selectors that make up the family.
   - Note the cache stores the values of the selector based on a key containing all dependencies and their values. This means the size of the internal selector cache depends on both the size of the selector values as well as the number of unique values of all dependencies.
   - Note the default eviction policy (currently `keep-all`) may change in the future.
 
@@ -157,35 +157,6 @@ const Component2 = () => {
 }
 ```
 
-## Selector Cache Policy Configuration
+## Cache policy configuration
 
-The `cachePolicy_UNSTABLE` property allows you to configure the caching behavior of **individual selectors** that make up the family. This property can be useful for reducing memory in applications that have a large number of selectors that have a large number of changing dependencies. For now the only configurable option is `eviction`, but we may add more in the future.
-
-Below is an example of how you might use this new property:
-
-```jsx
-const clockStateFamily = selectorFamily({
-  key: 'clockState',
-  get: (clockName) => ({get}) => {
-    const hour = get(hourState);
-    const minute = get(minuteState);
-    const second = get(secondState); // will re-run every second
-
-    return `${clockName} - ${hour}:${minute}:${second}`;
-  },
-  cachePolicy_UNSTABLE: {
-    eviction: 'most-recent', // will only store the most recent set of dependencies and their values
-  },
-});
-```
-
-In the example above, each selector in the `clockStateFamily` recalculates every second (the number of selectors in the family will be dictated by the number of times the family is called with distinct `clockName`s). Each seccond, a new set of dependency values is added to the internal cache for each selector in the family, which may lead to a memory issue over time as the internal cache grows indefinitely. Using the `most-recent` eviction policy, the internal selector cache for each selector will only retain the most recent set of dependencies and their values, thus solving the memory issue.
-
-Current eviction options are:
-- `lru` - evicts the least-recently-used value from the cache when the cache size exceeds the given `maxSize`
-- `most-recent` - retains only the most recent value and evicts any other values
-- `keep-all` (default) - keeps all entries in the cache and does not evict
-
-> **_NOTE:_** In this example, we used an eviction policy to control the cache of each selector in the family. This policy will not control the size of the family itself, so if you were to call `clockStateFamily()` with 10 million names, the family size will be 10 million regardless of the internal cache size of each individual selector.
-
-> **_NOTE:_** The default eviciton policy (currently `keep-all`) may change in the future.
+The `cachePolicy_UNSTABLE` property allows you to configure the caching behavior of **individual selectors** that make up the family. This property can be useful for reducing memory in applications that have a large number of selectors that have a large number of changing dependencies.  Please see the [selector cache policy configuration documentation](/docs/api-reference/core/selector#cache-policy-configuration).
