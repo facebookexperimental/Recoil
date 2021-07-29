@@ -125,7 +125,7 @@ export type EvictionPolicy = 'lru' | 'none';
 //   equality: EqualityPolicy;
 // }
 
-export type CachePolicyWithoutEquality = {eviction: 'lru', maxSize: number} | {eviction: 'none'};
+export type CachePolicyWithoutEquality = {eviction: 'lru', maxSize: number} | {eviction: 'none'} | {eviction: 'most-recent'};
 
 export interface ReadOnlySelectorOptions<T> {
     key: string;

@@ -623,6 +623,14 @@ isRecoilValue(mySelector1);
     }
   });
 
+  selector({
+    key: 'ReadOnlySelectorSel_cachePolicy2',
+    get: () => {},
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent',
+    }
+  });
+
   selectorFamily({
     key: 'ReadOnlySelectorFSel_cachePolicy2',
     get: () => () => {},
@@ -643,6 +651,14 @@ isRecoilValue(mySelector1);
     cachePolicy_UNSTABLE: {
       eviction: 'lru',
       maxSize: 10,
+    }
+  });
+
+  selectorFamily({
+    key: 'ReadOnlySelectorFSel_cachePolicy2',
+    get: () => () => {},
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent',
     }
   });
 }

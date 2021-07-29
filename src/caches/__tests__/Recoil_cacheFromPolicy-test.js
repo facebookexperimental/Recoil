@@ -131,4 +131,71 @@ describe('cacheFromPolicy()', () => {
     expect(cache.get({...obj1})).toBe(true);
     expect(cache.get({...obj3})).toBe(true);
   });
+
+  testRecoil('equality: reference, eviction: most-recent', () => {
+    const policy = {equality: 'reference', eviction: 'most-recent'};
+    const cache = cacheFromPolicy<{[string]: number}, boolean>(policy);
+
+    const obj1 = {a: 1};
+    const obj2 = {b: 2};
+    const obj3 = {c: 3};
+
+    cache.set(obj1, true);
+    cache.set(obj2, true);
+    cache.set(obj3, true);
+
+    expect(cache.size()).toBe(1);
+
+    expect(cache.get(obj1)).toBe(undefined);
+    expect(cache.get(obj2)).toBe(undefined);
+
+    expect(cache.get(obj3)).toBe(true);
+
+    cache.set(obj1, true);
+
+    expect(cache.size()).toBe(1);
+
+    expect(cache.get(obj2)).toBe(undefined);
+    expect(cache.get(obj3)).toBe(undefined);
+
+    expect(cache.get(obj1)).toBe(true);
+
+    expect(cache.get({...obj2})).toBe(undefined);
+    expect(cache.get({...obj1})).toBe(undefined);
+    expect(cache.get({...obj3})).toBe(undefined);
+  });
+
+  testRecoil('equality: value, eviction: most-recent', () => {
+    const policy = {equality: 'value', eviction: 'most-recent'};
+    const cache = cacheFromPolicy<{[string]: number}, boolean>(policy);
+
+    const obj1 = {a: 1};
+    const obj2 = {b: 2};
+    const obj3 = {c: 3};
+
+    cache.set(obj1, true);
+    cache.set(obj2, true);
+    cache.set(obj3, true);
+
+    expect(cache.size()).toBe(1);
+
+    expect(cache.get(obj1)).toBe(undefined);
+    expect(cache.get(obj2)).toBe(undefined);
+
+    expect(cache.get(obj3)).toBe(true);
+
+    cache.set(obj1, true);
+
+    expect(cache.size()).toBe(1);
+
+    expect(cache.get(obj2)).toBe(undefined);
+    expect(cache.get(obj3)).toBe(undefined);
+
+    expect(cache.get(obj1)).toBe(true);
+
+    expect(cache.get({...obj2})).toBe(undefined);
+    expect(cache.get({...obj3})).toBe(undefined);
+
+    expect(cache.get({...obj1})).toBe(true);
+  });
 });

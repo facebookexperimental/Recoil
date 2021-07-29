@@ -59,6 +59,8 @@ function getTreeCache<T>(
       return new TreeCache<T>({mapNodeValue});
     case 'lru':
       return treeCacheLRU<T>(nullthrows(maxSize), mapNodeValue);
+    case 'most-recent':
+      return treeCacheLRU<T>(1, mapNodeValue);
   }
 
   throw new Error(`Unrecognized eviction policy ${eviction}`);

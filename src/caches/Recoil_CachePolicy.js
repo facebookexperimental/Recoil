@@ -12,11 +12,12 @@
 'use strict';
 
 export type EqualityPolicy = 'reference' | 'value';
-export type EvictionPolicy = 'lru' | 'none';
+export type EvictionPolicy = 'lru' | 'none' | 'most-recent';
 
 export type CachePolicy =
   | {eviction: 'lru', maxSize: number, equality?: EqualityPolicy}
   | {eviction: 'none', equality?: EqualityPolicy}
+  | {eviction: 'most-recent', equality?: EqualityPolicy}
   | {equality: EqualityPolicy};
 
 export type CachePolicyWithoutEviction = {equality: EqualityPolicy};
