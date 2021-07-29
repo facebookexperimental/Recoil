@@ -232,3 +232,33 @@ const menuItemState = selectorFamily({
   },
 });
 ```
+
+## Selector Cache Policy Configuration
+
+The `cachePolicy_UNSTABLE` property allows you to configure the caching behavior of a selector's internal cache. This property can be useful for reducing memory in applications that have a large number of selectors that have a large number of changing dependencies. For now the only configurable option is `eviction`, but we may add more in the future.
+
+Below is an example of how you might use this new property:
+
+```jsx
+const clockState = selector({
+  key: 'clockState',
+  get: ({get}) => {
+    const hour = get(hourState);
+    const minute = get(minuteState);
+    const second = get(secondState); // will re-run every second
+    return `${hour}:${minute}:${second}`;
+  },
+  cachePolicy_UNSTABLE: {
+    eviction: 'most-recent', // will only store the most recent set of dependencies and their values
+  },
+});
+```
+
+In the example above, `clockState` recalculates every second, adding a new set of dependency values to the internal cache, which may lead to a memory issue over time as the internal cache grows indefinitely. Using the `most-recent` eviction policy, the internal selector cache will only retain the most recent set of dependencies and their values along with the output of running the selector using those dependencies, thus solving the memory issue. 
+
+Current eviction options are:
+- `lru` - evicts the least-recently-used value from the cache when the cache size exceeds the given `maxSize`
+- `most-recent` - retains only the most recent value and evicts any other values
+- `keep-all` (default) - keeps all entries in the cache and does not evict
+
+> **_NOTE:_** The default eviciton policy (currently `keep-all`) may change in the future.
