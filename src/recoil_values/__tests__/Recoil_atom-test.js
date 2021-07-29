@@ -20,6 +20,9 @@ let React,
   getRecoilValueAsLoadable,
   setRecoilValue,
   useRecoilState,
+  useRecoilCallback,
+  useRecoilValue,
+  selector,
   useRecoilTransactionObserver,
   useResetRecoilState,
   ReadsAtom,
@@ -48,6 +51,8 @@ const testRecoil = getRecoilTestFn(() => {
     useRecoilState,
     useRecoilTransactionObserver,
     useResetRecoilState,
+    useRecoilCallback,
+    useRecoilValue,
   } = require('../../hooks/Recoil_Hooks'));
   ({
     ReadsAtom,
@@ -56,6 +61,7 @@ const testRecoil = getRecoilTestFn(() => {
     renderElements,
   } = require('../../testing/Recoil_TestingUtils'));
   atom = require('../Recoil_atom');
+  selector = require('../Recoil_selector');
   immutable = require('immutable');
 
   store = makeStore();
@@ -925,6 +931,58 @@ describe('Effects', () => {
     });
     expect(c.textContent).toEqual('"OTHER""INIT"');
   });
+
+  /**
+   * See github issue #1107 item #1
+   */
+  testRecoil(
+    'atom effect runs twice when selector that depends on that atom is read from a snapshot and the atom is read for first time in that snapshot',
+    () => {
+      let numTimesEffectInit = 0;
+      let latestSetSelf = a => a;
+
+      const atomWithEffect = atom({
+        key: 'atomWithEffect',
+        default: 0,
+        effects_UNSTABLE: [
+          ({setSelf}) => {
+            latestSetSelf = setSelf;
+
+            setSelf(1); // to accurately reproduce minimal reproducible example based on GitHub issue
+
+            numTimesEffectInit++;
+          },
+        ],
+      });
+
+      const selThatDependsOnAtom = selector({
+        key: 'selThatDependsOnAtom',
+        get: ({get}) => get(atomWithEffect),
+      });
+
+      const Component = () => {
+        const readSelFromSnapshot = useRecoilCallback(({snapshot}) => () => {
+          snapshot.getLoadable(selThatDependsOnAtom);
+        });
+
+        readSelFromSnapshot(); // first initialization;
+
+        const val = useRecoilValue(selThatDependsOnAtom); // second initialization;
+
+        return val;
+      };
+
+      const c = renderElements(<Component />);
+
+      expect(c.textContent).toBe('1');
+
+      act(() => latestSetSelf(100));
+
+      expect(c.textContent).toBe('100');
+
+      expect(numTimesEffectInit).toBe(2);
+    },
+  );
 });
 
 testRecoil('object is frozen when stored in atom', () => {

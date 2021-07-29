@@ -280,11 +280,17 @@ function selector<T>(
     state: TreeState,
     key: NodeKey,
   ): Loadable<T> {
-    if (state.atomValues.has(key)) {
+    const isKeyPointingToSelector = store.getState().knownSelectors.has(key);
+
+    /**
+     * It's important that we don't bypass calling getNodeLoadable for atoms
+     * as getNodeLoadable has side effects in state
+     */
+    if (isKeyPointingToSelector && state.atomValues.has(key)) {
       return nullthrows(state.atomValues.get(key));
     }
+
     const loadable = getNodeLoadable(store, state, key);
-    const isKeyPointingToSelector = store.getState().knownSelectors.has(key);
 
     if (loadable.state !== 'loading' && isKeyPointingToSelector) {
       state.atomValues.set(key, loadable);
