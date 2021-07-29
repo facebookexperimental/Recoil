@@ -279,7 +279,7 @@ function CurrentUserInfo() {
 }
 ```
 
-Note that this pre-fetching works by triggering the `selectorFamily()` to initiate an async query and populate the selector's cache.  If the `selectorFamily()` has caching disabled, pre-fetching like this will not do anything.  Also, if you are using an `atomFamily()` instead of a `selectorFamily()`, by either setting the atoms or relying on atom effects to initialize, then it will also not work with `useRecoilCallback()` as trying to set the state of the provided `Snapshot` will have no effect on the live state in the host `<RecoilRoot>`.
+Note that this pre-fetching works by triggering the `selectorFamily()` to initiate an async query and populate the selector's cache.  If you are using an `atomFamily()` instead, by either setting the atoms or relying on atom effects to initialize, then you should use [`useRecoilTransaction_UNSTABLE()`](/docs/api-reference/core/useRecoilTransaction) instead of [`useRecoilCallback()](/docs/api-reference/core/useRecoilCallback), as trying to set the state of the provided `Snapshot` will have no effect on the live state in the host `<RecoilRoot>`.
 
 ## Query Default Atom Values
 

@@ -65,7 +65,7 @@ It is recommended to add [`'useRecoilCallback'`](/docs/api-reference/core/useRec
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": [
       "warn", {
-        "additionalHooks": "useRecoilCallback"
+        "additionalHooks": "useRecoilCallback|useRecoilTransaction_UNSTABLE"
       }
     ]
   }
