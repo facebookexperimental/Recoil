@@ -9,6 +9,7 @@
     - On initial render when not using React Concurrent Mode (#820)
 - Memory management
 - Selector cache configuration: introduced `cachePolicy_UNSTABLE` option for selectors and selector families. This option allows you to control the behavior of how the selector evicts entries from its internal cache. Initially the only eviction option is LRU (least recently used caching). For example, setting this option to: `{eviction: 'lru', maxSize: 5}` will ensure the selector only retains 5 entries for its cache of dependencies, and will evict additional entries based on the least recently used entry.
+- Fix waitFor helpers always having frozen values at the top level, now waitFor helpers can be used with mutable recoil state (#1074)
 
 ## NEXT
 
