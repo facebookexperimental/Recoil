@@ -35,6 +35,8 @@ function selectorFamily<T, Parameter>({
   ) => void,
 
   dangerouslyAllowMutability?: boolean,
+
+  cachePolicy_UNSTABLE?: CachePolicy,
 }): Parameter => RecoilState<T>
 ```
 
@@ -45,11 +47,20 @@ type ValueOrUpdater<T> =  T | DefaultValue | ((prevValue: T) => T | DefaultValue
 type GetRecoilValue = <T>(RecoilValue<T>) => T;
 type SetRecoilValue = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilValue = <T>(RecoilState<T>) => void;
+
+type CachePolicy = 
+  | {eviction: 'lru', maxSize: number}
+  | {eviction: 'keep-all'}
+  | {eviction: 'most-recent'};
 ```
 
 - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
 - `get` - A function that is passed an object of named callbacks that returns the value of the selector, the same as the `selector()` interface. This is wrapped by a function which is passed the parameter from calling the selector family function.
 - `set?` - An optional function that will produce writeable selectors when provided. It should be a function that takes an object of named callbacks, same as the `selector()` interface. This is again wrapped by another function with gets the parameters from calling the selector family function.
+- `cachePolicy_UNSTABLE` - Defines the behavior of the internal selector cache for **the invidual selectors** that make up the family (it does not control the number of selectors that are stored in the family). Can be useful to control the memory footprint in apps that have selectors with many changing dependencies.
+  - `eviction` - can be set to `lru` (which requires that a `maxSize` is set), `keep-all` (default), or `most-recent`. An `lru` cache will evict the least-recently-used value from the selector cache when the size of the cache exceeds `maxSize`. A `keep-all` policy will mean all selector dependencies and their values will be indefinitely stored in the selector cache. A `most-recent` policy will use a cache of size 1 and will retain only the most recently saved set of dependencies and their values.
+  - Note the cache key in a selector's internal cache is a chain of dependencies and their values, and that key points to the output of the full run of the selector given that chain of dependencies. This means the size of the internal selector cache is a function of both the number of dependencies and the number of values for each dependency.
+  - This is an unstable API and may change in the future.
 
 ---
 
