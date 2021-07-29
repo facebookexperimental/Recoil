@@ -22,7 +22,7 @@ const treeCacheLRU = require('./Recoil_treeCacheLRU');
 
 const defaultPolicy = {
   equality: 'reference',
-  eviction: 'none',
+  eviction: 'keep-all',
   maxSize: Infinity,
 };
 
@@ -54,7 +54,7 @@ function getTreeCache<T>(
   mapNodeValue: mixed => mixed,
 ): TreeCacheImplementation<T> {
   switch (eviction) {
-    case 'none':
+    case 'keep-all':
       // $FlowFixMe[method-unbinding]
       return new TreeCache<T>({mapNodeValue});
     case 'lru':

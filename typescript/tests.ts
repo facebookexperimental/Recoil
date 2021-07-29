@@ -604,7 +604,7 @@ isRecoilValue(mySelector1);
     key: 'ReadOnlySelectorSel_cachePolicy2',
     get: () => {},
     cachePolicy_UNSTABLE: {
-      eviction: 'none',
+      eviction: 'keep-all',
     }
   });
 
@@ -635,7 +635,7 @@ isRecoilValue(mySelector1);
     key: 'ReadOnlySelectorFSel_cachePolicy2',
     get: () => () => {},
     cachePolicy_UNSTABLE: {
-      eviction: 'none',
+      eviction: 'keep-all',
     }
   });
 

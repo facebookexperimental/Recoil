@@ -20,8 +20,8 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 describe('cacheFromPolicy()', () => {
-  testRecoil('equality: reference, eviction: none', () => {
-    const policy = {equality: 'reference', eviction: 'none'};
+  testRecoil('equality: reference, eviction: keep-all', () => {
+    const policy = {equality: 'reference', eviction: 'keep-all'};
     const cache = cacheFromPolicy<{[string]: number}, boolean>(policy);
 
     const obj1 = {a: 1};
@@ -43,8 +43,8 @@ describe('cacheFromPolicy()', () => {
     expect(cache.get({...obj3})).toBe(undefined);
   });
 
-  testRecoil('equality: value, eviction: none', () => {
-    const policy = {equality: 'value', eviction: 'none'};
+  testRecoil('equality: value, eviction: keep-all', () => {
+    const policy = {equality: 'value', eviction: 'keep-all'};
     const cache = cacheFromPolicy<{[string]: number}, boolean>(policy);
 
     const obj1 = {a: 1};

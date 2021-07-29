@@ -83,7 +83,7 @@ function atomFamily<T, P: Parameter>(
 ): P => RecoilState<T> {
   const atomCache = cacheFromPolicy<P, RecoilState<T>>({
     equality: options.cachePolicyForParams_UNSTABLE?.equality ?? 'value',
-    eviction: 'none',
+    eviction: 'keep-all',
   });
 
   // Simple atomFamily implementation to cache individual atoms based

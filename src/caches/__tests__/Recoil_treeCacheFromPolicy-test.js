@@ -24,8 +24,8 @@ const valGetterFromPath = path => nodeKey =>
 const clonePath = path => JSON.parse(JSON.stringify(path));
 
 describe('treeCacheFromPolicy()', () => {
-  testRecoil('equality: reference, eviction: none', () => {
-    const policy = {equality: 'reference', eviction: 'none'};
+  testRecoil('equality: reference, eviction: keep-all', () => {
+    const policy = {equality: 'reference', eviction: 'keep-all'};
     const cache = treeCacheFromPolicy<{[string]: number}>(policy);
 
     const path1 = [
@@ -58,8 +58,8 @@ describe('treeCacheFromPolicy()', () => {
     expect(cache.get(valGetterFromPath(clonePath(path3)))).toBe(undefined);
   });
 
-  testRecoil('equality: value, eviction: none', () => {
-    const policy = {equality: 'value', eviction: 'none'};
+  testRecoil('equality: value, eviction: keep-all', () => {
+    const policy = {equality: 'value', eviction: 'keep-all'};
     const cache = treeCacheFromPolicy<{[string]: number}>(policy);
 
     const path1 = [

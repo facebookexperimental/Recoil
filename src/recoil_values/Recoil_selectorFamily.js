@@ -101,7 +101,7 @@ function selectorFamily<T, Params: Parameter>(
     RecoilState<T> | RecoilValueReadOnly<T>,
   >({
     equality: options.cachePolicyForParams_UNSTABLE?.equality ?? 'value',
-    eviction: 'none',
+    eviction: 'keep-all',
   });
 
   return (params: Params) => {

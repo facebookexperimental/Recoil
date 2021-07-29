@@ -112,7 +112,7 @@ export type ResetRecoilState = (recoilVal: RecoilState<any>) => void; // eslint-
 
 // export type EqualityPolicy = 'reference' | 'value'; TODO: removing while we discuss long term API
 
-export type EvictionPolicy = 'lru' | 'none';
+export type EvictionPolicy = 'lru' | 'keep-all' | 'most-recent';
 
 // TODO: removing while we discuss long term API
 // export type CachePolicy =
@@ -125,7 +125,7 @@ export type EvictionPolicy = 'lru' | 'none';
 //   equality: EqualityPolicy;
 // }
 
-export type CachePolicyWithoutEquality = {eviction: 'lru', maxSize: number} | {eviction: 'none'} | {eviction: 'most-recent'};
+export type CachePolicyWithoutEquality = {eviction: 'lru', maxSize: number} | {eviction: 'keep-all'} | {eviction: 'most-recent'};
 
 export interface ReadOnlySelectorOptions<T> {
     key: string;
