@@ -2,22 +2,31 @@
 
 ## UPCOMING
 
-* Add new changes here as they land*
+***Add new changes here as they land***
 
 - Performance optimization to suppress re-rendering components:
     - When subscribed selectors evaluate to the same value. (#749, #952)
     - On initial render when not using React Concurrent Mode (#820)
 - Memory management
-- Selector cache configuration: introduced `cachePolicy_UNSTABLE` option for selectors and selector families. This option allows you to control the behavior of how the selector evicts entries from its internal cache. Initially the only eviction option is LRU (least recently used caching). For example, setting this option to: `{eviction: 'lru', maxSize: 5}` will ensure the selector only retains 5 entries for its cache of dependencies, and will evict additional entries based on the least recently used entry.
+- useTransition() compatibility
+- Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
 
-## NEXT
+## 0.4 (2021-07-30)
+
+### New Features
+- Introduce Recoil Transactions with `useRecoilTransaction_UNSTABLE()` (#1085)
+- Selector cache configuration: introduced `cachePolicy_UNSTABLE` option for selectors and selector families. This option allows you to control the behavior of how the selector evicts entries from its internal cache.
+
+### Fixes and Optimizations
 
 - Fix TypeScript typing for `selectorFamily()`, `getCallback()`, `useGetRecoilValueInfo()`, and `Snapshot#getNodes()` (#1060, #1116, #1123)
-- Fix onSet() handler to get the proper new value when atom is reset or has an async default Promise that resolves (#1059, #1050, #738) (Slightly breaking change)
-- Fix support for multiple Atom effects cleanup handlers
-- useRecoilTransaction_UNSTABLE
-- useTransition compatibility
-- Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
+- Allow mutable values in selectors to be used with waitFor*() helpers (#1074, #1096)
+- Atom Effects fixes:
+  - Fix onSet() handler to get the proper new value when an atom is reset or has an async default Promise that resolves (#1059, #1050, #738) (Slightly breaking change)
+  - Fix support for multiple Atom effects cleanup handlers (#1125)
+  - Fix selector subscriptions when atoms with effects are initialized via a `Snapshot` (#1135, #1107)
+- Optimization for async selectors when dependencies resolve to cached values (#1037)
+- Remove unnecessary warning message (#1034, #1062)
 
 ## 0.3.1 (2021-5-18)
 

@@ -14,7 +14,7 @@ const {
   getRecoilTestFn
 } = require('../../testing/Recoil_TestingUtils');
 
-let React, useRef, useState, act, useStoreRef, atom, atomFamily, selector, useRecoilCallback, useSetRecoilState, ReadsAtom, flushPromisesAndTimers, renderElements, invariant;
+let React, useRef, useState, act, useStoreRef, atom, atomFamily, selector, useRecoilCallback, useRecoilValue, useSetRecoilState, ReadsAtom, flushPromisesAndTimers, renderElements, invariant;
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({
@@ -32,7 +32,8 @@ const testRecoil = getRecoilTestFn(() => {
     atomFamily,
     selector,
     useRecoilCallback,
-    useSetRecoilState
+    useSetRecoilState,
+    useRecoilValue
   } = require('../../Recoil_index'));
   ({
     ReadsAtom,
@@ -230,4 +231,30 @@ testRecoil('Consistent callback function', () => {
   act(() => setIteration(1)); // Force a re-render of the Component
 
   expect(out.textContent).toBe('1');
+});
+testRecoil('Atom effects are initialized twice if first seen on snapshot and then on root store', () => {
+  let numTimesEffectInit = 0;
+  const atomWithEffect = atom({
+    key: 'atomWithEffect',
+    default: 0,
+    effects_UNSTABLE: [() => {
+      numTimesEffectInit++;
+    }]
+  });
+  declare var Component: () => any;
+  renderElements(<Component />);
+  expect(numTimesEffectInit).toBe(2);
+});
+testRecoil('Atom effects are initialized once if first seen on root store and then on snapshot', () => {
+  let numTimesEffectInit = 0;
+  const atomWithEffect = atom({
+    key: 'atomWithEffect2',
+    default: 0,
+    effects_UNSTABLE: [() => {
+      numTimesEffectInit++;
+    }]
+  });
+  declare var Component: () => any;
+  renderElements(<Component />);
+  expect(numTimesEffectInit).toBe(1);
 });

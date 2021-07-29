@@ -5986,6 +5986,9 @@ function getTreeCache(eviction, maxSize, mapNodeValue) {
 
     case 'lru':
       return Recoil_treeCacheLRU(Recoil_nullthrows(maxSize), mapNodeValue);
+
+    case 'most-recent':
+      return Recoil_treeCacheLRU(1, mapNodeValue);
   }
 
   throw new Error(`Unrecognized eviction policy ${eviction}`);
@@ -6163,12 +6166,17 @@ function selector(options) {
   }
 
   function getCachedNodeLoadable(store, state, key) {
-    if (state.atomValues.has(key)) {
+    const isKeyPointingToSelector = store.getState().knownSelectors.has(key);
+    /**
+     * It's important that we don't bypass calling getNodeLoadable for atoms
+     * as getNodeLoadable has side effects in state
+     */
+
+    if (isKeyPointingToSelector && state.atomValues.has(key)) {
       return Recoil_nullthrows(state.atomValues.get(key));
     }
 
     const loadable = getNodeLoadable$2(store, state, key);
-    const isKeyPointingToSelector = store.getState().knownSelectors.has(key);
 
     if (loadable.state !== 'loading' && isKeyPointingToSelector) {
       state.atomValues.set(key, loadable);
@@ -7357,6 +7365,13 @@ function getCache(eviction, maxSize, mapKey) {
       return new LRUCache$2({
         mapKey,
         maxSize: Recoil_nullthrows(maxSize)
+      });
+
+    case 'most-recent':
+      // $FlowFixMe[method-unbinding]
+      return new LRUCache$2({
+        mapKey,
+        maxSize: 1
       });
   }
 
