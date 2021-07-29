@@ -4,21 +4,28 @@
         <title>Recoil Blog</title>
         <link>https://recoiljs.org/blog</link>
         <description>Recoil Blog</description>
-        <lastBuildDate>Fri, 14 May 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Fri, 30 Jul 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <copyright>Copyright © 2021 Facebook, Inc.</copyright>
         <item>
-            <title><![CDATA[Recoil 0.3.0]]></title>
-            <link>https://recoiljs.org/ko/blog/2021/05/14/0.3.0-released</link>
-            <guid>Recoil 0.3.0</guid>
-            <pubDate>Fri, 14 May 2021 00:00:00 GMT</pubDate>
-            <description><![CDATA[We are pleased to announce the release of Recoil 0.3.0.]]></description>
+            <title><![CDATA[Recoil 0.4]]></title>
+            <link>https://recoiljs.org/ko/blog/2021/07/30/0.4.0-release</link>
+            <guid>Recoil 0.4</guid>
+            <pubDate>Fri, 30 Jul 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[We are pleased to announce the release of Recoil 0.4 with configurable selector caches, improved API for transactions with multiple atoms, and other optimizations and fixes.]]></description>
         </item>
         <item>
-            <title><![CDATA[Recoil 0.2.0]]></title>
+            <title><![CDATA[Recoil 0.3]]></title>
+            <link>https://recoiljs.org/ko/blog/2021/05/14/0.3.0-released</link>
+            <guid>Recoil 0.3</guid>
+            <pubDate>Fri, 14 May 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[We are pleased to announce the release of Recoil 0.3 with more flexible RecoilRoot nesting, callback generation, preparation for memory management, optimizations, and bug fixes.]]></description>
+        </item>
+        <item>
+            <title><![CDATA[Recoil 0.2]]></title>
             <link>https://recoiljs.org/ko/blog/2021/03/22/0.2.0-released</link>
-            <guid>Recoil 0.2.0</guid>
+            <guid>Recoil 0.2</guid>
             <pubDate>Mon, 22 Mar 2021 00:00:00 GMT</pubDate>
             <description><![CDATA[We are pleased to announce the release of Recoil 0.2.0. This release has a new, more reliable implementation of async selectors, greatly improved performance, and many bug fixes and improvements.]]></description>
         </item>
