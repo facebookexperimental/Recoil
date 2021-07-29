@@ -60,6 +60,9 @@ function getCache<K, V>(
     case 'lru':
       // $FlowFixMe[method-unbinding]
       return new LRUCache<K, V>({mapKey, maxSize: nullthrows(maxSize)});
+    case 'most-recent':
+      // $FlowFixMe[method-unbinding]
+      return new LRUCache<K, V>({mapKey, maxSize: 1});
   }
 
   throw new Error(`Unrecognized eviction policy ${eviction}`);
