@@ -54,7 +54,7 @@ function getCache<K, V>(
   mapKey: mixed => mixed,
 ): CacheImplementation<K, V> {
   switch (eviction) {
-    case 'none':
+    case 'keep-all':
       // $FlowFixMe[method-unbinding]
       return new MapCache<K, V>({mapKey});
     case 'lru':

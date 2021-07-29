@@ -205,7 +205,7 @@ function selector<T>(
   const cache: TreeCacheImplementation<Loadable<T>> = treeCacheFromPolicy(
     cachePolicy ?? {
       equality: 'reference',
-      eviction: 'none',
+      eviction: 'keep-all',
     },
   );
 
