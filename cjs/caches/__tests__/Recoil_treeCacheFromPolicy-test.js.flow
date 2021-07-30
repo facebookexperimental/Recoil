@@ -21,10 +21,10 @@ const testRecoil = getRecoilTestFn(() => {
 declare var valGetterFromPath: (path: any) => any;
 declare var clonePath: (path: any) => any;
 describe('treeCacheFromPolicy()', () => {
-  testRecoil('equality: reference, eviction: none', () => {
+  testRecoil('equality: reference, eviction: keep-all', () => {
     const policy = {
       equality: 'reference',
-      eviction: 'none'
+      eviction: 'keep-all'
     };
     const cache = treeCacheFromPolicy<{
       [string]: number
@@ -52,10 +52,10 @@ describe('treeCacheFromPolicy()', () => {
     expect(cache.get(valGetterFromPath(clonePath(path2)))).toBe(undefined);
     expect(cache.get(valGetterFromPath(clonePath(path3)))).toBe(undefined);
   });
-  testRecoil('equality: value, eviction: none', () => {
+  testRecoil('equality: value, eviction: keep-all', () => {
     const policy = {
       equality: 'value',
-      eviction: 'none'
+      eviction: 'keep-all'
     };
     const cache = treeCacheFromPolicy<{
       [string]: number

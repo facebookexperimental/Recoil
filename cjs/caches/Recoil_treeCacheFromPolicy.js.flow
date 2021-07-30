@@ -22,7 +22,7 @@ const treeCacheLRU = require('./Recoil_treeCacheLRU');
 
 const defaultPolicy = {
   equality: 'reference',
-  eviction: 'none',
+  eviction: 'keep-all',
   maxSize: Infinity
 };
 declare function treeCacheFromPolicy<T>(arg0: CachePolicy): TreeCacheImplementation<T>;

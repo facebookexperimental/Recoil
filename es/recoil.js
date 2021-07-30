@@ -5944,7 +5944,7 @@ const {
 
 const defaultPolicy = {
   equality: 'reference',
-  eviction: 'none',
+  eviction: 'keep-all',
   maxSize: Infinity
 };
 
@@ -5972,7 +5972,7 @@ function getValueMapper(equality) {
 
 function getTreeCache(eviction, maxSize, mapNodeValue) {
   switch (eviction) {
-    case 'none':
+    case 'keep-all':
       // $FlowFixMe[method-unbinding]
       return new TreeCache$2({
         mapNodeValue
@@ -6102,7 +6102,7 @@ function selector(options) {
 
   const cache = Recoil_treeCacheFromPolicy(cachePolicy !== null && cachePolicy !== void 0 ? cachePolicy : {
     equality: 'reference',
-    eviction: 'none'
+    eviction: 'keep-all'
   });
   const retainedBy = retainedByOptionWithDefault$1(options.retainedBy_UNSTABLE);
   const executionInfoMap = new Map();
@@ -7348,7 +7348,7 @@ function getValueMapper$1(equality) {
 
 function getCache(eviction, maxSize, mapKey) {
   switch (eviction) {
-    case 'none':
+    case 'keep-all':
       // $FlowFixMe[method-unbinding]
       return new MapCache$1({
         mapKey
@@ -7399,7 +7399,7 @@ function atomFamily(options) {
 
   const atomCache = Recoil_cacheFromPolicy({
     equality: (_options$cachePolicyF = (_options$cachePolicyF2 = options.cachePolicyForParams_UNSTABLE) === null || _options$cachePolicyF2 === void 0 ? void 0 : _options$cachePolicyF2.equality) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : 'value',
-    eviction: 'none'
+    eviction: 'keep-all'
   }); // Simple atomFamily implementation to cache individual atoms based
   // on the parameter value equality.
 
@@ -7473,7 +7473,7 @@ function selectorFamily(options) {
 
   const selectorCache = Recoil_cacheFromPolicy({
     equality: (_options$cachePolicyF = (_options$cachePolicyF2 = options.cachePolicyForParams_UNSTABLE) === null || _options$cachePolicyF2 === void 0 ? void 0 : _options$cachePolicyF2.equality) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : 'value',
-    eviction: 'none'
+    eviction: 'keep-all'
   });
   return params => {
     var _stableStringify;
