@@ -14,8 +14,8 @@
 ## 0.4 (2021-07-30)
 
 ### New Features
-- Introduce Recoil Transactions with `useRecoilTransaction_UNSTABLE()` (#1085)
 - Selector cache configuration: introduced `cachePolicy_UNSTABLE` option for selectors and selector families. This option allows you to control the behavior of how the selector evicts entries from its internal cache.
+- Improved `useRecoilTransaction_UNSTABLE()` hook for transactions with multiple atoms (#1085)
 
 ### Fixes and Optimizations
 
