@@ -3267,15 +3267,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
       });
 
-      _defineProperty(this, "mapBatched_UNSTABLE", mapper => {
-        this.checkRefCount_INTERNAL();
-        const mutableSnapshot = new MutableSnapshot(this, cb => cb());
-        batchUpdates$1(() => {
-          mapper(mutableSnapshot);
-        });
-        return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
-      });
-
       _defineProperty(this, "asyncMap", async mapper => {
         this.checkRefCount_INTERNAL();
         const mutableSnapshot = new MutableSnapshot(this, batchUpdates$1);
