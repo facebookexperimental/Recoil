@@ -243,16 +243,6 @@ class Snapshot {
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  mapBatched_UNSTABLE: ((MutableSnapshot) => void) => Snapshot = mapper => {
-    this.checkRefCount_INTERNAL();
-    const mutableSnapshot = new MutableSnapshot(this, cb => cb());
-    batchUpdates(() => {
-      mapper(mutableSnapshot);
-    });
-    return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
-  };
-
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   asyncMap: (
     (MutableSnapshot) => Promise<void>,
   ) => Promise<Snapshot> = async mapper => {
