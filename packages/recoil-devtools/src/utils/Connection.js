@@ -39,7 +39,7 @@ class Connection {
 
   constructor(
     id: number,
-    persistenceLimit?: number = 50,
+    persistenceLimit: number = 50,
     initialValues?: ?ValuesMessageType,
     displayName?: ?string,
     devMode?: ?boolean,
