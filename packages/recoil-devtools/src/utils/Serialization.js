@@ -192,10 +192,10 @@ function deserialize(item: ?SerializedValue): mixed {
     return new Map(value?.map(entry => entry.map(deserialize)));
   } else if (type === SerializedValueType.date) {
     return new Date(value ?? 0);
-  } else if (type == SerializedValueType.function) {
+  } else if (type === SerializedValueType.function) {
     // function cannot be restored :(
     return value;
-  } else if (type == SerializedValueType.error) {
+  } else if (type === SerializedValueType.error) {
     // Errors are shown as strings
     return value;
   } else if (type === SerializedValueType.symbol) {
@@ -232,10 +232,10 @@ function formatForDiff(item: ?SerializedValue): mixed {
     }, {});
   } else if (type === SerializedValueType.date) {
     return new Date(value ?? 0);
-  } else if (type == SerializedValueType.error) {
+  } else if (type === SerializedValueType.error) {
     // Errors are compared as strings
     return value;
-  } else if (type == SerializedValueType.function) {
+  } else if (type === SerializedValueType.function) {
     // function cannot be restored :(
     return value;
   } else if (type === SerializedValueType.symbol) {
