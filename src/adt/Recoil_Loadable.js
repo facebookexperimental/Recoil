@@ -144,10 +144,9 @@ const loadableAccessors = {
     return other.state === this.state && other.contents === this.contents;
   },
 
-  // TODO Unit tests
   // TODO Convert Loadable to a Class to better support chaining
   //      by returning a Loadable from a map function
-  map<T, S>(map: T => LoadablePromise<S> | S): Loadable<S> {
+  map<T, S>(map: T => Promise<S> | S): Loadable<S> {
     // $FlowFixMe[object-this-reference]
     if (this.state === 'hasError') {
       // $FlowFixMe[object-this-reference]
@@ -160,7 +159,7 @@ const loadableAccessors = {
         const next = map(this.contents);
         // TODO if next instanceof Loadable, then return next
         return isPromise(next)
-          ? loadableWithPromise(next)
+          ? loadableWithPromise(next.then(value => ({__value: value})))
           : loadableWithValue(next);
       } catch (e) {
         return isPromise(e)
@@ -177,7 +176,7 @@ const loadableAccessors = {
         // $FlowFixMe[object-this-reference]
         this.contents
           // TODO if map returns a loadable, then return the value or promise or throw the error
-          .then(map)
+          .then(value => ({__value: map(value.__value)}))
           .catch(e => {
             if (isPromise(e)) {
               // we were "suspended," try again
@@ -236,6 +235,8 @@ function loadableWithError<T>(error: mixed): ErrorLoadable<T> {
   });
 }
 
+// TODO Probably need to clean-up this API to accept `Promise<T>`
+// with an alternative params or mechanism for internal key proxy.
 function loadableWithPromise<T>(
   promise: LoadablePromise<T>,
 ): LoadingLoadable<T> {
