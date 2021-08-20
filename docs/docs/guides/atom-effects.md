@@ -227,7 +227,7 @@ const localStorageEffect = key => ({setSelf, onSet}) => {
     if (newValue instanceof DefaultValue) {
       localStorage.removeItem(key);
     } else {
-      localStorage.setItem(key, JSON.stringify(newValue));
+      localStorage.setItem(key, newValue !== null && typeof newValue === "object" ? JSON.stringify(newValue) : newValue + "");
     }
   });
 };
@@ -262,7 +262,7 @@ const localForageEffect = key => ({setSelf, onSet}) => {
   ));
 
   onSet(newValue => {
-    localStorage.setItem(key, JSON.stringify(newValue));
+    localStorage.setItem(key, newValue !== null && typeof newValue === "object" ? JSON.stringify(newValue) : newValue + "");
   });
 };
 
@@ -296,7 +296,7 @@ const localForageEffect = key => ({setSelf, onSet}) => {
 
   // Subscribe to state changes and persist them to localForage
   onSet(newValue => {
-    localForage.setItem(key, JSON.stringify(newValue));
+    localForage.setItem(key, newValue !== null && typeof newValue === "object" ? JSON.stringify(newValue) : newValue + "");
   });
 };
 
@@ -326,7 +326,7 @@ const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onS
   }
 
   onSet(newValue => {
-    localStorage.setItem(options.key, JSON.stringify(newValue));
+    localStorage.setItem(options.key, newValue !== null && typeof newValue === "object" ? JSON.stringify(newValue) : newValue + "");
   });
 };
 
@@ -366,7 +366,7 @@ const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onS
   );
 
   onSet(newValue => {
-    localStorage.setItem(options.key, JSON.stringify(newValue));
+    localStorage.setItem(options.key, newValue !== null && typeof newValue === "object" ? JSON.stringify(newValue) : newValue + "");
   });
 };
 
