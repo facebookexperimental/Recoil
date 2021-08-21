@@ -237,6 +237,31 @@ testRecoil("Updating with same value doesn't rerender", () => {
 });
 
 describe('Effects', () => {
+  testRecoil('effect error', () => {
+    const ERROR = new Error('ERROR');
+    const myAtom = atom({
+      key: 'atom effect error',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        () => {
+          throw ERROR;
+        },
+      ],
+    });
+    const mySelector = selector({
+      key: 'atom effect error selector',
+      get: ({get}) => {
+        try {
+          return get(myAtom);
+        } catch (e) {
+          return e.message;
+        }
+      },
+    });
+    const container = renderElements(<ReadsAtom atom={mySelector} />);
+    expect(container.textContent).toEqual('"ERROR"');
+  });
+
   testRecoil('initialization', () => {
     let inited = false;
     const myAtom = atom({
