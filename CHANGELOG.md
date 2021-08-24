@@ -10,6 +10,7 @@
 - Memory management
 - useTransition() compatibility
 - Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
+- Fixed #1072 where in some cases selectors with async deps would not update in response to state updates
 
 ## 0.4 (2021-07-30)
 
