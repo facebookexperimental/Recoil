@@ -22,7 +22,7 @@ yarn add recoil
 
 ### 支持 ES5
 
-Recoil 的构建没有转译成 ES5，我们也不支持在 ES5 下使用 Recoil。如果你需要兼容不支持 ES6 的浏览器，你可以通过 [Babel](https://babeljs.io/) 编译你的代码，并使用 [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env) 的 preset。然而，我们建议你这样做，你可能会遇到问题。
+Recoil 的构建没有转译成 ES5，我们也不支持在 ES5 下使用 Recoil。如果你需要兼容不支持 ES6 的浏览器，你可以通过 [Babel](https://babeljs.io/) 编译你的代码，并使用 [@babel/preset-env](https://babeljs.io/docs/en/babel-preset-env) 的 preset。然而，我们不建议你这样做，你可能会遇到问题。
 
 主要是，[像 React 这类的库](https://reactjs.org/docs/javascript-environment-requirements.html)，Recoil 依赖于 `Map` 和 `Set` 类型以及其他 ES6 的特性。使用 polyfill 来模拟这些特性可能会导致性能大大降低。
 
