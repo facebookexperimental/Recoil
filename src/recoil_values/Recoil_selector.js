@@ -493,6 +493,42 @@ function selector<T>(
           return {__value: cachedLoadable.contents, __key: key};
         }
 
+        /**
+         * If this execution is stale, let's check to see if there is some in
+         * progress execution with a matching state. If we find a match, then
+         * we can take the value from that in-progress execution. Note this may
+         * sound like an edge case, but may be very common in cases where a
+         * loading dependency resolves from loading to having a value (thus
+         * possibly triggering a re-render), and React re-renders before the
+         * chained .then() functions run, thus starting a new execution as the
+         * dep has changed value. Without this check we will run the selector
+         * twice (once in the new execution and once again in this .then(), so
+         * this check is necessary to keep unnecessary re-executions to a
+         * minimum).
+         *
+         * Also note this code does not check across all executions that may be
+         * running. It only optimizes for the _latest_ execution per store as
+         * we currently do not maintain a list of all currently running executions.
+         * This means in some cases we may run selectors more than strictly
+         * necessary when there are multiple executions running for the same
+         * selector. This may be a valid tradeoff as checking for dep changes
+         * across all in-progress executions may take longer than just
+         * re-running the selector. This will be app-dependent, and maybe in the
+         * future we can make the behavior configurable. An ideal fix may be
+         * to extend the tree cache to support caching loading states.
+         */
+        if (!isLatestExecution(store, executionId)) {
+          const executionInfo = getExecutionInfoOfInProgressExecution(state);
+
+          if (executionInfo?.latestLoadable?.state === 'loading') {
+            /**
+             * Returning promise here without wrapping as the wrapper logic was
+             * already done upstream when this promise was generated.
+             */
+            return executionInfo.latestLoadable.contents;
+          }
+        }
+
         const [loadable, depValues] = evaluateSelectorGetter(
           store,
           state,
@@ -828,7 +864,6 @@ function selector<T>(
     }
 
     const inProgressExecutionInfo = getExecutionInfoOfInProgressExecution(
-      store,
       state,
     );
 
@@ -854,11 +889,10 @@ function selector<T>(
    * execution whose dependency values match the values of the requesting store.
    */
   function getExecutionInfoOfInProgressExecution(
-    store: Store,
     state: TreeState,
   ): ?ExecutionInfo<T> {
     const [, executionInfo] =
-      Array.from(executionInfoMap.entries()).find(([, executionInfo]) => {
+      Array.from(executionInfoMap.entries()).find(([store, executionInfo]) => {
         return (
           executionInfo.latestLoadable != null &&
           executionInfo.latestExecutionId != null &&
@@ -901,23 +935,7 @@ function selector<T>(
     return Array.from(oldDepValues).some(([nodeKey, oldVal]) => {
       const loadable = getCachedNodeLoadable(store, state, nodeKey);
 
-      return (
-        loadable.contents !== oldVal.contents &&
-        /**
-         * FIXME: in the condition below we're making the assumption that a
-         * dependency that goes from loading to having a value is always because
-         * the dependency resolved to that value, so we don't count it as a dep
-         * change as the normal retry loop will handle retrying in response to a
-         * resolved async dep. This is an incorrect assumption for the edge case
-         * where there is an async selector that is loading, and while it is
-         * loading one of its dependencies changes, triggering a new execution,
-         * and that new execution produces a value synchronously (we don't make
-         * that assumption for asynchronous work b/c it's guaranteed that a
-         * loadable that goes from 'loading' to 'loading' in a new loadable is
-         * a dep change).
-         */
-        !(oldVal.state === 'loading' && loadable.state !== 'loading')
-      );
+      return loadable.contents !== oldVal.contents;
     });
   }
 
