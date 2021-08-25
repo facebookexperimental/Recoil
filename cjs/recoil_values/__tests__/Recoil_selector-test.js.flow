@@ -1259,3 +1259,44 @@ testRecoil('selector does not re-run to completion when one of its async deps re
 
   expect(numTimesCStartedToRun).toBe(3);
 });
+testRecoil('async dep that changes from loading to value triggers re-execution', async () => {
+  const baseAtom = atom({
+    key: 'baseAtom',
+    default: 0
+  });
+  const asyncSel = selector({
+    key: 'asyncSel',
+    get: ({
+      get
+    }) => {
+      const atomVal = get(baseAtom);
+
+      if (atomVal === 0) {
+        return new Promise(() => {});
+      }
+
+      return atomVal;
+    }
+  });
+  const selWithAsyncDep = selector({
+    key: 'selWithAsyncDep',
+    get: ({
+      get
+    }) => {
+      return get(asyncSel);
+    }
+  });
+  const snapshot = freshSnapshot();
+  snapshot.retain();
+  const loadingValLoadable = snapshot.getLoadable(selWithAsyncDep);
+  expect(loadingValLoadable.state).toBe('loading');
+  const mappedSnapshot = snapshot.map(({
+    set
+  }) => {
+    set(baseAtom, 10);
+  });
+  const newAtomVal = mappedSnapshot.getLoadable(baseAtom);
+  expect(newAtomVal.valueMaybe()).toBe(10);
+  const valLoadable = mappedSnapshot.getLoadable(selWithAsyncDep);
+  expect(valLoadable.valueMaybe()).toBe(10);
+});
