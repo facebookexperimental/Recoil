@@ -8,14 +8,14 @@
  * @flow strict
  * @format
  */
-
 'use strict';
 
 const {mutableSourceExists} = require('./Recoil_mutableSource');
 
 const gks = new Map()
   .set('recoil_hamt_2020', true)
-  .set('recoil_memory_managament_2020', true);
+  .set('recoil_memory_managament_2020', true)
+  .set('recoil_suppress_rerender_in_callback', true);
 
 function Recoil_gkx(gk: string): boolean {
   if (gk === 'recoil_early_rendering_2021' && !mutableSourceExists()) {
