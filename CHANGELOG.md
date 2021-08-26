@@ -1,15 +1,18 @@
 # Change Log
 
 ## UPCOMING
-
 ***Add new changes here as they land***
-
-- Performance optimization to suppress re-rendering components:
-    - When subscribed selectors evaluate to the same value. (#749, #952)
-    - On initial render when not using React Concurrent Mode (#820)
 - Memory management
 - useTransition() compatibility
 - Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
+
+
+## 0.4.1 (2021-08-26)
+
+- Performance optimizations to suppress re-rendering components:
+    - When subscribed selectors evaluate to the same value. (#749, #952)
+    - On initial render when not using React Concurrent Mode (#820)
+    - When selector async deps resolve, but React re-renders before chained promises have executed.
 - Fixed #1072 where in some cases selectors with async deps would not update in response to state updates
 
 ## 0.4 (2021-07-30)
