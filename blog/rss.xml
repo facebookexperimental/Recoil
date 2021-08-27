@@ -4,10 +4,17 @@
         <title>Recoil Blog</title>
         <link>https://recoiljs.org/blog</link>
         <description>Recoil Blog</description>
-        <lastBuildDate>Fri, 30 Jul 2021 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 26 Aug 2021 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <copyright>Copyright © 2021 Facebook, Inc.</copyright>
+        <item>
+            <title><![CDATA[Recoil 0.4.1]]></title>
+            <link>https://recoiljs.org/blog/2021/08/26/0.4.1-release</link>
+            <guid>Recoil 0.4.1</guid>
+            <pubDate>Thu, 26 Aug 2021 00:00:00 GMT</pubDate>
+            <description><![CDATA[Recoil 0.4.1 has been released with some performance optimizations and fixes focused on optimizing when React will re-render components based on Recoil state changes.]]></description>
+        </item>
         <item>
             <title><![CDATA[Recoil 0.4]]></title>
             <link>https://recoiljs.org/blog/2021/07/30/0.4.0-release</link>
