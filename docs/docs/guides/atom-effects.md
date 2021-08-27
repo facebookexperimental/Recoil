@@ -396,3 +396,7 @@ const currentUserIDState = atom<number>({
 ## Browser URL History Persistence
 
 Atom state can also be persisted and synced with the browser URL history.  This can be useful to have state changes update the current URL so it can be saved or shared with others to restore that state.  It can also be integrated with the browser history to leverage the browser forward/back buttons.  *Examples or a library to provide this type of persistence are coming soon...*
+
+## Error Handling
+
+If there is an error thrown during the execution of an atom effect then the atom will be initialized in an error state with that error.  This can then be handled with the React `<ErrorBoundary>` mechanism at render time.
