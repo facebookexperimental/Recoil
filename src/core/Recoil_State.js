@@ -16,10 +16,11 @@ import type {PersistentMap} from '../adt/Recoil_PersistentMap';
 import type {Graph} from './Recoil_GraphTypes';
 import type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 import type {RetentionZone} from './Recoil_RetentionZone';
-export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
-const {graph} = require('./Recoil_Graph');
 const {persistentMap} = require('../adt/Recoil_PersistentMap');
+const {graph} = require('./Recoil_Graph');
+
+export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
 // flowlint-next-line unclear-type:off
 export type AtomValues = PersistentMap<NodeKey, Loadable<any>>;
