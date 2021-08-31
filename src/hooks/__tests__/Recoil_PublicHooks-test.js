@@ -19,6 +19,7 @@ import type {
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 
 const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+let {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 
 let React,
   useEffect,
@@ -45,8 +46,6 @@ let React,
   useSetUnvalidatedAtomValues,
   useTransactionObservation_DEPRECATED,
   invariant;
-
-let {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');

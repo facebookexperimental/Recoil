@@ -8,7 +8,6 @@
  * @flow strict
  * @format
  */
-
 'use strict';
 
 export type EqualityPolicy = 'reference' | 'value';

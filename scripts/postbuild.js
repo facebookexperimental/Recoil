@@ -1,5 +1,16 @@
-const fs = require('fs');
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict
+ * @format
+ */
+
 const {exec} = require('child_process');
+const fs = require('fs');
 
 function logErrors(err) {
   if (err) {
@@ -8,6 +19,7 @@ function logErrors(err) {
 }
 
 console.log('Copying index.d.ts for TypeScript support...');
+// $FlowFixMe Flow typing for copyFile() is incorrect.
 fs.copyFile('./typescript/index.d.ts', './index.d.ts', logErrors);
 
 console.log('Generating Flow type files...');
