@@ -1313,187 +1313,6 @@ var Recoil_Queue = {
   enqueueExecution
 };
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-/**
- * Returns a set containing all of the values from the first set that are not
- * present in any of the subsequent sets.
- *
- * Note: this is written procedurally (i.e., without filterSet) for performant
- * use in tight loops.
- */
-
-function differenceSets(set, ...setsWithValuesToRemove) {
-  const ret = new Set();
-
-  FIRST: for (const value of set) {
-    for (const otherSet of setsWithValuesToRemove) {
-      if (otherSet.has(value)) {
-        continue FIRST;
-      }
-    }
-
-    ret.add(value);
-  }
-
-  return ret;
-}
-
-var Recoil_differenceSets = differenceSets;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-/**
- * Returns a new Map object with the same keys as the original, but with the
- * values replaced with the output of the given callback function.
- */
-
-function mapMap(map, callback) {
-  const result = new Map();
-  map.forEach((value, key) => {
-    result.set(key, callback(value, key));
-  });
-  return result;
-}
-
-var Recoil_mapMap = mapMap;
-
-function graph() {
-  return {
-    nodeDeps: new Map(),
-    nodeToNodeSubscriptions: new Map()
-  };
-}
-
-function cloneGraph(graph) {
-  return {
-    nodeDeps: Recoil_mapMap(graph.nodeDeps, s => new Set(s)),
-    nodeToNodeSubscriptions: Recoil_mapMap(graph.nodeToNodeSubscriptions, s => new Set(s))
-  };
-} // Note that this overwrites the deps of existing nodes, rather than unioning
-// the new deps with the old deps.
-
-
-function mergeDependencyMapIntoGraph(deps, graph, // If olderGraph is given then we will not overwrite changes made to the given
-// graph compared with olderGraph:
-olderGraph) {
-  const {
-    nodeDeps,
-    nodeToNodeSubscriptions
-  } = graph;
-  deps.forEach((upstreams, downstream) => {
-    const existingUpstreams = nodeDeps.get(downstream);
-
-    if (existingUpstreams && olderGraph && existingUpstreams !== olderGraph.nodeDeps.get(downstream)) {
-      return;
-    } // Update nodeDeps:
-
-
-    nodeDeps.set(downstream, new Set(upstreams)); // Add new deps to nodeToNodeSubscriptions:
-
-    const addedUpstreams = existingUpstreams == null ? upstreams : Recoil_differenceSets(upstreams, existingUpstreams);
-    addedUpstreams.forEach(upstream => {
-      if (!nodeToNodeSubscriptions.has(upstream)) {
-        nodeToNodeSubscriptions.set(upstream, new Set());
-      }
-
-      const existing = Recoil_nullthrows(nodeToNodeSubscriptions.get(upstream));
-      existing.add(downstream);
-    }); // Remove removed deps from nodeToNodeSubscriptions:
-
-    if (existingUpstreams) {
-      const removedUpstreams = Recoil_differenceSets(existingUpstreams, upstreams);
-      removedUpstreams.forEach(upstream => {
-        if (!nodeToNodeSubscriptions.has(upstream)) {
-          return;
-        }
-
-        const existing = Recoil_nullthrows(nodeToNodeSubscriptions.get(upstream));
-        existing.delete(downstream);
-
-        if (existing.size === 0) {
-          nodeToNodeSubscriptions.delete(upstream);
-        }
-      });
-    }
-  });
-}
-
-function saveDependencyMapToStore(dependencyMap, store, version) {
-  var _storeState$nextTree, _storeState$previousT, _storeState$previousT2, _storeState$previousT3;
-
-  const storeState = store.getState();
-
-  if (!(version === storeState.currentTree.version || version === ((_storeState$nextTree = storeState.nextTree) === null || _storeState$nextTree === void 0 ? void 0 : _storeState$nextTree.version) || version === ((_storeState$previousT = storeState.previousTree) === null || _storeState$previousT === void 0 ? void 0 : _storeState$previousT.version))) {
-    Recoil_recoverableViolation('Tried to save dependencies to a discarded tree');
-  } // Merge the dependencies discovered into the store's dependency map
-  // for the version that was read:
-
-
-  const graph = store.getGraph(version);
-  mergeDependencyMapIntoGraph(dependencyMap, graph); // If this version is not the latest version, also write these dependencies
-  // into later versions if they don't already have their own:
-
-  if (version === ((_storeState$previousT2 = storeState.previousTree) === null || _storeState$previousT2 === void 0 ? void 0 : _storeState$previousT2.version)) {
-    const currentGraph = store.getGraph(storeState.currentTree.version);
-    mergeDependencyMapIntoGraph(dependencyMap, currentGraph, graph);
-  }
-
-  if (version === ((_storeState$previousT3 = storeState.previousTree) === null || _storeState$previousT3 === void 0 ? void 0 : _storeState$previousT3.version) || version === storeState.currentTree.version) {
-    var _storeState$nextTree2;
-
-    const nextVersion = (_storeState$nextTree2 = storeState.nextTree) === null || _storeState$nextTree2 === void 0 ? void 0 : _storeState$nextTree2.version;
-
-    if (nextVersion !== undefined) {
-      const nextGraph = store.getGraph(nextVersion);
-      mergeDependencyMapIntoGraph(dependencyMap, nextGraph, graph);
-    }
-  }
-}
-
-function mergeDepsIntoDependencyMap(from, into) {
-  from.forEach((upstreamDeps, downstreamNode) => {
-    if (!into.has(downstreamNode)) {
-      into.set(downstreamNode, new Set());
-    }
-
-    const deps = Recoil_nullthrows(into.get(downstreamNode));
-    upstreamDeps.forEach(dep => deps.add(dep));
-  });
-}
-
-function addToDependencyMap(downstream, upstream, dependencyMap) {
-  if (!dependencyMap.has(downstream)) {
-    dependencyMap.set(downstream, new Set());
-  }
-
-  Recoil_nullthrows(dependencyMap.get(downstream)).add(upstream);
-}
-
-var Recoil_Graph = {
-  addToDependencyMap,
-  cloneGraph,
-  graph,
-  mergeDepsIntoDependencyMap,
-  saveDependencyMapToStore
-};
-
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
@@ -2705,14 +2524,194 @@ var Recoil_PersistentMap$1 = /*#__PURE__*/Object.freeze({
   persistentMap: Recoil_PersistentMap_1
 });
 
-const {
-  graph: graph$1
-} = Recoil_Graph;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+/**
+ * Returns a set containing all of the values from the first set that are not
+ * present in any of the subsequent sets.
+ *
+ * Note: this is written procedurally (i.e., without filterSet) for performant
+ * use in tight loops.
+ */
+
+function differenceSets(set, ...setsWithValuesToRemove) {
+  const ret = new Set();
+
+  FIRST: for (const value of set) {
+    for (const otherSet of setsWithValuesToRemove) {
+      if (otherSet.has(value)) {
+        continue FIRST;
+      }
+    }
+
+    ret.add(value);
+  }
+
+  return ret;
+}
+
+var Recoil_differenceSets = differenceSets;
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+/**
+ * Returns a new Map object with the same keys as the original, but with the
+ * values replaced with the output of the given callback function.
+ */
+
+function mapMap(map, callback) {
+  const result = new Map();
+  map.forEach((value, key) => {
+    result.set(key, callback(value, key));
+  });
+  return result;
+}
+
+var Recoil_mapMap = mapMap;
+
+function graph() {
+  return {
+    nodeDeps: new Map(),
+    nodeToNodeSubscriptions: new Map()
+  };
+}
+
+function cloneGraph(graph) {
+  return {
+    nodeDeps: Recoil_mapMap(graph.nodeDeps, s => new Set(s)),
+    nodeToNodeSubscriptions: Recoil_mapMap(graph.nodeToNodeSubscriptions, s => new Set(s))
+  };
+} // Note that this overwrites the deps of existing nodes, rather than unioning
+// the new deps with the old deps.
+
+
+function mergeDependencyMapIntoGraph(deps, graph, // If olderGraph is given then we will not overwrite changes made to the given
+// graph compared with olderGraph:
+olderGraph) {
+  const {
+    nodeDeps,
+    nodeToNodeSubscriptions
+  } = graph;
+  deps.forEach((upstreams, downstream) => {
+    const existingUpstreams = nodeDeps.get(downstream);
+
+    if (existingUpstreams && olderGraph && existingUpstreams !== olderGraph.nodeDeps.get(downstream)) {
+      return;
+    } // Update nodeDeps:
+
+
+    nodeDeps.set(downstream, new Set(upstreams)); // Add new deps to nodeToNodeSubscriptions:
+
+    const addedUpstreams = existingUpstreams == null ? upstreams : Recoil_differenceSets(upstreams, existingUpstreams);
+    addedUpstreams.forEach(upstream => {
+      if (!nodeToNodeSubscriptions.has(upstream)) {
+        nodeToNodeSubscriptions.set(upstream, new Set());
+      }
+
+      const existing = Recoil_nullthrows(nodeToNodeSubscriptions.get(upstream));
+      existing.add(downstream);
+    }); // Remove removed deps from nodeToNodeSubscriptions:
+
+    if (existingUpstreams) {
+      const removedUpstreams = Recoil_differenceSets(existingUpstreams, upstreams);
+      removedUpstreams.forEach(upstream => {
+        if (!nodeToNodeSubscriptions.has(upstream)) {
+          return;
+        }
+
+        const existing = Recoil_nullthrows(nodeToNodeSubscriptions.get(upstream));
+        existing.delete(downstream);
+
+        if (existing.size === 0) {
+          nodeToNodeSubscriptions.delete(upstream);
+        }
+      });
+    }
+  });
+}
+
+function saveDependencyMapToStore(dependencyMap, store, version) {
+  var _storeState$nextTree, _storeState$previousT, _storeState$previousT2, _storeState$previousT3;
+
+  const storeState = store.getState();
+
+  if (!(version === storeState.currentTree.version || version === ((_storeState$nextTree = storeState.nextTree) === null || _storeState$nextTree === void 0 ? void 0 : _storeState$nextTree.version) || version === ((_storeState$previousT = storeState.previousTree) === null || _storeState$previousT === void 0 ? void 0 : _storeState$previousT.version))) {
+    Recoil_recoverableViolation('Tried to save dependencies to a discarded tree');
+  } // Merge the dependencies discovered into the store's dependency map
+  // for the version that was read:
+
+
+  const graph = store.getGraph(version);
+  mergeDependencyMapIntoGraph(dependencyMap, graph); // If this version is not the latest version, also write these dependencies
+  // into later versions if they don't already have their own:
+
+  if (version === ((_storeState$previousT2 = storeState.previousTree) === null || _storeState$previousT2 === void 0 ? void 0 : _storeState$previousT2.version)) {
+    const currentGraph = store.getGraph(storeState.currentTree.version);
+    mergeDependencyMapIntoGraph(dependencyMap, currentGraph, graph);
+  }
+
+  if (version === ((_storeState$previousT3 = storeState.previousTree) === null || _storeState$previousT3 === void 0 ? void 0 : _storeState$previousT3.version) || version === storeState.currentTree.version) {
+    var _storeState$nextTree2;
+
+    const nextVersion = (_storeState$nextTree2 = storeState.nextTree) === null || _storeState$nextTree2 === void 0 ? void 0 : _storeState$nextTree2.version;
+
+    if (nextVersion !== undefined) {
+      const nextGraph = store.getGraph(nextVersion);
+      mergeDependencyMapIntoGraph(dependencyMap, nextGraph, graph);
+    }
+  }
+}
+
+function mergeDepsIntoDependencyMap(from, into) {
+  from.forEach((upstreamDeps, downstreamNode) => {
+    if (!into.has(downstreamNode)) {
+      into.set(downstreamNode, new Set());
+    }
+
+    const deps = Recoil_nullthrows(into.get(downstreamNode));
+    upstreamDeps.forEach(dep => deps.add(dep));
+  });
+}
+
+function addToDependencyMap(downstream, upstream, dependencyMap) {
+  if (!dependencyMap.has(downstream)) {
+    dependencyMap.set(downstream, new Set());
+  }
+
+  Recoil_nullthrows(dependencyMap.get(downstream)).add(upstream);
+}
+
+var Recoil_Graph = {
+  addToDependencyMap,
+  cloneGraph,
+  graph,
+  mergeDepsIntoDependencyMap,
+  saveDependencyMapToStore
+};
 
 const {
   persistentMap: persistentMap$1
-} = Recoil_PersistentMap$1; // flowlint-next-line unclear-type:off
+} = Recoil_PersistentMap$1;
 
+const {
+  graph: graph$1
+} = Recoil_Graph;
 
 let nextTreeStateVersion = 0;
 
