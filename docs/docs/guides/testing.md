@@ -24,3 +24,78 @@ test('Test multipliedState', () => {
   expect(testSnapshot.getLoadable(multipliedState).valueOrThrow()).toBe(100);
 })
 ```
+
+## Testing Recoil Selectors inside of a React Component
+
+It can be useful to know the state inside a component when testing it. You can use the state to evaluate the user's actions, comparing it with an expected state. As described [`here`](/docs/guides/dev-tools#observing-all-state-changes), you can use this component designed for the developer tools, also for testing your code.
+
+```jsx
+export const RecoilObserver = ({ element, onChange } => {
+  const value = useRecoilValue(element)
+  useEffect(() => onChange(value), [onChange, value])
+  return null
+}
+```
+
+* Element: can be an atom or a selector.
+* onChange: this function will be called everytime the state changes.
+
+### Example: Form state modified by user
+
+#### Component
+
+```jsx
+import { atom, useRecoilState } from 'recoil';
+
+export const nameAtom = atom({
+  key: 'nameAtom',
+  default: '',
+});
+
+function Form() {
+  const [name, setName] = useRecoilState(nameAtom);
+  return (
+    <form>
+      <input
+        data-testid="name_input"
+        type="text"
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+      />
+    </form>
+  );
+}
+
+export default Form;
+```
+
+#### Test
+
+```jsx
+import { RecoilRoot } from 'recoil';
+import { fireEvent, render, screen } from '@testing-library/react';
+
+import Form, { nameAtom } from './form';
+import { RecoilObserver } from './RecoilObserver';
+
+describe('The form state should', () => {
+  test('change when the user enters a name.', () => {
+    const onChange = jest.fn();
+
+    render(
+      <RecoilRoot>
+        <RecoilObserver element={nameAtom} onChange={onChange} />
+        <Form />
+      </RecoilRoot>
+    );
+
+    const component = screen.getByTestId('name_input');
+
+    fireEvent.change(component, { target: { value: 'Recoil' } });
+
+    expect(onChange).toHaveBeenCalledTimes(2);
+    expect(onChange).toHaveBeenCalledWith(''); // Initial state on render.
+    expect(onChange).toHaveBeenCalledWith('Recoil'); // New value on change.
+  });
+});
+```
