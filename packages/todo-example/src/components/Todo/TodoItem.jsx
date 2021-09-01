@@ -1,16 +1,19 @@
 /**
- * (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+recoil
- * @flow strict-local
+ * @flow strict
  * @format
  */
 
-import React from 'react';
-import {useRecoilState} from 'recoil';
+import type {TItem} from './Todo_types';
 
 import {todoListState} from './Todo_state';
-import type {TItem} from './Todo_types';
+import React from 'react';
+import {useRecoilState} from 'recoil';
 
 export const TodoItem = ({item, index}: {item: TItem, index: number}) => {
   const [todoList, setTodoList] = useRecoilState(todoListState);

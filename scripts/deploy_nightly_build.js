@@ -1,4 +1,15 @@
-const {files, version, repository} = require('../package.json');
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict
+ * @format
+ */
+
+const {files, repository, version} = require('../package.json');
 const {execSync} = require('child_process');
 
 const DEST_FOLDER = 'nightly-build-files/';
