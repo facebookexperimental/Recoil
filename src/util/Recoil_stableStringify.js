@@ -73,7 +73,7 @@ function stringify(x: mixed, opt: Options, key?: string): string {
   // For built-in Maps, sort the keys in a stable order instead of the
   // default insertion order.  Support non-string keys.
   if (x instanceof Map) {
-    const obj = {};
+    const obj: {[string]: $FlowFixMe} = {};
     for (const [k, v] of x) {
       // Stringify will escape any nested quotes
       obj[typeof k === 'string' ? k : stringify(k, opt)] = v;
