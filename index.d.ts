@@ -1,12 +1,21 @@
 // Minimum TypeScript Version: 3.7
 
 /**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ */
+
+/**
  * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
  */
 
 export { };
 
-  import * as React from 'react';
+import * as React from 'react';
 
 // state.d.ts
 type NodeKey = string;
