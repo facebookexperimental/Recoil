@@ -20,6 +20,8 @@ import type {NodeKey} from '../core/Recoil_Keys';
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 
+const TYPE_CHECK_COOKIE = 27495866187;
+
 // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()
 
@@ -35,7 +37,7 @@ export type LoadablePromise<+T> = Promise<
   ResolvedLoadablePromiseInfo<T> | Canceled,
 >;
 
-type Accessors<T> = $ReadOnly<{
+type Accessors<+T> = $ReadOnly<{
   // Attempt to get the value.
   // If there's an error, throw an error.  If it's still loading, throw a Promise
   // This is useful for composing with React Suspense or in a Recoil Selector.
@@ -49,24 +51,24 @@ type Accessors<T> = $ReadOnly<{
 
   is: (Loadable<mixed>) => boolean,
 
-  map: <T, S>(map: (T) => Promise<S> | S) => Loadable<S>,
+  map: <T, S>(map: (T) => Loadable<S> | Promise<S> | S) => Loadable<S>,
 }>;
 
-type ValueAccessors<T> = $ReadOnly<{
+type ValueAccessors<+T> = $ReadOnly<{
   ...Accessors<T>,
   valueMaybe: () => T,
   errorMaybe: () => void,
   promiseMaybe: () => void,
 }>;
 
-type ErrorAccessors<T> = $ReadOnly<{
+type ErrorAccessors<+T> = $ReadOnly<{
   ...Accessors<T>,
   valueMaybe: () => void,
   errorMaybe: () => mixed,
   promiseMaybe: () => void,
 }>;
 
-type LoadingAccessors<T> = $ReadOnly<{
+type LoadingAccessors<+T> = $ReadOnly<{
   ...Accessors<T>,
   valueMaybe: () => void,
   errorMaybe: () => void,
@@ -74,18 +76,21 @@ type LoadingAccessors<T> = $ReadOnly<{
 }>;
 
 type ValueLoadable<+T> = $ReadOnly<{
+  __loadable: number,
   state: 'hasValue',
   contents: T,
   ...ValueAccessors<T>,
 }>;
 
 type ErrorLoadable<+T> = $ReadOnly<{
+  __loadable: number,
   state: 'hasError',
   contents: mixed,
   ...ErrorAccessors<T>,
 }>;
 
 type LoadingLoadable<+T> = $ReadOnly<{
+  __loadable: number,
   state: 'loading',
   contents: LoadablePromise<T>,
   ...LoadingAccessors<T>,
@@ -144,9 +149,7 @@ const loadableAccessors = {
     return other.state === this.state && other.contents === this.contents;
   },
 
-  // TODO Convert Loadable to a Class to better support chaining
-  //      by returning a Loadable from a map function
-  map<T, S>(map: T => Promise<S> | S): Loadable<S> {
+  map<T, S>(map: T => Promise<S> | Loadable<S> | S): Loadable<S> {
     // $FlowFixMe[object-this-reference]
     if (this.state === 'hasError') {
       // $FlowFixMe[object-this-reference]
@@ -157,10 +160,12 @@ const loadableAccessors = {
       try {
         // $FlowFixMe[object-this-reference]
         const next = map(this.contents);
-        // TODO if next instanceof Loadable, then return next
         return isPromise(next)
           ? loadableWithPromise(next.then(value => ({__value: value})))
-          : loadableWithValue(next);
+          : isLoadable(next)
+          ? // TODO Fix Flow typing for isLoadable() %check
+            (next: any) // flowlint-line unclear-type:off
+          : loadableWithValue((next: any)); // flowlint-line unclear-type:off
       } catch (e) {
         return isPromise(e)
           ? // If we "suspended", then try again.
@@ -175,8 +180,21 @@ const loadableAccessors = {
       return loadableWithPromise(
         // $FlowFixMe[object-this-reference]
         this.contents
-          // TODO if map returns a loadable, then return the value or promise or throw the error
-          .then(value => ({__value: map(value.__value)}))
+          .then(value => {
+            const next = map(value.__value);
+            if (isLoadable(next)) {
+              const nextLoadable: Loadable<S> = (next: any); // flowlint-line unclear-type:off
+              switch (nextLoadable.state) {
+                case 'hasValue':
+                  return {__value: nextLoadable.contents};
+                case 'hasError':
+                  throw nextLoadable.contents;
+                case 'loading':
+                  return nextLoadable.contents;
+              }
+            }
+            return {__value: next};
+          })
           .catch(e => {
             if (isPromise(e)) {
               // we were "suspended," try again
@@ -197,6 +215,7 @@ const loadableAccessors = {
 function loadableWithValue<T>(value: T): ValueLoadable<T> {
   // Build objects this way since Flow doesn't support disjoint unions for class properties
   return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
     state: 'hasValue',
     contents: value,
     ...loadableAccessors,
@@ -217,6 +236,7 @@ function loadableWithValue<T>(value: T): ValueLoadable<T> {
 
 function loadableWithError<T>(error: mixed): ErrorLoadable<T> {
   return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
     state: 'hasError',
     contents: error,
     ...loadableAccessors,
@@ -241,6 +261,7 @@ function loadableWithPromise<T>(
   promise: LoadablePromise<T>,
 ): LoadingLoadable<T> {
   return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
     state: 'loading',
     contents: promise,
     ...loadableAccessors,
@@ -284,12 +305,18 @@ function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
       );
 }
 
+// TODO Actually get this to work with Flow
+function isLoadable(x: mixed): boolean %checks {
+  return (x: any).__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
+}
+
 module.exports = {
   loadableWithValue,
   loadableWithError,
   loadableWithPromise,
   loadableLoading,
   loadableAll,
+  isLoadable,
   Canceled,
   CANCELED,
 };
