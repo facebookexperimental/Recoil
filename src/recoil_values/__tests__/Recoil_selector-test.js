@@ -1373,6 +1373,44 @@ testRecoil(
   },
 );
 
+testRecoil(
+  'selectors with nested user-thrown loadable promises execute to completion as expected',
+  async () => {
+    const [asyncDep, resolveAsyncDep] = asyncSelector<string, void>();
+
+    const selWithUserThrownPromise = selector({
+      key: 'selWithUserThrownPromise',
+      get: ({get}) => {
+        const loadable = get(noWait(asyncDep));
+
+        if (loadable.state === 'loading') {
+          throw loadable.toPromise();
+        }
+
+        return loadable.valueOrThrow();
+      },
+    });
+
+    const selThatDependsOnSelWithUserThrownPromise = selector({
+      key: 'selThatDependsOnSelWithUserThrownPromise',
+      get: ({get}) => get(selWithUserThrownPromise),
+    });
+
+    const loadable = getLoadable(selThatDependsOnSelWithUserThrownPromise);
+    const promise = loadable.toPromise();
+
+    expect(loadable.state).toBe('loading');
+
+    resolveAsyncDep('RESOLVED');
+
+    await flushPromisesAndTimers();
+
+    const val: mixed = await promise;
+
+    expect(val).toBe('RESOLVED');
+  },
+);
+
 testRecoil('selectors cannot mutate values in get() or set()', () => {
   const devStatus = window.__DEV__;
   window.__DEV__ = true;
