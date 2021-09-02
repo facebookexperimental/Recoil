@@ -441,13 +441,6 @@ function selector<T>(
 
         const {__key: resolvedDepKey, __value: depValue} = resolvedDep ?? {};
 
-        /**
-         * We need to bypass the selector dep cache if the resolved dep was a
-         * user-thrown promise because the selector dep cache will contain the
-         * stale values of dependencies, causing an infinite evaluation loop.
-         */
-        let bypassSelectorDepCacheOnReevaluation = true;
-
         if (resolvedDepKey != null) {
           /**
            * Note for async atoms, this means we are changing the atom's value
@@ -457,12 +450,33 @@ function selector<T>(
            * in Recoil_atom.js)
            */
           state.atomValues.set(resolvedDepKey, loadableWithValue(depValue));
-
+        } else {
           /**
-           * We've added the resolved dependency to the selector dep cache, so
-           * there's no need to bypass the cache
+           * If resolvedDepKey is not defined, the promise was a user-thrown
+           * promise. User-thrown promises are an advanced feature and they
+           * should be avoided in almost all cases. Using `loadable.map()` inside
+           * of selectors for loading loadables and then throwing that mapped
+           * loadable's promise is an example of a user-thrown promise.
+           *
+           * When we hit a user-thrown promise, we have to bail out of an optimization
+           * where we bypass calculating selector cache keys for selectors that
+           * have been previously seen for a given state (these selectors are saved in
+           * state.atomValues) to avoid stale state as we have no way of knowing
+           * what state changes happened (if any) in result to the promise resolving.
+           *
+           * Ideally we would only bail out selectors that are in the chain of
+           * dependencies for this selector, but there's currently no way to get
+           * a full list of a selector's downstream nodes because the state that
+           * is executing may be a discarded tree (so store.getGraph(state.version)
+           * will be empty), and the full dep tree may not be in the selector
+           * caches in the case where the selector's cache was cleared. To solve
+           * for this we would have to keep track  of all running selector
+           * executions and their downstream deps. Because this only covers edge
+           * cases, that complexity might not be justifyable.
            */
-          bypassSelectorDepCacheOnReevaluation = false;
+          store.getState().knownSelectors.forEach(nodeKey => {
+            state.atomValues.delete(nodeKey);
+          });
         }
 
         /**
@@ -533,7 +547,6 @@ function selector<T>(
           store,
           state,
           executionId,
-          bypassSelectorDepCacheOnReevaluation,
         );
 
         if (isLatestExecution(store, executionId)) {
@@ -633,7 +646,6 @@ function selector<T>(
     store: Store,
     state: TreeState,
     executionId: ExecutionId,
-    bypassSelectorDepCache?: boolean = false,
   ): [Loadable<T>, DepValues] {
     const endPerfBlock = startPerfBlock(key); // TODO T63965866: use execution ID here
     let result;
@@ -661,9 +673,7 @@ function selector<T>(
 
       setNewDepInStore(store, state, deps, depKey, executionId);
 
-      const depLoadable = bypassSelectorDepCache
-        ? getNodeLoadable(store, state, depKey)
-        : getCachedNodeLoadable(store, state, depKey);
+      const depLoadable = getCachedNodeLoadable(store, state, depKey);
 
       maybeFreezeLoadableContents(depLoadable);
 
