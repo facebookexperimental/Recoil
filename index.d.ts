@@ -264,7 +264,7 @@ interface BaseLoadable<T> {
   errorOrThrow: () => any;
   promiseOrThrow: () => Promise<T>;
   is: (other: Loadable<any>) => boolean;
-  map: <S>(map: (from: T) => Promise<S> | S) => Loadable<S>;
+  map: <S>(map: (from: T) => Loadable<S> | Promise<S> | S) => Loadable<S>;
 }
 
 interface ValueLoadable<T> extends BaseLoadable<T> {

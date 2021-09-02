@@ -43,9 +43,8 @@ function nullthrows(x, message) {
 
 var Recoil_nullthrows = nullthrows;
 
-// TODO Convert Loadable to a Class to allow for runtime type detection.
+const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()
-
 
 class Canceled {}
 
@@ -86,8 +85,6 @@ const loadableAccessors = {
     return other.state === this.state && other.contents === this.contents;
   },
 
-  // TODO Convert Loadable to a Class to better support chaining
-  //      by returning a Loadable from a map function
   map(map) {
     // $FlowFixMe[object-this-reference]
     if (this.state === 'hasError') {
@@ -99,11 +96,12 @@ const loadableAccessors = {
     if (this.state === 'hasValue') {
       try {
         // $FlowFixMe[object-this-reference]
-        const next = map(this.contents); // TODO if next instanceof Loadable, then return next
-
+        const next = map(this.contents);
         return Recoil_isPromise(next) ? loadableWithPromise(next.then(value => ({
           __value: value
-        }))) : loadableWithValue(next);
+        }))) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
+        next : // flowlint-line unclear-type:off
+        loadableWithValue(next); // flowlint-line unclear-type:off
       } catch (e) {
         return Recoil_isPromise(e) ? // If we "suspended", then try again.
         // errors and subsequent retries will be handled in 'loading' case
@@ -115,10 +113,30 @@ const loadableAccessors = {
 
     if (this.state === 'loading') {
       return loadableWithPromise( // $FlowFixMe[object-this-reference]
-      this.contents // TODO if map returns a loadable, then return the value or promise or throw the error
-      .then(value => ({
-        __value: map(value.__value)
-      })).catch(e => {
+      this.contents.then(value => {
+        const next = map(value.__value);
+
+        if (isLoadable(next)) {
+          const nextLoadable = next; // flowlint-line unclear-type:off
+
+          switch (nextLoadable.state) {
+            case 'hasValue':
+              return {
+                __value: nextLoadable.contents
+              };
+
+            case 'hasError':
+              throw nextLoadable.contents;
+
+            case 'loading':
+              return nextLoadable.contents;
+          }
+        }
+
+        return {
+          __value: next
+        };
+      }).catch(e => {
         if (Recoil_isPromise(e)) {
           // we were "suspended," try again
           // $FlowFixMe[object-this-reference]
@@ -138,6 +156,7 @@ const loadableAccessors = {
 function loadableWithValue(value) {
   // Build objects this way since Flow doesn't support disjoint unions for class properties
   return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
     state: 'hasValue',
     contents: value,
     ...loadableAccessors,
@@ -163,6 +182,7 @@ function loadableWithValue(value) {
 
 function loadableWithError(error) {
   return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
     state: 'hasError',
     contents: error,
     ...loadableAccessors,
@@ -190,6 +210,7 @@ function loadableWithError(error) {
 
 function loadableWithPromise(promise) {
   return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
     state: 'loading',
     contents: promise,
     ...loadableAccessors,
@@ -229,6 +250,11 @@ function loadableAll(inputs) {
   return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)).then(value => ({
     __value: value
   })));
+} // TODO Actually get this to work with Flow
+
+
+function isLoadable(x) {
+  return x.__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
 }
 
 var Recoil_Loadable = {
@@ -237,6 +263,7 @@ var Recoil_Loadable = {
   loadableWithPromise,
   loadableLoading,
   loadableAll,
+  isLoadable,
   Canceled,
   CANCELED
 };
@@ -6293,13 +6320,6 @@ function selector(options) {
         __key: resolvedDepKey,
         __value: depValue
       } = resolvedDep !== null && resolvedDep !== void 0 ? resolvedDep : {};
-      /**
-       * We need to bypass the selector dep cache if the resolved dep was a
-       * user-thrown promise because the selector dep cache will contain the
-       * stale values of dependencies, causing an infinite evaluation loop.
-       */
-
-      let bypassSelectorDepCacheOnReevaluation = true;
 
       if (resolvedDepKey != null) {
         /**
@@ -6310,12 +6330,33 @@ function selector(options) {
          * in Recoil_atom.js)
          */
         state.atomValues.set(resolvedDepKey, loadableWithValue$2(depValue));
+      } else {
         /**
-         * We've added the resolved dependency to the selector dep cache, so
-         * there's no need to bypass the cache
+         * If resolvedDepKey is not defined, the promise was a user-thrown
+         * promise. User-thrown promises are an advanced feature and they
+         * should be avoided in almost all cases. Using `loadable.map()` inside
+         * of selectors for loading loadables and then throwing that mapped
+         * loadable's promise is an example of a user-thrown promise.
+         *
+         * When we hit a user-thrown promise, we have to bail out of an optimization
+         * where we bypass calculating selector cache keys for selectors that
+         * have been previously seen for a given state (these selectors are saved in
+         * state.atomValues) to avoid stale state as we have no way of knowing
+         * what state changes happened (if any) in result to the promise resolving.
+         *
+         * Ideally we would only bail out selectors that are in the chain of
+         * dependencies for this selector, but there's currently no way to get
+         * a full list of a selector's downstream nodes because the state that
+         * is executing may be a discarded tree (so store.getGraph(state.version)
+         * will be empty), and the full dep tree may not be in the selector
+         * caches in the case where the selector's cache was cleared. To solve
+         * for this we would have to keep track  of all running selector
+         * executions and their downstream deps. Because this only covers edge
+         * cases, that complexity might not be justifyable.
          */
-
-        bypassSelectorDepCacheOnReevaluation = false;
+        store.getState().knownSelectors.forEach(nodeKey => {
+          state.atomValues.delete(nodeKey);
+        });
       }
       /**
        * Optimization: Now that the dependency has resolved, let's try hitting
@@ -6385,7 +6426,7 @@ function selector(options) {
         }
       }
 
-      const [loadable, depValues] = evaluateSelectorGetter(store, state, executionId, bypassSelectorDepCacheOnReevaluation);
+      const [loadable, depValues] = evaluateSelectorGetter(store, state, executionId);
 
       if (isLatestExecution(store, executionId)) {
         updateExecutionInfoDepValues(depValues, store, executionId);
@@ -6455,7 +6496,7 @@ function selector(options) {
     setDepsInStore(store, state, deps, executionId);
   }
 
-  function evaluateSelectorGetter(store, state, executionId, bypassSelectorDepCache = false) {
+  function evaluateSelectorGetter(store, state, executionId) {
     const endPerfBlock = startPerfBlock$1(key); // TODO T63965866: use execution ID here
 
     let result;
@@ -6481,7 +6522,7 @@ function selector(options) {
         key: depKey
       } = recoilValue;
       setNewDepInStore(store, state, deps, depKey, executionId);
-      const depLoadable = bypassSelectorDepCache ? getNodeLoadable$2(store, state, depKey) : getCachedNodeLoadable(store, state, depKey);
+      const depLoadable = getCachedNodeLoadable(store, state, depKey);
       maybeFreezeLoadableContents(depLoadable);
       depValues.set(depKey, depLoadable);
 

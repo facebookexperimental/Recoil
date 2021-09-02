@@ -63,9 +63,9 @@ test('Pending Value Loadable', async () => {
 });
 describe('Loadable mapping', () => {
   test('Loadable mapping value', () => {
-    const loadable = loadableWithValue('VALUE').map(x => 'MAPPED_' + x);
+    const loadable = loadableWithValue('VALUE').map(x => 'MAPPED ' + x);
     expect(loadable.state).toBe('hasValue');
-    expect(loadable.contents).toBe('MAPPED_VALUE');
+    expect(loadable.contents).toBe('MAPPED VALUE');
   });
   test('Loadable mapping value to error', () => {
     const loadable = loadableWithValue('VALUE').map(() => {
@@ -75,9 +75,9 @@ describe('Loadable mapping', () => {
     expect(loadable.contents).toBe(ERROR);
   });
   test('Loadable mapping value to Promise', async () => {
-    const loadable = loadableWithValue('VALUE').map(() => Promise.resolve('MAPPED'));
+    const loadable = loadableWithValue('VALUE').map(value => Promise.resolve('MAPPED ' + value));
     expect(loadable.state).toBe('loading');
-    await expect(loadable.toPromise()).resolves.toBe('MAPPED');
+    await expect(loadable.toPromise()).resolves.toBe('MAPPED VALUE');
   });
   test('Loadable mapping value to reject', async () => {
     const loadable = loadableWithValue('VALUE').map(() => Promise.reject(ERROR));
@@ -93,9 +93,9 @@ describe('Loadable mapping', () => {
     // TODO update API to avoid wrapping
     const loadable = loadableWithPromise(Promise.resolve({
       __value: 'VALUE'
-    })).map(x => 'MAPPED_' + x);
+    })).map(x => 'MAPPED ' + x);
     expect(loadable.state).toBe('loading');
-    await expect(loadable.toPromise()).resolves.toBe('MAPPED_VALUE');
+    await expect(loadable.toPromise()).resolves.toBe('MAPPED VALUE');
   });
   test('Loadable mapping promise value to reject', async () => {
     // TODO update API to avoid wrapping
@@ -119,5 +119,37 @@ describe('Loadable mapping', () => {
     const loadable = loadableWithPromise(Promise.reject(ERROR)).map(() => 'NOT_USED');
     expect(loadable.state).toBe('loading');
     await expect(loadable.toPromise()).rejects.toBe(ERROR);
+  });
+  test('Loadable mapping to loadable', () => {
+    const loadable = loadableWithValue('VALUE').map(value => loadableWithValue(value));
+    expect(loadable.state).toBe('hasValue');
+    expect(loadable.contents).toBe('VALUE');
+  });
+  test('Loadable mapping promise to loadable value', async () => {
+    // TODO update API to avoid wrapping
+    const loadable = loadableWithPromise(Promise.resolve({
+      __value: 'VALUE'
+    })).map(value => loadableWithValue('MAPPED ' + value));
+    expect(loadable.state).toBe('loading');
+    await expect(loadable.toPromise()).resolves.toBe('MAPPED VALUE');
+  });
+  test('Loadable mapping promise to loadable error', async () => {
+    // TODO update API to avoid wrapping
+    const loadable = loadableWithPromise(Promise.resolve({
+      __value: 'VALUE'
+    })).map(() => loadableWithError(ERROR));
+    expect(loadable.state).toBe('loading');
+    await expect(loadable.toPromise()).rejects.toBe(ERROR);
+  });
+  test('Loadable mapping promise to loadable promise', async () => {
+    // TODO update API to avoid wrapping
+    const loadable = loadableWithPromise(Promise.resolve({
+      __value: 'VALUE'
+    })).map(value => // TODO update API to avoid wrapping
+    loadableWithPromise(Promise.resolve({
+      __value: 'MAPPED ' + value
+    })));
+    expect(loadable.state).toBe('loading');
+    await expect(loadable.toPromise()).resolves.toBe('MAPPED VALUE');
   });
 });
