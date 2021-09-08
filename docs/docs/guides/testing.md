@@ -77,7 +77,7 @@ describe('The form state should', () => {
 });
 ```
 
-## Testing Recoil State outside of React
+## Testing Recoil state outside of React
 
 It can be useful to manipulate and evaluate Recoil selectors outside of a React context for testing.  This can be done by working with a Recoil [`Snapshot`](/docs/api-reference/core/Snapshot).  You can build a fresh snapshot using `snapshot_UNSTABLE()` and then use that `Snapshot` to evaluate selectors for testing.
 
