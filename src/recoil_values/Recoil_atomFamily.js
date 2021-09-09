@@ -22,9 +22,12 @@ const stableStringify = require('../util/Recoil_stableStringify');
 const atom = require('./Recoil_atom');
 
 type Primitive = void | null | boolean | number | string;
+interface HasToJSON {
+  toJSON: () => string;
+}
 export type Parameter =
   | Primitive
-  | {toJSON: () => string, ...}
+  | HasToJSON
   | $ReadOnlyArray<Parameter>
   | $ReadOnly<{[string]: Parameter}>;
 

@@ -36,9 +36,12 @@ const selector = require('./Recoil_selector');
 // Keep in mind the parameter needs to be serializable as a cahche key
 // using Recoil_stableStringify
 type Primitive = void | null | boolean | number | string;
+interface HasToJSON {
+  toJSON: () => string;
+}
 export type Parameter =
   | Primitive
-  | {toJSON: () => string, ...}
+  | HasToJSON
   | $ReadOnlyArray<Parameter>
   | $ReadOnly<{...}>;
 // | $ReadOnly<{[string]: Parameter}>; // TODO Better enforce object is serializable
