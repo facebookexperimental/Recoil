@@ -30,10 +30,10 @@ const selector = require('./Recoil_selector'); // Keep in mind the parameter nee
 
 
 type Primitive = void | null | boolean | number | string;
-export type Parameter = Primitive | {
-  toJSON: () => string,
-  ...
-} | $ReadOnlyArray<Parameter> | $ReadOnly<{...}>; // | $ReadOnly<{[string]: Parameter}>; // TODO Better enforce object is serializable
+interface HasToJSON {
+  toJSON: () => string
+}
+export type Parameter = Primitive | HasToJSON | $ReadOnlyArray<Parameter> | $ReadOnly<{...}>; // | $ReadOnly<{[string]: Parameter}>; // TODO Better enforce object is serializable
 
 type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
   key: string,
