@@ -100,6 +100,7 @@ const reducer = useRecoilTransaction_UNSTABLE(({get, set}) => action => {
 ### Current Limitations and Future Vision
 
 * Transactions currently only support atoms, not yet selectors.  This support can be added in the future.
+* Atoms with default values that are selectors are also not yet supported.
 * Atoms that are read must have a synchronous value.  If it is in an error state or an asynchronous pending state, then the transaction will throw an error.  It would be possible to support pending dependencies by aborting the transaction if a dependency is pending and then re-starting the transaction when it is available.  This is consistent with how the selector `get()` is implemented.
 * Transactions do not have a return value.  If we want to have some notification a transaction completes, or use transactions to request slow data, or to request data from event handlers, then we could have a transaction return a `Promise` to a return value.
 * Transactions must be synchronous.  There is a proposal to allow asynchronous transactions.  The user could provide an `async` transaction callback function which could use `await`.  The atomic update of all sets would not be applied, however, until the `Promise` returned by the transaction is fully resolved.
