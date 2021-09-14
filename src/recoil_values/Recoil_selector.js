@@ -760,29 +760,38 @@ function selector<T>(
     state: TreeState,
   ): ?Loadable<T> {
     const depsAfterCacheDone = new Set();
-
     const executionInfo = getExecutionInfo(store);
 
-    const cachedVal = cache.get(
-      nodeKey => {
-        invariant(typeof nodeKey === 'string', 'Cache nodeKey is type string');
+    let cachedVal;
+    try {
+      cachedVal = cache.get(
+        nodeKey => {
+          invariant(
+            typeof nodeKey === 'string',
+            'Cache nodeKey is type string',
+          );
 
-        const loadable = getCachedNodeLoadable(store, state, nodeKey);
+          const loadable = getCachedNodeLoadable(store, state, nodeKey);
 
-        return loadable.contents;
-      },
-      {
-        onNodeVisit: node => {
-          if (
-            node.type === 'branch' &&
-            node.nodeKey !== key &&
-            typeof node.nodeKey === 'string'
-          ) {
-            depsAfterCacheDone.add(node.nodeKey);
-          }
+          return loadable.contents;
         },
-      },
-    );
+        {
+          onNodeVisit: node => {
+            if (
+              node.type === 'branch' &&
+              node.nodeKey !== key &&
+              typeof node.nodeKey === 'string'
+            ) {
+              depsAfterCacheDone.add(node.nodeKey);
+            }
+          },
+        },
+      );
+    } catch (err) {
+      throw new Error(
+        `Problem with cache lookup for selector "${key}": ${err.message}`,
+      );
+    }
 
     /**
      * Ensure store contains correct dependencies if we hit the cache so that
