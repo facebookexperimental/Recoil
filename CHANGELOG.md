@@ -1,8 +1,13 @@
 # Change Log
 
 ## UPCOMING
+
 ***Add new changes here as they land***
+
 - Ability to map Loadables with other Loadables
+- Allow class instances in family parameters for Flow
+
+### Pending
 - Memory management
 - useTransition() compatibility
 - Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
