@@ -275,25 +275,27 @@ function selector<T>(
     }
   }
 
-  function getCachedNodeLoadable<T>(
+  function getCachedNodeLoadable<TT>(
     store: Store,
     state: TreeState,
-    key: NodeKey,
-  ): Loadable<T> {
-    const isKeyPointingToSelector = store.getState().knownSelectors.has(key);
+    nodeKey: NodeKey,
+  ): Loadable<TT> {
+    const isKeyPointingToSelector = store
+      .getState()
+      .knownSelectors.has(nodeKey);
 
     /**
      * It's important that we don't bypass calling getNodeLoadable for atoms
      * as getNodeLoadable has side effects in state
      */
-    if (isKeyPointingToSelector && state.atomValues.has(key)) {
-      return nullthrows(state.atomValues.get(key));
+    if (isKeyPointingToSelector && state.atomValues.has(nodeKey)) {
+      return nullthrows(state.atomValues.get(nodeKey));
     }
 
-    const loadable = getNodeLoadable(store, state, key);
+    const loadable = getNodeLoadable(store, state, nodeKey);
 
     if (loadable.state !== 'loading' && isKeyPointingToSelector) {
-      state.atomValues.set(key, loadable);
+      state.atomValues.set(nodeKey, loadable);
     }
 
     return loadable;
@@ -814,8 +816,8 @@ function selector<T>(
    * With current implementation they are treated the same
    */
   function depValuesToDepRoute(depValues: DepValues): NodeCacheRoute {
-    return Array.from(depValues.entries()).map(([key, valLoadable]) => [
-      key,
+    return Array.from(depValues.entries()).map(([depKey, valLoadable]) => [
+      depKey,
       valLoadable.contents,
     ]);
   }
@@ -902,10 +904,10 @@ function selector<T>(
     state: TreeState,
   ): ?ExecutionInfo<T> {
     const [, executionInfo] =
-      Array.from(executionInfoMap.entries()).find(([store, executionInfo]) => {
+      Array.from(executionInfoMap.entries()).find(([store, execInfo]) => {
         return (
-          executionInfo.latestLoadable != null &&
-          executionInfo.latestExecutionId != null &&
+          execInfo.latestLoadable != null &&
+          execInfo.latestExecutionId != null &&
           !haveAsyncDepsChanged(store, state)
         );
       }) ?? [];
@@ -1092,21 +1094,21 @@ function selector<T>(
       let syncSelectorSetFinished = false;
       const writes: AtomWrites = new Map();
 
-      function getRecoilValue<S>({key}: RecoilValue<S>): S {
+      function getRecoilValue<S>({key: depKey}: RecoilValue<S>): S {
         if (syncSelectorSetFinished) {
           throw new Error(
             'Recoil: Async selector sets are not currently supported.',
           );
         }
 
-        const loadable = getCachedNodeLoadable(store, state, key);
+        const loadable = getCachedNodeLoadable(store, state, depKey);
 
         maybeFreezeLoadableContents(loadable);
 
         if (loadable.state === 'hasValue') {
           return loadable.contents;
         } else if (loadable.state === 'loading') {
-          throw new RecoilValueNotReady(key);
+          throw new RecoilValueNotReady(depKey);
         } else {
           throw loadable.contents;
         }
@@ -1122,7 +1124,7 @@ function selector<T>(
           );
         }
 
-        const newValue =
+        const setValue =
           typeof valueOrUpdater === 'function'
             ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
               // flowlint-next-line unclear-type:off
@@ -1133,7 +1135,7 @@ function selector<T>(
           store,
           state,
           recoilState.key,
-          newValue,
+          setValue,
         );
 
         upstreamWrites.forEach((v, k) => writes.set(k, v));
