@@ -74,7 +74,7 @@ Recoil 的构建没有转译成 ES5，我们也不支持在 ES5 下使用 Recoil
 
 ## Nightly Builds
 
-我们每天会基于当前的 `master` 分支构建一次 package，并将其作为 `nightly` 分支并发布到 Github 上。你可以通过 `npm` 来使用此分支：
+我们每天会基于当前的 `main` 分支构建一次 package，并将其作为 `nightly` 分支并发布到 Github 上。你可以通过 `npm` 来使用此分支：
 
 ```shell
 npm install https://github.com/facebookexperimental/Recoil.git#nightly
