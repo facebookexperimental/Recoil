@@ -6182,21 +6182,21 @@ function selector(options) {
     }
   }
 
-  function getCachedNodeLoadable(store, state, key) {
-    const isKeyPointingToSelector = store.getState().knownSelectors.has(key);
+  function getCachedNodeLoadable(store, state, nodeKey) {
+    const isKeyPointingToSelector = store.getState().knownSelectors.has(nodeKey);
     /**
      * It's important that we don't bypass calling getNodeLoadable for atoms
      * as getNodeLoadable has side effects in state
      */
 
-    if (isKeyPointingToSelector && state.atomValues.has(key)) {
-      return Recoil_nullthrows(state.atomValues.get(key));
+    if (isKeyPointingToSelector && state.atomValues.has(nodeKey)) {
+      return Recoil_nullthrows(state.atomValues.get(nodeKey));
     }
 
-    const loadable = getNodeLoadable$2(store, state, key);
+    const loadable = getNodeLoadable$2(store, state, nodeKey);
 
     if (loadable.state !== 'loading' && isKeyPointingToSelector) {
-      state.atomValues.set(key, loadable);
+      state.atomValues.set(nodeKey, loadable);
     }
 
     return loadable;
@@ -6594,17 +6594,23 @@ function selector(options) {
   function getValFromCacheAndUpdatedDownstreamDeps(store, state) {
     const depsAfterCacheDone = new Set();
     const executionInfo = getExecutionInfo(store);
-    const cachedVal = cache.get(nodeKey => {
-      !(typeof nodeKey === 'string') ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Cache nodeKey is type string') : Recoil_invariant(false) : void 0;
-      const loadable = getCachedNodeLoadable(store, state, nodeKey);
-      return loadable.contents;
-    }, {
-      onNodeVisit: node => {
-        if (node.type === 'branch' && node.nodeKey !== key && typeof node.nodeKey === 'string') {
-          depsAfterCacheDone.add(node.nodeKey);
+    let cachedVal;
+
+    try {
+      cachedVal = cache.get(nodeKey => {
+        !(typeof nodeKey === 'string') ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Cache nodeKey is type string') : Recoil_invariant(false) : void 0;
+        const loadable = getCachedNodeLoadable(store, state, nodeKey);
+        return loadable.contents;
+      }, {
+        onNodeVisit: node => {
+          if (node.type === 'branch' && node.nodeKey !== key && typeof node.nodeKey === 'string') {
+            depsAfterCacheDone.add(node.nodeKey);
+          }
         }
-      }
-    });
+      });
+    } catch (err) {
+      throw new Error(`Problem with cache lookup for selector "${key}": ${err.message}`);
+    }
     /**
      * Ensure store contains correct dependencies if we hit the cache so that
      * the store deps and cache are in sync for a given state. This is important
@@ -6613,6 +6619,7 @@ function selector(options) {
      * a change in deps in the store if the store deps for this state are empty
      * or stale.
      */
+
 
     if (cachedVal) {
       setDepsInStore(store, state, depsAfterCacheDone, executionInfo.latestExecutionId);
@@ -6634,7 +6641,7 @@ function selector(options) {
 
 
   function depValuesToDepRoute(depValues) {
-    return Array.from(depValues.entries()).map(([key, valLoadable]) => [key, valLoadable.contents]);
+    return Array.from(depValues.entries()).map(([depKey, valLoadable]) => [depKey, valLoadable.contents]);
   }
 
   function getValFromRunningNewExecutionAndUpdatedDeps(store, state) {
@@ -6694,8 +6701,8 @@ function selector(options) {
   function getExecutionInfoOfInProgressExecution(state) {
     var _Array$from$find;
 
-    const [, executionInfo] = (_Array$from$find = Array.from(executionInfoMap.entries()).find(([store, executionInfo]) => {
-      return executionInfo.latestLoadable != null && executionInfo.latestExecutionId != null && !haveAsyncDepsChanged(store, state);
+    const [, executionInfo] = (_Array$from$find = Array.from(executionInfoMap.entries()).find(([store, execInfo]) => {
+      return execInfo.latestLoadable != null && execInfo.latestExecutionId != null && !haveAsyncDepsChanged(store, state);
     })) !== null && _Array$from$find !== void 0 ? _Array$from$find : [];
     return executionInfo;
   }
@@ -6845,19 +6852,19 @@ function selector(options) {
       const writes = new Map();
 
       function getRecoilValue({
-        key
+        key: depKey
       }) {
         if (syncSelectorSetFinished) {
           throw new Error('Recoil: Async selector sets are not currently supported.');
         }
 
-        const loadable = getCachedNodeLoadable(store, state, key);
+        const loadable = getCachedNodeLoadable(store, state, depKey);
         maybeFreezeLoadableContents(loadable);
 
         if (loadable.state === 'hasValue') {
           return loadable.contents;
         } else if (loadable.state === 'loading') {
-          throw new RecoilValueNotReady$2(key);
+          throw new RecoilValueNotReady$2(depKey);
         } else {
           throw loadable.contents;
         }
@@ -6868,10 +6875,10 @@ function selector(options) {
           throw new Error('Recoil: Async selector sets are not currently supported.');
         }
 
-        const newValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
+        const setValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
         // flowlint-next-line unclear-type:off
         valueOrUpdater(getRecoilValue(recoilState)) : valueOrUpdater;
-        const upstreamWrites = setNodeValue$3(store, state, recoilState.key, newValue);
+        const upstreamWrites = setNodeValue$3(store, state, recoilState.key, setValue);
         upstreamWrites.forEach((v, k) => writes.set(k, v));
       }
 
