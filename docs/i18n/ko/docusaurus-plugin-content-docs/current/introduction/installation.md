@@ -71,7 +71,7 @@ CDN의 모든 Recoil 파일은 [jsdelivr](https://www.jsdelivr.com/package/npm/r
 
 ## Nightly Builds
 
-우리는 매일 한 번씩 현재의 `master` 브랜치에 기반하여 패키지를 빌드하고 GitHub에 `nightly` 브랜치로 배포한다. 아래의 `npm` 명령어를 통해 `nightly` 브랜치를 이용할 수 있다:
+우리는 매일 한 번씩 현재의 `main` 브랜치에 기반하여 패키지를 빌드하고 GitHub에 `nightly` 브랜치로 배포한다. 아래의 `npm` 명령어를 통해 `nightly` 브랜치를 이용할 수 있다:
 
 ```shell
 npm install https://github.com/facebookexperimental/Recoil.git#nightly
