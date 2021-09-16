@@ -89,7 +89,7 @@ export type AtomEffect<T> = (param: {
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
   onSet: (
-    param: (newValue: T, oldValue: T | DefaultValue) => void,
+    param: (newValue: T | DefaultValue, oldValue: T | DefaultValue) => void,
   ) => void,
 }) => void | (() => void);
 
