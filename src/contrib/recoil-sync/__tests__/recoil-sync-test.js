@@ -483,18 +483,26 @@ test('Listen to storage', async () => {
   expect(container.textContent).toBe('"A""B""C2"');
   expect(storage1.size).toBe(3);
 
+  // Subscribe to new value
   act(() =>
     update1(new Map([['recoil-sync listen', loadableWithValue('AA')]])),
   );
   expect(container.textContent).toBe('"AA""B""C2"');
   // Avoid feedback loops
-  // expect(storage1.get('recoil-sync listen')?.getValue()).toBe('A');
+  expect(storage1.get('recoil-sync listen')?.getValue()).toBe('A');
 
-  act(() => update1(new Map([['KEY B', loadableWithValue('BB')]])));
+  // Subscribe to new value from different key
+  act(() => update1(new Map([['KEY A', loadableWithValue('BB')]])));
   expect(container.textContent).toBe('"AA""BB""C2"');
-  // expect(storage1.get('KEY A')?.getValue()).toBe('BB');
-  // expect(storage1.get('KEY B')?.getValue()).toBe('B');
+  // Neither key in same storage will be updated to avoid feedback loops
+  expect(storage1.get('KEY A')?.getValue()).toBe('B');
+  expect(storage1.get('KEY B')?.getValue()).toBe(undefined);
+  act(() => update1(new Map([['KEY B', loadableWithValue('BBB')]])));
+  expect(container.textContent).toBe('"AA""BBB""C2"');
+  expect(storage1.get('KEY A')?.getValue()).toBe('B');
+  expect(storage1.get('KEY B')?.getValue()).toBe(undefined);
 
+  // Subscribe to new value from different storage
   act(() =>
     update1(
       new Map([
@@ -502,15 +510,15 @@ test('Listen to storage', async () => {
       ]),
     ),
   );
-  expect(container.textContent).toBe('"AA""BB""CC1"');
+  expect(container.textContent).toBe('"AA""BBB""CC1"');
   // Avoid feedback loops, do not update storage based on listening to the storage
-  // expect(
-  //   storage1.get('recoil-sync listen to multiple storage')?.getValue(),
-  // ).toBe('C1');
+  expect(
+    storage1.get('recoil-sync listen to multiple storage')?.getValue(),
+  ).toBe('C1');
   // But, we should update other storages to stay in sync
-  // expect(
-  //   storage2.get('recoil-sync listen to multiple storage')?.getValue(),
-  // ).toBe('CC1');
+  expect(
+    storage2.get('recoil-sync listen to multiple storage')?.getValue(),
+  ).toBe('CC1');
 
   act(() =>
     update2(
@@ -519,13 +527,13 @@ test('Listen to storage', async () => {
       ]),
     ),
   );
-  expect(container.textContent).toBe('"AA""BB""CC2"');
-  // expect(
-  //   storage1.get('recoil-sync listen to multiple storage')?.getValue(),
-  // ).toBe('CC2');
-  // expect(
-  //   storage2.get('recoil-sync listen to multiple storage')?.getValue(),
-  // ).toBe('CC1');
+  expect(container.textContent).toBe('"AA""BBB""CC2"');
+  expect(
+    storage1.get('recoil-sync listen to multiple storage')?.getValue(),
+  ).toBe('CC2');
+  expect(
+    storage2.get('recoil-sync listen to multiple storage')?.getValue(),
+  ).toBe('CC1');
 
   act(() =>
     update1(
@@ -534,19 +542,34 @@ test('Listen to storage', async () => {
       ]),
     ),
   );
-  expect(container.textContent).toBe('"AA""BB""CCC1"');
-  // expect(
-  //   storage1.get('recoil-sync listen to multiple storage')?.getValue(),
-  // ).toBe('CC2');
-  // expect(
-  //   storage2.get('recoil-sync listen to multiple storage')?.getValue(),
-  // ).toBe('CCC1');
+  expect(container.textContent).toBe('"AA""BBB""CCC1"');
+  expect(
+    storage1.get('recoil-sync listen to multiple storage')?.getValue(),
+  ).toBe('CC2');
+  expect(
+    storage2.get('recoil-sync listen to multiple storage')?.getValue(),
+  ).toBe('CCC1');
 
+  // Subscribe to reset
   act(() =>
-    update1(new Map([['recoil-sync listen', loadableWithError('ERROR')]])),
+    update1(new Map([['recoil-sync listen to multiple storage', null]])),
+  );
+  expect(container.textContent).toBe('"AA""BBB""DEFAULT"');
+  expect(
+    storage1.get('recoil-sync listen to multiple storage')?.getValue(),
+  ).toBe('CC2');
+  expect(
+    storage2.get('recoil-sync listen to multiple storage')?.getValue(),
+  ).toBe(undefined);
+
+  // Subscribe to error
+  const ERROR = new Error('ERROR');
+  act(() =>
+    update1(new Map([['recoil-sync listen', loadableWithError(ERROR)]])),
   );
   // TODO Atom should be put in an error state, but is just reset for now.
-  expect(container.textContent).toBe('"DEFAULT""BB""CCC1"');
+  expect(container.textContent).toBe('"DEFAULT""BBB""DEFAULT"');
+  // expect(storage1.get('recoil-sync listen')?.errorOrThrow()).toBe(ERROR);
 
   // TODO Async Atom support
   // act(() =>
@@ -560,7 +583,7 @@ test('Listen to storage', async () => {
   //   ),
   // );
   // await flushPromisesAndTimers();
-  // expect(container.textContent).toBe('"ASYNC""BB""CCC1"');
+  // expect(container.textContent).toBe('"ASYNC""BBB""CCC1"');
 
   // act(() =>
   //   update1(
