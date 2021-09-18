@@ -88,6 +88,7 @@ const {
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
+  getRecoilValueAsLoadable,
   markRecoilValueModified,
   setRecoilValue,
   setRecoilValueLoadable,
@@ -129,6 +130,10 @@ export type AtomEffect<T> = ({
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
   onSet: ((newValue: T, oldValue: T | DefaultValue) => void) => void,
+
+  // Accessors to read other atoms/selectors
+  getPromise: <S>(RecoilValue<S>) => Promise<S>,
+  getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
 }) => void | (() => void);
 
 export type AtomOptions<T> = $ReadOnly<{
@@ -241,6 +246,39 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     if (options.effects_UNSTABLE != null && !alreadyKnown) {
       let duringInit = true;
 
+      function getLoadable<S>(recoilValue: RecoilValue<S>): Loadable<S> {
+        // Normally we can just get the current value of another atom.
+        // But for our own value we need to check if there is a pending
+        // initialized value or get the fallback default value.
+        if (duringInit && recoilValue.key === key) {
+          // Cast T to S
+          const retValue: NewValue<S> = (initValue: any); // flowlint-line unclear-type:off
+          return retValue instanceof DefaultValue
+            ? (defaultLoadable: any) // flowlint-line unclear-type:off
+            : isPromise(retValue)
+            ? loadableWithPromise(
+                retValue.then(
+                  (v: S | DefaultValue): ResolvedLoadablePromiseInfo<S> => ({
+                    __key: key,
+                    __value:
+                      v instanceof DefaultValue
+                        ? // TODO It's a little weird that this returns a Promise<T>
+                          // instead of T, but it seems to work. This can be cleaned
+                          // up if we clean up how Loadable's wrap keys and values.
+                          (defaultLoadable: any).toPromise() // flowlint-line unclear-type:off
+                        : v,
+                  }),
+                ),
+              )
+            : loadableWithValue(retValue);
+        }
+        return getRecoilValueAsLoadable(store, recoilValue);
+      }
+
+      function getPromise<S>(recoilValue: RecoilValue<S>): Promise<S> {
+        return getLoadable(recoilValue).toPromise();
+      }
+
       const setSelf = (effect: AtomEffect<T>) => (
         valueOrUpdater: NewValueOrUpdater<T>,
       ) => {
@@ -339,6 +377,8 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           setSelf: setSelf(effect),
           resetSelf: resetSelf(effect),
           onSet: onSet(effect),
+          getPromise,
+          getLoadable,
         });
         if (cleanup != null) {
           cleanupEffectsByStore.set(store, [
