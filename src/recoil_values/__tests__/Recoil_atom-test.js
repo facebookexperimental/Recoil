@@ -1019,9 +1019,14 @@ describe('Effects', () => {
         key: 'atom effect - init from other atom',
         default: 'DEFAULT',
         effects_UNSTABLE: [
-          ({setSelf, getLoadable}) => {
+          ({node, setSelf, getLoadable, getInfo_UNSTABLE}) => {
             const otherValue = getLoadable(otherAtom).contents;
             expect(otherValue).toEqual('OTHER');
+            expect(getInfo_UNSTABLE(node).isSet).toBe(false);
+            expect(getInfo_UNSTABLE(otherAtom).isSet).toBe(false);
+            expect(getInfo_UNSTABLE(otherAtom).loadable?.contents).toBe(
+              'OTHER',
+            );
             setSelf(otherValue);
           },
         ],
@@ -1061,6 +1066,9 @@ describe('Effects', () => {
       let initTest1 = new Promise(() => {});
       let initTest2 = new Promise(() => {});
       let initTest3 = new Promise(() => {});
+      let initTest4 = new Promise(() => {});
+      let initTest5 = new Promise(() => {});
+      let initTest6 = new Promise(() => {});
       let setTest = new Promise(() => {});
 
       const myAtom = atom({
@@ -1068,8 +1076,10 @@ describe('Effects', () => {
         default: 'DEFAULT',
         effects_UNSTABLE: [
           // Test we can get default values
-          ({node, getLoadable, getPromise}) => {
+          ({node, getLoadable, getPromise, getInfo_UNSTABLE}) => {
             expect(getLoadable(node).contents).toEqual('DEFAULT');
+            expect(getInfo_UNSTABLE(node).isSet).toBe(false);
+            expect(getInfo_UNSTABLE(node).loadable?.contents).toBe('DEFAULT');
             // eslint-disable-next-line jest/valid-expect
             initTest1 = expect(getPromise(asyncAtom)).resolves.toEqual('ASYNC');
           },
@@ -1077,15 +1087,21 @@ describe('Effects', () => {
             setSelf('INIT');
           },
           // Test we can get value from previous initialization
-          ({node, getLoadable}) => {
+          ({node, getLoadable, getInfo_UNSTABLE}) => {
             expect(getLoadable(node).contents).toEqual('INIT');
+            expect(getInfo_UNSTABLE(node).isSet).toBe(true);
+            expect(getInfo_UNSTABLE(node).loadable?.contents).toBe('INIT');
           },
           // Test we can asynchronouse get "current" values of both self and other atoms
           // This will be executed when myAtom is set, but checks both atoms.
-          ({onSet, getLoadable, getPromise}) => {
+          ({onSet, getLoadable, getPromise, getInfo_UNSTABLE}) => {
             onSet(x => {
               expect(x).toEqual('SET_ATOM');
               expect(getLoadable(myAtom).contents).toEqual(x);
+              expect(getInfo_UNSTABLE(myAtom).isSet).toBe(true);
+              expect(getInfo_UNSTABLE(myAtom).loadable?.contents).toBe(
+                'SET_ATOM',
+              );
               // eslint-disable-next-line jest/valid-expect
               setTest = expect(getPromise(asyncAtom)).resolves.toEqual(
                 'SET_OTHER',
@@ -1100,22 +1116,41 @@ describe('Effects', () => {
         default: Promise.resolve('ASYNC_DEFAULT'),
         effects_UNSTABLE: [
           ({setSelf}) => void setSelf(Promise.resolve('ASYNC')),
-          ({getLoadable, getPromise}) => {
-            expect(getLoadable(myAtom).contents).toEqual('DEFAULT');
+          ({getPromise, getInfo_UNSTABLE}) => {
+            expect(getInfo_UNSTABLE(asyncAtom).isSet).toBe(true);
             // eslint-disable-next-line jest/valid-expect
-            initTest2 = expect(getPromise(asyncAtom)).resolves.toEqual('ASYNC');
+            initTest2 = expect(
+              getInfo_UNSTABLE(asyncAtom).loadable?.toPromise(),
+            ).resolves.toBe('ASYNC');
+            // eslint-disable-next-line jest/valid-expect
+            initTest3 = expect(getPromise(asyncAtom)).resolves.toEqual('ASYNC');
           },
 
           // Test that we can read default for an aborted initialization
           ({setSelf}) => void setSelf(Promise.resolve(new DefaultValue())),
-          ({getPromise}) => {
+          ({getPromise, getInfo_UNSTABLE}) => {
+            expect(getInfo_UNSTABLE(asyncAtom).isSet).toBe(true); // TODO sketchy...
             // eslint-disable-next-line jest/valid-expect
-            initTest3 = expect(getPromise(asyncAtom)).resolves.toEqual(
+            initTest4 = expect(
+              getInfo_UNSTABLE(asyncAtom).loadable?.toPromise(),
+            ).resolves.toBe('ASYNC_DEFAULT');
+            // eslint-disable-next-line jest/valid-expect
+            initTest5 = expect(getPromise(asyncAtom)).resolves.toEqual(
               'ASYNC_DEFAULT',
             );
           },
 
+          // Test initializing to async value and other atom can read it
           ({setSelf}) => void setSelf(Promise.resolve('ASYNC')),
+
+          // Test we can also read it ourselves
+          ({getInfo_UNSTABLE}) => {
+            expect(getInfo_UNSTABLE(asyncAtom).isSet).toBe(true);
+            // eslint-disable-next-line jest/valid-expect
+            initTest6 = expect(
+              getInfo_UNSTABLE(asyncAtom).loadable?.toPromise(),
+            ).resolves.toBe('ASYNC');
+          },
         ],
       });
 
@@ -1135,6 +1170,9 @@ describe('Effects', () => {
       await initTest1;
       await initTest2;
       await initTest3;
+      await initTest4;
+      await initTest5;
+      await initTest6;
 
       act(() => setAsyncAtom('SET_OTHER'));
       act(() => setMyAtom('SET_ATOM'));
