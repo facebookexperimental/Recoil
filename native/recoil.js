@@ -6942,6 +6942,10 @@ const {
 } = Recoil_Loadable;
 
 const {
+  peekNodeInfo: peekNodeInfo$3
+} = Recoil_FunctionalCore;
+
+const {
   DEFAULT_VALUE: DEFAULT_VALUE$5,
   DefaultValue: DefaultValue$2,
   getConfigDeletionHandler: getConfigDeletionHandler$2,
@@ -6954,6 +6958,7 @@ const {
 } = Recoil_RecoilValue$1;
 
 const {
+  getRecoilValueAsLoadable: getRecoilValueAsLoadable$4,
   markRecoilValueModified: markRecoilValueModified$1,
   setRecoilValue: setRecoilValue$3,
   setRecoilValueLoadable: setRecoilValueLoadable$3
@@ -7054,15 +7059,52 @@ function baseAtom(options) {
     if (options.effects_UNSTABLE != null && !alreadyKnown) {
       let duringInit = true;
 
+      function getLoadable(recoilValue) {
+        // Normally we can just get the current value of another atom.
+        // But for our own value we need to check if there is a pending
+        // initialized value or get the fallback default value.
+        if (duringInit && recoilValue.key === key && !(initValue instanceof DefaultValue$2)) {
+          // Cast T to S
+          const retValue = initValue; // flowlint-line unclear-type:off
+
+          return retValue instanceof DefaultValue$2 ? defaultLoadable : // flowlint-line unclear-type:off
+          Recoil_isPromise(retValue) ? loadableWithPromise$2(retValue.then(v => ({
+            __key: key,
+            __value: v instanceof DefaultValue$2 ? // TODO It's a little weird that this returns a Promise<T>
+            // instead of T, but it seems to work. This can be cleaned
+            // up if we clean up how Loadable's wrap keys and values.
+            defaultLoadable.toPromise() // flowlint-line unclear-type:off
+            : v
+          }))) : loadableWithValue$3(retValue);
+        }
+
+        return getRecoilValueAsLoadable$4(store, recoilValue);
+      }
+
+      function getPromise(recoilValue) {
+        return getLoadable(recoilValue).toPromise();
+      }
+
+      function getInfo_UNSTABLE(recoilValue) {
+        var _store$getState$nextT4;
+
+        const info = peekNodeInfo$3(store, (_store$getState$nextT4 = store.getState().nextTree) !== null && _store$getState$nextT4 !== void 0 ? _store$getState$nextT4 : store.getState().currentTree, recoilValue.key);
+        return duringInit && recoilValue.key === key && !(initValue instanceof DefaultValue$2) ? { ...info,
+          isSet: true,
+          loadable: getLoadable(recoilValue)
+        } : info;
+      }
+
       const setSelf = effect => valueOrUpdater => {
         if (duringInit) {
           const currentValue = initValue instanceof DefaultValue$2 || Recoil_isPromise(initValue) ? defaultLoadable.state === 'hasValue' ? defaultLoadable.contents : DEFAULT_VALUE$5 : initValue;
           initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict T from being a function without losing support for opaque types
           valueOrUpdater(currentValue) // flowlint-line unclear-type:off
-          : valueOrUpdater; // Avoid calling onSet() when setSelf() initializes with a Promise
+          : valueOrUpdater;
 
           if (Recoil_isPromise(initValue)) {
             initValue = initValue.then(value => {
+              // Avoid calling onSet() when setSelf() initializes with a Promise
               pendingSetSelf = {
                 effect,
                 value
@@ -7145,7 +7187,10 @@ function baseAtom(options) {
           trigger,
           setSelf: setSelf(effect),
           resetSelf: resetSelf(effect),
-          onSet: onSet(effect)
+          onSet: onSet(effect),
+          getPromise,
+          getLoadable,
+          getInfo_UNSTABLE
         });
 
         if (cleanup != null) {
@@ -7161,14 +7206,14 @@ function baseAtom(options) {
 
 
     if (!(initValue instanceof DefaultValue$2)) {
-      var _store$getState$nextT4;
+      var _store$getState$nextT5;
 
       const initLoadable = Recoil_isPromise(initValue) ? loadableWithPromise$2(wrapPendingPromise(store, initValue)) : loadableWithValue$3(initValue);
       initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
       // This could happen if the atom was first initialized in an action that
       // also updated some other atom's state.
 
-      (_store$getState$nextT4 = store.getState().nextTree) === null || _store$getState$nextT4 === void 0 ? void 0 : _store$getState$nextT4.atomValues.set(key, initLoadable);
+      (_store$getState$nextT5 = store.getState().nextTree) === null || _store$getState$nextT5 === void 0 ? void 0 : _store$getState$nextT5.atomValues.set(key, initLoadable);
     }
 
     return () => {

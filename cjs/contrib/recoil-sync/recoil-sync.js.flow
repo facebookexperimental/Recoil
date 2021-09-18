@@ -1,0 +1,99 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict'; // TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
+
+import type { Loadable } from '../../adt/Recoil_Loadable';
+import type { RecoilState } from '../../core/Recoil_RecoilValue';
+import type { AtomEffect } from '../../recoil_values/Recoil_atom';
+
+const {
+  isLoadable
+} = require('../../adt/Recoil_Loadable');
+
+const {
+  DefaultValue
+} = require('../../core/Recoil_Node');
+
+const {
+  useRecoilSnapshot,
+  useRecoilTransaction
+} = require('../../hooks/Recoil_Hooks');
+
+const {
+  useEffect
+} = require('react');
+
+type NodeKey = string;
+export type ItemKey = string;
+export type SyncKey = string | void;
+export type AtomDiff = Map<ItemKey, ?Loadable<mixed>>;
+export type ReadItem = (ItemKey) => ?Loadable<mixed>;
+export type WriteItems = ({
+  diff: AtomDiff
+}) => void;
+export type UpdateItems = (AtomDiff) => void;
+export type Restore<T> = (mixed) => ?Loadable<T>;
+const DEFAULT_VALUE = new DefaultValue();
+type AtomRegistration<T> = {
+  atom: RecoilState<T>,
+  itemKeys: Map<ItemKey, {
+    restore: Restore<T>,
+    syncDefault?: boolean,
+  }>,
+  // In-flight updates to avoid feedback loops
+  pendingUpdate?: {
+    value: mixed | DefaultValue
+  },
+}; // TODO Scope this per <RecoilRoot>
+
+declare class Registries {
+  atomRegistries: Map<SyncKey, Map<NodeKey, AtomRegistration<any>>>,
+  getAtomRegistry(syncKey: SyncKey): Map<NodeKey, AtomRegistration<any>>,
+}
+const registries = new Registries();
+type Storage = {
+  write?: WriteItems,
+  read?: ReadItem,
+};
+const storages: Map<SyncKey, Storage> = new Map();
+declare var validateLoadable: <T>(loadable: Loadable<mixed>, arg1: {
+  restore: (mixed) => ?Loadable<T>,
+  ...
+}) => Loadable<T | DefaultValue>; ///////////////////////
+// useRecoilSync()
+///////////////////////
+
+declare function useRecoilSync(arg0: {
+  syncKey?: SyncKey,
+  write?: WriteItems,
+  read?: ReadItem,
+  listen?: (UpdateItems) => void | (() => void),
+}): void; ///////////////////////
+// syncEffect()
+///////////////////////
+
+declare function syncEffect<T>(arg0: {
+  syncKey?: SyncKey,
+  key?: ItemKey,
+  restore: (mixed) => ?Loadable<T>,
+  read?: ({
+    read: ReadItem
+  }) => mixed,
+  write?: (Loadable<T>, {
+    read: ReadItem
+  }) => AtomDiff,
+  // Sync default value instead of empty when atom is indefault state
+  syncDefault?: boolean,
+}): AtomEffect<T>;
+module.exports = {
+  useRecoilSync,
+  syncEffect
+};

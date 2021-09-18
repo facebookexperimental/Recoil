@@ -58,6 +58,7 @@
 'use strict'; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 
 import type { Loadable, LoadablePromise, ResolvedLoadablePromiseInfo } from '../adt/Recoil_Loadable';
+import type { RecoilValueInfo } from '../core/Recoil_FunctionalCore';
 import type { PersistenceInfo, ReadWriteNodeOptions, Trigger } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
@@ -68,6 +69,10 @@ const {
   loadableWithPromise,
   loadableWithValue
 } = require('../adt/Recoil_Loadable');
+
+const {
+  peekNodeInfo
+} = require('../core/Recoil_FunctionalCore');
 
 const {
   DEFAULT_VALUE,
@@ -82,6 +87,7 @@ const {
 } = require('../core/Recoil_RecoilValue');
 
 const {
+  getRecoilValueAsLoadable,
   markRecoilValueModified,
   setRecoilValue,
   setRecoilValueLoadable
@@ -118,6 +124,10 @@ export type AtomEffect<T> = ({
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
   onSet: ((newValue: T, oldValue: T | DefaultValue) => void) => void,
+  // Accessors to read other atoms/selectors
+  getPromise: <S>(RecoilValue<S>) => Promise<S>,
+  getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
+  getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
 }) => void | (() => void);
 export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
