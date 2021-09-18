@@ -11,6 +11,7 @@
 // TODO PUBLIC LOADABLE INTERFACE
 
 import type {Loadable} from '../../../adt/Recoil_Loadable';
+import type {UpdateItems} from '../recoil-sync';
 
 const {act} = require('ReactTestUtils');
 
@@ -48,13 +49,14 @@ function upgrade<From, To>(
 ////////////////////////////
 // Mock Storage
 ////////////////////////////
-
 function TestRecoilSync({
   syncKey,
   storage,
+  regListen,
 }: {
   syncKey?: string,
   storage: Map<string, Loadable<mixed>>,
+  regListen?: UpdateItems => void,
 }) {
   useRecoilSync({
     syncKey,
@@ -68,6 +70,9 @@ function TestRecoilSync({
       for (const [key, loadable] of diff.entries()) {
         loadable != null ? storage.set(key, loadable) : storage.delete(key);
       }
+    },
+    listen: update => {
+      regListen?.(update);
     },
   });
   return null;
@@ -413,4 +418,157 @@ test('Read/Write from storage upgrade', async () => {
   expect(storage2.size).toBe(0);
 });
 
-// TODO Listen to Storage
+test('Listen to storage', async () => {
+  const atomA = atom({
+    key: 'recoil-sync listen',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      syncEffect({restore: validateAny}),
+      syncEffect({restore: validateAny}),
+    ],
+  });
+  const atomB = atom({
+    key: 'recoil-sync listen to multiple keys',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      syncEffect({key: 'KEY A', restore: validateAny}),
+      syncEffect({key: 'KEY B', restore: validateAny}),
+    ],
+  });
+  const atomC = atom({
+    key: 'recoil-sync listen to multiple storage',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      syncEffect({restore: validateAny}),
+      syncEffect({syncKey: 'SYNC_2', restore: validateAny}),
+    ],
+  });
+
+  const storage1 = new Map([
+    ['recoil-sync listen', loadableWithValue('A')],
+    ['KEY A', loadableWithValue('B')],
+    ['recoil-sync listen to multiple storage', loadableWithValue('C1')],
+  ]);
+  const storage2 = new Map([
+    ['recoil-sync listen to multiple storage', loadableWithValue('C2')],
+  ]);
+
+  let update1: UpdateItems = () => {
+    throw new Error('Failed to register 1');
+  };
+  let update2: UpdateItems = () => {
+    throw new Error('Failed to register 2');
+  };
+  const container = renderElements(
+    <>
+      <TestRecoilSync
+        storage={storage1}
+        regListen={u => {
+          update1 = u;
+        }}
+      />
+      <TestRecoilSync
+        syncKey="SYNC_2"
+        storage={storage2}
+        regListen={u => {
+          update2 = u;
+        }}
+      />
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+      <ReadsAtom atom={atomC} />
+    </>,
+  );
+
+  expect(container.textContent).toBe('"A""B""C2"');
+  expect(storage1.size).toBe(3);
+
+  act(() =>
+    update1(new Map([['recoil-sync listen', loadableWithValue('AA')]])),
+  );
+  expect(container.textContent).toBe('"AA""B""C2"');
+  // Avoid feedback loops
+  // expect(storage1.get('recoil-sync listen')?.getValue()).toBe('A');
+
+  act(() => update1(new Map([['KEY B', loadableWithValue('BB')]])));
+  expect(container.textContent).toBe('"AA""BB""C2"');
+  // expect(storage1.get('KEY A')?.getValue()).toBe('BB');
+  // expect(storage1.get('KEY B')?.getValue()).toBe('B');
+
+  act(() =>
+    update1(
+      new Map([
+        ['recoil-sync listen to multiple storage', loadableWithValue('CC1')],
+      ]),
+    ),
+  );
+  expect(container.textContent).toBe('"AA""BB""CC1"');
+  // Avoid feedback loops, do not update storage based on listening to the storage
+  // expect(
+  //   storage1.get('recoil-sync listen to multiple storage')?.getValue(),
+  // ).toBe('C1');
+  // But, we should update other storages to stay in sync
+  // expect(
+  //   storage2.get('recoil-sync listen to multiple storage')?.getValue(),
+  // ).toBe('CC1');
+
+  act(() =>
+    update2(
+      new Map([
+        ['recoil-sync listen to multiple storage', loadableWithValue('CC2')],
+      ]),
+    ),
+  );
+  expect(container.textContent).toBe('"AA""BB""CC2"');
+  // expect(
+  //   storage1.get('recoil-sync listen to multiple storage')?.getValue(),
+  // ).toBe('CC2');
+  // expect(
+  //   storage2.get('recoil-sync listen to multiple storage')?.getValue(),
+  // ).toBe('CC1');
+
+  act(() =>
+    update1(
+      new Map([
+        ['recoil-sync listen to multiple storage', loadableWithValue('CCC1')],
+      ]),
+    ),
+  );
+  expect(container.textContent).toBe('"AA""BB""CCC1"');
+  // expect(
+  //   storage1.get('recoil-sync listen to multiple storage')?.getValue(),
+  // ).toBe('CC2');
+  // expect(
+  //   storage2.get('recoil-sync listen to multiple storage')?.getValue(),
+  // ).toBe('CCC1');
+
+  act(() =>
+    update1(new Map([['recoil-sync listen', loadableWithError('ERROR')]])),
+  );
+  // TODO Atom should be put in an error state, but is just reset for now.
+  expect(container.textContent).toBe('"DEFAULT""BB""CCC1"');
+
+  // TODO Async Atom support
+  // act(() =>
+  //   update1(
+  //     new Map([
+  //       [
+  //         'recoil-sync listen',
+  //         loadableWithPromise(Promise.resolve({__value: 'ASYNC'})),
+  //       ],
+  //     ]),
+  //   ),
+  // );
+  // await flushPromisesAndTimers();
+  // expect(container.textContent).toBe('"ASYNC""BB""CCC1"');
+
+  // act(() =>
+  //   update1(
+  //     new Map([
+  //       ['KEY B', loadableWithPromise(Promise.reject(new Error('ERROR B')))],
+  //     ]),
+  //   ),
+  // );
+  // await flushPromisesAndTimers();
+  // expect(container.textContent).toBe('error');
+});
