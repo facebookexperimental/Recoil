@@ -71,6 +71,10 @@ function get(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue).contents;
 }
 
+function getLoadable(recoilValue) {
+  return getRecoilValueAsLoadable(store, recoilValue);
+}
+
 function set(recoilValue, value: mixed) {
   setRecoilValue(store, recoilValue, value);
 }
@@ -1008,6 +1012,135 @@ describe('Effects', () => {
       expect(numTimesEffectInit).toBe(2);
     },
   );
+
+  describe('Other Atoms', () => {
+    test('init from other atom', () => {
+      const myAtom = atom({
+        key: 'atom effect - init from other atom',
+        default: 'DEFAULT',
+        effects_UNSTABLE: [
+          ({setSelf, getLoadable}) => {
+            const otherValue = getLoadable(otherAtom).contents;
+            expect(otherValue).toEqual('OTHER');
+            setSelf(otherValue);
+          },
+        ],
+      });
+
+      const otherAtom = atom({
+        key: 'atom effect - other atom',
+        default: 'OTHER',
+      });
+
+      expect(get(myAtom)).toEqual('OTHER');
+    });
+
+    test('init from other atom async', async () => {
+      const myAtom = atom({
+        key: 'atom effect - init from other atom async',
+        default: 'DEFAULT',
+        effects_UNSTABLE: [
+          ({setSelf, getPromise}) => {
+            const otherValue = getPromise(otherAtom);
+            setSelf(otherValue);
+          },
+        ],
+      });
+
+      const otherAtom = atom({
+        key: 'atom effect - other atom async',
+        default: Promise.resolve('OTHER'),
+      });
+
+      await expect(getLoadable(myAtom).promiseOrThrow()).resolves.toEqual(
+        'OTHER',
+      );
+    });
+
+    test('async get other atoms', async () => {
+      let initTest1 = new Promise(() => {});
+      let initTest2 = new Promise(() => {});
+      let initTest3 = new Promise(() => {});
+      let setTest = new Promise(() => {});
+
+      const myAtom = atom({
+        key: 'atom effect - async get',
+        default: 'DEFAULT',
+        effects_UNSTABLE: [
+          // Test we can get default values
+          ({node, getLoadable, getPromise}) => {
+            expect(getLoadable(node).contents).toEqual('DEFAULT');
+            // eslint-disable-next-line jest/valid-expect
+            initTest1 = expect(getPromise(asyncAtom)).resolves.toEqual('ASYNC');
+          },
+          ({setSelf}) => {
+            setSelf('INIT');
+          },
+          // Test we can get value from previous initialization
+          ({node, getLoadable}) => {
+            expect(getLoadable(node).contents).toEqual('INIT');
+          },
+          // Test we can asynchronouse get "current" values of both self and other atoms
+          // This will be executed when myAtom is set, but checks both atoms.
+          ({onSet, getLoadable, getPromise}) => {
+            onSet(x => {
+              expect(x).toEqual('SET_ATOM');
+              expect(getLoadable(myAtom).contents).toEqual(x);
+              // eslint-disable-next-line jest/valid-expect
+              setTest = expect(getPromise(asyncAtom)).resolves.toEqual(
+                'SET_OTHER',
+              );
+            });
+          },
+        ],
+      });
+
+      const asyncAtom = atom({
+        key: 'atom effect - other atom async get',
+        default: Promise.resolve('ASYNC_DEFAULT'),
+        effects_UNSTABLE: [
+          ({setSelf}) => void setSelf(Promise.resolve('ASYNC')),
+          ({getLoadable, getPromise}) => {
+            expect(getLoadable(myAtom).contents).toEqual('DEFAULT');
+            // eslint-disable-next-line jest/valid-expect
+            initTest2 = expect(getPromise(asyncAtom)).resolves.toEqual('ASYNC');
+          },
+
+          // Test that we can read default for an aborted initialization
+          ({setSelf}) => void setSelf(Promise.resolve(new DefaultValue())),
+          ({getPromise}) => {
+            // eslint-disable-next-line jest/valid-expect
+            initTest3 = expect(getPromise(asyncAtom)).resolves.toEqual(
+              'ASYNC_DEFAULT',
+            );
+          },
+
+          ({setSelf}) => void setSelf(Promise.resolve('ASYNC')),
+        ],
+      });
+
+      const [MyAtom, setMyAtom] = componentThatReadsAndWritesAtom(myAtom);
+      const [AsyncAtom, setAsyncAtom] = componentThatReadsAndWritesAtom(
+        asyncAtom,
+      );
+      const c = renderElements(
+        <>
+          <MyAtom />
+          <AsyncAtom />
+        </>,
+      );
+
+      await flushPromisesAndTimers();
+      expect(c.textContent).toBe('"INIT""ASYNC"');
+      await initTest1;
+      await initTest2;
+      await initTest3;
+
+      act(() => setAsyncAtom('SET_OTHER'));
+      act(() => setMyAtom('SET_ATOM'));
+      await setTest;
+    });
+  });
 });
 
 testRecoil('object is frozen when stored in atom', () => {
