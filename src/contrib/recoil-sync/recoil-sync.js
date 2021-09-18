@@ -16,6 +16,7 @@ import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilState} from '../../core/Recoil_RecoilValue';
 import type {AtomEffect} from '../../recoil_values/Recoil_atom';
 
+const {DefaultValue} = require('../../core/Recoil_Node');
 const {useRecoilSnapshot} = require('../../hooks/Recoil_Hooks');
 const {useEffect} = require('react');
 
@@ -24,13 +25,11 @@ export type ItemKey = string;
 export type SyncKey = string | void;
 
 export type AtomDiff = Map<ItemKey, ?Loadable<mixed>>;
-type Store = Map<ItemKey, ?Loadable<mixed>>;
 type ReadItem = ItemKey => ?Loadable<mixed>;
 
 type AtomRegistration = {
   atom: RecoilState<any>, // flowlint-line unclear-type:off
-  itemKey: ItemKey,
-  options: mixed,
+  itemKeys: Set<ItemKey>,
 };
 
 class Registries {
@@ -60,7 +59,7 @@ function useRecoilSync({
   listen,
 }: {
   syncKey?: SyncKey,
-  write?: ({diff: AtomDiff, store: Store}) => void,
+  write?: ({diff: AtomDiff}) => void,
   read?: ReadItem,
   listen?: ((AtomDiff) => void) => () => void,
 }): void {
@@ -76,14 +75,12 @@ function useRecoilSync({
         if (registration != null) {
           const atomInfo = snapshot.getInfo_UNSTABLE(registration.atom);
           // TODO syncEffect()'s write()
-          diff.set(
-            registration.itemKey,
-            atomInfo.isSet ? atomInfo.loadable : null,
-          );
+          for (const itemKey of registration.itemKeys) {
+            diff.set(itemKey, atomInfo.isSet ? atomInfo.loadable : null);
+          }
         }
       }
-      // TODO store
-      write({diff, store: diff});
+      write({diff});
     }
   }, [snapshot, syncKey, write]);
 
@@ -99,17 +96,15 @@ function useRecoilSync({
   }, [syncKey]);
 }
 
-function syncEffect<SyncItemOptions, T, V = T>({
+function syncEffect<T>({
   syncKey,
   key,
-  options,
+  restore,
 }: {
   syncKey?: SyncKey,
   key?: ItemKey,
-  options?: SyncItemOptions,
 
-  validate: mixed => ?Loadable<V>,
-  upgrade?: V => T,
+  restore: mixed => ?Loadable<T>,
 
   read?: ({read: ReadItem}) => mixed,
   write?: (Loadable<T>, {read: ReadItem}) => AtomDiff,
@@ -119,7 +114,13 @@ function syncEffect<SyncItemOptions, T, V = T>({
 
     // Register Atom
     const atomRegistry = registries.getAtomRegistry(syncKey);
-    atomRegistry.set(node.key, {atom: node, itemKey, options});
+    const registration = atomRegistry.get(node.key);
+    registration != null
+      ? registration.itemKeys.add(itemKey)
+      : atomRegistry.set(node.key, {
+          atom: node,
+          itemKeys: new Set([itemKey]),
+        });
 
     // Initialize Atom value
     const readFromStorage = storages.get(syncKey)?.read;
@@ -133,18 +134,19 @@ function syncEffect<SyncItemOptions, T, V = T>({
           throw loadable.contents;
         }
 
-        switch (loadable.state) {
+        const validated = loadable.map<mixed, T | DefaultValue>(
+          x => restore(x) ?? new DefaultValue(),
+        );
+        switch (validated.state) {
           case 'hasValue':
-            // $FlowFixMe TODO with validation
-            setSelf(loadable.contents);
+            if (!(validated.contents instanceof DefaultValue)) {
+              setSelf(validated.contents);
+            }
             break;
-
           case 'hasError':
-            throw loadable.contents;
-
+            throw validated.contents;
           case 'loading':
-            // $FlowFixMe TODO with validation
-            setSelf(loadable.toPromise());
+            setSelf(validated.toPromise());
             break;
         }
       }
