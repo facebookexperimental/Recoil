@@ -6,6 +6,7 @@
 
 - Ability to map Loadables with other Loadables
 - Allow class instances in family parameters for Flow
+- Add `getLoadable()` and `getPromise()` to Atom Effects interface for reading other atoms.
 
 ### Pending
 - Memory management
