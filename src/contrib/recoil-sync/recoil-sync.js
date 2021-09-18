@@ -30,6 +30,7 @@ export type SyncKey = string | void;
 
 export type AtomDiff = Map<ItemKey, ?Loadable<mixed>>;
 export type ReadItem = ItemKey => ?Loadable<mixed>;
+export type WriteItems = ({diff: AtomDiff}) => void;
 export type UpdateItems = AtomDiff => void;
 export type Restore<T> = mixed => ?Loadable<T>;
 
@@ -37,39 +38,42 @@ const DEFAULT_VALUE = new DefaultValue();
 
 type AtomRegistration<T> = {
   atom: RecoilState<T>,
-  itemKeys: Map<ItemKey, {restore: Restore<T>}>,
+  itemKeys: Map<ItemKey, {restore: Restore<T>, syncDefault?: boolean}>,
   // In-flight updates to avoid feedback loops
   pendingUpdate?: {value: mixed | DefaultValue},
 };
 
 // TODO Scope this per <RecoilRoot>
 class Registries {
-  // flowlint-next-line unclear-type:off
-  registries: Map<SyncKey, Map<NodeKey, AtomRegistration<any>>> = new Map();
+  atomRegistries: Map<
+    SyncKey,
+    Map<NodeKey, AtomRegistration<any>>, // flowlint-line unclear-type:off
+  > = new Map();
 
   getAtomRegistry(
     syncKey: SyncKey,
     // flowlint-next-line unclear-type:off
   ): Map<NodeKey, AtomRegistration<any>> {
-    const registry = this.registries.get(syncKey);
+    const registry = this.atomRegistries.get(syncKey);
     if (registry != null) {
       return registry;
     }
     const newRegistry = new Map();
-    this.registries.set(syncKey, newRegistry);
+    this.atomRegistries.set(syncKey, newRegistry);
     return newRegistry;
   }
 }
 const registries = new Registries();
 
 type Storage = {
+  write?: WriteItems,
   read?: ReadItem,
 };
 const storages: Map<SyncKey, Storage> = new Map();
 
 const validateLoadable = <T>(
   loadable: Loadable<mixed>,
-  {restore}: {restore: mixed => ?Loadable<T>},
+  {restore}: {restore: mixed => ?Loadable<T>, ...},
 ): Loadable<T | DefaultValue> =>
   loadable.map<mixed, T | DefaultValue>(x => restore(x) ?? new DefaultValue());
 
@@ -83,7 +87,7 @@ function useRecoilSync({
   listen,
 }: {
   syncKey?: SyncKey,
-  write?: ({diff: AtomDiff}) => void,
+  write?: WriteItems,
   read?: ReadItem,
   listen?: UpdateItems => void | (() => void),
 }): void {
@@ -110,8 +114,13 @@ function useRecoilSync({
             )
           ) {
             // TODO syncEffect()'s write()
-            for (const [itemKey] of registration.itemKeys) {
-              diff.set(itemKey, atomInfo.isSet ? atomInfo.loadable : null);
+            for (const [itemKey, {syncDefault}] of registration.itemKeys) {
+              diff.set(
+                itemKey,
+                atomInfo.isSet || syncDefault === true
+                  ? atomInfo.loadable
+                  : null,
+              );
             }
           }
           delete registration.pendingUpdate;
@@ -164,7 +173,7 @@ function useRecoilSync({
 
   // Register Storage
   // Save before effects so that we can initialize atoms for initial render
-  storages.set(syncKey, {read});
+  storages.set(syncKey, {write, read});
   useEffect(() => () => void storages.delete(syncKey), [syncKey]);
 }
 
@@ -175,6 +184,7 @@ function syncEffect<T>({
   syncKey,
   key,
   restore,
+  syncDefault,
 }: {
   syncKey?: SyncKey,
   key?: ItemKey,
@@ -183,8 +193,11 @@ function syncEffect<T>({
 
   read?: ({read: ReadItem}) => mixed,
   write?: (Loadable<T>, {read: ReadItem}) => AtomDiff,
+
+  // Sync default value instead of empty when atom is indefault state
+  syncDefault?: boolean,
 }): AtomEffect<T> {
-  return ({node, setSelf}) => {
+  return ({node, setSelf, getLoadable}) => {
     const itemKey = key ?? node.key;
 
     // Register Atom
@@ -194,7 +207,7 @@ function syncEffect<T>({
       ? registration.itemKeys.set(itemKey, {restore})
       : atomRegistry.set(node.key, {
           atom: node,
-          itemKeys: new Map([[itemKey, {restore}]]),
+          itemKeys: new Map([[itemKey, {restore, syncDefault}]]),
         });
 
     // Initialize Atom value
@@ -223,6 +236,18 @@ function syncEffect<T>({
             break;
         }
       }
+    }
+
+    // Persist on Initial Read
+    const writeToStorage = storages.get(syncKey)?.write;
+    if (syncDefault === true && writeToStorage != null) {
+      setTimeout(() => {
+        const loadable = getLoadable(node);
+        if (loadable.state === 'hasValue') {
+          // TODO Atom syncEffect() Write
+          writeToStorage({diff: new Map([[itemKey, loadable]])});
+        }
+      }, 0);
     }
 
     // TODO Unregister atom

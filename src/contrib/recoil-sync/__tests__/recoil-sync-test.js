@@ -90,7 +90,7 @@ test('Write to storage', async () => {
     effects_UNSTABLE: [syncEffect({restore: validateAny})],
   });
   const ignoreAtom = atom({
-    key: 'recol-sync write ignore',
+    key: 'recoil-sync write ignore',
     default: 'DEFAULT',
   });
 
@@ -594,4 +594,115 @@ test('Listen to storage', async () => {
   // );
   // await flushPromisesAndTimers();
   // expect(container.textContent).toBe('error');
+});
+
+test('Persist on read', async () => {
+  const atomA = atom({
+    key: 'recoil-sync persist on read default',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({restore: validateAny, syncDefault: true})],
+  });
+  const atomB = atom({
+    key: 'recoil-sync persist on read init',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => setSelf('INIT_BEFORE'),
+      syncEffect({restore: validateAny, syncDefault: true}),
+      ({setSelf}) => setSelf('INIT_AFTER'),
+    ],
+  });
+
+  const storage = new Map();
+
+  const container = renderElements(
+    <>
+      <TestRecoilSync storage={storage} />
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+    </>,
+  );
+
+  expect(storage.size).toBe(0);
+  expect(container.textContent).toBe('"DEFAULT""INIT_AFTER"');
+
+  await flushPromisesAndTimers();
+
+  expect(storage.size).toBe(2);
+  expect(storage.get('recoil-sync persist on read default')?.getValue()).toBe(
+    'DEFAULT',
+  );
+  expect(storage.get('recoil-sync persist on read init')?.getValue()).toBe(
+    'INIT_AFTER',
+  );
+});
+
+test('Persist on read - async', async () => {
+  let resolveA, resolveB1, resolveB2;
+
+  const atomA = atom({
+    key: 'recoil-sync persist on read default async',
+    // default: Promise.resolve('ASYNC_DEFAULT'),
+    default: new Promise(resolve => {
+      resolveA = resolve;
+    }),
+    effects_UNSTABLE: [syncEffect({restore: validateAny, syncDefault: true})],
+  });
+  const atomB = atom({
+    key: 'recoil-sync persist on read init async',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) =>
+        setSelf(
+          new Promise(resolve => {
+            resolveB1 = resolve;
+          }),
+        ),
+      syncEffect({restore: validateAny, syncDefault: true}),
+      ({setSelf}) =>
+        setSelf(
+          new Promise(resolve => {
+            resolveB2 = resolve;
+          }),
+        ),
+    ],
+  });
+
+  const storage = new Map();
+
+  const container = renderElements(
+    <>
+      <TestRecoilSync storage={storage} />
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+    </>,
+  );
+
+  await flushPromisesAndTimers();
+  expect(storage.size).toBe(0);
+
+  act(() => {
+    resolveA('ASYNC_DEFAULT');
+  });
+  await flushPromisesAndTimers();
+  expect(storage.size).toBe(1);
+
+  act(() => {
+    resolveB1('ASYNC_INIT_BEFORE');
+  });
+  await flushPromisesAndTimers();
+  expect(container.textContent).toBe('loading');
+  expect(storage.size).toBe(1);
+
+  act(() => {
+    resolveB2('ASYNC_INIT_AFTER');
+  });
+  await flushPromisesAndTimers();
+  expect(container.textContent).toBe('"ASYNC_DEFAULT""ASYNC_INIT_AFTER"');
+  expect(storage.size).toBe(2);
+  expect(
+    storage.get('recoil-sync persist on read default async')?.getValue(),
+  ).toBe('ASYNC_DEFAULT');
+  expect(
+    storage.get('recoil-sync persist on read init async')?.getValue(),
+  ).toBe('ASYNC_INIT_AFTER');
 });
