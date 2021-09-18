@@ -33,11 +33,16 @@ export type ReadItem = ItemKey => ?Loadable<mixed>;
 export type UpdateItems = AtomDiff => void;
 export type Restore<T> = mixed => ?Loadable<T>;
 
+const DEFAULT_VALUE = new DefaultValue();
+
 type AtomRegistration<T> = {
   atom: RecoilState<T>,
   itemKeys: Map<ItemKey, {restore: Restore<T>}>,
+  // In-flight updates to avoid feedback loops
+  pendingUpdate?: {value: mixed | DefaultValue},
 };
 
+// TODO Scope this per <RecoilRoot>
 class Registries {
   // flowlint-next-line unclear-type:off
   registries: Map<SyncKey, Map<NodeKey, AtomRegistration<any>>> = new Map();
@@ -93,10 +98,23 @@ function useRecoilSync({
         const registration = atomRegistry.get(atom.key);
         if (registration != null) {
           const atomInfo = snapshot.getInfo_UNSTABLE(registration.atom);
-          // TODO syncEffect()'s write()
-          for (const [itemKey] of registration.itemKeys) {
-            diff.set(itemKey, atomInfo.isSet ? atomInfo.loadable : null);
+          // Avoid feedback loops:
+          // Don't write to storage updates that came from listening to storage
+          if (
+            !(
+              (atomInfo.isSet &&
+                atomInfo.loadable?.contents ===
+                  registration.pendingUpdate?.value) ||
+              (!atomInfo.isSet &&
+                registration.pendingUpdate?.value instanceof DefaultValue)
+            )
+          ) {
+            // TODO syncEffect()'s write()
+            for (const [itemKey] of registration.itemKeys) {
+              diff.set(itemKey, atomInfo.isSet ? atomInfo.loadable : null);
+            }
           }
+          delete registration.pendingUpdate;
         }
       }
       write({diff});
@@ -115,11 +133,15 @@ function useRecoilSync({
               const validated = validateLoadable(loadable, cbs);
               switch (validated.state) {
                 case 'hasValue':
+                  registration.pendingUpdate = {
+                    value: validated.contents,
+                  };
                   set(registration.atom, validated.contents);
                   break;
                 case 'hasError':
                   // TODO Async atom support to allow setting atom to error state
                   // in the meantime we can just reset it to default value...
+                  registration.pendingUpdate = {value: DEFAULT_VALUE};
                   reset(registration.atom);
                   break;
                 case 'loading':
@@ -129,6 +151,7 @@ function useRecoilSync({
                   );
               }
             } else {
+              registration.pendingUpdate = {value: DEFAULT_VALUE};
               reset(registration.atom);
             }
           }
