@@ -63,6 +63,7 @@ import type {
   LoadablePromise,
   ResolvedLoadablePromiseInfo,
 } from '../adt/Recoil_Loadable';
+import type {RecoilValueInfo} from '../core/Recoil_FunctionalCore';
 import type {
   PersistenceInfo,
   ReadWriteNodeOptions,
@@ -79,6 +80,7 @@ const {
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
+const {peekNodeInfo} = require('../core/Recoil_FunctionalCore');
 const {
   DEFAULT_VALUE,
   DefaultValue,
@@ -134,6 +136,7 @@ export type AtomEffect<T> = ({
   // Accessors to read other atoms/selectors
   getPromise: <S>(RecoilValue<S>) => Promise<S>,
   getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
+  getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
 }) => void | (() => void);
 
 export type AtomOptions<T> = $ReadOnly<{
@@ -250,7 +253,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         // Normally we can just get the current value of another atom.
         // But for our own value we need to check if there is a pending
         // initialized value or get the fallback default value.
-        if (duringInit && recoilValue.key === key) {
+        if (
+          duringInit &&
+          recoilValue.key === key &&
+          !(initValue instanceof DefaultValue)
+        ) {
           // Cast T to S
           const retValue: NewValue<S> = (initValue: any); // flowlint-line unclear-type:off
           return retValue instanceof DefaultValue
@@ -277,6 +284,21 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
       function getPromise<S>(recoilValue: RecoilValue<S>): Promise<S> {
         return getLoadable(recoilValue).toPromise();
+      }
+
+      function getInfo_UNSTABLE<S>(
+        recoilValue: RecoilValue<S>,
+      ): RecoilValueInfo<S> {
+        const info = peekNodeInfo(
+          store,
+          store.getState().nextTree ?? store.getState().currentTree,
+          recoilValue.key,
+        );
+        return duringInit &&
+          recoilValue.key === key &&
+          !(initValue instanceof DefaultValue)
+          ? {...info, isSet: true, loadable: getLoadable(recoilValue)}
+          : info;
       }
 
       const setSelf = (effect: AtomEffect<T>) => (
@@ -379,6 +401,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           onSet: onSet(effect),
           getPromise,
           getLoadable,
+          getInfo_UNSTABLE,
         });
         if (cleanup != null) {
           cleanupEffectsByStore.set(store, [
