@@ -55,6 +55,8 @@ testRecoil(
       useRecoilValue(atomWithEffect);
 
       expect(numTimesEffectInit).toBe(1);
+
+      return null;
     };
 
     renderElements(<Component />);
@@ -94,6 +96,8 @@ testRecoil(
       readAtomFromSnapshot();
 
       expect(numTimesEffectInit).toBe(1);
+
+      return null;
     };
 
     renderElements(<Component />);
