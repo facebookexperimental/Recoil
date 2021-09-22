@@ -314,11 +314,13 @@ describe('useRecoilCallback', () => {
           set(family(i), 1);
         }
       });
+      return null;
     }
 
     let store: any; // flowlint-line unclear-type:off
     function GetStore() {
       store = useStoreRef().current;
+      return null;
     }
 
     renderElements(
@@ -393,6 +395,8 @@ testRecoil(
       useRecoilValue(atomWithEffect); // second initialization
 
       expect(numTimesEffectInit).toBe(2);
+
+      return null;
     };
 
     renderElements(<Component />);
@@ -432,6 +436,8 @@ testRecoil(
       readAtomFromSnapshot();
 
       expect(numTimesEffectInit).toBe(1);
+
+      return null;
     };
 
     renderElements(<Component />);
