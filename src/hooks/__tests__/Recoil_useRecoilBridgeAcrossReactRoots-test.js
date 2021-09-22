@@ -67,7 +67,7 @@ testRecoil(
     }
 
     const container = document.createElement('div');
-    await act(() => {
+    act(() => {
       ReactDOM.render(
         <RecoilRoot initializeState={initializeState}>
           <ReadWriteAtom />
