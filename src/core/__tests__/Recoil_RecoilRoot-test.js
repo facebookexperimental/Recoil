@@ -220,6 +220,7 @@ testRecoil(
           return 1;
         });
       };
+      return null;
     }
 
     renderElements(<Component />);
