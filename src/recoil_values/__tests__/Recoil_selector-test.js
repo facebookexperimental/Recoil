@@ -88,7 +88,7 @@ function getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   return getRecoilValueAsLoadable(store, recoilValue);
 }
 
-function get<T>(recoilValue: RecoilValue<T>): T {
+function getValue<T>(recoilValue: RecoilValue<T>): T {
   return (getLoadable(recoilValue).contents: any); // flowlint-line unclear-type:off
 }
 
@@ -100,11 +100,11 @@ function getError(recoilValue): Error {
   return error;
 }
 
-function set(recoilState, value) {
+function setValue(recoilState, value) {
   setRecoilValue(store, recoilState, value);
 }
 
-function reset(recoilState) {
+function resetValue(recoilState) {
   setRecoilValue(store, recoilState, new DefaultValue());
 }
 
@@ -122,7 +122,7 @@ testRecoil('selector get', () => {
     get: ({get}) => get(staticSel),
   });
 
-  expect(get(selectorRO)).toEqual('HELLO');
+  expect(getValue(selectorRO)).toEqual('HELLO');
 });
 
 testRecoil('selector set', () => {
@@ -141,13 +141,13 @@ testRecoil('selector set', () => {
       ),
   });
 
-  expect(get(selectorRW)).toEqual('DEFAULT');
-  set(myAtom, 'SET ATOM');
-  expect(get(selectorRW)).toEqual('SET ATOM');
-  set(selectorRW, 'SET SELECTOR');
-  expect(get(selectorRW)).toEqual('SET: SET SELECTOR');
-  reset(selectorRW);
-  expect(get(selectorRW)).toEqual('DEFAULT');
+  expect(getValue(selectorRW)).toEqual('DEFAULT');
+  setValue(myAtom, 'SET ATOM');
+  expect(getValue(selectorRW)).toEqual('SET ATOM');
+  setValue(selectorRW, 'SET SELECTOR');
+  expect(getValue(selectorRW)).toEqual('SET: SET SELECTOR');
+  resetValue(selectorRW);
+  expect(getValue(selectorRW)).toEqual('DEFAULT');
 });
 
 testRecoil('selector reset', () => {
@@ -162,11 +162,11 @@ testRecoil('selector reset', () => {
     set: ({reset}) => reset(myAtom),
   });
 
-  expect(get(selectorRW)).toEqual('DEFAULT');
-  set(myAtom, 'SET ATOM');
-  expect(get(selectorRW)).toEqual('SET ATOM');
-  set(selectorRW, 'SET SELECTOR');
-  expect(get(selectorRW)).toEqual('DEFAULT');
+  expect(getValue(selectorRW)).toEqual('DEFAULT');
+  setValue(myAtom, 'SET ATOM');
+  expect(getValue(selectorRW)).toEqual('SET ATOM');
+  setValue(selectorRW, 'SET SELECTOR');
+  expect(getValue(selectorRW)).toEqual('DEFAULT');
 });
 
 testRecoil('useRecoilState - resolved async selector', async () => {
@@ -187,14 +187,14 @@ testRecoil('selector - evaluate to RecoilValue', () => {
     get: ({get}) => (get(inputAtom) === 'a' ? atomA : atomB),
   });
 
-  expect(get(mySelector)).toEqual('A');
-  set(inputAtom, 'b');
-  expect(get(mySelector)).toEqual('B');
+  expect(getValue(mySelector)).toEqual('A');
+  setValue(inputAtom, 'b');
+  expect(getValue(mySelector)).toEqual('B');
 });
 
 testRecoil('selector - catching exceptions', () => {
   const throwingSel = errorSelector('MY ERROR');
-  expect(get(throwingSel)).toBeInstanceOf(Error);
+  expect(getValue(throwingSel)).toBeInstanceOf(Error);
 
   const catchingSelector = selector({
     key: 'selector/catching selector',
@@ -208,7 +208,7 @@ testRecoil('selector - catching exceptions', () => {
       }
     },
   });
-  expect(get(catchingSelector)).toEqual('CAUGHT');
+  expect(getValue(catchingSelector)).toEqual('CAUGHT');
 });
 
 testRecoil('selector - catching exception (non Error)', () => {
@@ -232,18 +232,18 @@ testRecoil('selector - catching exception (non Error)', () => {
     },
   });
 
-  expect(get(catchingSelector)).toEqual('CAUGHT');
+  expect(getValue(catchingSelector)).toEqual('CAUGHT');
 });
 
 testRecoil('selector - catching loads', () => {
   const loadingSel = resolvingAsyncSelector('READY');
-  expect(get(loadingSel) instanceof Promise).toBe(true);
+  expect(getValue(loadingSel) instanceof Promise).toBe(true);
 
   const blockedSelector = selector({
     key: 'selector/blocked selector',
     get: ({get}) => get(loadingSel),
   });
-  expect(get(blockedSelector) instanceof Promise).toBe(true);
+  expect(getValue(blockedSelector) instanceof Promise).toBe(true);
 
   const bypassSelector = selector({
     key: 'selector/bypassing selector',
@@ -256,9 +256,9 @@ testRecoil('selector - catching loads', () => {
       }
     },
   });
-  expect(get(bypassSelector)).toBe('BYPASS');
+  expect(getValue(bypassSelector)).toBe('BYPASS');
   act(() => jest.runAllTimers());
-  expect(get(bypassSelector)).toEqual('READY');
+  expect(getValue(bypassSelector)).toEqual('READY');
 });
 
 testRecoil('useRecoilState - selector catching exceptions', () => {
@@ -475,7 +475,7 @@ testRecoil(
 // This tests ability to catch a pending result as a promise and
 // that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
-testRecoil('useRecoilState - selector catching promise 2', async gks => {
+testRecoil('useRecoilState - selector catching promise 2', async () => {
   let dependencyPromiseTest;
   const resolvingSel = resolvingAsyncSelector('READY');
   const catchPromiseSelector = selector({
@@ -536,7 +536,7 @@ testRecoil('Detect circular dependencies', () => {
   });
   const devStatus = window.__DEV__;
   window.__DEV__ = true;
-  expect(get(selectorC)).toBeInstanceOf(Error);
+  expect(getValue(selectorC)).toBeInstanceOf(Error);
   expect(getError(selectorC).message).toEqual(
     expect.stringContaining('circular/A'),
   );
@@ -666,9 +666,9 @@ testRecoil('Selector getCallback', async () => {
     },
   });
 
-  const menuItem = get(mySelector);
+  const menuItem = getValue(mySelector);
   await expect(menuItem.onClick()).resolves.toEqual('DEFAULT');
-  act(() => set(myAtom, 'SET'));
+  act(() => setValue(myAtom, 'SET'));
   await expect(menuItem.onClick()).resolves.toEqual('SET');
 });
 
@@ -702,10 +702,10 @@ testRecoil("Updating with same value doesn't rerender", gks => {
   let renders = 0;
   function SelectorComponent() {
     const value = useRecoilValue(mySelector);
-    const setValue = useSetRecoilState(myAtom);
-    const resetValue = useResetRecoilState(myAtom);
-    setAtom = value => setValue({value});
-    resetAtom = resetValue;
+    const setAtomValue = useSetRecoilState(myAtom);
+    const resetAtomValue = useResetRecoilState(myAtom);
+    setAtom = x => setAtomValue({value: x});
+    resetAtom = resetAtomValue;
     return value;
   }
   expect(renders).toEqual(0);
@@ -960,7 +960,7 @@ testRecoil('selector - dynamic getRecoilValue()', async () => {
   const el = renderElements(<ReadsAtom atom={sel1} />);
   expect(el.textContent).toEqual('loading');
 
-  await act(() => get(sel1));
+  await act(() => getValue(sel1));
   act(() => jest.runAllTimers());
 
   expect(el.textContent).toEqual('"READY"');
@@ -982,16 +982,16 @@ testRecoil(
       get: ({get}) => get(upstreamAsyncSelector),
     });
 
-    expect(get(directSelector) instanceof Promise).toBe(true);
+    expect(getValue(directSelector) instanceof Promise).toBe(true);
 
     act(() => jest.runAllTimers());
-    expect(get(directSelector)).toEqual(0);
+    expect(getValue(directSelector)).toEqual(0);
 
-    set(upstreamAtom, 1);
-    expect(get(directSelector) instanceof Promise).toBe(true);
+    setValue(upstreamAtom, 1);
+    expect(getValue(directSelector) instanceof Promise).toBe(true);
 
     act(() => jest.runAllTimers());
-    expect(get(directSelector)).toEqual(1);
+    expect(getValue(directSelector)).toEqual(1);
   },
 );
 
@@ -1214,14 +1214,14 @@ testRecoil(
       },
     });
 
-    let dNodeValue = get(dNode);
+    let dNodeValue = getValue(dNode);
     expect(dNodeValue).toEqual('TRUE');
     expect(bNodeRunCount).toEqual(1);
     expect(cNodeRunCount).toEqual(0);
     expect(dNodeRunCount).toEqual(1);
 
-    set(aNode, false);
-    dNodeValue = get(dNode);
+    setValue(aNode, false);
+    dNodeValue = getValue(dNode);
     expect(dNodeValue).toEqual('0');
     expect(bNodeRunCount).toEqual(1);
     expect(cNodeRunCount).toEqual(1);
