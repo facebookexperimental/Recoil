@@ -92,8 +92,12 @@ function getValue<T>(recoilValue: RecoilValue<T>): T {
   return (getLoadable(recoilValue).contents: any); // flowlint-line unclear-type:off
 }
 
+function getPromise<T>(recoilValue: RecoilValue<T>): Promise<T> {
+  return getLoadable(recoilValue).promiseOrThrow();
+}
+
 function getError(recoilValue): Error {
-  const error = getRecoilValueAsLoadable(store, recoilValue).errorOrThrow();
+  const error = getLoadable(recoilValue).errorOrThrow();
   if (!(error instanceof Error)) {
     throw new Error('Expected error to be instance of Error');
   }
@@ -1614,3 +1618,85 @@ testRecoil(
     expect(valLoadable.valueMaybe()).toBe(10);
   },
 );
+
+testRecoil('Selector values are frozen', async () => {
+  const devStatus = window.__DEV__;
+  window.__DEV__ = true;
+
+  const frozenSelector = selector({
+    key: 'selector frozen',
+    get: () => ({state: 'frozen', nested: {state: 'frozen'}}),
+  });
+  expect(Object.isFrozen(getValue(frozenSelector))).toBe(true);
+  expect(Object.isFrozen(getValue(frozenSelector).nested)).toBe(true);
+
+  const thawedSelector = selector({
+    key: 'selector frozen thawed',
+    get: () => ({state: 'thawed', nested: {state: 'thawed'}}),
+    dangerouslyAllowMutability: true,
+  });
+  expect(Object.isFrozen(getValue(thawedSelector))).toBe(false);
+  expect(Object.isFrozen(getValue(thawedSelector).nested)).toBe(false);
+
+  const asyncFrozenSelector = selector({
+    key: 'selector frozen async',
+    get: () => Promise.resolve({state: 'frozen', nested: {state: 'frozen'}}),
+  });
+  await expect(
+    getPromise(asyncFrozenSelector).then(x => Object.isFrozen(x)),
+  ).resolves.toBe(true);
+  expect(Object.isFrozen(getValue(asyncFrozenSelector).nested)).toBe(true);
+
+  const asyncThawedSelector = selector({
+    key: 'selector frozen thawed async',
+    get: () => Promise.resolve({state: 'thawed', nested: {state: 'thawed'}}),
+    dangerouslyAllowMutability: true,
+  });
+  await expect(
+    getPromise(asyncThawedSelector).then(x => Object.isFrozen(x)),
+  ).resolves.toBe(false);
+  expect(Object.isFrozen(getValue(asyncThawedSelector).nested)).toBe(false);
+
+  const upstreamFrozenSelector = selector({
+    key: 'selector frozen upstream',
+    get: () => ({state: 'frozen', nested: {state: 'frozen'}}),
+  });
+  const fwdFrozenSelector = selector({
+    key: 'selector frozen fwd',
+    get: () => upstreamFrozenSelector,
+  });
+  expect(Object.isFrozen(getValue(fwdFrozenSelector))).toBe(true);
+  expect(Object.isFrozen(getValue(fwdFrozenSelector).nested)).toBe(true);
+
+  const upstreamThawedSelector = selector({
+    key: 'selector frozen thawed upstream',
+    get: () => ({state: 'thawed', nested: {state: 'thawed'}}),
+    dangerouslyAllowMutability: true,
+  });
+  const fwdThawedSelector = selector({
+    key: 'selector frozen thawed fwd',
+    get: () => upstreamThawedSelector,
+    dangerouslyAllowMutability: true,
+  });
+  expect(Object.isFrozen(getValue(fwdThawedSelector))).toBe(false);
+  expect(Object.isFrozen(getValue(fwdThawedSelector).nested)).toBe(false);
+
+  // Selectors should not freeze their upstream dependencies
+  const upstreamMixedSelector = selector({
+    key: 'selector frozen mixed upstream',
+    get: () => ({state: 'thawed', nested: {state: 'thawed'}}),
+    dangerouslyAllowMutability: true,
+  });
+  const fwdMixedSelector = selector({
+    key: 'selector frozen mixed fwd',
+    get: ({get}) => {
+      get(upstreamMixedSelector);
+      return {state: 'frozen'};
+    },
+  });
+  expect(Object.isFrozen(getValue(fwdMixedSelector))).toBe(true);
+  expect(Object.isFrozen(getValue(upstreamMixedSelector))).toBe(false);
+  expect(Object.isFrozen(getValue(upstreamMixedSelector).nested)).toBe(false);
+
+  window.__DEV__ = devStatus;
+});
