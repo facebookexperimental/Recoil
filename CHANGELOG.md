@@ -7,6 +7,7 @@
 - Ability to map Loadables with other Loadables
 - Allow class instances in family parameters for Flow
 - Add `getLoadable()`, `getPromise()`, and `getInfo_UNSTABLE()` to Atom Effects interface for reading other atoms.
+- Atoms freeze default, initialized, and async values in dev mode.  Selectors should not freeze upstream dependencies. (#1261, #1259)
 
 ### Pending
 - Memory management

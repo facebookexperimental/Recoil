@@ -555,8 +555,6 @@ function selector<T>(
           updateExecutionInfoDepValues(depValues, store, executionId);
         }
 
-        maybeFreezeLoadableContents(loadable);
-
         if (loadable.state !== 'loading') {
           setCache(state, depValuesToDepRoute(depValues), loadable);
           setDepsInStore(store, state, new Set(depValues.keys()), executionId);
@@ -677,8 +675,6 @@ function selector<T>(
 
       const depLoadable = getCachedNodeLoadable(store, state, depKey);
 
-      maybeFreezeLoadableContents(depLoadable);
-
       depValues.set(depKey, depLoadable);
 
       if (depLoadable.state === 'hasValue') {
@@ -750,7 +746,9 @@ function selector<T>(
       loadable = loadableWithValue<T>(result);
     }
 
-    maybeFreezeLoadableContents(loadable);
+    if (loadable.state !== 'loading') {
+      maybeFreezeValue(loadable.contents);
+    }
 
     return [loadable, depValues];
   }
@@ -1034,12 +1032,6 @@ function selector<T>(
     return executionId === executionInfo.latestExecutionId;
   }
 
-  function maybeFreezeLoadableContents(loadable: Loadable<T>) {
-    if (loadable.state !== 'loading') {
-      maybeFreezeValue(loadable.contents);
-    }
-  }
-
   function maybeFreezeValue(val) {
     if (__DEV__) {
       if (Boolean(options.dangerouslyAllowMutability) === false) {
@@ -1111,8 +1103,6 @@ function selector<T>(
         }
 
         const loadable = getCachedNodeLoadable(store, state, depKey);
-
-        maybeFreezeLoadableContents(loadable);
 
         if (loadable.state === 'hasValue') {
           return loadable.contents;
