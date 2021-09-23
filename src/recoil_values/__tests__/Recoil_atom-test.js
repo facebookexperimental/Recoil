@@ -7,6 +7,8 @@
  */
 'use strict';
 
+import type {RecoilValue} from '../../core/Recoil_RecoilValue';
+
 const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
 
 let React,
@@ -67,12 +69,16 @@ const testRecoil = getRecoilTestFn(() => {
   store = makeStore();
 });
 
-function get(recoilValue) {
-  return getRecoilValueAsLoadable(store, recoilValue).contents;
+function get<T>(recoilValue: RecoilValue<T>): T {
+  return (getRecoilValueAsLoadable(store, recoilValue).contents: any); // flowlint-line unclear-type:off
 }
 
 function getLoadable(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue);
+}
+
+function getPromise(recoilValue) {
+  return getLoadable(recoilValue).promiseOrThrow();
 }
 
 function set(recoilValue, value: mixed) {
@@ -1181,8 +1187,11 @@ describe('Effects', () => {
   });
 });
 
-testRecoil('object is frozen when stored in atom', () => {
-  const anAtom = atom<{x: mixed, ...}>({key: 'anAtom', default: {x: 0}});
+testRecoil('object is frozen when stored in atom', async () => {
+  const devStatus = window.__DEV__;
+  window.__DEV__ = true;
+
+  const anAtom = atom<{x: mixed, ...}>({key: 'atom frozen', default: {x: 0}});
 
   function valueAfterSettingInAtom<T>(value: T): T {
     act(() => set(anAtom, value));
@@ -1214,4 +1223,63 @@ testRecoil('object is frozen when stored in atom', () => {
   expect(isFrozen(immutable.Range())).toBe(false);
   expect(isFrozen(immutable.Repeat())).toBe(false);
   expect(isFrozen(new (immutable.Record({}))())).toBe(false);
+
+  // Default values are frozen
+  const defaultFrozenAtom = atom({
+    key: 'atom frozen default',
+    default: {state: 'frozen', nested: {state: 'frozen'}},
+  });
+  expect(Object.isFrozen(get(defaultFrozenAtom))).toBe(true);
+  expect(Object.isFrozen(get(defaultFrozenAtom).nested)).toBe(true);
+
+  // Async Default values are frozen
+  const defaultFrozenAsyncAtom = atom({
+    key: 'atom frozen default async',
+    default: Promise.resolve({state: 'frozen', nested: {state: 'frozen'}}),
+  });
+  await expect(
+    getPromise(defaultFrozenAsyncAtom).then(x => Object.isFrozen(x)),
+  ).resolves.toBe(true);
+  expect(Object.isFrozen(get(defaultFrozenAsyncAtom).nested)).toBe(true);
+
+  // Initialized values are frozen
+  const initializedValueInAtom = atom({
+    key: 'atom frozen initialized',
+    default: {nested: 'DEFAULT'},
+    effects_UNSTABLE: [
+      ({setSelf}) => setSelf({state: 'frozen', nested: {state: 'frozen'}}),
+    ],
+  });
+  expect(Object.isFrozen(get(initializedValueInAtom))).toBe(true);
+  expect(Object.isFrozen(get(initializedValueInAtom).nested)).toBe(true);
+
+  // Async Initialized values are frozen
+  const initializedAsyncValueInAtom = atom<{state: string, nested: {...}, ...}>(
+    {
+      key: 'atom frozen initialized async',
+      default: {state: 'DEFAULT', nested: {state: 'DEFAULT'}},
+      effects_UNSTABLE: [
+        ({setSelf}) =>
+          setSelf(
+            Promise.resolve({state: 'frozen', nested: {state: 'frozen'}}),
+          ),
+      ],
+    },
+  );
+  await expect(
+    getPromise(initializedAsyncValueInAtom).then(x => Object.isFrozen(x)),
+  ).resolves.toBe(true);
+  expect(Object.isFrozen(get(initializedAsyncValueInAtom).nested)).toBe(true);
+  expect(get(initializedAsyncValueInAtom).nested).toEqual({state: 'frozen'});
+
+  // dangerouslyAllowMutability
+  const thawedAtom = atom({
+    key: 'atom frozen thawed',
+    default: {state: 'thawed', nested: {state: 'thawed'}},
+    dangerouslyAllowMutability: true,
+  });
+  expect(Object.isFrozen(get(thawedAtom))).toBe(false);
+  expect(Object.isFrozen(get(thawedAtom).nested)).toBe(false);
+
+  window.__DEV__ = devStatus;
 });
