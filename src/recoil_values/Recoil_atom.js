@@ -180,12 +180,30 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           }),
       )
     : loadableWithValue(options.default);
+  maybeFreezeValueOrPromise(options.default);
 
   let cachedAnswerForUnvalidatedValue: void | Loadable<T> = undefined;
 
   // Cleanup handlers for this atom
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
   const cleanupEffectsByStore: Map<Store, Array<() => void>> = new Map();
+
+  function maybeFreezeValueOrPromise(valueOrPromise) {
+    if (__DEV__) {
+      if (options.dangerouslyAllowMutability !== true) {
+        if (isPromise(valueOrPromise)) {
+          return valueOrPromise.then(value => {
+            deepFreezeValue(value);
+            return value;
+          });
+        } else {
+          deepFreezeValue(valueOrPromise);
+          return valueOrPromise;
+        }
+      }
+    }
+    return valueOrPromise;
+  }
 
   function wrapPendingPromise(
     store: Store,
@@ -417,9 +435,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     // Mutate initial state in place since we know there are no other subscribers
     // since we are the ones initializing on first use.
     if (!(initValue instanceof DefaultValue)) {
-      const initLoadable = isPromise(initValue)
-        ? loadableWithPromise(wrapPendingPromise(store, initValue))
-        : loadableWithValue(initValue);
+      const frozenInitValue = maybeFreezeValueOrPromise(initValue);
+      const initLoadable = isPromise(frozenInitValue)
+        ? loadableWithPromise(wrapPendingPromise(store, frozenInitValue))
+        : loadableWithValue(frozenInitValue);
       initState.atomValues.set(key, initLoadable);
 
       // If there is a pending transaction, then also mutate the next state tree.
@@ -503,11 +522,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       return new Map();
     }
 
-    if (__DEV__) {
-      if (options.dangerouslyAllowMutability !== true) {
-        deepFreezeValue(newValue);
-      }
-    }
+    maybeFreezeValueOrPromise(newValue);
 
     cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
 
