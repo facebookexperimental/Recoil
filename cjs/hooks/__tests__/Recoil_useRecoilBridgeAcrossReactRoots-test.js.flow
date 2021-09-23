@@ -43,7 +43,7 @@ testRecoil('useRecoilBridgeAcrossReactRoots - create a context bridge', async ()
   const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
   declare function NestedReactRoot(arg0: any): any;
   const container = document.createElement('div');
-  await act(() => {
+  act(() => {
     ReactDOM.render(<RecoilRoot initializeState={initializeState}>
           <ReadWriteAtom />
 

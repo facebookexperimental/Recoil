@@ -6432,8 +6432,6 @@ function selector(options) {
         updateExecutionInfoDepValues(depValues, store, executionId);
       }
 
-      maybeFreezeLoadableContents(loadable);
-
       if (loadable.state !== 'loading') {
         setCache(state, depValuesToDepRoute(depValues), loadable);
         setDepsInStore(store, state, new Set(depValues.keys()), executionId);
@@ -6523,7 +6521,6 @@ function selector(options) {
       } = recoilValue;
       setNewDepInStore(store, state, deps, depKey, executionId);
       const depLoadable = getCachedNodeLoadable(store, state, depKey);
-      maybeFreezeLoadableContents(depLoadable);
       depValues.set(depKey, depLoadable);
 
       if (depLoadable.state === 'hasValue') {
@@ -6586,7 +6583,10 @@ function selector(options) {
       loadable = loadableWithValue$2(result);
     }
 
-    maybeFreezeLoadableContents(loadable);
+    if (loadable.state !== 'loading') {
+      maybeFreezeValue(loadable.contents);
+    }
+
     return [loadable, depValues];
   }
 
@@ -6790,12 +6790,6 @@ function selector(options) {
     return executionId === executionInfo.latestExecutionId;
   }
 
-  function maybeFreezeLoadableContents(loadable) {
-    if (loadable.state !== 'loading') {
-      maybeFreezeValue(loadable.contents);
-    }
-  }
-
   function maybeFreezeValue(val) {
     if (process.env.NODE_ENV !== "production") {
       if (Boolean(options.dangerouslyAllowMutability) === false) {
@@ -6858,7 +6852,6 @@ function selector(options) {
         }
 
         const loadable = getCachedNodeLoadable(store, state, depKey);
-        maybeFreezeLoadableContents(loadable);
 
         if (loadable.state === 'hasValue') {
           return loadable.contents;
@@ -6998,10 +6991,29 @@ function baseAtom(options) {
     defaultLoadable = loadableWithError$2(error);
     throw error;
   })) : loadableWithValue$3(options.default);
+  maybeFreezeValueOrPromise(options.default);
   let cachedAnswerForUnvalidatedValue = undefined; // Cleanup handlers for this atom
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
 
   const cleanupEffectsByStore = new Map();
+
+  function maybeFreezeValueOrPromise(valueOrPromise) {
+    if (process.env.NODE_ENV !== "production") {
+      if (options.dangerouslyAllowMutability !== true) {
+        if (Recoil_isPromise(valueOrPromise)) {
+          return valueOrPromise.then(value => {
+            Recoil_deepFreezeValue(value);
+            return value;
+          });
+        } else {
+          Recoil_deepFreezeValue(valueOrPromise);
+          return valueOrPromise;
+        }
+      }
+    }
+
+    return valueOrPromise;
+  }
 
   function wrapPendingPromise(store, promise) {
     const wrappedPromise = promise.then(value => {
@@ -7207,7 +7219,8 @@ function baseAtom(options) {
     if (!(initValue instanceof DefaultValue$2)) {
       var _store$getState$nextT5;
 
-      const initLoadable = Recoil_isPromise(initValue) ? loadableWithPromise$2(wrapPendingPromise(store, initValue)) : loadableWithValue$3(initValue);
+      const frozenInitValue = maybeFreezeValueOrPromise(initValue);
+      const initLoadable = Recoil_isPromise(frozenInitValue) ? loadableWithPromise$2(wrapPendingPromise(store, frozenInitValue)) : loadableWithValue$3(frozenInitValue);
       initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
       // This could happen if the atom was first initialized in an action that
       // also updated some other atom's state.
@@ -7274,12 +7287,7 @@ function baseAtom(options) {
       return new Map();
     }
 
-    if (process.env.NODE_ENV !== "production") {
-      if (options.dangerouslyAllowMutability !== true) {
-        Recoil_deepFreezeValue(newValue);
-      }
-    }
-
+    maybeFreezeValueOrPromise(newValue);
     cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
 
     return new Map().set(key, loadableWithValue$3(newValue));

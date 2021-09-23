@@ -72,10 +72,11 @@ const testRecoil = getRecoilTestFn(() => {
   store = makeStore();
 });
 declare function getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
-declare function get<T>(recoilValue: RecoilValue<T>): T;
+declare function getValue<T>(recoilValue: RecoilValue<T>): T;
+declare function getPromise<T>(recoilValue: RecoilValue<T>): Promise<T>;
 declare function getError(recoilValue: any): Error;
-declare function set(recoilState: any, value: any): any;
-declare function reset(recoilState: any): any;
+declare function setValue(recoilState: any, value: any): any;
+declare function resetValue(recoilState: any): any;
 testRecoil('useRecoilState - static selector', () => {
   const staticSel = constSelector('HELLO');
   const c = renderElements(<ReadsAtom atom={staticSel} />);
@@ -89,7 +90,7 @@ testRecoil('selector get', () => {
       get
     }) => get(staticSel)
   });
-  expect(get(selectorRO)).toEqual('HELLO');
+  expect(getValue(selectorRO)).toEqual('HELLO');
 });
 testRecoil('selector set', () => {
   const myAtom = atom({
@@ -105,13 +106,13 @@ testRecoil('selector set', () => {
       set
     }, newValue) => set(myAtom, newValue instanceof DefaultValue ? newValue : 'SET: ' + newValue)
   });
-  expect(get(selectorRW)).toEqual('DEFAULT');
-  set(myAtom, 'SET ATOM');
-  expect(get(selectorRW)).toEqual('SET ATOM');
-  set(selectorRW, 'SET SELECTOR');
-  expect(get(selectorRW)).toEqual('SET: SET SELECTOR');
-  reset(selectorRW);
-  expect(get(selectorRW)).toEqual('DEFAULT');
+  expect(getValue(selectorRW)).toEqual('DEFAULT');
+  setValue(myAtom, 'SET ATOM');
+  expect(getValue(selectorRW)).toEqual('SET ATOM');
+  setValue(selectorRW, 'SET SELECTOR');
+  expect(getValue(selectorRW)).toEqual('SET: SET SELECTOR');
+  resetValue(selectorRW);
+  expect(getValue(selectorRW)).toEqual('DEFAULT');
 });
 testRecoil('selector reset', () => {
   const myAtom = atom({
@@ -127,11 +128,11 @@ testRecoil('selector reset', () => {
       reset
     }) => reset(myAtom)
   });
-  expect(get(selectorRW)).toEqual('DEFAULT');
-  set(myAtom, 'SET ATOM');
-  expect(get(selectorRW)).toEqual('SET ATOM');
-  set(selectorRW, 'SET SELECTOR');
-  expect(get(selectorRW)).toEqual('DEFAULT');
+  expect(getValue(selectorRW)).toEqual('DEFAULT');
+  setValue(myAtom, 'SET ATOM');
+  expect(getValue(selectorRW)).toEqual('SET ATOM');
+  setValue(selectorRW, 'SET SELECTOR');
+  expect(getValue(selectorRW)).toEqual('DEFAULT');
 });
 testRecoil('useRecoilState - resolved async selector', async () => {
   const resolvingSel = resolvingAsyncSelector('HELLO');
@@ -160,13 +161,13 @@ testRecoil('selector - evaluate to RecoilValue', () => {
       get
     }) => get(inputAtom) === 'a' ? atomA : atomB
   });
-  expect(get(mySelector)).toEqual('A');
-  set(inputAtom, 'b');
-  expect(get(mySelector)).toEqual('B');
+  expect(getValue(mySelector)).toEqual('A');
+  setValue(inputAtom, 'b');
+  expect(getValue(mySelector)).toEqual('B');
 });
 testRecoil('selector - catching exceptions', () => {
   const throwingSel = errorSelector('MY ERROR');
-  expect(get(throwingSel)).toBeInstanceOf(Error);
+  expect(getValue(throwingSel)).toBeInstanceOf(Error);
   const catchingSelector = selector({
     key: 'selector/catching selector',
     get: ({
@@ -181,7 +182,7 @@ testRecoil('selector - catching exceptions', () => {
       }
     }
   });
-  expect(get(catchingSelector)).toEqual('CAUGHT');
+  expect(getValue(catchingSelector)).toEqual('CAUGHT');
 });
 testRecoil('selector - catching exception (non Error)', () => {
   const throwingSel = selector({
@@ -204,18 +205,18 @@ testRecoil('selector - catching exception (non Error)', () => {
       }
     }
   });
-  expect(get(catchingSelector)).toEqual('CAUGHT');
+  expect(getValue(catchingSelector)).toEqual('CAUGHT');
 });
 testRecoil('selector - catching loads', () => {
   const loadingSel = resolvingAsyncSelector('READY');
-  expect(get(loadingSel) instanceof Promise).toBe(true);
+  expect(getValue(loadingSel) instanceof Promise).toBe(true);
   const blockedSelector = selector({
     key: 'selector/blocked selector',
     get: ({
       get
     }) => get(loadingSel)
   });
-  expect(get(blockedSelector) instanceof Promise).toBe(true);
+  expect(getValue(blockedSelector) instanceof Promise).toBe(true);
   const bypassSelector = selector({
     key: 'selector/bypassing selector',
     get: ({
@@ -229,9 +230,9 @@ testRecoil('selector - catching loads', () => {
       }
     }
   });
-  expect(get(bypassSelector)).toBe('BYPASS');
+  expect(getValue(bypassSelector)).toBe('BYPASS');
   act(() => jest.runAllTimers());
-  expect(get(bypassSelector)).toEqual('READY');
+  expect(getValue(bypassSelector)).toEqual('READY');
 });
 testRecoil('useRecoilState - selector catching exceptions', () => {
   const throwingSel = errorSelector('MY ERROR');
@@ -436,7 +437,7 @@ testRecoil('useRecoilState - selector catching promise and resolving asynchronou
 // that the promise resolves to the dependency's value and it is handled
 // as an asynchronous selector
 
-testRecoil('useRecoilState - selector catching promise 2', async gks => {
+testRecoil('useRecoilState - selector catching promise 2', async () => {
   let dependencyPromiseTest;
   const resolvingSel = resolvingAsyncSelector('READY');
   const catchPromiseSelector = selector({
@@ -496,7 +497,7 @@ testRecoil('Detect circular dependencies', () => {
   });
   const devStatus = window.__DEV__;
   window.__DEV__ = true;
-  expect(get(selectorC)).toBeInstanceOf(Error);
+  expect(getValue(selectorC)).toBeInstanceOf(Error);
   expect(getError(selectorC).message).toEqual(expect.stringContaining('circular/A'));
   window.__DEV__ = devStatus;
 });
@@ -590,9 +591,9 @@ testRecoil('Selector getCallback', async () => {
       };
     }
   });
-  const menuItem = get(mySelector);
+  const menuItem = getValue(mySelector);
   await expect(menuItem.onClick()).resolves.toEqual('DEFAULT');
-  act(() => set(myAtom, 'SET'));
+  act(() => setValue(myAtom, 'SET'));
   await expect(menuItem.onClick()).resolves.toEqual('SET');
 });
 testRecoil("Selector can't call getCallback during evaluation", () => {
@@ -806,7 +807,7 @@ testRecoil('selector - dynamic getRecoilValue()', async () => {
   });
   const el = renderElements(<ReadsAtom atom={sel1} />);
   expect(el.textContent).toEqual('loading');
-  await act(() => get(sel1));
+  await act(() => getValue(sel1));
   act(() => jest.runAllTimers());
   expect(el.textContent).toEqual('"READY"');
 });
@@ -827,13 +828,13 @@ testRecoil('distinct loading dependencies are treated as distinct', async () => 
       get
     }) => get(upstreamAsyncSelector)
   });
-  expect(get(directSelector) instanceof Promise).toBe(true);
+  expect(getValue(directSelector) instanceof Promise).toBe(true);
   act(() => jest.runAllTimers());
-  expect(get(directSelector)).toEqual(0);
-  set(upstreamAtom, 1);
-  expect(get(directSelector) instanceof Promise).toBe(true);
+  expect(getValue(directSelector)).toEqual(0);
+  setValue(upstreamAtom, 1);
+  expect(getValue(directSelector) instanceof Promise).toBe(true);
   act(() => jest.runAllTimers());
-  expect(get(directSelector)).toEqual(1);
+  expect(getValue(directSelector)).toEqual(1);
 });
 testRecoil('Selector deps are saved when a component mounts due to a non-recoil change at the same time that a selector is first read', () => {
   // Regression test for an issue where selector dependencies were not saved
@@ -984,13 +985,13 @@ testRecoil('selector - kite pattern runs only necessary selectors', async () => 
       return value.toUpperCase();
     }
   });
-  let dNodeValue = get(dNode);
+  let dNodeValue = getValue(dNode);
   expect(dNodeValue).toEqual('TRUE');
   expect(bNodeRunCount).toEqual(1);
   expect(cNodeRunCount).toEqual(0);
   expect(dNodeRunCount).toEqual(1);
-  set(aNode, false);
-  dNodeValue = get(dNode);
+  setValue(aNode, false);
+  dNodeValue = getValue(dNode);
   expect(dNodeValue).toEqual('0');
   expect(bNodeRunCount).toEqual(1);
   expect(cNodeRunCount).toEqual(1);
@@ -1329,4 +1330,112 @@ testRecoil('async dep that changes from loading to value triggers re-execution',
   expect(newAtomVal.valueMaybe()).toBe(10);
   const valLoadable = mappedSnapshot.getLoadable(selWithAsyncDep);
   expect(valLoadable.valueMaybe()).toBe(10);
+});
+testRecoil('Selector values are frozen', async () => {
+  const devStatus = window.__DEV__;
+  window.__DEV__ = true;
+  const frozenSelector = selector({
+    key: 'selector frozen',
+    get: () => ({
+      state: 'frozen',
+      nested: {
+        state: 'frozen'
+      }
+    })
+  });
+  expect(Object.isFrozen(getValue(frozenSelector))).toBe(true);
+  expect(Object.isFrozen(getValue(frozenSelector).nested)).toBe(true);
+  const thawedSelector = selector({
+    key: 'selector frozen thawed',
+    get: () => ({
+      state: 'thawed',
+      nested: {
+        state: 'thawed'
+      }
+    }),
+    dangerouslyAllowMutability: true
+  });
+  expect(Object.isFrozen(getValue(thawedSelector))).toBe(false);
+  expect(Object.isFrozen(getValue(thawedSelector).nested)).toBe(false);
+  const asyncFrozenSelector = selector({
+    key: 'selector frozen async',
+    get: () => Promise.resolve({
+      state: 'frozen',
+      nested: {
+        state: 'frozen'
+      }
+    })
+  });
+  await expect(getPromise(asyncFrozenSelector).then(x => Object.isFrozen(x))).resolves.toBe(true);
+  expect(Object.isFrozen(getValue(asyncFrozenSelector).nested)).toBe(true);
+  const asyncThawedSelector = selector({
+    key: 'selector frozen thawed async',
+    get: () => Promise.resolve({
+      state: 'thawed',
+      nested: {
+        state: 'thawed'
+      }
+    }),
+    dangerouslyAllowMutability: true
+  });
+  await expect(getPromise(asyncThawedSelector).then(x => Object.isFrozen(x))).resolves.toBe(false);
+  expect(Object.isFrozen(getValue(asyncThawedSelector).nested)).toBe(false);
+  const upstreamFrozenSelector = selector({
+    key: 'selector frozen upstream',
+    get: () => ({
+      state: 'frozen',
+      nested: {
+        state: 'frozen'
+      }
+    })
+  });
+  const fwdFrozenSelector = selector({
+    key: 'selector frozen fwd',
+    get: () => upstreamFrozenSelector
+  });
+  expect(Object.isFrozen(getValue(fwdFrozenSelector))).toBe(true);
+  expect(Object.isFrozen(getValue(fwdFrozenSelector).nested)).toBe(true);
+  const upstreamThawedSelector = selector({
+    key: 'selector frozen thawed upstream',
+    get: () => ({
+      state: 'thawed',
+      nested: {
+        state: 'thawed'
+      }
+    }),
+    dangerouslyAllowMutability: true
+  });
+  const fwdThawedSelector = selector({
+    key: 'selector frozen thawed fwd',
+    get: () => upstreamThawedSelector,
+    dangerouslyAllowMutability: true
+  });
+  expect(Object.isFrozen(getValue(fwdThawedSelector))).toBe(false);
+  expect(Object.isFrozen(getValue(fwdThawedSelector).nested)).toBe(false); // Selectors should not freeze their upstream dependencies
+
+  const upstreamMixedSelector = selector({
+    key: 'selector frozen mixed upstream',
+    get: () => ({
+      state: 'thawed',
+      nested: {
+        state: 'thawed'
+      }
+    }),
+    dangerouslyAllowMutability: true
+  });
+  const fwdMixedSelector = selector({
+    key: 'selector frozen mixed fwd',
+    get: ({
+      get
+    }) => {
+      get(upstreamMixedSelector);
+      return {
+        state: 'frozen'
+      };
+    }
+  });
+  expect(Object.isFrozen(getValue(fwdMixedSelector))).toBe(true);
+  expect(Object.isFrozen(getValue(upstreamMixedSelector))).toBe(false);
+  expect(Object.isFrozen(getValue(upstreamMixedSelector).nested)).toBe(false);
+  window.__DEV__ = devStatus;
 });
