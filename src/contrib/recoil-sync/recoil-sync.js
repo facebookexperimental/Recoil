@@ -157,36 +157,48 @@ function useRecoilSync({
   const updateItems = useRecoilTransaction(
     ({set, reset}) => (diff: ItemDiff) => {
       const atomRegistry = registries.getAtomRegistry(syncKey);
-      for (const [itemKey, loadable] of diff) {
-        for (const [, registration] of atomRegistry) {
-          const cbs = registration.itemKeys.get(itemKey);
-          if (cbs != null) {
-            if (loadable != null) {
-              const validated = validateLoadable(loadable, cbs);
-              switch (validated.state) {
-                case 'hasValue':
-                  registration.pendingUpdate = {
-                    value: validated.contents,
-                  };
-                  set(registration.atom, validated.contents);
-                  break;
-                case 'hasError':
-                  // TODO Async atom support to allow setting atom to error state
-                  // in the meantime we can just reset it to default value...
-                  registration.pendingUpdate = {value: DEFAULT_VALUE};
-                  reset(registration.atom);
-                  break;
-                case 'loading':
-                  // TODO Async atom support
-                  throw new Error(
-                    'Recoil does not yet support setting atoms to an asynchronous state',
-                  );
-              }
-            } else {
-              registration.pendingUpdate = {value: DEFAULT_VALUE};
-              reset(registration.atom);
-            }
+      for (const [, registration] of atomRegistry) {
+        let resetAtom = false;
+        // Go through registered item keys in reverse order so later syncEffects
+        // take priority if multiple keys are specified for the same storage
+        for (const [itemKey, cbs] of Array.from(
+          registration.itemKeys,
+        ).reverse()) {
+          if (diff.has(itemKey)) {
+            // null entry means to reset atom, but let's first check if there
+            // is a fallback syncEffect for the same storage with another key
+            // that may provide backup instructions.
+            resetAtom = true;
           }
+          const loadable = diff.get(itemKey);
+          if (loadable != null) {
+            resetAtom = false;
+            const validated = validateLoadable(loadable, cbs);
+            switch (validated.state) {
+              case 'hasValue':
+                registration.pendingUpdate = {
+                  value: validated.contents,
+                };
+                set(registration.atom, validated.contents);
+                break;
+              case 'hasError':
+                // TODO Async atom support to allow setting atom to error state
+                // in the meantime we can just reset it to default value...
+                registration.pendingUpdate = {value: DEFAULT_VALUE};
+                reset(registration.atom);
+                break;
+              case 'loading':
+                // TODO Async atom support
+                throw new Error(
+                  'Recoil does not yet support setting atoms to an asynchronous state',
+                );
+            }
+            break;
+          }
+        }
+        if (resetAtom) {
+          registration.pendingUpdate = {value: DEFAULT_VALUE};
+          reset(registration.atom);
         }
       }
     },
@@ -298,7 +310,7 @@ function syncEffect<T>({
       }, 0);
     }
 
-    // TODO Unregister atom
+    // Unregister atom
     return () => {
       atomRegistry.delete(node.key);
     };
