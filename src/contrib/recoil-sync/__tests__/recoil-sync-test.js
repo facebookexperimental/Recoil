@@ -66,9 +66,12 @@ function TestRecoilSync({
       }
       return storage.get(itemKey);
     },
-    write: ({diff}) => {
+    write: ({diff, items}) => {
       for (const [key, loadable] of diff.entries()) {
         loadable != null ? storage.set(key, loadable) : storage.delete(key);
+      }
+      for (const [itemKey, loadable] of diff) {
+        expect(items.get(itemKey)?.contents).toEqual(loadable?.contents);
       }
     },
     listen: update => {
