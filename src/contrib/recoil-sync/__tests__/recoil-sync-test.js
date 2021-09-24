@@ -11,7 +11,7 @@
 // TODO PUBLIC LOADABLE INTERFACE
 
 import type {Loadable} from '../../../adt/Recoil_Loadable';
-import type {UpdateItems} from '../recoil-sync';
+import type {ItemDiff, ItemKey, ListenInterface} from '../recoil-sync';
 
 const {act} = require('ReactTestUtils');
 
@@ -56,7 +56,7 @@ function TestRecoilSync({
 }: {
   syncKey?: string,
   storage: Map<string, Loadable<mixed>>,
-  regListen?: UpdateItems => void,
+  regListen?: ListenInterface => void,
 }) {
   useRecoilSync({
     syncKey,
@@ -74,8 +74,8 @@ function TestRecoilSync({
         expect(items.get(itemKey)?.contents).toEqual(loadable?.contents);
       }
     },
-    listen: update => {
-      regListen?.(update);
+    listen: listenInterface => {
+      regListen?.(listenInterface);
     },
   });
   return null;
@@ -369,7 +369,7 @@ test('Read/Write from storage upgrade', async () => {
     default: 'DEFAULT',
     effects_UNSTABLE: [
       syncEffect({restore: validateAny}),
-      syncEffect({syncKey: 'SYNC_2', restore: validateAny}),
+      syncEffect({syncKey: 'OTHER_SYNC', restore: validateAny}),
     ],
   });
 
@@ -388,7 +388,7 @@ test('Read/Write from storage upgrade', async () => {
   const container = renderElements(
     <>
       <TestRecoilSync storage={storage1} />
-      <TestRecoilSync storage={storage2} syncKey="SYNC_2" />
+      <TestRecoilSync storage={storage2} syncKey="OTHER_SYNC" />
       <AtomA />
       <AtomB />
       <AtomC />
@@ -428,24 +428,21 @@ test('Listen to storage', async () => {
   const atomA = atom({
     key: 'recoil-sync listen',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
-      syncEffect({restore: validateAny}),
-      syncEffect({restore: validateAny}),
-    ],
+    effects_UNSTABLE: [syncEffect({syncKey: 'SYNC_1', restore: validateAny})],
   });
   const atomB = atom({
     key: 'recoil-sync listen to multiple keys',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect({key: 'KEY A', restore: validateAny}),
-      syncEffect({key: 'KEY B', restore: validateAny}),
+      syncEffect({syncKey: 'SYNC_1', key: 'KEY A', restore: validateAny}),
+      syncEffect({syncKey: 'SYNC_1', key: 'KEY B', restore: validateAny}),
     ],
   });
   const atomC = atom({
     key: 'recoil-sync listen to multiple storage',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect({restore: validateAny}),
+      syncEffect({syncKey: 'SYNC_1', restore: validateAny}),
       syncEffect({syncKey: 'SYNC_2', restore: validateAny}),
     ],
   });
@@ -459,25 +456,34 @@ test('Listen to storage', async () => {
     ['recoil-sync listen to multiple storage', loadableWithValue('C2')],
   ]);
 
-  let update1: UpdateItems = () => {
+  let update1: ItemDiff => void = () => {
     throw new Error('Failed to register 1');
   };
-  let update2: UpdateItems = () => {
+  let getItemKeys1: () => Set<ItemKey> = _ => {
+    throw new Error('Failed to register 1');
+  };
+  let update2: ItemDiff => void = () => {
+    throw new Error('Failed to register 2');
+  };
+  let getItemKeys2: () => Set<ItemKey> = _ => {
     throw new Error('Failed to register 2');
   };
   const container = renderElements(
     <>
       <TestRecoilSync
+        syncKey="SYNC_1"
         storage={storage1}
-        regListen={u => {
-          update1 = u;
+        regListen={listenInterface => {
+          update1 = listenInterface.updateItems;
+          getItemKeys1 = listenInterface.getItemKeys;
         }}
       />
       <TestRecoilSync
         syncKey="SYNC_2"
         storage={storage2}
-        regListen={u => {
-          update2 = u;
+        regListen={listenInterface => {
+          update2 = listenInterface.updateItems;
+          getItemKeys2 = listenInterface.getItemKeys;
         }}
       />
       <ReadsAtom atom={atomA} />
@@ -488,6 +494,19 @@ test('Listen to storage', async () => {
 
   expect(container.textContent).toBe('"A""B""C2"');
   expect(storage1.size).toBe(3);
+  expect(getItemKeys1().size).toBe(4);
+  expect(getItemKeys1()).toEqual(
+    new Set([
+      'recoil-sync listen',
+      'KEY A',
+      'KEY B',
+      'recoil-sync listen to multiple storage',
+    ]),
+  );
+  expect(getItemKeys2().size).toBe(1);
+  expect(getItemKeys2()).toEqual(
+    new Set(['recoil-sync listen to multiple storage']),
+  );
 
   // Subscribe to new value
   act(() =>
