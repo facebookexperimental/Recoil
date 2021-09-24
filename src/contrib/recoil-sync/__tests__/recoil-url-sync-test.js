@@ -10,7 +10,7 @@
 // TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
 // TODO PUBLIC LOADABLE INTERFACE
 
-// import type {Loadable} from '../../../adt/Recoil_Loadable';
+import type {Loadable} from '../../../adt/Recoil_Loadable';
 import type {LocationOption} from '../recoil-url-sync';
 
 const {act} = require('ReactTestUtils');
@@ -18,6 +18,7 @@ const {act} = require('ReactTestUtils');
 const {loadableWithValue} = require('../../../adt/Recoil_Loadable');
 const atom = require('../../../recoil_values/Recoil_atom');
 const {
+  ReadsAtom,
   componentThatReadsAndWritesAtom,
   renderElements,
 } = require('../../../testing/Recoil_TestingUtils');
@@ -32,16 +33,16 @@ const nextKey = () => `recoil-url-sync/${atomIndex++}`;
 // Mock validation library
 ////////////////////////////
 const validateAny = loadableWithValue;
-// const validateString = x =>
-//   typeof x === 'string' ? loadableWithValue(x) : null;
-// const validateNumber = x =>
-//   typeof x === 'number' ? loadableWithValue(x) : null;
-// function upgrade<From, To>(
-//   validate: mixed => ?Loadable<From>,
-//   upgrade: From => To,
-// ): mixed => ?Loadable<To> {
-//   return x => validate(x)?.map(upgrade);
-// }
+const validateString = x =>
+  typeof x === 'string' ? loadableWithValue(x) : null;
+const validateNumber = x =>
+  typeof x === 'number' ? loadableWithValue(x) : null;
+function upgrade<From, To>(
+  validate: mixed => ?Loadable<From>,
+  upgrader: From => To,
+): mixed => ?Loadable<To> {
+  return x => validate(x)?.map(upgrader);
+}
 
 // ////////////////////////////
 // // Mock Serialization
@@ -68,6 +69,19 @@ function TestURLSync({
       `${location.part === 'href' ? '/TEST#' : ''}${encodeURI(
         JSON.stringify(mapToObj(items)),
       )}`,
+    deserialize: str => {
+      const stateStr = location.part === 'href' ? str.split('#')[1] : str;
+      // Skip the default URL parts which don't conform to the serialized standard
+      if (
+        stateStr == null ||
+        stateStr === 'anchor' ||
+        stateStr === 'foo=bar' ||
+        stateStr === 'bar'
+      ) {
+        return new Map();
+      }
+      return new Map(Object.entries(JSON.parse(decodeURI(stateStr))));
+    },
   });
   return null;
 }
@@ -76,7 +90,7 @@ function encodeState(obj) {
   return `${encodeURI(JSON.stringify(obj))}`;
 }
 
-function encodeURL(loc, obj) {
+function encodeURL(loc: LocationOption, obj) {
   const encoded = encodeState(obj);
   const url = new URL(window.location);
   switch (loc.part) {
@@ -92,7 +106,6 @@ function encodeURL(loc, obj) {
       if (queryParam == null) {
         url.search = encoded;
       } else {
-        // const searchParams = new URLSearchParams(location.search);
         const searchParams = url.searchParams;
         searchParams.set(queryParam, encoded);
         url.search = searchParams.toString();
@@ -219,4 +232,112 @@ describe('Test URL Persistence', () => {
     url.searchParams.set('bar', encodeState({x: 'B'}));
     expect(location.href).toBe(url.href);
   });
+
+  function testReadFromURL(loc) {
+    const atomA = atom({
+      key: nextKey(),
+      default: 'DEFAULT',
+      effects_UNSTABLE: [syncEffect({key: 'a', restore: validateAny})],
+    });
+    const atomB = atom({
+      key: nextKey(),
+      default: 'DEFAULT',
+      effects_UNSTABLE: [syncEffect({key: 'b', restore: validateAny})],
+    });
+    const atomC = atom({
+      key: nextKey(),
+      default: 'DEFAULT',
+      effects_UNSTABLE: [syncEffect({key: 'c', restore: validateAny})],
+    });
+
+    history.replaceState(
+      null,
+      '',
+      encodeURL(loc, {
+        a: 'A',
+        b: 'B',
+      }),
+    );
+
+    const container = renderElements(
+      <>
+        <TestURLSync location={loc} />
+        <ReadsAtom atom={atomA} />
+        <ReadsAtom atom={atomB} />
+        <ReadsAtom atom={atomC} />
+      </>,
+    );
+
+    expect(container.textContent).toBe('"A""B""DEFAULT"');
+  }
+  test('Read from URL', () => testReadFromURL({part: 'href'}));
+  test('Read from URL - Anchor Hash', () => testReadFromURL({part: 'hash'}));
+  test('Read from URL - Search Query', () => testReadFromURL({part: 'search'}));
+  test('Read from URL - Search Query Param', () =>
+    testReadFromURL({part: 'search', queryParam: 'foo'}));
+  test('Read from URL - Search Query Param with other param', () =>
+    testReadFromURL({part: 'search', queryParam: 'bar'}));
+});
+
+test('Read from URL upgrade', async () => {
+  const loc = {part: 'hash'};
+
+  // Fail validation
+  const atomA = atom<string>({
+    key: 'recoil-url-sync fail validation',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      // No matching sync effect
+      syncEffect({restore: validateString}),
+    ],
+  });
+
+  // Upgrade from number
+  const atomB = atom<string>({
+    key: 'recoil-url-sync upgrade number',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      // This sync effect is ignored
+      syncEffect<string>({restore: upgrade(validateString, () => 'IGNORE')}),
+      syncEffect<string>({restore: upgrade(validateNumber, num => `${num}`)}),
+      // This sync effect is ignored
+      syncEffect<string>({restore: upgrade(validateString, () => 'IGNORE')}),
+    ],
+  });
+
+  // Upgrade from string
+  const atomC = atom<number>({
+    key: 'recoil-url-sync upgrade string',
+    default: 0,
+    effects_UNSTABLE: [
+      // This sync effect is ignored
+      syncEffect<number>({restore: upgrade(validateNumber, () => 999)}),
+      syncEffect<number>({
+        restore: upgrade(validateString, str => Number(str)),
+      }),
+      // This sync effect is ignored
+      syncEffect<number>({restore: upgrade(validateNumber, () => 999)}),
+    ],
+  });
+
+  history.replaceState(
+    null,
+    '',
+    encodeURL(loc, {
+      'recoil-url-sync fail validation': 123,
+      'recoil-url-sync upgrade number': 123,
+      'recoil-url-sync upgrade string': '123',
+    }),
+  );
+
+  const container = renderElements(
+    <>
+      <TestURLSync location={loc} />
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+      <ReadsAtom atom={atomC} />
+    </>,
+  );
+
+  expect(container.textContent).toBe('"DEFAULT""123"123');
 });
