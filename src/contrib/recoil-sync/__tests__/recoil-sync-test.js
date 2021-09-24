@@ -11,7 +11,7 @@
 // TODO PUBLIC LOADABLE INTERFACE
 
 import type {Loadable} from '../../../adt/Recoil_Loadable';
-import type {ItemDiff, ItemKey, ListenInterface} from '../recoil-sync';
+import type {ItemDiff, ItemSnapshot, ListenInterface} from '../recoil-sync';
 
 const {act} = require('ReactTestUtils');
 
@@ -459,13 +459,10 @@ test('Listen to storage', async () => {
   let update1: ItemDiff => void = () => {
     throw new Error('Failed to register 1');
   };
-  let getItemKeys1: () => Set<ItemKey> = _ => {
+  let updateAll1: ItemSnapshot => void = _ => {
     throw new Error('Failed to register 1');
   };
   let update2: ItemDiff => void = () => {
-    throw new Error('Failed to register 2');
-  };
-  let getItemKeys2: () => Set<ItemKey> = _ => {
     throw new Error('Failed to register 2');
   };
   const container = renderElements(
@@ -475,7 +472,7 @@ test('Listen to storage', async () => {
         storage={storage1}
         regListen={listenInterface => {
           update1 = listenInterface.updateItems;
-          getItemKeys1 = listenInterface.getItemKeys;
+          updateAll1 = listenInterface.updateAllItems;
         }}
       />
       <TestRecoilSync
@@ -483,7 +480,6 @@ test('Listen to storage', async () => {
         storage={storage2}
         regListen={listenInterface => {
           update2 = listenInterface.updateItems;
-          getItemKeys2 = listenInterface.getItemKeys;
         }}
       />
       <ReadsAtom atom={atomA} />
@@ -494,19 +490,6 @@ test('Listen to storage', async () => {
 
   expect(container.textContent).toBe('"A""B""C2"');
   expect(storage1.size).toBe(3);
-  expect(getItemKeys1().size).toBe(4);
-  expect(getItemKeys1()).toEqual(
-    new Set([
-      'recoil-sync listen',
-      'KEY A',
-      'KEY B',
-      'recoil-sync listen to multiple storage',
-    ]),
-  );
-  expect(getItemKeys2().size).toBe(1);
-  expect(getItemKeys2()).toEqual(
-    new Set(['recoil-sync listen to multiple storage']),
-  );
 
   // Subscribe to new value
   act(() =>
@@ -596,6 +579,13 @@ test('Listen to storage', async () => {
   expect(container.textContent).toBe('"DEFAULT""BBB""DEFAULT"');
   // expect(storage1.get('recoil-sync listen')?.errorOrThrow()).toBe(ERROR);
 
+  // Update All Items
+  // Set A while resetting B
+  act(() =>
+    updateAll1(new Map([['recoil-sync listen', loadableWithValue('AAA')]])),
+  );
+  expect(container.textContent).toBe('"AAA""DEFAULT""DEFAULT"');
+
   // TODO Async Atom support
   // act(() =>
   //   update1(
@@ -608,7 +598,7 @@ test('Listen to storage', async () => {
   //   ),
   // );
   // await flushPromisesAndTimers();
-  // expect(container.textContent).toBe('"ASYNC""BBB""CCC1"');
+  // expect(container.textContent).toBe('"ASYNC""DEFAULT""DEFAULT"');
 
   // act(() =>
   //   update1(
