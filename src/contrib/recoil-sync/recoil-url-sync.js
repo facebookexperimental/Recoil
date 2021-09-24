@@ -10,9 +10,14 @@
  */
 'use strict';
 
+// TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
+// TODO PUBLIC LOADABLE INTERFACE
+
+import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {AtomEffect} from '../../recoil_values/Recoil_atom';
 import type {ItemKey, SyncEffectOptions, SyncKey} from './recoil-sync';
 
+const {loadableWithValue} = require('../../adt/Recoil_Loadable');
 const {syncEffect, useRecoilSync} = require('./recoil-sync');
 const React = require('react');
 
@@ -22,6 +27,24 @@ type AtomRegistration = {
 };
 
 const registries: Map<SyncKey, Map<NodeKey, AtomRegistration>> = new Map();
+
+function parseURL(loc: LocationOption): ?string {
+  switch (loc.part) {
+    case 'href':
+      return `${location.pathname}${location.search}${location.hash}`;
+    case 'hash':
+      return location.hash ? location.hash.substr(1) : null;
+    case 'search': {
+      const {queryParam} = loc;
+      return queryParam != null
+        ? new URLSearchParams(location.search).get(queryParam)
+        : location.search
+        ? location.search.substr(1)
+        : null;
+    }
+  }
+  throw new Error(`Unknown URL location part: "${loc.part}"`);
+}
 
 function updateURL(loc: LocationOption, serialization): string {
   switch (loc.part) {
@@ -54,14 +77,26 @@ type RecoilURLSyncOptions = {
   syncKey?: SyncKey,
   location: LocationOption,
   serialize: ItemState => string,
+  deserialize: string => ItemState,
 };
 
 function useRecoilURLSync({
   syncKey,
   location,
   serialize,
+  deserialize,
 }: RecoilURLSyncOptions): void {
-  function read() {}
+  function read(itemKey): ?Loadable<mixed> {
+    const stateStr = parseURL(location);
+    if (stateStr == null) {
+      return null;
+    }
+    const state = deserialize(stateStr);
+    if (!state.has(itemKey)) {
+      return null;
+    }
+    return loadableWithValue(state.get(itemKey));
+  }
 
   function write({items}) {
     // Only serialize atoms in a non-default value state.
