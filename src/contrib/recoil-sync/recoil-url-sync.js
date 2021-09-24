@@ -33,14 +33,16 @@ function parseURL(loc: LocationOption): ?string {
     case 'href':
       return `${location.pathname}${location.search}${location.hash}`;
     case 'hash':
-      return location.hash ? location.hash.substr(1) : null;
+      return location.hash ? decodeURIComponent(location.hash.substr(1)) : null;
     case 'search': {
       const {queryParam} = loc;
-      return queryParam != null
-        ? new URLSearchParams(location.search).get(queryParam)
-        : location.search
-        ? location.search.substr(1)
-        : null;
+      if (queryParam == null) {
+        return location.search
+          ? decodeURIComponent(location.search.substr(1))
+          : null;
+      }
+      const param = new URLSearchParams(location.search).get(queryParam);
+      return param != null ? decodeURIComponent(param) : null;
     }
   }
   throw new Error(`Unknown URL location part: "${loc.part}"`);
@@ -51,14 +53,14 @@ function updateURL(loc: LocationOption, serialization): string {
     case 'href':
       return serialization;
     case 'hash':
-      return `#${serialization}`;
+      return `#${encodeURIComponent(serialization)}`;
     case 'search': {
       const {queryParam} = loc;
       if (queryParam == null) {
-        return `?${serialization}${location.hash}`;
+        return `?${encodeURIComponent(serialization)}${location.hash}`;
       }
       const searchParams = new URLSearchParams(location.search);
-      searchParams.set(queryParam, serialization);
+      searchParams.set(queryParam, encodeURIComponent(serialization));
       return `?${searchParams.toString()}${location.hash}`;
     }
   }
