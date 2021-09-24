@@ -199,12 +199,7 @@ function useRecoilSync({
 ///////////////////////
 // syncEffect()
 ///////////////////////
-function syncEffect<T>({
-  syncKey,
-  key,
-  restore,
-  syncDefault,
-}: {
+export type SyncEffectOptions<T> = {
   syncKey?: SyncKey,
   key?: ItemKey,
 
@@ -215,7 +210,14 @@ function syncEffect<T>({
 
   // Sync default value instead of empty when atom is indefault state
   syncDefault?: boolean,
-}): AtomEffect<T> {
+};
+
+function syncEffect<T>({
+  syncKey,
+  key,
+  restore,
+  syncDefault,
+}: SyncEffectOptions<T>): AtomEffect<T> {
   return ({node, setSelf, getLoadable, getInfo_UNSTABLE}) => {
     const itemKey = key ?? node.key;
 
