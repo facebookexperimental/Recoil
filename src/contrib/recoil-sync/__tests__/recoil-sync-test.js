@@ -510,6 +510,11 @@ test('Listen to storage', async () => {
   expect(storage1.get('KEY A')?.getValue()).toBe('B');
   expect(storage1.get('KEY B')?.getValue()).toBe(undefined);
 
+  // TODO
+  // // Updating older key won't override newer key
+  // act(() => update1(new Map([['KEY A', loadableWithValue('IGNORE')]])));
+  // expect(container.textContent).toBe('"AA""BBB""C2"');
+
   // Subscribe to new value from different storage
   act(() =>
     update1(
@@ -586,6 +591,31 @@ test('Listen to storage', async () => {
   );
   expect(container.textContent).toBe('"AAA""DEFAULT""DEFAULT"');
 
+  // Update All Items
+  // Setting older Key while newer Key is blank will take value instead of default
+  act(() =>
+    updateAll1(
+      new Map([
+        ['recoil-sync listen', loadableWithValue('AAA')],
+        ['KEY A', loadableWithValue('BBB')],
+      ]),
+    ),
+  );
+  expect(container.textContent).toBe('"AAA""BBB""DEFAULT"');
+
+  // Update All Items
+  // Setting an older and newer key will take the newer key value
+  act(() =>
+    updateAll1(
+      new Map([
+        ['recoil-sync listen', loadableWithValue('AAA')],
+        ['KEY A', loadableWithValue('IGNORE')],
+        ['KEY B', loadableWithValue('BBBB')],
+      ]),
+    ),
+  );
+  expect(container.textContent).toBe('"AAA""BBBB""DEFAULT"');
+
   // TODO Async Atom support
   // act(() =>
   //   update1(
@@ -598,7 +628,7 @@ test('Listen to storage', async () => {
   //   ),
   // );
   // await flushPromisesAndTimers();
-  // expect(container.textContent).toBe('"ASYNC""DEFAULT""DEFAULT"');
+  // expect(container.textContent).toBe('"ASYNC""BBBB""DEFAULT"');
 
   // act(() =>
   //   update1(
