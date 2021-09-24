@@ -34,7 +34,7 @@ export type ReadItem = ItemKey => ?Loadable<mixed>;
 export type WriteItems = ({diff: ItemDiff, items: ItemSnapshot}) => void;
 export type ListenInterface = {
   updateItems: ItemDiff => void,
-  getItemKeys: () => Set<ItemKey>,
+  updateAllItems: ItemSnapshot => void,
 };
 export type ListenToItems = ListenInterface => void | (() => void);
 export type Restore<T> = mixed => ?Loadable<T>;
@@ -192,19 +192,25 @@ function useRecoilSync({
     },
     [syncKey],
   );
-  const getItemKeys = useCallback(() => {
-    const atomRegistry = registries.getAtomRegistry(syncKey);
-    const itemKeys = new Set();
-    for (const [, registration] of atomRegistry) {
-      for (const [itemKey] of registration.itemKeys) {
-        itemKeys.add(itemKey);
+  const updateAllItems = useCallback(
+    itemSnapshot => {
+      // Reset the value of any items that are registered and not included in
+      // the user-provided snapshot.
+      const atomRegistry = registries.getAtomRegistry(syncKey);
+      for (const [, registration] of atomRegistry) {
+        for (const [itemKey] of registration.itemKeys) {
+          if (!itemSnapshot.has(itemKey)) {
+            itemSnapshot.set(itemKey);
+          }
+        }
       }
-    }
-    return itemKeys;
-  }, [syncKey]);
-  useEffect(() => listen?.({updateItems, getItemKeys}), [
+      updateItems(itemSnapshot);
+    },
+    [syncKey, updateItems],
+  );
+  useEffect(() => listen?.({updateItems, updateAllItems}), [
     updateItems,
-    getItemKeys,
+    updateAllItems,
     listen,
   ]);
 
