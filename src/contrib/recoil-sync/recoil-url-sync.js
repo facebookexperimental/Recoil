@@ -86,10 +86,10 @@ function useRecoilURLSync({
   serialize,
   deserialize,
 }: RecoilURLSyncOptions): void {
-  function write({items}) {
+  function write({allItems}) {
     // Only serialize atoms in a non-default value state.
     const state = new Map(
-      Array.from(items.entries())
+      Array.from(allItems.entries())
         .filter(([, loadable]) => loadable?.state === 'hasValue')
         .map(([key, loadable]) => [key, loadable?.contents]),
     );
@@ -108,7 +108,7 @@ function useRecoilURLSync({
     }
   }
 
-  function listen({updateAllItems}) {
+  function listen({updateAllKnownItems}) {
     function handleUpdate() {
       const stateStr = parseURL(location);
       if (stateStr != null) {
@@ -119,7 +119,7 @@ function useRecoilURLSync({
             loadableWithValue(v),
           ]),
         );
-        updateAllItems(mappedState);
+        updateAllKnownItems(mappedState);
       }
     }
     window.addEventListener('popstate', handleUpdate);
