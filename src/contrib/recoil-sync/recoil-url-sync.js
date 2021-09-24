@@ -86,18 +86,6 @@ function useRecoilURLSync({
   serialize,
   deserialize,
 }: RecoilURLSyncOptions): void {
-  function read(itemKey): ?Loadable<mixed> {
-    const stateStr = parseURL(location);
-    if (stateStr == null) {
-      return null;
-    }
-    const state = deserialize(stateStr);
-    if (!state.has(itemKey)) {
-      return null;
-    }
-    return loadableWithValue(state.get(itemKey));
-  }
-
   function write({items}) {
     // Only serialize atoms in a non-default value state.
     const state = new Map(
@@ -111,7 +99,32 @@ function useRecoilURLSync({
     history.replaceState(null, '', newURL);
   }
 
-  function listen() {}
+  function read(itemKey): ?Loadable<mixed> {
+    const stateStr = parseURL(location);
+    if (stateStr != null) {
+      // TODO cache deserialization
+      const state = deserialize(stateStr);
+      return state.has(itemKey) ? loadableWithValue(state.get(itemKey)) : null;
+    }
+  }
+
+  function listen({updateAllItems}) {
+    function handleUpdate() {
+      const stateStr = parseURL(location);
+      if (stateStr != null) {
+        const state = deserialize(stateStr);
+        const mappedState = new Map(
+          Array.from(state.entries()).map(([k, v]) => [
+            k,
+            loadableWithValue(v),
+          ]),
+        );
+        updateAllItems(mappedState);
+      }
+    }
+    window.addEventListener('popstate', handleUpdate);
+    return () => window.removeEventListener('popstate', handleUpdate);
+  }
 
   useRecoilSync({syncKey, read, write, listen});
 }
