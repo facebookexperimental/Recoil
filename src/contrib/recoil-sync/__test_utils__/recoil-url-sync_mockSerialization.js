@@ -20,6 +20,7 @@ const React = require('react');
 // ////////////////////////////
 // // Mock Serialization
 // ////////////////////////////
+
 // Object.fromEntries() is not available in GitHub's version of Node.js (9/21/2021)
 const mapToObj = map => {
   const obj = {};
@@ -28,6 +29,7 @@ const mapToObj = map => {
   }
   return obj;
 };
+
 function TestURLSync({
   syncKey,
   location,
@@ -38,12 +40,15 @@ function TestURLSync({
   useRecoilURLSync({
     syncKey,
     location,
-    serialize: items =>
-      `${location.part === 'href' ? '/TEST#' : ''}${encodeURI(
-        JSON.stringify(mapToObj(items)),
-      )}`,
+    serialize: items => {
+      const str = JSON.stringify(mapToObj(items));
+      return location.part === 'href'
+        ? `/TEST#${encodeURIComponent(str)}`
+        : str;
+    },
     deserialize: str => {
-      const stateStr = location.part === 'href' ? str.split('#')[1] : str;
+      const stateStr =
+        location.part === 'href' ? decodeURIComponent(str.split('#')[1]) : str;
       // Skip the default URL parts which don't conform to the serialized standard
       if (
         stateStr == null ||
@@ -54,10 +59,15 @@ function TestURLSync({
         return new Map();
       }
       try {
-        return new Map(Object.entries(JSON.parse(decodeURI(stateStr))));
+        return new Map(Object.entries(JSON.parse(stateStr)));
       } catch (e) {
         // eslint-disable-next-line fb-www/no-console
-        console.error('Error parsing: ', location, decodeURI(stateStr));
+        console.error(
+          'Error parsing: ',
+          location,
+          stateStr,
+          decodeURI(stateStr),
+        );
         throw e;
       }
     },
@@ -66,7 +76,7 @@ function TestURLSync({
 }
 
 function encodeState(obj) {
-  return `${encodeURI(JSON.stringify(obj))}`;
+  return `${encodeURIComponent(JSON.stringify(obj))}`;
 }
 
 function encodeURLPart(href: string, loc: LocationOption, obj): string {
