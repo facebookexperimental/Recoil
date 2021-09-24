@@ -20,6 +20,7 @@ const atom = require('../../../recoil_values/Recoil_atom');
 const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
+  flushPromisesAndTimers,
   renderElements,
 } = require('../../../testing/Recoil_TestingUtils');
 const {syncEffect} = require('../recoil-sync');
@@ -80,7 +81,12 @@ function TestURLSync({
       ) {
         return new Map();
       }
-      return new Map(Object.entries(JSON.parse(decodeURI(stateStr))));
+      try {
+        return new Map(Object.entries(JSON.parse(decodeURI(stateStr))));
+      } catch (e) {
+        console.error('Error parsing: ', location, decodeURI(stateStr));
+        throw e;
+      }
     },
   });
   return null;
@@ -90,9 +96,9 @@ function encodeState(obj) {
   return `${encodeURI(JSON.stringify(obj))}`;
 }
 
-function encodeURL(loc: LocationOption, obj) {
+function encodeURLPart(href: string, loc: LocationOption, obj): string {
   const encoded = encodeState(obj);
-  const url = new URL(window.location);
+  const url = new URL(href);
   switch (loc.part) {
     case 'href':
       url.pathname = '/TEST';
@@ -116,8 +122,23 @@ function encodeURL(loc: LocationOption, obj) {
   return url.href;
 }
 
-function expectURL(loc, obj) {
-  expect(window.location.href).toBe(encodeURL(loc, obj));
+function encodeURL(parts: Array<[LocationOption, {...}]>) {
+  let href = window.location.href;
+  for (const [loc, obj] of parts) {
+    href = encodeURLPart(href, loc, obj);
+  }
+  return href;
+}
+
+function expectURL(parts: Array<[LocationOption, {...}]>) {
+  expect(window.location.href).toBe(encodeURL(parts));
+}
+
+async function gotoURL(parts: Array<[LocationOption, {...}]>) {
+  history.pushState(null, '', encodeURL(parts));
+  history.pushState(null, '', '/POPSTATE');
+  history.back();
+  await flushPromisesAndTimers();
 }
 
 ///////////////////////
@@ -156,35 +177,31 @@ describe('Test URL Persistence', () => {
       </>,
     );
 
-    expectURL(loc, {});
     expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');
 
     act(() => setA('A'));
     act(() => setB('B'));
     act(() => setIgnore('IGNORE'));
     expect(container.textContent).toBe('"A""B""IGNORE"');
-    expectURL(loc, {a: 'A', b: 'B'});
+    expectURL([[loc, {a: 'A', b: 'B'}]]);
 
     act(() => resetA());
     act(() => setB('BB'));
     expect(container.textContent).toBe('"DEFAULT""BB""IGNORE"');
-    expectURL(loc, {b: 'BB'});
+    expectURL([[loc, {b: 'BB'}]]);
 
     remainder();
   }
 
-  test('Write to URL', () =>
-    testWriteToURL({part: 'href'}, () => {
-      expect(location.search).toBe('');
-      expect(location.pathname).toBe('/TEST');
-    }));
+  // TODO Re-enable test when supporting multiple <RecoilRoot>'s
+  // test('Write to URL', () =>
+  //   testWriteToURL({part: 'href'}, () => {
+  //     expect(location.search).toBe('');
+  //     expect(location.pathname).toBe('/TEST');
+  //   }));
   test('Write to URL - Anchor Hash', () =>
     testWriteToURL({part: 'hash'}, () => {
       expect(location.search).toBe('?foo=bar');
-    }));
-  test('Write to URL - Query Search', () =>
-    testWriteToURL({part: 'search'}, () => {
-      expect(location.hash).toBe('#anchor');
     }));
   test('Write to URL - Query Search Param', () =>
     testWriteToURL({part: 'search', queryParam: 'bar'}, () => {
@@ -193,6 +210,8 @@ describe('Test URL Persistence', () => {
     }));
 
   test('Write to multiple params', async () => {
+    const locA = {part: 'search', queryParam: 'paramA'};
+    const locB = {part: 'search', queryParam: 'paramB'};
     const atomA = atom({
       key: 'recoil-url-sync multiple param A',
       default: 'DEFAULT',
@@ -212,14 +231,8 @@ describe('Test URL Persistence', () => {
     const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
     renderElements(
       <>
-        <TestURLSync
-          syncKey="A"
-          location={{part: 'search', queryParam: 'foo'}}
-        />
-        <TestURLSync
-          syncKey="B"
-          location={{part: 'search', queryParam: 'bar'}}
-        />
+        <TestURLSync syncKey="A" location={locA} />
+        <TestURLSync syncKey="B" location={locB} />
         <AtomA />
         <AtomB />
       </>,
@@ -227,10 +240,10 @@ describe('Test URL Persistence', () => {
 
     act(() => setA('A'));
     act(() => setB('B'));
-    const url = new URL(location.href);
-    url.searchParams.set('foo', encodeState({x: 'A'}));
-    url.searchParams.set('bar', encodeState({x: 'B'}));
-    expect(location.href).toBe(url.href);
+    expectURL([
+      [locA, {x: 'A'}],
+      [locB, {x: 'B'}],
+    ]);
   });
 
   function testReadFromURL(loc) {
@@ -253,10 +266,15 @@ describe('Test URL Persistence', () => {
     history.replaceState(
       null,
       '',
-      encodeURL(loc, {
-        a: 'A',
-        b: 'B',
-      }),
+      encodeURL([
+        [
+          loc,
+          {
+            a: 'A',
+            b: 'B',
+          },
+        ],
+      ]),
     );
 
     const container = renderElements(
@@ -270,13 +288,14 @@ describe('Test URL Persistence', () => {
 
     expect(container.textContent).toBe('"A""B""DEFAULT"');
   }
-  test('Read from URL', () => testReadFromURL({part: 'href'}));
+
+  // TODO Re-enable test when supporting multiple <RecoilRoot>'s
+  // test('Read from URL', () => testReadFromURL({part: 'href'}));
   test('Read from URL - Anchor Hash', () => testReadFromURL({part: 'hash'}));
-  test('Read from URL - Search Query', () => testReadFromURL({part: 'search'}));
   test('Read from URL - Search Query Param', () =>
-    testReadFromURL({part: 'search', queryParam: 'foo'}));
+    testReadFromURL({part: 'search', queryParam: 'param'}));
   test('Read from URL - Search Query Param with other param', () =>
-    testReadFromURL({part: 'search', queryParam: 'bar'}));
+    testReadFromURL({part: 'search', queryParam: 'other'}));
 
   test('Read from URL upgrade', async () => {
     const loc = {part: 'hash'};
@@ -322,11 +341,16 @@ describe('Test URL Persistence', () => {
     history.replaceState(
       null,
       '',
-      encodeURL(loc, {
-        'recoil-url-sync fail validation': 123,
-        'recoil-url-sync upgrade number': 123,
-        'recoil-url-sync upgrade string': '123',
-      }),
+      encodeURL([
+        [
+          loc,
+          {
+            'recoil-url-sync fail validation': 123,
+            'recoil-url-sync upgrade number': 123,
+            'recoil-url-sync upgrade string': '123',
+          },
+        ],
+      ]),
     );
 
     const container = renderElements(
@@ -342,8 +366,8 @@ describe('Test URL Persistence', () => {
   });
 
   test('Read/Write from URL with upgrade', async () => {
-    const loc1 = {part: 'search', queryParam: 'foo'};
-    const loc2 = {part: 'search', queryParam: 'bar'};
+    const loc1 = {part: 'search', queryParam: 'param1'};
+    const loc2 = {part: 'search', queryParam: 'param2'};
 
     const atomA = atom<string>({
       key: 'recoil-url-sync read/write upgrade type',
@@ -373,13 +397,22 @@ describe('Test URL Persistence', () => {
     history.replaceState(
       null,
       '',
-      `/test?foo=${encodeState({
-        'recoil-url-sync read/write upgrade type': 123,
-        'OLD KEY': 'OLD',
-        'recoil-url-sync read/write upgrade storage': 'STR1',
-      })}&bar=${encodeState({
-        'recoil-url-sync read/write upgrade storage': 'STR2',
-      })}`,
+      encodeURL([
+        [
+          loc1,
+          {
+            'recoil-url-sync read/write upgrade type': 123,
+            'OLD KEY': 'OLD',
+            'recoil-url-sync read/write upgrade storage': 'STR1',
+          },
+        ],
+        [
+          loc2,
+          {
+            'recoil-url-sync read/write upgrade storage': 'STR2',
+          },
+        ],
+      ]),
     );
 
     const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
@@ -401,30 +434,271 @@ describe('Test URL Persistence', () => {
     act(() => setB('B'));
     act(() => setC('C'));
     expect(container.textContent).toBe('"A""B""C"');
-    expect(location.search).toEqual(
-      `?foo=${encodeURIComponent(
-        encodeState({
+    expectURL([
+      [
+        loc1,
+        {
           'recoil-url-sync read/write upgrade type': 'A',
           'OLD KEY': 'B',
           'NEW KEY': 'B',
           'recoil-url-sync read/write upgrade storage': 'C',
-        }),
-      )}&bar=${encodeURIComponent(
-        encodeState({
+        },
+      ],
+      [
+        loc2,
+        {
           'recoil-url-sync read/write upgrade storage': 'C',
-        }),
-      )}`,
-    );
+        },
+      ],
+    ]);
 
     act(() => resetA());
     act(() => resetB());
     act(() => resetC());
     expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');
-    expect(location.search).toEqual(
-      `?foo=${encodeURIComponent(encodeState({}))}&bar=${encodeURIComponent(
-        encodeState({}),
-      )}`,
+    expectURL([
+      [loc1, {}],
+      [loc2, {}],
+    ]);
+  });
+
+  test('Listen to URL changes', async () => {
+    const locFoo = {part: 'search', queryParam: 'foo'};
+    const locBar = {part: 'search', queryParam: 'bar'};
+
+    const atomA = atom({
+      key: 'recoil-url-sync listen',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [syncEffect({syncKey: 'foo', restore: validateAny})],
+    });
+    const atomB = atom({
+      key: 'recoil-url-sync listen to multiple keys',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        syncEffect({syncKey: 'foo', key: 'KEY A', restore: validateAny}),
+        syncEffect({syncKey: 'foo', key: 'KEY B', restore: validateAny}),
+      ],
+    });
+    const atomC = atom({
+      key: 'recoil-url-sync listen to multiple storage',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        syncEffect({syncKey: 'foo', restore: validateAny}),
+        syncEffect({syncKey: 'bar', restore: validateAny}),
+      ],
+    });
+
+    history.replaceState(
+      null,
+      '',
+      encodeURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen': 'A',
+            'KEY A': 'B',
+            'recoil-url-sync listen to multiple storage': 'C',
+          },
+        ],
+      ]),
     );
+
+    const container = renderElements(
+      <>
+        <TestURLSync syncKey="foo" location={locFoo} />
+        <TestURLSync syncKey="bar" location={locBar} />
+        <ReadsAtom atom={atomA} />
+        <ReadsAtom atom={atomB} />
+        <ReadsAtom atom={atomC} />
+      </>,
+    );
+
+    // Initial load will use the fallback storage for C
+    expect(container.textContent).toBe('"A""B""C"');
+    expectURL([
+      [
+        locFoo,
+        {
+          'recoil-url-sync listen': 'A',
+          'KEY A': 'B',
+          'recoil-url-sync listen to multiple storage': 'C',
+        },
+      ],
+    ]);
+
+    // Subscribe to new value
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen': 'AA',
+            'KEY A': 'B',
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+      ]),
+    );
+    expect(container.textContent).toBe('"AA""B""C1"');
+    // Changing value of C caused it to sync with locBar
+    expectURL([
+      [
+        locFoo,
+        {
+          'recoil-url-sync listen': 'AA',
+          'KEY A': 'B',
+          'recoil-url-sync listen to multiple storage': 'C1',
+        },
+      ],
+      [
+        locBar,
+        {
+          'recoil-url-sync listen to multiple storage': 'C1',
+        },
+      ],
+    ]);
+
+    // Subscribe to new value from different key
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen': 'AA',
+            'KEY A': 'BB',
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+      ]),
+    );
+    expectURL([
+      [
+        locFoo,
+        {
+          'recoil-url-sync listen': 'AA',
+          'KEY A': 'BB',
+          'recoil-url-sync listen to multiple storage': 'C1',
+        },
+      ],
+      [
+        locBar,
+        {
+          'recoil-url-sync listen to multiple storage': 'C1',
+        },
+      ],
+    ]);
+    expect(container.textContent).toBe('"AA""BB""C1"');
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen': 'AA',
+            'KEY A': 'BB',
+            'KEY B': 'BBB',
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+      ]),
+    );
+    expect(container.textContent).toBe('"AA""BBB""C1"');
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen': 'AA',
+            'KEY A': 'IGNORE',
+            'KEY B': 'BBB',
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+      ]),
+    );
+    expect(container.textContent).toBe('"AA""BBB""C1"');
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen': 'AA',
+            'KEY A': 'BBBB',
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+      ]),
+    );
+    expect(container.textContent).toBe('"AA""BBBB""C1"');
+
+    // Subscribe to reset
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+      ]),
+    );
+    expect(container.textContent).toBe('"DEFAULT""DEFAULT""C1"');
+
+    // Subscribe to new value from different storage
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen': 'AA',
+            'KEY A': 'B',
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+        [locBar, {}],
+      ]),
+    );
+    expect(container.textContent).toBe('"AA""B""DEFAULT"');
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+        [
+          locBar,
+          {
+            'recoil-url-sync listen to multiple storage': 'CC2',
+          },
+        ],
+      ]),
+    );
+    expect(container.textContent).toBe('"DEFAULT""DEFAULT""CC2"');
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen to multiple storage': 'C1',
+          },
+        ],
+        [locBar, {}],
+      ]),
+    );
+    expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');
+    act(() =>
+      gotoURL([
+        [
+          locFoo,
+          {
+            'recoil-url-sync listen to multiple storage': 'CC1',
+          },
+        ],
+        [locBar, {}],
+      ]),
+    );
+    expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');
   });
 
   test('Persist default on read', async () => {
@@ -453,10 +727,16 @@ describe('Test URL Persistence', () => {
       </>,
     );
 
+    await flushPromisesAndTimers();
     expect(container.textContent).toBe('"DEFAULT""INIT_AFTER"');
-    expectURL(loc, {
-      'recoil-url-sync persist on read default': 'DEFAULT',
-      'recoil-url-sync persist on read init': 'INIT_AFTER',
-    });
+    expectURL([
+      [
+        loc,
+        {
+          'recoil-url-sync persist on read default': 'DEFAULT',
+          'recoil-url-sync persist on read init': 'INIT_AFTER',
+        },
+      ],
+    ]);
   });
 });
