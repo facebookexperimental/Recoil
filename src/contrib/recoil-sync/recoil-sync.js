@@ -28,10 +28,11 @@ type NodeKey = string;
 export type ItemKey = string;
 export type SyncKey = string | void;
 
-export type AtomDiff = Map<ItemKey, ?Loadable<mixed>>;
+export type ItemDiff = Map<ItemKey, ?Loadable<mixed>>;
+export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>;
 export type ReadItem = ItemKey => ?Loadable<mixed>;
-export type WriteItems = ({diff: AtomDiff}) => void;
-export type UpdateItems = AtomDiff => void;
+export type WriteItems = ({diff: ItemDiff, items: ItemSnapshot}) => void;
+export type UpdateItems = ItemDiff => void;
 export type Restore<T> = mixed => ?Loadable<T>;
 
 const DEFAULT_VALUE = new DefaultValue();
@@ -77,6 +78,21 @@ const validateLoadable = <T>(
 ): Loadable<T | DefaultValue> =>
   loadable.map<mixed, T | DefaultValue>(x => restore(x) ?? new DefaultValue());
 
+const itemsFromSnapshot = (syncKey, getInfo): ItemSnapshot => {
+  const items: ItemSnapshot = new Map();
+  for (const [, {atom, itemKeys}] of registries.getAtomRegistry(syncKey)) {
+    // TODO syncEffect()'s write()
+    for (const [itemKey, {syncDefault}] of itemKeys) {
+      const atomInfo = getInfo(atom);
+      items.set(
+        itemKey,
+        atomInfo.isSet || syncDefault === true ? atomInfo.loadable : null,
+      );
+    }
+  }
+  return items;
+};
+
 ///////////////////////
 // useRecoilSync()
 ///////////////////////
@@ -95,7 +111,7 @@ function useRecoilSync({
   const snapshot = useRecoilSnapshot();
   useEffect(() => {
     if (write != null) {
-      const diff: AtomDiff = new Map();
+      const diff: ItemDiff = new Map();
       const atomRegistry = registries.getAtomRegistry(syncKey);
       const modifiedAtoms = snapshot.getNodes_UNSTABLE({isModified: true});
       for (const atom of modifiedAtoms) {
@@ -126,13 +142,16 @@ function useRecoilSync({
           delete registration.pendingUpdate;
         }
       }
-      write({diff});
+      write({
+        diff,
+        items: itemsFromSnapshot(syncKey, snapshot.getInfo_UNSTABLE),
+      });
     }
   }, [snapshot, syncKey, write]);
 
   // Subscribe to Sync storage changes
   const handleListen = useRecoilTransaction(
-    ({set, reset}) => (diff: AtomDiff) => {
+    ({set, reset}) => (diff: ItemDiff) => {
       const atomRegistry = registries.getAtomRegistry(syncKey);
       for (const [key, loadable] of diff) {
         for (const [, registration] of atomRegistry) {
@@ -192,12 +211,12 @@ function syncEffect<T>({
   restore: mixed => ?Loadable<T>,
 
   read?: ({read: ReadItem}) => mixed,
-  write?: (Loadable<T>, {read: ReadItem}) => AtomDiff,
+  write?: (Loadable<T>, {read: ReadItem}) => ItemDiff,
 
   // Sync default value instead of empty when atom is indefault state
   syncDefault?: boolean,
 }): AtomEffect<T> {
-  return ({node, setSelf, getLoadable}) => {
+  return ({node, setSelf, getLoadable, getInfo_UNSTABLE}) => {
     const itemKey = key ?? node.key;
 
     // Register Atom
@@ -245,7 +264,10 @@ function syncEffect<T>({
         const loadable = getLoadable(node);
         if (loadable.state === 'hasValue') {
           // TODO Atom syncEffect() Write
-          writeToStorage({diff: new Map([[itemKey, loadable]])});
+          writeToStorage({
+            diff: new Map([[itemKey, loadable]]),
+            items: itemsFromSnapshot(syncKey, getInfo_UNSTABLE),
+          });
         }
       }, 0);
     }
