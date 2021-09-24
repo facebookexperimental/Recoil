@@ -22,7 +22,7 @@ const {
   useRecoilSnapshot,
   useRecoilTransaction,
 } = require('../../hooks/Recoil_Hooks');
-const {useEffect} = require('react');
+const {useCallback, useEffect} = require('react');
 
 type NodeKey = string;
 export type ItemKey = string;
@@ -32,7 +32,11 @@ export type ItemDiff = Map<ItemKey, ?Loadable<mixed>>; // null means reset
 export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>; // null means default
 export type ReadItem = ItemKey => ?Loadable<mixed>;
 export type WriteItems = ({diff: ItemDiff, items: ItemSnapshot}) => void;
-export type UpdateItems = ItemDiff => void;
+export type ListenInterface = {
+  updateItems: ItemDiff => void,
+  getItemKeys: () => Set<ItemKey>,
+};
+export type ListenToItems = ListenInterface => void | (() => void);
 export type Restore<T> = mixed => ?Loadable<T>;
 
 const DEFAULT_VALUE = new DefaultValue();
@@ -105,7 +109,7 @@ function useRecoilSync({
   syncKey?: SyncKey,
   write?: WriteItems,
   read?: ReadItem,
-  listen?: UpdateItems => void | (() => void),
+  listen?: ListenToItems,
 }): void {
   // Subscribe to Recoil state changes
   const snapshot = useRecoilSnapshot();
@@ -150,12 +154,12 @@ function useRecoilSync({
   }, [snapshot, syncKey, write]);
 
   // Subscribe to Sync storage changes
-  const handleListen = useRecoilTransaction(
+  const updateItems = useRecoilTransaction(
     ({set, reset}) => (diff: ItemDiff) => {
       const atomRegistry = registries.getAtomRegistry(syncKey);
-      for (const [key, loadable] of diff) {
+      for (const [itemKey, loadable] of diff) {
         for (const [, registration] of atomRegistry) {
-          const cbs = registration.itemKeys.get(key);
+          const cbs = registration.itemKeys.get(itemKey);
           if (cbs != null) {
             if (loadable != null) {
               const validated = validateLoadable(loadable, cbs);
@@ -188,7 +192,21 @@ function useRecoilSync({
     },
     [syncKey],
   );
-  useEffect(() => listen?.(handleListen), [handleListen, listen]);
+  const getItemKeys = useCallback(() => {
+    const atomRegistry = registries.getAtomRegistry(syncKey);
+    const itemKeys = new Set();
+    for (const [, registration] of atomRegistry) {
+      for (const [itemKey] of registration.itemKeys) {
+        itemKeys.add(itemKey);
+      }
+    }
+    return itemKeys;
+  }, [syncKey]);
+  useEffect(() => listen?.({updateItems, getItemKeys}), [
+    updateItems,
+    getItemKeys,
+    listen,
+  ]);
 
   // Register Storage
   // Save before effects so that we can initialize atoms for initial render
@@ -275,6 +293,9 @@ function syncEffect<T>({
     }
 
     // TODO Unregister atom
+    return () => {
+      atomRegistry.delete(node.key);
+    };
   };
 }
 
