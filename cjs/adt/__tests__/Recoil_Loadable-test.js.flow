@@ -31,16 +31,15 @@ test('Value Loadable', async () => {
   expect(() => loadable.promiseOrThrow()).toThrow();
 });
 test('Error Loadable', async () => {
-  const error = new Error('ERROR');
-  const loadable = loadableWithError(error);
+  const loadable = loadableWithError(ERROR);
   expect(loadable.state).toBe('hasError');
-  expect(loadable.contents).toBe(error);
-  expect(() => loadable.getValue()).toThrow(error);
-  await expect(loadable.toPromise()).rejects.toBe(error);
+  expect(loadable.contents).toBe(ERROR);
+  expect(() => loadable.getValue()).toThrow(ERROR);
+  await expect(loadable.toPromise()).rejects.toBe(ERROR);
   expect(loadable.valueMaybe()).toBe(undefined);
   expect(() => loadable.valueOrThrow()).toThrow();
-  expect(loadable.errorMaybe()).toBe(error);
-  expect(loadable.errorOrThrow()).toBe(error);
+  expect(loadable.errorMaybe()).toBe(ERROR);
+  expect(loadable.errorOrThrow()).toBe(ERROR);
   expect(loadable.promiseMaybe()).toBe(undefined);
   expect(() => loadable.promiseOrThrow()).toThrow();
 });
