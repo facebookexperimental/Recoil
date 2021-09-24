@@ -277,67 +277,186 @@ describe('Test URL Persistence', () => {
     testReadFromURL({part: 'search', queryParam: 'foo'}));
   test('Read from URL - Search Query Param with other param', () =>
     testReadFromURL({part: 'search', queryParam: 'bar'}));
-});
 
-test('Read from URL upgrade', async () => {
-  const loc = {part: 'hash'};
+  test('Read from URL upgrade', async () => {
+    const loc = {part: 'hash'};
 
-  // Fail validation
-  const atomA = atom<string>({
-    key: 'recoil-url-sync fail validation',
-    default: 'DEFAULT',
-    effects_UNSTABLE: [
-      // No matching sync effect
-      syncEffect({restore: validateString}),
-    ],
-  });
+    // Fail validation
+    const atomA = atom<string>({
+      key: 'recoil-url-sync fail validation',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        // No matching sync effect
+        syncEffect({restore: validateString}),
+      ],
+    });
 
-  // Upgrade from number
-  const atomB = atom<string>({
-    key: 'recoil-url-sync upgrade number',
-    default: 'DEFAULT',
-    effects_UNSTABLE: [
-      // This sync effect is ignored
-      syncEffect<string>({restore: upgrade(validateString, () => 'IGNORE')}),
-      syncEffect<string>({restore: upgrade(validateNumber, num => `${num}`)}),
-      // This sync effect is ignored
-      syncEffect<string>({restore: upgrade(validateString, () => 'IGNORE')}),
-    ],
-  });
+    // Upgrade from number
+    const atomB = atom<string>({
+      key: 'recoil-url-sync upgrade number',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        // This sync effect is ignored
+        syncEffect<string>({restore: upgrade(validateString, () => 'IGNORE')}),
+        syncEffect<string>({restore: upgrade(validateNumber, num => `${num}`)}),
+        // This sync effect is ignored
+        syncEffect<string>({restore: upgrade(validateString, () => 'IGNORE')}),
+      ],
+    });
 
-  // Upgrade from string
-  const atomC = atom<number>({
-    key: 'recoil-url-sync upgrade string',
-    default: 0,
-    effects_UNSTABLE: [
-      // This sync effect is ignored
-      syncEffect<number>({restore: upgrade(validateNumber, () => 999)}),
-      syncEffect<number>({
-        restore: upgrade(validateString, str => Number(str)),
+    // Upgrade from string
+    const atomC = atom<number>({
+      key: 'recoil-url-sync upgrade string',
+      default: 0,
+      effects_UNSTABLE: [
+        // This sync effect is ignored
+        syncEffect<number>({restore: upgrade(validateNumber, () => 999)}),
+        syncEffect<number>({
+          restore: upgrade(validateString, str => Number(str)),
+        }),
+        // This sync effect is ignored
+        syncEffect<number>({restore: upgrade(validateNumber, () => 999)}),
+      ],
+    });
+
+    history.replaceState(
+      null,
+      '',
+      encodeURL(loc, {
+        'recoil-url-sync fail validation': 123,
+        'recoil-url-sync upgrade number': 123,
+        'recoil-url-sync upgrade string': '123',
       }),
-      // This sync effect is ignored
-      syncEffect<number>({restore: upgrade(validateNumber, () => 999)}),
-    ],
+    );
+
+    const container = renderElements(
+      <>
+        <TestURLSync location={loc} />
+        <ReadsAtom atom={atomA} />
+        <ReadsAtom atom={atomB} />
+        <ReadsAtom atom={atomC} />
+      </>,
+    );
+
+    expect(container.textContent).toBe('"DEFAULT""123"123');
   });
 
-  history.replaceState(
-    null,
-    '',
-    encodeURL(loc, {
-      'recoil-url-sync fail validation': 123,
-      'recoil-url-sync upgrade number': 123,
-      'recoil-url-sync upgrade string': '123',
-    }),
-  );
+  test('Read/Write from URL with upgrade', async () => {
+    const loc1 = {part: 'search', queryParam: 'foo'};
+    const loc2 = {part: 'search', queryParam: 'bar'};
 
-  const container = renderElements(
-    <>
-      <TestURLSync location={loc} />
-      <ReadsAtom atom={atomA} />
-      <ReadsAtom atom={atomB} />
-      <ReadsAtom atom={atomC} />
-    </>,
-  );
+    const atomA = atom<string>({
+      key: 'recoil-url-sync read/write upgrade type',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        syncEffect<string>({restore: upgrade(validateNumber, num => `${num}`)}),
+        syncEffect({restore: validateString}),
+      ],
+    });
+    const atomB = atom({
+      key: 'recoil-url-sync read/write upgrade key',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        syncEffect({key: 'OLD KEY', restore: validateAny}),
+        syncEffect({key: 'NEW KEY', restore: validateAny}),
+      ],
+    });
+    const atomC = atom({
+      key: 'recoil-url-sync read/write upgrade storage',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        syncEffect({restore: validateAny}),
+        syncEffect({syncKey: 'SYNC_2', restore: validateAny}),
+      ],
+    });
 
-  expect(container.textContent).toBe('"DEFAULT""123"123');
+    history.replaceState(
+      null,
+      '',
+      `/test?foo=${encodeState({
+        'recoil-url-sync read/write upgrade type': 123,
+        'OLD KEY': 'OLD',
+        'recoil-url-sync read/write upgrade storage': 'STR1',
+      })}&bar=${encodeState({
+        'recoil-url-sync read/write upgrade storage': 'STR2',
+      })}`,
+    );
+
+    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
+    const [AtomC, setC, resetC] = componentThatReadsAndWritesAtom(atomC);
+    const container = renderElements(
+      <>
+        <TestURLSync location={loc1} />
+        <TestURLSync location={loc2} syncKey="SYNC_2" />
+        <AtomA />
+        <AtomB />
+        <AtomC />
+      </>,
+    );
+
+    expect(container.textContent).toBe('"123""OLD""STR2"');
+
+    act(() => setA('A'));
+    act(() => setB('B'));
+    act(() => setC('C'));
+    expect(container.textContent).toBe('"A""B""C"');
+    expect(location.search).toEqual(
+      `?foo=${encodeURIComponent(
+        encodeState({
+          'recoil-url-sync read/write upgrade type': 'A',
+          'OLD KEY': 'B',
+          'NEW KEY': 'B',
+          'recoil-url-sync read/write upgrade storage': 'C',
+        }),
+      )}&bar=${encodeURIComponent(
+        encodeState({
+          'recoil-url-sync read/write upgrade storage': 'C',
+        }),
+      )}`,
+    );
+
+    act(() => resetA());
+    act(() => resetB());
+    act(() => resetC());
+    expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');
+    expect(location.search).toEqual(
+      `?foo=${encodeURIComponent(encodeState({}))}&bar=${encodeURIComponent(
+        encodeState({}),
+      )}`,
+    );
+  });
+
+  test('Persist default on read', async () => {
+    const loc = {part: 'hash'};
+
+    const atomA = atom({
+      key: 'recoil-url-sync persist on read default',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [syncEffect({restore: validateAny, syncDefault: true})],
+    });
+    const atomB = atom({
+      key: 'recoil-url-sync persist on read init',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({setSelf}) => setSelf('INIT_BEFORE'),
+        syncEffect({restore: validateAny, syncDefault: true}),
+        ({setSelf}) => setSelf('INIT_AFTER'),
+      ],
+    });
+
+    const container = renderElements(
+      <>
+        <TestURLSync location={loc} />
+        <ReadsAtom atom={atomA} />
+        <ReadsAtom atom={atomB} />
+      </>,
+    );
+
+    expect(container.textContent).toBe('"DEFAULT""INIT_AFTER"');
+    expectURL(loc, {
+      'recoil-url-sync persist on read default': 'DEFAULT',
+      'recoil-url-sync persist on read init': 'INIT_AFTER',
+    });
+  });
 });
