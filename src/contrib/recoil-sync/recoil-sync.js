@@ -146,10 +146,12 @@ function useRecoilSync({
           delete registration.pendingUpdate;
         }
       }
-      write({
-        diff,
-        items: itemsFromSnapshot(syncKey, snapshot.getInfo_UNSTABLE),
-      });
+      if (diff.size) {
+        write({
+          diff,
+          items: itemsFromSnapshot(syncKey, snapshot.getInfo_UNSTABLE),
+        });
+      }
     }
   }, [snapshot, syncKey, write]);
 
