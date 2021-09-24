@@ -81,6 +81,9 @@ function TestRecoilSync({
   return null;
 }
 
+///////////////////////
+// Tests
+///////////////////////
 test('Write to storage', async () => {
   const atomA = atom({
     key: 'recoil-sync write A',
