@@ -20,6 +20,7 @@ import type {ItemKey, SyncEffectOptions, SyncKey} from './recoil-sync';
 const {loadableWithValue} = require('../../adt/Recoil_Loadable');
 const {syncEffect, useRecoilSync} = require('./recoil-sync');
 const React = require('react');
+const {useCallback, useEffect, useRef} = require('react');
 
 type NodeKey = string;
 type AtomRegistration = {
@@ -88,6 +89,35 @@ function useRecoilURLSync({
   serialize,
   deserialize,
 }: RecoilURLSyncOptions): void {
+  // Parse and cache the current state from the URL
+  const parseCurrentState = useCallback(
+    (loc: LocationOption) => {
+      const stateStr = parseURL(loc);
+      return stateStr != null ? deserialize(stateStr) : null;
+    },
+    [deserialize],
+  );
+  const updateCachedState = useCallback(
+    (loc: LocationOption) => {
+      cachedState.current = parseCurrentState(loc);
+    },
+    [parseCurrentState],
+  );
+  const firstRender = useRef(true); // Avoid executing parseCurrentState() on each render
+  const cachedState = useRef<?ItemState>(
+    firstRender.current ? parseCurrentState(location) : null,
+  );
+  firstRender.current = false;
+  // Update cached URL parsing if properties of location prop change, but not
+  // based on just the object reference itself.
+  // eslint-disable-next-line fb-www/react-hooks-deps
+  useEffect(() => updateCachedState(location), [
+    location.part,
+    // $FlowFixMe[prop-missing] Complications with disjoint unions...
+    location.queryParam,
+    updateCachedState,
+  ]);
+
   function write({allItems}) {
     // Only serialize atoms in a non-default value state.
     const state = new Map(
@@ -102,21 +132,17 @@ function useRecoilURLSync({
   }
 
   function read(itemKey): ?Loadable<mixed> {
-    const stateStr = parseURL(location);
-    if (stateStr != null) {
-      // TODO cache deserialization
-      const state = deserialize(stateStr);
-      return state.has(itemKey) ? loadableWithValue(state.get(itemKey)) : null;
-    }
+    return cachedState.current?.has(itemKey)
+      ? loadableWithValue(cachedState.current?.get(itemKey))
+      : null;
   }
 
   function listen({updateAllKnownItems}) {
     function handleUpdate() {
-      const stateStr = parseURL(location);
-      if (stateStr != null) {
-        const state = deserialize(stateStr);
+      updateCachedState(location);
+      if (cachedState.current != null) {
         const mappedState = new Map(
-          Array.from(state.entries()).map(([k, v]) => [
+          Array.from(cachedState.current.entries()).map(([k, v]) => [
             k,
             loadableWithValue(v),
           ]),
