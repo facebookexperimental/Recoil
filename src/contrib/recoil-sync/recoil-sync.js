@@ -28,8 +28,8 @@ type NodeKey = string;
 export type ItemKey = string;
 export type SyncKey = string | void;
 
-export type ItemDiff = Map<ItemKey, ?Loadable<mixed>>;
-export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>;
+export type ItemDiff = Map<ItemKey, ?Loadable<mixed>>; // null means reset
+export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>; // null means default
 export type ReadItem = ItemKey => ?Loadable<mixed>;
 export type WriteItems = ({diff: ItemDiff, items: ItemSnapshot}) => void;
 export type UpdateItems = ItemDiff => void;
