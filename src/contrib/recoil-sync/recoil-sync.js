@@ -31,10 +31,10 @@ export type SyncKey = string | void;
 export type ItemDiff = Map<ItemKey, ?Loadable<mixed>>; // null means reset
 export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>; // null means default
 export type ReadItem = ItemKey => ?Loadable<mixed>;
-export type WriteItems = ({diff: ItemDiff, items: ItemSnapshot}) => void;
+export type WriteItems = ({diff: ItemDiff, allItems: ItemSnapshot}) => void;
 export type ListenInterface = {
-  updateItems: ItemDiff => void,
-  updateAllItems: ItemSnapshot => void,
+  updateItem: (ItemKey, ?Loadable<mixed>) => void,
+  updateAllKnownItems: ItemSnapshot => void,
 };
 export type ListenToItems = ListenInterface => void | (() => void);
 export type Restore<T> = mixed => ?Loadable<T>;
@@ -149,7 +149,7 @@ function useRecoilSync({
       if (diff.size) {
         write({
           diff,
-          items: itemsFromSnapshot(syncKey, snapshot.getInfo_UNSTABLE),
+          allItems: itemsFromSnapshot(syncKey, snapshot.getInfo_UNSTABLE),
         });
       }
     }
@@ -206,7 +206,13 @@ function useRecoilSync({
     },
     [syncKey],
   );
-  const updateAllItems = useCallback(
+  const updateItem = useCallback(
+    (itemKey: ItemKey, loadable: ?Loadable<mixed>) => {
+      updateItems(new Map([[itemKey, loadable]]));
+    },
+    [updateItems],
+  );
+  const updateAllKnownItems = useCallback(
     itemSnapshot => {
       // Reset the value of any items that are registered and not included in
       // the user-provided snapshot.
@@ -222,9 +228,9 @@ function useRecoilSync({
     },
     [syncKey, updateItems],
   );
-  useEffect(() => listen?.({updateItems, updateAllItems}), [
-    updateItems,
-    updateAllItems,
+  useEffect(() => listen?.({updateItem, updateAllKnownItems}), [
+    updateItem,
+    updateAllKnownItems,
     listen,
   ]);
 
@@ -306,7 +312,7 @@ function syncEffect<T>({
           // TODO Atom syncEffect() Write
           writeToStorage({
             diff: new Map([[itemKey, loadable]]),
-            items: itemsFromSnapshot(syncKey, getInfo_UNSTABLE),
+            allItems: itemsFromSnapshot(syncKey, getInfo_UNSTABLE),
           });
         }
       }, 0);
