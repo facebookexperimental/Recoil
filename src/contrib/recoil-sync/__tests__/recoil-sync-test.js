@@ -16,6 +16,12 @@ import type {ItemKey, ItemSnapshot, ListenInterface} from '../recoil-sync';
 const {act} = require('ReactTestUtils');
 
 const {
+  upgrade,
+  validateAny,
+  validateNumber,
+  validateString,
+} = require('../__test_utils__/recoil-sync_mockValidation');
+const {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
@@ -30,21 +36,6 @@ const {
 } = require('../../../testing/Recoil_TestingUtils');
 const {syncEffect, useRecoilSync} = require('../recoil-sync');
 const React = require('react');
-
-////////////////////////////
-// Mock validation library
-////////////////////////////
-const validateAny = loadableWithValue;
-const validateString = x =>
-  typeof x === 'string' ? loadableWithValue(x) : null;
-const validateNumber = x =>
-  typeof x === 'number' ? loadableWithValue(x) : null;
-function upgrade<From, To>(
-  validate: mixed => ?Loadable<From>,
-  upgrader: From => To,
-): mixed => ?Loadable<To> {
-  return x => validate(x)?.map(upgrader);
-}
 
 ////////////////////////////
 // Mock Storage
@@ -274,7 +265,7 @@ test('Read from storage upgrade', async () => {
     default: 'DEFAULT',
     effects_UNSTABLE: [
       // No matching sync effect
-      syncEffect({restore: validateString}),
+      syncEffect<string>({restore: validateString}),
     ],
   });
 
@@ -285,7 +276,9 @@ test('Read from storage upgrade', async () => {
     effects_UNSTABLE: [
       // This sync effect is ignored
       syncEffect<string>({restore: upgrade(validateString, () => 'IGNORE')}),
-      syncEffect<string>({restore: upgrade(validateNumber, num => `${num}`)}),
+      syncEffect<string>({
+        restore: upgrade<number, string>(validateNumber, num => `${num}`),
+      }),
       // This sync effect is ignored
       syncEffect<string>({restore: upgrade(validateString, () => 'IGNORE')}),
     ],
@@ -318,7 +311,9 @@ test('Read from storage upgrade', async () => {
     key: 'recoil-sync upgrade async',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect<string>({restore: upgrade(validateNumber, num => `${num}`)}),
+      syncEffect<string>({
+        restore: upgrade<number, string>(validateNumber, num => `${num}`),
+      }),
     ],
   });
 
@@ -352,8 +347,10 @@ test('Read/Write from storage upgrade', async () => {
     key: 'recoil-sync read/write upgrade type',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect<string>({restore: upgrade(validateNumber, num => `${num}`)}),
-      syncEffect({restore: validateString}),
+      syncEffect<string>({
+        restore: upgrade<number, string>(validateNumber, num => `${num}`),
+      }),
+      syncEffect<string>({restore: validateString}),
     ],
   });
   const atomB = atom({
