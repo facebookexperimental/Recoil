@@ -1,0 +1,73 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict'; // TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
+// TODO PUBLIC LOADABLE INTERFACE
+
+import type { Loadable } from '../../adt/Recoil_Loadable';
+import type { AtomEffect } from '../../recoil_values/Recoil_atom';
+import type { ItemKey, SyncEffectOptions, SyncKey } from './recoil-sync';
+
+const {
+  loadableWithValue
+} = require('../../adt/Recoil_Loadable');
+
+const {
+  syncEffect,
+  useRecoilSync
+} = require('./recoil-sync');
+
+const React = require('react');
+
+const {
+  useCallback,
+  useEffect,
+  useRef
+} = require('react');
+
+type NodeKey = string;
+type AtomRegistration = {
+  history: HistoryOption
+};
+const registries: Map<SyncKey, Map<NodeKey, AtomRegistration>> = new Map();
+declare function parseURL(loc: LocationOption): ?string;
+declare function updateURL(loc: LocationOption, serialization: any): string; ///////////////////////
+// useRecoilURLSync()
+///////////////////////
+
+export type LocationOption = {
+  part: 'href'
+} | {
+  part: 'hash'
+} | {
+  part: 'search',
+  queryParam?: string,
+};
+export type ItemState = Map<ItemKey, mixed>;
+type RecoilURLSyncOptions = {
+  syncKey?: SyncKey,
+  location: LocationOption,
+  serialize: (ItemState) => string,
+  deserialize: (string) => ItemState,
+};
+declare function useRecoilURLSync(arg0: RecoilURLSyncOptions): void;
+declare function RecoilURLSync(props: RecoilURLSyncOptions): React.Node; ///////////////////////
+// urlSyncEffect()
+///////////////////////
+
+type HistoryOption = 'push' | 'replace';
+declare function urlSyncEffect<T>(arg0: { ...SyncEffectOptions<T>,
+  history?: HistoryOption,
+}): AtomEffect<T>;
+module.exports = {
+  useRecoilURLSync,
+  RecoilURLSync,
+  urlSyncEffect
+};

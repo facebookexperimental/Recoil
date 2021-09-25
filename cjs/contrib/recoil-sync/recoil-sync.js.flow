@@ -28,18 +28,27 @@ const {
 } = require('../../hooks/Recoil_Hooks');
 
 const {
+  useCallback,
   useEffect
 } = require('react');
 
 type NodeKey = string;
 export type ItemKey = string;
 export type SyncKey = string | void;
-export type AtomDiff = Map<ItemKey, ?Loadable<mixed>>;
+export type ItemDiff = Map<ItemKey, ?Loadable<mixed>>; // null means reset
+
+export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>; // null means default
+
 export type ReadItem = (ItemKey) => ?Loadable<mixed>;
 export type WriteItems = ({
-  diff: AtomDiff
+  diff: ItemDiff,
+  allItems: ItemSnapshot,
 }) => void;
-export type UpdateItems = (AtomDiff) => void;
+export type ListenInterface = {
+  updateItem: (ItemKey, ?Loadable<mixed>) => void,
+  updateAllKnownItems: (ItemSnapshot) => void,
+};
+export type ListenToItems = (ListenInterface) => void | (() => void);
 export type Restore<T> = (mixed) => ?Loadable<T>;
 const DEFAULT_VALUE = new DefaultValue();
 type AtomRegistration<T> = {
@@ -67,7 +76,8 @@ const storages: Map<SyncKey, Storage> = new Map();
 declare var validateLoadable: <T>(loadable: Loadable<mixed>, arg1: {
   restore: (mixed) => ?Loadable<T>,
   ...
-}) => Loadable<T | DefaultValue>; ///////////////////////
+}) => Loadable<T | DefaultValue>;
+declare var itemsFromSnapshot: (syncKey: any, getInfo: any) => ItemSnapshot; ///////////////////////
 // useRecoilSync()
 ///////////////////////
 
@@ -75,12 +85,12 @@ declare function useRecoilSync(arg0: {
   syncKey?: SyncKey,
   write?: WriteItems,
   read?: ReadItem,
-  listen?: (UpdateItems) => void | (() => void),
+  listen?: ListenToItems,
 }): void; ///////////////////////
 // syncEffect()
 ///////////////////////
 
-declare function syncEffect<T>(arg0: {
+export type SyncEffectOptions<T> = {
   syncKey?: SyncKey,
   key?: ItemKey,
   restore: (mixed) => ?Loadable<T>,
@@ -89,10 +99,11 @@ declare function syncEffect<T>(arg0: {
   }) => mixed,
   write?: (Loadable<T>, {
     read: ReadItem
-  }) => AtomDiff,
+  }) => ItemDiff,
   // Sync default value instead of empty when atom is indefault state
   syncDefault?: boolean,
-}): AtomEffect<T>;
+};
+declare function syncEffect<T>(arg0: SyncEffectOptions<T>): AtomEffect<T>;
 module.exports = {
   useRecoilSync,
   syncEffect

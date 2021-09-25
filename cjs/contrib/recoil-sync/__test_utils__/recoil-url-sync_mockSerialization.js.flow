@@ -1,0 +1,41 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict'; // TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
+
+import type { LocationOption } from '../recoil-url-sync';
+
+const {
+  flushPromisesAndTimers
+} = require('../../../testing/Recoil_TestingUtils');
+
+const {
+  useRecoilURLSync
+} = require('../recoil-url-sync');
+
+const React = require('react'); // ////////////////////////////
+// // Mock Serialization
+// ////////////////////////////
+// Object.fromEntries() is not available in GitHub's version of Node.js (9/21/2021)
+
+
+declare var mapToObj: (map: any) => any;
+declare function TestURLSync(arg0: {
+  syncKey?: string,
+  location: LocationOption,
+}): React.Node;
+declare function encodeState(obj: any): any;
+declare function encodeURLPart(href: string, loc: LocationOption, obj: any): string;
+declare function encodeURL(parts: Array<[LocationOption, {...}]>): string;
+declare function expectURL(parts: Array<[LocationOption, {...}]>): any;
+declare function gotoURL(parts: Array<[LocationOption, {...}]>): any;
+module.exports = {
+  TestURLSync,
+  encodeURL,
+  expectURL,
+  gotoURL
+};
