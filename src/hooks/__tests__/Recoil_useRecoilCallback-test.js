@@ -332,12 +332,14 @@ describe('useRecoilCallback', () => {
 
     invariant(store, 'store should be initialized');
     const originalReplaceState = store.replaceState;
+    // $FlowFixMe[cannot-write]
     store.replaceState = jest.fn(originalReplaceState);
 
     expect(store.replaceState).toHaveBeenCalledTimes(0);
     act(() => cb());
     expect(store.replaceState).toHaveBeenCalledTimes(1);
 
+    // $FlowFixMe[cannot-write]
     store.replaceState = originalReplaceState;
   });
 });
