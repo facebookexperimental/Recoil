@@ -213,11 +213,13 @@ describe('useRecoilCallback', () => {
         <GetStore />
       </>);
     invariant(store, 'store should be initialized');
-    const originalReplaceState = store.replaceState;
+    const originalReplaceState = store.replaceState; // $FlowFixMe[cannot-write]
+
     store.replaceState = jest.fn(originalReplaceState);
     expect(store.replaceState).toHaveBeenCalledTimes(0);
     act(() => cb());
-    expect(store.replaceState).toHaveBeenCalledTimes(1);
+    expect(store.replaceState).toHaveBeenCalledTimes(1); // $FlowFixMe[cannot-write]
+
     store.replaceState = originalReplaceState;
   });
 }); // Test that we always get a consistent instance of the callback function
