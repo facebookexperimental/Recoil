@@ -20,8 +20,8 @@ import type {
   TreeCacheNode,
 } from './Recoil_TreeCacheImplementationType';
 
-const invariant = require('../util/Recoil_invariant');
 const nullthrows = require('../util/Recoil_nullthrows');
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 export type Options<T> = {
   mapNodeValue?: (value: mixed) => mixed,
@@ -80,26 +80,33 @@ class TreeCache<T = mixed> {
 
   set(route: NodeCacheRoute, value: T, handlers?: SetHandlers<T>): void {
     let leafNode: TreeCacheLeaf<T>;
+    let newRoot = null;
+    const setRetryablePart = () => {
+      newRoot = addLeaf(
+        this.root(),
+        route.map(([nodeKey, nodeValue]) => [
+          nodeKey,
+          this._mapNodeValue(nodeValue),
+        ]),
+        null,
+        value,
+        null,
+        {
+          onNodeVisit: node => {
+            handlers?.onNodeVisit(node);
 
-    const newRoot = addLeaf(
-      this.root(),
-      route.map(([nodeKey, nodeValue]) => [
-        nodeKey,
-        this._mapNodeValue(nodeValue),
-      ]),
-      null,
-      value,
-      null,
-      {
-        onNodeVisit: node => {
-          handlers?.onNodeVisit(node);
-
-          if (node.type === 'leaf') {
-            leafNode = node;
-          }
+            if (node.type === 'leaf') {
+              leafNode = node;
+            }
+          },
         },
-      },
-    );
+        () => {
+          this.clear();
+          setRetryablePart();
+        },
+      );
+    };
+    setRetryablePart();
 
     if (!this.root()) {
       this._root = newRoot;
@@ -166,6 +173,7 @@ const addLeaf = <T>(
   value: T,
   branchKey: ?mixed,
   handlers?: SetHandlers<T>,
+  onAbort: () => void,
 ): TreeCacheNode<T> => {
   let node;
 
@@ -186,7 +194,7 @@ const addLeaf = <T>(
 
       node.branches.set(
         nodeValue,
-        addLeaf(null, rest, node, value, nodeValue, handlers),
+        addLeaf(null, rest, node, value, nodeValue, handlers, onAbort),
       );
     }
   } else {
@@ -196,10 +204,15 @@ const addLeaf = <T>(
       const [path, ...rest] = route;
       const [nodeKey, nodeValue] = path;
 
-      invariant(
-        root.type === 'branch' && root.nodeKey === nodeKey,
-        'Existing cache must have a branch midway through the route with matching node key',
-      );
+      if (root.type !== 'branch' || root.nodeKey !== nodeKey) {
+        recoverableViolation(
+          'Existing cache must have a branch midway through the ' +
+            'route with matching node key. Resetting cache.',
+          'recoil',
+        );
+        onAbort();
+        return node; // ignored
+      }
 
       root.branches.set(
         nodeValue,
@@ -210,6 +223,7 @@ const addLeaf = <T>(
           value,
           nodeValue,
           handlers,
+          onAbort,
         ),
       );
     }
