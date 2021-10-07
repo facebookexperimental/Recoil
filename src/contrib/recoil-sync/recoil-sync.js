@@ -31,7 +31,8 @@ export type SyncKey = string | void;
 export type ItemDiff = Map<ItemKey, ?Loadable<mixed>>; // null means reset
 export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>; // null means default
 export type ReadItem = ItemKey => ?Loadable<mixed>;
-export type WriteItems = ({diff: ItemDiff, allItems: ItemSnapshot}) => void;
+type WriteInterface = {diff: ItemDiff, allItems: ItemSnapshot};
+export type WriteItems = WriteInterface => void;
 export type ListenInterface = {
   updateItem: (ItemKey, ?Loadable<mixed>) => void,
   updateAllKnownItems: ItemSnapshot => void,
@@ -146,11 +147,23 @@ function useRecoilSync({
           delete registration.pendingUpdate;
         }
       }
+      // Lazy load "allItems" only if needed.
+      const writeInterface = new Proxy(
+        ({diff, allItems: (null: any)}: WriteInterface), // flowlint-line unclear-type:off
+        {
+          get: (target, prop) => {
+            if (prop === 'allItems' && target.allItems == null) {
+              target.allItems = itemsFromSnapshot(
+                syncKey,
+                snapshot.getInfo_UNSTABLE,
+              );
+            }
+            return target[prop];
+          },
+        },
+      );
       if (diff.size) {
-        write({
-          diff,
-          allItems: itemsFromSnapshot(syncKey, snapshot.getInfo_UNSTABLE),
-        });
+        write(writeInterface);
       }
     }
   }, [snapshot, syncKey, write]);
@@ -283,9 +296,6 @@ function syncEffect<T>({
         if (!isLoadable(loadable)) {
           throw new Error('Sync read must provide a Loadable');
         }
-        if (loadable.state === 'hasError') {
-          throw loadable.contents;
-        }
 
         const validated = validateLoadable<T>(loadable, {restore});
         switch (validated.state) {
@@ -310,10 +320,27 @@ function syncEffect<T>({
         const loadable = getLoadable(node);
         if (loadable.state === 'hasValue') {
           // TODO Atom syncEffect() Write
-          writeToStorage({
-            diff: new Map([[itemKey, loadable]]),
-            allItems: itemsFromSnapshot(syncKey, getInfo_UNSTABLE),
-          });
+
+          // Lazy load "allItems" only if needed.
+          const writeInterface = new Proxy(
+            ({
+              diff: new Map([[itemKey, loadable]]),
+              allItems: (null: any), // flowlint-line unclear-type:off
+            }: WriteInterface),
+            {
+              get: (target, prop) => {
+                if (prop === 'allItems' && target.allItems == null) {
+                  target.allItems = itemsFromSnapshot(
+                    syncKey,
+                    getInfo_UNSTABLE,
+                  );
+                }
+                return target[prop];
+              },
+            },
+          );
+
+          writeToStorage(writeInterface);
         }
       }, 0);
     }
