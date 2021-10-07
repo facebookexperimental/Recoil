@@ -662,7 +662,6 @@ test('Persist on read - async', async () => {
 
   const atomA = atom({
     key: 'recoil-sync persist on read default async',
-    // default: Promise.resolve('ASYNC_DEFAULT'),
     default: new Promise(resolve => {
       resolveA = resolve;
     }),
@@ -726,4 +725,41 @@ test('Persist on read - async', async () => {
   expect(
     storage.get('recoil-sync persist on read init async')?.getValue(),
   ).toBe('ASYNC_INIT_AFTER');
+});
+
+test('Sync based on component props', async () => {
+  function SyncWithProps(props) {
+    useRecoilSync({
+      read: itemKey =>
+        itemKey in props ? loadableWithValue(props[itemKey]) : null,
+    });
+    return null;
+  }
+
+  const atomA = atom({
+    key: 'recoil-sync from props spam',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({key: 'spam', restore: validateAny})],
+  });
+  const atomB = atom({
+    key: 'recoil-sync from props eggs',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({key: 'eggs', restore: validateAny})],
+  });
+  const atomC = atom({
+    key: 'recoil-sync from props default',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({key: 'default', restore: validateAny})],
+  });
+
+  const container = renderElements(
+    <>
+      <SyncWithProps spam="SPAM" eggs="EGGS" />
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+      <ReadsAtom atom={atomC} />
+    </>,
+  );
+
+  expect(container.textContent).toBe('"SPAM""EGGS""DEFAULT"');
 });
