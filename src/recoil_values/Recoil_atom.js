@@ -58,11 +58,7 @@
 'use strict';
 
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
-import type {
-  Loadable,
-  LoadablePromise,
-  ResolvedLoadablePromiseInfo,
-} from '../adt/Recoil_Loadable';
+import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilValueInfo} from '../core/Recoil_FunctionalCore';
 import type {
   PersistenceInfo,
@@ -165,14 +161,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         options.default
           .then(value => {
             defaultLoadable = loadableWithValue(value);
-            // TODO Temporary disable Flow due to pending selector_NEW refactor
-
-            const promiseInfo: ResolvedLoadablePromiseInfo<T> = {
-              __key: key,
-              __value: value,
-            };
-
-            return promiseInfo;
+            return value;
           })
           .catch(error => {
             defaultLoadable = loadableWithError(error);
@@ -208,7 +197,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   function wrapPendingPromise(
     store: Store,
     promise: Promise<T | DefaultValue>,
-  ): LoadablePromise<T | DefaultValue> {
+  ): Promise<T | DefaultValue> {
     const wrappedPromise = promise
       .then(value => {
         const state = store.getState().nextTree ?? store.getState().currentTree;
@@ -217,10 +206,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           setRecoilValue(store, node, value);
         }
 
-        return {
-          __key: key,
-          __value: value,
-        };
+        return value;
       })
       .catch(error => {
         const state = store.getState().nextTree ?? store.getState().currentTree;
@@ -282,17 +268,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
             ? (defaultLoadable: any) // flowlint-line unclear-type:off
             : isPromise(retValue)
             ? loadableWithPromise(
-                retValue.then(
-                  (v: S | DefaultValue): ResolvedLoadablePromiseInfo<S> => ({
-                    __key: key,
-                    __value:
-                      v instanceof DefaultValue
-                        ? // TODO It's a little weird that this returns a Promise<T>
-                          // instead of T, but it seems to work. This can be cleaned
-                          // up if we clean up how Loadable's wrap keys and values.
-                          (defaultLoadable: any).toPromise() // flowlint-line unclear-type:off
-                        : v,
-                  }),
+                retValue.then((v: S | DefaultValue): S | Promise<S> =>
+                  v instanceof DefaultValue
+                    ? // Cast T to S
+                      (defaultLoadable: any).toPromise() // flowlint-line unclear-type:off
+                    : v,
                 ),
               )
             : loadableWithValue(retValue);

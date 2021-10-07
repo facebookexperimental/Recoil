@@ -26,7 +26,7 @@ class DefaultValue {}
 const DEFAULT_VALUE: DefaultValue = new DefaultValue();
 
 class RecoilValueNotReady extends Error {
-  constructor(key: string) {
+  constructor(key: NodeKey) {
     super(
       `Tried to set the value of Recoil selector ${key} using an updater function, but it is an async selector in a pending or error state; this is not supported.`,
     );
