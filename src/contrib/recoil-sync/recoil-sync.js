@@ -275,7 +275,7 @@ function syncEffect<T>({
   restore,
   syncDefault,
 }: SyncEffectOptions<T>): AtomEffect<T> {
-  return ({node, setSelf, getLoadable, getInfo_UNSTABLE}) => {
+  return ({node, trigger, setSelf, getLoadable, getInfo_UNSTABLE}) => {
     const itemKey = key ?? node.key;
 
     // Register Atom
@@ -288,61 +288,63 @@ function syncEffect<T>({
           itemKeys: new Map([[itemKey, {restore, syncDefault}]]),
         });
 
-    // Initialize Atom value
-    const readFromStorage = storages.get(syncKey)?.read;
-    if (readFromStorage != null) {
-      const loadable = readFromStorage(itemKey);
-      if (loadable != null) {
-        if (!isLoadable(loadable)) {
-          throw new Error('Sync read must provide a Loadable');
-        }
+    if (trigger === 'get') {
+      // Initialize Atom value
+      const readFromStorage = storages.get(syncKey)?.read;
+      if (readFromStorage != null) {
+        const loadable = readFromStorage(itemKey);
+        if (loadable != null) {
+          if (!isLoadable(loadable)) {
+            throw new Error('Sync read must provide a Loadable');
+          }
 
-        const validated = validateLoadable<T>(loadable, {restore});
-        switch (validated.state) {
-          case 'hasValue':
-            if (!(validated.contents instanceof DefaultValue)) {
-              setSelf(validated.contents);
-            }
-            break;
-          case 'hasError':
-            throw validated.contents;
-          case 'loading':
-            setSelf(validated.toPromise());
-            break;
+          const validated = validateLoadable<T>(loadable, {restore});
+          switch (validated.state) {
+            case 'hasValue':
+              if (!(validated.contents instanceof DefaultValue)) {
+                setSelf(validated.contents);
+              }
+              break;
+            case 'hasError':
+              throw validated.contents;
+            case 'loading':
+              setSelf(validated.toPromise());
+              break;
+          }
         }
       }
-    }
 
-    // Persist on Initial Read
-    const writeToStorage = storages.get(syncKey)?.write;
-    if (syncDefault === true && writeToStorage != null) {
-      setTimeout(() => {
-        const loadable = getLoadable(node);
-        if (loadable.state === 'hasValue') {
-          // TODO Atom syncEffect() Write
+      // Persist on Initial Read
+      const writeToStorage = storages.get(syncKey)?.write;
+      if (syncDefault === true && writeToStorage != null) {
+        setTimeout(() => {
+          const loadable = getLoadable(node);
+          if (loadable.state === 'hasValue') {
+            // TODO Atom syncEffect() Write
 
-          // Lazy load "allItems" only if needed.
-          const writeInterface = new Proxy(
-            ({
-              diff: new Map([[itemKey, loadable]]),
-              allItems: (null: any), // flowlint-line unclear-type:off
-            }: WriteInterface),
-            {
-              get: (target, prop) => {
-                if (prop === 'allItems' && target.allItems == null) {
-                  target.allItems = itemsFromSnapshot(
-                    syncKey,
-                    getInfo_UNSTABLE,
-                  );
-                }
-                return target[prop];
+            // Lazy load "allItems" only if needed.
+            const writeInterface = new Proxy(
+              ({
+                diff: new Map([[itemKey, loadable]]),
+                allItems: (null: any), // flowlint-line unclear-type:off
+              }: WriteInterface),
+              {
+                get: (target, prop) => {
+                  if (prop === 'allItems' && target.allItems == null) {
+                    target.allItems = itemsFromSnapshot(
+                      syncKey,
+                      getInfo_UNSTABLE,
+                    );
+                  }
+                  return target[prop];
+                },
               },
-            },
-          );
+            );
 
-          writeToStorage(writeInterface);
-        }
-      }, 0);
+            writeToStorage(writeInterface);
+          }
+        }, 0);
+      }
     }
 
     // Unregister atom
