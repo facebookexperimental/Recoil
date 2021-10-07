@@ -118,8 +118,13 @@ function expectURL(parts: Array<[LocationOption, {...}]>) {
 }
 
 async function gotoURL(parts: Array<[LocationOption, {...}]>) {
-  history.pushState(null, '', encodeURL(parts));
+  history.replaceState(null, '', encodeURL(parts));
   history.pushState(null, '', '/POPSTATE');
+  history.back();
+  await flushPromisesAndTimers();
+}
+
+async function goBack() {
   history.back();
   await flushPromisesAndTimers();
 }
@@ -129,4 +134,5 @@ module.exports = {
   encodeURL,
   expectURL,
   gotoURL,
+  goBack,
 };
