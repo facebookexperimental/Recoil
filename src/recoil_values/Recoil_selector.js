@@ -1046,7 +1046,13 @@ function selector<T>(
     loadable: Loadable<T>,
   ) {
     state.atomValues.set(key, loadable);
-    cache.set(cacheRoute, loadable);
+    try {
+      cache.set(cacheRoute, loadable);
+    } catch (err) {
+      throw new Error(
+        `Problem with setting cache for selector "${key}": ${err.message}`,
+      );
+    }
   }
 
   function detectCircularDependencies(fn) {
