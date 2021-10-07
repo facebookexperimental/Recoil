@@ -27,6 +27,7 @@ const {
   loadableWithValue,
 } = require('../../../adt/Recoil_Loadable');
 const atom = require('../../../recoil_values/Recoil_atom');
+const atomFamily = require('../../../recoil_values/Recoil_atomFamily');
 const selectorFamily = require('../../../recoil_values/Recoil_selectorFamily');
 const {
   ReadsAtom,
@@ -762,4 +763,28 @@ test('Sync based on component props', async () => {
   );
 
   expect(container.textContent).toBe('"SPAM""EGGS""DEFAULT"');
+});
+
+test('Sync Atom Family', async () => {
+  const atoms = atomFamily({
+    key: 'recoil-sync atom family',
+    default: 'DEFAULT',
+    effects_UNSTABLE: param => [syncEffect({key: param, restore: validateAny})],
+  });
+
+  const storage = new Map([
+    ['a', loadableWithValue('A')],
+    ['b', loadableWithValue('B')],
+  ]);
+
+  const container = renderElements(
+    <>
+      <TestRecoilSync storage={storage} />
+      <ReadsAtom atom={atoms('a')} />
+      <ReadsAtom atom={atoms('b')} />
+      <ReadsAtom atom={atoms('c')} />
+    </>,
+  );
+
+  expect(container.textContent).toBe('"A""B""DEFAULT"');
 });
