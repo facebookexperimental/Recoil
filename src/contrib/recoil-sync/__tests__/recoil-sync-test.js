@@ -26,6 +26,7 @@ const {
   loadableWithPromise,
   loadableWithValue,
 } = require('../../../adt/Recoil_Loadable');
+const {useRecoilValue} = require('../../../hooks/Recoil_Hooks');
 const atom = require('../../../recoil_values/Recoil_atom');
 const atomFamily = require('../../../recoil_values/Recoil_atomFamily');
 const selectorFamily = require('../../../recoil_values/Recoil_selectorFamily');
@@ -787,4 +788,42 @@ test('Sync Atom Family', async () => {
   );
 
   expect(container.textContent).toBe('"A""B""DEFAULT"');
+});
+
+// Test that using atoms before the sync hook initialize properly
+test('Reading before sync hook', async () => {
+  const atoms = atomFamily({
+    key: 'recoil-sync order',
+    default: 'DEFAULT',
+    effects_UNSTABLE: param => [syncEffect({key: param, restore: validateAny})],
+  });
+
+  function SyncOrder() {
+    const b = useRecoilValue(atoms('b'));
+    useRecoilSync({
+      read: itemKey => loadableWithValue(itemKey.toUpperCase()),
+    });
+    const c = useRecoilValue(atoms('c'));
+    return (
+      <div>
+        {String(b)}
+        {String(c)}
+        <ReadsAtom atom={atoms('d')} />
+      </div>
+    );
+  }
+
+  function MyRoot() {
+    return (
+      <div>
+        <ReadsAtom atom={atoms('a')} />
+        <SyncOrder />
+        <ReadsAtom atom={atoms('e')} />
+      </div>
+    );
+  }
+
+  const container = renderElements(<MyRoot />);
+
+  expect(container.textContent).toBe('"A"BC"D""E"');
 });
