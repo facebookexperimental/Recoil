@@ -66,18 +66,6 @@ function unwrapDependencies(
     : Object.getOwnPropertyNames(dependencies).map(key => dependencies[key]);
 }
 
-function getValueFromLoadablePromiseResult(result) {
-  if (
-    result != null &&
-    typeof result === 'object' &&
-    result.hasOwnProperty('__value')
-  ) {
-    return result.__value;
-  }
-
-  return result;
-}
-
 function wrapResults(
   dependencies:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
@@ -191,7 +179,7 @@ const waitForAny: <
         if (isPromise(exp)) {
           exp
             .then(result => {
-              results[i] = getValueFromLoadablePromiseResult(result);
+              results[i] = result;
               exceptions[i] = undefined;
               resolve(wrapLoadables(dependencies, results, exceptions));
             })
@@ -244,9 +232,7 @@ const waitForAll: <
     return Promise.all(exceptions).then(exceptionResults =>
       wrapResults(
         dependencies,
-        combineAsyncResultsWithSyncResults(results, exceptionResults).map(
-          getValueFromLoadablePromiseResult,
-        ),
+        combineAsyncResultsWithSyncResults(results, exceptionResults),
       ),
     );
   },
@@ -286,7 +272,7 @@ const waitForAllSettled: <
           isPromise(exp)
             ? exp
                 .then(result => {
-                  results[i] = getValueFromLoadablePromiseResult(result);
+                  results[i] = result;
                   exceptions[i] = undefined;
                 })
                 .catch(error => {
