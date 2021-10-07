@@ -25,6 +25,7 @@ const {useCallback, useEffect, useRef} = require('react');
 type NodeKey = string;
 type AtomRegistration = {
   history: HistoryOption,
+  itemKeys: Set<ItemKey>,
 };
 
 const registries: Map<SyncKey, Map<NodeKey, AtomRegistration>> = new Map();
@@ -118,17 +119,57 @@ function useRecoilURLSync({
     updateCachedState,
   ]);
 
-  function write({allItems}) {
+  function write({diff, allItems}) {
     // Only serialize atoms in a non-default value state.
-    const state = new Map(
+    const newState = new Map(
       Array.from(allItems.entries())
         .filter(([, loadable]) => loadable?.state === 'hasValue')
         .map(([key, loadable]) => [key, loadable?.contents]),
     );
+    updateCachedState(location);
 
-    // TODO Support History Push vs Replace
-    const newURL = updateURL(location, serialize(state));
-    history.replaceState(null, '', newURL);
+    // This could be optimized with an itemKey-based registery if necessary to avoid
+    // atom traversal.
+    const atomRegistry = registries.get(syncKey);
+    const itemsToPush =
+      atomRegistry != null
+        ? new Set(
+            Array.from(atomRegistry)
+              .filter(
+                ([, {history, itemKeys}]) =>
+                  history === 'push' &&
+                  Array.from(itemKeys).some(key => diff.has(key)),
+              )
+              .map(([, {itemKeys}]) => itemKeys)
+              .reduce(
+                (itemKeys, keys) => itemKeys.concat(Array.from(keys)),
+                [],
+              ),
+          )
+        : null;
+
+    const replaceState = cachedState.current;
+    if (itemsToPush?.size && replaceState != null) {
+      // First, repalce the URL with any atoms that replace the URL history
+      for (const [key] of allItems) {
+        if (!itemsToPush.has(key)) {
+          newState.has(key)
+            ? replaceState.set(key, newState.get(key))
+            : replaceState.delete(key);
+        }
+      }
+      const replaceURL = updateURL(location, serialize(replaceState));
+      history.replaceState(null, '', replaceURL);
+
+      // Next, push the URL with any atoms that caused a new URL history entry
+      const pushURL = updateURL(location, serialize(newState));
+      history.pushState(null, '', pushURL);
+    } else {
+      // Just replace the URL with the new state
+      const newURL = updateURL(location, serialize(newState));
+      history.replaceState(null, '', newURL);
+    }
+    cachedState.current = newState;
   }
 
   function read(itemKey): ?Loadable<mixed> {
@@ -184,7 +225,10 @@ function urlSyncEffect<T>({
     if (atomRegistry == null) {
       throw new Error('Error with atom registration');
     }
-    atomRegistry.set(effectArgs.node.key, {history});
+    atomRegistry.set(effectArgs.node.key, {
+      history,
+      itemKeys: new Set([options.key ?? effectArgs.node.key]),
+    });
 
     // Wrap syncEffect() atom effect
     const cleanup = atomEffect(effectArgs);
