@@ -25,17 +25,8 @@ const TYPE_CHECK_COOKIE = 27495866187;
 // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()
 
-export type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
-  __value: T,
-  __key?: NodeKey,
-}>;
-
 class Canceled {}
 const CANCELED: Canceled = new Canceled();
-
-export type LoadablePromise<+T> = Promise<
-  ResolvedLoadablePromiseInfo<T> | Canceled,
->;
 
 type Accessors<+T> = $ReadOnly<{
   // Attempt to get the value.
@@ -51,7 +42,7 @@ type Accessors<+T> = $ReadOnly<{
 
   is: (Loadable<mixed>) => boolean,
 
-  map: <T, S>(map: (T) => Loadable<S> | Promise<S> | S) => Loadable<S>,
+  map: <U, V>(map: (U) => Loadable<V> | Promise<V> | V) => Loadable<V>,
 }>;
 
 type ValueAccessors<+T> = $ReadOnly<{
@@ -92,7 +83,7 @@ type ErrorLoadable<+T> = $ReadOnly<{
 type LoadingLoadable<+T> = $ReadOnly<{
   __loadable: number,
   state: 'loading',
-  contents: LoadablePromise<T>,
+  contents: Promise<T | Canceled>,
   ...LoadingAccessors<T>,
 }>;
 
@@ -161,7 +152,7 @@ const loadableAccessors = {
         // $FlowFixMe[object-this-reference]
         const next = map(this.contents);
         return isPromise(next)
-          ? loadableWithPromise(next.then(value => ({__value: value})))
+          ? loadableWithPromise(next)
           : isLoadable(next)
           ? // TODO Fix Flow typing for isLoadable() %check
             (next: any) // flowlint-line unclear-type:off
@@ -181,19 +172,19 @@ const loadableAccessors = {
         // $FlowFixMe[object-this-reference]
         this.contents
           .then(value => {
-            const next = map(value.__value);
+            const next = map(value);
             if (isLoadable(next)) {
               const nextLoadable: Loadable<S> = (next: any); // flowlint-line unclear-type:off
               switch (nextLoadable.state) {
                 case 'hasValue':
-                  return {__value: nextLoadable.contents};
+                  return nextLoadable.contents;
                 case 'hasError':
                   throw nextLoadable.contents;
                 case 'loading':
                   return nextLoadable.contents;
               }
             }
-            return {__value: next};
+            return next;
           })
           .catch(e => {
             if (isPromise(e)) {
@@ -257,8 +248,14 @@ function loadableWithError<T>(error: mixed): ErrorLoadable<T> {
 
 // TODO Probably need to clean-up this API to accept `Promise<T>`
 // with an alternative params or mechanism for internal key proxy.
+const throwCanceled = value => {
+  if (value instanceof Canceled) {
+    throw value;
+  }
+  return value;
+};
 function loadableWithPromise<T>(
-  promise: LoadablePromise<T>,
+  promise: Promise<T | Canceled>,
 ): LoadingLoadable<T> {
   return Object.freeze({
     __loadable: TYPE_CHECK_COOKIE,
@@ -266,16 +263,16 @@ function loadableWithPromise<T>(
     contents: promise,
     ...loadableAccessors,
     getValue() {
-      throw this.contents.then(({__value}) => __value);
+      throw this.contents.then(throwCanceled);
     },
     toPromise() {
-      return this.contents.then(({__value}) => __value);
+      return this.contents.then(throwCanceled);
     },
     promiseMaybe() {
-      return this.contents.then(({__value}) => __value);
+      return this.contents.then(throwCanceled);
     },
     promiseOrThrow() {
-      return this.contents.then(({__value}) => __value);
+      return this.contents.then(throwCanceled);
     },
   });
 }
@@ -298,11 +295,7 @@ function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
           'Invalid loadable passed to loadableAll',
         ).contents,
       )
-    : loadableWithPromise(
-        Promise.all(inputs.map(i => i.contents)).then(value => ({
-          __value: value,
-        })),
-      );
+    : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
 }
 
 // TODO Actually get this to work with Flow
