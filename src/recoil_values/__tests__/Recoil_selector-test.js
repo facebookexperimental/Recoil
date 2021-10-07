@@ -490,12 +490,10 @@ testRecoil('useRecoilState - selector catching promise 2', async () => {
       } catch (promise) {
         expect(promise instanceof Promise).toBe(true);
         // eslint-disable-next-line jest/valid-expect
-        dependencyPromiseTest = expect(promise).resolves.toHaveProperty(
-          '__value',
-          'READY',
-        );
+        dependencyPromiseTest = expect(promise).resolves.toBe('READY');
 
-        return promise.then(result => {
+        return promise.then(pending => {
+          const result = pending.value;
           expect(result).toBe('READY');
           return result.value + ' NOW';
         });
