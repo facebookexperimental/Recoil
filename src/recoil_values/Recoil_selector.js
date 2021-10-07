@@ -53,7 +53,7 @@
  */
 'use strict';
 
-import type {Loadable, LoadablePromise} from '../adt/Recoil_Loadable';
+import type {Loadable} from '../adt/Recoil_Loadable';
 import type {CachePolicy} from '../caches/Recoil_CachePolicy';
 import type {
   NodeCacheRoute,
@@ -75,8 +75,8 @@ import type {
 } from './Recoil_callbackTypes';
 
 const {
-  CANCELED,
   Canceled,
+  CANCELED,
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
@@ -169,6 +169,17 @@ type ExecutionInfo<T> = {
   latestLoadable: ?Loadable<T>,
   latestExecutionId: ?ExecutionId,
   stateVersion: ?number,
+};
+
+// An object to hold the current state for loading dependencies for a particular
+// execution of a selector.  This is used for async selector handling to know
+// which dependency was pending or if a user-promise was thrown.  An object is
+// used instead of just a variable with the loadingDepKey so that if the
+// selector is async we can still access the current state in a promise chain
+// by updating the object reference.
+type LoadingDepsState = {
+  loadingDepKey: NodeKey | null,
+  loadingDepPromise: Promise<mixed> | null,
 };
 
 const dependencyStack = []; // for detecting circular dependencies.
@@ -336,7 +347,8 @@ function selector<T>(
     state: TreeState,
     depValues: DepValues,
     executionId: ExecutionId,
-  ): LoadablePromise<T> {
+    loadingDepsState: LoadingDepsState,
+  ): Promise<T | Canceled> {
     return promise
       .then(value => {
         if (!selectorIsLive()) {
@@ -353,7 +365,7 @@ function selector<T>(
 
         setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
-        return {__value: value, __key: key};
+        return value;
       })
       .catch(errorOrPromise => {
         if (!selectorIsLive()) {
@@ -373,6 +385,7 @@ function selector<T>(
             state,
             depValues,
             executionId,
+            loadingDepsState,
           );
         }
 
@@ -420,11 +433,12 @@ function selector<T>(
    */
   function wrapPendingDependencyPromise(
     store: Store,
-    promise: LoadablePromise<mixed>,
+    promise: Promise<mixed | Canceled>,
     state: TreeState,
     existingDeps: DepValues,
     executionId: ExecutionId,
-  ): LoadablePromise<T> {
+    loadingDepsState: LoadingDepsState,
+  ): Promise<T | Canceled> {
     return promise
       .then(resolvedDep => {
         if (!selectorIsLive()) {
@@ -441,9 +455,16 @@ function selector<T>(
           return CANCELED;
         }
 
-        const {__key: resolvedDepKey, __value: depValue} = resolvedDep ?? {};
-
-        if (resolvedDepKey != null) {
+        // Check if we are handling a pending Recoil dependency or if the user
+        // threw their own Promise to "suspend" a selector evaluation.  We need
+        // to check that the loadingDepPromise actually matches the promise that
+        // we caught in case the selector happened to catch the promise we threw
+        // for a pending Recoil dependency from `getRecoilValue()` and threw
+        // their own promise instead.
+        if (
+          loadingDepsState.loadingDepKey != null &&
+          loadingDepsState.loadingDepPromise === promise
+        ) {
           /**
            * Note for async atoms, this means we are changing the atom's value
            * in the store for the given version. This should be alright because
@@ -451,7 +472,10 @@ function selector<T>(
            * already been triggered by the atom being resolved (see this logic
            * in Recoil_atom.js)
            */
-          state.atomValues.set(resolvedDepKey, loadableWithValue(depValue));
+          state.atomValues.set(
+            loadingDepsState.loadingDepKey,
+            loadableWithValue(resolvedDep),
+          );
         } else {
           /**
            * If resolvedDepKey is not defined, the promise was a user-thrown
@@ -495,7 +519,7 @@ function selector<T>(
          * The ideal case is more difficult to implement as it would require that
          * we capture and wait for the the async dependency right after checking
          * the cache. The current approach takes advantage of the fact that running
-         * the selector already has a code path that lets use exit early when
+         * the selector already has a code path that lets us exit early when
          * an async dep resolves.
          */
         const cachedLoadable = getValFromCacheAndUpdatedDownstreamDeps(
@@ -506,7 +530,7 @@ function selector<T>(
         if (cachedLoadable && cachedLoadable.state === 'hasValue') {
           setExecutionInfo(cachedLoadable, store);
 
-          return {__value: cachedLoadable.contents, __key: key};
+          return cachedLoadable.contents;
         }
 
         /**
@@ -565,12 +589,8 @@ function selector<T>(
           throw loadable.contents;
         }
 
-        if (loadable.state === 'hasValue') {
-          return {__value: loadable.contents, __key: key};
-        }
-
         /**
-         * Returning promise here without wrapping as the wrapepr logic was
+         * Returning any promises here without wrapping as the wrapepr logic was
          * already done when we called evaluateSelectorGetter() to get this
          * loadable
          */
@@ -651,6 +671,10 @@ function selector<T>(
     let result;
     let resultIsError = false;
     let loadable: Loadable<T>;
+    const loadingDepsState: LoadingDepsState = {
+      loadingDepKey: null,
+      loadingDepPromise: null,
+    };
 
     const depValues = new Map();
 
@@ -677,11 +701,17 @@ function selector<T>(
 
       depValues.set(depKey, depLoadable);
 
-      if (depLoadable.state === 'hasValue') {
-        return depLoadable.contents;
+      switch (depLoadable.state) {
+        case 'hasValue':
+          return depLoadable.contents;
+        case 'hasError':
+          throw depLoadable.contents;
+        case 'loading':
+          loadingDepsState.loadingDepKey = depKey;
+          loadingDepsState.loadingDepPromise = depLoadable.contents;
+          throw depLoadable.contents;
       }
-
-      throw depLoadable.contents;
+      throw new Error('Invalid Loadable state');
     }
 
     let gateCallback = false;
@@ -717,6 +747,7 @@ function selector<T>(
           state,
           depValues,
           executionId,
+          loadingDepsState,
         ).finally(endPerfBlock);
       } else {
         endPerfBlock();
@@ -731,6 +762,7 @@ function selector<T>(
           state,
           depValues,
           executionId,
+          loadingDepsState,
         ).finally(endPerfBlock);
       } else {
         resultIsError = true;

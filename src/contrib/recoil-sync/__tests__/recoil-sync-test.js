@@ -203,10 +203,7 @@ test('Read from storage async', async () => {
   });
 
   const storage = new Map([
-    [
-      'recoil-sync read async',
-      loadableWithPromise(Promise.resolve({__value: 'A'})),
-    ],
+    ['recoil-sync read async', loadableWithPromise(Promise.resolve('A'))],
   ]);
 
   const container = renderElements(
@@ -296,7 +293,7 @@ test('Read from storage upgrade', async () => {
           // Test async validation
           x =>
             typeof x === 'string'
-              ? loadableWithPromise(Promise.resolve({__value: x}))
+              ? loadableWithPromise(Promise.resolve(x))
               : null,
           str => Number(str),
         ),
@@ -321,10 +318,7 @@ test('Read from storage upgrade', async () => {
     ['recoil-sync fail validation', loadableWithValue(123)],
     ['recoil-sync upgrade number', loadableWithValue(123)],
     ['recoil-sync upgrade string', loadableWithValue('123')],
-    [
-      'recoil-sync upgrade async',
-      loadableWithPromise(Promise.resolve({__value: 123})),
-    ],
+    ['recoil-sync upgrade async', loadableWithPromise(Promise.resolve(123))],
   ]);
 
   const container = renderElements(
@@ -608,7 +602,7 @@ test('Listen to storage', async () => {
   // act(() =>
   //   updateItem1(
   //     'recoil-sync listen',
-  //     loadableWithPromise(Promise.resolve({__value: 'ASYNC'})),
+  //     loadableWithPromise(Promise.resolve( 'ASYNC')),
   //   ),
   // );
   // await flushPromisesAndTimers();
