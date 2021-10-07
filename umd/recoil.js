@@ -5639,15 +5639,24 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
     set(route, value, handlers) {
       let leafNode;
-      const newRoot = addLeaf(this.root(), route.map(([nodeKey, nodeValue]) => [nodeKey, this._mapNodeValue(nodeValue)]), null, value, null, {
-        onNodeVisit: node => {
-          handlers === null || handlers === void 0 ? void 0 : handlers.onNodeVisit(node);
+      let newRoot = null;
 
-          if (node.type === 'leaf') {
-            leafNode = node;
+      const setRetryablePart = () => {
+        newRoot = addLeaf(this.root(), route.map(([nodeKey, nodeValue]) => [nodeKey, this._mapNodeValue(nodeValue)]), null, value, null, {
+          onNodeVisit: node => {
+            handlers === null || handlers === void 0 ? void 0 : handlers.onNodeVisit(node);
+
+            if (node.type === 'leaf') {
+              leafNode = node;
+            }
           }
-        }
-      });
+        }, () => {
+          this.clear();
+          setRetryablePart();
+        });
+      };
+
+      setRetryablePart();
 
       if (!this.root()) {
         this._root = newRoot;
@@ -5704,7 +5713,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     return findLeaf(root.branches.get(nodeValue), getNodeValue, handlers);
   };
 
-  const addLeaf = (root, route, parent, value, branchKey, handlers) => {
+  const addLeaf = (root, route, parent, value, branchKey, handlers, onAbort) => {
     var _handlers$onNodeVisit2;
 
     let node;
@@ -5727,7 +5736,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           branches: new Map(),
           branchKey
         };
-        node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers));
+        node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers, onAbort));
       }
     } else {
       node = root;
@@ -5735,8 +5744,14 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       if (route.length) {
         const [path, ...rest] = route;
         const [nodeKey, nodeValue] = path;
-        !(root.type === 'branch' && root.nodeKey === nodeKey) ?  Recoil_invariant(false, 'Existing cache must have a branch midway through the route with matching node key')  : void 0;
-        root.branches.set(nodeValue, addLeaf(root.branches.get(nodeValue), rest, root, value, nodeValue, handlers));
+
+        if (root.type !== 'branch' || root.nodeKey !== nodeKey) {
+          Recoil_recoverableViolation('Existing cache must have a branch midway through the ' + 'route with matching node key. Resetting cache.');
+          onAbort();
+          return node; // ignored
+        }
+
+        root.branches.set(nodeValue, addLeaf(root.branches.get(nodeValue), rest, root, value, nodeValue, handlers, onAbort));
       }
     }
 
@@ -6806,7 +6821,12 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
     function setCache(state, cacheRoute, loadable) {
       state.atomValues.set(key, loadable);
-      cache.set(cacheRoute, loadable);
+
+      try {
+        cache.set(cacheRoute, loadable);
+      } catch (err) {
+        throw new Error(`Problem with setting cache for selector "${key}": ${err.message}`);
+      }
     }
 
     function detectCircularDependencies(fn) {

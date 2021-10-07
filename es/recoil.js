@@ -5633,15 +5633,24 @@ class TreeCache {
 
   set(route, value, handlers) {
     let leafNode;
-    const newRoot = addLeaf(this.root(), route.map(([nodeKey, nodeValue]) => [nodeKey, this._mapNodeValue(nodeValue)]), null, value, null, {
-      onNodeVisit: node => {
-        handlers === null || handlers === void 0 ? void 0 : handlers.onNodeVisit(node);
+    let newRoot = null;
 
-        if (node.type === 'leaf') {
-          leafNode = node;
+    const setRetryablePart = () => {
+      newRoot = addLeaf(this.root(), route.map(([nodeKey, nodeValue]) => [nodeKey, this._mapNodeValue(nodeValue)]), null, value, null, {
+        onNodeVisit: node => {
+          handlers === null || handlers === void 0 ? void 0 : handlers.onNodeVisit(node);
+
+          if (node.type === 'leaf') {
+            leafNode = node;
+          }
         }
-      }
-    });
+      }, () => {
+        this.clear();
+        setRetryablePart();
+      });
+    };
+
+    setRetryablePart();
 
     if (!this.root()) {
       this._root = newRoot;
@@ -5698,7 +5707,7 @@ const findLeaf = (root, getNodeValue, handlers) => {
   return findLeaf(root.branches.get(nodeValue), getNodeValue, handlers);
 };
 
-const addLeaf = (root, route, parent, value, branchKey, handlers) => {
+const addLeaf = (root, route, parent, value, branchKey, handlers, onAbort) => {
   var _handlers$onNodeVisit2;
 
   let node;
@@ -5721,7 +5730,7 @@ const addLeaf = (root, route, parent, value, branchKey, handlers) => {
         branches: new Map(),
         branchKey
       };
-      node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers));
+      node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers, onAbort));
     }
   } else {
     node = root;
@@ -5729,8 +5738,14 @@ const addLeaf = (root, route, parent, value, branchKey, handlers) => {
     if (route.length) {
       const [path, ...rest] = route;
       const [nodeKey, nodeValue] = path;
-      !(root.type === 'branch' && root.nodeKey === nodeKey) ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Existing cache must have a branch midway through the route with matching node key') : Recoil_invariant(false) : void 0;
-      root.branches.set(nodeValue, addLeaf(root.branches.get(nodeValue), rest, root, value, nodeValue, handlers));
+
+      if (root.type !== 'branch' || root.nodeKey !== nodeKey) {
+        Recoil_recoverableViolation('Existing cache must have a branch midway through the ' + 'route with matching node key. Resetting cache.');
+        onAbort();
+        return node; // ignored
+      }
+
+      root.branches.set(nodeValue, addLeaf(root.branches.get(nodeValue), rest, root, value, nodeValue, handlers, onAbort));
     }
   }
 
@@ -6800,7 +6815,12 @@ function selector(options) {
 
   function setCache(state, cacheRoute, loadable) {
     state.atomValues.set(key, loadable);
-    cache.set(cacheRoute, loadable);
+
+    try {
+      cache.set(cacheRoute, loadable);
+    } catch (err) {
+      throw new Error(`Problem with setting cache for selector "${key}": ${err.message}`);
+    }
   }
 
   function detectCircularDependencies(fn) {

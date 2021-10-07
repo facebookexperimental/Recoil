@@ -12,9 +12,9 @@
 
 import type { GetHandlers, NodeCacheRoute, NodeValueGet, SetHandlers, TreeCacheBranch, TreeCacheLeaf, TreeCacheNode } from './Recoil_TreeCacheImplementationType';
 
-const invariant = require('../util/Recoil_invariant');
-
 const nullthrows = require('../util/Recoil_nullthrows');
+
+const recoverableViolation = require('../util/Recoil_recoverableViolation');
 
 export type Options<T> = {
   mapNodeValue?: (value: mixed) => mixed,
@@ -37,7 +37,7 @@ declare class TreeCache<T = mixed> {
   clear(): void,
 }
 declare var findLeaf: <T>(root: ?TreeCacheNode<T>, getNodeValue: NodeValueGet, handlers?: GetHandlers<T>) => ?TreeCacheLeaf<T>;
-declare var addLeaf: <T>(root: ?TreeCacheNode<T>, route: NodeCacheRoute, parent: ?TreeCacheBranch<T>, value: T, branchKey: ?mixed, handlers?: SetHandlers<T>) => TreeCacheNode<T>;
+declare var addLeaf: <T>(root: ?TreeCacheNode<T>, route: NodeCacheRoute, parent: ?TreeCacheBranch<T>, value: T, branchKey: ?mixed, handlers?: SetHandlers<T>, onAbort: () => void) => TreeCacheNode<T>;
 declare var pruneNodeFromTree: <T>(root: TreeCacheNode<T>, node: TreeCacheNode<T>, parent: ?TreeCacheBranch<T>) => boolean;
 declare var pruneUpstreamBranches: <T>(root: TreeCacheNode<T>, branchNode: TreeCacheBranch<T>, parent: ?TreeCacheBranch<T>) => boolean;
 declare var countDownstreamLeaves: <T>(node: TreeCacheNode<T>) => number;
