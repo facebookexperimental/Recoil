@@ -30,7 +30,7 @@ const RecoilValueClasses = require('./Recoil_RecoilValue');
 declare class DefaultValue {}
 const DEFAULT_VALUE: DefaultValue = new DefaultValue();
 declare class RecoilValueNotReady extends Error {
-  constructor(key: string): any
+  constructor(key: NodeKey): any
 }
 export type PersistenceType = 'none' | 'url';
 export type PersistenceInfo = $ReadOnly<{

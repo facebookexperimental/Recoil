@@ -53,7 +53,7 @@
  */
 'use strict';
 
-import type { Loadable, LoadablePromise } from '../adt/Recoil_Loadable';
+import type { Loadable } from '../adt/Recoil_Loadable';
 import type { CachePolicy } from '../caches/Recoil_CachePolicy';
 import type { NodeCacheRoute, TreeCacheImplementation } from '../caches/Recoil_TreeCacheImplementationType';
 import type { DefaultValue } from '../core/Recoil_Node';
@@ -64,8 +64,8 @@ import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State
 import type { GetRecoilValue, ResetRecoilState, SetRecoilState } from './Recoil_callbackTypes';
 
 const {
-  CANCELED,
   Canceled,
+  CANCELED,
   loadableWithError,
   loadableWithPromise,
   loadableWithValue
@@ -183,6 +183,16 @@ type ExecutionInfo<T> = {
   latestLoadable: ?Loadable<T>,
   latestExecutionId: ?ExecutionId,
   stateVersion: ?number,
+}; // An object to hold the current state for loading dependencies for a particular
+// execution of a selector.  This is used for async selector handling to know
+// which dependency was pending or if a user-promise was thrown.  An object is
+// used instead of just a variable with the loadingDepKey so that if the
+// selector is async we can still access the current state in a promise chain
+// by updating the object reference.
+
+type LoadingDepsState = {
+  loadingDepKey: NodeKey | null,
+  loadingDepPromise: Promise<mixed> | null,
 };
 const dependencyStack = []; // for detecting circular dependencies.
 

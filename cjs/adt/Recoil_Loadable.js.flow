@@ -24,13 +24,8 @@ const nullthrows = require('../util/Recoil_nullthrows');
 const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()
 
-export type ResolvedLoadablePromiseInfo<+T> = $ReadOnly<{
-  __value: T,
-  __key?: NodeKey,
-}>;
 declare class Canceled {}
 const CANCELED: Canceled = new Canceled();
-export type LoadablePromise<+T> = Promise<ResolvedLoadablePromiseInfo<T> | Canceled>;
 type Accessors<+T> = $ReadOnly<{
   // Attempt to get the value.
   // If there's an error, throw an error.  If it's still loading, throw a Promise
@@ -42,7 +37,7 @@ type Accessors<+T> = $ReadOnly<{
   errorOrThrow: () => mixed,
   promiseOrThrow: () => Promise<T>,
   is: (Loadable<mixed>) => boolean,
-  map: <T, S>(map: (T) => Loadable<S> | Promise<S> | S) => Loadable<S>,
+  map: <U, V>(map: (U) => Loadable<V> | Promise<V> | V) => Loadable<V>,
 }>;
 type ValueAccessors<+T> = $ReadOnly<{ ...Accessors<T>,
   valueMaybe: () => T,
@@ -74,7 +69,7 @@ type ErrorLoadable<+T> = $ReadOnly<{
 type LoadingLoadable<+T> = $ReadOnly<{
   __loadable: number,
   state: 'loading',
-  contents: LoadablePromise<T>,
+  contents: Promise<T | Canceled>,
   ...LoadingAccessors<T>,
 }>;
 export type Loadable<+T> = ValueLoadable<T> | ErrorLoadable<T> | LoadingLoadable<T>;
@@ -132,9 +127,7 @@ const loadableAccessors = {
       try {
         // $FlowFixMe[object-this-reference]
         const next = map(this.contents);
-        return isPromise(next) ? loadableWithPromise(next.then(value => ({
-          __value: value
-        }))) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
+        return isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
         (next: any) : // flowlint-line unclear-type:off
         loadableWithValue((next: any)); // flowlint-line unclear-type:off
       } catch (e) {
@@ -149,16 +142,14 @@ const loadableAccessors = {
     if (this.state === 'loading') {
       return loadableWithPromise( // $FlowFixMe[object-this-reference]
       this.contents.then(value => {
-        const next = map(value.__value);
+        const next = map(value);
 
         if (isLoadable(next)) {
           const nextLoadable: Loadable<S> = (next: any); // flowlint-line unclear-type:off
 
           switch (nextLoadable.state) {
             case 'hasValue':
-              return {
-                __value: nextLoadable.contents
-              };
+              return nextLoadable.contents;
 
             case 'hasError':
               throw nextLoadable.contents;
@@ -168,9 +159,7 @@ const loadableAccessors = {
           }
         }
 
-        return {
-          __value: next
-        };
+        return next;
       }).catch(e => {
         if (isPromise(e)) {
           // we were "suspended," try again
@@ -193,7 +182,8 @@ declare function loadableWithValue<T>(value: T): ValueLoadable<T>;
 declare function loadableWithError<T>(error: mixed): ErrorLoadable<T>; // TODO Probably need to clean-up this API to accept `Promise<T>`
 // with an alternative params or mechanism for internal key proxy.
 
-declare function loadableWithPromise<T>(promise: LoadablePromise<T>): LoadingLoadable<T>;
+declare var throwCanceled: (value: any) => any;
+declare function loadableWithPromise<T>(promise: Promise<T | Canceled>): LoadingLoadable<T>;
 declare function loadableLoading<T>(): Loadable<T>;
 type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
 declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>; // TODO Actually get this to work with Flow

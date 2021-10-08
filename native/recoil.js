@@ -97,9 +97,7 @@ const loadableAccessors = {
       try {
         // $FlowFixMe[object-this-reference]
         const next = map(this.contents);
-        return Recoil_isPromise(next) ? loadableWithPromise(next.then(value => ({
-          __value: value
-        }))) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
+        return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
         next : // flowlint-line unclear-type:off
         loadableWithValue(next); // flowlint-line unclear-type:off
       } catch (e) {
@@ -114,16 +112,14 @@ const loadableAccessors = {
     if (this.state === 'loading') {
       return loadableWithPromise( // $FlowFixMe[object-this-reference]
       this.contents.then(value => {
-        const next = map(value.__value);
+        const next = map(value);
 
         if (isLoadable(next)) {
           const nextLoadable = next; // flowlint-line unclear-type:off
 
           switch (nextLoadable.state) {
             case 'hasValue':
-              return {
-                __value: nextLoadable.contents
-              };
+              return nextLoadable.contents;
 
             case 'hasError':
               throw nextLoadable.contents;
@@ -133,9 +129,7 @@ const loadableAccessors = {
           }
         }
 
-        return {
-          __value: next
-        };
+        return next;
       }).catch(e => {
         if (Recoil_isPromise(e)) {
           // we were "suspended," try again
@@ -208,6 +202,14 @@ function loadableWithError(error) {
 // with an alternative params or mechanism for internal key proxy.
 
 
+const throwCanceled = value => {
+  if (value instanceof Canceled) {
+    throw value;
+  }
+
+  return value;
+};
+
 function loadableWithPromise(promise) {
   return Object.freeze({
     __loadable: TYPE_CHECK_COOKIE,
@@ -216,27 +218,19 @@ function loadableWithPromise(promise) {
     ...loadableAccessors,
 
     getValue() {
-      throw this.contents.then(({
-        __value
-      }) => __value);
+      throw this.contents.then(throwCanceled);
     },
 
     toPromise() {
-      return this.contents.then(({
-        __value
-      }) => __value);
+      return this.contents.then(throwCanceled);
     },
 
     promiseMaybe() {
-      return this.contents.then(({
-        __value
-      }) => __value);
+      return this.contents.then(throwCanceled);
     },
 
     promiseOrThrow() {
-      return this.contents.then(({
-        __value
-      }) => __value);
+      return this.contents.then(throwCanceled);
     }
 
   });
@@ -247,9 +241,7 @@ function loadableLoading() {
 }
 
 function loadableAll(inputs) {
-  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)).then(value => ({
-    __value: value
-  })));
+  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
 } // TODO Actually get this to work with Flow
 
 
@@ -6049,8 +6041,8 @@ var Recoil_PerformanceTimings = {
 };
 
 const {
-  CANCELED: CANCELED$2,
   Canceled: Canceled$1,
+  CANCELED: CANCELED$2,
   loadableWithError: loadableWithError$1,
   loadableWithPromise: loadableWithPromise$1,
   loadableWithValue: loadableWithValue$2
@@ -6247,7 +6239,7 @@ function selector(options) {
    */
 
 
-  function wrapPendingPromise(store, promise, state, depValues, executionId) {
+  function wrapPendingPromise(store, promise, state, depValues, executionId, loadingDepsState) {
     return promise.then(value => {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
@@ -6260,10 +6252,7 @@ function selector(options) {
       setCache(state, depValuesToDepRoute(depValues), loadable);
       setDepsInStore(store, state, new Set(depValues.keys()), executionId);
       setLoadableInStoreToNotifyDeps(store, loadable, executionId);
-      return {
-        __value: value,
-        __key: key
-      };
+      return value;
     }).catch(errorOrPromise => {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
@@ -6276,7 +6265,7 @@ function selector(options) {
       }
 
       if (Recoil_isPromise(errorOrPromise)) {
-        return wrapPendingDependencyPromise(store, errorOrPromise, state, depValues, executionId);
+        return wrapPendingDependencyPromise(store, errorOrPromise, state, depValues, executionId, loadingDepsState);
       }
 
       const loadable = loadableWithError$1(errorOrPromise);
@@ -6319,7 +6308,7 @@ function selector(options) {
    */
 
 
-  function wrapPendingDependencyPromise(store, promise, state, existingDeps, executionId) {
+  function wrapPendingDependencyPromise(store, promise, state, existingDeps, executionId, loadingDepsState) {
     return promise.then(resolvedDep => {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
@@ -6330,14 +6319,15 @@ function selector(options) {
       if (resolvedDep instanceof Canceled$1) {
         Recoil_recoverableViolation('Selector was released while it had dependencies');
         return CANCELED$2;
-      }
+      } // Check if we are handling a pending Recoil dependency or if the user
+      // threw their own Promise to "suspend" a selector evaluation.  We need
+      // to check that the loadingDepPromise actually matches the promise that
+      // we caught in case the selector happened to catch the promise we threw
+      // for a pending Recoil dependency from `getRecoilValue()` and threw
+      // their own promise instead.
 
-      const {
-        __key: resolvedDepKey,
-        __value: depValue
-      } = resolvedDep !== null && resolvedDep !== void 0 ? resolvedDep : {};
 
-      if (resolvedDepKey != null) {
+      if (loadingDepsState.loadingDepKey != null && loadingDepsState.loadingDepPromise === promise) {
         /**
          * Note for async atoms, this means we are changing the atom's value
          * in the store for the given version. This should be alright because
@@ -6345,7 +6335,7 @@ function selector(options) {
          * already been triggered by the atom being resolved (see this logic
          * in Recoil_atom.js)
          */
-        state.atomValues.set(resolvedDepKey, loadableWithValue$2(depValue));
+        state.atomValues.set(loadingDepsState.loadingDepKey, loadableWithValue$2(resolvedDep));
       } else {
         /**
          * If resolvedDepKey is not defined, the promise was a user-thrown
@@ -6388,7 +6378,7 @@ function selector(options) {
        * The ideal case is more difficult to implement as it would require that
        * we capture and wait for the the async dependency right after checking
        * the cache. The current approach takes advantage of the fact that running
-       * the selector already has a code path that lets use exit early when
+       * the selector already has a code path that lets us exit early when
        * an async dep resolves.
        */
 
@@ -6397,10 +6387,7 @@ function selector(options) {
 
       if (cachedLoadable && cachedLoadable.state === 'hasValue') {
         setExecutionInfo(cachedLoadable, store);
-        return {
-          __value: cachedLoadable.contents,
-          __key: key
-        };
+        return cachedLoadable.contents;
       }
       /**
        * If this execution is stale, let's check to see if there is some in
@@ -6457,15 +6444,8 @@ function selector(options) {
       if (loadable.state === 'hasError') {
         throw loadable.contents;
       }
-
-      if (loadable.state === 'hasValue') {
-        return {
-          __value: loadable.contents,
-          __key: key
-        };
-      }
       /**
-       * Returning promise here without wrapping as the wrapepr logic was
+       * Returning any promises here without wrapping as the wrapepr logic was
        * already done when we called evaluateSelectorGetter() to get this
        * loadable
        */
@@ -6516,6 +6496,10 @@ function selector(options) {
     let result;
     let resultIsError = false;
     let loadable;
+    const loadingDepsState = {
+      loadingDepKey: null,
+      loadingDepPromise: null
+    };
     const depValues = new Map();
     /**
      * Starting a fresh set of deps that we'll be using to update state. We're
@@ -6539,11 +6523,20 @@ function selector(options) {
       const depLoadable = getCachedNodeLoadable(store, state, depKey);
       depValues.set(depKey, depLoadable);
 
-      if (depLoadable.state === 'hasValue') {
-        return depLoadable.contents;
+      switch (depLoadable.state) {
+        case 'hasValue':
+          return depLoadable.contents;
+
+        case 'hasError':
+          throw depLoadable.contents;
+
+        case 'loading':
+          loadingDepsState.loadingDepKey = depKey;
+          loadingDepsState.loadingDepPromise = depLoadable.contents;
+          throw depLoadable.contents;
       }
 
-      throw depLoadable.contents;
+      throw new Error('Invalid Loadable state');
     }
 
     let gateCallback = false;
@@ -6576,7 +6569,7 @@ function selector(options) {
       gateCallback = true;
 
       if (Recoil_isPromise(result)) {
-        result = wrapPendingPromise(store, result, state, depValues, executionId).finally(endPerfBlock);
+        result = wrapPendingPromise(store, result, state, depValues, executionId, loadingDepsState).finally(endPerfBlock);
       } else {
         endPerfBlock();
       }
@@ -6584,7 +6577,7 @@ function selector(options) {
       result = errorOrDepPromise;
 
       if (Recoil_isPromise(result)) {
-        result = wrapPendingDependencyPromise(store, result, state, depValues, executionId).finally(endPerfBlock);
+        result = wrapPendingDependencyPromise(store, result, state, depValues, executionId, loadingDepsState).finally(endPerfBlock);
       } else {
         resultIsError = true;
         endPerfBlock();
@@ -7001,13 +6994,8 @@ function baseAtom(options) {
   const retainedBy = retainedByOptionWithDefault$2(options.retainedBy_UNSTABLE);
   let liveStoresCount = 0;
   let defaultLoadable = Recoil_isPromise(options.default) ? loadableWithPromise$2(options.default.then(value => {
-    defaultLoadable = loadableWithValue$3(value); // TODO Temporary disable Flow due to pending selector_NEW refactor
-
-    const promiseInfo = {
-      __key: key,
-      __value: value
-    };
-    return promiseInfo;
+    defaultLoadable = loadableWithValue$3(value);
+    return value;
   }).catch(error => {
     defaultLoadable = loadableWithError$2(error);
     throw error;
@@ -7046,10 +7034,7 @@ function baseAtom(options) {
         setRecoilValue$3(store, node, value);
       }
 
-      return {
-        __key: key,
-        __value: value
-      };
+      return value;
     }).catch(error => {
       var _store$getState$nextT2, _state$atomValues$get2;
 
@@ -7100,14 +7085,9 @@ function baseAtom(options) {
           const retValue = initValue; // flowlint-line unclear-type:off
 
           return retValue instanceof DefaultValue$2 ? defaultLoadable : // flowlint-line unclear-type:off
-          Recoil_isPromise(retValue) ? loadableWithPromise$2(retValue.then(v => ({
-            __key: key,
-            __value: v instanceof DefaultValue$2 ? // TODO It's a little weird that this returns a Promise<T>
-            // instead of T, but it seems to work. This can be cleaned
-            // up if we clean up how Loadable's wrap keys and values.
-            defaultLoadable.toPromise() // flowlint-line unclear-type:off
-            : v
-          }))) : loadableWithValue$3(retValue);
+          Recoil_isPromise(retValue) ? loadableWithPromise$2(retValue.then(v => v instanceof DefaultValue$2 ? // Cast T to S
+          defaultLoadable.toPromise() // flowlint-line unclear-type:off
+          : v)) : loadableWithValue$3(retValue);
         }
 
         return getRecoilValueAsLoadable$4(store, recoilValue);
@@ -7783,14 +7763,6 @@ function unwrapDependencies(dependencies) {
   return Array.isArray(dependencies) ? dependencies : Object.getOwnPropertyNames(dependencies).map(key => dependencies[key]);
 }
 
-function getValueFromLoadablePromiseResult(result) {
-  if (result != null && typeof result === 'object' && result.hasOwnProperty('__value')) {
-    return result.__value;
-  }
-
-  return result;
-}
-
 function wrapResults(dependencies, results) {
   return Array.isArray(dependencies) ? results : // Object.getOwnPropertyNames() has consistent key ordering with ES6
   Object.getOwnPropertyNames(dependencies).reduce((out, key, idx) => ({ ...out,
@@ -7854,7 +7826,7 @@ const waitForAny = Recoil_selectorFamily({
       for (const [i, exp] of exceptions.entries()) {
         if (Recoil_isPromise(exp)) {
           exp.then(result => {
-            results[i] = getValueFromLoadablePromiseResult(result);
+            results[i] = result;
             exceptions[i] = undefined;
             resolve(wrapLoadables(dependencies, results, exceptions));
           }).catch(error => {
@@ -7891,7 +7863,7 @@ const waitForAll = Recoil_selectorFamily({
     } // Otherwise, return a promise that will resolve when all results are available
 
 
-    return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults).map(getValueFromLoadablePromiseResult)));
+    return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults)));
   },
   dangerouslyAllowMutability: true
 });
@@ -7911,7 +7883,7 @@ const waitForAllSettled = Recoil_selectorFamily({
 
 
     return Promise.all(exceptions.map((exp, i) => Recoil_isPromise(exp) ? exp.then(result => {
-      results[i] = getValueFromLoadablePromiseResult(result);
+      results[i] = result;
       exceptions[i] = undefined;
     }).catch(error => {
       results[i] = undefined;

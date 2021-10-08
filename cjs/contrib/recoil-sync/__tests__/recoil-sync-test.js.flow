@@ -28,7 +28,13 @@ const {
   loadableWithValue
 } = require('../../../adt/Recoil_Loadable');
 
+const {
+  useRecoilValue
+} = require('../../../hooks/Recoil_Hooks');
+
 const atom = require('../../../recoil_values/Recoil_atom');
+
+const atomFamily = require('../../../recoil_values/Recoil_atomFamily');
 
 const selectorFamily = require('../../../recoil_values/Recoil_selectorFamily');
 
@@ -177,9 +183,7 @@ test('Read from storage async', async () => {
       restore: validateAny
     })]
   });
-  const storage = new Map([['recoil-sync read async', loadableWithPromise(Promise.resolve({
-    __value: 'A'
-  }))]]);
+  const storage = new Map([['recoil-sync read async', loadableWithPromise(Promise.resolve('A'))]]);
   const container = renderElements(<>
       <TestRecoilSync storage={storage} />
       <ReadsAtom atom={atomA} />
@@ -263,9 +267,7 @@ test('Read from storage upgrade', async () => {
       restore: upgrade(validateNumber, () => 999)
     }), syncEffect<number>({
       restore: upgrade( // Test async validation
-      x => typeof x === 'string' ? loadableWithPromise(Promise.resolve({
-        __value: x
-      })) : null, str => Number(str))
+      x => typeof x === 'string' ? loadableWithPromise(Promise.resolve(x)) : null, str => Number(str))
     }), // This sync effect is ignored
     syncEffect<number>({
       restore: upgrade(validateNumber, () => 999)
@@ -279,9 +281,7 @@ test('Read from storage upgrade', async () => {
       restore: upgrade<number, string>(validateNumber, num => `${num}`)
     })]
   });
-  const storage = new Map([['recoil-sync fail validation', loadableWithValue(123)], ['recoil-sync upgrade number', loadableWithValue(123)], ['recoil-sync upgrade string', loadableWithValue('123')], ['recoil-sync upgrade async', loadableWithPromise(Promise.resolve({
-    __value: 123
-  }))]]);
+  const storage = new Map([['recoil-sync fail validation', loadableWithValue(123)], ['recoil-sync upgrade number', loadableWithValue(123)], ['recoil-sync upgrade string', loadableWithValue('123')], ['recoil-sync upgrade async', loadableWithPromise(Promise.resolve(123))]]);
   const container = renderElements(<>
       <TestRecoilSync storage={storage} />
       <ReadsAtom atom={atomA} />
@@ -468,7 +468,7 @@ test('Listen to storage', async () => {
   // act(() =>
   //   updateItem1(
   //     'recoil-sync listen',
-  //     loadableWithPromise(Promise.resolve({__value: 'ASYNC'})),
+  //     loadableWithPromise(Promise.resolve( 'ASYNC')),
   //   ),
   // );
   // await flushPromisesAndTimers();
@@ -519,7 +519,6 @@ test('Persist on read - async', async () => {
   let resolveA, resolveB1, resolveB2;
   const atomA = atom({
     key: 'recoil-sync persist on read default async',
-    // default: Promise.resolve('ASYNC_DEFAULT'),
     default: new Promise(resolve => {
       resolveA = resolve;
     }),
@@ -571,4 +570,71 @@ test('Persist on read - async', async () => {
   expect(storage.size).toBe(2);
   expect(storage.get('recoil-sync persist on read default async')?.getValue()).toBe('ASYNC_DEFAULT');
   expect(storage.get('recoil-sync persist on read init async')?.getValue()).toBe('ASYNC_INIT_AFTER');
+});
+test('Sync based on component props', async () => {
+  declare function SyncWithProps(props: any): any;
+  const atomA = atom({
+    key: 'recoil-sync from props spam',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({
+      key: 'spam',
+      restore: validateAny
+    })]
+  });
+  const atomB = atom({
+    key: 'recoil-sync from props eggs',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({
+      key: 'eggs',
+      restore: validateAny
+    })]
+  });
+  const atomC = atom({
+    key: 'recoil-sync from props default',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({
+      key: 'default',
+      restore: validateAny
+    })]
+  });
+  const container = renderElements(<>
+      <SyncWithProps spam="SPAM" eggs="EGGS" />
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+      <ReadsAtom atom={atomC} />
+    </>);
+  expect(container.textContent).toBe('"SPAM""EGGS""DEFAULT"');
+});
+test('Sync Atom Family', async () => {
+  const atoms = atomFamily({
+    key: 'recoil-sync atom family',
+    default: 'DEFAULT',
+    effects_UNSTABLE: param => [syncEffect({
+      key: param,
+      restore: validateAny
+    })]
+  });
+  const storage = new Map([['a', loadableWithValue('A')], ['b', loadableWithValue('B')]]);
+  const container = renderElements(<>
+      <TestRecoilSync storage={storage} />
+      <ReadsAtom atom={atoms('a')} />
+      <ReadsAtom atom={atoms('b')} />
+      <ReadsAtom atom={atoms('c')} />
+    </>);
+  expect(container.textContent).toBe('"A""B""DEFAULT"');
+}); // Test that using atoms before the sync hook initialize properly
+
+test('Reading before sync hook', async () => {
+  const atoms = atomFamily({
+    key: 'recoil-sync order',
+    default: 'DEFAULT',
+    effects_UNSTABLE: param => [syncEffect({
+      key: param,
+      restore: validateAny
+    })]
+  });
+  declare function SyncOrder(): any;
+  declare function MyRoot(): any;
+  const container = renderElements(<MyRoot />);
+  expect(container.textContent).toBe('"A"BC"D""E"');
 });

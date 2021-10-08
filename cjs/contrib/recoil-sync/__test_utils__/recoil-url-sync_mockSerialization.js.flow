@@ -33,9 +33,11 @@ declare function encodeURLPart(href: string, loc: LocationOption, obj: any): str
 declare function encodeURL(parts: Array<[LocationOption, {...}]>): string;
 declare function expectURL(parts: Array<[LocationOption, {...}]>): any;
 declare function gotoURL(parts: Array<[LocationOption, {...}]>): any;
+declare function goBack(): any;
 module.exports = {
   TestURLSync,
   encodeURL,
   expectURL,
-  gotoURL
+  gotoURL,
+  goBack
 };

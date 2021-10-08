@@ -40,10 +40,11 @@ export type ItemDiff = Map<ItemKey, ?Loadable<mixed>>; // null means reset
 export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>; // null means default
 
 export type ReadItem = (ItemKey) => ?Loadable<mixed>;
-export type WriteItems = ({
+type WriteInterface = {
   diff: ItemDiff,
   allItems: ItemSnapshot,
-}) => void;
+};
+export type WriteItems = (WriteInterface) => void;
 export type ListenInterface = {
   updateItem: (ItemKey, ?Loadable<mixed>) => void,
   updateAllKnownItems: (ItemSnapshot) => void,

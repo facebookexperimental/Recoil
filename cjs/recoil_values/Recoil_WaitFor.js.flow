@@ -41,7 +41,6 @@ declare function isError(exp: any): any;
 declare function unwrapDependencies(dependencies: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | {
   +[string]: RecoilValueReadOnly<mixed>
 }): $ReadOnlyArray<RecoilValue<mixed>>;
-declare function getValueFromLoadablePromiseResult(result: any): any;
 declare function wrapResults(dependencies: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | {
   +[string]: RecoilValueReadOnly<mixed>
 }, results: any): any;
@@ -104,7 +103,7 @@ const waitForAny: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $R
       for (const [i, exp] of exceptions.entries()) {
         if (isPromise(exp)) {
           exp.then(result => {
-            results[i] = getValueFromLoadablePromiseResult(result);
+            results[i] = result;
             exceptions[i] = undefined;
             resolve(wrapLoadables(dependencies, results, exceptions));
           }).catch(error => {
@@ -149,7 +148,7 @@ const waitForAll: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed>> | $R
     } // Otherwise, return a promise that will resolve when all results are available
 
 
-    return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults).map(getValueFromLoadablePromiseResult)));
+    return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults)));
   },
   dangerouslyAllowMutability: true
 });
@@ -177,7 +176,7 @@ const waitForAllSettled: <RecoilValues: $ReadOnlyArray<RecoilValueReadOnly<mixed
 
 
     return Promise.all(exceptions.map((exp, i) => isPromise(exp) ? exp.then(result => {
-      results[i] = getValueFromLoadablePromiseResult(result);
+      results[i] = result;
       exceptions[i] = undefined;
     }).catch(error => {
       results[i] = undefined;

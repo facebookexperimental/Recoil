@@ -34,7 +34,8 @@ const {
 
 type NodeKey = string;
 type AtomRegistration = {
-  history: HistoryOption
+  history: HistoryOption,
+  itemKeys: Set<ItemKey>,
 };
 const registries: Map<SyncKey, Map<NodeKey, AtomRegistration>> = new Map();
 declare function parseURL(loc: LocationOption): ?string;
