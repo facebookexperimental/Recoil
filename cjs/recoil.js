@@ -18,253 +18,28 @@ var reactDom = _interopDefault(require('react-dom'));
  * @format
  */
 
-// Split declaration and implementation to allow this function to pretend to
-// check for actual instance of Promise instead of something with a `then`
-// method.
-// eslint-disable-next-line no-redeclare
-function isPromise(p) {
-  return !!p && typeof p.then === 'function';
+function sprintf(format, ...args) {
+  let index = 0;
+  return format.replace(/%s/g, () => String(args[index++]));
 }
 
-var Recoil_isPromise = isPromise;
+var sprintf_1 = sprintf;
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-function nullthrows(x, message) {
-  if (x != null) {
-    return x;
+function expectationViolation(format, ...args) {
+  if (process.env.NODE_ENV !== "production") {
+    const message = sprintf_1.call(null, format, ...args);
+    const error = new Error(message);
+    error.name = 'Expectation Violation';
+    console.error(error);
   }
-
-  throw new Error(message !== null && message !== void 0 ? message : 'Got unexpected null or undefined');
 }
 
-var Recoil_nullthrows = nullthrows;
+var expectationViolation_1 = expectationViolation;
 
-const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
-// Containing static factories of withValue(), withError(), withPromise(), and all()
-
-class Canceled {}
-
-const CANCELED = new Canceled();
-const loadableAccessors = {
-  valueMaybe() {
-    return undefined;
-  },
-
-  valueOrThrow() {
-    const error = new Error( // $FlowFixMe[object-this-reference]
-    `Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
-  },
-
-  errorMaybe() {
-    return undefined;
-  },
-
-  errorOrThrow() {
-    const error = new Error( // $FlowFixMe[object-this-reference]
-    `Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
-  },
-
-  promiseMaybe() {
-    return undefined;
-  },
-
-  promiseOrThrow() {
-    const error = new Error( // $FlowFixMe[object-this-reference]
-    `Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
-  },
-
-  is(other) {
-    // $FlowFixMe[object-this-reference]
-    return other.state === this.state && other.contents === this.contents;
-  },
-
-  map(map) {
-    // $FlowFixMe[object-this-reference]
-    if (this.state === 'hasError') {
-      // $FlowFixMe[object-this-reference]
-      return this;
-    } // $FlowFixMe[object-this-reference]
+// @oss-only
 
 
-    if (this.state === 'hasValue') {
-      try {
-        // $FlowFixMe[object-this-reference]
-        const next = map(this.contents);
-        return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
-        next : // flowlint-line unclear-type:off
-        loadableWithValue(next); // flowlint-line unclear-type:off
-      } catch (e) {
-        return Recoil_isPromise(e) ? // If we "suspended", then try again.
-        // errors and subsequent retries will be handled in 'loading' case
-        // $FlowFixMe[object-this-reference]
-        loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
-      }
-    } // $FlowFixMe[object-this-reference]
-
-
-    if (this.state === 'loading') {
-      return loadableWithPromise( // $FlowFixMe[object-this-reference]
-      this.contents.then(value => {
-        const next = map(value);
-
-        if (isLoadable(next)) {
-          const nextLoadable = next; // flowlint-line unclear-type:off
-
-          switch (nextLoadable.state) {
-            case 'hasValue':
-              return nextLoadable.contents;
-
-            case 'hasError':
-              throw nextLoadable.contents;
-
-            case 'loading':
-              return nextLoadable.contents;
-          }
-        }
-
-        return next;
-      }).catch(e => {
-        if (Recoil_isPromise(e)) {
-          // we were "suspended," try again
-          // $FlowFixMe[object-this-reference]
-          return e.then(() => map(this.contents));
-        }
-
-        throw e;
-      }));
-    }
-
-    const error = new Error('Invalid Loadable state'); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
-  }
-
-};
-
-function loadableWithValue(value) {
-  // Build objects this way since Flow doesn't support disjoint unions for class properties
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'hasValue',
-    contents: value,
-    ...loadableAccessors,
-
-    getValue() {
-      return this.contents;
-    },
-
-    toPromise() {
-      return Promise.resolve(this.contents);
-    },
-
-    valueMaybe() {
-      return this.contents;
-    },
-
-    valueOrThrow() {
-      return this.contents;
-    }
-
-  });
-}
-
-function loadableWithError(error) {
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'hasError',
-    contents: error,
-    ...loadableAccessors,
-
-    getValue() {
-      throw this.contents;
-    },
-
-    toPromise() {
-      return Promise.reject(this.contents);
-    },
-
-    errorMaybe() {
-      return this.contents;
-    },
-
-    errorOrThrow() {
-      return this.contents;
-    }
-
-  });
-} // TODO Probably need to clean-up this API to accept `Promise<T>`
-// with an alternative params or mechanism for internal key proxy.
-
-
-const throwCanceled = value => {
-  if (value instanceof Canceled) {
-    throw value;
-  }
-
-  return value;
-};
-
-function loadableWithPromise(promise) {
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'loading',
-    contents: promise,
-    ...loadableAccessors,
-
-    getValue() {
-      throw this.contents.then(throwCanceled);
-    },
-
-    toPromise() {
-      return this.contents.then(throwCanceled);
-    },
-
-    promiseMaybe() {
-      return this.contents.then(throwCanceled);
-    },
-
-    promiseOrThrow() {
-      return this.contents.then(throwCanceled);
-    }
-
-  });
-}
-
-function loadableLoading() {
-  return loadableWithPromise(new Promise(() => {}));
-}
-
-function loadableAll(inputs) {
-  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
-} // TODO Actually get this to work with Flow
-
-
-function isLoadable(x) {
-  return x.__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
-}
-
-var Recoil_Loadable = {
-  loadableWithValue,
-  loadableWithError,
-  loadableWithPromise,
-  loadableLoading,
-  loadableAll,
-  isLoadable,
-  Canceled,
-  CANCELED
-};
+var Recoil_expectationViolation = expectationViolation_1;
 
 var _useMutableSource;
 
@@ -319,120 +94,6 @@ var Recoil_gkx_1 = Recoil_gkx; // @oss-only
  * 
  * @format
  */
-
-function recoverableViolation(message, projectName, {
-  error
-} = {}) {
-  if (process.env.NODE_ENV !== "production") {
-    console.error(message, error);
-  }
-
-  return null;
-}
-
-var recoverableViolation_1 = recoverableViolation;
-
-// @oss-only
-
-
-var Recoil_recoverableViolation = recoverableViolation_1;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * Utilities for working with built-in Maps and Sets without mutating them.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-function setByAddingToSet(set, v) {
-  const next = new Set(set);
-  next.add(v);
-  return next;
-}
-
-function setByDeletingFromSet(set, v) {
-  const next = new Set(set);
-  next.delete(v);
-  return next;
-}
-
-function mapBySettingInMap(map, k, v) {
-  const next = new Map(map);
-  next.set(k, v);
-  return next;
-}
-
-function mapByUpdatingInMap(map, k, updater) {
-  const next = new Map(map);
-  next.set(k, updater(next.get(k)));
-  return next;
-}
-
-function mapByDeletingFromMap(map, k) {
-  const next = new Map(map);
-  next.delete(k);
-  return next;
-}
-
-function mapByDeletingMultipleFromMap(map, ks) {
-  const next = new Map(map);
-  ks.forEach(k => next.delete(k));
-  return next;
-}
-
-var Recoil_CopyOnWrite = {
-  setByAddingToSet,
-  setByDeletingFromSet,
-  mapBySettingInMap,
-  mapByUpdatingInMap,
-  mapByDeletingFromMap,
-  mapByDeletingMultipleFromMap
-};
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-/**
- * Creates a new iterable whose output is generated by passing the input
- * iterable's values through the filter function.
- */
-
-function* filterIterable(iterable, predicate) {
-  // Use generator to create iterable/iterator
-  let index = 0;
-
-  for (const value of iterable) {
-    if (predicate(value, index++)) {
-      yield value;
-    }
-  }
-}
-
-var Recoil_filterIterable = filterIterable;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
 /**
  * Creates a new iterable whose output is generated by passing the input
  * iterable's values through the mapper function.
@@ -462,28 +123,43 @@ var Recoil_mapIterable = mapIterable;
  * @format
  */
 
-function sprintf(format, ...args) {
-  let index = 0;
-  return format.replace(/%s/g, () => String(args[index++]));
-}
-
-var sprintf_1 = sprintf;
-
-function expectationViolation(format, ...args) {
-  if (process.env.NODE_ENV !== "production") {
-    const message = sprintf_1.call(null, format, ...args);
-    const error = new Error(message);
-    error.name = 'Expectation Violation';
-    console.error(error);
+function nullthrows(x, message) {
+  if (x != null) {
+    return x;
   }
+
+  throw new Error(message !== null && message !== void 0 ? message : 'Got unexpected null or undefined');
 }
 
-var expectationViolation_1 = expectationViolation;
+var Recoil_nullthrows = nullthrows;
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function recoverableViolation(message, projectName, {
+  error
+} = {}) {
+  if (process.env.NODE_ENV !== "production") {
+    console.error(message, error);
+  }
+
+  return null;
+}
+
+var recoverableViolation_1 = recoverableViolation;
 
 // @oss-only
 
 
-var Recoil_expectationViolation = expectationViolation_1;
+var Recoil_recoverableViolation = recoverableViolation_1;
 
 function _defineProperty(obj, key, value) {
   if (key in obj) {
@@ -666,656 +342,6 @@ var Recoil_Node = {
   DefaultValue,
   DEFAULT_VALUE,
   RecoilValueNotReady
-};
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-class RetentionZone {}
-
-function retentionZone() {
-  return new RetentionZone();
-}
-
-var Recoil_RetentionZone = {
-  RetentionZone,
-  retentionZone
-};
-
-const {
-  setByAddingToSet: setByAddingToSet$1
-} = Recoil_CopyOnWrite;
-
-
-
-
-
-
-
-const {
-  getNode: getNode$1,
-  getNodeMaybe: getNodeMaybe$1,
-  recoilValuesForKeys: recoilValuesForKeys$1
-} = Recoil_Node;
-
-const {
-  RetentionZone: RetentionZone$1
-} = Recoil_RetentionZone; // flowlint-next-line unclear-type:off
-
-
-const emptySet = Object.freeze(new Set());
-
-class ReadOnlyRecoilValueError extends Error {}
-
-function initializeRetentionForNode(store, nodeKey, retainedBy) {
-  if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-    return () => undefined;
-  }
-
-  const {
-    nodesRetainedByZone
-  } = store.getState().retention;
-
-  function addToZone(zone) {
-    let set = nodesRetainedByZone.get(zone);
-
-    if (!set) {
-      nodesRetainedByZone.set(zone, set = new Set());
-    }
-
-    set.add(nodeKey);
-  }
-
-  if (retainedBy instanceof RetentionZone$1) {
-    addToZone(retainedBy);
-  } else if (Array.isArray(retainedBy)) {
-    for (const zone of retainedBy) {
-      addToZone(zone);
-    }
-  }
-
-  return () => {
-    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-      return;
-    }
-
-    const nodesRetainedByZone = store.getState().retention.nodesRetainedByZone;
-
-    function deleteFromZone(zone) {
-      const set = nodesRetainedByZone.get(zone);
-
-      if (set) {
-        set.delete(nodeKey);
-      }
-
-      if (set && set.size === 0) {
-        nodesRetainedByZone.delete(zone);
-      }
-    }
-
-    if (retainedBy instanceof RetentionZone$1) {
-      deleteFromZone(retainedBy);
-    } else if (Array.isArray(retainedBy)) {
-      for (const zone of retainedBy) {
-        deleteFromZone(zone);
-      }
-    }
-  };
-}
-
-function initializeNodeIfNewToStore(store, treeState, key, trigger) {
-  const storeState = store.getState();
-
-  if (storeState.nodeCleanupFunctions.has(key)) {
-    return;
-  }
-
-  const config = getNode$1(key);
-  const retentionCleanup = initializeRetentionForNode(store, key, config.retainedBy);
-  const nodeCleanup = config.init(store, treeState, trigger);
-  storeState.nodeCleanupFunctions.set(key, () => {
-    nodeCleanup();
-    retentionCleanup();
-  });
-}
-
-function cleanUpNode(store, key) {
-  var _state$nodeCleanupFun;
-
-  const state = store.getState();
-  (_state$nodeCleanupFun = state.nodeCleanupFunctions.get(key)) === null || _state$nodeCleanupFun === void 0 ? void 0 : _state$nodeCleanupFun();
-  state.nodeCleanupFunctions.delete(key);
-} // Get the current value loadable of a node and update the state.
-// Update dependencies and subscriptions for selectors.
-// Update saved value validation for atoms.
-
-
-function getNodeLoadable(store, state, key) {
-  initializeNodeIfNewToStore(store, state, key, 'get');
-  return getNode$1(key).get(store, state);
-} // Peek at the current value loadable for a node without any evaluation or state change
-
-
-function peekNodeLoadable(store, state, key) {
-  return getNode$1(key).peek(store, state);
-} // Write value directly to state bypassing the Node interface as the node
-// definitions may not have been loaded yet when processing the initial snapshot.
-
-
-function setUnvalidatedAtomValue_DEPRECATED(state, key, newValue) {
-  var _node$invalidate;
-
-  const node = getNodeMaybe$1(key);
-  node === null || node === void 0 ? void 0 : (_node$invalidate = node.invalidate) === null || _node$invalidate === void 0 ? void 0 : _node$invalidate.call(node, state);
-  return { ...state,
-    atomValues: state.atomValues.clone().delete(key),
-    nonvalidatedAtoms: state.nonvalidatedAtoms.clone().set(key, newValue),
-    dirtyAtoms: setByAddingToSet$1(state.dirtyAtoms, key)
-  };
-} // Return the discovered dependencies and values to be written by setting
-// a node value. (Multiple values may be written due to selectors getting to
-// set upstreams; deps may be discovered because of reads in updater functions.)
-
-
-function setNodeValue(store, state, key, newValue) {
-  const node = getNode$1(key);
-
-  if (node.set == null) {
-    throw new ReadOnlyRecoilValueError(`Attempt to set read-only RecoilValue: ${key}`);
-  }
-
-  const set = node.set; // so flow doesn't lose the above refinement.
-
-  initializeNodeIfNewToStore(store, state, key, 'set');
-  return set(store, state, newValue);
-}
-
-function peekNodeInfo(store, state, key) {
-  var _graph$nodeDeps$get, _storeState$nodeToCom, _storeState$nodeToCom2;
-
-  const storeState = store.getState();
-  const graph = store.getGraph(state.version);
-  const type = storeState.knownAtoms.has(key) ? 'atom' : storeState.knownSelectors.has(key) ? 'selector' : undefined;
-  const downstreamNodes = Recoil_filterIterable(getDownstreamNodes(store, state, new Set([key])), nodeKey => nodeKey !== key);
-  return {
-    loadable: peekNodeLoadable(store, state, key),
-    isActive: storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
-    isSet: type === 'selector' ? false : state.atomValues.has(key),
-    isModified: state.dirtyAtoms.has(key),
-    type,
-    // Report current dependencies.  If the node hasn't been evaluated, then
-    // dependencies may be missing based on the current state.
-    deps: recoilValuesForKeys$1((_graph$nodeDeps$get = graph.nodeDeps.get(key)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : []),
-    // Reportsall "current" subscribers.  Evaluating other nodes or
-    // previous in-progress async evaluations may introduce new subscribers.
-    subscribers: {
-      nodes: recoilValuesForKeys$1(downstreamNodes),
-      components: Recoil_mapIterable((_storeState$nodeToCom = (_storeState$nodeToCom2 = storeState.nodeToComponentSubscriptions.get(key)) === null || _storeState$nodeToCom2 === void 0 ? void 0 : _storeState$nodeToCom2.values()) !== null && _storeState$nodeToCom !== void 0 ? _storeState$nodeToCom : [], ([name]) => ({
-        name
-      }))
-    }
-  };
-} // Find all of the recursively dependent nodes
-
-
-function getDownstreamNodes(store, state, keys) {
-  const visitedNodes = new Set();
-  const visitingNodes = Array.from(keys);
-  const graph = store.getGraph(state.version);
-
-  for (let key = visitingNodes.pop(); key; key = visitingNodes.pop()) {
-    var _graph$nodeToNodeSubs;
-
-    visitedNodes.add(key);
-    const subscribedNodes = (_graph$nodeToNodeSubs = graph.nodeToNodeSubscriptions.get(key)) !== null && _graph$nodeToNodeSubs !== void 0 ? _graph$nodeToNodeSubs : emptySet;
-
-    for (const downstreamNode of subscribedNodes) {
-      if (!visitedNodes.has(downstreamNode)) {
-        visitingNodes.push(downstreamNode);
-      }
-    }
-  }
-
-  return visitedNodes;
-}
-
-var Recoil_FunctionalCore = {
-  getNodeLoadable,
-  peekNodeLoadable,
-  setNodeValue,
-  cleanUpNode,
-  setUnvalidatedAtomValue_DEPRECATED,
-  peekNodeInfo,
-  getDownstreamNodes,
-  initializeNodeIfNewToStore
-};
-
-const {
-  CANCELED: CANCELED$1
-} = Recoil_Loadable;
-
-
-
-
-
-
-
-const {
-  getDownstreamNodes: getDownstreamNodes$1,
-  getNodeLoadable: getNodeLoadable$1,
-  setNodeValue: setNodeValue$1
-} = Recoil_FunctionalCore;
-
-const {
-  getNodeMaybe: getNodeMaybe$2
-} = Recoil_Node;
-
-const {
-  DefaultValue: DefaultValue$1,
-  RecoilValueNotReady: RecoilValueNotReady$1
-} = Recoil_Node;
-
-const {
-  AbstractRecoilValue: AbstractRecoilValue$1,
-  RecoilState: RecoilState$1,
-  RecoilValueReadOnly: RecoilValueReadOnly$1,
-  isRecoilValue: isRecoilValue$1
-} = Recoil_RecoilValue$1;
-
-function getRecoilValueAsLoadable(store, {
-  key
-}, treeState = store.getState().currentTree) {
-  var _storeState$nextTree, _storeState$previousT;
-
-  // Reading from an older tree can cause bugs because the dependencies that we
-  // discover during the read are lost.
-  const storeState = store.getState();
-
-  if (!(treeState.version === storeState.currentTree.version || treeState.version === ((_storeState$nextTree = storeState.nextTree) === null || _storeState$nextTree === void 0 ? void 0 : _storeState$nextTree.version) || treeState.version === ((_storeState$previousT = storeState.previousTree) === null || _storeState$previousT === void 0 ? void 0 : _storeState$previousT.version))) {
-    Recoil_recoverableViolation('Tried to read from a discarded tree');
-  }
-
-  const loadable = getNodeLoadable$1(store, treeState, key);
-
-  if (loadable.state === 'loading') {
-    loadable.contents.catch(() => {
-      /**
-       * HACK: intercept thrown error here to prevent an uncaught promise exception. Ideally this would happen closer to selector
-       * execution (perhaps introducing a new ERROR class to be resolved by async selectors that are in an error state)
-       */
-      return CANCELED$1;
-    });
-  }
-
-  return loadable;
-}
-
-function applyAtomValueWrites(atomValues, writes) {
-  const result = atomValues.clone();
-  writes.forEach((v, k) => {
-    if (v.state === 'hasValue' && v.contents instanceof DefaultValue$1) {
-      result.delete(k);
-    } else {
-      result.set(k, v);
-    }
-  });
-  return result;
-}
-
-function valueFromValueOrUpdater(store, state, {
-  key
-}, valueOrUpdater) {
-  if (typeof valueOrUpdater === 'function') {
-    // Updater form: pass in the current value. Throw if the current value
-    // is unavailable (namely when updating an async selector that's
-    // pending or errored):
-    const current = getNodeLoadable$1(store, state, key);
-
-    if (current.state === 'loading') {
-      throw new RecoilValueNotReady$1(key);
-    } else if (current.state === 'hasError') {
-      throw current.contents;
-    } // T itself may be a function, so our refinement is not sufficient:
-
-
-    return valueOrUpdater(current.contents); // flowlint-line unclear-type:off
-  } else {
-    return valueOrUpdater;
-  }
-}
-
-function applyAction(store, state, action) {
-  if (action.type === 'set') {
-    const {
-      recoilValue,
-      valueOrUpdater
-    } = action;
-    const newValue = valueFromValueOrUpdater(store, state, recoilValue, valueOrUpdater);
-    const writes = setNodeValue$1(store, state, recoilValue.key, newValue);
-
-    for (const [key, loadable] of writes.entries()) {
-      writeLoadableToTreeState(state, key, loadable);
-    }
-  } else if (action.type === 'setLoadable') {
-    const {
-      recoilValue: {
-        key
-      },
-      loadable
-    } = action;
-    writeLoadableToTreeState(state, key, loadable);
-  } else if (action.type === 'markModified') {
-    const {
-      recoilValue: {
-        key
-      }
-    } = action;
-    state.dirtyAtoms.add(key);
-  } else if (action.type === 'setUnvalidated') {
-    var _node$invalidate;
-
-    // Write value directly to state bypassing the Node interface as the node
-    // definitions may not have been loaded yet when processing the initial snapshot.
-    const {
-      recoilValue: {
-        key
-      },
-      unvalidatedValue
-    } = action;
-    const node = getNodeMaybe$2(key);
-    node === null || node === void 0 ? void 0 : (_node$invalidate = node.invalidate) === null || _node$invalidate === void 0 ? void 0 : _node$invalidate.call(node, state);
-    state.atomValues.delete(key);
-    state.nonvalidatedAtoms.set(key, unvalidatedValue);
-    state.dirtyAtoms.add(key);
-  } else {
-    Recoil_recoverableViolation(`Unknown action ${action.type}`);
-  }
-}
-
-function writeLoadableToTreeState(state, key, loadable) {
-  if (loadable.state === 'hasValue' && loadable.contents instanceof DefaultValue$1) {
-    state.atomValues.delete(key);
-  } else {
-    state.atomValues.set(key, loadable);
-  }
-
-  state.dirtyAtoms.add(key);
-  state.nonvalidatedAtoms.delete(key);
-}
-
-function applyActionsToStore(store, actions) {
-  store.replaceState(state => {
-    const newState = copyTreeState(state);
-
-    for (const action of actions) {
-      applyAction(store, newState, action);
-    }
-
-    invalidateDownstreams(store, newState);
-    return newState;
-  });
-}
-
-function queueOrPerformStateUpdate(store, action) {
-  if (batchStack.length) {
-    const actionsByStore = batchStack[batchStack.length - 1];
-    let actions = actionsByStore.get(store);
-
-    if (!actions) {
-      actionsByStore.set(store, actions = []);
-    }
-
-    actions.push(action);
-  } else {
-    applyActionsToStore(store, [action]);
-  }
-}
-
-const batchStack = [];
-
-function batchStart() {
-  const actionsByStore = new Map();
-  batchStack.push(actionsByStore);
-  return () => {
-    for (const [store, actions] of actionsByStore) {
-      applyActionsToStore(store, actions);
-    }
-
-    const popped = batchStack.pop();
-
-    if (popped !== actionsByStore) {
-      Recoil_recoverableViolation('Incorrect order of batch popping');
-    }
-  };
-}
-
-function copyTreeState(state) {
-  return { ...state,
-    atomValues: state.atomValues.clone(),
-    nonvalidatedAtoms: state.nonvalidatedAtoms.clone(),
-    dirtyAtoms: new Set(state.dirtyAtoms)
-  };
-}
-
-function invalidateDownstreams(store, state) {
-  // Inform any nodes that were changed or downstream of changes so that they
-  // can clear out any caches as needed due to the update:
-  const downstreams = getDownstreamNodes$1(store, state, state.dirtyAtoms);
-
-  for (const key of downstreams) {
-    var _getNodeMaybe, _getNodeMaybe$invalid;
-
-    (_getNodeMaybe = getNodeMaybe$2(key)) === null || _getNodeMaybe === void 0 ? void 0 : (_getNodeMaybe$invalid = _getNodeMaybe.invalidate) === null || _getNodeMaybe$invalid === void 0 ? void 0 : _getNodeMaybe$invalid.call(_getNodeMaybe, state);
-  }
-}
-
-function setRecoilValue(store, recoilValue, valueOrUpdater) {
-  queueOrPerformStateUpdate(store, {
-    type: 'set',
-    recoilValue,
-    valueOrUpdater
-  });
-}
-
-function setRecoilValueLoadable(store, recoilValue, loadable) {
-  if (loadable instanceof DefaultValue$1) {
-    return setRecoilValue(store, recoilValue, loadable);
-  }
-
-  queueOrPerformStateUpdate(store, {
-    type: 'setLoadable',
-    recoilValue,
-    loadable
-  });
-}
-
-function markRecoilValueModified(store, recoilValue) {
-  queueOrPerformStateUpdate(store, {
-    type: 'markModified',
-    recoilValue
-  });
-}
-
-function setUnvalidatedRecoilValue(store, recoilValue, unvalidatedValue) {
-  queueOrPerformStateUpdate(store, {
-    type: 'setUnvalidated',
-    recoilValue,
-    unvalidatedValue
-  });
-}
-
-let subscriptionID = 0;
-
-function subscribeToRecoilValue(store, {
-  key
-}, callback, componentDebugName = null) {
-  const subID = subscriptionID++;
-  const storeState = store.getState();
-
-  if (!storeState.nodeToComponentSubscriptions.has(key)) {
-    storeState.nodeToComponentSubscriptions.set(key, new Map());
-  }
-
-  Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]); // Handle the case that, during the same tick that we are subscribing, an atom
-  // has been updated by some effect handler. Otherwise we will miss the update.
-
-  if (Recoil_gkx_1('recoil_early_rendering_2021')) {
-    const nextTree = store.getState().nextTree;
-
-    if (nextTree && nextTree.dirtyAtoms.has(key)) {
-      callback(nextTree);
-    }
-  }
-
-  return {
-    release: () => {
-      const storeState = store.getState();
-      const subs = storeState.nodeToComponentSubscriptions.get(key);
-
-      if (subs === undefined || !subs.has(subID)) {
-        Recoil_recoverableViolation(`Subscription missing at release time for atom ${key}. This is a bug in Recoil.`);
-        return;
-      }
-
-      subs.delete(subID);
-
-      if (subs.size === 0) {
-        storeState.nodeToComponentSubscriptions.delete(key);
-      }
-    }
-  };
-}
-
-var Recoil_RecoilValueInterface = {
-  RecoilValueReadOnly: RecoilValueReadOnly$1,
-  AbstractRecoilValue: AbstractRecoilValue$1,
-  RecoilState: RecoilState$1,
-  getRecoilValueAsLoadable,
-  setRecoilValue,
-  setRecoilValueLoadable,
-  markRecoilValueModified,
-  setUnvalidatedRecoilValue,
-  subscribeToRecoilValue,
-  isRecoilValue: isRecoilValue$1,
-  applyAtomValueWrites,
-  // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
-  batchStart,
-  writeLoadableToTreeState,
-  invalidateDownstreams,
-  copyTreeState,
-  invalidateDownstreams_FOR_TESTING: invalidateDownstreams
-};
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- *
- * This is to export esstiential functions from react-dom
- * for our web build
- */
-const {
-  unstable_batchedUpdates
-} = reactDom;
-
-var ReactBatchedUpdates = {
-  unstable_batchedUpdates
-};
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- *
- * This is to export esstiential functions from react-dom
- * for our web build
- */
-// @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
-const {
-  unstable_batchedUpdates: unstable_batchedUpdates$1
-} = ReactBatchedUpdates; // @oss-only
-
-
-var Recoil_ReactBatchedUpdates = {
-  unstable_batchedUpdates: unstable_batchedUpdates$1
-};
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-const {
-  batchStart: batchStart$1
-} = Recoil_RecoilValueInterface;
-
-const {
-  unstable_batchedUpdates: unstable_batchedUpdates$2
-} = Recoil_ReactBatchedUpdates;
-
-let batcher = unstable_batchedUpdates$2; // flowlint-next-line unclear-type:off
-
-/**
- * Sets the provided batcher function as the batcher function used by Recoil.
- *
- * Set the batcher to a custom batcher for your renderer,
- * if you use a renderer other than React DOM or React Native.
- */
-const setBatcher = newBatcher => {
-  batcher = newBatcher;
-};
-/**
- * Returns the current batcher function.
- */
-
-
-const getBatcher = () => batcher;
-/**
- * Calls the current batcher function and passes the
- * provided callback function.
- */
-
-
-const batchUpdates = callback => {
-  batcher(() => {
-    let batchEnd = () => undefined;
-
-    try {
-      batchEnd = batchStart$1();
-      callback();
-    } finally {
-      batchEnd();
-    }
-  });
-};
-
-var Recoil_Batching = {
-  getBatcher,
-  setBatcher,
-  batchUpdates
 };
 
 /**
@@ -2815,6 +1841,876 @@ var Recoil_unionSets = unionSets;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * Utilities for working with built-in Maps and Sets without mutating them.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function setByAddingToSet(set, v) {
+  const next = new Set(set);
+  next.add(v);
+  return next;
+}
+
+function setByDeletingFromSet(set, v) {
+  const next = new Set(set);
+  next.delete(v);
+  return next;
+}
+
+function mapBySettingInMap(map, k, v) {
+  const next = new Map(map);
+  next.set(k, v);
+  return next;
+}
+
+function mapByUpdatingInMap(map, k, updater) {
+  const next = new Map(map);
+  next.set(k, updater(next.get(k)));
+  return next;
+}
+
+function mapByDeletingFromMap(map, k) {
+  const next = new Map(map);
+  next.delete(k);
+  return next;
+}
+
+function mapByDeletingMultipleFromMap(map, ks) {
+  const next = new Map(map);
+  ks.forEach(k => next.delete(k));
+  return next;
+}
+
+var Recoil_CopyOnWrite = {
+  setByAddingToSet,
+  setByDeletingFromSet,
+  mapBySettingInMap,
+  mapByUpdatingInMap,
+  mapByDeletingFromMap,
+  mapByDeletingMultipleFromMap
+};
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+/**
+ * Creates a new iterable whose output is generated by passing the input
+ * iterable's values through the filter function.
+ */
+
+function* filterIterable(iterable, predicate) {
+  // Use generator to create iterable/iterator
+  let index = 0;
+
+  for (const value of iterable) {
+    if (predicate(value, index++)) {
+      yield value;
+    }
+  }
+}
+
+var Recoil_filterIterable = filterIterable;
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+class RetentionZone {}
+
+function retentionZone() {
+  return new RetentionZone();
+}
+
+var Recoil_RetentionZone = {
+  RetentionZone,
+  retentionZone
+};
+
+const {
+  setByAddingToSet: setByAddingToSet$1
+} = Recoil_CopyOnWrite;
+
+
+
+
+
+
+
+const {
+  getNode: getNode$1,
+  getNodeMaybe: getNodeMaybe$1,
+  recoilValuesForKeys: recoilValuesForKeys$1
+} = Recoil_Node;
+
+const {
+  RetentionZone: RetentionZone$1
+} = Recoil_RetentionZone; // flowlint-next-line unclear-type:off
+
+
+const emptySet = Object.freeze(new Set());
+
+class ReadOnlyRecoilValueError extends Error {}
+
+function initializeRetentionForNode(store, nodeKey, retainedBy) {
+  if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
+    return () => undefined;
+  }
+
+  const {
+    nodesRetainedByZone
+  } = store.getState().retention;
+
+  function addToZone(zone) {
+    let set = nodesRetainedByZone.get(zone);
+
+    if (!set) {
+      nodesRetainedByZone.set(zone, set = new Set());
+    }
+
+    set.add(nodeKey);
+  }
+
+  if (retainedBy instanceof RetentionZone$1) {
+    addToZone(retainedBy);
+  } else if (Array.isArray(retainedBy)) {
+    for (const zone of retainedBy) {
+      addToZone(zone);
+    }
+  }
+
+  return () => {
+    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
+      return;
+    }
+
+    const nodesRetainedByZone = store.getState().retention.nodesRetainedByZone;
+
+    function deleteFromZone(zone) {
+      const set = nodesRetainedByZone.get(zone);
+
+      if (set) {
+        set.delete(nodeKey);
+      }
+
+      if (set && set.size === 0) {
+        nodesRetainedByZone.delete(zone);
+      }
+    }
+
+    if (retainedBy instanceof RetentionZone$1) {
+      deleteFromZone(retainedBy);
+    } else if (Array.isArray(retainedBy)) {
+      for (const zone of retainedBy) {
+        deleteFromZone(zone);
+      }
+    }
+  };
+}
+
+function initializeNodeIfNewToStore(store, treeState, key, trigger) {
+  const storeState = store.getState();
+
+  if (storeState.nodeCleanupFunctions.has(key)) {
+    return;
+  }
+
+  const config = getNode$1(key);
+  const retentionCleanup = initializeRetentionForNode(store, key, config.retainedBy);
+  const nodeCleanup = config.init(store, treeState, trigger);
+  storeState.nodeCleanupFunctions.set(key, () => {
+    nodeCleanup();
+    retentionCleanup();
+  });
+}
+
+function cleanUpNode(store, key) {
+  var _state$nodeCleanupFun;
+
+  const state = store.getState();
+  (_state$nodeCleanupFun = state.nodeCleanupFunctions.get(key)) === null || _state$nodeCleanupFun === void 0 ? void 0 : _state$nodeCleanupFun();
+  state.nodeCleanupFunctions.delete(key);
+} // Get the current value loadable of a node and update the state.
+// Update dependencies and subscriptions for selectors.
+// Update saved value validation for atoms.
+
+
+function getNodeLoadable(store, state, key) {
+  initializeNodeIfNewToStore(store, state, key, 'get');
+  return getNode$1(key).get(store, state);
+} // Peek at the current value loadable for a node without any evaluation or state change
+
+
+function peekNodeLoadable(store, state, key) {
+  return getNode$1(key).peek(store, state);
+} // Write value directly to state bypassing the Node interface as the node
+// definitions may not have been loaded yet when processing the initial snapshot.
+
+
+function setUnvalidatedAtomValue_DEPRECATED(state, key, newValue) {
+  var _node$invalidate;
+
+  const node = getNodeMaybe$1(key);
+  node === null || node === void 0 ? void 0 : (_node$invalidate = node.invalidate) === null || _node$invalidate === void 0 ? void 0 : _node$invalidate.call(node, state);
+  return { ...state,
+    atomValues: state.atomValues.clone().delete(key),
+    nonvalidatedAtoms: state.nonvalidatedAtoms.clone().set(key, newValue),
+    dirtyAtoms: setByAddingToSet$1(state.dirtyAtoms, key)
+  };
+} // Return the discovered dependencies and values to be written by setting
+// a node value. (Multiple values may be written due to selectors getting to
+// set upstreams; deps may be discovered because of reads in updater functions.)
+
+
+function setNodeValue(store, state, key, newValue) {
+  const node = getNode$1(key);
+
+  if (node.set == null) {
+    throw new ReadOnlyRecoilValueError(`Attempt to set read-only RecoilValue: ${key}`);
+  }
+
+  const set = node.set; // so flow doesn't lose the above refinement.
+
+  initializeNodeIfNewToStore(store, state, key, 'set');
+  return set(store, state, newValue);
+}
+
+function peekNodeInfo(store, state, key) {
+  var _graph$nodeDeps$get, _storeState$nodeToCom, _storeState$nodeToCom2;
+
+  const storeState = store.getState();
+  const graph = store.getGraph(state.version);
+  const type = storeState.knownAtoms.has(key) ? 'atom' : storeState.knownSelectors.has(key) ? 'selector' : undefined;
+  const downstreamNodes = Recoil_filterIterable(getDownstreamNodes(store, state, new Set([key])), nodeKey => nodeKey !== key);
+  return {
+    loadable: peekNodeLoadable(store, state, key),
+    isActive: storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
+    isSet: type === 'selector' ? false : state.atomValues.has(key),
+    isModified: state.dirtyAtoms.has(key),
+    type,
+    // Report current dependencies.  If the node hasn't been evaluated, then
+    // dependencies may be missing based on the current state.
+    deps: recoilValuesForKeys$1((_graph$nodeDeps$get = graph.nodeDeps.get(key)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : []),
+    // Reportsall "current" subscribers.  Evaluating other nodes or
+    // previous in-progress async evaluations may introduce new subscribers.
+    subscribers: {
+      nodes: recoilValuesForKeys$1(downstreamNodes),
+      components: Recoil_mapIterable((_storeState$nodeToCom = (_storeState$nodeToCom2 = storeState.nodeToComponentSubscriptions.get(key)) === null || _storeState$nodeToCom2 === void 0 ? void 0 : _storeState$nodeToCom2.values()) !== null && _storeState$nodeToCom !== void 0 ? _storeState$nodeToCom : [], ([name]) => ({
+        name
+      }))
+    }
+  };
+} // Find all of the recursively dependent nodes
+
+
+function getDownstreamNodes(store, state, keys) {
+  const visitedNodes = new Set();
+  const visitingNodes = Array.from(keys);
+  const graph = store.getGraph(state.version);
+
+  for (let key = visitingNodes.pop(); key; key = visitingNodes.pop()) {
+    var _graph$nodeToNodeSubs;
+
+    visitedNodes.add(key);
+    const subscribedNodes = (_graph$nodeToNodeSubs = graph.nodeToNodeSubscriptions.get(key)) !== null && _graph$nodeToNodeSubs !== void 0 ? _graph$nodeToNodeSubs : emptySet;
+
+    for (const downstreamNode of subscribedNodes) {
+      if (!visitedNodes.has(downstreamNode)) {
+        visitingNodes.push(downstreamNode);
+      }
+    }
+  }
+
+  return visitedNodes;
+}
+
+var Recoil_FunctionalCore = {
+  getNodeLoadable,
+  peekNodeLoadable,
+  setNodeValue,
+  cleanUpNode,
+  setUnvalidatedAtomValue_DEPRECATED,
+  peekNodeInfo,
+  getDownstreamNodes,
+  initializeNodeIfNewToStore
+};
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+// Split declaration and implementation to allow this function to pretend to
+// check for actual instance of Promise instead of something with a `then`
+// method.
+// eslint-disable-next-line no-redeclare
+function isPromise(p) {
+  return !!p && typeof p.then === 'function';
+}
+
+var Recoil_isPromise = isPromise;
+
+const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
+// Containing static factories of withValue(), withError(), withPromise(), and all()
+
+class Canceled {}
+
+const CANCELED = new Canceled();
+const loadableAccessors = {
+  valueMaybe() {
+    return undefined;
+  },
+
+  valueOrThrow() {
+    const error = new Error( // $FlowFixMe[object-this-reference]
+    `Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
+  },
+
+  errorMaybe() {
+    return undefined;
+  },
+
+  errorOrThrow() {
+    const error = new Error( // $FlowFixMe[object-this-reference]
+    `Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
+  },
+
+  promiseMaybe() {
+    return undefined;
+  },
+
+  promiseOrThrow() {
+    const error = new Error( // $FlowFixMe[object-this-reference]
+    `Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
+  },
+
+  is(other) {
+    // $FlowFixMe[object-this-reference]
+    return other.state === this.state && other.contents === this.contents;
+  },
+
+  map(map) {
+    // $FlowFixMe[object-this-reference]
+    if (this.state === 'hasError') {
+      // $FlowFixMe[object-this-reference]
+      return this;
+    } // $FlowFixMe[object-this-reference]
+
+
+    if (this.state === 'hasValue') {
+      try {
+        // $FlowFixMe[object-this-reference]
+        const next = map(this.contents);
+        return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
+        next : // flowlint-line unclear-type:off
+        loadableWithValue(next); // flowlint-line unclear-type:off
+      } catch (e) {
+        return Recoil_isPromise(e) ? // If we "suspended", then try again.
+        // errors and subsequent retries will be handled in 'loading' case
+        // $FlowFixMe[object-this-reference]
+        loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
+      }
+    } // $FlowFixMe[object-this-reference]
+
+
+    if (this.state === 'loading') {
+      return loadableWithPromise( // $FlowFixMe[object-this-reference]
+      this.contents.then(value => {
+        const next = map(value);
+
+        if (isLoadable(next)) {
+          const nextLoadable = next; // flowlint-line unclear-type:off
+
+          switch (nextLoadable.state) {
+            case 'hasValue':
+              return nextLoadable.contents;
+
+            case 'hasError':
+              throw nextLoadable.contents;
+
+            case 'loading':
+              return nextLoadable.contents;
+          }
+        }
+
+        return next;
+      }).catch(e => {
+        if (Recoil_isPromise(e)) {
+          // we were "suspended," try again
+          // $FlowFixMe[object-this-reference]
+          return e.then(() => map(this.contents));
+        }
+
+        throw e;
+      }));
+    }
+
+    const error = new Error('Invalid Loadable state'); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
+    throw error;
+  }
+
+};
+
+function loadableWithValue(value) {
+  // Build objects this way since Flow doesn't support disjoint unions for class properties
+  return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
+    state: 'hasValue',
+    contents: value,
+    ...loadableAccessors,
+
+    getValue() {
+      return this.contents;
+    },
+
+    toPromise() {
+      return Promise.resolve(this.contents);
+    },
+
+    valueMaybe() {
+      return this.contents;
+    },
+
+    valueOrThrow() {
+      return this.contents;
+    }
+
+  });
+}
+
+function loadableWithError(error) {
+  return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
+    state: 'hasError',
+    contents: error,
+    ...loadableAccessors,
+
+    getValue() {
+      throw this.contents;
+    },
+
+    toPromise() {
+      return Promise.reject(this.contents);
+    },
+
+    errorMaybe() {
+      return this.contents;
+    },
+
+    errorOrThrow() {
+      return this.contents;
+    }
+
+  });
+} // TODO Probably need to clean-up this API to accept `Promise<T>`
+// with an alternative params or mechanism for internal key proxy.
+
+
+const throwCanceled = value => {
+  if (value instanceof Canceled) {
+    throw value;
+  }
+
+  return value;
+};
+
+function loadableWithPromise(promise) {
+  return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
+    state: 'loading',
+    contents: promise,
+    ...loadableAccessors,
+
+    getValue() {
+      throw this.contents.then(throwCanceled);
+    },
+
+    toPromise() {
+      return this.contents.then(throwCanceled);
+    },
+
+    promiseMaybe() {
+      return this.contents.then(throwCanceled);
+    },
+
+    promiseOrThrow() {
+      return this.contents.then(throwCanceled);
+    }
+
+  });
+}
+
+function loadableLoading() {
+  return loadableWithPromise(new Promise(() => {}));
+}
+
+function loadableAll(inputs) {
+  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
+} // TODO Actually get this to work with Flow
+
+
+function isLoadable(x) {
+  return x.__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
+}
+
+var Recoil_Loadable = {
+  loadableWithValue,
+  loadableWithError,
+  loadableWithPromise,
+  loadableLoading,
+  loadableAll,
+  isLoadable,
+  Canceled,
+  CANCELED
+};
+
+const {
+  CANCELED: CANCELED$1
+} = Recoil_Loadable;
+
+
+
+
+
+
+
+const {
+  getDownstreamNodes: getDownstreamNodes$1,
+  getNodeLoadable: getNodeLoadable$1,
+  setNodeValue: setNodeValue$1
+} = Recoil_FunctionalCore;
+
+const {
+  getNodeMaybe: getNodeMaybe$2
+} = Recoil_Node;
+
+const {
+  DefaultValue: DefaultValue$1,
+  RecoilValueNotReady: RecoilValueNotReady$1
+} = Recoil_Node;
+
+const {
+  AbstractRecoilValue: AbstractRecoilValue$1,
+  RecoilState: RecoilState$1,
+  RecoilValueReadOnly: RecoilValueReadOnly$1,
+  isRecoilValue: isRecoilValue$1
+} = Recoil_RecoilValue$1;
+
+function getRecoilValueAsLoadable(store, {
+  key
+}, treeState = store.getState().currentTree) {
+  var _storeState$nextTree, _storeState$previousT;
+
+  // Reading from an older tree can cause bugs because the dependencies that we
+  // discover during the read are lost.
+  const storeState = store.getState();
+
+  if (!(treeState.version === storeState.currentTree.version || treeState.version === ((_storeState$nextTree = storeState.nextTree) === null || _storeState$nextTree === void 0 ? void 0 : _storeState$nextTree.version) || treeState.version === ((_storeState$previousT = storeState.previousTree) === null || _storeState$previousT === void 0 ? void 0 : _storeState$previousT.version))) {
+    Recoil_recoverableViolation('Tried to read from a discarded tree');
+  }
+
+  const loadable = getNodeLoadable$1(store, treeState, key);
+
+  if (loadable.state === 'loading') {
+    loadable.contents.catch(() => {
+      /**
+       * HACK: intercept thrown error here to prevent an uncaught promise exception. Ideally this would happen closer to selector
+       * execution (perhaps introducing a new ERROR class to be resolved by async selectors that are in an error state)
+       */
+      return CANCELED$1;
+    });
+  }
+
+  return loadable;
+}
+
+function applyAtomValueWrites(atomValues, writes) {
+  const result = atomValues.clone();
+  writes.forEach((v, k) => {
+    if (v.state === 'hasValue' && v.contents instanceof DefaultValue$1) {
+      result.delete(k);
+    } else {
+      result.set(k, v);
+    }
+  });
+  return result;
+}
+
+function valueFromValueOrUpdater(store, state, {
+  key
+}, valueOrUpdater) {
+  if (typeof valueOrUpdater === 'function') {
+    // Updater form: pass in the current value. Throw if the current value
+    // is unavailable (namely when updating an async selector that's
+    // pending or errored):
+    const current = getNodeLoadable$1(store, state, key);
+
+    if (current.state === 'loading') {
+      throw new RecoilValueNotReady$1(key);
+    } else if (current.state === 'hasError') {
+      throw current.contents;
+    } // T itself may be a function, so our refinement is not sufficient:
+
+
+    return valueOrUpdater(current.contents); // flowlint-line unclear-type:off
+  } else {
+    return valueOrUpdater;
+  }
+}
+
+function applyAction(store, state, action) {
+  if (action.type === 'set') {
+    const {
+      recoilValue,
+      valueOrUpdater
+    } = action;
+    const newValue = valueFromValueOrUpdater(store, state, recoilValue, valueOrUpdater);
+    const writes = setNodeValue$1(store, state, recoilValue.key, newValue);
+
+    for (const [key, loadable] of writes.entries()) {
+      writeLoadableToTreeState(state, key, loadable);
+    }
+  } else if (action.type === 'setLoadable') {
+    const {
+      recoilValue: {
+        key
+      },
+      loadable
+    } = action;
+    writeLoadableToTreeState(state, key, loadable);
+  } else if (action.type === 'markModified') {
+    const {
+      recoilValue: {
+        key
+      }
+    } = action;
+    state.dirtyAtoms.add(key);
+  } else if (action.type === 'setUnvalidated') {
+    var _node$invalidate;
+
+    // Write value directly to state bypassing the Node interface as the node
+    // definitions may not have been loaded yet when processing the initial snapshot.
+    const {
+      recoilValue: {
+        key
+      },
+      unvalidatedValue
+    } = action;
+    const node = getNodeMaybe$2(key);
+    node === null || node === void 0 ? void 0 : (_node$invalidate = node.invalidate) === null || _node$invalidate === void 0 ? void 0 : _node$invalidate.call(node, state);
+    state.atomValues.delete(key);
+    state.nonvalidatedAtoms.set(key, unvalidatedValue);
+    state.dirtyAtoms.add(key);
+  } else {
+    Recoil_recoverableViolation(`Unknown action ${action.type}`);
+  }
+}
+
+function writeLoadableToTreeState(state, key, loadable) {
+  if (loadable.state === 'hasValue' && loadable.contents instanceof DefaultValue$1) {
+    state.atomValues.delete(key);
+  } else {
+    state.atomValues.set(key, loadable);
+  }
+
+  state.dirtyAtoms.add(key);
+  state.nonvalidatedAtoms.delete(key);
+}
+
+function applyActionsToStore(store, actions) {
+  store.replaceState(state => {
+    const newState = copyTreeState(state);
+
+    for (const action of actions) {
+      applyAction(store, newState, action);
+    }
+
+    invalidateDownstreams(store, newState);
+    return newState;
+  });
+}
+
+function queueOrPerformStateUpdate(store, action) {
+  if (batchStack.length) {
+    const actionsByStore = batchStack[batchStack.length - 1];
+    let actions = actionsByStore.get(store);
+
+    if (!actions) {
+      actionsByStore.set(store, actions = []);
+    }
+
+    actions.push(action);
+  } else {
+    applyActionsToStore(store, [action]);
+  }
+}
+
+const batchStack = [];
+
+function batchStart() {
+  const actionsByStore = new Map();
+  batchStack.push(actionsByStore);
+  return () => {
+    for (const [store, actions] of actionsByStore) {
+      applyActionsToStore(store, actions);
+    }
+
+    const popped = batchStack.pop();
+
+    if (popped !== actionsByStore) {
+      Recoil_recoverableViolation('Incorrect order of batch popping');
+    }
+  };
+}
+
+function copyTreeState(state) {
+  return { ...state,
+    atomValues: state.atomValues.clone(),
+    nonvalidatedAtoms: state.nonvalidatedAtoms.clone(),
+    dirtyAtoms: new Set(state.dirtyAtoms)
+  };
+}
+
+function invalidateDownstreams(store, state) {
+  // Inform any nodes that were changed or downstream of changes so that they
+  // can clear out any caches as needed due to the update:
+  const downstreams = getDownstreamNodes$1(store, state, state.dirtyAtoms);
+
+  for (const key of downstreams) {
+    var _getNodeMaybe, _getNodeMaybe$invalid;
+
+    (_getNodeMaybe = getNodeMaybe$2(key)) === null || _getNodeMaybe === void 0 ? void 0 : (_getNodeMaybe$invalid = _getNodeMaybe.invalidate) === null || _getNodeMaybe$invalid === void 0 ? void 0 : _getNodeMaybe$invalid.call(_getNodeMaybe, state);
+  }
+}
+
+function setRecoilValue(store, recoilValue, valueOrUpdater) {
+  queueOrPerformStateUpdate(store, {
+    type: 'set',
+    recoilValue,
+    valueOrUpdater
+  });
+}
+
+function setRecoilValueLoadable(store, recoilValue, loadable) {
+  if (loadable instanceof DefaultValue$1) {
+    return setRecoilValue(store, recoilValue, loadable);
+  }
+
+  queueOrPerformStateUpdate(store, {
+    type: 'setLoadable',
+    recoilValue,
+    loadable
+  });
+}
+
+function markRecoilValueModified(store, recoilValue) {
+  queueOrPerformStateUpdate(store, {
+    type: 'markModified',
+    recoilValue
+  });
+}
+
+function setUnvalidatedRecoilValue(store, recoilValue, unvalidatedValue) {
+  queueOrPerformStateUpdate(store, {
+    type: 'setUnvalidated',
+    recoilValue,
+    unvalidatedValue
+  });
+}
+
+let subscriptionID = 0;
+
+function subscribeToRecoilValue(store, {
+  key
+}, callback, componentDebugName = null) {
+  const subID = subscriptionID++;
+  const storeState = store.getState();
+
+  if (!storeState.nodeToComponentSubscriptions.has(key)) {
+    storeState.nodeToComponentSubscriptions.set(key, new Map());
+  }
+
+  Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]); // Handle the case that, during the same tick that we are subscribing, an atom
+  // has been updated by some effect handler. Otherwise we will miss the update.
+
+  if (Recoil_gkx_1('recoil_early_rendering_2021')) {
+    const nextTree = store.getState().nextTree;
+
+    if (nextTree && nextTree.dirtyAtoms.has(key)) {
+      callback(nextTree);
+    }
+  }
+
+  return {
+    release: () => {
+      const storeState = store.getState();
+      const subs = storeState.nodeToComponentSubscriptions.get(key);
+
+      if (subs === undefined || !subs.has(subID)) {
+        Recoil_recoverableViolation(`Subscription missing at release time for atom ${key}. This is a bug in Recoil.`);
+        return;
+      }
+
+      subs.delete(subID);
+
+      if (subs.size === 0) {
+        storeState.nodeToComponentSubscriptions.delete(key);
+      }
+    }
+  };
+}
+
+var Recoil_RecoilValueInterface = {
+  RecoilValueReadOnly: RecoilValueReadOnly$1,
+  AbstractRecoilValue: AbstractRecoilValue$1,
+  RecoilState: RecoilState$1,
+  getRecoilValueAsLoadable,
+  setRecoilValue,
+  setRecoilValueLoadable,
+  markRecoilValueModified,
+  setUnvalidatedRecoilValue,
+  subscribeToRecoilValue,
+  isRecoilValue: isRecoilValue$1,
+  applyAtomValueWrites,
+  // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
+  batchStart,
+  writeLoadableToTreeState,
+  invalidateDownstreams,
+  copyTreeState,
+  invalidateDownstreams_FOR_TESTING: invalidateDownstreams
+};
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
  * @emails oncall+recoil
  * 
  * @format
@@ -3172,6 +3068,110 @@ const isReactNative = typeof navigator !== 'undefined' && navigator.product === 
 var Recoil_Environment = {
   isSSR,
   isReactNative
+};
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ *
+ * This is to export esstiential functions from react-dom
+ * for our web build
+ */
+const {
+  unstable_batchedUpdates
+} = reactDom;
+
+var ReactBatchedUpdates = {
+  unstable_batchedUpdates
+};
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ *
+ * This is to export esstiential functions from react-dom
+ * for our web build
+ */
+// @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
+const {
+  unstable_batchedUpdates: unstable_batchedUpdates$1
+} = ReactBatchedUpdates; // @oss-only
+
+
+var Recoil_ReactBatchedUpdates = {
+  unstable_batchedUpdates: unstable_batchedUpdates$1
+};
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+const {
+  batchStart: batchStart$1
+} = Recoil_RecoilValueInterface;
+
+const {
+  unstable_batchedUpdates: unstable_batchedUpdates$2
+} = Recoil_ReactBatchedUpdates;
+
+let batcher = unstable_batchedUpdates$2; // flowlint-next-line unclear-type:off
+
+/**
+ * Sets the provided batcher function as the batcher function used by Recoil.
+ *
+ * Set the batcher to a custom batcher for your renderer,
+ * if you use a renderer other than React DOM or React Native.
+ */
+const setBatcher = newBatcher => {
+  batcher = newBatcher;
+};
+/**
+ * Returns the current batcher function.
+ */
+
+
+const getBatcher = () => batcher;
+/**
+ * Calls the current batcher function and passes the
+ * provided callback function.
+ */
+
+
+const batchUpdates = callback => {
+  batcher(() => {
+    let batchEnd = () => undefined;
+
+    try {
+      batchEnd = batchStart$1();
+      callback();
+    } finally {
+      batchEnd();
+    }
+  });
+};
+
+var Recoil_Batching = {
+  getBatcher,
+  setBatcher,
+  batchUpdates
 };
 
 const {
@@ -7920,11 +7920,6 @@ var Recoil_WaitFor = {
 };
 
 const {
-  batchUpdates: batchUpdates$3,
-  setBatcher: setBatcher$1
-} = Recoil_Batching;
-
-const {
   DefaultValue: DefaultValue$3
 } = Recoil_Node;
 
@@ -8030,9 +8025,6 @@ var Recoil_index = {
   waitForAllSettled: waitForAllSettled$1,
   // Other functions
   isRecoilValue: isRecoilValue$5,
-  // Batching
-  batchUpdates: batchUpdates$3,
-  setBatcher: setBatcher$1,
   // Snapshot Utils
   snapshot_UNSTABLE: freshSnapshot$2
 };
@@ -8068,15 +8060,12 @@ var Recoil_index_29 = Recoil_index.waitForAny;
 var Recoil_index_30 = Recoil_index.waitForAll;
 var Recoil_index_31 = Recoil_index.waitForAllSettled;
 var Recoil_index_32 = Recoil_index.isRecoilValue;
-var Recoil_index_33 = Recoil_index.batchUpdates;
-var Recoil_index_34 = Recoil_index.setBatcher;
-var Recoil_index_35 = Recoil_index.snapshot_UNSTABLE;
+var Recoil_index_33 = Recoil_index.snapshot_UNSTABLE;
 
 exports.DefaultValue = Recoil_index_1;
 exports.RecoilRoot = Recoil_index_2;
 exports.atom = Recoil_index_4;
 exports.atomFamily = Recoil_index_7;
-exports.batchUpdates = Recoil_index_33;
 exports.constSelector = Recoil_index_9;
 exports.default = Recoil_index;
 exports.errorSelector = Recoil_index_10;
@@ -8086,8 +8075,7 @@ exports.readOnlySelector = Recoil_index_11;
 exports.retentionZone = Recoil_index_6;
 exports.selector = Recoil_index_5;
 exports.selectorFamily = Recoil_index_8;
-exports.setBatcher = Recoil_index_34;
-exports.snapshot_UNSTABLE = Recoil_index_35;
+exports.snapshot_UNSTABLE = Recoil_index_33;
 exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_18;
 exports.useGotoRecoilSnapshot = Recoil_index_22;
 exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = Recoil_index_3;

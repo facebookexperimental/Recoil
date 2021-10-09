@@ -22,11 +22,6 @@ export type { GetRecoilValue, SetRecoilState, ResetRecoilState } from './recoil_
 export type { Parameter, SelectorFamilyOptions } from './recoil_values/Recoil_selectorFamily';
 
 const {
-  batchUpdates,
-  setBatcher
-} = require('./core/Recoil_Batching');
-
-const {
   DefaultValue
 } = require('./core/Recoil_Node');
 
@@ -132,9 +127,6 @@ module.exports = {
   waitForAllSettled,
   // Other functions
   isRecoilValue,
-  // Batching
-  batchUpdates,
-  setBatcher,
   // Snapshot Utils
   snapshot_UNSTABLE: freshSnapshot
 };
