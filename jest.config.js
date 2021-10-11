@@ -14,6 +14,6 @@ module.exports = {
   globals: {
     __DEV__: true,
   },
-  testPathIgnorePatterns: ['/node_modules/', '/packages/'],
+  testPathIgnorePatterns: ['/node_modules/', '/packages-ext/'],
   setupFiles: ['./setupJestMock.js'],
 };
