@@ -41,7 +41,54 @@ export type {
   Parameter,
   SelectorFamilyOptions,
 } from './recoil_values/Recoil_selectorFamily';
+export type {
+  AssertionFunction,
+  Checker,
+  CheckFailure,
+  CheckResult,
+  CheckSuccess,
+  CoercionFunction,
+  JSONParser,
+  Get,
+  Path,
+} from './contrib/refine/Refine.js';
 
+const {
+  array,
+  assertion,
+  asType,
+  boolean,
+  coercion,
+  constraint,
+  custom,
+  date,
+  dict,
+  lazy,
+  literal,
+  map,
+  match,
+  mixed,
+  nullable,
+  number,
+  or,
+  record,
+  set,
+  string,
+  stringifyPath,
+  stringLiterals,
+  template,
+  tuple,
+  union,
+  voidable,
+  withDefault,
+  writableArray,
+  writableDict,
+  writableRecord,
+} = require('./contrib/refine/Refine');
+const {
+  jsonParser,
+  jsonParserEnforced,
+} = require('./contrib/refine/Refine_json');
 const {DefaultValue} = require('./core/Recoil_Node');
 const {RecoilRoot} = require('./core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
@@ -81,8 +128,13 @@ const {
 } = require('./recoil_values/Recoil_WaitFor');
 
 module.exports = {
+  /////////////////////////////////////////////////////////////////
+  // Recoil
+  /////////////////////////////////////////////////////////////////
+
   // Types
   DefaultValue,
+  isRecoilValue,
 
   // Components
   RecoilRoot,
@@ -92,8 +144,9 @@ module.exports = {
   atom,
   selector,
 
-  // Other factories
+  // Factories
   retentionZone,
+  snapshot_UNSTABLE: freshSnapshot,
 
   // Convenience RecoilValues
   atomFamily,
@@ -130,9 +183,49 @@ module.exports = {
   waitForAll,
   waitForAllSettled,
 
-  // Other functions
-  isRecoilValue,
+  /////////////////////////////////////////////////////////////////
+  // Refine
+  /////////////////////////////////////////////////////////////////
 
-  // Snapshot Utils
-  snapshot_UNSTABLE: freshSnapshot,
+  // API
+  assertion,
+  coercion,
+  jsonParser,
+  jsonParserEnforced,
+
+  // Checkers - Primitives
+  mixed,
+  literal,
+  boolean,
+  number,
+  string,
+  template,
+  stringLiterals,
+  date,
+
+  // Checkers - Utility
+  or,
+  union,
+  match,
+  nullable,
+  voidable,
+  withDefault,
+  constraint,
+  asType,
+  lazy,
+  custom,
+
+  // Checkers - Containers
+  array,
+  tuple,
+  record,
+  dict,
+  set,
+  map,
+  writableArray,
+  writableDict,
+  writableRecord,
+
+  // Helpers
+  stringifyPath,
 };
