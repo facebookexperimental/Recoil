@@ -87,14 +87,16 @@ const {
 module.exports = {
   // Types
   DefaultValue,
+  isRecoilValue,
   // Components
   RecoilRoot,
   useRecoilBridgeAcrossReactRoots_UNSTABLE: useRecoilBridgeAcrossReactRoots,
   // RecoilValues
   atom,
   selector,
-  // Other factories
+  // Factories
   retentionZone,
+  snapshot_UNSTABLE: freshSnapshot,
   // Convenience RecoilValues
   atomFamily,
   selectorFamily,
@@ -124,9 +126,5 @@ module.exports = {
   waitForNone,
   waitForAny,
   waitForAll,
-  waitForAllSettled,
-  // Other functions
-  isRecoilValue,
-  // Snapshot Utils
-  snapshot_UNSTABLE: freshSnapshot
+  waitForAllSettled
 };
