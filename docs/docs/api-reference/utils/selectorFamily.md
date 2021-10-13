@@ -136,7 +136,7 @@ const formFieldState = selectorFamily({
   key: 'FormField',
   get: field => ({get}) => get(formState)[field],
   set: field => ({set}, newValue) =>
-    set(formState, prevState => {...prevState, [field]: newValue}),
+    set(formState, prevState => ({...prevState, [field]: newValue})),
 });
 
 const Component1 = () => {

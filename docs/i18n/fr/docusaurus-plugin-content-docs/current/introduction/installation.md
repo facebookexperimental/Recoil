@@ -74,7 +74,7 @@ Il est recommandé d'ajouter [`'useRecoilCallback'`](/docs/api-reference/core/us
 
 ## Version journalière
 
-Nous construisons un packet une fois par jour basé sur la branche `master` courrente et le publions en tant que branche `nightly` sur GitHub. Vous pouvez utiliser cette branche via `npm`:
+Nous construisons un packet une fois par jour basé sur la branche `main` courrente et le publions en tant que branche `nightly` sur GitHub. Vous pouvez utiliser cette branche via `npm`:
 
 ```shell
 npm install https://github.com/facebookexperimental/Recoil.git#nightly
