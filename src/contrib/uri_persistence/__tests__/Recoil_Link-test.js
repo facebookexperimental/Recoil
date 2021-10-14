@@ -12,13 +12,13 @@
 
 const {Simulate, act} = require('ReactTestUtils');
 
-const {freshSnapshot} = require('../../../core/Recoil_Snapshot');
-const atom = require('../../../recoil_values/Recoil_atom');
 const {
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
-} = require('../../../testing/Recoil_TestingUtils');
+} = require('../../../__test_utils__/Recoil_TestingUtils');
+const {freshSnapshot} = require('../../../core/Recoil_Snapshot');
+const atom = require('../../../recoil_values/Recoil_atom');
 const {
   LinkToRecoilSnapshot,
   LinkToRecoilStateChange,

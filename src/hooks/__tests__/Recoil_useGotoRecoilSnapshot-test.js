@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React,
   useState,
@@ -48,7 +48,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
 });
 
 testRecoil('Goto mapped snapshot', async () => {

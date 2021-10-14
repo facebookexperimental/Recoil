@@ -14,7 +14,7 @@
 const {
   IS_INTERNAL,
   getRecoilTestFn,
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React,
   act,
@@ -34,7 +34,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     renderElementsInConcurrentRoot,
     flushPromisesAndTimers,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
 
   const initialGKValue = gkx('recoil_early_rendering_2021');
   gkx.setPass('recoil_early_rendering_2021');

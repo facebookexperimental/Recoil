@@ -13,7 +13,7 @@ import type {LocationOption} from '../recoil-url-sync';
 
 const {
   flushPromisesAndTimers,
-} = require('../../../testing/Recoil_TestingUtils');
+} = require('../../../__test_utils__/Recoil_TestingUtils');
 const {useRecoilURLSync} = require('../recoil-url-sync');
 const React = require('react');
 

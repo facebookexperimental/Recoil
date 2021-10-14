@@ -22,6 +22,12 @@ const {
   validateString,
 } = require('../__test_utils__/recoil-sync_mockValidation');
 const {
+  ReadsAtom,
+  componentThatReadsAndWritesAtom,
+  flushPromisesAndTimers,
+  renderElements,
+} = require('../../../__test_utils__/Recoil_TestingUtils');
+const {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
@@ -30,12 +36,6 @@ const {useRecoilValue} = require('../../../hooks/Recoil_Hooks');
 const atom = require('../../../recoil_values/Recoil_atom');
 const atomFamily = require('../../../recoil_values/Recoil_atomFamily');
 const selectorFamily = require('../../../recoil_values/Recoil_selectorFamily');
-const {
-  ReadsAtom,
-  componentThatReadsAndWritesAtom,
-  flushPromisesAndTimers,
-  renderElements,
-} = require('../../../testing/Recoil_TestingUtils');
 const {syncEffect, useRecoilSync} = require('../recoil-sync');
 const React = require('react');
 

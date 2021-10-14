@@ -13,7 +13,7 @@
 import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React,
   store,
@@ -46,7 +46,7 @@ let React,
   freshSnapshot;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
+  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({useEffect, useState, Profiler} = require('react'));
@@ -76,7 +76,7 @@ const testRecoil = getRecoilTestFn(() => {
     resolvingAsyncSelector,
     loadingAsyncSelector,
     flushPromisesAndTimers,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({noWait} = require('../Recoil_WaitFor'));
   ({DefaultValue} = require('../../core/Recoil_Node'));
   ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));

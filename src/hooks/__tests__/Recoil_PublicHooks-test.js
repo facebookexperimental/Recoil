@@ -18,7 +18,7 @@ import type {
 } from '../../core/Recoil_RecoilValue';
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 let {mutableSourceExists} = require('../../util/Recoil_mutableSource');
 
 let React,
@@ -64,7 +64,7 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers,
     renderElements,
     renderElementsWithSuspenseCount,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
   ({
     recoilComponentGetRecoilValueCount_FOR_TESTING,
