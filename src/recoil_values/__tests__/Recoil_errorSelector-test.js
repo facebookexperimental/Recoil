@@ -10,12 +10,12 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let store, getRecoilValueAsLoadable, errorSelector;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
+  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
 
   ({
     getRecoilValueAsLoadable,

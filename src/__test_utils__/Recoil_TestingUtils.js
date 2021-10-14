@@ -54,13 +54,17 @@ function makeStore(): Store {
   const store = {
     getState: () => storeState,
     replaceState: replacer => {
-      const storeState = store.getState();
+      const currentStoreState = store.getState();
       // FIXME: does not increment state version number
-      storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
-      invalidateDownstreams_FOR_TESTING(store, storeState.currentTree);
+      currentStoreState.currentTree = replacer(currentStoreState.currentTree); // no batching so nextTree is never active
+      invalidateDownstreams_FOR_TESTING(store, currentStoreState.currentTree);
       const gkx = require('../util/Recoil_gkx');
       if (gkx('recoil_early_rendering_2021')) {
-        notifyComponents_FOR_TESTING(store, storeState, storeState.currentTree);
+        notifyComponents_FOR_TESTING(
+          store,
+          currentStoreState,
+          currentStoreState.currentTree,
+        );
       }
       sendEndOfBatchNotifications_FOR_TESTING(store);
     },
@@ -118,6 +122,7 @@ function renderElementsInternal(
     createReactRoot(
       container,
       <RecoilRoot>
+        {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
         <ErrorBoundary>
           <React.Suspense fallback="loading">{elements}</React.Suspense>
         </ErrorBoundary>
@@ -148,6 +153,7 @@ function renderElementsWithSuspenseCount(
     createLegacyReactRoot(
       container,
       <RecoilRoot>
+        {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
         <ErrorBoundary>
           <React.Suspense fallback={<Fallback />}>{elements}</React.Suspense>
         </ErrorBoundary>
@@ -249,7 +255,6 @@ function flushPromisesAndTimers(): Promise<void> {
   return act(
     () =>
       new Promise(resolve => {
-        // eslint-disable-next-line no-restricted-globals
         setTimeout(resolve, 100);
         jest.runAllTimers();
       }),
@@ -272,21 +277,23 @@ const testGKs = (
   {gks: additionalGKs = []}: TestOptions = {},
 ) => {
   test.each([
-    ...[...gks, ...additionalGKs].map(gks => [
-      !gks.length ? testDescription : `${testDescription} [${gks.join(', ')}]`,
-      gks,
+    ...[...gks, ...additionalGKs].map(gksToTest => [
+      !gksToTest.length
+        ? testDescription
+        : `${testDescription} [${gksToTest.join(', ')}]`,
+      gksToTest,
     ]),
-  ])('%s', async (_title, gks) => {
+  ])('%s', async (_title, gksToTest) => {
     jest.resetModules();
 
     const gkx = require('../util/Recoil_gkx');
 
-    gks.forEach(gkx.setPass);
+    gksToTest.forEach(gkx.setPass);
 
     const after = reloadImports();
-    await assertionsFn(gks);
+    await assertionsFn(gksToTest);
 
-    gks.forEach(gkx.setFail);
+    gksToTest.forEach(gkx.setFail);
 
     after?.();
   });

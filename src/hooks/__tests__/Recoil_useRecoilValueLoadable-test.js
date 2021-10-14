@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React,
   act,
@@ -32,7 +32,7 @@ const testRecoil = getRecoilTestFn(() => {
     asyncSelector,
     renderElements,
     flushPromisesAndTimers,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({useRecoilValueLoadable} = require('../Recoil_Hooks'));
 });
 

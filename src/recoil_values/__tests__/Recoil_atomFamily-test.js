@@ -12,7 +12,7 @@
 
 import type {Store} from '../../core/Recoil_State';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let store: Store,
   React,
@@ -39,7 +39,7 @@ let store: Store,
   pAtom;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
+  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({Profiler, useState} = require('react'));
@@ -62,7 +62,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
   stableStringify = require('../../util/Recoil_stableStringify');
   atom = require('../Recoil_atom');

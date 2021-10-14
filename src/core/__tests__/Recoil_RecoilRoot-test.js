@@ -9,7 +9,7 @@
 
 import type {Store} from '../Recoil_State';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React,
   useState,
@@ -39,7 +39,7 @@ const testRecoil = getRecoilTestFn(() => {
     ReadsAtom,
     componentThatReadsAndWritesAtom,
     renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({RecoilRoot} = require('../Recoil_RecoilRoot.react'));
   ({useStoreRef} = require('../Recoil_RecoilRoot.react'));
 });

@@ -10,10 +10,10 @@
  */
 'use strict';
 
-import type {RecoilValue} from 'Recoil_RecoilValue';
-import type {Store} from 'Recoil_State';
+import type {RecoilValue} from '../../core/Recoil_RecoilValue';
+import type {Store} from '../../core/Recoil_State';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React,
   useState,
@@ -29,12 +29,12 @@ let React,
   constSelector,
   store: Store;
 
-let fallback: RecoilValue<number>, hasFallback: RecoilValue<number>;
+let fallbackAtom: RecoilValue<number>, hasFallbackAtom: RecoilValue<number>;
 
 let id = 0;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
+  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({useState} = require('react'));
@@ -52,17 +52,17 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     componentThatReadsAndWritesAtom,
     renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   atom = require('../Recoil_atom');
   constSelector = require('../Recoil_constSelector');
 
   store = makeStore();
-  fallback = atom<number>({key: `fallback${id}`, default: 1});
-  hasFallback = atom<number>({
+  fallbackAtom = atom<number>({key: `fallback${id}`, default: 1});
+  hasFallbackAtom = atom<number>({
     key: `hasFallback${id++}`,
-    default: fallback,
+    default: fallbackAtom,
   });
-  subscribeToRecoilValue(store, hasFallback, () => undefined);
+  subscribeToRecoilValue(store, hasFallbackAtom, () => undefined);
 });
 
 function get(recoilValue) {
@@ -74,11 +74,11 @@ function set(recoilValue, value) {
 }
 
 testRecoil('atomWithFallback', () => {
-  expect(get(hasFallback)).toBe(1);
-  set(fallback, 2);
-  expect(get(hasFallback)).toBe(2);
-  set(hasFallback, 3);
-  expect(get(hasFallback)).toBe(3);
+  expect(get(hasFallbackAtom)).toBe(1);
+  set(fallbackAtom, 2);
+  expect(get(hasFallbackAtom)).toBe(2);
+  set(hasFallbackAtom, 3);
+  expect(get(hasFallbackAtom)).toBe(3);
 });
 
 describe('ReturnDefaultOrFallback', () => {
@@ -178,13 +178,13 @@ describe('ReturnDefaultOrFallback', () => {
 });
 
 testRecoil('Atom with atom fallback can store null and undefined', () => {
-  const fallbackAtom = atom<?string>({
+  const myFallbackAtom = atom<?string>({
     key: 'fallback for null undefined',
     default: 'FALLBACK',
   });
   const myAtom = atom<?string>({
     key: 'fallback atom with undefined',
-    default: fallbackAtom,
+    default: myFallbackAtom,
   });
   expect(get(myAtom)).toBe('FALLBACK');
   act(() => set(myAtom, 'VALUE'));
@@ -216,13 +216,13 @@ testRecoil('Atom with selector fallback can store null and undefined', () => {
 
 testRecoil('Effects', () => {
   let inited = false;
-  const fallbackAtom = atom({
+  const myFallbackAtom = atom({
     key: 'atom with fallback effects init fallback',
     default: 'FALLBACK',
   });
   const myAtom = atom<string>({
     key: 'atom with fallback effects init',
-    default: fallbackAtom,
+    default: myFallbackAtom,
     effects_UNSTABLE: [
       ({setSelf}) => {
         inited = true;

@@ -18,11 +18,11 @@ const {
   expectURL,
   gotoURL,
 } = require('../__test_utils__/recoil-url-sync_mockSerialization');
-const atom = require('../../../recoil_values/Recoil_atom');
 const {
   ReadsAtom,
   renderElements,
-} = require('../../../testing/Recoil_TestingUtils');
+} = require('../../../__test_utils__/Recoil_TestingUtils');
+const atom = require('../../../recoil_values/Recoil_atom');
 const {syncEffect} = require('../recoil-sync');
 const React = require('react');
 

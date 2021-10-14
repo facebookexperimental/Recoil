@@ -16,7 +16,7 @@ import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 const {
   flushPromisesAndTimers,
   getRecoilTestFn,
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let getRecoilValueAsLoadable,
   noWait,
@@ -29,7 +29,7 @@ let getRecoilValueAsLoadable,
   invariant;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../testing/Recoil_TestingUtils');
+  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
 
   invariant = require('../../util/Recoil_invariant');
   ({
