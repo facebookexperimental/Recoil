@@ -17,6 +17,7 @@ import type {
 } from './Recoil_CachePolicy';
 import type {TreeCacheImplementation} from './Recoil_TreeCacheImplementationType';
 
+const err = require('../util/Recoil_err');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
 const {TreeCache} = require('./Recoil_TreeCache');
@@ -47,7 +48,7 @@ function getValueMapper(equality: EqualityPolicy): mixed => mixed {
       return val => stableStringify(val);
   }
 
-  throw new Error(`Unrecognized equality policy ${equality}`);
+  throw err(`Unrecognized equality policy ${equality}`);
 }
 
 function getTreeCache<T>(
@@ -65,7 +66,7 @@ function getTreeCache<T>(
       return treeCacheLRU<T>(1, mapNodeValue);
   }
 
-  throw new Error(`Unrecognized eviction policy ${eviction}`);
+  throw err(`Unrecognized eviction policy ${eviction}`);
 }
 
 module.exports = treeCacheFromPolicy;

@@ -39,6 +39,7 @@ const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
 const differenceSets = require('../util/Recoil_differenceSets');
 const {isSSR} = require('../util/Recoil_Environment');
+const err = require('../util/Recoil_err');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const filterMap = require('../util/Recoil_filterMap');
 const filterSet = require('../util/Recoil_filterSet');
@@ -82,19 +83,13 @@ function handleLoadable<T>(
   } else if (loadable.state === 'hasError') {
     throw loadable.contents;
   } else {
-    const err = new Error(
-      `Invalid value of loadable atom "${recoilValue.key}"`,
-    );
-
-    err.stack; // In V8, Error objects keep closures alive until the error.stack property is accessed
-
-    throw err;
+    throw err(`Invalid value of loadable atom "${recoilValue.key}"`);
   }
 }
 
 function validateRecoilValue(recoilValue, hookName) {
   if (!isRecoilValue(recoilValue)) {
-    throw new Error(
+    throw err(
       `Invalid argument to ${hookName}: expected an atom or selector but got ${String(
         recoilValue,
       )}`,
@@ -836,7 +831,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
           'types of the callback you want to create.  Please see the docs ' +
           'at recoiljs.org for details.';
         if (typeof fn !== 'function') {
-          throw new Error(errMsg);
+          throw err(errMsg);
         }
         // flowlint-next-line unclear-type:off
         const cb = (fn: any)({
@@ -847,7 +842,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
           transact_UNSTABLE: atomicUpdate,
         });
         if (typeof cb !== 'function') {
-          throw new Error(errMsg);
+          throw err(errMsg);
         }
         ret = cb(...args);
       });

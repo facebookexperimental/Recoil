@@ -93,6 +93,7 @@ const {
 } = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+const err = require('../util/Recoil_err');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -323,9 +324,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           }
         } else {
           if (isPromise(valueOrUpdater)) {
-            throw new Error(
-              'Setting atoms to async values is not implemented.',
-            );
+            throw err('Setting atoms to async values is not implemented.');
           }
 
           if (typeof valueOrUpdater !== 'function') {

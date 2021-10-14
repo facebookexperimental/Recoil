@@ -23,6 +23,7 @@ const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
 } = require('../core/Recoil_State');
+const err = require('../util/Recoil_err');
 const expectationViolation = require('../util/Recoil_expectationViolation');
 const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -60,9 +61,7 @@ type InternalProps = {
 };
 
 function notInAContext() {
-  throw new Error(
-    'This component must be used inside a <RecoilRoot> component.',
-  );
+  throw err('This component must be used inside a <RecoilRoot> component.');
 }
 
 const defaultStore: Store = Object.freeze({
@@ -77,7 +76,7 @@ let stateReplacerIsBeingExecuted: boolean = false;
 
 function startNextTreeIfNeeded(store: Store): void {
   if (stateReplacerIsBeingExecuted) {
-    throw new Error(
+    throw err(
       'An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.',
     );
   }

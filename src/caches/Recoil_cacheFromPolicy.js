@@ -17,6 +17,7 @@ import type {
   EvictionPolicy,
 } from './Recoil_CachePolicy';
 
+const err = require('../util/Recoil_err');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
 const {LRUCache} = require('./Recoil_LRUCache');
@@ -47,7 +48,7 @@ function getValueMapper(equality: EqualityPolicy): mixed => mixed {
       return val => stableStringify(val);
   }
 
-  throw new Error(`Unrecognized equality policy ${equality}`);
+  throw err(`Unrecognized equality policy ${equality}`);
 }
 
 function getCache<K, V>(
@@ -67,7 +68,7 @@ function getCache<K, V>(
       return new LRUCache<K, V>({mapKey, maxSize: 1});
   }
 
-  throw new Error(`Unrecognized eviction policy ${eviction}`);
+  throw err(`Unrecognized eviction policy ${eviction}`);
 }
 
 module.exports = cacheFromPolicy;
