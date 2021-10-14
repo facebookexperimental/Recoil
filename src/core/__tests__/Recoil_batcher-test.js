@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let unstable_batchedUpdates, batchUpdates, getBatcher, setBatcher;
 

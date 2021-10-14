@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../testing/Recoil_TestingUtils');
+const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React,
   useRef,
@@ -46,7 +46,7 @@ const testRecoil = getRecoilTestFn(() => {
     ReadsAtom,
     flushPromisesAndTimers,
     renderElements,
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   invariant = require('../../util/Recoil_invariant');
 });
 
