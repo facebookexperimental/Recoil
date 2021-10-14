@@ -17,6 +17,7 @@
 
 import type {NodeKey} from '../core/Recoil_Keys';
 
+const err = require('../util/Recoil_err');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 
@@ -98,13 +99,10 @@ const loadableAccessors = {
   },
 
   valueOrThrow() {
-    const error = new Error(
+    throw err(
       // $FlowFixMe[object-this-reference]
       `Loadable expected value, but in "${this.state}" state`,
     );
-    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    error.stack;
-    throw error;
   },
 
   errorMaybe() {
@@ -112,13 +110,10 @@ const loadableAccessors = {
   },
 
   errorOrThrow() {
-    const error = new Error(
+    throw err(
       // $FlowFixMe[object-this-reference]
       `Loadable expected error, but in "${this.state}" state`,
     );
-    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    error.stack;
-    throw error;
   },
 
   promiseMaybe() {
@@ -126,13 +121,10 @@ const loadableAccessors = {
   },
 
   promiseOrThrow() {
-    const error = new Error(
+    throw err(
       // $FlowFixMe[object-this-reference]
       `Loadable expected promise, but in "${this.state}" state`,
     );
-    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    error.stack;
-    throw error;
   },
 
   is(other: Loadable<mixed>): boolean {
@@ -196,10 +188,7 @@ const loadableAccessors = {
           }),
       );
     }
-    const error = new Error('Invalid Loadable state');
-    // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    error.stack;
-    throw error;
+    throw err('Invalid Loadable state');
   },
 };
 

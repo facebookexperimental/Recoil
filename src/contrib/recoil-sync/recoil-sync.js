@@ -22,6 +22,7 @@ const {
   useRecoilSnapshot,
   useRecoilTransaction,
 } = require('../../hooks/Recoil_Hooks');
+const err = require('../../util/Recoil_err');
 const {useCallback, useEffect} = require('react');
 
 type NodeKey = string;
@@ -204,7 +205,7 @@ function useRecoilSync({
                 break;
               case 'loading':
                 // TODO Async atom support
-                throw new Error(
+                throw err(
                   'Recoil does not yet support setting atoms to an asynchronous state',
                 );
             }
@@ -295,7 +296,10 @@ function syncEffect<T>({
         const loadable = readFromStorage(itemKey);
         if (loadable != null) {
           if (!isLoadable(loadable)) {
-            throw new Error('Sync read must provide a Loadable');
+            throw err('Sync read must provide a Loadable');
+          }
+          if (loadable.state === 'hasError') {
+            throw loadable.contents;
           }
 
           const validated = validateLoadable<T>(loadable, {restore});

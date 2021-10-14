@@ -10,13 +10,8 @@
  */
 'use strict';
 
-const err = require('../util/Recoil_err');
+// @fb-only: const {err} = require('fb-error');
 
-function nullthrows<T>(x: ?T, message: ?string): T {
-  if (x != null) {
-    return x;
-  }
-  throw err(message ?? 'Got unexpected null or undefined');
-}
+const err = require('./polyfill/err.js'); // @oss-only
 
-module.exports = nullthrows;
+module.exports = err;

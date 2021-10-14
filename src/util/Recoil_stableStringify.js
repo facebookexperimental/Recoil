@@ -10,6 +10,7 @@
  */
 'use strict';
 
+const err = require('./Recoil_err');
 const isPromise = require('./Recoil_isPromise');
 
 const TIME_WARNING_THRESHOLD_MS = 15;
@@ -38,7 +39,7 @@ function stringify(x: mixed, opt: Options, key?: string): string {
       return JSON.stringify(x);
     case 'function':
       if (opt?.allowFunctions !== true) {
-        throw new Error('Attempt to serialize function in a Recoil cache key');
+        throw err('Attempt to serialize function in a Recoil cache key');
       }
       return `__FUNCTION(${x.name})__`;
   }
@@ -105,10 +106,10 @@ function stringify(x: mixed, opt: Options, key?: string): string {
 
   // For all other Objects, sort the keys in a stable order.
   return `{${Object.keys(x)
-    .filter(key => x[key] !== undefined)
+    .filter(k => x[k] !== undefined)
     .sort()
     // stringify the key to add quotes and escape any nested slashes or quotes.
-    .map(key => `${stringify(key, opt)}:${stringify(x[key], opt, key)}`)
+    .map(k => `${stringify(k, opt)}:${stringify(x[k], opt, k)}`)
     .join(',')}}`;
 }
 

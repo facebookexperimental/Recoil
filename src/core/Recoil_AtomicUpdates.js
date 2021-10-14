@@ -22,6 +22,7 @@ const {
   invalidateDownstreams,
   writeLoadableToTreeState,
 } = require('../core/Recoil_RecoilValueInterface');
+const err = require('../util/Recoil_err');
 
 export interface TransactionInterface {
   get: <T>(RecoilValue<T>) => T;
@@ -52,7 +53,7 @@ class TransactionInterfaceImpl {
       return this._changes.get(recoilValue.key);
     }
     if (!isAtom(recoilValue)) {
-      throw new Error('Reading selectors within atomicUpdate is not supported');
+      throw err('Reading selectors within atomicUpdate is not supported');
     }
     const loadable = getRecoilValueAsLoadable(
       this._store,
@@ -64,7 +65,7 @@ class TransactionInterfaceImpl {
     } else if (loadable.state === 'hasError') {
       throw loadable.contents;
     } else {
-      throw new Error(
+      throw err(
         `Expected Recoil atom ${recoilValue.key} to have a value, but it is in a loading state.`,
       );
     }
@@ -77,7 +78,7 @@ class TransactionInterfaceImpl {
     valueOrUpdater: ValueOrUpdater<T>,
   ): void => {
     if (!isAtom(recoilState)) {
-      throw new Error('Setting selectors within atomicUpdate is not supported');
+      throw err('Setting selectors within atomicUpdate is not supported');
     }
     if (typeof valueOrUpdater === 'function') {
       const current = this.get(recoilState);

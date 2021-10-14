@@ -18,6 +18,7 @@ import type {AtomEffect} from '../../recoil_values/Recoil_atom';
 import type {ItemKey, SyncEffectOptions, SyncKey} from './recoil-sync';
 
 const {loadableWithValue} = require('../../adt/Recoil_Loadable');
+const err = require('../../util/Recoil_err');
 const {syncEffect, useRecoilSync} = require('./recoil-sync');
 const React = require('react');
 const {useCallback, useEffect, useRef} = require('react');
@@ -47,7 +48,7 @@ function parseURL(loc: LocationOption): ?string {
       return param != null ? decodeURIComponent(param) : null;
     }
   }
-  throw new Error(`Unknown URL location part: "${loc.part}"`);
+  throw err(`Unknown URL location part: "${loc.part}"`);
 }
 
 function updateURL(loc: LocationOption, serialization): string {
@@ -66,7 +67,7 @@ function updateURL(loc: LocationOption, serialization): string {
       return `?${searchParams.toString()}${location.hash}`;
     }
   }
-  throw new Error(`Unknown URL location part: "${loc.part}"`);
+  throw err(`Unknown URL location part: "${loc.part}"`);
 }
 
 ///////////////////////
@@ -223,7 +224,7 @@ function urlSyncEffect<T>({
     }
     const atomRegistry = registries.get(options.syncKey);
     if (atomRegistry == null) {
-      throw new Error('Error with atom registration');
+      throw err('Error with atom registration');
     }
     atomRegistry.set(effectArgs.node.key, {
       history,

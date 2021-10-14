@@ -23,6 +23,7 @@ import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
 const concatIterables = require('../util/Recoil_concatIterables');
 const {isSSR} = require('../util/Recoil_Environment');
+const err = require('../util/Recoil_err');
 const filterIterable = require('../util/Recoil_filterIterable');
 const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -90,7 +91,7 @@ class Snapshot {
       },
       subscribeToTransactions: () => ({release: () => {}}),
       addTransactionMetadata: () => {
-        throw new Error('Cannot subscribe to Snapshots');
+        throw err('Cannot subscribe to Snapshots');
       },
     };
     // Initialize any nodes that are live in the parent store (primarily so that this
@@ -151,7 +152,7 @@ class Snapshot {
         recoverableViolation(retainWarning, 'recoil');
       }
       // What we will ship later:
-      // throw new Error(retainWarning);
+      // throw err(retainWarning);
     }
   }
 
