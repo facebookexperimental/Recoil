@@ -58,9 +58,14 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   // the node is released again.
   init: (Store, TreeState, Trigger) => () => void,
 
-  // Informs the node to invalidate any caches as needed in case either it is
-  // set or it has an upstream dependency that was set. (Called at batch end.)
-  invalidate?: TreeState => void,
+  // Invalidate the cached value stored in the TreeState.
+  // It is used at the end of each batch for mutated state.
+  // This does not affect any other caches such as the selector cache.
+  invalidate: TreeState => void,
+
+  // Clear all internal caches for this node.  Unlike "invalidate()" this clears
+  // the selector cache and clears for all possible dependency values.
+  clearCache?: (Store, RecoilValue<T>) => void,
 
   shouldRestoreFromSnapshots: boolean,
 

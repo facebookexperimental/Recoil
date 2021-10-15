@@ -96,7 +96,10 @@ const {
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
-const {setRecoilValueLoadable} = require('../core/Recoil_RecoilValueInterface');
+const {
+  markRecoilValueModified,
+  setRecoilValueLoadable,
+} = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
@@ -1123,6 +1126,11 @@ function selector<T>(
     state.atomValues.delete(key);
   }
 
+  function clearSelectorCache(store: Store, recoilValue: RecoilValue<T>) {
+    cache.clear();
+    markRecoilValueModified(store, recoilValue);
+  }
+
   if (set != null) {
     /**
      * ES5 strict mode prohibits defining non-top-level function declarations,
@@ -1208,6 +1216,7 @@ function selector<T>(
       set: selectorSet,
       init: selectorInit,
       invalidate: invalidateSelector,
+      clearCache: clearSelectorCache,
       shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
@@ -1221,6 +1230,7 @@ function selector<T>(
       get: selectorGet,
       init: selectorInit,
       invalidate: invalidateSelector,
+      clearCache: clearSelectorCache,
       shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
