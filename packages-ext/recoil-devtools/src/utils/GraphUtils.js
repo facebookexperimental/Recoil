@@ -36,9 +36,7 @@ function depsHaveChaged(
   return false;
 }
 
-function createGraph(
-  deps: DependenciesSnapshotType,
-): {
+function createGraph(deps: DependenciesSnapshotType): {
   // TODO: define proper types
   levels: $ReadOnlyArray<$ReadOnlyArray<string>>,
   edges: $ReadOnlyArray<mixed>,

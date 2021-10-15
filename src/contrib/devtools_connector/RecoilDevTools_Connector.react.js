@@ -34,9 +34,7 @@ type ConnectProps = $ReadOnly<{
   goToSnapshot: Snapshot => void,
 }>;
 
-function connect(
-  props: ConnectProps,
-): ?{
+function connect(props: ConnectProps): ?{
   track: (transactionId: number, snapshot: Snapshot) => void,
   disconnect: () => void,
 } {

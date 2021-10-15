@@ -128,17 +128,19 @@ const waitForNone: <
   // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 > = selectorFamily({
   key: '__waitForNone',
-  get: (
-    dependencies:
-      | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
-      | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
-  ) => ({get}) => {
-    // Issue requests for all dependencies in parallel.
-    const deps = unwrapDependencies(dependencies);
-    const [results, exceptions] = concurrentRequests(get, deps);
-    // Always return the current status of the results; never block.
-    return wrapLoadables(dependencies, results, exceptions);
-  },
+  get:
+    (
+      dependencies:
+        | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
+        | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
+    ) =>
+    ({get}) => {
+      // Issue requests for all dependencies in parallel.
+      const deps = unwrapDependencies(dependencies);
+      const [results, exceptions] = concurrentRequests(get, deps);
+      // Always return the current status of the results; never block.
+      return wrapLoadables(dependencies, results, exceptions);
+    },
   dangerouslyAllowMutability: true,
 });
 
@@ -156,41 +158,43 @@ const waitForAny: <
   // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 > = selectorFamily({
   key: '__waitForAny',
-  get: (
-    dependencies:
-      | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
-      | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
-  ) => ({get}) => {
-    // Issue requests for all dependencies in parallel.
-    // Exceptions can either be Promises of pending results or real errors
-    const deps = unwrapDependencies(dependencies);
-    const [results, exceptions] = concurrentRequests(get, deps);
+  get:
+    (
+      dependencies:
+        | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
+        | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
+    ) =>
+    ({get}) => {
+      // Issue requests for all dependencies in parallel.
+      // Exceptions can either be Promises of pending results or real errors
+      const deps = unwrapDependencies(dependencies);
+      const [results, exceptions] = concurrentRequests(get, deps);
 
-    // If any results are available, value or error, return the current status
-    if (exceptions.some(exp => !isPromise(exp))) {
-      return wrapLoadables(dependencies, results, exceptions);
-    }
-
-    // Otherwise, return a promise that will resolve when the next result is
-    // available, whichever one happens to be next.  But, if all pending
-    // dependencies end up with errors, then reject the promise.
-    return new Promise(resolve => {
-      for (const [i, exp] of exceptions.entries()) {
-        if (isPromise(exp)) {
-          exp
-            .then(result => {
-              results[i] = result;
-              exceptions[i] = undefined;
-              resolve(wrapLoadables(dependencies, results, exceptions));
-            })
-            .catch(error => {
-              exceptions[i] = error;
-              resolve(wrapLoadables(dependencies, results, exceptions));
-            });
-        }
+      // If any results are available, value or error, return the current status
+      if (exceptions.some(exp => !isPromise(exp))) {
+        return wrapLoadables(dependencies, results, exceptions);
       }
-    });
-  },
+
+      // Otherwise, return a promise that will resolve when the next result is
+      // available, whichever one happens to be next.  But, if all pending
+      // dependencies end up with errors, then reject the promise.
+      return new Promise(resolve => {
+        for (const [i, exp] of exceptions.entries()) {
+          if (isPromise(exp)) {
+            exp
+              .then(result => {
+                results[i] = result;
+                exceptions[i] = undefined;
+                resolve(wrapLoadables(dependencies, results, exceptions));
+              })
+              .catch(error => {
+                exceptions[i] = error;
+                resolve(wrapLoadables(dependencies, results, exceptions));
+              });
+          }
+        }
+      });
+    },
   dangerouslyAllowMutability: true,
 });
 
@@ -207,35 +211,37 @@ const waitForAll: <
   // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 > = selectorFamily({
   key: '__waitForAll',
-  get: (
-    dependencies:
-      | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
-      | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
-  ) => ({get}) => {
-    // Issue requests for all dependencies in parallel.
-    // Exceptions can either be Promises of pending results or real errors
-    const deps = unwrapDependencies(dependencies);
-    const [results, exceptions] = concurrentRequests(get, deps);
+  get:
+    (
+      dependencies:
+        | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
+        | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
+    ) =>
+    ({get}) => {
+      // Issue requests for all dependencies in parallel.
+      // Exceptions can either be Promises of pending results or real errors
+      const deps = unwrapDependencies(dependencies);
+      const [results, exceptions] = concurrentRequests(get, deps);
 
-    // If all results are available, return the results
-    if (exceptions.every(exp => exp == null)) {
-      return wrapResults(dependencies, results);
-    }
+      // If all results are available, return the results
+      if (exceptions.every(exp => exp == null)) {
+        return wrapResults(dependencies, results);
+      }
 
-    // If we have any errors, throw the first error
-    const error = exceptions.find(isError);
-    if (error != null) {
-      throw error;
-    }
+      // If we have any errors, throw the first error
+      const error = exceptions.find(isError);
+      if (error != null) {
+        throw error;
+      }
 
-    // Otherwise, return a promise that will resolve when all results are available
-    return Promise.all(exceptions).then(exceptionResults =>
-      wrapResults(
-        dependencies,
-        combineAsyncResultsWithSyncResults(results, exceptionResults),
-      ),
-    );
-  },
+      // Otherwise, return a promise that will resolve when all results are available
+      return Promise.all(exceptions).then(exceptionResults =>
+        wrapResults(
+          dependencies,
+          combineAsyncResultsWithSyncResults(results, exceptionResults),
+        ),
+      );
+    },
   dangerouslyAllowMutability: true,
 });
 
@@ -250,42 +256,44 @@ const waitForAllSettled: <
   // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 > = selectorFamily({
   key: '__waitForAllSettled',
-  get: (
-    dependencies:
-      | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
-      | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
-  ) => ({get}) => {
-    // Issue requests for all dependencies in parallel.
-    // Exceptions can either be Promises of pending results or real errors
-    const deps = unwrapDependencies(dependencies);
-    const [results, exceptions] = concurrentRequests(get, deps);
+  get:
+    (
+      dependencies:
+        | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>}>
+        | $ReadOnlyArray<RecoilValueReadOnly<mixed>>,
+    ) =>
+    ({get}) => {
+      // Issue requests for all dependencies in parallel.
+      // Exceptions can either be Promises of pending results or real errors
+      const deps = unwrapDependencies(dependencies);
+      const [results, exceptions] = concurrentRequests(get, deps);
 
-    // If all results are available, return the results
-    if (exceptions.every(exp => !isPromise(exp))) {
-      return wrapLoadables(dependencies, results, exceptions);
-    }
+      // If all results are available, return the results
+      if (exceptions.every(exp => !isPromise(exp))) {
+        return wrapLoadables(dependencies, results, exceptions);
+      }
 
-    // Wait for all results to settle
-    return (
-      Promise.all(
-        exceptions.map((exp, i) =>
-          isPromise(exp)
-            ? exp
-                .then(result => {
-                  results[i] = result;
-                  exceptions[i] = undefined;
-                })
-                .catch(error => {
-                  results[i] = undefined;
-                  exceptions[i] = error;
-                })
-            : null,
-        ),
-      )
-        // Then wrap them as loadables
-        .then(() => wrapLoadables(dependencies, results, exceptions))
-    );
-  },
+      // Wait for all results to settle
+      return (
+        Promise.all(
+          exceptions.map((exp, i) =>
+            isPromise(exp)
+              ? exp
+                  .then(result => {
+                    results[i] = result;
+                    exceptions[i] = undefined;
+                  })
+                  .catch(error => {
+                    results[i] = undefined;
+                    exceptions[i] = error;
+                  })
+              : null,
+          ),
+        )
+          // Then wrap them as loadables
+          .then(() => wrapLoadables(dependencies, results, exceptions))
+      );
+    },
   dangerouslyAllowMutability: true,
 });
 
@@ -294,15 +302,17 @@ const noWait: (
   // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 ) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
   key: '__noWait',
-  get: dependency => ({get}) => {
-    try {
-      return loadableWithValue(get(dependency));
-    } catch (exception) {
-      return isPromise(exception)
-        ? loadableWithPromise(exception)
-        : loadableWithError(exception);
-    }
-  },
+  get:
+    dependency =>
+    ({get}) => {
+      try {
+        return loadableWithValue(get(dependency));
+      } catch (exception) {
+        return isPromise(exception)
+          ? loadableWithPromise(exception)
+          : loadableWithError(exception);
+      }
+    },
   dangerouslyAllowMutability: true,
 });
 

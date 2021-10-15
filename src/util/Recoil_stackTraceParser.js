@@ -65,7 +65,8 @@ function stackTraceParser(stackString: string): Array<Frame> {
   }, []);
 }
 
-const chromeRe = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
+const chromeRe =
+  /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
 const chromeEvalRe = /\((\S*)(?::(\d+))(?::(\d+))\)/;
 
 function parseChrome(line: string): ?Frame {
@@ -95,7 +96,8 @@ function parseChrome(line: string): ?Frame {
   };
 }
 
-const winjsRe = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:file|ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i;
+const winjsRe =
+  /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:file|ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i;
 
 function parseWinjs(line): ?Frame {
   const parts = winjsRe.exec(line);
@@ -113,7 +115,8 @@ function parseWinjs(line): ?Frame {
   };
 }
 
-const geckoRe = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i;
+const geckoRe =
+  /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i;
 const geckoEvalRe = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
 
 function parseGecko(line): ?Frame {
@@ -142,7 +145,8 @@ function parseGecko(line): ?Frame {
   };
 }
 
-const javaScriptCoreRe = /^\s*(?:([^@]*)(?:\((.*?)\))?@)?(\S.*?):(\d+)(?::(\d+))?\s*$/i;
+const javaScriptCoreRe =
+  /^\s*(?:([^@]*)(?:\((.*?)\))?@)?(\S.*?):(\d+)(?::(\d+))?\s*$/i;
 
 function parseJSC(line): ?Frame {
   const parts = javaScriptCoreRe.exec(line);
@@ -160,7 +164,8 @@ function parseJSC(line): ?Frame {
   };
 }
 
-const nodeRe = /^\s*at (?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
+const nodeRe =
+  /^\s*at (?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
 
 function parseNode(line): ?Frame {
   const parts = nodeRe.exec(line);

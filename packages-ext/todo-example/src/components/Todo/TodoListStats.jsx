@@ -14,12 +14,8 @@ import React from 'react';
 import {useRecoilValue} from 'recoil';
 
 export const TodoListStats = () => {
-  const {
-    totalNum,
-    totalCompletedNum,
-    totalUncompletedNum,
-    percentCompleted,
-  } = useRecoilValue(todoListStatsState);
+  const {totalNum, totalCompletedNum, totalUncompletedNum, percentCompleted} =
+    useRecoilValue(todoListStatsState);
 
   const formattedPercentCompleted = Math.round(percentCompleted);
 

@@ -914,9 +914,8 @@ function selector<T>(
       return cachedVal;
     }
 
-    const inProgressExecutionInfo = getExecutionInfoOfInProgressExecution(
-      state,
-    );
+    const inProgressExecutionInfo =
+      getExecutionInfoOfInProgressExecution(state);
 
     // FIXME: this won't work with custom caching b/c it uses separate cache
     if (inProgressExecutionInfo) {
