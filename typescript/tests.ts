@@ -7,7 +7,7 @@
  * @emails oncall+recoil
  */
 
-import {
+ import {
   atom,
   atomFamily,
   constSelector, DefaultValue,
@@ -28,6 +28,7 @@ import {
   waitForAll, waitForAllSettled, waitForAny, waitForNone,
   Loadable,
   useRecoilTransaction_UNSTABLE,
+  useRecoilRefresher_UNSTABLE,
 } from 'recoil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -307,11 +308,25 @@ const transact: (p: number) => void = useRecoilTransaction_UNSTABLE(({get, set, 
   useRecoilSnapshot(); // $ExpectType Snapshot
 }
 
-// useRecoilBridgeAcrossReactRoots()
-const RecoilBridgeComponent: typeof RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE();
-RecoilBridgeComponent({});
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-RecoilBridgeComponent({initializeState: () => {}}); // $ExpectError
+/**
+ * useRecoilRefresher()
+ */
+{
+  useRecoilRefresher_UNSTABLE(false); // $ExpectError
+  const refresher = useRecoilRefresher_UNSTABLE();
+  refresher(false); // $ExpectError
+  refresher(mySelector1); // $ExpectType void
+}
+
+/**
+ * useRecoilBridgeAcrossReactRoots()
+ */
+{
+  const RecoilBridgeComponent: typeof RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE();
+  RecoilBridgeComponent({});
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  RecoilBridgeComponent({initializeState: () => {}}); // $ExpectError
+}
 
 // Other
 isRecoilValue(4);
