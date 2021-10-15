@@ -19,8 +19,7 @@ function err(message: string): Error {
     // IE sets the stack only if error is thrown
     try {
       throw error;
-      // TODO, disable fb-www/no-unused-catch-bindings after bumping package.json to eslint-plugin-fb-www 1.0.7
-    } catch (_) {} // eslint-disable-line no-empty
+    } catch (_) {} // eslint-disable-line fb-www/no-unused-catch-bindings, no-empty
   }
 
   return error;
