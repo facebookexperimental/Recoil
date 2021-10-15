@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React, atom, useRecoilValue, useRecoilTransaction, renderElements;
 const testRecoil = getRecoilTestFn(() => {
@@ -24,7 +24,7 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('../../Recoil_index'));
   ({
     renderElements
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
 });
 testRecoil('Atom effects are initialized once if first seen on transaction and then on root store', () => {
   let numTimesEffectInit = 0;

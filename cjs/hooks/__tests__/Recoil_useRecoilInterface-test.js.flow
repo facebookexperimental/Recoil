@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React, useRef, useState, act, atom, counterAtom, renderElements, useRecoilInterface;
 const testRecoil = getRecoilTestFn(() => {
@@ -27,7 +27,7 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../../recoil_values/Recoil_atom');
   ({
     renderElements
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({
     useRecoilInterface
   } = require('../Recoil_Hooks'));

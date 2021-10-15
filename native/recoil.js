@@ -117,12 +117,34 @@ var Recoil_mapIterable = mapIterable;
  * @format
  */
 
+function err(message) {
+  const error = new Error(message); // In V8, Error objects keep the closure scope chain alive until the
+  // err.stack property is accessed.
+
+  if (error.stack === undefined) {
+    // IE sets the stack only if error is thrown
+    try {
+      throw error; // TODO, disable fb-www/no-unused-catch-bindings after bumping package.json to eslint-plugin-fb-www 1.0.7
+    } catch (_) {} // eslint-disable-line no-empty
+
+  }
+
+  return error;
+}
+
+var err_1 = err;
+
+// @oss-only
+
+
+var Recoil_err = err_1;
+
 function nullthrows(x, message) {
   if (x != null) {
     return x;
   }
 
-  throw new Error(message !== null && message !== void 0 ? message : 'Got unexpected null or undefined');
+  throw Recoil_err(message !== null && message !== void 0 ? message : 'Got unexpected null or undefined');
 }
 
 var Recoil_nullthrows = nullthrows;
@@ -2178,9 +2200,8 @@ const loadableAccessors = {
   },
 
   valueOrThrow() {
-    const error = new Error( // $FlowFixMe[object-this-reference]
-    `Loadable expected value, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
+    throw Recoil_err( // $FlowFixMe[object-this-reference]
+    `Loadable expected value, but in "${this.state}" state`);
   },
 
   errorMaybe() {
@@ -2188,9 +2209,8 @@ const loadableAccessors = {
   },
 
   errorOrThrow() {
-    const error = new Error( // $FlowFixMe[object-this-reference]
-    `Loadable expected error, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
+    throw Recoil_err( // $FlowFixMe[object-this-reference]
+    `Loadable expected error, but in "${this.state}" state`);
   },
 
   promiseMaybe() {
@@ -2198,9 +2218,8 @@ const loadableAccessors = {
   },
 
   promiseOrThrow() {
-    const error = new Error( // $FlowFixMe[object-this-reference]
-    `Loadable expected promise, but in "${this.state}" state`); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
+    throw Recoil_err( // $FlowFixMe[object-this-reference]
+    `Loadable expected promise, but in "${this.state}" state`);
   },
 
   is(other) {
@@ -2264,8 +2283,7 @@ const loadableAccessors = {
       }));
     }
 
-    const error = new Error('Invalid Loadable state'); // V8 keeps closures alive until stack is accessed, this prevents a memory leak
-    throw error;
+    throw Recoil_err('Invalid Loadable state');
   }
 
 };
@@ -3181,6 +3199,8 @@ const {
 
 
 
+
+
 const {
   batchUpdates: batchUpdates$1
 } = Recoil_Batching;
@@ -3312,7 +3332,7 @@ class Snapshot {
         release: () => {}
       }),
       addTransactionMetadata: () => {
-        throw new Error('Cannot subscribe to Snapshots');
+        throw Recoil_err('Cannot subscribe to Snapshots');
       }
     }; // Initialize any nodes that are live in the parent store (primarily so that this
     // snapshot gets counted towards the node's live stores count).
@@ -3366,7 +3386,7 @@ class Snapshot {
       if (process.env.NODE_ENV !== "production") {
         Recoil_recoverableViolation(retainWarning);
       } // What we will ship later:
-      // throw new Error(retainWarning);
+      // throw err(retainWarning);
 
     }
   }
@@ -3529,6 +3549,8 @@ const {
 
 
 
+
+
 const {
   cleanUpNode: cleanUpNode$2,
   getDownstreamNodes: getDownstreamNodes$2,
@@ -3568,7 +3590,7 @@ const {
 } = react;
 
 function notInAContext() {
-  throw new Error('This component must be used inside a <RecoilRoot> component.');
+  throw Recoil_err('This component must be used inside a <RecoilRoot> component.');
 }
 
 const defaultStore = Object.freeze({
@@ -3582,7 +3604,7 @@ let stateReplacerIsBeingExecuted = false;
 
 function startNextTreeIfNeeded(store) {
   if (stateReplacerIsBeingExecuted) {
-    throw new Error('An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.');
+    throw Recoil_err('An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.');
   }
 
   const storeState = store.getState();
@@ -3994,6 +4016,8 @@ const {
   writeLoadableToTreeState: writeLoadableToTreeState$1
 } = Recoil_RecoilValueInterface;
 
+
+
 function isAtom(recoilValue) {
   return getNode$3(recoilValue.key).nodeType === 'atom';
 }
@@ -4013,7 +4037,7 @@ class TransactionInterfaceImpl {
       }
 
       if (!isAtom(recoilValue)) {
-        throw new Error('Reading selectors within atomicUpdate is not supported');
+        throw Recoil_err('Reading selectors within atomicUpdate is not supported');
       }
 
       const loadable = getRecoilValueAsLoadable$2(this._store, recoilValue, this._treeState);
@@ -4023,13 +4047,13 @@ class TransactionInterfaceImpl {
       } else if (loadable.state === 'hasError') {
         throw loadable.contents;
       } else {
-        throw new Error(`Expected Recoil atom ${recoilValue.key} to have a value, but it is in a loading state.`);
+        throw Recoil_err(`Expected Recoil atom ${recoilValue.key} to have a value, but it is in a loading state.`);
       }
     });
 
     _defineProperty(this, "set", (recoilState, valueOrUpdater) => {
       if (!isAtom(recoilState)) {
-        throw new Error('Setting selectors within atomicUpdate is not supported');
+        throw Recoil_err('Setting selectors within atomicUpdate is not supported');
       }
 
       if (typeof valueOrUpdater === 'function') {
@@ -4424,6 +4448,7 @@ function useComponentName() {
         // to look down the stack and find the first function which doesn't start
         // with 'use'. We are only enabling this in dev for now, since once the
         // codebase is minified, the naming assumptions no longer hold true.
+        // eslint-disable-next-line fb-www/no-new-error
         const frames = Recoil_stackTraceParser(new Error().stack);
 
         for (const {
@@ -4518,6 +4543,8 @@ const {
 
 
 
+
+
 const {
   mutableSourceExists: mutableSourceExists$2,
   useMutableSource: useMutableSource$1
@@ -4559,15 +4586,13 @@ function handleLoadable(loadable, recoilValue, storeRef) {
   } else if (loadable.state === 'hasError') {
     throw loadable.contents;
   } else {
-    const err = new Error(`Invalid value of loadable atom "${recoilValue.key}"`);
-
-    throw err;
+    throw Recoil_err(`Invalid value of loadable atom "${recoilValue.key}"`);
   }
 }
 
 function validateRecoilValue(recoilValue, hookName) {
   if (!isRecoilValue$2(recoilValue)) {
-    throw new Error(`Invalid argument to ${hookName}: expected an atom or selector but got ${String(recoilValue)}`);
+    throw Recoil_err(`Invalid argument to ${hookName}: expected an atom or selector but got ${String(recoilValue)}`);
   }
 }
 
@@ -5164,7 +5189,7 @@ function useRecoilCallback(fn, deps) {
       const errMsg = 'useRecoilCallback expects a function that returns a function: ' + 'it accepts a function of the type (RecoilInterface) => T = R ' + 'and returns a callback function T => R, where RecoilInterface is an ' + 'object {snapshot, set, ...} and T and R are the argument and return ' + 'types of the callback you want to create.  Please see the docs ' + 'at recoiljs.org for details.';
 
       if (typeof fn !== 'function') {
-        throw new Error(errMsg);
+        throw Recoil_err(errMsg);
       } // flowlint-next-line unclear-type:off
 
 
@@ -5177,7 +5202,7 @@ function useRecoilCallback(fn, deps) {
       });
 
       if (typeof cb !== 'function') {
-        throw new Error(errMsg);
+        throw Recoil_err(errMsg);
       }
 
       ret = cb(...args);
@@ -5474,7 +5499,7 @@ function stringify(x, opt, key) {
 
     case 'function':
       if ((opt === null || opt === void 0 ? void 0 : opt.allowFunctions) !== true) {
-        throw new Error('Attempt to serialize function in a Recoil cache key');
+        throw Recoil_err('Attempt to serialize function in a Recoil cache key');
       }
 
       return `__FUNCTION(${x.name})__`;
@@ -5536,8 +5561,8 @@ function stringify(x, opt, key) {
   } // For all other Objects, sort the keys in a stable order.
 
 
-  return `{${Object.keys(x).filter(key => x[key] !== undefined).sort() // stringify the key to add quotes and escape any nested slashes or quotes.
-  .map(key => `${stringify(key, opt)}:${stringify(x[key], opt, key)}`).join(',')}}`;
+  return `{${Object.keys(x).filter(k => x[k] !== undefined).sort() // stringify the key to add quotes and escape any nested slashes or quotes.
+  .map(k => `${stringify(k, opt)}:${stringify(x[k], opt, k)}`).join(',')}}`;
 } // Utility similar to JSON.stringify() except:
 // * Serialize built-in Sets as an Array
 // * Serialize built-in Maps as an Object.  Supports non-string keys.
@@ -5997,7 +6022,7 @@ function getValueMapper(equality) {
       return val => Recoil_stableStringify(val);
   }
 
-  throw new Error(`Unrecognized equality policy ${equality}`);
+  throw Recoil_err(`Unrecognized equality policy ${equality}`);
 }
 
 function getTreeCache(eviction, maxSize, mapNodeValue) {
@@ -6015,7 +6040,7 @@ function getTreeCache(eviction, maxSize, mapNodeValue) {
       return Recoil_treeCacheLRU(1, mapNodeValue);
   }
 
-  throw new Error(`Unrecognized eviction policy ${eviction}`);
+  throw Recoil_err(`Unrecognized eviction policy ${eviction}`);
 }
 
 var Recoil_treeCacheFromPolicy = treeCacheFromPolicy;
@@ -6986,6 +7011,8 @@ const {
 
 
 
+
+
 function baseAtom(options) {
   const {
     key,
@@ -7126,7 +7153,7 @@ function baseAtom(options) {
           }
         } else {
           if (Recoil_isPromise(valueOrUpdater)) {
-            throw new Error('Setting atoms to async values is not implemented.');
+            throw Recoil_err('Setting atoms to async values is not implemented.');
           }
 
           if (typeof valueOrUpdater !== 'function') {
@@ -7468,7 +7495,7 @@ function getValueMapper$1(equality) {
       return val => Recoil_stableStringify(val);
   }
 
-  throw new Error(`Unrecognized equality policy ${equality}`);
+  throw Recoil_err(`Unrecognized equality policy ${equality}`);
 }
 
 function getCache(eviction, maxSize, mapKey) {
@@ -7494,7 +7521,7 @@ function getCache(eviction, maxSize, mapKey) {
       });
   }
 
-  throw new Error(`Unrecognized eviction policy ${eviction}`);
+  throw Recoil_err(`Unrecognized eviction policy ${eviction}`);
 }
 
 var Recoil_cacheFromPolicy = cacheFromPolicy;
@@ -7682,8 +7709,9 @@ var Recoil_constSelector = constSelector;
 const throwingSelector = Recoil_selectorFamily({
   key: '__error',
   get: message => () => {
-    throw new Error(message);
+    throw Recoil_err(message);
   },
+  // TODO Why?
   cachePolicyForParams_UNSTABLE: {
     equality: 'reference'
   }

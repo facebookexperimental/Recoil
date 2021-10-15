@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let treeCacheFromPolicy;
 const testRecoil = getRecoilTestFn(() => {

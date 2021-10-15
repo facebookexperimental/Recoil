@@ -72,6 +72,8 @@ const {
   isSSR
 } = require('../util/Recoil_Environment');
 
+const err = require('../util/Recoil_err');
+
 const expectationViolation = require('../util/Recoil_expectationViolation');
 
 const filterMap = require('../util/Recoil_filterMap');

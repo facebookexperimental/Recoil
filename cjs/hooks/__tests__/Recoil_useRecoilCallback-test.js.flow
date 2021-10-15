@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React, useRef, useState, act, useStoreRef, atom, atomFamily, selector, useRecoilCallback, useRecoilValue, useSetRecoilState, ReadsAtom, flushPromisesAndTimers, renderElements, invariant;
 const testRecoil = getRecoilTestFn(() => {
@@ -39,7 +39,7 @@ const testRecoil = getRecoilTestFn(() => {
     ReadsAtom,
     flushPromisesAndTimers,
     renderElements
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   invariant = require('../../util/Recoil_invariant');
 });
 describe('useRecoilCallback', () => {

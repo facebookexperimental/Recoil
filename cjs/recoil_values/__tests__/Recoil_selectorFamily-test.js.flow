@@ -14,13 +14,13 @@ import type { RecoilValue } from '../../core/Recoil_RecoilValue';
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let atom, DefaultValue, selectorFamily, getRecoilValueAsLoadable, setRecoilValue, store, myAtom;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
-  } = require('../../testing/Recoil_TestingUtils');
+  } = require('../../__test_utils__/Recoil_TestingUtils');
 
   atom = require('../Recoil_atom');
   ({

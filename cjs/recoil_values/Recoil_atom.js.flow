@@ -99,6 +99,8 @@ const {
 
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 
+const err = require('../util/Recoil_err');
+
 const expectationViolation = require('../util/Recoil_expectationViolation');
 
 const isPromise = require('../util/Recoil_isPromise');

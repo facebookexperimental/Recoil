@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React, useState, act, freshSnapshot, useGotoRecoilSnapshot, useRecoilCallback, useRecoilValue, atom, constSelector, selector, ReadsAtom, asyncSelector, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements;
 const testRecoil = getRecoilTestFn(() => {
@@ -40,7 +40,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
 });
 testRecoil('Goto mapped snapshot', async () => {
   const snapshot = freshSnapshot();

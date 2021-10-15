@@ -14,13 +14,13 @@ import type { Store } from '../../core/Recoil_State';
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let store: Store, React, Profiler, useState, ReactDOM, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, mutableSourceExists, stableStringify, atom, atomFamily, selectorFamily, pAtom;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
-  } = require('../../testing/Recoil_TestingUtils');
+  } = require('../../__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({
@@ -49,7 +49,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({
     mutableSourceExists
   } = require('../../util/Recoil_mutableSource'));

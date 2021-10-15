@@ -13,6 +13,8 @@
 import type { CachePolicy, EqualityPolicy, EvictionPolicy } from './Recoil_CachePolicy';
 import type { TreeCacheImplementation } from './Recoil_TreeCacheImplementationType';
 
+const err = require('../util/Recoil_err');
+
 const nullthrows = require('../util/Recoil_nullthrows');
 
 const stableStringify = require('../util/Recoil_stableStringify');

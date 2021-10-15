@@ -30,6 +30,8 @@ const {
   writeLoadableToTreeState
 } = require('../core/Recoil_RecoilValueInterface');
 
+const err = require('../util/Recoil_err');
+
 export interface TransactionInterface {
   get: <T>(RecoilValue<T>) => T,
   set: <T>(RecoilState<T>, ValueOrUpdater<T>) => void,

@@ -19,6 +19,8 @@ const {
   loadableWithValue
 } = require('../../adt/Recoil_Loadable');
 
+const err = require('../../util/Recoil_err');
+
 const {
   syncEffect,
   useRecoilSync

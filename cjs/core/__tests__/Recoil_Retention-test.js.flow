@@ -14,7 +14,7 @@ import type { RecoilState } from '../../core/Recoil_RecoilValue';
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React, act, atom, componentThatReadsAndWritesAtom, gkx, useRecoilValue, useRecoilValueLoadable, useRetain, useRecoilCallback, useState, selector, renderElements, retentionZone;
 const testRecoil = getRecoilTestFn(() => {
@@ -39,7 +39,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     componentThatReadsAndWritesAtom,
     renderElements
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   gkx = require('../../util/Recoil_gkx');
   const initialGKValue = gkx('recoil_memory_managament_2020');
   gkx.setPass('recoil_memory_managament_2020');

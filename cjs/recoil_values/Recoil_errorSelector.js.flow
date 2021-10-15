@@ -12,14 +12,17 @@
 
 import type { RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 
+const err = require('../util/Recoil_err');
+
 const selectorFamily = require('./Recoil_selectorFamily'); // flowlint-next-line unclear-type:off
 
 
 const throwingSelector = selectorFamily<any, any>({
   key: '__error',
   get: message => () => {
-    throw new Error(message);
+    throw err(message);
   },
+  // TODO Why?
   cachePolicyForParams_UNSTABLE: {
     equality: 'reference'
   }

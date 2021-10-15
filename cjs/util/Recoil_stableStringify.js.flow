@@ -10,6 +10,8 @@
  */
 'use strict';
 
+const err = require('./Recoil_err');
+
 const isPromise = require('./Recoil_isPromise');
 
 const TIME_WARNING_THRESHOLD_MS = 15;

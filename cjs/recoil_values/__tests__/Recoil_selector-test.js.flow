@@ -15,13 +15,13 @@ import type { RecoilValue } from '../../core/Recoil_RecoilValue';
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React, store, atom, nullthrows, useEffect, useState, Profiler, noWait, act, useRecoilCallback, useRecoilState, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useResetRecoilState, constSelector, errorSelector, getRecoilValueAsLoadable, setRecoilValue, selector, asyncSelector, ReadsAtom, renderElements, resolvingAsyncSelector, loadingAsyncSelector, flushPromisesAndTimers, DefaultValue, mutableSourceExists, freshSnapshot;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
-  } = require('../../testing/Recoil_TestingUtils');
+  } = require('../../__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({
@@ -59,7 +59,7 @@ const testRecoil = getRecoilTestFn(() => {
     resolvingAsyncSelector,
     loadingAsyncSelector,
     flushPromisesAndTimers
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({
     noWait
   } = require('../Recoil_WaitFor'));

@@ -8,9 +8,9 @@
  * @flow strict
  * @format
  */
-'use strict';
+'use strict'; // @fb-only: const {err} = require('fb-error');
 
-const err = require('../util/Recoil_err');
+const err = require('./polyfill/err.js'); // @oss-only
 
-declare function nullthrows<T>(x: ?T, message: ?string): T;
-module.exports = nullthrows;
+
+module.exports = err;

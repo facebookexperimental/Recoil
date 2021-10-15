@@ -17,7 +17,7 @@ import type { PersistenceSettings } from '../../recoil_values/Recoil_atom';
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let {
   mutableSourceExists
@@ -48,7 +48,7 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers,
     renderElements,
     renderElementsWithSuspenseCount
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({
     mutableSourceExists
   } = require('../../util/Recoil_mutableSource'));

@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React, useEffect, useRef, ReactDOM, act, RecoilRoot, atom, componentThatReadsAndWritesAtom, useRecoilBridgeAcrossReactRoots;
 const testRecoil = getRecoilTestFn(() => {
@@ -31,7 +31,7 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../../recoil_values/Recoil_atom');
   ({
     componentThatReadsAndWritesAtom
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 });
 testRecoil('useRecoilBridgeAcrossReactRoots - create a context bridge', async () => {

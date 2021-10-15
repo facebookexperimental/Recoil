@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../testing/Recoil_TestingUtils');
+} = require('../../__test_utils__/Recoil_TestingUtils');
 
 let React, act, useGotoRecoilSnapshot, useRecoilTransactionObserver, atom, constSelector, selector, ReadsAtom, asyncSelector, componentThatReadsAndWritesAtom, renderElements, Snapshot, freshSnapshot;
 const testRecoil = getRecoilTestFn(() => {
@@ -32,7 +32,7 @@ const testRecoil = getRecoilTestFn(() => {
     asyncSelector,
     componentThatReadsAndWritesAtom,
     renderElements
-  } = require('../../testing/Recoil_TestingUtils'));
+  } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({
     Snapshot,
     freshSnapshot

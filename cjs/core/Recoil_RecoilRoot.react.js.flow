@@ -23,6 +23,8 @@ const {
   makeEmptyStoreState
 } = require('../core/Recoil_State');
 
+const err = require('../util/Recoil_err');
+
 const expectationViolation = require('../util/Recoil_expectationViolation');
 
 const gkx = require('../util/Recoil_gkx');
