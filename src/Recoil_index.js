@@ -50,6 +50,7 @@ const {freshSnapshot} = require('./core/Recoil_Snapshot');
 const {
   useGotoRecoilSnapshot,
   useRecoilCallback,
+  useRecoilRefresher,
   useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
@@ -113,6 +114,7 @@ module.exports = {
   useResetRecoilState,
   useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
   useRetain,
+  useRecoilRefresher_UNSTABLE: useRecoilRefresher,
 
   // Hooks for complex operations with RecoilValues
   useRecoilCallback,

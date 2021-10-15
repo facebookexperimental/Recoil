@@ -632,9 +632,8 @@ function useTransactionObservation_DEPRECATED(
         }
 
         const atomValues = externallyVisibleAtomValuesInState(currentTree);
-        const previousAtomValues = externallyVisibleAtomValuesInState(
-          previousTree,
-        );
+        const previousAtomValues =
+          externallyVisibleAtomValuesInState(previousTree);
         const atomInfo = mapMap(nodes, node => ({
           persistence_UNSTABLE: {
             type: node.persistence_UNSTABLE?.type ?? 'none',
@@ -937,18 +936,31 @@ function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(
 ): (...Arguments) => void {
   const storeRef = useStoreRef();
   return useMemo(
-    () => (...args: Arguments): void => {
-      const atomicUpdate = atomicUpdater(storeRef.current);
-      atomicUpdate(transactionInterface => {
-        fn(transactionInterface)(...args);
-      });
-    },
+    () =>
+      (...args: Arguments): void => {
+        const atomicUpdate = atomicUpdater(storeRef.current);
+        atomicUpdate(transactionInterface => {
+          fn(transactionInterface)(...args);
+        });
+      },
     deps != null ? [...deps, storeRef] : undefined, // eslint-disable-line fb-www/react-hooks-deps
   );
 }
 
+function useRecoilRefresher<T>(recoilValue: RecoilValue<T>): () => void {
+  const storeRef = useStoreRef();
+  return useCallback(() => {
+    const store = storeRef.current;
+    const {currentTree} = store.getState();
+    const node = getNode(recoilValue.key);
+    node.invalidate(currentTree);
+    node.clearCache?.(store, recoilValue);
+  }, [recoilValue, storeRef]);
+}
+
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
+  useRecoilRefresher,
   useGotoRecoilSnapshot,
   useRecoilCallback,
   useRecoilInterface: useRecoilInterface_DEPRECATED,
