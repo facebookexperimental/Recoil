@@ -4,7 +4,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
 
-const inputFile = 'src/Recoil_index.js';
+const inputFile = 'packages/recoil/Recoil_index.js';
 const externalLibs = ['react', 'react-dom'];
 
 const defaultNodeResolveConfig = {};

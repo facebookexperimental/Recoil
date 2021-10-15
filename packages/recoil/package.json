@@ -1,0 +1,14 @@
+{
+  "name": "recoil-oss",
+  "description": "This is the internal package.json enabling CommonJS module",
+  "main": "Recoil_index.js",
+  "haste_commonjs": true,
+  "files": [
+    "Recoil_index.js"
+  ],
+  "directories": {
+    "": "./"
+  },
+  "repository": "https://github.com/facebookexperimental/Recoil.git",
+  "license": "MIT"
+}
