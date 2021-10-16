@@ -5304,8 +5304,24 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     );
   }
 
+  function useRecoilRefresher(recoilValue) {
+    const storeRef = useStoreRef$1();
+    return useCallback$1(() => {
+      var _node$clearCache;
+
+      const store = storeRef.current;
+      const {
+        currentTree
+      } = store.getState();
+      const node = getNode$4(recoilValue.key);
+      node.invalidate(currentTree);
+      (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, recoilValue);
+    }, [recoilValue, storeRef]);
+  }
+
   var Recoil_Hooks = {
     recoilComponentGetRecoilValueCount_FOR_TESTING,
+    useRecoilRefresher,
     useGotoRecoilSnapshot,
     useRecoilCallback,
     useRecoilInterface: useRecoilInterface_DEPRECATED,
@@ -6106,6 +6122,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   } = Recoil_RecoilValue$1;
 
   const {
+    markRecoilValueModified: markRecoilValueModified$1,
     setRecoilValueLoadable: setRecoilValueLoadable$2
   } = Recoil_RecoilValueInterface;
 
@@ -6879,6 +6896,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       state.atomValues.delete(key);
     }
 
+    function clearSelectorCache(store, recoilValue) {
+      cache.clear();
+      markRecoilValueModified$1(store, recoilValue);
+    }
+
     if (set != null) {
       /**
        * ES5 strict mode prohibits defining non-top-level function declarations,
@@ -6945,6 +6967,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         set: selectorSet,
         init: selectorInit,
         invalidate: invalidateSelector,
+        clearCache: clearSelectorCache,
         shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
         shouldRestoreFromSnapshots: false,
@@ -6958,6 +6981,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         get: selectorGet,
         init: selectorInit,
         invalidate: invalidateSelector,
+        clearCache: clearSelectorCache,
         shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
         dangerouslyAllowMutability: options.dangerouslyAllowMutability,
         shouldRestoreFromSnapshots: false,
@@ -6995,7 +7019,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   const {
     getRecoilValueAsLoadable: getRecoilValueAsLoadable$4,
-    markRecoilValueModified: markRecoilValueModified$1,
+    markRecoilValueModified: markRecoilValueModified$2,
     setRecoilValue: setRecoilValue$3,
     setRecoilValueLoadable: setRecoilValueLoadable$3
   } = Recoil_RecoilValueInterface;
@@ -7093,7 +7117,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           const state = (_store$getState$nextT3 = store.getState().nextTree) !== null && _store$getState$nextT3 !== void 0 ? _store$getState$nextT3 : store.getState().currentTree;
 
           if (!state.atomValues.has(key)) {
-            markRecoilValueModified$1(store, node);
+            markRecoilValueModified$2(store, node);
           }
         };
 
@@ -7970,6 +7994,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     useGotoRecoilSnapshot: useGotoRecoilSnapshot$1,
     useRecoilCallback: useRecoilCallback$1,
+    useRecoilRefresher: useRecoilRefresher$1,
     useRecoilSnapshot: useRecoilSnapshot$1,
     useRecoilState: useRecoilState$1,
     useRecoilStateLoadable: useRecoilStateLoadable$1,
@@ -8038,6 +8063,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     useResetRecoilState: useResetRecoilState$1,
     useGetRecoilValueInfo_UNSTABLE: Recoil_useGetRecoilValueInfo,
     useRetain: useRetain$1,
+    useRecoilRefresher_UNSTABLE: useRecoilRefresher$1,
     // Hooks for complex operations with RecoilValues
     useRecoilCallback: useRecoilCallback$1,
     useRecoilTransaction_UNSTABLE: useRecoilTransaction$1,
@@ -8075,18 +8101,19 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_index_19 = Recoil_index.useResetRecoilState;
   var Recoil_index_20 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
   var Recoil_index_21 = Recoil_index.useRetain;
-  var Recoil_index_22 = Recoil_index.useRecoilCallback;
-  var Recoil_index_23 = Recoil_index.useRecoilTransaction_UNSTABLE;
-  var Recoil_index_24 = Recoil_index.useGotoRecoilSnapshot;
-  var Recoil_index_25 = Recoil_index.useRecoilSnapshot;
-  var Recoil_index_26 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
-  var Recoil_index_27 = Recoil_index.useTransactionObservation_UNSTABLE;
-  var Recoil_index_28 = Recoil_index.useSetUnvalidatedAtomValues_UNSTABLE;
-  var Recoil_index_29 = Recoil_index.noWait;
-  var Recoil_index_30 = Recoil_index.waitForNone;
-  var Recoil_index_31 = Recoil_index.waitForAny;
-  var Recoil_index_32 = Recoil_index.waitForAll;
-  var Recoil_index_33 = Recoil_index.waitForAllSettled;
+  var Recoil_index_22 = Recoil_index.useRecoilRefresher_UNSTABLE;
+  var Recoil_index_23 = Recoil_index.useRecoilCallback;
+  var Recoil_index_24 = Recoil_index.useRecoilTransaction_UNSTABLE;
+  var Recoil_index_25 = Recoil_index.useGotoRecoilSnapshot;
+  var Recoil_index_26 = Recoil_index.useRecoilSnapshot;
+  var Recoil_index_27 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
+  var Recoil_index_28 = Recoil_index.useTransactionObservation_UNSTABLE;
+  var Recoil_index_29 = Recoil_index.useSetUnvalidatedAtomValues_UNSTABLE;
+  var Recoil_index_30 = Recoil_index.noWait;
+  var Recoil_index_31 = Recoil_index.waitForNone;
+  var Recoil_index_32 = Recoil_index.waitForAny;
+  var Recoil_index_33 = Recoil_index.waitForAll;
+  var Recoil_index_34 = Recoil_index.waitForAllSettled;
 
   exports.DefaultValue = Recoil_index_1;
   exports.RecoilRoot = Recoil_index_3;
@@ -8096,32 +8123,33 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   exports.default = Recoil_index;
   exports.errorSelector = Recoil_index_12;
   exports.isRecoilValue = Recoil_index_2;
-  exports.noWait = Recoil_index_29;
+  exports.noWait = Recoil_index_30;
   exports.readOnlySelector = Recoil_index_13;
   exports.retentionZone = Recoil_index_7;
   exports.selector = Recoil_index_6;
   exports.selectorFamily = Recoil_index_10;
   exports.snapshot_UNSTABLE = Recoil_index_8;
   exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_20;
-  exports.useGotoRecoilSnapshot = Recoil_index_24;
+  exports.useGotoRecoilSnapshot = Recoil_index_25;
   exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = Recoil_index_4;
-  exports.useRecoilCallback = Recoil_index_22;
-  exports.useRecoilSnapshot = Recoil_index_25;
+  exports.useRecoilCallback = Recoil_index_23;
+  exports.useRecoilRefresher_UNSTABLE = Recoil_index_22;
+  exports.useRecoilSnapshot = Recoil_index_26;
   exports.useRecoilState = Recoil_index_16;
   exports.useRecoilStateLoadable = Recoil_index_17;
-  exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_26;
-  exports.useRecoilTransaction_UNSTABLE = Recoil_index_23;
+  exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_27;
+  exports.useRecoilTransaction_UNSTABLE = Recoil_index_24;
   exports.useRecoilValue = Recoil_index_14;
   exports.useRecoilValueLoadable = Recoil_index_15;
   exports.useResetRecoilState = Recoil_index_19;
   exports.useRetain = Recoil_index_21;
   exports.useSetRecoilState = Recoil_index_18;
-  exports.useSetUnvalidatedAtomValues_UNSTABLE = Recoil_index_28;
-  exports.useTransactionObservation_UNSTABLE = Recoil_index_27;
-  exports.waitForAll = Recoil_index_32;
-  exports.waitForAllSettled = Recoil_index_33;
-  exports.waitForAny = Recoil_index_31;
-  exports.waitForNone = Recoil_index_30;
+  exports.useSetUnvalidatedAtomValues_UNSTABLE = Recoil_index_29;
+  exports.useTransactionObservation_UNSTABLE = Recoil_index_28;
+  exports.waitForAll = Recoil_index_33;
+  exports.waitForAllSettled = Recoil_index_34;
+  exports.waitForAny = Recoil_index_32;
+  exports.waitForNone = Recoil_index_31;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

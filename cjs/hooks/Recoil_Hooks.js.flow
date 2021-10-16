@@ -249,8 +249,10 @@ type ToRetain = RecoilValue<any> // flowlint-line unclear-type:off
 declare function useRetain(toRetain: ToRetain): void;
 declare function useRetain_ACTUAL(toRetain: ToRetain): void;
 declare function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(fn: (TransactionInterface) => (...Arguments) => void, deps?: $ReadOnlyArray<mixed>): (...Arguments) => void;
+declare function useRecoilRefresher<T>(recoilValue: RecoilValue<T>): () => void;
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
+  useRecoilRefresher,
   useGotoRecoilSnapshot,
   useRecoilCallback,
   useRecoilInterface: useRecoilInterface_DEPRECATED,

@@ -99,6 +99,7 @@ const {
 } = require('../core/Recoil_RecoilValue');
 
 const {
+  markRecoilValueModified,
   setRecoilValueLoadable
 } = require('../core/Recoil_RecoilValueInterface');
 

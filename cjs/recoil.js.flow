@@ -44,6 +44,7 @@ const {
 const {
   useGotoRecoilSnapshot,
   useRecoilCallback,
+  useRecoilRefresher,
   useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
@@ -112,6 +113,7 @@ module.exports = {
   useResetRecoilState,
   useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
   useRetain,
+  useRecoilRefresher_UNSTABLE: useRecoilRefresher,
   // Hooks for complex operations with RecoilValues
   useRecoilCallback,
   useRecoilTransaction_UNSTABLE: useRecoilTransaction,
