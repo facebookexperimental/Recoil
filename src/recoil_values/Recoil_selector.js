@@ -92,6 +92,7 @@ const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
   getConfigDeletionHandler,
+  getNode,
   registerNode,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
@@ -213,8 +214,13 @@ function getInitialExecutionInfo<T>(): ExecutionInfo<T> {
 function selector<T>(
   options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>,
 ): RecoilValue<T> {
+  let recoilValue: ?RecoilValue<T> = null;
+
   const {key, get, cachePolicy_UNSTABLE: cachePolicy} = options;
   const set = options.set != null ? options.set : undefined; // flow
+
+  // This is every discovered dependency across executions
+  const discoveredDependencyNodeKeys = new Set();
 
   const cache: TreeCacheImplementation<Loadable<T>> = treeCacheFromPolicy(
     cachePolicy ?? {
@@ -816,6 +822,7 @@ function selector<T>(
               typeof node.nodeKey === 'string'
             ) {
               depsAfterCacheDone.add(node.nodeKey);
+              discoveredDependencyNodeKeys.add(node.nodeKey);
             }
           },
         },
@@ -1126,7 +1133,13 @@ function selector<T>(
     state.atomValues.delete(key);
   }
 
-  function clearSelectorCache(store: Store, recoilValue: RecoilValue<T>) {
+  function clearSelectorCache(store: Store, treeState: TreeState) {
+    invariant(recoilValue != null, 'Recoil Value can never be null');
+    for (const nodeKey of discoveredDependencyNodeKeys) {
+      const node = getNode(String(nodeKey));
+      node.clearCache?.(store, treeState);
+    }
+    invalidateSelector(treeState);
     cache.clear();
     markRecoilValueModified(store, recoilValue);
   }
@@ -1208,7 +1221,7 @@ function selector<T>(
       return writes;
     };
 
-    return registerNode<T>({
+    return (recoilValue = registerNode<T>({
       key,
       nodeType: 'selector',
       peek: selectorPeek,
@@ -1221,9 +1234,9 @@ function selector<T>(
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
       retainedBy,
-    });
+    }));
   } else {
-    return registerNode<T>({
+    return (recoilValue = registerNode<T>({
       key,
       nodeType: 'selector',
       peek: selectorPeek,
@@ -1235,7 +1248,7 @@ function selector<T>(
       dangerouslyAllowMutability: options.dangerouslyAllowMutability,
       shouldRestoreFromSnapshots: false,
       retainedBy,
-    });
+    }));
   }
 }
 
