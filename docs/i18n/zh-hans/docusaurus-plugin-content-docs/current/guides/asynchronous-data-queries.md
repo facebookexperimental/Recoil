@@ -61,7 +61,7 @@ function CurrentUserInfo() {
 
 selector 的接口总是相同的，所以使用这个 selector 的组件不需要关心它是用同步 atom 状态、派生 selector 状态或者异步查询来实现的！
 
-但是，由于 React 的渲染函数是同步的，在 Promise 解决之前，它将渲染什么？Recoil 的设计配合 [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) 处理待定 (pending) 数据。如果用 Suspense 边界包裹你的组件，会捕捉到任何仍在 pending 中的后代，并渲染一个回调 UI。
+但是，由于 React 的渲染函数是同步的，在 Promise 解决之前，它将渲染什么？Recoil 的设计配合 [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) 处理待定 (pending) 数据。如果用 Suspense 边界包裹你的组件，会捕捉到任何仍在 pending 中的后代，并渲染一个回退 UI。
 
 ```jsx
 function MyApp() {
