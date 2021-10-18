@@ -953,8 +953,7 @@ function useRecoilRefresher<T>(recoilValue: RecoilValue<T>): () => void {
     const store = storeRef.current;
     const {currentTree} = store.getState();
     const node = getNode(recoilValue.key);
-    node.invalidate(currentTree);
-    node.clearCache?.(store, recoilValue);
+    node.clearCache?.(store, currentTree);
   }, [recoilValue, storeRef]);
 }
 
