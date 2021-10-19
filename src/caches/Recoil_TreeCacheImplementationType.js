@@ -10,7 +10,9 @@
  */
 'use strict';
 
-export type NodeCacheRoute = Array<[mixed, mixed]>;
+import type {NodeKey} from '../core/Recoil_Keys';
+
+export type NodeCacheRoute = Array<[NodeKey, mixed]>;
 
 export type TreeCacheNode<T> = TreeCacheLeaf<T> | TreeCacheBranch<T>;
 
@@ -23,13 +25,13 @@ export type TreeCacheLeaf<T> = {
 
 export type TreeCacheBranch<T> = {
   type: 'branch',
-  nodeKey: mixed,
+  nodeKey: NodeKey,
   branches: Map<mixed, TreeCacheNode<T>>,
   branchKey?: ?mixed,
   parent: ?TreeCacheBranch<T>,
 };
 
-export type NodeValueGet = (nodeKey: mixed) => mixed;
+export type NodeValueGet = (nodeKey: NodeKey) => mixed;
 
 type NodeVisitHandler<T> = (node: TreeCacheNode<T>) => void;
 
