@@ -1136,7 +1136,7 @@ function selector<T>(
   function clearSelectorCache(store: Store, treeState: TreeState) {
     invariant(recoilValue != null, 'Recoil Value can never be null');
     for (const nodeKey of discoveredDependencyNodeKeys) {
-      const node = getNode(String(nodeKey));
+      const node = getNode(nodeKey);
       node.clearCache?.(store, treeState);
     }
     invalidateSelector(treeState);
