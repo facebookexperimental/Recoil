@@ -12,6 +12,6 @@
 
 // @fb-only: const expectationViolation = require('expectationViolation');
 
-const expectationViolation = require('./polyfill/expectationViolation.js'); // @oss-only
+const expectationViolation = require('@shared/polyfill/expectationViolation.js'); // @oss-only
 
 module.exports = expectationViolation;
