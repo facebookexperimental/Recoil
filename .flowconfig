@@ -38,6 +38,8 @@ module.name_mapper='Recoil_ScopedAtomTaggedValue' -> '<PROJECT_ROOT>/src/adt/Rec
 module.name_mapper='Recoil_ArrayKeyedMap' -> '<PROJECT_ROOT>/src/adt/Recoil_ArrayKeyedMap.js'
 module.name_mapper='gkx' -> '<PROJECT_ROOT>/__mocks__/gkx.js'
 
+module.name_mapper='@shared' -> '<PROJECT_ROOT>/packages/shared'
+
 exact_by_default=true
 
 [strict]

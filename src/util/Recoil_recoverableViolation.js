@@ -13,6 +13,6 @@
 
 // @fb-only: const recoverableViolation = require('recoverableViolation');
 
-const recoverableViolation = require('./polyfill/recoverableViolation.js'); // @oss-only
+const recoverableViolation = require('@shared/polyfill/recoverableViolation.js'); // @oss-only
 
 module.exports = recoverableViolation;

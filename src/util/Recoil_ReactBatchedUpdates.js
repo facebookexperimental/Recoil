@@ -14,6 +14,7 @@
 
 // @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
 
-const {unstable_batchedUpdates} = require('./polyfill/ReactBatchedUpdates'); // @oss-only
+// prettier-ignore
+const {unstable_batchedUpdates} = require('@shared/polyfill/ReactBatchedUpdates'); // @oss-only
 
 module.exports = {unstable_batchedUpdates};
