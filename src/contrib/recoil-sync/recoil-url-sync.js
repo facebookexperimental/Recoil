@@ -11,13 +11,12 @@
 'use strict';
 
 // TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
-// TODO PUBLIC LOADABLE INTERFACE
 
 import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {AtomEffect} from '../../recoil_values/Recoil_atom';
 import type {ItemKey, SyncEffectOptions, SyncKey} from './recoil-sync';
 
-const {loadableWithValue} = require('../../adt/Recoil_Loadable');
+const {RecoilLoadable} = require('../../adt/Recoil_Loadable');
 const err = require('../../util/Recoil_err');
 const {syncEffect, useRecoilSync} = require('./recoil-sync');
 const React = require('react');
@@ -113,12 +112,15 @@ function useRecoilURLSync({
   // Update cached URL parsing if properties of location prop change, but not
   // based on just the object reference itself.
   // eslint-disable-next-line fb-www/react-hooks-deps
-  useEffect(() => updateCachedState(location), [
-    location.part,
-    // $FlowFixMe[prop-missing] Complications with disjoint unions...
-    location.queryParam,
-    updateCachedState,
-  ]);
+  useEffect(
+    () => updateCachedState(location),
+    [
+      location.part,
+      // $FlowFixMe[prop-missing] Complications with disjoint unions...
+      location.queryParam,
+      updateCachedState,
+    ],
+  );
 
   function write({diff, allItems}) {
     // Only serialize atoms in a non-default value state.
@@ -175,7 +177,7 @@ function useRecoilURLSync({
 
   function read(itemKey): ?Loadable<mixed> {
     return cachedState.current?.has(itemKey)
-      ? loadableWithValue(cachedState.current?.get(itemKey))
+      ? RecoilLoadable.of(cachedState.current?.get(itemKey))
       : null;
   }
 
@@ -186,7 +188,7 @@ function useRecoilURLSync({
         const mappedState = new Map(
           Array.from(cachedState.current.entries()).map(([k, v]) => [
             k,
-            loadableWithValue(v),
+            RecoilLoadable.of(v),
           ]),
         );
         updateAllKnownItems(mappedState);
