@@ -689,6 +689,31 @@ isRecoilValue(mySelector1);
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-RecoilLoadable.of('x'); // $ExpectType Loadable<string>
-RecoilLoadable.of(Promise.resolve('x')); // $ExpectType Loadable<string>
-RecoilLoadable.error('x'); // $ExpectType ErrorLoadable<any>
+/**
+ * Loadable Factory Tests
+ */
+ {
+  RecoilLoadable.of('x'); // $ExpectType Loadable<string>
+  RecoilLoadable.of(Promise.resolve('x')); // $ExpectType Loadable<string>
+  RecoilLoadable.error('x'); // $ExpectType ErrorLoadable<any>
+
+  const allLoadableArray = RecoilLoadable.all([
+    RecoilLoadable.of('str'),
+    RecoilLoadable.of(123),
+  ]);
+  allLoadableArray.map(x => {
+    x[0]; // $ExpectType string
+    x[1]; // $ExpectType number
+    x[2]; // $ExpectError
+  });
+
+  const allLoadableObj = RecoilLoadable.all({
+    str: RecoilLoadable.of('str'),
+    num: RecoilLoadable.of(123),
+  });
+  allLoadableObj.map(x => {
+    x.str; // $ExpectType string
+    x.num; // $ExpectType number
+    x.void; // $ExpectError
+  });
+}

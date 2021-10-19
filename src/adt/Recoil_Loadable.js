@@ -269,8 +269,15 @@ function loadableLoading<T>(): Loadable<T> {
 }
 
 type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
+type LoadableAllOfTuple = <Tuple: $ReadOnlyArray<Loadable<mixed>>>(
+  tuple: Tuple,
+) => Loadable<$TupleMap<Tuple, <V>(Loadable<V>) => V>>;
+type LoadableAllOfObj = <Obj: $ReadOnly<{[string]: Loadable<mixed>, ...}>>(
+  obj: Obj,
+) => Loadable<$ObjMap<Obj, <V>(Loadable<V>) => V>>;
+type LoadableAll = LoadableAllOfTuple & LoadableAllOfObj;
 
-function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
+function loadableAllArray<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
   inputs: Inputs,
 ): Loadable<UnwrapLoadables<Inputs>> {
   return inputs.every(i => i.state === 'hasValue')
@@ -285,16 +292,40 @@ function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
     : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
 }
 
-// TODO Actually get this to work with Flow
-function isLoadable(x: mixed): boolean %checks {
-  return (x: any).__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
+function loadableAll<
+  Inputs:
+    | $ReadOnlyArray<Loadable<mixed>>
+    | $ReadOnly<{[string]: Loadable<mixed>, ...}>,
+>(
+  inputs: Inputs,
+): Loadable<$ReadOnlyArray<mixed> | $ReadOnly<{[string]: mixed, ...}>> {
+  const unwrapedInputs = Array.isArray(inputs)
+    ? inputs
+    : Object.getOwnPropertyNames(inputs).map(key => inputs[key]);
+  const output = loadableAllArray(unwrapedInputs);
+  return Array.isArray(inputs)
+    ? output
+    : // Object.getOwnPropertyNames() has consistent key ordering with ES6
+      output.map(outputs =>
+        Object.getOwnPropertyNames(inputs).reduce(
+          (out, key, idx) => ({...out, [key]: outputs[idx]}),
+          {},
+        ),
+      );
 }
 
 const LoadableFactories = {
   of: <T>(value: T | Promise<T>): Loadable<T> =>
     isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
   error: <T>(error: mixed): ErrorLoadable<T> => loadableWithError(error),
+  // $FlowIssue[unclear-type]
+  all: ((loadableAll: any): LoadableAll),
 };
+
+// TODO Actually get this to work with Flow
+function isLoadable(x: mixed): boolean %checks {
+  return (x: any).__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
+}
 
 module.exports = {
   loadableWithValue,
