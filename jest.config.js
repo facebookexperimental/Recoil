@@ -14,6 +14,9 @@ module.exports = {
   globals: {
     __DEV__: true,
   },
+  moduleNameMapper: {
+    '^@shared(.*)$': '<rootDir>/packages/shared$1',
+  },
   testPathIgnorePatterns: ['/node_modules/', '/packages-ext/'],
   setupFiles: ['./setupJestMock.js'],
 };
