@@ -42,6 +42,7 @@ export type {
   SelectorFamilyOptions,
 } from './recoil_values/Recoil_selectorFamily';
 
+const {RecoilLoadable} = require('./adt/Recoil_Loadable');
 const {DefaultValue} = require('./core/Recoil_Node');
 const {RecoilRoot} = require('./core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
@@ -85,27 +86,31 @@ module.exports = {
   // Types
   DefaultValue,
   isRecoilValue,
+  RecoilLoadable,
 
-  // Components
+  // Recoil Root
   RecoilRoot,
   useRecoilBridgeAcrossReactRoots_UNSTABLE: useRecoilBridgeAcrossReactRoots,
 
-  // RecoilValues
+  // Atoms/Selectors
   atom,
   selector,
 
-  // Factories
-  retentionZone,
-  snapshot_UNSTABLE: freshSnapshot,
-
-  // Convenience RecoilValues
+  // Convenience Atoms/Selectors
   atomFamily,
   selectorFamily,
   constSelector,
   errorSelector,
   readOnlySelector,
 
-  // Hooks that accept RecoilValues
+  // Concurrency Helpers for Atoms/Selectors
+  noWait,
+  waitForNone,
+  waitForAny,
+  waitForAll,
+  waitForAllSettled,
+
+  // Hooks for Atoms/Selectors
   useRecoilValue,
   useRecoilValueLoadable,
   useRecoilState,
@@ -113,24 +118,21 @@ module.exports = {
   useSetRecoilState,
   useResetRecoilState,
   useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
-  useRetain,
   useRecoilRefresher_UNSTABLE: useRecoilRefresher,
 
-  // Hooks for complex operations with RecoilValues
+  // Hooks for complex operations
   useRecoilCallback,
   useRecoilTransaction_UNSTABLE: useRecoilTransaction,
 
-  // Hooks for Snapshots
+  // Snapshots
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
   useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
+  snapshot_UNSTABLE: freshSnapshot,
 
-  // Concurrency Helpers
-  noWait,
-  waitForNone,
-  waitForAny,
-  waitForAll,
-  waitForAllSettled,
+  // Memory Management
+  useRetain,
+  retentionZone,
 };
