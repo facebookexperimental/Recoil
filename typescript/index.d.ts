@@ -13,9 +13,8 @@
  * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
  */
 
- export { };
+export { };
 
- import { voidTypeAnnotation } from '@babel/types';
 import * as React from 'react';
 
 // state.d.ts
@@ -431,6 +430,13 @@ export function waitForAllSettled<RecoilValues extends Array<RecoilValue<any>> |
 export function waitForAllSettled<RecoilValues extends { [key: string]: RecoilValue<any> }>(
  param: RecoilValues,
 ): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+ export namespace RecoilLoadable {
+  function of<T>(x: T | Promise<T>): Loadable<T>;
+  function error(x: any): ErrorLoadable<any>;
+}
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
