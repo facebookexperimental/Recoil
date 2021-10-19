@@ -26,7 +26,7 @@
   useRecoilValueLoadable,
   useResetRecoilState, useSetRecoilState,
   waitForAll, waitForAllSettled, waitForAny, waitForNone,
-  Loadable,
+  Loadable, RecoilLoadable,
   useRecoilTransaction_UNSTABLE,
   useRecoilRefresher_UNSTABLE,
 } from 'recoil';
@@ -688,3 +688,7 @@ isRecoilValue(mySelector1);
 }
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+RecoilLoadable.of('x'); // $ExpectType Loadable<string>
+RecoilLoadable.of(Promise.resolve('x')); // $ExpectType Loadable<string>
+RecoilLoadable.error('x'); // $ExpectType ErrorLoadable<any>

@@ -15,8 +15,6 @@
  */
 'use strict';
 
-import type {NodeKey} from '../core/Recoil_Keys';
-
 const err = require('../util/Recoil_err');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
@@ -292,6 +290,12 @@ function isLoadable(x: mixed): boolean %checks {
   return (x: any).__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
 }
 
+const LoadableFactories = {
+  of: <T>(value: T | Promise<T>): Loadable<T> =>
+    isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
+  error: <T>(error: mixed): ErrorLoadable<T> => loadableWithError(error),
+};
+
 module.exports = {
   loadableWithValue,
   loadableWithError,
@@ -301,4 +305,5 @@ module.exports = {
   isLoadable,
   Canceled,
   CANCELED,
+  RecoilLoadable: LoadableFactories,
 };

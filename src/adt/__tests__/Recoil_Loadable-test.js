@@ -11,6 +11,7 @@
 'use strict';
 
 const {
+  RecoilLoadable,
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
@@ -160,4 +161,18 @@ describe('Loadable mapping', () => {
     expect(loadable.state).toBe('loading');
     await expect(loadable.toPromise()).resolves.toBe('MAPPED VALUE');
   });
+});
+
+test('Loadable Factory Interface', async () => {
+  const valueLoadable = RecoilLoadable.of('VALUE');
+  expect(valueLoadable.state).toBe('hasValue');
+  expect(valueLoadable.contents).toBe('VALUE');
+
+  const promiseLoadable = RecoilLoadable.of(Promise.resolve('ASYNC'));
+  expect(promiseLoadable.state).toBe('loading');
+  await expect(promiseLoadable.contents).resolves.toBe('ASYNC');
+
+  const errorLoadable = RecoilLoadable.error('ERROR');
+  expect(errorLoadable.state).toBe('hasError');
+  expect(errorLoadable.contents).toBe('ERROR');
 });
