@@ -8,7 +8,6 @@
 'use strict';
 
 // TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
-// TODO PUBLIC LOADABLE INTERFACE
 
 import type {Loadable} from '../../../adt/Recoil_Loadable';
 import type {ItemKey, ItemSnapshot, ListenInterface} from '../recoil-sync';
@@ -27,11 +26,7 @@ const {
   flushPromisesAndTimers,
   renderElements,
 } = require('../../../__test_utils__/Recoil_TestingUtils');
-const {
-  loadableWithError,
-  loadableWithPromise,
-  loadableWithValue,
-} = require('../../../adt/Recoil_Loadable');
+const {RecoilLoadable} = require('../../../adt/Recoil_Loadable');
 const {useRecoilValue} = require('../../../hooks/Recoil_Hooks');
 const atom = require('../../../recoil_values/Recoil_atom');
 const atomFamily = require('../../../recoil_values/Recoil_atomFamily');
@@ -181,8 +176,8 @@ test('Read from storage', async () => {
   });
 
   const storage = new Map([
-    ['recoil-sync read A', loadableWithValue('A')],
-    ['recoil-sync read B', loadableWithValue('B')],
+    ['recoil-sync read A', RecoilLoadable.of('A')],
+    ['recoil-sync read B', RecoilLoadable.of('B')],
   ]);
 
   const container = renderElements(
@@ -205,7 +200,7 @@ test('Read from storage async', async () => {
   });
 
   const storage = new Map([
-    ['recoil-sync read async', loadableWithPromise(Promise.resolve('A'))],
+    ['recoil-sync read async', RecoilLoadable.of(Promise.resolve('A'))],
   ]);
 
   const container = renderElements(
@@ -233,17 +228,19 @@ test('Read from storage error', async () => {
   });
   const mySelector = selectorFamily({
     key: 'recoil-sync read error selector',
-    get: ({myAtom}) => ({get}) => {
-      try {
-        return get(myAtom);
-      } catch (e) {
-        return e.message;
-      }
-    },
+    get:
+      ({myAtom}) =>
+      ({get}) => {
+        try {
+          return get(myAtom);
+        } catch (e) {
+          return e.message;
+        }
+      },
   });
 
   const storage = new Map([
-    ['recoil-sync read error A', loadableWithError(new Error('ERROR A'))],
+    ['recoil-sync read error A', RecoilLoadable.error(new Error('ERROR A'))],
   ]);
 
   const container = renderElements(
@@ -295,7 +292,7 @@ test('Read from storage upgrade', async () => {
           // Test async validation
           x =>
             typeof x === 'string'
-              ? loadableWithPromise(Promise.resolve(x))
+              ? RecoilLoadable.of(Promise.resolve(x))
               : null,
           str => Number(str),
         ),
@@ -317,10 +314,10 @@ test('Read from storage upgrade', async () => {
   });
 
   const storage = new Map([
-    ['recoil-sync fail validation', loadableWithValue(123)],
-    ['recoil-sync upgrade number', loadableWithValue(123)],
-    ['recoil-sync upgrade string', loadableWithValue('123')],
-    ['recoil-sync upgrade async', loadableWithPromise(Promise.resolve(123))],
+    ['recoil-sync fail validation', RecoilLoadable.of(123)],
+    ['recoil-sync upgrade number', RecoilLoadable.of(123)],
+    ['recoil-sync upgrade string', RecoilLoadable.of('123')],
+    ['recoil-sync upgrade async', RecoilLoadable.of(Promise.resolve(123))],
   ]);
 
   const container = renderElements(
@@ -367,12 +364,12 @@ test('Read/Write from storage upgrade', async () => {
   });
 
   const storage1 = new Map([
-    ['recoil-sync read/write upgrade type', loadableWithValue(123)],
-    ['OLD KEY', loadableWithValue('OLD')],
-    ['recoil-sync read/write upgrade storage', loadableWithValue('STR1')],
+    ['recoil-sync read/write upgrade type', RecoilLoadable.of(123)],
+    ['OLD KEY', RecoilLoadable.of('OLD')],
+    ['recoil-sync read/write upgrade storage', RecoilLoadable.of('STR1')],
   ]);
   const storage2 = new Map([
-    ['recoil-sync read/write upgrade storage', loadableWithValue('STR2')],
+    ['recoil-sync read/write upgrade storage', RecoilLoadable.of('STR2')],
   ]);
 
   const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
@@ -441,12 +438,12 @@ test('Listen to storage', async () => {
   });
 
   const storage1 = new Map([
-    ['recoil-sync listen', loadableWithValue('A')],
-    ['KEY A', loadableWithValue('B')],
-    ['recoil-sync listen to multiple storage', loadableWithValue('C1')],
+    ['recoil-sync listen', RecoilLoadable.of('A')],
+    ['KEY A', RecoilLoadable.of('B')],
+    ['recoil-sync listen to multiple storage', RecoilLoadable.of('C1')],
   ]);
   const storage2 = new Map([
-    ['recoil-sync listen to multiple storage', loadableWithValue('C2')],
+    ['recoil-sync listen to multiple storage', RecoilLoadable.of('C2')],
   ]);
 
   let updateItem1: (ItemKey, ?Loadable<mixed>) => void = () => {
@@ -485,32 +482,32 @@ test('Listen to storage', async () => {
   expect(storage1.size).toBe(3);
 
   // Subscribe to new value
-  act(() => updateItem1('recoil-sync listen', loadableWithValue('AA')));
+  act(() => updateItem1('recoil-sync listen', RecoilLoadable.of('AA')));
   expect(container.textContent).toBe('"AA""B""C2"');
   // Avoid feedback loops
   expect(storage1.get('recoil-sync listen')?.getValue()).toBe('A');
 
   // Subscribe to new value from different key
-  act(() => updateItem1('KEY A', loadableWithValue('BB')));
+  act(() => updateItem1('KEY A', RecoilLoadable.of('BB')));
   expect(container.textContent).toBe('"AA""BB""C2"');
   // Neither key in same storage will be updated to avoid feedback loops
   expect(storage1.get('KEY A')?.getValue()).toBe('B');
   expect(storage1.get('KEY B')?.getValue()).toBe(undefined);
-  act(() => updateItem1('KEY B', loadableWithValue('BBB')));
+  act(() => updateItem1('KEY B', RecoilLoadable.of('BBB')));
   expect(container.textContent).toBe('"AA""BBB""C2"');
   expect(storage1.get('KEY A')?.getValue()).toBe('B');
   expect(storage1.get('KEY B')?.getValue()).toBe(undefined);
 
   // TODO
   // // Updating older key won't override newer key
-  // act(() => updateItem1('KEY A', loadableWithValue('IGNORE')));
+  // act(() => updateItem1('KEY A', RecoilLoadable.of('IGNORE')));
   // expect(container.textContent).toBe('"AA""BBB""C2"');
 
   // Subscribe to new value from different storage
   act(() =>
     updateItem1(
       'recoil-sync listen to multiple storage',
-      loadableWithValue('CC1'),
+      RecoilLoadable.of('CC1'),
     ),
   );
   expect(container.textContent).toBe('"AA""BBB""CC1"');
@@ -526,7 +523,7 @@ test('Listen to storage', async () => {
   act(() =>
     updateItem2(
       'recoil-sync listen to multiple storage',
-      loadableWithValue('CC2'),
+      RecoilLoadable.of('CC2'),
     ),
   );
   expect(container.textContent).toBe('"AA""BBB""CC2"');
@@ -540,7 +537,7 @@ test('Listen to storage', async () => {
   act(() =>
     updateItem1(
       'recoil-sync listen to multiple storage',
-      loadableWithValue('CCC1'),
+      RecoilLoadable.of('CCC1'),
     ),
   );
   expect(container.textContent).toBe('"AA""BBB""CCC1"');
@@ -563,7 +560,7 @@ test('Listen to storage', async () => {
 
   // Subscribe to error
   const ERROR = new Error('ERROR');
-  act(() => updateItem1('recoil-sync listen', loadableWithError(ERROR)));
+  act(() => updateItem1('recoil-sync listen', RecoilLoadable.error(ERROR)));
   // TODO Atom should be put in an error state, but is just reset for now.
   expect(container.textContent).toBe('"DEFAULT""BBB""DEFAULT"');
   // expect(storage1.get('recoil-sync listen')?.errorOrThrow()).toBe(ERROR);
@@ -571,7 +568,7 @@ test('Listen to storage', async () => {
   // Update All Items
   // Set A while resetting B
   act(() =>
-    updateAll1(new Map([['recoil-sync listen', loadableWithValue('AAA')]])),
+    updateAll1(new Map([['recoil-sync listen', RecoilLoadable.of('AAA')]])),
   );
   expect(container.textContent).toBe('"AAA""DEFAULT""DEFAULT"');
 
@@ -580,8 +577,8 @@ test('Listen to storage', async () => {
   act(() =>
     updateAll1(
       new Map([
-        ['recoil-sync listen', loadableWithValue('AAA')],
-        ['KEY A', loadableWithValue('BBB')],
+        ['recoil-sync listen', RecoilLoadable.of('AAA')],
+        ['KEY A', RecoilLoadable.of('BBB')],
       ]),
     ),
   );
@@ -592,9 +589,9 @@ test('Listen to storage', async () => {
   act(() =>
     updateAll1(
       new Map([
-        ['recoil-sync listen', loadableWithValue('AAA')],
-        ['KEY A', loadableWithValue('IGNORE')],
-        ['KEY B', loadableWithValue('BBBB')],
+        ['recoil-sync listen', RecoilLoadable.of('AAA')],
+        ['KEY A', RecoilLoadable.of('IGNORE')],
+        ['KEY B', RecoilLoadable.of('BBBB')],
       ]),
     ),
   );
@@ -604,7 +601,7 @@ test('Listen to storage', async () => {
   // act(() =>
   //   updateItem1(
   //     'recoil-sync listen',
-  //     loadableWithPromise(Promise.resolve( 'ASYNC')),
+  //     RecoilLoadable.of(Promise.resolve( 'ASYNC')),
   //   ),
   // );
   // await flushPromisesAndTimers();
@@ -612,7 +609,7 @@ test('Listen to storage', async () => {
 
   // act(() =>
   //   updateItem1(
-  //     'KEY B', loadableWithPromise(Promise.reject(new Error('ERROR B'))),
+  //     'KEY B', RecoilLoadable.of(Promise.reject(new Error('ERROR B'))),
   //   ),
   // );
   // await flushPromisesAndTimers();
@@ -733,7 +730,7 @@ test('Sync based on component props', async () => {
   function SyncWithProps(props) {
     useRecoilSync({
       read: itemKey =>
-        itemKey in props ? loadableWithValue(props[itemKey]) : null,
+        itemKey in props ? RecoilLoadable.of(props[itemKey]) : null,
     });
     return null;
   }
@@ -774,8 +771,8 @@ test('Sync Atom Family', async () => {
   });
 
   const storage = new Map([
-    ['a', loadableWithValue('A')],
-    ['b', loadableWithValue('B')],
+    ['a', RecoilLoadable.of('A')],
+    ['b', RecoilLoadable.of('B')],
   ]);
 
   const container = renderElements(
@@ -801,7 +798,7 @@ test('Reading before sync hook', async () => {
   function SyncOrder() {
     const b = useRecoilValue(atoms('b'));
     useRecoilSync({
-      read: itemKey => loadableWithValue(itemKey.toUpperCase()),
+      read: itemKey => RecoilLoadable.of(itemKey.toUpperCase()),
     });
     const c = useRecoilValue(atoms('c'));
     return (
