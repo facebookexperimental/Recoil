@@ -8,20 +8,19 @@
 'use strict';
 
 // TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
-// TODO PUBLIC LOADABLE INTERFACE
 
 import type {Loadable} from '../../../adt/Recoil_Loadable';
 
-const {loadableWithValue} = require('../../../adt/Recoil_Loadable');
+const {RecoilLoadable} = require('../../../adt/Recoil_Loadable');
 
 ////////////////////////////
 // Mock validation library
 ////////////////////////////
-const validateAny = loadableWithValue;
+const validateAny = RecoilLoadable.of;
 const validateString = (x: mixed): ?Loadable<string> =>
-  typeof x === 'string' ? loadableWithValue<string>(x) : null;
+  typeof x === 'string' ? RecoilLoadable.of(x) : null;
 const validateNumber = (x: mixed): ?Loadable<number> =>
-  typeof x === 'number' ? loadableWithValue<number>(x) : null;
+  typeof x === 'number' ? RecoilLoadable.of(x) : null;
 function upgrade<From, To>(
   validate: mixed => ?Loadable<From>,
   upgrader: From => To,
