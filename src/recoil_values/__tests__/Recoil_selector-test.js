@@ -173,6 +173,46 @@ testRecoil('selector reset', () => {
   expect(getValue(selectorRW)).toEqual('DEFAULT');
 });
 
+testRecoil(
+  'selector get - sync setSelf dependency after async dependency',
+  async () => {
+    const syncSetSelfAtom = atom({
+      key: 'selector/get/syncSetSelf',
+      default: false,
+      effects_UNSTABLE: [
+        ({trigger, setSelf}) => {
+          if (trigger === 'get') {
+            setSelf(true);
+          }
+        },
+      ],
+    });
+
+    const asyncSelector = selector({
+      key: 'selector/get/asyncDep',
+      get: () => {
+        return Promise.resolve(null);
+      },
+    });
+
+    const selectorRO = selector({
+      key: 'selector/get',
+      get: async ({get}) => {
+        const async = get(asyncSelector);
+        const syncSetSelf = get(syncSetSelfAtom);
+        return !async && syncSetSelf;
+      },
+    });
+
+    const c = renderElements(<ReadsAtom atom={selectorRO} />);
+    expect(c.textContent).toEqual('loading');
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('true');
+  },
+);
+
 testRecoil('useRecoilState - resolved async selector', async () => {
   const resolvingSel = resolvingAsyncSelector('HELLO');
   const c = renderElements(<ReadsAtom atom={resolvingSel} />);
