@@ -176,3 +176,58 @@ test('Loadable Factory Interface', async () => {
   expect(errorLoadable.state).toBe('hasError');
   expect(errorLoadable.contents).toBe('ERROR');
 });
+
+test('Load All Array', async () => {
+  expect(
+    RecoilLoadable.all([RecoilLoadable.of('x'), RecoilLoadable.of(123)])
+      .contents,
+  ).toEqual(['x', 123]);
+  await expect(
+    RecoilLoadable.all([
+      RecoilLoadable.of(Promise.resolve('x')),
+      RecoilLoadable.of(123),
+    ]).contents,
+  ).resolves.toEqual(['x', 123]);
+  expect(
+    RecoilLoadable.all([
+      RecoilLoadable.of('x'),
+      RecoilLoadable.of(123),
+      RecoilLoadable.error('ERROR'),
+    ]).contents,
+  ).toEqual('ERROR');
+
+  expect(
+    RecoilLoadable.all([
+      RecoilLoadable.of('x'),
+      RecoilLoadable.all([RecoilLoadable.of(1), RecoilLoadable.of(2)]),
+    ]).contents,
+  ).toEqual(['x', [1, 2]]);
+});
+
+test('Load All Object', async () => {
+  expect(
+    RecoilLoadable.all({
+      str: RecoilLoadable.of('x'),
+      num: RecoilLoadable.of(123),
+    }).contents,
+  ).toEqual({
+    str: 'x',
+    num: 123,
+  });
+  await expect(
+    RecoilLoadable.all({
+      str: RecoilLoadable.of(Promise.resolve('x')),
+      num: RecoilLoadable.of(123),
+    }).contents,
+  ).resolves.toEqual({
+    str: 'x',
+    num: 123,
+  });
+  expect(
+    RecoilLoadable.all({
+      str: RecoilLoadable.of('x'),
+      num: RecoilLoadable.of(123),
+      err: RecoilLoadable.error('ERROR'),
+    }).contents,
+  ).toEqual('ERROR');
+});
