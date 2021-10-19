@@ -716,4 +716,7 @@ isRecoilValue(mySelector1);
     x.num; // $ExpectType number
     x.void; // $ExpectError
   });
+
+  Load.isLoadable(false); // $ExpectType boolean
+  Load.isLoadable(Load.of('x')); // $ExpectType boolean
 }
