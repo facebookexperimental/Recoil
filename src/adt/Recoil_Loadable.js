@@ -314,18 +314,19 @@ function loadableAll<
       );
 }
 
-const LoadableFactories = {
+// TODO Actually get this to work with Flow
+function isLoadable(x: mixed): boolean %checks {
+  return (x: any).__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
+}
+
+const LoadableStaticInterface = {
   of: <T>(value: T | Promise<T>): Loadable<T> =>
     isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
   error: <T>(error: mixed): ErrorLoadable<T> => loadableWithError(error),
   // $FlowIssue[unclear-type]
   all: ((loadableAll: any): LoadableAll),
+  isLoadable,
 };
-
-// TODO Actually get this to work with Flow
-function isLoadable(x: mixed): boolean %checks {
-  return (x: any).__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
-}
 
 module.exports = {
   loadableWithValue,
@@ -336,5 +337,5 @@ module.exports = {
   isLoadable,
   Canceled,
   CANCELED,
-  RecoilLoadable: LoadableFactories,
+  RecoilLoadable: LoadableStaticInterface,
 };

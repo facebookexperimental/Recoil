@@ -442,7 +442,8 @@ export function waitForAllSettled<RecoilValues extends { [key: string]: RecoilVa
    function error(x: any): ErrorLoadable<any>;
    function all<Inputs extends Array<Loadable<any>> | [Loadable<any>]>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
    function all<Inputs extends {[key: string]: Loadable<any>}>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
- }
+   function isLoadable(x: any): x is Loadable<any>;
+  }
  /* eslint-enable @typescript-eslint/no-unused-vars */
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
