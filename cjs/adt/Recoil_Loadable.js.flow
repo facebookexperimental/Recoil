@@ -15,8 +15,6 @@
  */
 'use strict';
 
-import type { NodeKey } from '../core/Recoil_Keys';
-
 const err = require('../util/Recoil_err');
 
 const isPromise = require('../util/Recoil_isPromise');
@@ -176,9 +174,29 @@ declare var throwCanceled: (value: any) => any;
 declare function loadableWithPromise<T>(promise: Promise<T | Canceled>): LoadingLoadable<T>;
 declare function loadableLoading<T>(): Loadable<T>;
 type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
-declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>>>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>; // TODO Actually get this to work with Flow
+type LoadableAllOfTuple = <Tuple: $ReadOnlyArray<Loadable<mixed>>>(tuple: Tuple) => Loadable<$TupleMap<Tuple, <V>(Loadable<V>) => V>>;
+type LoadableAllOfObj = <Obj: $ReadOnly<{
+  [string]: Loadable<mixed>,
+  ...
+}>>(obj: Obj) => Loadable<$ObjMap<Obj, <V>(Loadable<V>) => V>>;
+type LoadableAll = LoadableAllOfTuple & LoadableAllOfObj;
+declare function loadableAllArray<Inputs: $ReadOnlyArray<Loadable<mixed>>>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
+declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>> | $ReadOnly<{
+  [string]: Loadable<mixed>,
+  ...
+}>>(inputs: Inputs): Loadable<$ReadOnlyArray<mixed> | $ReadOnly<{
+  [string]: mixed,
+  ...
+}>>; // TODO Actually get this to work with Flow
 
 declare function isLoadable(x: mixed): boolean;
+const LoadableStaticInterface = {
+  of: <T>(value: T | Promise<T>): Loadable<T> => isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
+  error: <T>(error: mixed): ErrorLoadable<T> => loadableWithError(error),
+  // $FlowIssue[unclear-type]
+  all: ((loadableAll: any): LoadableAll),
+  isLoadable
+};
 module.exports = {
   loadableWithValue,
   loadableWithError,
@@ -187,5 +205,6 @@ module.exports = {
   loadableAll,
   isLoadable,
   Canceled,
-  CANCELED
+  CANCELED,
+  RecoilLoadable: LoadableStaticInterface
 };

@@ -87,6 +87,7 @@ const {
   DEFAULT_VALUE,
   RecoilValueNotReady,
   getConfigDeletionHandler,
+  getNode,
   registerNode
 } = require('../core/Recoil_Node');
 

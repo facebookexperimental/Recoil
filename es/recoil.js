@@ -12,6 +12,300 @@ import reactDom from 'react-dom';
  * @format
  */
 
+function err(message) {
+  const error = new Error(message); // In V8, Error objects keep the closure scope chain alive until the
+  // err.stack property is accessed.
+
+  if (error.stack === undefined) {
+    // IE sets the stack only if error is thrown
+    try {
+      throw error;
+    } catch (_) {} // eslint-disable-line fb-www/no-unused-catch-bindings, no-empty
+
+  }
+
+  return error;
+}
+
+var err_1 = err;
+
+// @oss-only
+
+
+var Recoil_err = err_1;
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+// Split declaration and implementation to allow this function to pretend to
+// check for actual instance of Promise instead of something with a `then`
+// method.
+// eslint-disable-next-line no-redeclare
+function isPromise(p) {
+  return !!p && typeof p.then === 'function';
+}
+
+var Recoil_isPromise = isPromise;
+
+function nullthrows(x, message) {
+  if (x != null) {
+    return x;
+  }
+
+  throw Recoil_err(message !== null && message !== void 0 ? message : 'Got unexpected null or undefined');
+}
+
+var Recoil_nullthrows = nullthrows;
+
+const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
+// Containing static factories of withValue(), withError(), withPromise(), and all()
+
+class Canceled {}
+
+const CANCELED = new Canceled();
+const loadableAccessors = {
+  valueMaybe() {
+    return undefined;
+  },
+
+  valueOrThrow() {
+    throw Recoil_err( // $FlowFixMe[object-this-reference]
+    `Loadable expected value, but in "${this.state}" state`);
+  },
+
+  errorMaybe() {
+    return undefined;
+  },
+
+  errorOrThrow() {
+    throw Recoil_err( // $FlowFixMe[object-this-reference]
+    `Loadable expected error, but in "${this.state}" state`);
+  },
+
+  promiseMaybe() {
+    return undefined;
+  },
+
+  promiseOrThrow() {
+    throw Recoil_err( // $FlowFixMe[object-this-reference]
+    `Loadable expected promise, but in "${this.state}" state`);
+  },
+
+  is(other) {
+    // $FlowFixMe[object-this-reference]
+    return other.state === this.state && other.contents === this.contents;
+  },
+
+  map(map) {
+    // $FlowFixMe[object-this-reference]
+    if (this.state === 'hasError') {
+      // $FlowFixMe[object-this-reference]
+      return this;
+    } // $FlowFixMe[object-this-reference]
+
+
+    if (this.state === 'hasValue') {
+      try {
+        // $FlowFixMe[object-this-reference]
+        const next = map(this.contents);
+        return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
+        next : // flowlint-line unclear-type:off
+        loadableWithValue(next); // flowlint-line unclear-type:off
+      } catch (e) {
+        return Recoil_isPromise(e) ? // If we "suspended", then try again.
+        // errors and subsequent retries will be handled in 'loading' case
+        // $FlowFixMe[object-this-reference]
+        loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
+      }
+    } // $FlowFixMe[object-this-reference]
+
+
+    if (this.state === 'loading') {
+      return loadableWithPromise( // $FlowFixMe[object-this-reference]
+      this.contents.then(value => {
+        const next = map(value);
+
+        if (isLoadable(next)) {
+          const nextLoadable = next; // flowlint-line unclear-type:off
+
+          switch (nextLoadable.state) {
+            case 'hasValue':
+              return nextLoadable.contents;
+
+            case 'hasError':
+              throw nextLoadable.contents;
+
+            case 'loading':
+              return nextLoadable.contents;
+          }
+        }
+
+        return next;
+      }).catch(e => {
+        if (Recoil_isPromise(e)) {
+          // we were "suspended," try again
+          // $FlowFixMe[object-this-reference]
+          return e.then(() => map(this.contents));
+        }
+
+        throw e;
+      }));
+    }
+
+    throw Recoil_err('Invalid Loadable state');
+  }
+
+};
+
+function loadableWithValue(value) {
+  // Build objects this way since Flow doesn't support disjoint unions for class properties
+  return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
+    state: 'hasValue',
+    contents: value,
+    ...loadableAccessors,
+
+    getValue() {
+      return this.contents;
+    },
+
+    toPromise() {
+      return Promise.resolve(this.contents);
+    },
+
+    valueMaybe() {
+      return this.contents;
+    },
+
+    valueOrThrow() {
+      return this.contents;
+    }
+
+  });
+}
+
+function loadableWithError(error) {
+  return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
+    state: 'hasError',
+    contents: error,
+    ...loadableAccessors,
+
+    getValue() {
+      throw this.contents;
+    },
+
+    toPromise() {
+      return Promise.reject(this.contents);
+    },
+
+    errorMaybe() {
+      return this.contents;
+    },
+
+    errorOrThrow() {
+      return this.contents;
+    }
+
+  });
+} // TODO Probably need to clean-up this API to accept `Promise<T>`
+// with an alternative params or mechanism for internal key proxy.
+
+
+const throwCanceled = value => {
+  if (value instanceof Canceled) {
+    throw value;
+  }
+
+  return value;
+};
+
+function loadableWithPromise(promise) {
+  return Object.freeze({
+    __loadable: TYPE_CHECK_COOKIE,
+    state: 'loading',
+    contents: promise,
+    ...loadableAccessors,
+
+    getValue() {
+      throw this.contents.then(throwCanceled);
+    },
+
+    toPromise() {
+      return this.contents.then(throwCanceled);
+    },
+
+    promiseMaybe() {
+      return this.contents.then(throwCanceled);
+    },
+
+    promiseOrThrow() {
+      return this.contents.then(throwCanceled);
+    }
+
+  });
+}
+
+function loadableLoading() {
+  return loadableWithPromise(new Promise(() => {}));
+}
+
+function loadableAllArray(inputs) {
+  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
+}
+
+function loadableAll(inputs) {
+  const unwrapedInputs = Array.isArray(inputs) ? inputs : Object.getOwnPropertyNames(inputs).map(key => inputs[key]);
+  const output = loadableAllArray(unwrapedInputs);
+  return Array.isArray(inputs) ? output : // Object.getOwnPropertyNames() has consistent key ordering with ES6
+  output.map(outputs => Object.getOwnPropertyNames(inputs).reduce((out, key, idx) => ({ ...out,
+    [key]: outputs[idx]
+  }), {}));
+} // TODO Actually get this to work with Flow
+
+
+function isLoadable(x) {
+  return x.__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
+}
+
+const LoadableStaticInterface = {
+  of: value => Recoil_isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
+  error: error => loadableWithError(error),
+  // $FlowIssue[unclear-type]
+  all: loadableAll,
+  isLoadable
+};
+var Recoil_Loadable = {
+  loadableWithValue,
+  loadableWithError,
+  loadableWithPromise,
+  loadableLoading,
+  loadableAll,
+  isLoadable,
+  Canceled,
+  CANCELED,
+  RecoilLoadable: LoadableStaticInterface
+};
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
 function sprintf(format, ...args) {
   let index = 0;
   return format.replace(/%s/g, () => String(args[index++]));
@@ -105,49 +399,6 @@ function mapIterable(iterable, callback) {
 }
 
 var Recoil_mapIterable = mapIterable;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-function err(message) {
-  const error = new Error(message); // In V8, Error objects keep the closure scope chain alive until the
-  // err.stack property is accessed.
-
-  if (error.stack === undefined) {
-    // IE sets the stack only if error is thrown
-    try {
-      throw error; // TODO, disable fb-www/no-unused-catch-bindings after bumping package.json to eslint-plugin-fb-www 1.0.7
-    } catch (_) {} // eslint-disable-line no-empty
-
-  }
-
-  return error;
-}
-
-var err_1 = err;
-
-// @oss-only
-
-
-var Recoil_err = err_1;
-
-function nullthrows(x, message) {
-  if (x != null) {
-    return x;
-  }
-
-  throw Recoil_err(message !== null && message !== void 0 ? message : 'Got unexpected null or undefined');
-}
-
-var Recoil_nullthrows = nullthrows;
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -2167,240 +2418,6 @@ var Recoil_FunctionalCore = {
   initializeNodeIfNewToStore
 };
 
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-
-// Split declaration and implementation to allow this function to pretend to
-// check for actual instance of Promise instead of something with a `then`
-// method.
-// eslint-disable-next-line no-redeclare
-function isPromise(p) {
-  return !!p && typeof p.then === 'function';
-}
-
-var Recoil_isPromise = isPromise;
-
-const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
-// Containing static factories of withValue(), withError(), withPromise(), and all()
-
-class Canceled {}
-
-const CANCELED = new Canceled();
-const loadableAccessors = {
-  valueMaybe() {
-    return undefined;
-  },
-
-  valueOrThrow() {
-    throw Recoil_err( // $FlowFixMe[object-this-reference]
-    `Loadable expected value, but in "${this.state}" state`);
-  },
-
-  errorMaybe() {
-    return undefined;
-  },
-
-  errorOrThrow() {
-    throw Recoil_err( // $FlowFixMe[object-this-reference]
-    `Loadable expected error, but in "${this.state}" state`);
-  },
-
-  promiseMaybe() {
-    return undefined;
-  },
-
-  promiseOrThrow() {
-    throw Recoil_err( // $FlowFixMe[object-this-reference]
-    `Loadable expected promise, but in "${this.state}" state`);
-  },
-
-  is(other) {
-    // $FlowFixMe[object-this-reference]
-    return other.state === this.state && other.contents === this.contents;
-  },
-
-  map(map) {
-    // $FlowFixMe[object-this-reference]
-    if (this.state === 'hasError') {
-      // $FlowFixMe[object-this-reference]
-      return this;
-    } // $FlowFixMe[object-this-reference]
-
-
-    if (this.state === 'hasValue') {
-      try {
-        // $FlowFixMe[object-this-reference]
-        const next = map(this.contents);
-        return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
-        next : // flowlint-line unclear-type:off
-        loadableWithValue(next); // flowlint-line unclear-type:off
-      } catch (e) {
-        return Recoil_isPromise(e) ? // If we "suspended", then try again.
-        // errors and subsequent retries will be handled in 'loading' case
-        // $FlowFixMe[object-this-reference]
-        loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
-      }
-    } // $FlowFixMe[object-this-reference]
-
-
-    if (this.state === 'loading') {
-      return loadableWithPromise( // $FlowFixMe[object-this-reference]
-      this.contents.then(value => {
-        const next = map(value);
-
-        if (isLoadable(next)) {
-          const nextLoadable = next; // flowlint-line unclear-type:off
-
-          switch (nextLoadable.state) {
-            case 'hasValue':
-              return nextLoadable.contents;
-
-            case 'hasError':
-              throw nextLoadable.contents;
-
-            case 'loading':
-              return nextLoadable.contents;
-          }
-        }
-
-        return next;
-      }).catch(e => {
-        if (Recoil_isPromise(e)) {
-          // we were "suspended," try again
-          // $FlowFixMe[object-this-reference]
-          return e.then(() => map(this.contents));
-        }
-
-        throw e;
-      }));
-    }
-
-    throw Recoil_err('Invalid Loadable state');
-  }
-
-};
-
-function loadableWithValue(value) {
-  // Build objects this way since Flow doesn't support disjoint unions for class properties
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'hasValue',
-    contents: value,
-    ...loadableAccessors,
-
-    getValue() {
-      return this.contents;
-    },
-
-    toPromise() {
-      return Promise.resolve(this.contents);
-    },
-
-    valueMaybe() {
-      return this.contents;
-    },
-
-    valueOrThrow() {
-      return this.contents;
-    }
-
-  });
-}
-
-function loadableWithError(error) {
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'hasError',
-    contents: error,
-    ...loadableAccessors,
-
-    getValue() {
-      throw this.contents;
-    },
-
-    toPromise() {
-      return Promise.reject(this.contents);
-    },
-
-    errorMaybe() {
-      return this.contents;
-    },
-
-    errorOrThrow() {
-      return this.contents;
-    }
-
-  });
-} // TODO Probably need to clean-up this API to accept `Promise<T>`
-// with an alternative params or mechanism for internal key proxy.
-
-
-const throwCanceled = value => {
-  if (value instanceof Canceled) {
-    throw value;
-  }
-
-  return value;
-};
-
-function loadableWithPromise(promise) {
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'loading',
-    contents: promise,
-    ...loadableAccessors,
-
-    getValue() {
-      throw this.contents.then(throwCanceled);
-    },
-
-    toPromise() {
-      return this.contents.then(throwCanceled);
-    },
-
-    promiseMaybe() {
-      return this.contents.then(throwCanceled);
-    },
-
-    promiseOrThrow() {
-      return this.contents.then(throwCanceled);
-    }
-
-  });
-}
-
-function loadableLoading() {
-  return loadableWithPromise(new Promise(() => {}));
-}
-
-function loadableAll(inputs) {
-  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
-} // TODO Actually get this to work with Flow
-
-
-function isLoadable(x) {
-  return x.__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
-}
-
-var Recoil_Loadable = {
-  loadableWithValue,
-  loadableWithError,
-  loadableWithPromise,
-  loadableLoading,
-  loadableAll,
-  isLoadable,
-  Canceled,
-  CANCELED
-};
-
 const {
   CANCELED: CANCELED$1
 } = Recoil_Loadable;
@@ -3117,6 +3134,7 @@ var ReactBatchedUpdates = {
  * for our web build
  */
 // @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
+// prettier-ignore
 const {
   unstable_batchedUpdates: unstable_batchedUpdates$1
 } = ReactBatchedUpdates; // @oss-only
@@ -5308,8 +5326,7 @@ function useRecoilRefresher(recoilValue) {
       currentTree
     } = store.getState();
     const node = getNode$4(recoilValue.key);
-    node.invalidate(currentTree);
-    (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, recoilValue);
+    (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, currentTree);
   }, [recoilValue, storeRef]);
 }
 
@@ -6104,6 +6121,7 @@ const {
   DEFAULT_VALUE: DEFAULT_VALUE$4,
   RecoilValueNotReady: RecoilValueNotReady$2,
   getConfigDeletionHandler: getConfigDeletionHandler$1,
+  getNode: getNode$5,
   registerNode: registerNode$1
 } = Recoil_Node;
 
@@ -6164,13 +6182,16 @@ function getInitialExecutionInfo() {
 }
 
 function selector(options) {
+  let recoilValue = null;
   const {
     key,
     get,
     cachePolicy_UNSTABLE: cachePolicy
   } = options;
   const set = options.set != null ? options.set : undefined; // flow
+  // This is every discovered dependency across executions
 
+  const discoveredDependencyNodeKeys = new Set();
   const cache = Recoil_treeCacheFromPolicy(cachePolicy !== null && cachePolicy !== void 0 ? cachePolicy : {
     equality: 'reference',
     eviction: 'keep-all'
@@ -6654,6 +6675,7 @@ function selector(options) {
         onNodeVisit: node => {
           if (node.type === 'branch' && node.nodeKey !== key && typeof node.nodeKey === 'string') {
             depsAfterCacheDone.add(node.nodeKey);
+            discoveredDependencyNodeKeys.add(node.nodeKey);
           }
         }
       });
@@ -6890,7 +6912,17 @@ function selector(options) {
     state.atomValues.delete(key);
   }
 
-  function clearSelectorCache(store, recoilValue) {
+  function clearSelectorCache(store, treeState) {
+    !(recoilValue != null) ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Recoil Value can never be null') : Recoil_invariant(false) : void 0;
+
+    for (const nodeKey of discoveredDependencyNodeKeys) {
+      var _node$clearCache;
+
+      const node = getNode$5(nodeKey);
+      (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, treeState);
+    }
+
+    invalidateSelector(treeState);
     cache.clear();
     markRecoilValueModified$1(store, recoilValue);
   }
@@ -6953,7 +6985,7 @@ function selector(options) {
       return writes;
     };
 
-    return registerNode$1({
+    return recoilValue = registerNode$1({
       key,
       nodeType: 'selector',
       peek: selectorPeek,
@@ -6968,7 +7000,7 @@ function selector(options) {
       retainedBy
     });
   } else {
-    return registerNode$1({
+    return recoilValue = registerNode$1({
       key,
       nodeType: 'selector',
       peek: selectorPeek,
@@ -7966,6 +7998,10 @@ var Recoil_WaitFor = {
 };
 
 const {
+  RecoilLoadable
+} = Recoil_Loadable;
+
+const {
   DefaultValue: DefaultValue$3
 } = Recoil_Node;
 
@@ -8033,22 +8069,26 @@ var Recoil_index = {
   // Types
   DefaultValue: DefaultValue$3,
   isRecoilValue: isRecoilValue$5,
-  // Components
+  RecoilLoadable,
+  // Recoil Root
   RecoilRoot: RecoilRoot$2,
   useRecoilBridgeAcrossReactRoots_UNSTABLE: Recoil_useRecoilBridgeAcrossReactRoots,
-  // RecoilValues
+  // Atoms/Selectors
   atom: Recoil_atom,
   selector: Recoil_selector,
-  // Factories
-  retentionZone: retentionZone$1,
-  snapshot_UNSTABLE: freshSnapshot$2,
-  // Convenience RecoilValues
+  // Convenience Atoms/Selectors
   atomFamily: Recoil_atomFamily,
   selectorFamily: Recoil_selectorFamily,
   constSelector: Recoil_constSelector,
   errorSelector: Recoil_errorSelector,
   readOnlySelector: Recoil_readOnlySelector,
-  // Hooks that accept RecoilValues
+  // Concurrency Helpers for Atoms/Selectors
+  noWait: noWait$1,
+  waitForNone: waitForNone$1,
+  waitForAny: waitForAny$1,
+  waitForAll: waitForAll$1,
+  waitForAllSettled: waitForAllSettled$1,
+  // Hooks for Atoms/Selectors
   useRecoilValue: useRecoilValue$1,
   useRecoilValueLoadable: useRecoilValueLoadable$1,
   useRecoilState: useRecoilState$1,
@@ -8056,58 +8096,56 @@ var Recoil_index = {
   useSetRecoilState: useSetRecoilState$1,
   useResetRecoilState: useResetRecoilState$1,
   useGetRecoilValueInfo_UNSTABLE: Recoil_useGetRecoilValueInfo,
-  useRetain: useRetain$1,
   useRecoilRefresher_UNSTABLE: useRecoilRefresher$1,
-  // Hooks for complex operations with RecoilValues
+  // Hooks for complex operations
   useRecoilCallback: useRecoilCallback$1,
   useRecoilTransaction_UNSTABLE: useRecoilTransaction$1,
-  // Hooks for Snapshots
+  // Snapshots
   useGotoRecoilSnapshot: useGotoRecoilSnapshot$1,
   useRecoilSnapshot: useRecoilSnapshot$1,
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver$1,
   useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED$1,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues$1,
-  // Concurrency Helpers
-  noWait: noWait$1,
-  waitForNone: waitForNone$1,
-  waitForAny: waitForAny$1,
-  waitForAll: waitForAll$1,
-  waitForAllSettled: waitForAllSettled$1
+  snapshot_UNSTABLE: freshSnapshot$2,
+  // Memory Management
+  useRetain: useRetain$1,
+  retentionZone: retentionZone$1
 };
 var Recoil_index_1 = Recoil_index.DefaultValue;
 var Recoil_index_2 = Recoil_index.isRecoilValue;
-var Recoil_index_3 = Recoil_index.RecoilRoot;
-var Recoil_index_4 = Recoil_index.useRecoilBridgeAcrossReactRoots_UNSTABLE;
-var Recoil_index_5 = Recoil_index.atom;
-var Recoil_index_6 = Recoil_index.selector;
-var Recoil_index_7 = Recoil_index.retentionZone;
-var Recoil_index_8 = Recoil_index.snapshot_UNSTABLE;
-var Recoil_index_9 = Recoil_index.atomFamily;
-var Recoil_index_10 = Recoil_index.selectorFamily;
-var Recoil_index_11 = Recoil_index.constSelector;
-var Recoil_index_12 = Recoil_index.errorSelector;
-var Recoil_index_13 = Recoil_index.readOnlySelector;
-var Recoil_index_14 = Recoil_index.useRecoilValue;
-var Recoil_index_15 = Recoil_index.useRecoilValueLoadable;
-var Recoil_index_16 = Recoil_index.useRecoilState;
-var Recoil_index_17 = Recoil_index.useRecoilStateLoadable;
-var Recoil_index_18 = Recoil_index.useSetRecoilState;
-var Recoil_index_19 = Recoil_index.useResetRecoilState;
-var Recoil_index_20 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
-var Recoil_index_21 = Recoil_index.useRetain;
-var Recoil_index_22 = Recoil_index.useRecoilRefresher_UNSTABLE;
-var Recoil_index_23 = Recoil_index.useRecoilCallback;
-var Recoil_index_24 = Recoil_index.useRecoilTransaction_UNSTABLE;
-var Recoil_index_25 = Recoil_index.useGotoRecoilSnapshot;
-var Recoil_index_26 = Recoil_index.useRecoilSnapshot;
-var Recoil_index_27 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
-var Recoil_index_28 = Recoil_index.useTransactionObservation_UNSTABLE;
-var Recoil_index_29 = Recoil_index.useSetUnvalidatedAtomValues_UNSTABLE;
-var Recoil_index_30 = Recoil_index.noWait;
-var Recoil_index_31 = Recoil_index.waitForNone;
-var Recoil_index_32 = Recoil_index.waitForAny;
-var Recoil_index_33 = Recoil_index.waitForAll;
-var Recoil_index_34 = Recoil_index.waitForAllSettled;
+var Recoil_index_3 = Recoil_index.RecoilLoadable;
+var Recoil_index_4 = Recoil_index.RecoilRoot;
+var Recoil_index_5 = Recoil_index.useRecoilBridgeAcrossReactRoots_UNSTABLE;
+var Recoil_index_6 = Recoil_index.atom;
+var Recoil_index_7 = Recoil_index.selector;
+var Recoil_index_8 = Recoil_index.atomFamily;
+var Recoil_index_9 = Recoil_index.selectorFamily;
+var Recoil_index_10 = Recoil_index.constSelector;
+var Recoil_index_11 = Recoil_index.errorSelector;
+var Recoil_index_12 = Recoil_index.readOnlySelector;
+var Recoil_index_13 = Recoil_index.noWait;
+var Recoil_index_14 = Recoil_index.waitForNone;
+var Recoil_index_15 = Recoil_index.waitForAny;
+var Recoil_index_16 = Recoil_index.waitForAll;
+var Recoil_index_17 = Recoil_index.waitForAllSettled;
+var Recoil_index_18 = Recoil_index.useRecoilValue;
+var Recoil_index_19 = Recoil_index.useRecoilValueLoadable;
+var Recoil_index_20 = Recoil_index.useRecoilState;
+var Recoil_index_21 = Recoil_index.useRecoilStateLoadable;
+var Recoil_index_22 = Recoil_index.useSetRecoilState;
+var Recoil_index_23 = Recoil_index.useResetRecoilState;
+var Recoil_index_24 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
+var Recoil_index_25 = Recoil_index.useRecoilRefresher_UNSTABLE;
+var Recoil_index_26 = Recoil_index.useRecoilCallback;
+var Recoil_index_27 = Recoil_index.useRecoilTransaction_UNSTABLE;
+var Recoil_index_28 = Recoil_index.useGotoRecoilSnapshot;
+var Recoil_index_29 = Recoil_index.useRecoilSnapshot;
+var Recoil_index_30 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
+var Recoil_index_31 = Recoil_index.useTransactionObservation_UNSTABLE;
+var Recoil_index_32 = Recoil_index.useSetUnvalidatedAtomValues_UNSTABLE;
+var Recoil_index_33 = Recoil_index.snapshot_UNSTABLE;
+var Recoil_index_34 = Recoil_index.useRetain;
+var Recoil_index_35 = Recoil_index.retentionZone;
 
 export default Recoil_index;
-export { Recoil_index_1 as DefaultValue, Recoil_index_3 as RecoilRoot, Recoil_index_5 as atom, Recoil_index_9 as atomFamily, Recoil_index_11 as constSelector, Recoil_index_12 as errorSelector, Recoil_index_2 as isRecoilValue, Recoil_index_30 as noWait, Recoil_index_13 as readOnlySelector, Recoil_index_7 as retentionZone, Recoil_index_6 as selector, Recoil_index_10 as selectorFamily, Recoil_index_8 as snapshot_UNSTABLE, Recoil_index_20 as useGetRecoilValueInfo_UNSTABLE, Recoil_index_25 as useGotoRecoilSnapshot, Recoil_index_4 as useRecoilBridgeAcrossReactRoots_UNSTABLE, Recoil_index_23 as useRecoilCallback, Recoil_index_22 as useRecoilRefresher_UNSTABLE, Recoil_index_26 as useRecoilSnapshot, Recoil_index_16 as useRecoilState, Recoil_index_17 as useRecoilStateLoadable, Recoil_index_27 as useRecoilTransactionObserver_UNSTABLE, Recoil_index_24 as useRecoilTransaction_UNSTABLE, Recoil_index_14 as useRecoilValue, Recoil_index_15 as useRecoilValueLoadable, Recoil_index_19 as useResetRecoilState, Recoil_index_21 as useRetain, Recoil_index_18 as useSetRecoilState, Recoil_index_29 as useSetUnvalidatedAtomValues_UNSTABLE, Recoil_index_28 as useTransactionObservation_UNSTABLE, Recoil_index_33 as waitForAll, Recoil_index_34 as waitForAllSettled, Recoil_index_32 as waitForAny, Recoil_index_31 as waitForNone };
+export { Recoil_index_1 as DefaultValue, Recoil_index_3 as RecoilLoadable, Recoil_index_4 as RecoilRoot, Recoil_index_6 as atom, Recoil_index_8 as atomFamily, Recoil_index_10 as constSelector, Recoil_index_11 as errorSelector, Recoil_index_2 as isRecoilValue, Recoil_index_13 as noWait, Recoil_index_12 as readOnlySelector, Recoil_index_35 as retentionZone, Recoil_index_7 as selector, Recoil_index_9 as selectorFamily, Recoil_index_33 as snapshot_UNSTABLE, Recoil_index_24 as useGetRecoilValueInfo_UNSTABLE, Recoil_index_28 as useGotoRecoilSnapshot, Recoil_index_5 as useRecoilBridgeAcrossReactRoots_UNSTABLE, Recoil_index_26 as useRecoilCallback, Recoil_index_25 as useRecoilRefresher_UNSTABLE, Recoil_index_29 as useRecoilSnapshot, Recoil_index_20 as useRecoilState, Recoil_index_21 as useRecoilStateLoadable, Recoil_index_30 as useRecoilTransactionObserver_UNSTABLE, Recoil_index_27 as useRecoilTransaction_UNSTABLE, Recoil_index_18 as useRecoilValue, Recoil_index_19 as useRecoilValueLoadable, Recoil_index_23 as useResetRecoilState, Recoil_index_34 as useRetain, Recoil_index_22 as useSetRecoilState, Recoil_index_32 as useSetUnvalidatedAtomValues_UNSTABLE, Recoil_index_31 as useTransactionObservation_UNSTABLE, Recoil_index_16 as waitForAll, Recoil_index_17 as waitForAllSettled, Recoil_index_15 as waitForAny, Recoil_index_14 as waitForNone };

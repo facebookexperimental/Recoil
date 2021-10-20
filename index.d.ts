@@ -13,9 +13,8 @@
  * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
  */
 
- export { };
+export { };
 
- import { voidTypeAnnotation } from '@babel/types';
 import * as React from 'react';
 
 // state.d.ts
@@ -431,6 +430,21 @@ export function waitForAllSettled<RecoilValues extends Array<RecoilValue<any>> |
 export function waitForAllSettled<RecoilValues extends { [key: string]: RecoilValue<any> }>(
  param: RecoilValues,
 ): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
+
+ export type UnwrapLoadable<T> = T extends Loadable<infer R> ? R : never;
+ export type UnwrapLoadables<T extends Array<Loadable<any>> | { [key: string]: Loadable<any> }> = {
+   [P in keyof T]: UnwrapLoadable<T[P]>;
+ };
+
+ /* eslint-disable @typescript-eslint/no-unused-vars */
+ export namespace RecoilLoadable {
+   function of<T>(x: T | Promise<T>): Loadable<T>;
+   function error(x: any): ErrorLoadable<any>;
+   function all<Inputs extends Array<Loadable<any>> | [Loadable<any>]>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
+   function all<Inputs extends {[key: string]: Loadable<any>}>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
+   function isLoadable(x: any): x is Loadable<any>;
+  }
+ /* eslint-enable @typescript-eslint/no-unused-vars */
 
 /* eslint-enable @typescript-eslint/no-explicit-any */
 

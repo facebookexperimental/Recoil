@@ -9,6 +9,7 @@
 - Add `getLoadable()`, `getPromise()`, and `getInfo_UNSTABLE()` to Atom Effects interface for reading other atoms.
 - Atoms freeze default, initialized, and async values in dev mode.  Selectors should not freeze upstream dependencies. (#1261, #1259)
 - Added `useRecoilRefresher_UNSTABLE()` hook which forces a selector to re-run it's `get()`, and is a no-op for an atom. (#972)
+- Expose `RecoilLoadable` interface for creating `Loadable` objects.
 
 ### Pending
 - Memory management

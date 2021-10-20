@@ -12,9 +12,10 @@
  * for our web build
  */
 // @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
+// prettier-ignore
 const {
   unstable_batchedUpdates
-} = require('./polyfill/ReactBatchedUpdates'); // @oss-only
+} = require('@shared/polyfill/ReactBatchedUpdates'); // @oss-only
 
 
 module.exports = {
