@@ -75,8 +75,6 @@ import type {
 } from './Recoil_callbackTypes';
 
 const {
-  Canceled,
-  CANCELED,
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
@@ -138,6 +136,9 @@ type ReadWriteSelectorOptions<T> = $ReadOnly<{
 }>;
 
 export type DepValues = Map<NodeKey, Loadable<mixed>>;
+
+class Canceled {}
+const CANCELED: Canceled = new Canceled();
 
 /**
  * An ExecutionId is an arbitrary ID that lets us distinguish executions from
@@ -358,13 +359,13 @@ function selector<T>(
     depValues: DepValues,
     executionId: ExecutionId,
     loadingDepsState: LoadingDepsState,
-  ): Promise<T | Canceled> {
+  ): Promise<T> {
     return promise
       .then(value => {
         if (!selectorIsLive()) {
           // The selector was released since the request began; ignore the response.
           clearExecutionInfo(store, executionId);
-          return CANCELED;
+          throw CANCELED;
         }
 
         const loadable = loadableWithValue(value);
@@ -381,7 +382,7 @@ function selector<T>(
         if (!selectorIsLive()) {
           // The selector was released since the request began; ignore the response.
           clearExecutionInfo(store, executionId);
-          return CANCELED;
+          throw CANCELED;
         }
 
         if (isLatestExecution(store, executionId)) {
@@ -443,26 +444,18 @@ function selector<T>(
    */
   function wrapPendingDependencyPromise(
     store: Store,
-    promise: Promise<mixed | Canceled>,
+    promise: Promise<mixed>,
     state: TreeState,
     existingDeps: DepValues,
     executionId: ExecutionId,
     loadingDepsState: LoadingDepsState,
-  ): Promise<T | Canceled> {
+  ): Promise<T> {
     return promise
       .then(resolvedDep => {
         if (!selectorIsLive()) {
           // The selector was released since the request began; ignore the response.
           clearExecutionInfo(store, executionId);
-          return CANCELED;
-        }
-
-        if (resolvedDep instanceof Canceled) {
-          recoverableViolation(
-            'Selector was released while it had dependencies',
-            'recoil',
-          );
-          return CANCELED;
+          throw CANCELED;
         }
 
         // Check if we are handling a pending Recoil dependency or if the user
@@ -607,10 +600,18 @@ function selector<T>(
         return loadable.contents;
       })
       .catch(error => {
+        if (error instanceof Canceled) {
+          recoverableViolation(
+            'Selector was released while it had dependencies',
+            'recoil',
+          );
+          throw CANCELED;
+        }
+
         if (!selectorIsLive()) {
           // The selector was released since the request began; ignore the response.
           clearExecutionInfo(store, executionId);
-          return CANCELED;
+          throw CANCELED;
         }
 
         const loadable = loadableWithError(error);

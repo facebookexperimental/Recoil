@@ -20,7 +20,6 @@ import type {
   TreeState,
 } from './Recoil_State';
 
-const {CANCELED} = require('../adt/Recoil_Loadable');
 const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
@@ -64,7 +63,7 @@ function getRecoilValueAsLoadable<T>(
        * HACK: intercept thrown error here to prevent an uncaught promise exception. Ideally this would happen closer to selector
        * execution (perhaps introducing a new ERROR class to be resolved by async selectors that are in an error state)
        */
-      return CANCELED;
+      return;
     });
   }
 
