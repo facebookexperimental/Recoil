@@ -41,7 +41,7 @@ Suppose we have two atoms, `positionState` and `headingState`, and we'd like to 
 const goForward = useRecoilTransaction_UNSTABLE(({get, set}) => (distance) => {
   const heading = get(headingState);
   const position = get(positionState);
-  set(positionAtom, {
+  set(positionState, {
     x: position.x + cos(heading) * distance,
     y: position.y + sin(heading) * distance,
   });
