@@ -104,6 +104,7 @@ const {
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+const err = require('../util/Recoil_err');
 const gkx = require('../util/Recoil_gkx');
 const invariant = require('../util/Recoil_invariant');
 const isPromise = require('../util/Recoil_isPromise');
@@ -720,7 +721,7 @@ function selector<T>(
           loadingDepsState.loadingDepPromise = depLoadable.contents;
           throw depLoadable.contents;
       }
-      throw new Error('Invalid Loadable state');
+      throw err('Invalid Loadable state');
     }
 
     let gateCallback = false;
@@ -729,14 +730,14 @@ function selector<T>(
     ): ((...Args) => Return) => {
       return (...args) => {
         if (!gateCallback) {
-          throw new Error(
+          throw err(
             'getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can obtain the current Recoil state without a subscription.',
           );
         }
         const snapshot = cloneSnapshot(store);
         const cb = fn({snapshot});
         if (typeof cb !== 'function') {
-          throw new Error(
+          throw err(
             'getCallback() expects a function that returns a function.',
           );
         }
@@ -827,9 +828,9 @@ function selector<T>(
           },
         },
       );
-    } catch (err) {
-      throw new Error(
-        `Problem with cache lookup for selector "${key}": ${err.message}`,
+    } catch (error) {
+      throw err(
+        `Problem with cache lookup for selector "${key}": ${error.message}`,
       );
     }
 
@@ -1089,9 +1090,9 @@ function selector<T>(
     state.atomValues.set(key, loadable);
     try {
       cache.set(cacheRoute, loadable);
-    } catch (err) {
-      throw new Error(
-        `Problem with setting cache for selector "${key}": ${err.message}`,
+    } catch (error) {
+      throw err(
+        `Problem with setting cache for selector "${key}": ${error.message}`,
       );
     }
   }
@@ -1101,7 +1102,7 @@ function selector<T>(
       const message = `Recoil selector has circular dependencies: ${dependencyStack
         .slice(dependencyStack.indexOf(key))
         .join(' \u2192 ')}`;
-      return loadableWithError(new Error(message));
+      return loadableWithError(err(message));
     }
     dependencyStack.push(key);
     try {
@@ -1155,9 +1156,7 @@ function selector<T>(
 
       function getRecoilValue<S>({key: depKey}: RecoilValue<S>): S {
         if (syncSelectorSetFinished) {
-          throw new Error(
-            'Recoil: Async selector sets are not currently supported.',
-          );
+          throw err('Recoil: Async selector sets are not currently supported.');
         }
 
         const loadable = getCachedNodeLoadable(store, state, depKey);
@@ -1176,9 +1175,7 @@ function selector<T>(
         valueOrUpdater: S | DefaultValue | ((S, GetRecoilValue) => S),
       ) {
         if (syncSelectorSetFinished) {
-          throw new Error(
-            'Recoil: Async selector sets are not currently supported.',
-          );
+          throw err('Recoil: Async selector sets are not currently supported.');
         }
 
         const setValue =
@@ -1211,10 +1208,8 @@ function selector<T>(
       // will return a Promise, which we don't currently support.
       if (ret !== undefined) {
         throw isPromise(ret)
-          ? new Error(
-              'Recoil: Async selector sets are not currently supported.',
-            )
-          : new Error('Recoil: selector set should be a void function.');
+          ? err('Recoil: Async selector sets are not currently supported.')
+          : err('Recoil: selector set should be a void function.');
       }
       syncSelectorSetFinished = true;
 
