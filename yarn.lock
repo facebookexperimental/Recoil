@@ -2297,10 +2297,10 @@ flatted@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-2.0.2.tgz#4575b21e2bcee7434aa9be662f4b7b5f9c2b5138"
 
-flow-bin@^0.129.0:
-  version "0.129.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.129.0.tgz#50294d6e335dd97d095c27b096ea0b94c2415d55"
-  integrity sha512-WLXOj09oCK6nODVKM5uxvAzBpxXeI304E60tELMeQd/TJsyfbykNCZ+e4xml9eUOyoac9nDL3YrJpPZMzq0tMA==
+flow-bin@^0.162.1:
+  version "0.162.1"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.162.1.tgz#5aaac790dab8664ce363fd0f09764fb9f0daed20"
+  integrity sha512-gFNWkEzBuQ9YzQcPKcVL16V5MZixbiQ+Kn867iwaCfs1TAFuhQQcng4vX3Rtyd7JI3O+g8jToEX7pEDhdzG80Q==
 
 for-in@^1.0.2:
   version "1.0.2"

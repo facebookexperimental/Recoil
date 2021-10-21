@@ -1,6 +1,7 @@
 [ignore]
 .*/__tests__.*
 .*/node_modules.*
+<PROJECT_ROOT>/packages-ext/.*
 
 [include]
 
@@ -8,10 +9,6 @@
 
 [options]
 module.system=node
-
-esproposal.class_static_fields=enable
-esproposal.optional_chaining=enable
-esproposal.nullish_coalescing=enable
 
 suppress_type=$FlowIssue
 suppress_type=$FlowFixMe
@@ -52,4 +49,4 @@ unsafe-getters-setters
 all=warn
 
 [version]
-^0.129.0
+^0.162.1
