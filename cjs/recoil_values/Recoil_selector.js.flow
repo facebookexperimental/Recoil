@@ -64,8 +64,6 @@ import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State
 import type { GetRecoilValue, ResetRecoilState, SetRecoilState } from './Recoil_callbackTypes';
 
 const {
-  Canceled,
-  CANCELED,
   loadableWithError,
   loadableWithPromise,
   loadableWithValue
@@ -114,6 +112,8 @@ const {
 
 const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
 
+const err = require('../util/Recoil_err');
+
 const gkx = require('../util/Recoil_gkx');
 
 const invariant = require('../util/Recoil_invariant');
@@ -149,6 +149,8 @@ type ReadWriteSelectorOptions<T> = $ReadOnly<{ ...ReadOnlySelectorOptions<T>,
   }, newValue: T | DefaultValue) => void,
 }>;
 export type DepValues = Map<NodeKey, Loadable<mixed>>;
+declare class Canceled {}
+const CANCELED: Canceled = new Canceled();
 /**
  * An ExecutionId is an arbitrary ID that lets us distinguish executions from
  * each other. This is necessary as we need a way of solving this problem:

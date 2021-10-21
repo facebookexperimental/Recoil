@@ -68,9 +68,6 @@ var Recoil_nullthrows = nullthrows;
 const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()
 
-class Canceled {}
-
-const CANCELED = new Canceled();
 const loadableAccessors = {
   valueMaybe() {
     return undefined;
@@ -216,17 +213,7 @@ function loadableWithError(error) {
     }
 
   });
-} // TODO Probably need to clean-up this API to accept `Promise<T>`
-// with an alternative params or mechanism for internal key proxy.
-
-
-const throwCanceled = value => {
-  if (value instanceof Canceled) {
-    throw value;
-  }
-
-  return value;
-};
+}
 
 function loadableWithPromise(promise) {
   return Object.freeze({
@@ -236,19 +223,19 @@ function loadableWithPromise(promise) {
     ...loadableAccessors,
 
     getValue() {
-      throw this.contents.then(throwCanceled);
+      throw this.contents;
     },
 
     toPromise() {
-      return this.contents.then(throwCanceled);
+      return this.contents;
     },
 
     promiseMaybe() {
-      return this.contents.then(throwCanceled);
+      return this.contents;
     },
 
     promiseOrThrow() {
-      return this.contents.then(throwCanceled);
+      return this.contents;
     }
 
   });
@@ -290,8 +277,6 @@ var Recoil_Loadable = {
   loadableLoading,
   loadableAll,
   isLoadable,
-  Canceled,
-  CANCELED,
   RecoilLoadable: LoadableStaticInterface
 };
 
@@ -2419,16 +2404,6 @@ var Recoil_FunctionalCore = {
 };
 
 const {
-  CANCELED: CANCELED$1
-} = Recoil_Loadable;
-
-
-
-
-
-
-
-const {
   getDownstreamNodes: getDownstreamNodes$1,
   getNodeLoadable: getNodeLoadable$1,
   setNodeValue: setNodeValue$1
@@ -2471,7 +2446,7 @@ function getRecoilValueAsLoadable(store, {
        * HACK: intercept thrown error here to prevent an uncaught promise exception. Ideally this would happen closer to selector
        * execution (perhaps introducing a new ERROR class to be resolved by async selectors that are in an error state)
        */
-      return CANCELED$1;
+      return;
     });
   }
 
@@ -6099,8 +6074,6 @@ var Recoil_PerformanceTimings = {
 };
 
 const {
-  Canceled: Canceled$1,
-  CANCELED: CANCELED$2,
   loadableWithError: loadableWithError$1,
   loadableWithPromise: loadableWithPromise$1,
   loadableWithValue: loadableWithValue$2
@@ -6157,11 +6130,25 @@ const {
 
 
 
+
+
 const {
   startPerfBlock: startPerfBlock$1
 } = Recoil_PerformanceTimings;
 
 
+
+class Canceled {}
+
+const CANCELED = new Canceled();
+/**
+ * An ExecutionId is an arbitrary ID that lets us distinguish executions from
+ * each other. This is necessary as we need a way of solving this problem:
+ * "given 3 async executions, only update state for the 'latest' execution when
+ * it finishes running regardless of when the other 2 finish". ExecutionIds
+ * provide a convenient way of identifying executions so that we can track and
+ * manage them over time.
+ */
 
 const dependencyStack = []; // for detecting circular dependencies.
 
@@ -6307,7 +6294,7 @@ function selector(options) {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
         clearExecutionInfo(store, executionId);
-        return CANCELED$2;
+        throw CANCELED;
       }
 
       const loadable = loadableWithValue$2(value);
@@ -6320,7 +6307,7 @@ function selector(options) {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
         clearExecutionInfo(store, executionId);
-        return CANCELED$2;
+        throw CANCELED;
       }
 
       if (isLatestExecution(store, executionId)) {
@@ -6376,12 +6363,7 @@ function selector(options) {
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
         clearExecutionInfo(store, executionId);
-        return CANCELED$2;
-      }
-
-      if (resolvedDep instanceof Canceled$1) {
-        Recoil_recoverableViolation('Selector was released while it had dependencies');
-        return CANCELED$2;
+        throw CANCELED;
       } // Check if we are handling a pending Recoil dependency or if the user
       // threw their own Promise to "suspend" a selector evaluation.  We need
       // to check that the loadingDepPromise actually matches the promise that
@@ -6516,10 +6498,15 @@ function selector(options) {
 
       return loadable.contents;
     }).catch(error => {
+      if (error instanceof Canceled) {
+        Recoil_recoverableViolation('Selector was released while it had dependencies');
+        throw CANCELED;
+      }
+
       if (!selectorIsLive()) {
         // The selector was released since the request began; ignore the response.
         clearExecutionInfo(store, executionId);
-        return CANCELED$2;
+        throw CANCELED;
       }
 
       const loadable = loadableWithError$1(error);
@@ -6599,7 +6586,7 @@ function selector(options) {
           throw depLoadable.contents;
       }
 
-      throw new Error('Invalid Loadable state');
+      throw Recoil_err('Invalid Loadable state');
     }
 
     let gateCallback = false;
@@ -6607,7 +6594,7 @@ function selector(options) {
     const getCallback = fn => {
       return (...args) => {
         if (!gateCallback) {
-          throw new Error('getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can obtain the current Recoil state without a subscription.');
+          throw Recoil_err('getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can obtain the current Recoil state without a subscription.');
         }
 
         const snapshot = cloneSnapshot$2(store);
@@ -6616,7 +6603,7 @@ function selector(options) {
         });
 
         if (typeof cb !== 'function') {
-          throw new Error('getCallback() expects a function that returns a function.');
+          throw Recoil_err('getCallback() expects a function that returns a function.');
         }
 
         return cb(...args);
@@ -6680,8 +6667,8 @@ function selector(options) {
           }
         }
       });
-    } catch (err) {
-      throw new Error(`Problem with cache lookup for selector "${key}": ${err.message}`);
+    } catch (error) {
+      throw Recoil_err(`Problem with cache lookup for selector "${key}": ${error.message}`);
     }
     /**
      * Ensure store contains correct dependencies if we hit the cache so that
@@ -6876,15 +6863,15 @@ function selector(options) {
 
     try {
       cache.set(cacheRoute, loadable);
-    } catch (err) {
-      throw new Error(`Problem with setting cache for selector "${key}": ${err.message}`);
+    } catch (error) {
+      throw Recoil_err(`Problem with setting cache for selector "${key}": ${error.message}`);
     }
   }
 
   function detectCircularDependencies(fn) {
     if (dependencyStack.includes(key)) {
       const message = `Recoil selector has circular dependencies: ${dependencyStack.slice(dependencyStack.indexOf(key)).join(' \u2192 ')}`;
-      return loadableWithError$1(new Error(message));
+      return loadableWithError$1(Recoil_err(message));
     }
 
     dependencyStack.push(key);
@@ -6941,7 +6928,7 @@ function selector(options) {
         key: depKey
       }) {
         if (syncSelectorSetFinished) {
-          throw new Error('Recoil: Async selector sets are not currently supported.');
+          throw Recoil_err('Recoil: Async selector sets are not currently supported.');
         }
 
         const loadable = getCachedNodeLoadable(store, state, depKey);
@@ -6957,7 +6944,7 @@ function selector(options) {
 
       function setRecoilState(recoilState, valueOrUpdater) {
         if (syncSelectorSetFinished) {
-          throw new Error('Recoil: Async selector sets are not currently supported.');
+          throw Recoil_err('Recoil: Async selector sets are not currently supported.');
         }
 
         const setValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
@@ -6979,7 +6966,7 @@ function selector(options) {
       // will return a Promise, which we don't currently support.
 
       if (ret !== undefined) {
-        throw Recoil_isPromise(ret) ? new Error('Recoil: Async selector sets are not currently supported.') : new Error('Recoil: selector set should be a void function.');
+        throw Recoil_isPromise(ret) ? Recoil_err('Recoil: Async selector sets are not currently supported.') : Recoil_err('Recoil: selector set should be a void function.');
       }
 
       syncSelectorSetFinished = true;
