@@ -69,16 +69,16 @@ const testRecoil = getRecoilTestFn(() => {
   store = makeStore();
 });
 
-function get<T>(recoilValue: RecoilValue<T>): T {
+function getValue<T>(recoilValue: RecoilValue<T>): T {
   return (getRecoilValueAsLoadable(store, recoilValue).contents: any); // flowlint-line unclear-type:off
 }
 
-function getLoadable(recoilValue) {
+function getRecoilStateLoadable(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue);
 }
 
-function getPromise(recoilValue) {
-  return getLoadable(recoilValue).promiseOrThrow();
+function getRecoilStatePromise(recoilValue) {
+  return getRecoilStateLoadable(recoilValue).promiseOrThrow();
 }
 
 function set(recoilValue, value: mixed) {
@@ -94,9 +94,9 @@ testRecoil('atom can read and write value', () => {
     key: 'atom with default',
     default: 'DEFAULT',
   });
-  expect(get(myAtom)).toBe('DEFAULT');
+  expect(getValue(myAtom)).toBe('DEFAULT');
   act(() => set(myAtom, 'VALUE'));
-  expect(get(myAtom)).toBe('VALUE');
+  expect(getValue(myAtom)).toBe('VALUE');
 });
 
 describe('Valid values', () => {
@@ -105,15 +105,15 @@ describe('Valid values', () => {
       key: 'atom with default for null and undefined',
       default: 'DEFAULT',
     });
-    expect(get(myAtom)).toBe('DEFAULT');
+    expect(getValue(myAtom)).toBe('DEFAULT');
     act(() => set(myAtom, 'VALUE'));
-    expect(get(myAtom)).toBe('VALUE');
+    expect(getValue(myAtom)).toBe('VALUE');
     act(() => set(myAtom, null));
-    expect(get(myAtom)).toBe(null);
+    expect(getValue(myAtom)).toBe(null);
     act(() => set(myAtom, undefined));
-    expect(get(myAtom)).toBe(undefined);
+    expect(getValue(myAtom)).toBe(undefined);
     act(() => set(myAtom, 'VALUE'));
-    expect(get(myAtom)).toBe('VALUE');
+    expect(getValue(myAtom)).toBe('VALUE');
   });
 
   testRecoil('atom can store a circular reference object', () => {
@@ -129,9 +129,9 @@ describe('Valid values', () => {
       key: 'atom',
       default: undefined,
     });
-    expect(get(myAtom)).toBe(undefined);
+    expect(getValue(myAtom)).toBe(undefined);
     act(() => set(myAtom, circular));
-    expect(get(myAtom)).toBe(circular);
+    expect(getValue(myAtom)).toBe(circular);
   });
 });
 
@@ -158,11 +158,8 @@ describe('Async Defaults', () => {
       }),
     });
 
-    const [
-      ReadsWritesAtom,
-      setAtom,
-      resetAtom,
-    ] = componentThatReadsAndWritesAtom(myAtom);
+    const [ReadsWritesAtom, setAtom, resetAtom] =
+      componentThatReadsAndWritesAtom(myAtom);
     const container = renderElements(<ReadsWritesAtom />);
 
     expect(container.textContent).toEqual('loading');
@@ -286,7 +283,7 @@ describe('Effects', () => {
         },
       ],
     });
-    expect(get(myAtom)).toEqual('INIT');
+    expect(getValue(myAtom)).toEqual('INIT');
     expect(inited).toEqual(true);
   });
 
@@ -308,12 +305,13 @@ describe('Effects', () => {
 
     expect(inited).toEqual(false);
 
-    const [ReadsWritesAtom, _, reset] = componentThatReadsAndWritesAtom(myAtom);
+    const [ReadsWritesAtom, _, resetAtom] =
+      componentThatReadsAndWritesAtom(myAtom);
     const c = renderElements(<ReadsWritesAtom />);
     expect(inited).toEqual(true);
     expect(c.textContent).toEqual('"INIT"');
 
-    act(reset);
+    act(resetAtom);
     expect(c.textContent).toEqual('loading');
     act(() => jest.runAllTimers());
     expect(c.textContent).toEqual('"RESOLVE"');
@@ -343,7 +341,7 @@ describe('Effects', () => {
         () => {},
       ],
     });
-    expect(get(myAtom)).toEqual('EFFECT 2');
+    expect(getValue(myAtom)).toEqual('EFFECT 2');
   });
 
   testRecoil('reset during init', () => {
@@ -355,7 +353,7 @@ describe('Effects', () => {
         ({resetSelf}) => resetSelf(),
       ],
     });
-    expect(get(myAtom)).toEqual('DEFAULT');
+    expect(getValue(myAtom)).toEqual('DEFAULT');
   });
 
   testRecoil('init to undefined', () => {
@@ -367,7 +365,7 @@ describe('Effects', () => {
         ({setSelf}) => setSelf(),
       ],
     });
-    expect(get(myAtom)).toEqual(undefined);
+    expect(getValue(myAtom)).toEqual(undefined);
   });
 
   testRecoil('init on set', () => {
@@ -384,10 +382,10 @@ describe('Effects', () => {
       ],
     });
     set(myAtom, 'SET');
-    expect(get(myAtom)).toEqual('SET');
+    expect(getValue(myAtom)).toEqual('SET');
     expect(inited).toEqual(1);
     reset(myAtom);
-    expect(get(myAtom)).toEqual('DEFAULT');
+    expect(getValue(myAtom)).toEqual('DEFAULT');
     expect(inited).toEqual(1);
   });
 
@@ -502,9 +500,8 @@ describe('Effects', () => {
       ],
     });
 
-    const [ReadsWritesAtom, set, reset] = componentThatReadsAndWritesAtom(
-      myAtom,
-    );
+    const [ReadsWritesAtom, setAtom, resetAtom] =
+      componentThatReadsAndWritesAtom(myAtom);
     const c = renderElements(<ReadsWritesAtom />);
     expect(c.textContent).toEqual('loading');
 
@@ -514,12 +511,12 @@ describe('Effects', () => {
     expect(onSetHandler).toHaveBeenCalledTimes(1);
 
     setValue = 'SET';
-    act(() => set('SET'));
+    act(() => setAtom('SET'));
     expect(c.textContent).toEqual('"SET"');
     expect(onSetHandler).toHaveBeenCalledTimes(2);
 
     setValue = 'RESOLVE_DEFAULT';
-    act(reset);
+    act(resetAtom);
     expect(c.textContent).toEqual('"RESOLVE_DEFAULT"');
     expect(onSetHandler).toHaveBeenCalledTimes(3);
   });
@@ -547,11 +544,12 @@ describe('Effects', () => {
         ],
       });
 
-      const [ReadsWritesAtom, set] = componentThatReadsAndWritesAtom(myAtom);
+      const [ReadsWritesAtom, setAtom] =
+        componentThatReadsAndWritesAtom(myAtom);
 
       const c = renderElements(<ReadsWritesAtom />);
       expect(c.textContent).toEqual('"DEFAULT"');
-      act(() => set(valueToSet1));
+      act(() => setAtom(valueToSet1));
       expect(c.textContent).toEqual(`"${transformedBySetSelf}"`);
     },
   );
@@ -933,9 +931,8 @@ describe('Effects', () => {
       default: 'OTHER_DEFAULT',
     });
 
-    const [OtherAtom, setOtherAtom] = componentThatReadsAndWritesAtom(
-      otherAtom,
-    );
+    const [OtherAtom, setOtherAtom] =
+      componentThatReadsAndWritesAtom(otherAtom);
 
     function NewPage() {
       return <ReadsAtom atom={myAtom} />;
@@ -1043,7 +1040,7 @@ describe('Effects', () => {
         default: 'OTHER',
       });
 
-      expect(get(myAtom)).toEqual('OTHER');
+      expect(getValue(myAtom)).toEqual('OTHER');
     });
 
     test('init from other atom async', async () => {
@@ -1063,9 +1060,9 @@ describe('Effects', () => {
         default: Promise.resolve('OTHER'),
       });
 
-      await expect(getLoadable(myAtom).promiseOrThrow()).resolves.toEqual(
-        'OTHER',
-      );
+      await expect(
+        getRecoilStateLoadable(myAtom).promiseOrThrow(),
+      ).resolves.toEqual('OTHER');
     });
 
     test('async get other atoms', async () => {
@@ -1161,9 +1158,8 @@ describe('Effects', () => {
       });
 
       const [MyAtom, setMyAtom] = componentThatReadsAndWritesAtom(myAtom);
-      const [AsyncAtom, setAsyncAtom] = componentThatReadsAndWritesAtom(
-        asyncAtom,
-      );
+      const [AsyncAtom, setAsyncAtom] =
+        componentThatReadsAndWritesAtom(asyncAtom);
       const c = renderElements(
         <>
           <MyAtom />
@@ -1229,8 +1225,8 @@ testRecoil('object is frozen when stored in atom', async () => {
     key: 'atom frozen default',
     default: {state: 'frozen', nested: {state: 'frozen'}},
   });
-  expect(Object.isFrozen(get(defaultFrozenAtom))).toBe(true);
-  expect(Object.isFrozen(get(defaultFrozenAtom).nested)).toBe(true);
+  expect(Object.isFrozen(getValue(defaultFrozenAtom))).toBe(true);
+  expect(Object.isFrozen(getValue(defaultFrozenAtom).nested)).toBe(true);
 
   // Async Default values are frozen
   const defaultFrozenAsyncAtom = atom({
@@ -1238,9 +1234,9 @@ testRecoil('object is frozen when stored in atom', async () => {
     default: Promise.resolve({state: 'frozen', nested: {state: 'frozen'}}),
   });
   await expect(
-    getPromise(defaultFrozenAsyncAtom).then(x => Object.isFrozen(x)),
+    getRecoilStatePromise(defaultFrozenAsyncAtom).then(x => Object.isFrozen(x)),
   ).resolves.toBe(true);
-  expect(Object.isFrozen(get(defaultFrozenAsyncAtom).nested)).toBe(true);
+  expect(Object.isFrozen(getValue(defaultFrozenAsyncAtom).nested)).toBe(true);
 
   // Initialized values are frozen
   const initializedValueInAtom = atom({
@@ -1250,8 +1246,8 @@ testRecoil('object is frozen when stored in atom', async () => {
       ({setSelf}) => setSelf({state: 'frozen', nested: {state: 'frozen'}}),
     ],
   });
-  expect(Object.isFrozen(get(initializedValueInAtom))).toBe(true);
-  expect(Object.isFrozen(get(initializedValueInAtom).nested)).toBe(true);
+  expect(Object.isFrozen(getValue(initializedValueInAtom))).toBe(true);
+  expect(Object.isFrozen(getValue(initializedValueInAtom).nested)).toBe(true);
 
   // Async Initialized values are frozen
   const initializedAsyncValueInAtom = atom<{state: string, nested: {...}, ...}>(
@@ -1267,10 +1263,16 @@ testRecoil('object is frozen when stored in atom', async () => {
     },
   );
   await expect(
-    getPromise(initializedAsyncValueInAtom).then(x => Object.isFrozen(x)),
+    getRecoilStatePromise(initializedAsyncValueInAtom).then(x =>
+      Object.isFrozen(x),
+    ),
   ).resolves.toBe(true);
-  expect(Object.isFrozen(get(initializedAsyncValueInAtom).nested)).toBe(true);
-  expect(get(initializedAsyncValueInAtom).nested).toEqual({state: 'frozen'});
+  expect(Object.isFrozen(getValue(initializedAsyncValueInAtom).nested)).toBe(
+    true,
+  );
+  expect(getValue(initializedAsyncValueInAtom).nested).toEqual({
+    state: 'frozen',
+  });
 
   // dangerouslyAllowMutability
   const thawedAtom = atom({
@@ -1278,8 +1280,8 @@ testRecoil('object is frozen when stored in atom', async () => {
     default: {state: 'thawed', nested: {state: 'thawed'}},
     dangerouslyAllowMutability: true,
   });
-  expect(Object.isFrozen(get(thawedAtom))).toBe(false);
-  expect(Object.isFrozen(get(thawedAtom).nested)).toBe(false);
+  expect(Object.isFrozen(getValue(thawedAtom))).toBe(false);
+  expect(Object.isFrozen(getValue(thawedAtom).nested)).toBe(false);
 
   window.__DEV__ = devStatus;
 });
