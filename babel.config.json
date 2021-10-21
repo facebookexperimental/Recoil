@@ -4,7 +4,7 @@
     [
       "module-resolver",
       {
-        "root": ["./src"],
+        "root": ["./"],
         "alias": {
           "React": "react",
           "ReactDOMLegacy_DEPRECATED": "react-dom",
