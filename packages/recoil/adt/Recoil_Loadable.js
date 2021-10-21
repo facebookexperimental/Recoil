@@ -19,240 +19,202 @@ const err = require('../util/Recoil_err');
 const isPromise = require('../util/Recoil_isPromise');
 const nullthrows = require('../util/Recoil_nullthrows');
 
-const TYPE_CHECK_COOKIE = 27495866187;
+class BaseLoadable<T> {
+  getValue(): T {
+    throw err('BaseLoadable');
+  }
+  toPromise(): Promise<T> {
+    throw err('BaseLoadable');
+  }
 
-// TODO Convert Loadable to a Class to allow for runtime type detection.
-// Containing static factories of withValue(), withError(), withPromise(), and all()
-
-type Accessors<+T> = $ReadOnly<{
-  // Attempt to get the value.
-  // If there's an error, throw an error.  If it's still loading, throw a Promise
-  // This is useful for composing with React Suspense or in a Recoil Selector.
-  getValue: () => T,
-  toPromise: () => Promise<T>,
-
-  // Convenience accessors
-  valueOrThrow: () => T,
-  errorOrThrow: () => mixed,
-  promiseOrThrow: () => Promise<T>,
-
-  is: (Loadable<mixed>) => boolean,
-
-  map: <U, V>(map: (U) => Loadable<V> | Promise<V> | V) => Loadable<V>,
-}>;
-
-type ValueAccessors<+T> = $ReadOnly<{
-  ...Accessors<T>,
-  valueMaybe: () => T,
-  errorMaybe: () => void,
-  promiseMaybe: () => void,
-}>;
-
-type ErrorAccessors<+T> = $ReadOnly<{
-  ...Accessors<T>,
-  valueMaybe: () => void,
-  errorMaybe: () => mixed,
-  promiseMaybe: () => void,
-}>;
-
-type LoadingAccessors<+T> = $ReadOnly<{
-  ...Accessors<T>,
-  valueMaybe: () => void,
-  errorMaybe: () => void,
-  promiseMaybe: () => Promise<T>,
-}>;
-
-type ValueLoadable<+T> = $ReadOnly<{
-  __loadable: number,
-  state: 'hasValue',
-  contents: T,
-  ...ValueAccessors<T>,
-}>;
-
-type ErrorLoadable<+T> = $ReadOnly<{
-  __loadable: number,
-  state: 'hasError',
-  contents: mixed,
-  ...ErrorAccessors<T>,
-}>;
-
-type LoadingLoadable<+T> = $ReadOnly<{
-  __loadable: number,
-  state: 'loading',
-  contents: Promise<T>,
-  ...LoadingAccessors<T>,
-}>;
-
-export type Loadable<+T> =
-  | ValueLoadable<T>
-  | ErrorLoadable<T>
-  | LoadingLoadable<T>;
-
-const loadableAccessors = {
-  valueMaybe() {
-    return undefined;
-  },
-
-  valueOrThrow() {
-    throw err(
-      // $FlowFixMe[object-this-reference]
-      `Loadable expected value, but in "${this.state}" state`,
-    );
-  },
-
-  errorMaybe() {
-    return undefined;
-  },
-
-  errorOrThrow() {
-    throw err(
-      // $FlowFixMe[object-this-reference]
-      `Loadable expected error, but in "${this.state}" state`,
-    );
-  },
-
-  promiseMaybe() {
-    return undefined;
-  },
-
-  promiseOrThrow() {
-    throw err(
-      // $FlowFixMe[object-this-reference]
-      `Loadable expected promise, but in "${this.state}" state`,
-    );
-  },
+  valueMaybe(): T | void {
+    throw err('BaseLoadable');
+  }
+  valueOrThrow(): T {
+    // $FlowFixMe[prop-missing]
+    throw err(`Loadable expected value, but in "${this.state}" state`);
+  }
+  promiseMaybe(): Promise<T> | void {
+    throw err('BaseLoadable');
+  }
+  promiseOrThrow(): Promise<T> {
+    // $FlowFixMe[prop-missing]
+    throw err(`Loadable expected promise, but in "${this.state}" state`);
+  }
+  errorMaybe(): mixed | void {
+    throw err('BaseLoadable');
+  }
+  errorOrThrow(): mixed {
+    // $FlowFixMe[prop-missing]
+    throw err(`Loadable expected error, but in "${this.state}" state`);
+  }
 
   is(other: Loadable<mixed>): boolean {
-    // $FlowFixMe[object-this-reference]
+    // $FlowFixMe[prop-missing]
     return other.state === this.state && other.contents === this.contents;
-  },
+  }
 
-  map<T, S>(map: T => Promise<S> | Loadable<S> | S): Loadable<S> {
-    // $FlowFixMe[object-this-reference]
-    if (this.state === 'hasError') {
-      // $FlowFixMe[object-this-reference]
-      return this;
+  map<S>(_map: T => Promise<S> | Loadable<S> | S): Loadable<S> {
+    throw err('BaseLoadable');
+  }
+}
+
+class ValueLoadable<T> extends BaseLoadable<T> {
+  state: 'hasValue' = 'hasValue';
+  contents: T;
+
+  constructor(value: T) {
+    super();
+    this.contents = value;
+  }
+  getValue(): T {
+    return this.contents;
+  }
+  toPromise(): Promise<T> {
+    return Promise.resolve(this.contents);
+  }
+  valueMaybe(): T {
+    return this.contents;
+  }
+  valueOrThrow(): T {
+    return this.contents;
+  }
+  promiseMaybe(): void {
+    return undefined;
+  }
+  errorMaybe(): void {
+    return undefined;
+  }
+  map<S>(map: T => Promise<S> | Loadable<S> | S): Loadable<S> {
+    try {
+      const next = map(this.contents);
+      return isPromise(next)
+        ? loadableWithPromise(next)
+        : isLoadable(next)
+        ? next
+        : // $FlowIssue[incompatible-type-arg]
+          loadableWithValue(next);
+    } catch (e) {
+      return isPromise(e)
+        ? // If we "suspended", then try again.
+          // errors and subsequent retries will be handled in 'loading' case
+          loadableWithPromise(e.next(() => this.map(map)))
+        : loadableWithError(e);
     }
-    // $FlowFixMe[object-this-reference]
-    if (this.state === 'hasValue') {
-      try {
-        // $FlowFixMe[object-this-reference]
-        const next = map(this.contents);
-        return isPromise(next)
-          ? loadableWithPromise(next)
-          : isLoadable(next)
-          ? // TODO Fix Flow typing for isLoadable() %check
-            (next: any) // flowlint-line unclear-type:off
-          : loadableWithValue((next: any)); // flowlint-line unclear-type:off
-      } catch (e) {
-        return isPromise(e)
-          ? // If we "suspended", then try again.
-            // errors and subsequent retries will be handled in 'loading' case
-            // $FlowFixMe[object-this-reference]
-            loadableWithPromise(e.next(() => map(this.contents)))
-          : loadableWithError(e);
-      }
-    }
-    // $FlowFixMe[object-this-reference]
-    if (this.state === 'loading') {
-      return loadableWithPromise(
-        // $FlowFixMe[object-this-reference]
-        this.contents
-          .then(value => {
-            const next = map(value);
-            if (isLoadable(next)) {
-              const nextLoadable: Loadable<S> = (next: any); // flowlint-line unclear-type:off
-              switch (nextLoadable.state) {
-                case 'hasValue':
-                  return nextLoadable.contents;
-                case 'hasError':
-                  throw nextLoadable.contents;
-                case 'loading':
-                  return nextLoadable.contents;
-              }
+  }
+}
+
+class ErrorLoadable<T> extends BaseLoadable<T> {
+  state: 'hasError' = 'hasError';
+  contents: mixed;
+
+  constructor(error: mixed) {
+    super();
+    this.contents = error;
+  }
+  getValue(): T {
+    throw this.contents;
+  }
+  toPromise(): Promise<T> {
+    return Promise.reject(this.contents);
+  }
+  valueMaybe(): void {
+    return undefined;
+  }
+  promiseMaybe(): void {
+    return undefined;
+  }
+  errorMaybe(): mixed {
+    return this.contents;
+  }
+  errorOrThrow(): mixed {
+    return this.contents;
+  }
+  map<S>(_map: T => Promise<S> | Loadable<S> | S): $ReadOnly<ErrorLoadable<S>> {
+    // $FlowIssue[incompatible-return]
+    return this;
+  }
+}
+
+class LoadingLoadable<T> extends BaseLoadable<T> {
+  state: 'loading' = 'loading';
+  contents: Promise<T>;
+
+  constructor(promise: Promise<T>) {
+    super();
+    this.contents = promise;
+  }
+  getValue(): T {
+    throw this.contents;
+  }
+  toPromise(): Promise<T> {
+    return this.contents;
+  }
+  valueMaybe(): void {
+    return undefined;
+  }
+  promiseMaybe(): Promise<T> {
+    return this.contents;
+  }
+  promiseOrThrow(): Promise<T> {
+    return this.contents;
+  }
+  errorMaybe(): void {
+    return undefined;
+  }
+  map<S>(
+    map: T => Promise<S> | Loadable<S> | S,
+  ): $ReadOnly<LoadingLoadable<S>> {
+    return loadableWithPromise(
+      this.contents
+        .then(value => {
+          const next = map(value);
+          if (isLoadable(next)) {
+            const nextLoadable: Loadable<S> = next;
+            switch (nextLoadable.state) {
+              case 'hasValue':
+                return nextLoadable.contents;
+              case 'hasError':
+                throw nextLoadable.contents;
+              case 'loading':
+                return nextLoadable.contents;
             }
-            return next;
-          })
-          .catch(e => {
-            if (isPromise(e)) {
-              // we were "suspended," try again
-              // $FlowFixMe[object-this-reference]
-              return e.then(() => map(this.contents));
-            }
-            throw e;
-          }),
-      );
-    }
-    throw err('Invalid Loadable state');
-  },
-};
-
-function loadableWithValue<T>(value: T): ValueLoadable<T> {
-  // Build objects this way since Flow doesn't support disjoint unions for class properties
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'hasValue',
-    contents: value,
-    ...loadableAccessors,
-    getValue() {
-      return this.contents;
-    },
-    toPromise() {
-      return Promise.resolve(this.contents);
-    },
-    valueMaybe() {
-      return this.contents;
-    },
-    valueOrThrow() {
-      return this.contents;
-    },
-  });
+          }
+          // $FlowIssue[incompatible-return]
+          return next;
+        })
+        .catch(e => {
+          if (isPromise(e)) {
+            // we were "suspended," try again
+            return e.then(() => this.map(map).contents);
+          }
+          throw e;
+        }),
+    );
+  }
 }
 
-function loadableWithError<T>(error: mixed): ErrorLoadable<T> {
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'hasError',
-    contents: error,
-    ...loadableAccessors,
-    getValue() {
-      throw this.contents;
-    },
-    toPromise() {
-      return Promise.reject(this.contents);
-    },
-    errorMaybe() {
-      return this.contents;
-    },
-    errorOrThrow() {
-      return this.contents;
-    },
-  });
+export type Loadable<+T> =
+  | $ReadOnly<ValueLoadable<T>>
+  | $ReadOnly<ErrorLoadable<T>>
+  | $ReadOnly<LoadingLoadable<T>>;
+
+function loadableWithValue<+T>(value: T): $ReadOnly<ValueLoadable<T>> {
+  return Object.freeze(new ValueLoadable(value));
 }
 
-function loadableWithPromise<T>(promise: Promise<T>): LoadingLoadable<T> {
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'loading',
-    contents: promise,
-    ...loadableAccessors,
-    getValue() {
-      throw this.contents;
-    },
-    toPromise() {
-      return this.contents;
-    },
-    promiseMaybe() {
-      return this.contents;
-    },
-    promiseOrThrow() {
-      return this.contents;
-    },
-  });
+function loadableWithError<+T>(error: mixed): $ReadOnly<ErrorLoadable<T>> {
+  return Object.freeze(new ErrorLoadable(error));
 }
 
-function loadableLoading<T>(): Loadable<T> {
-  return loadableWithPromise(new Promise(() => {}));
+function loadableWithPromise<+T>(
+  promise: Promise<T>,
+): $ReadOnly<LoadingLoadable<T>> {
+  return Object.freeze(new LoadingLoadable(promise));
+}
+
+function loadableLoading<+T>(): $ReadOnly<LoadingLoadable<T>> {
+  return Object.freeze(new LoadingLoadable(new Promise(() => {})));
 }
 
 type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
@@ -291,8 +253,10 @@ function loadableAll<
     : Object.getOwnPropertyNames(inputs).map(key => inputs[key]);
   const output = loadableAllArray(unwrapedInputs);
   return Array.isArray(inputs)
-    ? output
+    ? // $FlowIssue[incompatible-return]
+      output
     : // Object.getOwnPropertyNames() has consistent key ordering with ES6
+      // $FlowIssue[incompatible-call]
       output.map(outputs =>
         Object.getOwnPropertyNames(inputs).reduce(
           (out, key, idx) => ({...out, [key]: outputs[idx]}),
@@ -301,15 +265,15 @@ function loadableAll<
       );
 }
 
-// TODO Actually get this to work with Flow
 function isLoadable(x: mixed): boolean %checks {
-  return (x: any).__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
+  return x instanceof BaseLoadable;
 }
 
 const LoadableStaticInterface = {
-  of: <T>(value: T | Promise<T>): Loadable<T> =>
+  of: <T>(value: Promise<T> | T): Loadable<T> =>
     isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
-  error: <T>(error: mixed): ErrorLoadable<T> => loadableWithError(error),
+  error: <T>(error: mixed): $ReadOnly<ErrorLoadable<T>> =>
+    loadableWithError(error),
   // $FlowIssue[unclear-type]
   all: ((loadableAll: any): LoadableAll),
   isLoadable,
