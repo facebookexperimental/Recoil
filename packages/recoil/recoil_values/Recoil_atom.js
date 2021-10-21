@@ -300,52 +300,51 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           : info;
       }
 
-      const setSelf = (effect: AtomEffect<T>) => (
-        valueOrUpdater: NewValueOrUpdater<T>,
-      ) => {
-        if (duringInit) {
-          const currentValue: T | DefaultValue =
-            initValue instanceof DefaultValue || isPromise(initValue)
-              ? defaultLoadable.state === 'hasValue'
-                ? defaultLoadable.contents
-                : DEFAULT_VALUE
-              : initValue;
-          initValue =
-            typeof valueOrUpdater === 'function'
-              ? // cast to any because we can't restrict T from being a function without losing support for opaque types
-                (valueOrUpdater: any)(currentValue) // flowlint-line unclear-type:off
-              : valueOrUpdater;
-          if (isPromise(initValue)) {
-            initValue = initValue.then(value => {
-              // Avoid calling onSet() when setSelf() initializes with a Promise
-              pendingSetSelf = {effect, value};
-              return value;
-            });
-          }
-        } else {
-          if (isPromise(valueOrUpdater)) {
-            throw err('Setting atoms to async values is not implemented.');
-          }
+      const setSelf =
+        (effect: AtomEffect<T>) => (valueOrUpdater: NewValueOrUpdater<T>) => {
+          if (duringInit) {
+            const currentValue: T | DefaultValue =
+              initValue instanceof DefaultValue || isPromise(initValue)
+                ? defaultLoadable.state === 'hasValue'
+                  ? defaultLoadable.contents
+                  : DEFAULT_VALUE
+                : initValue;
+            initValue =
+              typeof valueOrUpdater === 'function'
+                ? // cast to any because we can't restrict T from being a function without losing support for opaque types
+                  (valueOrUpdater: any)(currentValue) // flowlint-line unclear-type:off
+                : valueOrUpdater;
+            if (isPromise(initValue)) {
+              initValue = initValue.then(value => {
+                // Avoid calling onSet() when setSelf() initializes with a Promise
+                pendingSetSelf = {effect, value};
+                return value;
+              });
+            }
+          } else {
+            if (isPromise(valueOrUpdater)) {
+              throw err('Setting atoms to async values is not implemented.');
+            }
 
-          if (typeof valueOrUpdater !== 'function') {
-            pendingSetSelf = {effect, value: valueOrUpdater};
-          }
+            if (typeof valueOrUpdater !== 'function') {
+              pendingSetSelf = {effect, value: valueOrUpdater};
+            }
 
-          setRecoilValue(
-            store,
-            node,
-            typeof valueOrUpdater === 'function'
-              ? currentValue => {
-                  const newValue =
-                    // cast to any because we can't restrict T from being a function without losing support for opaque types
-                    (valueOrUpdater: any)(currentValue); // flowlint-line unclear-type:off
-                  pendingSetSelf = {effect, value: newValue};
-                  return newValue;
-                }
-              : valueOrUpdater,
-          );
-        }
-      };
+            setRecoilValue(
+              store,
+              node,
+              typeof valueOrUpdater === 'function'
+                ? currentValue => {
+                    const newValue =
+                      // cast to any because we can't restrict T from being a function without losing support for opaque types
+                      (valueOrUpdater: any)(currentValue); // flowlint-line unclear-type:off
+                    pendingSetSelf = {effect, value: newValue};
+                    return newValue;
+                  }
+                : valueOrUpdater,
+            );
+          }
+        };
       const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE);
 
       const onSet = effect => (handler: (T, T | DefaultValue) => void) => {
@@ -437,7 +436,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   function peekAtom(_store, state: TreeState): ?Loadable<T> {
     return (
       state.atomValues.get(key) ??
-      cachedAnswerForUnvalidatedValue?.[1] ??
+      cachedAnswerForUnvalidatedValue ??
       defaultLoadable
     );
   }

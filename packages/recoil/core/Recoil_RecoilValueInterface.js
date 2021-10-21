@@ -267,7 +267,7 @@ function setRecoilValueLoadable<T>(
   queueOrPerformStateUpdate(store, {
     type: 'setLoadable',
     recoilValue,
-    loadable,
+    loadable: (loadable: Loadable<T>),
   });
 }
 

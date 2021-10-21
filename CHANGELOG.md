@@ -4,12 +4,14 @@
 
 ***Add new changes here as they land***
 
-- Ability to map Loadables with other Loadables
 - Allow class instances in family parameters for Flow
 - Add `getLoadable()`, `getPromise()`, and `getInfo_UNSTABLE()` to Atom Effects interface for reading other atoms.
 - Atoms freeze default, initialized, and async values in dev mode.  Selectors should not freeze upstream dependencies. (#1261, #1259)
 - Added `useRecoilRefresher_UNSTABLE()` hook which forces a selector to re-run it's `get()`, and is a no-op for an atom. (#972)
-- Expose `RecoilLoadable` interface for creating `Loadable` objects.
+- `Loadable` improvements:
+  - Publish `RecoilLoadable` interface with factories and type checking for Loadables
+  - Ability to map Loadables with other Loadables.
+  - Re-implement Loadable as classes.
 
 ### Pending
 - Memory management
