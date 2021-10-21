@@ -24,9 +24,6 @@ const TYPE_CHECK_COOKIE = 27495866187;
 // TODO Convert Loadable to a Class to allow for runtime type detection.
 // Containing static factories of withValue(), withError(), withPromise(), and all()
 
-class Canceled {}
-const CANCELED: Canceled = new Canceled();
-
 type Accessors<+T> = $ReadOnly<{
   // Attempt to get the value.
   // If there's an error, throw an error.  If it's still loading, throw a Promise
@@ -82,7 +79,7 @@ type ErrorLoadable<+T> = $ReadOnly<{
 type LoadingLoadable<+T> = $ReadOnly<{
   __loadable: number,
   state: 'loading',
-  contents: Promise<T | Canceled>,
+  contents: Promise<T>,
   ...LoadingAccessors<T>,
 }>;
 
@@ -233,33 +230,23 @@ function loadableWithError<T>(error: mixed): ErrorLoadable<T> {
   });
 }
 
-// TODO Probably need to clean-up this API to accept `Promise<T>`
-// with an alternative params or mechanism for internal key proxy.
-const throwCanceled = value => {
-  if (value instanceof Canceled) {
-    throw value;
-  }
-  return value;
-};
-function loadableWithPromise<T>(
-  promise: Promise<T | Canceled>,
-): LoadingLoadable<T> {
+function loadableWithPromise<T>(promise: Promise<T>): LoadingLoadable<T> {
   return Object.freeze({
     __loadable: TYPE_CHECK_COOKIE,
     state: 'loading',
     contents: promise,
     ...loadableAccessors,
     getValue() {
-      throw this.contents.then(throwCanceled);
+      throw this.contents;
     },
     toPromise() {
-      return this.contents.then(throwCanceled);
+      return this.contents;
     },
     promiseMaybe() {
-      return this.contents.then(throwCanceled);
+      return this.contents;
     },
     promiseOrThrow() {
-      return this.contents.then(throwCanceled);
+      return this.contents;
     },
   });
 }
@@ -335,7 +322,5 @@ module.exports = {
   loadableLoading,
   loadableAll,
   isLoadable,
-  Canceled,
-  CANCELED,
   RecoilLoadable: LoadableStaticInterface,
 };
