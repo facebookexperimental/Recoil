@@ -74,7 +74,7 @@ class BuiltInMap<K: string, V> implements PersistentMap<K, V> {
 class HashArrayMappedTrieMap<K: string, V> implements PersistentMap<K, V> {
   // Because hamt.empty is not a function there is no way to introduce type
   // parameters on it, so empty is typed as HAMTPlusMap<string, mixed>.
-  // flowlint-next-line unclear-type:off
+  // $FlowIssue
   _hamt: HAMTPlusMap<K, V> = ((hamt.empty: any).beginMutation(): HAMTPlusMap<
     K,
     V,

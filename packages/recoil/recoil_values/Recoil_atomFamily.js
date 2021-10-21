@@ -55,16 +55,17 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
 }>;
 
 // Process scopeRules to handle any entries which are functions taking parameters
-function mapScopeRules<P>(
-  scopeRules?: ParameterizedScopeRules<P>,
-  param: P,
-): ScopeRules | void {
-  return scopeRules?.map(rule =>
-    Array.isArray(rule)
-      ? rule.map(entry => (typeof entry === 'function' ? entry(param) : entry))
-      : rule,
-  );
-}
+// prettier-ignore
+// @fb-only: function mapScopeRules<P>(
+  // @fb-only: scopeRules?: ParameterizedScopeRules<P>,
+  // @fb-only: param: P,
+// @fb-only: ): ScopeRules | void {
+  // @fb-only: return scopeRules?.map(rule =>
+    // @fb-only: Array.isArray(rule)
+      // @fb-only: ? rule.map(entry => (typeof entry === 'function' ? entry(param) : entry))
+      // @fb-only: : rule,
+  // @fb-only: );
+// @fb-only: }
 
 /*
 A function which returns an atom based on the input parameter.
