@@ -9,6 +9,6 @@
  * @format
  */
 
-module.exports = function gkx(_gk: string) {
+module.exports = function gkx(_gk: string): boolean {
   return false;
 };
