@@ -29,6 +29,12 @@
   Loadable, RecoilLoadable,
   useRecoilTransaction_UNSTABLE,
   useRecoilRefresher_UNSTABLE,
+
+  // refine
+  object,
+  optional,
+  string
+
 } from 'recoil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -719,4 +725,15 @@ isRecoilValue(mySelector1);
 
   Load.isLoadable(false); // $ExpectType boolean
   Load.isLoadable(Load.of('x')); // $ExpectType boolean
+}
+
+
+const check = object({a: optional(string()), b: string()});
+
+const result = check({});
+
+if (result.type === 'success') {
+  result.value.b.includes('test');
+} else{
+  result.message.includes('');
 }

@@ -17,6 +17,8 @@ export { };
 
 import * as React from 'react';
 
+export * from './refine';
+
 // state.d.ts
 type NodeKey = string;
 
