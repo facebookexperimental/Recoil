@@ -124,7 +124,7 @@ if (__DEV__) {
 declare function initialStoreState_DEPRECATED(store: any, initializeState: any): StoreState;
 declare function initialStoreState(initializeState: any): StoreState;
 let nextID = 0;
-declare function RecoilRoot_INTERNAL(arg0: InternalProps): ReactElement;
+declare function RecoilRoot_INTERNAL(arg0: InternalProps): React.Node;
 type Props = {
   initializeState_DEPRECATED?: ({
     set: <T>(RecoilValue<T>, T) => void,

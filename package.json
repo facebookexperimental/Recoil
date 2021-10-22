@@ -18,7 +18,7 @@
   "scripts": {
     "prepare": "install-peers",
     "build": "rollup -c && node scripts/postbuild.js",
-    "test": "jest src/*",
+    "test": "jest packages/*",
     "format": "prettier --write \"./**/*.{js,md,json}\"",
     "flow": "flow --show-all-errors",
     "flow:restart": "flow stop && npm run flow",
@@ -67,7 +67,7 @@
     "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-rulesdir": "^0.1.0",
-    "flow-bin": "^0.129.0",
+    "flow-bin": "^0.162.1",
     "gen-flow-files": "^0.4.11",
     "husky": ">=4",
     "immutable": "^4.0.0-rc.12",

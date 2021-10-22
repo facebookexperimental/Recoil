@@ -21,153 +21,59 @@ const isPromise = require('../util/Recoil_isPromise');
 
 const nullthrows = require('../util/Recoil_nullthrows');
 
-const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
-// Containing static factories of withValue(), withError(), withPromise(), and all()
-
-type Accessors<+T> = $ReadOnly<{
-  // Attempt to get the value.
-  // If there's an error, throw an error.  If it's still loading, throw a Promise
-  // This is useful for composing with React Suspense or in a Recoil Selector.
-  getValue: () => T,
-  toPromise: () => Promise<T>,
-  // Convenience accessors
-  valueOrThrow: () => T,
-  errorOrThrow: () => mixed,
-  promiseOrThrow: () => Promise<T>,
-  is: (Loadable<mixed>) => boolean,
-  map: <U, V>(map: (U) => Loadable<V> | Promise<V> | V) => Loadable<V>,
-}>;
-type ValueAccessors<+T> = $ReadOnly<{ ...Accessors<T>,
-  valueMaybe: () => T,
-  errorMaybe: () => void,
-  promiseMaybe: () => void,
-}>;
-type ErrorAccessors<+T> = $ReadOnly<{ ...Accessors<T>,
-  valueMaybe: () => void,
-  errorMaybe: () => mixed,
-  promiseMaybe: () => void,
-}>;
-type LoadingAccessors<+T> = $ReadOnly<{ ...Accessors<T>,
-  valueMaybe: () => void,
-  errorMaybe: () => void,
-  promiseMaybe: () => Promise<T>,
-}>;
-type ValueLoadable<+T> = $ReadOnly<{
-  __loadable: number,
+declare class BaseLoadable<T> {
+  getValue(): T,
+  toPromise(): Promise<T>,
+  valueMaybe(): T | void,
+  valueOrThrow(): T,
+  promiseMaybe(): Promise<T> | void,
+  promiseOrThrow(): Promise<T>,
+  errorMaybe(): mixed | void,
+  errorOrThrow(): mixed,
+  is(other: Loadable<mixed>): boolean,
+  map<S>(_map: (T) => Promise<S> | Loadable<S> | S): Loadable<S>,
+}
+declare class ValueLoadable<T> extends BaseLoadable<T> {
   state: 'hasValue',
   contents: T,
-  ...ValueAccessors<T>,
-}>;
-type ErrorLoadable<+T> = $ReadOnly<{
-  __loadable: number,
+  constructor(value: T): any,
+  getValue(): T,
+  toPromise(): Promise<T>,
+  valueMaybe(): T,
+  valueOrThrow(): T,
+  promiseMaybe(): void,
+  errorMaybe(): void,
+  map<S>(map: (T) => Promise<S> | Loadable<S> | S): Loadable<S>,
+}
+declare class ErrorLoadable<T> extends BaseLoadable<T> {
   state: 'hasError',
   contents: mixed,
-  ...ErrorAccessors<T>,
-}>;
-type LoadingLoadable<+T> = $ReadOnly<{
-  __loadable: number,
+  constructor(error: mixed): any,
+  getValue(): T,
+  toPromise(): Promise<T>,
+  valueMaybe(): void,
+  promiseMaybe(): void,
+  errorMaybe(): mixed,
+  errorOrThrow(): mixed,
+  map<S>(_map: (T) => Promise<S> | Loadable<S> | S): $ReadOnly<ErrorLoadable<S>>,
+}
+declare class LoadingLoadable<T> extends BaseLoadable<T> {
   state: 'loading',
   contents: Promise<T>,
-  ...LoadingAccessors<T>,
-}>;
-export type Loadable<+T> = ValueLoadable<T> | ErrorLoadable<T> | LoadingLoadable<T>;
-const loadableAccessors = {
-  valueMaybe() {
-    return undefined;
-  },
-
-  valueOrThrow() {
-    throw err( // $FlowFixMe[object-this-reference]
-    `Loadable expected value, but in "${this.state}" state`);
-  },
-
-  errorMaybe() {
-    return undefined;
-  },
-
-  errorOrThrow() {
-    throw err( // $FlowFixMe[object-this-reference]
-    `Loadable expected error, but in "${this.state}" state`);
-  },
-
-  promiseMaybe() {
-    return undefined;
-  },
-
-  promiseOrThrow() {
-    throw err( // $FlowFixMe[object-this-reference]
-    `Loadable expected promise, but in "${this.state}" state`);
-  },
-
-  is(other: Loadable<mixed>): boolean {
-    // $FlowFixMe[object-this-reference]
-    return other.state === this.state && other.contents === this.contents;
-  },
-
-  map<T, S>(map: (T) => Promise<S> | Loadable<S> | S): Loadable<S> {
-    // $FlowFixMe[object-this-reference]
-    if (this.state === 'hasError') {
-      // $FlowFixMe[object-this-reference]
-      return this;
-    } // $FlowFixMe[object-this-reference]
-
-
-    if (this.state === 'hasValue') {
-      try {
-        // $FlowFixMe[object-this-reference]
-        const next = map(this.contents);
-        return isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
-        (next: any) : // flowlint-line unclear-type:off
-        loadableWithValue((next: any)); // flowlint-line unclear-type:off
-      } catch (e) {
-        return isPromise(e) ? // If we "suspended", then try again.
-        // errors and subsequent retries will be handled in 'loading' case
-        // $FlowFixMe[object-this-reference]
-        loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
-      }
-    } // $FlowFixMe[object-this-reference]
-
-
-    if (this.state === 'loading') {
-      return loadableWithPromise( // $FlowFixMe[object-this-reference]
-      this.contents.then(value => {
-        const next = map(value);
-
-        if (isLoadable(next)) {
-          const nextLoadable: Loadable<S> = (next: any); // flowlint-line unclear-type:off
-
-          switch (nextLoadable.state) {
-            case 'hasValue':
-              return nextLoadable.contents;
-
-            case 'hasError':
-              throw nextLoadable.contents;
-
-            case 'loading':
-              return nextLoadable.contents;
-          }
-        }
-
-        return next;
-      }).catch(e => {
-        if (isPromise(e)) {
-          // we were "suspended," try again
-          // $FlowFixMe[object-this-reference]
-          return e.then(() => map(this.contents));
-        }
-
-        throw e;
-      }));
-    }
-
-    throw err('Invalid Loadable state');
-  }
-
-};
-declare function loadableWithValue<T>(value: T): ValueLoadable<T>;
-declare function loadableWithError<T>(error: mixed): ErrorLoadable<T>;
-declare function loadableWithPromise<T>(promise: Promise<T>): LoadingLoadable<T>;
-declare function loadableLoading<T>(): Loadable<T>;
+  constructor(promise: Promise<T>): any,
+  getValue(): T,
+  toPromise(): Promise<T>,
+  valueMaybe(): void,
+  promiseMaybe(): Promise<T>,
+  promiseOrThrow(): Promise<T>,
+  errorMaybe(): void,
+  map<S>(map: (T) => Promise<S> | Loadable<S> | S): $ReadOnly<LoadingLoadable<S>>,
+}
+export type Loadable<+T> = $ReadOnly<ValueLoadable<T>> | $ReadOnly<ErrorLoadable<T>> | $ReadOnly<LoadingLoadable<T>>;
+declare function loadableWithValue<+T>(value: T): $ReadOnly<ValueLoadable<T>>;
+declare function loadableWithError<+T>(error: mixed): $ReadOnly<ErrorLoadable<T>>;
+declare function loadableWithPromise<+T>(promise: Promise<T>): $ReadOnly<LoadingLoadable<T>>;
+declare function loadableLoading<+T>(): $ReadOnly<LoadingLoadable<T>>;
 type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
 type LoadableAllOfTuple = <Tuple: $ReadOnlyArray<Loadable<mixed>>>(tuple: Tuple) => Loadable<$TupleMap<Tuple, <V>(Loadable<V>) => V>>;
 type LoadableAllOfObj = <Obj: $ReadOnly<{
@@ -182,12 +88,11 @@ declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>> | $ReadOnly
 }>>(inputs: Inputs): Loadable<$ReadOnlyArray<mixed> | $ReadOnly<{
   [string]: mixed,
   ...
-}>>; // TODO Actually get this to work with Flow
-
+}>>;
 declare function isLoadable(x: mixed): boolean;
 const LoadableStaticInterface = {
-  of: <T>(value: T | Promise<T>): Loadable<T> => isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
-  error: <T>(error: mixed): ErrorLoadable<T> => loadableWithError(error),
+  of: <T>(value: Promise<T> | T): Loadable<T> => isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
+  error: <T>(error: mixed): $ReadOnly<ErrorLoadable<T>> => loadableWithError(error),
   // $FlowIssue[unclear-type]
   all: ((loadableAll: any): LoadableAll),
   isLoadable

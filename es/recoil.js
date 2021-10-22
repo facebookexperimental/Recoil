@@ -65,184 +65,241 @@ function nullthrows(x, message) {
 
 var Recoil_nullthrows = nullthrows;
 
-const TYPE_CHECK_COOKIE = 27495866187; // TODO Convert Loadable to a Class to allow for runtime type detection.
-// Containing static factories of withValue(), withError(), withPromise(), and all()
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
 
-const loadableAccessors = {
+  return obj;
+}
+
+class BaseLoadable {
+  getValue() {
+    throw Recoil_err('BaseLoadable');
+  }
+
+  toPromise() {
+    throw Recoil_err('BaseLoadable');
+  }
+
   valueMaybe() {
-    return undefined;
-  },
+    throw Recoil_err('BaseLoadable');
+  }
 
   valueOrThrow() {
-    throw Recoil_err( // $FlowFixMe[object-this-reference]
-    `Loadable expected value, but in "${this.state}" state`);
-  },
+    // $FlowFixMe[prop-missing]
+    throw Recoil_err(`Loadable expected value, but in "${this.state}" state`);
+  }
+
+  promiseMaybe() {
+    throw Recoil_err('BaseLoadable');
+  }
+
+  promiseOrThrow() {
+    // $FlowFixMe[prop-missing]
+    throw Recoil_err(`Loadable expected promise, but in "${this.state}" state`);
+  }
 
   errorMaybe() {
-    return undefined;
-  },
+    throw Recoil_err('BaseLoadable');
+  }
 
   errorOrThrow() {
-    throw Recoil_err( // $FlowFixMe[object-this-reference]
-    `Loadable expected error, but in "${this.state}" state`);
-  },
+    // $FlowFixMe[prop-missing]
+    throw Recoil_err(`Loadable expected error, but in "${this.state}" state`);
+  }
+
+  is(other) {
+    // $FlowFixMe[prop-missing]
+    return other.state === this.state && other.contents === this.contents;
+  }
+
+  map(_map) {
+    throw Recoil_err('BaseLoadable');
+  }
+
+}
+
+class ValueLoadable extends BaseLoadable {
+  constructor(value) {
+    super();
+
+    _defineProperty(this, "state", 'hasValue');
+
+    _defineProperty(this, "contents", void 0);
+
+    this.contents = value;
+  }
+
+  getValue() {
+    return this.contents;
+  }
+
+  toPromise() {
+    return Promise.resolve(this.contents);
+  }
+
+  valueMaybe() {
+    return this.contents;
+  }
+
+  valueOrThrow() {
+    return this.contents;
+  }
 
   promiseMaybe() {
     return undefined;
-  },
-
-  promiseOrThrow() {
-    throw Recoil_err( // $FlowFixMe[object-this-reference]
-    `Loadable expected promise, but in "${this.state}" state`);
-  },
-
-  is(other) {
-    // $FlowFixMe[object-this-reference]
-    return other.state === this.state && other.contents === this.contents;
-  },
-
-  map(map) {
-    // $FlowFixMe[object-this-reference]
-    if (this.state === 'hasError') {
-      // $FlowFixMe[object-this-reference]
-      return this;
-    } // $FlowFixMe[object-this-reference]
-
-
-    if (this.state === 'hasValue') {
-      try {
-        // $FlowFixMe[object-this-reference]
-        const next = map(this.contents);
-        return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? // TODO Fix Flow typing for isLoadable() %check
-        next : // flowlint-line unclear-type:off
-        loadableWithValue(next); // flowlint-line unclear-type:off
-      } catch (e) {
-        return Recoil_isPromise(e) ? // If we "suspended", then try again.
-        // errors and subsequent retries will be handled in 'loading' case
-        // $FlowFixMe[object-this-reference]
-        loadableWithPromise(e.next(() => map(this.contents))) : loadableWithError(e);
-      }
-    } // $FlowFixMe[object-this-reference]
-
-
-    if (this.state === 'loading') {
-      return loadableWithPromise( // $FlowFixMe[object-this-reference]
-      this.contents.then(value => {
-        const next = map(value);
-
-        if (isLoadable(next)) {
-          const nextLoadable = next; // flowlint-line unclear-type:off
-
-          switch (nextLoadable.state) {
-            case 'hasValue':
-              return nextLoadable.contents;
-
-            case 'hasError':
-              throw nextLoadable.contents;
-
-            case 'loading':
-              return nextLoadable.contents;
-          }
-        }
-
-        return next;
-      }).catch(e => {
-        if (Recoil_isPromise(e)) {
-          // we were "suspended," try again
-          // $FlowFixMe[object-this-reference]
-          return e.then(() => map(this.contents));
-        }
-
-        throw e;
-      }));
-    }
-
-    throw Recoil_err('Invalid Loadable state');
   }
 
-};
+  errorMaybe() {
+    return undefined;
+  }
+
+  map(map) {
+    try {
+      const next = map(this.contents);
+      return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? next : // $FlowIssue[incompatible-type-arg]
+      loadableWithValue(next);
+    } catch (e) {
+      return Recoil_isPromise(e) ? // If we "suspended", then try again.
+      // errors and subsequent retries will be handled in 'loading' case
+      loadableWithPromise(e.next(() => this.map(map))) : loadableWithError(e);
+    }
+  }
+
+}
+
+class ErrorLoadable extends BaseLoadable {
+  constructor(error) {
+    super();
+
+    _defineProperty(this, "state", 'hasError');
+
+    _defineProperty(this, "contents", void 0);
+
+    this.contents = error;
+  }
+
+  getValue() {
+    throw this.contents;
+  }
+
+  toPromise() {
+    return Promise.reject(this.contents);
+  }
+
+  valueMaybe() {
+    return undefined;
+  }
+
+  promiseMaybe() {
+    return undefined;
+  }
+
+  errorMaybe() {
+    return this.contents;
+  }
+
+  errorOrThrow() {
+    return this.contents;
+  }
+
+  map(_map) {
+    // $FlowIssue[incompatible-return]
+    return this;
+  }
+
+}
+
+class LoadingLoadable extends BaseLoadable {
+  constructor(promise) {
+    super();
+
+    _defineProperty(this, "state", 'loading');
+
+    _defineProperty(this, "contents", void 0);
+
+    this.contents = promise;
+  }
+
+  getValue() {
+    throw this.contents;
+  }
+
+  toPromise() {
+    return this.contents;
+  }
+
+  valueMaybe() {
+    return undefined;
+  }
+
+  promiseMaybe() {
+    return this.contents;
+  }
+
+  promiseOrThrow() {
+    return this.contents;
+  }
+
+  errorMaybe() {
+    return undefined;
+  }
+
+  map(map) {
+    return loadableWithPromise(this.contents.then(value => {
+      const next = map(value);
+
+      if (isLoadable(next)) {
+        const nextLoadable = next;
+
+        switch (nextLoadable.state) {
+          case 'hasValue':
+            return nextLoadable.contents;
+
+          case 'hasError':
+            throw nextLoadable.contents;
+
+          case 'loading':
+            return nextLoadable.contents;
+        }
+      } // $FlowIssue[incompatible-return]
+
+
+      return next;
+    }).catch(e => {
+      if (Recoil_isPromise(e)) {
+        // we were "suspended," try again
+        return e.then(() => this.map(map).contents);
+      }
+
+      throw e;
+    }));
+  }
+
+}
 
 function loadableWithValue(value) {
-  // Build objects this way since Flow doesn't support disjoint unions for class properties
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'hasValue',
-    contents: value,
-    ...loadableAccessors,
-
-    getValue() {
-      return this.contents;
-    },
-
-    toPromise() {
-      return Promise.resolve(this.contents);
-    },
-
-    valueMaybe() {
-      return this.contents;
-    },
-
-    valueOrThrow() {
-      return this.contents;
-    }
-
-  });
+  return Object.freeze(new ValueLoadable(value));
 }
 
 function loadableWithError(error) {
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'hasError',
-    contents: error,
-    ...loadableAccessors,
-
-    getValue() {
-      throw this.contents;
-    },
-
-    toPromise() {
-      return Promise.reject(this.contents);
-    },
-
-    errorMaybe() {
-      return this.contents;
-    },
-
-    errorOrThrow() {
-      return this.contents;
-    }
-
-  });
+  return Object.freeze(new ErrorLoadable(error));
 }
 
 function loadableWithPromise(promise) {
-  return Object.freeze({
-    __loadable: TYPE_CHECK_COOKIE,
-    state: 'loading',
-    contents: promise,
-    ...loadableAccessors,
-
-    getValue() {
-      throw this.contents;
-    },
-
-    toPromise() {
-      return this.contents;
-    },
-
-    promiseMaybe() {
-      return this.contents;
-    },
-
-    promiseOrThrow() {
-      return this.contents;
-    }
-
-  });
+  return Object.freeze(new LoadingLoadable(promise));
 }
 
 function loadableLoading() {
-  return loadableWithPromise(new Promise(() => {}));
+  return Object.freeze(new LoadingLoadable(new Promise(() => {})));
 }
 
 function loadableAllArray(inputs) {
@@ -252,15 +309,16 @@ function loadableAllArray(inputs) {
 function loadableAll(inputs) {
   const unwrapedInputs = Array.isArray(inputs) ? inputs : Object.getOwnPropertyNames(inputs).map(key => inputs[key]);
   const output = loadableAllArray(unwrapedInputs);
-  return Array.isArray(inputs) ? output : // Object.getOwnPropertyNames() has consistent key ordering with ES6
+  return Array.isArray(inputs) ? // $FlowIssue[incompatible-return]
+  output : // Object.getOwnPropertyNames() has consistent key ordering with ES6
+  // $FlowIssue[incompatible-call]
   output.map(outputs => Object.getOwnPropertyNames(inputs).reduce((out, key, idx) => ({ ...out,
     [key]: outputs[idx]
   }), {}));
-} // TODO Actually get this to work with Flow
-
+}
 
 function isLoadable(x) {
-  return x.__loadable == TYPE_CHECK_COOKIE; // flowlint-line unclear-type:off
+  return x instanceof BaseLoadable;
 }
 
 const LoadableStaticInterface = {
@@ -279,6 +337,25 @@ var Recoil_Loadable = {
   isLoadable,
   RecoilLoadable: LoadableStaticInterface
 };
+
+var Recoil_Loadable_1 = Recoil_Loadable.loadableWithValue;
+var Recoil_Loadable_2 = Recoil_Loadable.loadableWithError;
+var Recoil_Loadable_3 = Recoil_Loadable.loadableWithPromise;
+var Recoil_Loadable_4 = Recoil_Loadable.loadableLoading;
+var Recoil_Loadable_5 = Recoil_Loadable.loadableAll;
+var Recoil_Loadable_6 = Recoil_Loadable.isLoadable;
+var Recoil_Loadable_7 = Recoil_Loadable.RecoilLoadable;
+
+var Recoil_Loadable$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  loadableWithValue: Recoil_Loadable_1,
+  loadableWithError: Recoil_Loadable_2,
+  loadableWithPromise: Recoil_Loadable_3,
+  loadableLoading: Recoil_Loadable_4,
+  loadableAll: Recoil_Loadable_5,
+  isLoadable: Recoil_Loadable_6,
+  RecoilLoadable: Recoil_Loadable_7
+});
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -412,21 +489,6 @@ var recoverableViolation_1 = recoverableViolation;
 
 
 var Recoil_recoverableViolation = recoverableViolation_1;
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -1753,7 +1815,7 @@ class BuiltInMap {
 class HashArrayMappedTrieMap {
   // Because hamt.empty is not a function there is no way to introduce type
   // parameters on it, so empty is typed as HAMTPlusMap<string, mixed>.
-  // flowlint-next-line unclear-type:off
+  // $FlowIssue
   constructor(existing) {
     _defineProperty(this, "_hamt", hamt_1.empty.beginMutation());
 
@@ -2628,7 +2690,7 @@ function setRecoilValueLoadable(store, recoilValue, loadable) {
   queueOrPerformStateUpdate(store, {
     type: 'setLoadable',
     recoilValue,
-    loadable
+    loadable: loadable
   });
 }
 
@@ -3994,7 +4056,7 @@ var Recoil_RecoilRoot_react = {
 
 const {
   loadableWithValue: loadableWithValue$1
-} = Recoil_Loadable;
+} = Recoil_Loadable$1;
 
 const {
   DEFAULT_VALUE: DEFAULT_VALUE$2,
@@ -6076,7 +6138,7 @@ const {
   loadableWithError: loadableWithError$1,
   loadableWithPromise: loadableWithPromise$1,
   loadableWithValue: loadableWithValue$2
-} = Recoil_Loadable;
+} = Recoil_Loadable$1;
 
 
 
@@ -7012,7 +7074,7 @@ const {
   loadableWithError: loadableWithError$2,
   loadableWithPromise: loadableWithPromise$2,
   loadableWithValue: loadableWithValue$3
-} = Recoil_Loadable;
+} = Recoil_Loadable$1;
 
 const {
   peekNodeInfo: peekNodeInfo$3
@@ -7309,9 +7371,9 @@ function baseAtom(options) {
   }
 
   function peekAtom(_store, state) {
-    var _ref, _state$atomValues$get3, _cachedAnswerForUnval;
+    var _ref, _state$atomValues$get3;
 
-    return (_ref = (_state$atomValues$get3 = state.atomValues.get(key)) !== null && _state$atomValues$get3 !== void 0 ? _state$atomValues$get3 : (_cachedAnswerForUnval = cachedAnswerForUnvalidatedValue) === null || _cachedAnswerForUnval === void 0 ? void 0 : _cachedAnswerForUnval[1]) !== null && _ref !== void 0 ? _ref : defaultLoadable;
+    return (_ref = (_state$atomValues$get3 = state.atomValues.get(key)) !== null && _state$atomValues$get3 !== void 0 ? _state$atomValues$get3 : cachedAnswerForUnvalidatedValue) !== null && _ref !== void 0 ? _ref : defaultLoadable;
   }
 
   function getAtom(_store, state) {
@@ -7571,6 +7633,24 @@ var Recoil_cacheFromPolicy = cacheFromPolicy;
 const {
   setConfigDeletionHandler: setConfigDeletionHandler$2
 } = Recoil_Node;
+
+
+
+
+
+// Process scopeRules to handle any entries which are functions taking parameters
+// prettier-ignore
+// @fb-only: function mapScopeRules<P>(
+// @fb-only: scopeRules?: ParameterizedScopeRules<P>,
+// @fb-only: param: P,
+// @fb-only: ): ScopeRules | void {
+// @fb-only: return scopeRules?.map(rule =>
+// @fb-only: Array.isArray(rule)
+// @fb-only: ? rule.map(entry => (typeof entry === 'function' ? entry(param) : entry))
+// @fb-only: : rule,
+// @fb-only: );
+// @fb-only: }
+
 /*
 A function which returns an atom based on the input parameter.
 
@@ -7586,8 +7666,6 @@ parameter for a family of atoms; in this way, each component will have
 its own atom not shared by other instances.  These state keys may be composed
 into children's state keys as well.
 */
-
-
 function atomFamily(options) {
   var _options$cachePolicyF, _options$cachePolicyF2;
 
@@ -7790,7 +7868,7 @@ const {
   loadableWithError: loadableWithError$3,
   loadableWithPromise: loadableWithPromise$3,
   loadableWithValue: loadableWithValue$4
-} = Recoil_Loadable;
+} = Recoil_Loadable$1;
 
 
 
@@ -7986,7 +8064,7 @@ var Recoil_WaitFor = {
 
 const {
   RecoilLoadable
-} = Recoil_Loadable;
+} = Recoil_Loadable$1;
 
 const {
   DefaultValue: DefaultValue$3
