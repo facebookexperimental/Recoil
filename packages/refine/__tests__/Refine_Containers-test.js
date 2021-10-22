@@ -9,7 +9,6 @@
  * @format
  */
 'use strict';
-
 const invariant = require('../__test_utils__/Refine_invariant');
 const {coercion} = require('../Refine_API');
 const {
@@ -17,6 +16,7 @@ const {
   dict,
   map,
   object,
+  optional,
   set,
   tuple,
   writableArray,
@@ -171,6 +171,32 @@ describe('object', () => {
     const b: string = result.value.b;
     expect(a).toEqual(1);
     expect(b).toEqual('test');
+  });
+
+  it('should allow optional props', () => {
+    const coerce = object({
+      a: number(),
+      b: string(),
+      c: optional(number()),
+    });
+
+    const result = coerce({a: 1, b: 'test'});
+    invariant(result.type === 'success', 'should succeed');
+
+    // eslint-disable-next-line no-unused-vars
+    const n: ?number = result.value.c;
+
+    // typecheck assertion
+    const a: number = result.value.a;
+    const b: string = result.value.b;
+    expect(a).toEqual(1);
+    expect(b).toEqual('test');
+
+    const result2 = coerce({a: 1, b: 'test', c: 2});
+    invariant(result2.type === 'success', 'should succeed');
+
+    const result3 = coerce({a: 1, b: 'test', c: undefined});
+    invariant(result3.type === 'failure', 'should fail');
   });
 
   it('should succeed in parsing nested objects', () => {
