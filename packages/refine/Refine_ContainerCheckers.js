@@ -126,6 +126,45 @@ function dict<V>(
   };
 }
 
+// expose opaque version of optional property as public api,
+// forcing consistent usage of built-in `optional` to define optional properties
+export opaque type OptionalPropertyChecker<+T> = OptionalProperty<T>;
+
+// not a public api, don't export at root
+class OptionalProperty<+T> {
+  +checker: Checker<T>;
+  constructor(checker: Checker<T>) {
+    this.checker = checker;
+  }
+}
+
+/**
+ * checker which can only be used with `object` or `writablObject`. Marks a
+ * field as optional, skipping the key in the result if it doesn't
+ * exist in the input.
+ *
+ * @example
+ * ```jsx
+ * import {object, string, optional} from 'refine';
+ *
+ * const checker = object({a: string(), b: optional(string())});
+ * assert(checker({a: 1}).type === 'success');
+ * ```
+ */
+function optional<+T>(checker: Checker<T>): OptionalPropertyChecker<T | void> {
+  return new OptionalProperty<T>((value, path = new Path()) => {
+    const result = checker(value, path);
+    if (result.type === 'failure') {
+      return {
+        ...result,
+        message: '(optional property) ' + result.message,
+      };
+    } else {
+      return result;
+    }
+  });
+}
+
 /**
  * checker to assert if a mixed value is a fixed-property object,
  * with key-value pairs determined by a provided object of checkers.
@@ -153,9 +192,17 @@ function dict<V>(
  * });
  * ```
  */
-function object<Checkers: $ReadOnly<{...}>>(
+function object<
+  Checkers: $ReadOnly<{
+    [key: string]: Checker<mixed> | OptionalPropertyChecker<mixed>,
+  }>,
+>(
   checkers: Checkers,
-): Checker<$ReadOnly<$ObjMap<Checkers, <T>(c: Checker<T>) => T>>> {
+): Checker<
+  $ReadOnly<
+    $ObjMap<Checkers, <T>(c: Checker<T> | OptionalPropertyChecker<T>) => T>,
+  >,
+> {
   const checkerProperties: $ReadOnlyArray<string> = Object.keys(checkers);
 
   return (value, path = new Path()) => {
@@ -167,8 +214,21 @@ function object<Checkers: $ReadOnly<{...}>>(
     const warnings = [];
 
     for (const key of checkerProperties) {
-      const check: Checker<mixed> = checkers[key];
-      const element: mixed = value.hasOwnProperty(key) ? value[key] : undefined;
+      const provided: Checker<mixed> | OptionalProperty<mixed> = checkers[key];
+
+      let check: Checker<mixed>;
+      let element: mixed;
+      if (provided instanceof OptionalProperty) {
+        check = provided.checker;
+        if (!value.hasOwnProperty(key)) {
+          continue;
+        }
+        element = value[key];
+      } else {
+        check = provided;
+        element = value.hasOwnProperty(key) ? value[key] : undefined;
+      }
+
       const result = check(element, path.extend(`.${key}`));
 
       if (result.type === 'failure') {
@@ -263,9 +323,15 @@ function writableDict<V>(
 /**
  * identical to `object()` except the resulting value is a writable flow type.
  */
-function writableObject<Checkers: $ReadOnly<{...}>>(
+function writableObject<
+  Checkers: $ReadOnly<{
+    [key: string]: Checker<mixed> | OptionalPropertyChecker<mixed>,
+  }>,
+>(
   checkers: Checkers,
-): Checker<$ObjMap<Checkers, <T>(c: Checker<T>) => T>> {
+): Checker<
+  $ObjMap<Checkers, <T>(c: Checker<T> | OptionalPropertyChecker<T>) => T>,
+> {
   return compose(object(checkers), ({value, warnings}) =>
     success({...value}, warnings),
   );
@@ -275,6 +341,7 @@ module.exports = {
   array,
   tuple,
   object,
+  optional,
   dict,
   set,
   map,

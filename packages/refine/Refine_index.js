@@ -20,6 +20,7 @@ export type {
   Get,
   Path,
 } from './Refine_Checkers';
+export type {OptionalPropertyChecker} from './Refine_ContainerCheckers';
 
 const {assertion, coercion} = require('./Refine_API');
 const {
@@ -27,6 +28,7 @@ const {
   dict,
   map,
   object,
+  optional,
   set,
   tuple,
   writableArray,
@@ -89,6 +91,7 @@ module.exports = {
   tuple,
   dict,
   object,
+  optional,
   set,
   map,
   writableArray,
