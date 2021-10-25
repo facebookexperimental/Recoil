@@ -16,6 +16,9 @@ module.exports = {
   },
   moduleNameMapper: {
     '^@shared(.*)$': '<rootDir>/packages/shared$1',
+    '^Recoil$': '<rootDir>/packages/recoil',
+    '^recoil-sync$': '<rootDir>/packages/recoil-sync',
+    '^refine$': '<rootDir>/packages/refine',
   },
   testPathIgnorePatterns: ['/node_modules/', '/packages-ext/'],
   setupFiles: ['./setupJestMock.js'],

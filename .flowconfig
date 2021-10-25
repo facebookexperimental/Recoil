@@ -18,6 +18,9 @@ module.name_mapper='React' -> '<PROJECT_ROOT>/node_modules/react'
 module.name_mapper='ReactDOMLegacy_DEPRECATED' -> '<PROJECT_ROOT>/node_modules/react-dom'
 module.name_mapper='ReactNative' -> '<PROJECT_ROOT>/node_modules/react-native'
 module.name_mapper='ReactTestUtils' -> '<PROJECT_ROOT>/node_modules/react-dom/test-utils'
+module.name_mapper='Recoil' -> '<PROJECT_ROOT>/packages/recoil'
+module.name_mapper='recoil-sync' -> '<PROJECT_ROOT>/packages/recoil-syync'
+module.name_mapper='refine' -> '<PROJECT_ROOT>/packages/refine'
 
 module.name_mapper='@shared' -> '<PROJECT_ROOT>/packages/shared'
 
