@@ -661,8 +661,10 @@ testRecoil('Selector getCallback', async () => {
     key: 'selector - getCallback',
     get: ({getCallback}) => {
       return {
-        onClick: getCallback(({snapshot}) => async () =>
-          await snapshot.getPromise(myAtom),
+        onClick: getCallback(
+          ({snapshot}) =>
+            async () =>
+              await snapshot.getPromise(myAtom),
         ),
       };
     },
@@ -1695,6 +1697,20 @@ testRecoil('Selector values are frozen', async () => {
   expect(Object.isFrozen(getValue(fwdMixedSelector))).toBe(true);
   expect(Object.isFrozen(getValue(upstreamMixedSelector))).toBe(false);
   expect(Object.isFrozen(getValue(upstreamMixedSelector).nested)).toBe(false);
+
+  window.__DEV__ = devStatus;
+});
+
+testRecoil('Required options are provided when creating selectors', () => {
+  const devStatus = window.__DEV__;
+  window.__DEV__ = true;
+
+  // $FlowExpectedError[incompatible-call]
+  expect(() => selector({get: () => {}})).toThrow();
+  // $FlowExpectedError[incompatible-call]
+  expect(() => selector({get: false})).toThrow();
+  // $FlowExpectedError[incompatible-call]
+  expect(() => selector({key: 'MISSING GET'})).toThrow();
 
   window.__DEV__ = devStatus;
 });

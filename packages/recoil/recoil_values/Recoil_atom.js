@@ -153,8 +153,8 @@ type BaseAtomOptions<T> = $ReadOnly<{
 
 function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const {key, persistence_UNSTABLE: persistence} = options;
-  const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
 
+  const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
   let liveStoresCount = 0;
 
   let defaultLoadable: Loadable<T> = isPromise(options.default)
@@ -537,6 +537,17 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
 // prettier-ignore
 function atom<T>(options: AtomOptions<T>): RecoilState<T> {
+  if (__DEV__) {
+    if (typeof options.key !== 'string') {
+      throw err(
+        'A key option with a unique string value must be provided when creating an atom.',
+      );
+    }
+    if (!('default' in options)) {
+      throw err('A default value must be specified when creating an atom.');
+    }
+  }
+
   const {
     default: optionsDefault,
     // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,

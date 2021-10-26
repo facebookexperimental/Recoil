@@ -1285,3 +1285,15 @@ testRecoil('object is frozen when stored in atom', async () => {
 
   window.__DEV__ = devStatus;
 });
+
+testRecoil('Required options are provided when creating atoms', () => {
+  const devStatus = window.__DEV__;
+  window.__DEV__ = true;
+
+  // $FlowExpectedError[prop-missing]
+  expect(() => atom({default: undefined})).toThrow();
+  // $FlowExpectedError[prop-missing]
+  expect(() => atom({key: 'MISSING DEFAULT'})).toThrow();
+
+  window.__DEV__ = devStatus;
+});
