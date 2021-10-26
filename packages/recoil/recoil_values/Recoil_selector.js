@@ -220,6 +220,18 @@ function selector<T>(
 
   const {key, get, cachePolicy_UNSTABLE: cachePolicy} = options;
   const set = options.set != null ? options.set : undefined; // flow
+  if (__DEV__) {
+    if (typeof key !== 'string') {
+      throw err(
+        'A key option with a unique string value must be provided when creating a selector.',
+      );
+    }
+    if (typeof get !== 'function') {
+      throw err(
+        'Selectors must specify a get callback option to get the selector value.',
+      );
+    }
+  }
 
   // This is every discovered dependency across executions
   const discoveredDependencyNodeKeys = new Set();
@@ -703,8 +715,8 @@ function selector<T>(
 
     setDepsInStore(store, state, deps, executionId);
 
-    function getRecoilValue<S>(recoilValue: RecoilValue<S>): S {
-      const {key: depKey} = recoilValue;
+    function getRecoilValue<S>(dep: RecoilValue<S>): S {
+      const {key: depKey} = dep;
 
       setNewDepInStore(store, state, deps, depKey, executionId);
 
