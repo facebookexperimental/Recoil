@@ -224,11 +224,7 @@ const localStorageEffect = key => ({setSelf, onSet}) => {
   }
 
   onSet(newValue => {
-    if (newValue instanceof DefaultValue) {
-      localStorage.removeItem(key);
-    } else {
-      localStorage.setItem(key, JSON.stringify(newValue));
-    }
+    localStorage.setItem(key, JSON.stringify(newValue));
   });
 };
 
