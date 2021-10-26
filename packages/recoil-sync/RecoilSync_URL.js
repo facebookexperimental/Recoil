@@ -17,6 +17,7 @@ const {RecoilLoadable} = require('Recoil');
 
 const {syncEffect, useRecoilSync} = require('./RecoilSync');
 const err = require('./util/RecoilSync_err');
+const objectFromEntries = require('./util/RecoilSync_objectFromEntries');
 const React = require('react');
 const {useCallback, useEffect, useMemo, useRef} = require('react');
 
@@ -74,12 +75,12 @@ export type LocationOption =
   | {part: 'href'}
   | {part: 'hash'}
   | {part: 'search', queryParam?: string};
-export type ItemState = Map<ItemKey, mixed>;
+export type ItemsState = {[ItemKey]: mixed};
 type RecoilURLSyncOptions = {
   syncKey?: SyncKey,
   location: LocationOption,
-  serialize: ItemState => string,
-  deserialize: string => ItemState,
+  serialize: ItemsState => string,
+  deserialize: string => ItemsState,
 };
 
 function useRecoilURLSync({
@@ -103,7 +104,7 @@ function useRecoilURLSync({
     [parseCurrentState],
   );
   const firstRender = useRef(true); // Avoid executing parseCurrentState() on each render
-  const cachedState = useRef<?ItemState>(
+  const cachedState = useRef<?ItemsState>(
     firstRender.current ? parseCurrentState(location) : null,
   );
   firstRender.current = false;
@@ -122,7 +123,7 @@ function useRecoilURLSync({
 
   function write({diff, allItems}) {
     // Only serialize atoms in a non-default value state.
-    const newState = new Map(
+    const newState: ItemsState = objectFromEntries(
       Array.from(allItems.entries())
         .filter(([, loadable]) => loadable?.state === 'hasValue')
         .map(([key, loadable]) => [key, loadable?.contents]),
@@ -154,9 +155,9 @@ function useRecoilURLSync({
       // First, repalce the URL with any atoms that replace the URL history
       for (const [key] of allItems) {
         if (!itemsToPush.has(key)) {
-          newState.has(key)
-            ? replaceState.set(key, newState.get(key))
-            : replaceState.delete(key);
+          key in newState
+            ? (replaceState[key] = newState[key])
+            : delete replaceState[key];
         }
       }
       const replaceURL = updateURL(location, serialize(replaceState));
@@ -174,8 +175,8 @@ function useRecoilURLSync({
   }
 
   function read(itemKey): ?Loadable<mixed> {
-    return cachedState.current?.has(itemKey)
-      ? RecoilLoadable.of(cachedState.current?.get(itemKey))
+    return cachedState.current && itemKey in cachedState.current
+      ? RecoilLoadable.of(cachedState.current[itemKey])
       : null;
   }
 
@@ -184,7 +185,7 @@ function useRecoilURLSync({
       updateCachedState(location);
       if (cachedState.current != null) {
         const mappedState = new Map(
-          Array.from(cachedState.current.entries()).map(([k, v]) => [
+          Array.from(Object.entries(cachedState.current)).map(([k, v]) => [
             k,
             RecoilLoadable.of(v),
           ]),

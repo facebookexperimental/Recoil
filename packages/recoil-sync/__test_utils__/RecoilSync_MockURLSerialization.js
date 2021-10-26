@@ -21,15 +21,6 @@ const React = require('react');
 // // Mock Serialization
 // ////////////////////////////
 
-// Object.fromEntries() is not available in GitHub's version of Node.js (9/21/2021)
-const mapToObj = map => {
-  const obj = {};
-  for (const [key, value] of map.entries()) {
-    obj[key] = value;
-  }
-  return obj;
-};
-
 function TestURLSync({
   syncKey,
   location,
@@ -41,7 +32,7 @@ function TestURLSync({
     syncKey,
     location,
     serialize: items => {
-      const str = JSON.stringify(mapToObj(items));
+      const str = JSON.stringify(items);
       return location.part === 'href'
         ? `/TEST#${encodeURIComponent(str)}`
         : str;
@@ -56,10 +47,10 @@ function TestURLSync({
         stateStr === 'foo=bar' ||
         stateStr === 'bar'
       ) {
-        return new Map();
+        return {};
       }
       try {
-        return new Map(Object.entries(JSON.parse(stateStr)));
+        return JSON.parse(stateStr);
       } catch (e) {
         // eslint-disable-next-line fb-www/no-console
         console.error(
