@@ -76,27 +76,26 @@ function TestURLSync({
 }
 
 function encodeState(obj) {
-  return `${encodeURIComponent(JSON.stringify(obj))}`;
+  return encodeURIComponent(JSON.stringify(obj));
 }
 
 function encodeURLPart(href: string, loc: LocationOption, obj): string {
-  const encoded = encodeState(obj);
   const url = new URL(href);
   switch (loc.part) {
     case 'href':
       url.pathname = '/TEST';
-      url.hash = encoded;
+      url.hash = encodeState(obj);
       break;
     case 'hash':
-      url.hash = encoded;
+      url.hash = encodeState(obj);
       break;
     case 'search': {
       const {queryParam} = loc;
       if (queryParam == null) {
-        url.search = encoded;
+        url.search = encodeState(obj);
       } else {
         const searchParams = url.searchParams;
-        searchParams.set(queryParam, encoded);
+        searchParams.set(queryParam, JSON.stringify(obj));
         url.search = searchParams.toString();
       }
       break;

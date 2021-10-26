@@ -42,7 +42,7 @@ function parseURL(loc: LocationOption): ?string {
           : null;
       }
       const param = new URLSearchParams(location.search).get(queryParam);
-      return param != null ? decodeURIComponent(param) : null;
+      return param != null ? param : null;
     }
   }
   throw err(`Unknown URL location part: "${loc.part}"`);
@@ -60,7 +60,7 @@ function updateURL(loc: LocationOption, serialization): string {
         return `?${encodeURIComponent(serialization)}${location.hash}`;
       }
       const searchParams = new URLSearchParams(location.search);
-      searchParams.set(queryParam, encodeURIComponent(serialization));
+      searchParams.set(queryParam, serialization);
       return `?${searchParams.toString()}${location.hash}`;
     }
   }
