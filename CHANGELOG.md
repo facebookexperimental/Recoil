@@ -12,6 +12,7 @@
   - Publish `RecoilLoadable` interface with factories and type checking for Loadables
   - Ability to map Loadables with other Loadables.
   - Re-implement Loadable as classes.
+- Perform runtime check in dev mode that required options are provided when creating atoms and selectors. (#1324)
 
 ### Pending
 - Memory management

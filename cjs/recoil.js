@@ -6244,7 +6244,17 @@ function selector(options) {
     cachePolicy_UNSTABLE: cachePolicy
   } = options;
   const set = options.set != null ? options.set : undefined; // flow
-  // This is every discovered dependency across executions
+
+  if (process.env.NODE_ENV !== "production") {
+    if (typeof key !== 'string') {
+      throw Recoil_err('A key option with a unique string value must be provided when creating a selector.');
+    }
+
+    if (typeof get !== 'function') {
+      throw Recoil_err('Selectors must specify a get callback option to get the selector value.');
+    }
+  } // This is every discovered dependency across executions
+
 
   const discoveredDependencyNodeKeys = new Set();
   const cache = Recoil_treeCacheFromPolicy(cachePolicy !== null && cachePolicy !== void 0 ? cachePolicy : {
@@ -6632,10 +6642,10 @@ function selector(options) {
     const deps = new Set();
     setDepsInStore(store, state, deps, executionId);
 
-    function getRecoilValue(recoilValue) {
+    function getRecoilValue(dep) {
       const {
         key: depKey
-      } = recoilValue;
+      } = dep;
       setNewDepInStore(store, state, deps, depKey, executionId);
       const depLoadable = getCachedNodeLoadable(store, state, depKey);
       depValues.set(depKey, depLoadable);
@@ -7457,6 +7467,16 @@ function baseAtom(options) {
 
 
 function atom(options) {
+  if (process.env.NODE_ENV !== "production") {
+    if (typeof options.key !== 'string') {
+      throw Recoil_err('A key option with a unique string value must be provided when creating an atom.');
+    }
+
+    if (!('default' in options)) {
+      throw Recoil_err('A default value must be specified when creating an atom.');
+    }
+  }
+
   const {
     default: optionsDefault,
     // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
