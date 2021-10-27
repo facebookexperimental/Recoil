@@ -683,11 +683,13 @@ describe('Effects', () => {
   });
 
   testRecoil('onSet', () => {
-    const sets = {a: 0, b: 0};
-    const observer = key => (newValue, oldValue) => {
-      expect(oldValue).toEqual(sets[key]);
-      sets[key]++;
-      expect(newValue).toEqual(sets[key]);
+    const oldSets = {a: 0, b: 0};
+    const newSets = {a: 0, b: 0};
+    const observer = key => (newValue, oldValue, isReset) => {
+      expect(oldValue).toEqual(oldSets[key]);
+      expect(newValue).toEqual(newSets[key]);
+      expect(isReset).toEqual(newValue === 0);
+      oldSets[key] = newValue;
     };
 
     const atomA = atom({
@@ -702,9 +704,7 @@ describe('Effects', () => {
       effects_UNSTABLE: [({onSet}) => onSet(observer('b'))],
     });
 
-    expect(sets).toEqual({a: 0, b: 0});
-
-    const [AtomA, setA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
     const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
     const c = renderElements(
       <>
@@ -712,16 +712,24 @@ describe('Effects', () => {
         <AtomB />
       </>,
     );
+    expect(oldSets).toEqual({a: 0, b: 0});
+    expect(c.textContent).toEqual('00');
 
+    newSets.a = 1;
     act(() => setA(1));
-    expect(sets).toEqual({a: 1, b: 0});
+    expect(c.textContent).toEqual('10');
 
+    newSets.a = 2;
     act(() => setA(2));
-    expect(sets).toEqual({a: 2, b: 0});
+    expect(c.textContent).toEqual('20');
 
+    newSets.b = 1;
     act(() => setB(1));
-    expect(sets).toEqual({a: 2, b: 1});
     expect(c.textContent).toEqual('21');
+
+    newSets.a = 0;
+    act(() => resetA());
+    expect(c.textContent).toEqual('01');
   });
 
   testRecoil('onSet ordering', () => {

@@ -128,7 +128,9 @@ export type AtomEffect<T> = ({
 
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
-  onSet: ((newValue: T, oldValue: T | DefaultValue) => void) => void,
+  onSet: (
+    (newValue: T, oldValue: T | DefaultValue, isReset: boolean) => void,
+  ) => void,
 
   // Accessors to read other atoms/selectors
   getPromise: <S>(RecoilValue<S>) => Promise<S>,
@@ -347,46 +349,47 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         };
       const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE);
 
-      const onSet = effect => (handler: (T, T | DefaultValue) => void) => {
-        store.subscribeToTransactions(currentStore => {
-          // eslint-disable-next-line prefer-const
-          let {currentTree, previousTree} = currentStore.getState();
-          if (!previousTree) {
-            recoverableViolation(
-              'Transaction subscribers notified without a next tree being present -- this is a bug in Recoil',
-              'recoil',
-            );
-            previousTree = currentTree; // attempt to trundle on
-          }
-          const newLoadable =
-            currentTree.atomValues.get(key) ?? defaultLoadable;
-          if (newLoadable.state === 'hasValue') {
-            const newValue: T = newLoadable.contents;
-            const oldLoadable =
-              previousTree.atomValues.get(key) ?? defaultLoadable;
-            const oldValue: T | DefaultValue =
-              oldLoadable.state === 'hasValue'
-                ? oldLoadable.contents
-                : DEFAULT_VALUE; // TODO This isn't actually valid, use as a placeholder for now.
-
-            // Ignore atom value changes that were set via setSelf() in the same effect.
-            // We will still properly call the handler if there was a subsequent
-            // set from something other than an atom effect which was batched
-            // with the `setSelf()` call.  However, we may incorrectly ignore
-            // the handler if the subsequent batched call happens to set the
-            // atom to the exact same value as the `setSelf()`.   But, in that
-            // case, it was kind of a noop, so the semantics are debatable..
-            if (
-              pendingSetSelf?.effect !== effect ||
-              pendingSetSelf?.value !== newValue
-            ) {
-              handler(newValue, oldValue);
-            } else if (pendingSetSelf?.effect === effect) {
-              pendingSetSelf = null;
+      const onSet =
+        effect => (handler: (T, T | DefaultValue, boolean) => void) => {
+          store.subscribeToTransactions(currentStore => {
+            // eslint-disable-next-line prefer-const
+            let {currentTree, previousTree} = currentStore.getState();
+            if (!previousTree) {
+              recoverableViolation(
+                'Transaction subscribers notified without a next tree being present -- this is a bug in Recoil',
+                'recoil',
+              );
+              previousTree = currentTree; // attempt to trundle on
             }
-          }
-        }, key);
-      };
+            const newLoadable =
+              currentTree.atomValues.get(key) ?? defaultLoadable;
+            if (newLoadable.state === 'hasValue') {
+              const newValue: T = newLoadable.contents;
+              const oldLoadable =
+                previousTree.atomValues.get(key) ?? defaultLoadable;
+              const oldValue: T | DefaultValue =
+                oldLoadable.state === 'hasValue'
+                  ? oldLoadable.contents
+                  : DEFAULT_VALUE; // TODO This isn't actually valid, use as a placeholder for now.
+
+              // Ignore atom value changes that were set via setSelf() in the same effect.
+              // We will still properly call the handler if there was a subsequent
+              // set from something other than an atom effect which was batched
+              // with the `setSelf()` call.  However, we may incorrectly ignore
+              // the handler if the subsequent batched call happens to set the
+              // atom to the exact same value as the `setSelf()`.   But, in that
+              // case, it was kind of a noop, so the semantics are debatable..
+              if (
+                pendingSetSelf?.effect !== effect ||
+                pendingSetSelf?.value !== newValue
+              ) {
+                handler(newValue, oldValue, !currentTree.atomValues.has(key));
+              } else if (pendingSetSelf?.effect === effect) {
+                pendingSetSelf = null;
+              }
+            }
+          }, key);
+        };
 
       for (const effect of options.effects_UNSTABLE ?? []) {
         const cleanup = effect({
