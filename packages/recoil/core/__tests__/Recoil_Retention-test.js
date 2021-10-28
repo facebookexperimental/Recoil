@@ -8,7 +8,6 @@
  * @flow strict-local
  * @format
  */
-
 'use strict';
 
 import type {RecoilState} from '../../core/Recoil_RecoilValue';
@@ -38,9 +37,9 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     useRecoilValue,
     useRecoilValueLoadable,
-    useRetain,
     useRecoilCallback,
   } = require('../../hooks/Recoil_Hooks'));
+  useRetain = require('../../hooks/Recoil_useRetain');
   atom = require('../../recoil_values/Recoil_atom');
   selector = require('../../recoil_values/Recoil_selector');
   ({
@@ -335,9 +334,8 @@ describe('Retention of and via selectors', () => {
         act(() => setAtomsMountedDirectly(true));
       }
 
-      const [ReadsSwitch, setDepSwitch] = componentThatReadsAndWritesAtom(
-        switchAtom,
-      );
+      const [ReadsSwitch, setDepSwitch] =
+        componentThatReadsAndWritesAtom(switchAtom);
 
       renderElements(
         <>
