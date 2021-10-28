@@ -54,7 +54,6 @@ const {
   useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
-  useRecoilTransaction,
   useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
@@ -66,6 +65,7 @@ const {
 const useGetRecoilValueInfo = require('./hooks/Recoil_useGetRecoilValueInfo');
 const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
 const useRecoilRefresher = require('./hooks/Recoil_useRecoilRefresher');
+const useRecoilTransaction = require('./hooks/Recoil_useRecoilTransaction');
 const useRetain = require('./hooks/Recoil_useRetain');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
