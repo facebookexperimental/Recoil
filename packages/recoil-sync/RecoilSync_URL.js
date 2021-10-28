@@ -14,8 +14,8 @@ import type {AtomEffect, Loadable} from 'Recoil';
 import type {
   ItemKey,
   ItemSnapshot,
+  StoreKey,
   SyncEffectOptions,
-  SyncKey,
 } from './RecoilSync';
 import type {Get} from 'refine';
 
@@ -35,7 +35,7 @@ type AtomRegistration = {
   itemKeys: Set<ItemKey>,
 };
 
-const registries: Map<SyncKey, Map<NodeKey, AtomRegistration>> = new Map();
+const registries: Map<StoreKey, Map<NodeKey, AtomRegistration>> = new Map();
 
 const itemStateChecker = writableDict(mixed());
 const refineState = assertion(itemStateChecker);
@@ -135,14 +135,14 @@ export type LocationOption =
   | {part: 'search'}
   | {part: 'queryParams', param?: string};
 type RecoilURLSyncOptions = {
-  syncKey?: SyncKey,
+  storeKey?: StoreKey,
   location: LocationOption,
   serialize: mixed => string,
   deserialize: string => mixed,
 };
 
 function useRecoilURLSync({
-  syncKey,
+  storeKey,
   location,
   serialize,
   deserialize,
@@ -181,7 +181,7 @@ function useRecoilURLSync({
 
     // This could be optimized with an itemKey-based registery if necessary to avoid
     // atom traversal.
-    const atomRegistry = registries.get(syncKey);
+    const atomRegistry = registries.get(storeKey);
     const itemsToPush =
       atomRegistry != null
         ? new Set(
@@ -236,7 +236,7 @@ function useRecoilURLSync({
     return () => window.removeEventListener('popstate', handleUpdate);
   }
 
-  useRecoilSync({syncKey, read, write, listen});
+  useRecoilSync({storeKey, read, write, listen});
 }
 
 function RecoilURLSync(props: RecoilURLSyncOptions): React.Node {
@@ -259,16 +259,16 @@ function urlSyncEffect<T>({
   const atomEffect = syncEffect<T>(options);
   return effectArgs => {
     // Register URL sync options
-    if (!registries.has(options.syncKey)) {
-      registries.set(options.syncKey, new Map());
+    if (!registries.has(options.storeKey)) {
+      registries.set(options.storeKey, new Map());
     }
-    const atomRegistry = registries.get(options.syncKey);
+    const atomRegistry = registries.get(options.storeKey);
     if (atomRegistry == null) {
       throw err('Error with atom registration');
     }
     atomRegistry.set(effectArgs.node.key, {
       history,
-      itemKeys: new Set([options.key ?? effectArgs.node.key]),
+      itemKeys: new Set([options.itemKey ?? effectArgs.node.key]),
     });
 
     // Wrap syncEffect() atom effect

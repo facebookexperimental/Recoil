@@ -31,22 +31,22 @@ test('Listen to URL changes', async () => {
   const atomA = atom({
     key: 'recoil-url-sync listen',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({syncKey: 'foo', refine: string()})],
+    effects_UNSTABLE: [syncEffect({storeKey: 'foo', refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-url-sync listen to multiple keys',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect({syncKey: 'foo', key: 'KEY A', refine: string()}),
-      syncEffect({syncKey: 'foo', key: 'KEY B', refine: string()}),
+      syncEffect({storeKey: 'foo', itemKey: 'KEY A', refine: string()}),
+      syncEffect({storeKey: 'foo', itemKey: 'KEY B', refine: string()}),
     ],
   });
   const atomC = atom({
     key: 'recoil-url-sync listen to multiple storage',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect({syncKey: 'foo', refine: string()}),
-      syncEffect({syncKey: 'bar', refine: string()}),
+      syncEffect({storeKey: 'foo', refine: string()}),
+      syncEffect({storeKey: 'bar', refine: string()}),
     ],
   });
 
@@ -67,8 +67,8 @@ test('Listen to URL changes', async () => {
 
   const container = renderElements(
     <>
-      <TestURLSync syncKey="foo" location={locFoo} />
-      <TestURLSync syncKey="bar" location={locBar} />
+      <TestURLSync storeKey="foo" location={locFoo} />
+      <TestURLSync storeKey="bar" location={locBar} />
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
       <ReadsAtom atom={atomC} />

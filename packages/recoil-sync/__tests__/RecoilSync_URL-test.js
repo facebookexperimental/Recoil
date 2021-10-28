@@ -38,12 +38,12 @@ describe('Test URL Persistence', () => {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [urlSyncEffect({key: 'a', refine: string()})],
+      effects_UNSTABLE: [urlSyncEffect({itemKey: 'a', refine: string()})],
     });
     const atomB = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [urlSyncEffect({key: 'b', refine: string()})],
+      effects_UNSTABLE: [urlSyncEffect({itemKey: 'b', refine: string()})],
     });
     const ignoreAtom = atom({
       key: nextKey(),
@@ -111,14 +111,14 @@ describe('Test URL Persistence', () => {
       key: 'recoil-url-sync multiple param A',
       default: 'DEFAULT',
       effects_UNSTABLE: [
-        syncEffect({syncKey: 'A', key: 'x', refine: string()}),
+        syncEffect({storeKey: 'A', itemKey: 'x', refine: string()}),
       ],
     });
     const atomB = atom({
       key: 'recoil-url-sync multiple param B',
       default: 'DEFAULT',
       effects_UNSTABLE: [
-        syncEffect({syncKey: 'B', key: 'x', refine: string()}),
+        syncEffect({storeKey: 'B', itemKey: 'x', refine: string()}),
       ],
     });
 
@@ -126,8 +126,8 @@ describe('Test URL Persistence', () => {
     const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
     renderElements(
       <>
-        <TestURLSync syncKey="A" location={locA} />
-        <TestURLSync syncKey="B" location={locB} />
+        <TestURLSync storeKey="A" location={locA} />
+        <TestURLSync storeKey="B" location={locB} />
         <AtomA />
         <AtomB />
       </>,
@@ -145,17 +145,17 @@ describe('Test URL Persistence', () => {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({key: 'a', refine: string()})],
+      effects_UNSTABLE: [syncEffect({itemKey: 'a', refine: string()})],
     });
     const atomB = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({key: 'b', refine: string()})],
+      effects_UNSTABLE: [syncEffect({itemKey: 'b', refine: string()})],
     });
     const atomC = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({key: 'c', refine: string()})],
+      effects_UNSTABLE: [syncEffect({itemKey: 'c', refine: string()})],
     });
 
     history.replaceState(
@@ -284,8 +284,8 @@ describe('Test URL Persistence', () => {
       key: 'recoil-url-sync read/write upgrade key',
       default: 'DEFAULT',
       effects_UNSTABLE: [
-        syncEffect({key: 'OLD KEY', refine: string()}),
-        syncEffect({key: 'NEW KEY', refine: string()}),
+        syncEffect({itemKey: 'OLD KEY', refine: string()}),
+        syncEffect({itemKey: 'NEW KEY', refine: string()}),
       ],
     });
     const atomC = atom({
@@ -293,7 +293,7 @@ describe('Test URL Persistence', () => {
       default: 'DEFAULT',
       effects_UNSTABLE: [
         syncEffect({refine: string()}),
-        syncEffect({syncKey: 'SYNC_2', refine: string()}),
+        syncEffect({storeKey: 'SYNC_2', refine: string()}),
       ],
     });
 
@@ -324,7 +324,7 @@ describe('Test URL Persistence', () => {
     const container = renderElements(
       <>
         <TestURLSync location={loc1} />
-        <TestURLSync location={loc2} syncKey="SYNC_2" />
+        <TestURLSync location={loc2} storeKey="SYNC_2" />
         <AtomA />
         <AtomB />
         <AtomC />
