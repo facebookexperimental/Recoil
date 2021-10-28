@@ -947,19 +947,8 @@ function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(
   );
 }
 
-function useRecoilRefresher<T>(recoilValue: RecoilValue<T>): () => void {
-  const storeRef = useStoreRef();
-  return useCallback(() => {
-    const store = storeRef.current;
-    const {currentTree} = store.getState();
-    const node = getNode(recoilValue.key);
-    node.clearCache?.(store, currentTree);
-  }, [recoilValue, storeRef]);
-}
-
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
-  useRecoilRefresher,
   useGotoRecoilSnapshot,
   useRecoilCallback,
   useRecoilInterface: useRecoilInterface_DEPRECATED,
