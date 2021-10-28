@@ -12,5 +12,5 @@
     "baseUrl": ".",
     "paths": {"recoil": ["./index.d.ts"]}
   },
-  "files": ["index.d.ts", "tests.ts"]
+  "files": ["index.d.ts", "refine.d.ts", "refine-test.ts", "tests.ts"]
 }
