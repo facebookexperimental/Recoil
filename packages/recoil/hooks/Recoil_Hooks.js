@@ -98,7 +98,7 @@ export type RecoilInterface = {
  * */
 function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const storeRef = useStoreRef();
-  const [_, forceUpdate] = useState([]);
+  const [, forceUpdate] = useState([]);
 
   const recoilValuesUsed = useRef<$ReadOnlySet<NodeKey>>(new Set());
   recoilValuesUsed.current = new Set(); // Track the RecoilValues used just during this render
@@ -189,6 +189,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
   }, [unsubscribeFrom]);
 
   return useMemo(() => {
+    // eslint-disable-next-line no-shadow
     function useSetRecoilState<T>(
       recoilState: RecoilState<T>,
     ): SetterOrUpdater<T> {
@@ -203,6 +204,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       };
     }
 
+    // eslint-disable-next-line no-shadow
     function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
       if (__DEV__) {
         // $FlowFixMe[escaped-generic]
@@ -211,6 +213,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       return () => setRecoilValue(storeRef.current, recoilState, DEFAULT_VALUE);
     }
 
+    // eslint-disable-next-line no-shadow
     function useRecoilValueLoadable<T>(
       recoilValue: RecoilValue<T>,
     ): Loadable<T> {
@@ -235,6 +238,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       );
     }
 
+    // eslint-disable-next-line no-shadow
     function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
       if (__DEV__) {
         // $FlowFixMe[escaped-generic]
@@ -244,6 +248,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       return handleLoadable(loadable, recoilValue, storeRef);
     }
 
+    // eslint-disable-next-line no-shadow
     function useRecoilState<T>(
       recoilState: RecoilState<T>,
     ): [T, SetterOrUpdater<T>] {
@@ -254,6 +259,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
     }
 
+    // eslint-disable-next-line no-shadow
     function useRecoilStateLoadable<T>(
       recoilState: RecoilState<T>,
     ): [Loadable<T>, SetterOrUpdater<T>] {
