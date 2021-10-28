@@ -41,27 +41,13 @@ function TestURLSync({
     deserialize: str => {
       const stateStr =
         location.part === 'href' ? decodeURIComponent(str.split('#')[1]) : str;
-      // Skip the default URL parts which don't conform to the serialized standard
-      if (
-        stateStr == null ||
-        stateStr === 'anchor' ||
-        stateStr === 'foo=bar' ||
-        stateStr === 'bar'
-      ) {
+      // Skip the default URL parts which don't conform to the serialized standard.
+      // 'bar' also doesn't conform, but we want to test coexistence of foreign
+      // query parameters.
+      if (stateStr == null || stateStr === 'anchor' || stateStr === 'foo=bar') {
         return {};
       }
-      try {
-        return JSON.parse(stateStr);
-      } catch (e) {
-        // eslint-disable-next-line fb-www/no-console
-        console.error(
-          'Error parsing: ',
-          location,
-          stateStr,
-          decodeURI(stateStr),
-        );
-        throw e;
-      }
+      return JSON.parse(stateStr);
     },
   });
   return null;
