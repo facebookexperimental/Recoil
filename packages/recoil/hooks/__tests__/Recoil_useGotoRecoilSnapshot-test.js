@@ -36,9 +36,9 @@ const testRecoil = getRecoilTestFn(() => {
   ({freshSnapshot} = require('../../core/Recoil_Snapshot'));
   ({
     useGotoRecoilSnapshot,
-    useRecoilCallback,
     useRecoilValue,
   } = require('../../hooks/Recoil_Hooks'));
+  useRecoilCallback = require('../../hooks/Recoil_useRecoilCallback');
   atom = require('../../recoil_values/Recoil_atom');
   constSelector = require('../../recoil_values/Recoil_constSelector');
   selector = require('../../recoil_values/Recoil_selector');
