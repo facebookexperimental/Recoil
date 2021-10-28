@@ -15,6 +15,7 @@ const {
   flushPromisesAndTimers,
 } = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
 const {useRecoilURLSync} = require('../RecoilSync_URL');
+const nullthrows = require('../util/RecoilSync_nullthrows');
 const React = require('react');
 
 // ////////////////////////////
@@ -32,7 +33,7 @@ function TestURLSync({
     syncKey,
     location,
     serialize: items => {
-      const str = JSON.stringify(items);
+      const str = nullthrows(JSON.stringify(items));
       return location.part === 'href'
         ? `/TEST#${encodeURIComponent(str)}`
         : str;
@@ -81,14 +82,20 @@ function encodeURLPart(href: string, loc: LocationOption, obj): string {
       url.hash = encodeState(obj);
       break;
     case 'search': {
-      const {queryParam} = loc;
-      if (queryParam == null) {
-        url.search = encodeState(obj);
+      url.search = encodeState(obj);
+      break;
+    }
+    case 'queryParams': {
+      const {param} = loc;
+      const {searchParams} = url;
+      if (param != null) {
+        searchParams.set(param, JSON.stringify(obj));
       } else {
-        const searchParams = url.searchParams;
-        searchParams.set(queryParam, JSON.stringify(obj));
-        url.search = searchParams.toString();
+        for (const [key, value] of Object.entries(obj)) {
+          searchParams.set(key, JSON.stringify(value) ?? '');
+        }
       }
+      url.search = searchParams.toString() || '?';
       break;
     }
   }
