@@ -21,7 +21,7 @@ const {setRecoilValue} = require('../core/Recoil_RecoilValueInterface');
 const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
 const err = require('../util/Recoil_err');
 const invariant = require('../util/Recoil_invariant');
-const {useGotoRecoilSnapshot} = require('./Recoil_Hooks');
+const {useGotoRecoilSnapshot} = require('./Recoil_SnapshotHooks');
 const {useCallback} = require('react');
 
 export type RecoilCallbackInterface = $ReadOnly<{

@@ -47,18 +47,20 @@ const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {retentionZone} = require('./core/Recoil_RetentionZone');
 const {freshSnapshot} = require('./core/Recoil_Snapshot');
 const {
-  useGotoRecoilSnapshot,
-  useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
-  useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
   useResetRecoilState,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
-  useTransactionObservation_DEPRECATED,
 } = require('./hooks/Recoil_Hooks');
+const {
+  useGotoRecoilSnapshot,
+  useRecoilSnapshot,
+  useRecoilTransactionObserver,
+  useTransactionObservation_DEPRECATED,
+} = require('./hooks/Recoil_SnapshotHooks');
 const useGetRecoilValueInfo = require('./hooks/Recoil_useGetRecoilValueInfo');
 const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
 const useRecoilCallback = require('./hooks/Recoil_useRecoilCallback');
