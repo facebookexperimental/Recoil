@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+recoil
- * @flow
+ * @flow strict-local
  * @format
  */
 /* eslint-disable fb-www/react-no-useless-fragment */
@@ -142,6 +142,7 @@ function additionSelector(
   return [sel, fn];
 }
 
+// flowlint-next-line unclear-type:off
 function asyncSelectorThatPushesPromisesOntoArray(dep: RecoilValue<any>) {
   const promises = [];
   const sel = selector({
@@ -162,44 +163,47 @@ function asyncSelectorThatPushesPromisesOntoArray(dep: RecoilValue<any>) {
 }
 
 function componentThatReadsAndWritesAtom<T>(
-  atom: RecoilState<T>,
+  recoilState: RecoilState<T>,
 ): [React.AbstractComponent<{...}>, ((T => T) | T) => void] {
   let updateValue;
   const Component = jest.fn(() => {
-    const [value, _updateValue] = useRecoilState(atom);
+    const [value, _updateValue] = useRecoilState(recoilState);
     updateValue = _updateValue;
     return value;
   });
+  // flowlint-next-line unclear-type:off
   return [(Component: any), (...args) => updateValue(...args)];
 }
 
 function componentThatWritesAtom<T>(
-  atom: RecoilState<T>,
+  recoilState: RecoilState<T>,
+  // flowlint-next-line unclear-type:off
 ): [any, ((T => T) | T) => void] {
   let updateValue;
   const Component = jest.fn(() => {
-    updateValue = useSetRecoilState(atom);
+    updateValue = useSetRecoilState(recoilState);
     return null;
   });
+  // flowlint-next-line unclear-type:off
   return [(Component: any), x => updateValue(x)];
 }
 
 function componentThatReadsTwoAtoms(one, two) {
   return (jest.fn(function ReadTwoAtoms() {
     return `${useRecoilValue(one)},${useRecoilValue(two)}`;
-  }): any);
+  }): any); // flowlint-line unclear-type:off
 }
 
-function componentThatReadsAtomWithCommitCount(atom) {
+function componentThatReadsAtomWithCommitCount(recoilState) {
   const commit = jest.fn(() => {});
-  function ReadsAtom() {
+  function ReadAtom() {
     return (
       <Profiler id="test" onRender={commit}>
-        {useRecoilValue(atom)}
+        {useRecoilValue(recoilState)}
       </Profiler>
     );
   }
-  return [ReadsAtom, commit];
+  return [ReadAtom, commit];
 }
 
 function componentThatToggles(a, b) {
@@ -351,7 +355,7 @@ testRecoil('Async selectors can depend on async selectors', async () => {
   }
 });
 
-testRecoil('Dep of upstream selector can change while pending', async gks => {
+testRecoil('Dep of upstream selector can change while pending', async () => {
   const anAtom = counterAtom();
   const [upstreamSel, upstreamResolvers] =
     asyncSelectorThatPushesPromisesOntoArray(anAtom);
@@ -774,16 +778,16 @@ testRecoil(
     const [WriteA, updateValueA] = componentThatWritesAtom(atomA);
     const [WriteB, updateValueB] = componentThatWritesAtom(atomB);
 
-    const Component = (jest.fn(function Read({atom}) {
-      const [value] = useRecoilState(atom);
+    const Component = (jest.fn(function Read({state}) {
+      const [value] = useRecoilState(state);
       return value;
-    }): any);
+    }): any); // flowlint-line unclear-type:off
 
     let toggleSwitch;
     const Switch = () => {
       const [value, setValue] = useState(false);
       toggleSwitch = () => setValue(true);
-      return value ? <Component atom={atomB} /> : <Component atom={atomA} />;
+      return value ? <Component state={atomB} /> : <Component state={atomA} />;
     };
 
     const container = renderElements(
@@ -1285,8 +1289,8 @@ testRecoil('Ability to not use Suspense', () => {
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
 
-  function ReadsAtomWithoutSuspense({atom}) {
-    const loadable = useRecoilValueLoadable(atom);
+  function ReadsAtomWithoutSuspense({state}) {
+    const loadable = useRecoilValueLoadable(state);
     if (loadable.state === 'loading') {
       return 'loading not with suspense';
     } else if (loadable.state === 'hasValue') {
@@ -1299,7 +1303,7 @@ testRecoil('Ability to not use Suspense', () => {
   const container = renderElements(
     <>
       <Component />
-      <ReadsAtomWithoutSuspense atom={aSelector} />
+      <ReadsAtomWithoutSuspense state={aSelector} />
     </>,
   );
   // Begins in loading state, then shows initial value:
@@ -1324,16 +1328,17 @@ testRecoil(
     const [aSelector, _] = plusOneAsyncSelector(anAtom);
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
 
-    function ReadsAtomWithoutSuspense({atom}) {
+    function ReadsAtomWithoutSuspense({state}) {
       return (
-        useRecoilValueLoadable(atom).valueMaybe() ?? 'loading not with suspense'
+        useRecoilValueLoadable(state).valueMaybe() ??
+        'loading not with suspense'
       );
     }
 
     const container = renderElements(
       <>
         <Component />
-        <ReadsAtomWithoutSuspense atom={aSelector} />
+        <ReadsAtomWithoutSuspense state={aSelector} />
       </>,
     );
     // Begins in loading state, then shows initial value:
@@ -1638,7 +1643,7 @@ testRecoil(
   async () => {
     const anAtom = counterAtom({
       type: 'url',
-      validator: x => (x: any),
+      validator: x => (x: any), // flowlint-line unclear-type:off
     });
     const [aSelector, _] = plusOneSelector(anAtom);
     const [anAsyncSelector, __] = plusOneAsyncSelector(aSelector);
@@ -1689,7 +1694,7 @@ testRecoil(
       return visible ? children : null;
     }
     function MyReadsAtom({getAtom}) {
-      const [value] = useRecoilState((getAtom(): any));
+      const [value] = useRecoilState((getAtom(): any)); // flowlint-line unclear-type:off
       return value;
     }
     const container = renderElements(
@@ -1725,7 +1730,7 @@ testRecoil(
   () => {
     const anAtom = counterAtom({
       type: 'url',
-      validator: x => (x: any),
+      validator: x => (x: any), // flowlint-line unclear-type:off
     });
 
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
