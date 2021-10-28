@@ -74,14 +74,11 @@ const testRecoil = getRecoilTestFn(() => {
     useRecoilValueLoadable,
     useSetRecoilState,
     useSetUnvalidatedAtomValues,
-    useTransactionObservation_DEPRECATED,
   } = require('../Recoil_Hooks'));
+  ({useTransactionObservation_DEPRECATED} = require('../Recoil_SnapshotHooks'));
 
   invariant = require('../../util/Recoil_invariant');
 });
-
-let fbOnlyTest = test.skip;
-// @fb-only: fbOnlyTest = test;
 
 let nextID = 0;
 
@@ -356,14 +353,10 @@ testRecoil('Async selectors can depend on async selectors', async () => {
 
 testRecoil('Dep of upstream selector can change while pending', async gks => {
   const anAtom = counterAtom();
-  const [
-    upstreamSel,
-    upstreamResolvers,
-  ] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
-  const [
-    downstreamSel,
-    downstreamResolvers,
-  ] = asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
+  const [upstreamSel, upstreamResolvers] =
+    asyncSelectorThatPushesPromisesOntoArray(anAtom);
+  const [downstreamSel, downstreamResolvers] =
+    asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
 
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
   const container = renderElements(
@@ -1483,9 +1476,8 @@ testRecoil(
 
 testRecoil('Can move out of suspense by changing deps', async () => {
   const anAtom = counterAtom();
-  const [aSelector, resolvers] = asyncSelectorThatPushesPromisesOntoArray(
-    anAtom,
-  );
+  const [aSelector, resolvers] =
+    asyncSelectorThatPushesPromisesOntoArray(anAtom);
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
   const container = renderElements(
     <>

@@ -38,7 +38,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     renderElements,
   } = require('../../__test_utils__/Recoil_TestingUtils'));
-  ({useRecoilTransactionObserver} = require('../Recoil_Hooks'));
+  ({useRecoilTransactionObserver} = require('../Recoil_SnapshotHooks'));
 });
 
 function TransactionObserver({callback}) {
