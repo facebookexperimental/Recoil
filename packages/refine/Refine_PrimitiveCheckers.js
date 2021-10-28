@@ -79,12 +79,28 @@ function string(regex?: RegExp): Checker<string> {
 }
 
 /**
- * checker to assert if a mixed value matches a union of string literals.
- * Legal values are provided as keys in an object and may be translated by
- * providing values in the object.
+ * Checker to assert if a mixed value matches a union of string literals.
+ * Legal values are provided as key/values in an object and may be translated by
+ * providing different values in the object.
  *
  * For example:
  * ```jsx
+ * const suitChecker = stringLiterals({
+ *   heart: 'heart',
+ *   spade: 'spade',
+ *   club: 'club',
+ *   diamond: 'diamond',
+ * });
+ *
+ * const suit: 'heart' | 'spade' | 'club' | 'diamond' = assertion(suitChecker(x));
+ * ```
+ *
+ * Strings can also be mapped to new values:
+ * ```jsx
+ * const placeholderChecker = stringLiterals({
+ *   foo: 'spam',
+ *   bar: 'eggs',
+ * });
  * ```
  */
 function stringLiterals<T>(enumValues: {+[string]: T}): Checker<T> {
