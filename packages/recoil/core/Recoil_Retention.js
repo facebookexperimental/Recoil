@@ -23,6 +23,10 @@ const {cleanUpNode} = require('./Recoil_FunctionalCore');
 const {deleteNodeConfigIfPossible, getNode} = require('./Recoil_Node');
 const {RetentionZone} = require('./Recoil_RetentionZone');
 
+// Components that aren't mounted after suspending for this long will be assumed
+// to be discarded and their resources released.
+const SUSPENSE_TIMEOUT_MS = 120000;
+
 const emptySet = new Set();
 
 function releaseRetainablesNowOnCurrentTree(
@@ -295,6 +299,7 @@ function retainedByOptionWithDefault(r: RetainedBy | void): RetainedBy {
 }
 
 module.exports = {
+  SUSPENSE_TIMEOUT_MS,
   updateRetainCount,
   updateRetainCountToZero,
   releaseScheduledRetainablesNow,
