@@ -843,23 +843,6 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
   );
 }
 
-function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(
-  fn: TransactionInterface => (...Arguments) => void,
-  deps?: $ReadOnlyArray<mixed>,
-): (...Arguments) => void {
-  const storeRef = useStoreRef();
-  return useMemo(
-    () =>
-      (...args: Arguments): void => {
-        const atomicUpdate = atomicUpdater(storeRef.current);
-        atomicUpdate(transactionInterface => {
-          fn(transactionInterface)(...args);
-        });
-      },
-    deps != null ? [...deps, storeRef] : undefined, // eslint-disable-line fb-www/react-hooks-deps
-  );
-}
-
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
   useGotoRecoilSnapshot,
@@ -868,7 +851,6 @@ module.exports = {
   useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
-  useRecoilTransaction,
   useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
