@@ -33,16 +33,16 @@ const {asType, match, number, string} = require('refine');
 // Mock Storage
 ////////////////////////////
 function TestRecoilSync({
-  syncKey,
+  storeKey,
   storage,
   regListen,
 }: {
-  syncKey?: string,
+  storeKey?: string,
   storage: Map<string, Loadable<mixed>>,
   regListen?: ListenInterface => void,
 }) {
   useRecoilSync({
-    syncKey,
+    storeKey,
     read: itemKey => {
       if (itemKey === 'error') {
         throw new Error('READ ERROR');
@@ -120,12 +120,12 @@ test('Write to multiple storages', async () => {
   const atomA = atom({
     key: 'recoil-sync multiple storage A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({syncKey: 'A', refine: string()})],
+    effects_UNSTABLE: [syncEffect({storeKey: 'A', refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync multiple storage B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({syncKey: 'B', refine: string()})],
+    effects_UNSTABLE: [syncEffect({storeKey: 'B', refine: string()})],
   });
 
   const storageA = new Map();
@@ -135,8 +135,8 @@ test('Write to multiple storages', async () => {
   const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
   renderElements(
     <>
-      <TestRecoilSync syncKey="A" storage={storageA} />
-      <TestRecoilSync syncKey="B" storage={storageB} />
+      <TestRecoilSync storeKey="A" storage={storageA} />
+      <TestRecoilSync storeKey="B" storage={storageB} />
       <AtomA />
       <AtomB />
     </>,
@@ -227,7 +227,7 @@ test('Read from storage error', async () => {
     key: 'recoil-sync read error C',
     default: 'DEFAULT',
     // <TestRecoilSync> will throw error if the key is "error"
-    effects_UNSTABLE: [syncEffect({key: 'error', refine: string()})],
+    effects_UNSTABLE: [syncEffect({itemKey: 'error', refine: string()})],
   });
   const atomD = atom({
     key: 'recoil-sync read error D',
@@ -235,7 +235,7 @@ test('Read from storage error', async () => {
     // <TestRecoilSync> will throw error if the key is "error"
     effects_UNSTABLE: [
       syncEffect({
-        key: 'error',
+        itemKey: 'error',
         refine: string(),
         actionOnFailure: 'defaultValue',
       }),
@@ -484,8 +484,8 @@ test('Read/Write from storage upgrade', async () => {
     key: 'recoil-sync read/write upgrade key',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect({key: 'OLD KEY', refine: string()}),
-      syncEffect({key: 'NEW KEY', refine: string()}),
+      syncEffect({itemKey: 'OLD KEY', refine: string()}),
+      syncEffect({itemKey: 'NEW KEY', refine: string()}),
     ],
   });
   const atomC = atom({
@@ -493,7 +493,7 @@ test('Read/Write from storage upgrade', async () => {
     default: 'DEFAULT',
     effects_UNSTABLE: [
       syncEffect({refine: string()}),
-      syncEffect({syncKey: 'OTHER_SYNC', refine: string()}),
+      syncEffect({storeKey: 'OTHER_SYNC', refine: string()}),
     ],
   });
 
@@ -512,7 +512,7 @@ test('Read/Write from storage upgrade', async () => {
   const container = renderElements(
     <>
       <TestRecoilSync storage={storage1} />
-      <TestRecoilSync storage={storage2} syncKey="OTHER_SYNC" />
+      <TestRecoilSync storage={storage2} storeKey="OTHER_SYNC" />
       <AtomA />
       <AtomB />
       <AtomC />
@@ -552,22 +552,22 @@ test('Listen to storage', async () => {
   const atomA = atom({
     key: 'recoil-sync listen',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({syncKey: 'SYNC_1', refine: string()})],
+    effects_UNSTABLE: [syncEffect({storeKey: 'SYNC_1', refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync listen to multiple keys',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect({syncKey: 'SYNC_1', key: 'KEY A', refine: string()}),
-      syncEffect({syncKey: 'SYNC_1', key: 'KEY B', refine: string()}),
+      syncEffect({storeKey: 'SYNC_1', itemKey: 'KEY A', refine: string()}),
+      syncEffect({storeKey: 'SYNC_1', itemKey: 'KEY B', refine: string()}),
     ],
   });
   const atomC = atom({
     key: 'recoil-sync listen to multiple storage',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect({syncKey: 'SYNC_1', refine: string()}),
-      syncEffect({syncKey: 'SYNC_2', refine: string()}),
+      syncEffect({storeKey: 'SYNC_1', refine: string()}),
+      syncEffect({storeKey: 'SYNC_2', refine: string()}),
     ],
   });
 
@@ -592,7 +592,7 @@ test('Listen to storage', async () => {
   const container = renderElements(
     <>
       <TestRecoilSync
-        syncKey="SYNC_1"
+        storeKey="SYNC_1"
         storage={storage1}
         regListen={listenInterface => {
           updateItem1 = listenInterface.updateItem;
@@ -600,7 +600,7 @@ test('Listen to storage', async () => {
         }}
       />
       <TestRecoilSync
-        syncKey="SYNC_2"
+        storeKey="SYNC_2"
         storage={storage2}
         regListen={listenInterface => {
           updateItem2 = listenInterface.updateItem;
@@ -872,17 +872,17 @@ test('Sync based on component props', async () => {
   const atomA = atom({
     key: 'recoil-sync from props spam',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({key: 'spam', refine: string()})],
+    effects_UNSTABLE: [syncEffect({itemKey: 'spam', refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync from props eggs',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({key: 'eggs', refine: string()})],
+    effects_UNSTABLE: [syncEffect({itemKey: 'eggs', refine: string()})],
   });
   const atomC = atom({
     key: 'recoil-sync from props default',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({key: 'default', refine: string()})],
+    effects_UNSTABLE: [syncEffect({itemKey: 'default', refine: string()})],
   });
 
   const container = renderElements(
@@ -901,7 +901,7 @@ test('Sync Atom Family', async () => {
   const atoms = atomFamily({
     key: 'recoil-sync atom family',
     default: 'DEFAULT',
-    effects_UNSTABLE: param => [syncEffect({key: param, refine: string()})],
+    effects_UNSTABLE: param => [syncEffect({itemKey: param, refine: string()})],
   });
 
   const storage = new Map([
@@ -926,7 +926,7 @@ test('Reading before sync hook', async () => {
   const atoms = atomFamily({
     key: 'recoil-sync order',
     default: 'DEFAULT',
-    effects_UNSTABLE: param => [syncEffect({key: param, refine: string()})],
+    effects_UNSTABLE: param => [syncEffect({itemKey: param, refine: string()})],
   });
 
   function SyncOrder() {
