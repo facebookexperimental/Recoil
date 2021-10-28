@@ -53,9 +53,9 @@ const testRecoil = getRecoilTestFn(() => {
     useRecoilState,
     useRecoilTransactionObserver,
     useResetRecoilState,
-    useRecoilCallback,
     useRecoilValue,
   } = require('../../hooks/Recoil_Hooks'));
+  useRecoilCallback = require('../../hooks/Recoil_useRecoilCallback');
   ({
     ReadsAtom,
     componentThatReadsAndWritesAtom,

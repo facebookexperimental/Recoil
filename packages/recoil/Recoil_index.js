@@ -21,10 +21,8 @@ export type {
   Snapshot,
   SnapshotID,
 } from './core/Recoil_Snapshot';
-export type {
-  RecoilCallbackInterface,
-  SetterOrUpdater,
-} from './hooks/Recoil_Hooks';
+export type {SetterOrUpdater} from './hooks/Recoil_Hooks';
+export type {RecoilCallbackInterface} from './hooks/Recoil_useRecoilCallback';
 export type {RecoilBridge} from './hooks/Recoil_useRecoilBridgeAcrossReactRoots';
 export type {Loadable} from './adt/Recoil_Loadable';
 export type {
@@ -50,7 +48,6 @@ const {retentionZone} = require('./core/Recoil_RetentionZone');
 const {freshSnapshot} = require('./core/Recoil_Snapshot');
 const {
   useGotoRecoilSnapshot,
-  useRecoilCallback,
   useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
@@ -64,6 +61,7 @@ const {
 } = require('./hooks/Recoil_Hooks');
 const useGetRecoilValueInfo = require('./hooks/Recoil_useGetRecoilValueInfo');
 const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
+const useRecoilCallback = require('./hooks/Recoil_useRecoilCallback');
 const useRecoilRefresher = require('./hooks/Recoil_useRecoilRefresher');
 const useRecoilTransaction = require('./hooks/Recoil_useRecoilTransaction');
 const useRetain = require('./hooks/Recoil_useRetain');
