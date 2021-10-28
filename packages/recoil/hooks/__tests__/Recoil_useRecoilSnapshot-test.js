@@ -43,7 +43,10 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers,
     renderElements,
   } = require('../../__test_utils__/Recoil_TestingUtils'));
-  ({useGotoRecoilSnapshot, useRecoilSnapshot} = require('../Recoil_Hooks'));
+  ({
+    useGotoRecoilSnapshot,
+    useRecoilSnapshot,
+  } = require('../Recoil_SnapshotHooks'));
 });
 
 testRecoil('useRecoilSnapshot - subscribe to updates', () => {
@@ -51,11 +54,8 @@ testRecoil('useRecoilSnapshot - subscribe to updates', () => {
     key: 'useRecoilSnapshot - subscribe',
     default: 'DEFAULT',
   });
-  const [
-    ReadsAndWritesAtom,
-    setAtom,
-    resetAtom,
-  ] = componentThatReadsAndWritesAtom(myAtom);
+  const [ReadsAndWritesAtom, setAtom, resetAtom] =
+    componentThatReadsAndWritesAtom(myAtom);
 
   // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   const mySelector = constSelector(myAtom);
@@ -98,17 +98,15 @@ testRecoil('useRecoilSnapshot - goto snapshots', () => {
     key: 'useRecoilSnapshot - goto A',
     default: 'DEFAULT',
   });
-  const [ReadsAndWritesAtomA, setAtomA] = componentThatReadsAndWritesAtom(
-    atomA,
-  );
+  const [ReadsAndWritesAtomA, setAtomA] =
+    componentThatReadsAndWritesAtom(atomA);
 
   const atomB = atom({
     key: 'useRecoilSnapshot - goto B',
     default: 'DEFAULT',
   });
-  const [ReadsAndWritesAtomB, setAtomB] = componentThatReadsAndWritesAtom(
-    atomB,
-  );
+  const [ReadsAndWritesAtomB, setAtomB] =
+    componentThatReadsAndWritesAtom(atomB);
 
   const snapshots = [];
   let gotoSnapshot;

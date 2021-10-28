@@ -8,14 +8,13 @@
  * @flow strict-local
  * @format
  */
-
 'use strict';
 
 const {Snapshot} = require('../../core/Recoil_Snapshot');
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-} = require('../../hooks/Recoil_Hooks');
+} = require('../../hooks/Recoil_SnapshotHooks');
 const React = require('react');
 const {useEffect, useRef} = require('react');
 

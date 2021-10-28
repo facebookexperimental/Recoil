@@ -15,7 +15,7 @@ import type {MutableSnapshot, Snapshot} from '../../core/Recoil_Snapshot';
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-} = require('../../hooks/Recoil_Hooks');
+} = require('../../hooks/Recoil_SnapshotHooks');
 const React = require('react');
 const {useCallback} = require('react');
 
