@@ -19,6 +19,7 @@ export type RecoilBridge = React.AbstractComponent<{children: React.Node}>;
 function useRecoilBridgeAcrossReactRoots(): RecoilBridge {
   const store = useStoreRef().current;
   return useMemo(() => {
+    // eslint-disable-next-line no-shadow
     function RecoilBridge({children}) {
       return <RecoilRoot store_INTERNAL={store}>{children}</RecoilRoot>;
     }
