@@ -25,11 +25,8 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../../recoil_values/Recoil_atom');
   selector = require('../../recoil_values/Recoil_selector');
   ({renderElements} = require('../../__test_utils__/Recoil_TestingUtils'));
-  ({
-    useRecoilRefresher,
-    useRecoilValue,
-    useSetRecoilState,
-  } = require('../Recoil_Hooks'));
+  useRecoilRefresher = require('../Recoil_useRecoilRefresher');
+  ({useRecoilValue, useSetRecoilState} = require('../Recoil_Hooks'));
 });
 
 testRecoil('useRerunRecoilValue - no-op for atom', async () => {
