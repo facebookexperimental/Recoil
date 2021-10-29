@@ -167,8 +167,7 @@ testRecoil('waitFor - resolve to values', async () => {
   // waitForAll returns a promise that resolves to the actual values
   expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
   const allTest0 = expect(getPromise(waitForAll(deps))).resolves.toEqual([
-    0,
-    1,
+    0, 1,
   ]);
 
   // Resolve the first dep
@@ -181,8 +180,7 @@ testRecoil('waitFor - resolve to values', async () => {
   expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
 
   const allTest1 = expect(getPromise(waitForAll(deps))).resolves.toEqual([
-    0,
-    1,
+    0, 1,
   ]);
 
   // Resolve the second dep

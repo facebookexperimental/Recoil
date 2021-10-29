@@ -1,14 +1,14 @@
 {
-    "name": "recoil-sync",
-    "description": "This is the internal package.json enabling CommonJS module",
-    "main": "RecoilSync_index.js",
-    "haste_commonjs": true,
-    "files": [
-      "RecoilSync_index.js"
-    ],
-    "directories": {
-      "": "./"
-    },
-    "repository": "https://github.com/facebookexperimental/Recoil.git",
-    "license": "MIT"
-  }
+  "name": "recoil-sync",
+  "description": "This is the internal package.json enabling CommonJS module",
+  "main": "RecoilSync_index.js",
+  "haste_commonjs": true,
+  "files": [
+    "RecoilSync_index.js"
+  ],
+  "directories": {
+    "": "./"
+  },
+  "repository": "https://github.com/facebookexperimental/Recoil.git",
+  "license": "MIT"
+}

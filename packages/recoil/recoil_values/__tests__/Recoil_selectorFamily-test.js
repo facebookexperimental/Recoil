@@ -52,7 +52,10 @@ function set(recoilValue, value) {
 testRecoil('selectorFamily - number parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/number',
-    get: multiplier => ({get}) => get(myAtom) * multiplier,
+    get:
+      multiplier =>
+      ({get}) =>
+        get(myAtom) * multiplier,
   });
 
   set(myAtom, 1);
@@ -77,7 +80,10 @@ testRecoil('selectorFamily - array parameter', () => {
 testRecoil('selectorFamily - object parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/object',
-    get: ({multiplier}) => ({get}) => get(myAtom) * multiplier,
+    get:
+      ({multiplier}) =>
+      ({get}) =>
+        get(myAtom) * multiplier,
   });
 
   set(myAtom, 1);
@@ -91,14 +97,16 @@ testRecoil('selectorFamily - object parameter', () => {
 testRecoil('selectorFamily - date parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/date',
-    get: date => ({get}) => {
-      const daysToAdd = get(myAtom);
-      const returnDate = new Date(date);
+    get:
+      date =>
+      ({get}) => {
+        const daysToAdd = get(myAtom);
+        const returnDate = new Date(date);
 
-      returnDate.setDate(returnDate.getDate() + daysToAdd);
+        returnDate.setDate(returnDate.getDate() + daysToAdd);
 
-      return returnDate;
-    },
+        return returnDate;
+      },
   });
 
   set(myAtom, 1);
@@ -112,7 +120,10 @@ testRecoil('selectorFamily - date parameter', () => {
 testRecoil('Works with supersets', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/supersets',
-    get: ({multiplier}) => ({get}) => get(myAtom) * multiplier,
+    get:
+      ({multiplier}) =>
+      ({get}) =>
+        get(myAtom) * multiplier,
   });
   set(myAtom, 1);
   expect(getValue(mySelector({multiplier: 10}))).toBe(10);
@@ -123,9 +134,14 @@ testRecoil('Works with supersets', () => {
 testRecoil('selectorFamily - writable', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/writable',
-    get: ({multiplier}) => ({get}) => get(myAtom) * multiplier,
-    set: ({multiplier}) => ({set}, num) =>
-      set(myAtom, num instanceof DefaultValue ? num : num / multiplier),
+    get:
+      ({multiplier}) =>
+      ({get}) =>
+        get(myAtom) * multiplier,
+    set:
+      ({multiplier}) =>
+      ({set}, num) =>
+        set(myAtom, num instanceof DefaultValue ? num : num / multiplier),
   });
 
   set(myAtom, 1);
@@ -142,10 +158,12 @@ testRecoil('selectorFamily - value caching', () => {
   let evals = 0;
   const mySelector = selectorFamily({
     key: 'selectorFamily/value caching',
-    get: ({multiplier}) => ({get}) => {
-      evals++;
-      return get(myAtom) * multiplier;
-    },
+    get:
+      ({multiplier}) =>
+      ({get}) => {
+        evals++;
+        return get(myAtom) * multiplier;
+      },
   });
 
   expect(evals).toBe(0);
@@ -177,10 +195,12 @@ testRecoil('selectorFamily - reference caching', () => {
   let evals = 0;
   const mySelector = selectorFamily({
     key: 'selectorFamily/reference caching',
-    get: ({multiplier}) => ({get}) => {
-      evals++;
-      return get(myAtom) * multiplier;
-    },
+    get:
+      ({multiplier}) =>
+      ({get}) => {
+        evals++;
+        return get(myAtom) * multiplier;
+      },
     cachePolicyForParams_UNSTABLE: {
       equality: 'reference',
     },
@@ -241,7 +261,9 @@ testRecoil('selectorFamily - reference caching', () => {
 testRecoil('selectorFamily - mutability', () => {
   const myImmutableSelector = selectorFamily({
     key: 'selectorFamily/immutable',
-    get: ({key}) => ({get}) => ({[key]: get(myAtom)}),
+    get:
+      ({key}) =>
+      ({get}) => ({[key]: get(myAtom)}),
   });
   set(myAtom, 42);
   const immutableResult: {[string]: number, ...} = getValue(
@@ -254,7 +276,9 @@ testRecoil('selectorFamily - mutability', () => {
 
   const myMutableSelector = selectorFamily({
     key: 'selectorFamily/mutable',
-    get: ({key}) => ({get}) => ({[key]: get(myAtom)}),
+    get:
+      ({key}) =>
+      ({get}) => ({[key]: get(myAtom)}),
     dangerouslyAllowMutability: true,
   });
   set(myAtom, 42);
@@ -271,7 +295,7 @@ testRecoil('selectorFamily - evaluate to RecoilValue', () => {
   const atomB = atom({key: 'selectorFamily/const atom B', default: 'B'});
   const mySelector = selectorFamily<string, string>({
     key: 'selectorFamily/',
-    get: param => () => (param === 'a' ? atomA : atomB),
+    get: param => () => param === 'a' ? atomA : atomB,
   });
 
   expect(getValue(mySelector('a'))).toEqual('A');

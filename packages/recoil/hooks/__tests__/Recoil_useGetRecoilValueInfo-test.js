@@ -116,9 +116,8 @@ testRecoil(
     }
 
     // After reading values
-    const [ReadWriteAtom, setAtom, resetAtom] = componentThatReadsAndWritesAtom(
-      myAtom,
-    );
+    const [ReadWriteAtom, setAtom, resetAtom] =
+      componentThatReadsAndWritesAtom(myAtom);
     const c = renderElements(
       <>
         <GetRecoilValueInfo />

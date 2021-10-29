@@ -128,8 +128,16 @@ describe('useRecoilCallback', () => {
     let setCB, resetCB;
 
     function Component() {
-      setCB = useRecoilCallback(({set}) => value => set(anAtom, value));
-      resetCB = useRecoilCallback(({reset}) => () => reset(anAtom));
+      setCB = useRecoilCallback(
+        ({set}) =>
+          value =>
+            set(anAtom, value),
+      );
+      resetCB = useRecoilCallback(
+        ({reset}) =>
+          () =>
+            reset(anAtom),
+      );
       return null;
     }
 
