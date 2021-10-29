@@ -11,7 +11,7 @@
 'use strict';
 
 // Object.fromEntries() is not available in GitHub's version of Node.js (9/21/2021)
-function objectFromEntries<T>(entries: $ReadOnlyArray<[string, T]>): {
+function objectFromEntries<T>(entries: Iterable<[string, T]>): {
   [string]: T,
 } {
   const obj = {};

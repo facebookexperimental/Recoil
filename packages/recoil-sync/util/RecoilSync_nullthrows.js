@@ -5,12 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+recoil
- * @flow strict
+ * @flow strict-local
  * @format
  */
 'use strict';
 
-const err = require('./Recoil_err');
+const err = require('./RecoilSync_err');
 
 function nullthrows<T>(x: ?T, message: ?string): T {
   if (x != null) {

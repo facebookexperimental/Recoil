@@ -93,15 +93,20 @@ describe('Test URL Persistence', () => {
       expect(new URL(location.href).searchParams.get('foo')).toBe(null);
       expect(new URL(location.href).searchParams.get('bar')).toBe(null);
     }));
-  test('Write to URL - Query Search Param', () =>
-    testWriteToURL({part: 'search', queryParam: 'bar'}, () => {
+  test('Write to URL - Query Params', () =>
+    testWriteToURL({part: 'queryParams'}, () => {
+      expect(location.hash).toBe('#anchor');
+      expect(new URL(location.href).searchParams.get('foo')).toBe('bar');
+    }));
+  test('Write to URL - Query Param', () =>
+    testWriteToURL({part: 'queryParams', param: 'bar'}, () => {
       expect(location.hash).toBe('#anchor');
       expect(new URL(location.href).searchParams.get('foo')).toBe('bar');
     }));
 
   test('Write to multiple params', async () => {
-    const locA = {part: 'search', queryParam: 'paramA'};
-    const locB = {part: 'search', queryParam: 'paramB'};
+    const locA = {part: 'queryParams', param: 'paramA'};
+    const locB = {part: 'queryParams', param: 'paramB'};
     const atomA = atom({
       key: 'recoil-url-sync multiple param A',
       default: 'DEFAULT',
@@ -182,10 +187,12 @@ describe('Test URL Persistence', () => {
   test('Read from URL', () => testReadFromURL({part: 'href'}));
   test('Read from URL - Anchor Hash', () => testReadFromURL({part: 'hash'}));
   test('Read from URL - Search Query', () => testReadFromURL({part: 'search'}));
-  test('Read from URL - Search Query Param', () =>
-    testReadFromURL({part: 'search', queryParam: 'param'}));
-  test('Read from URL - Search Query Param with other param', () =>
-    testReadFromURL({part: 'search', queryParam: 'other'}));
+  test('Read from URL - Query Params', () =>
+    testReadFromURL({part: 'queryParams'}));
+  test('Read from URL - Query Param', () =>
+    testReadFromURL({part: 'queryParams', param: 'param'}));
+  test('Read from URL - Query Param with other param', () =>
+    testReadFromURL({part: 'queryParams', param: 'other'}));
 
   test('Read from URL upgrade', async () => {
     const loc = {part: 'hash'};
@@ -258,8 +265,8 @@ describe('Test URL Persistence', () => {
   });
 
   test('Read/Write from URL with upgrade', async () => {
-    const loc1 = {part: 'search', queryParam: 'param1'};
-    const loc2 = {part: 'search', queryParam: 'param2'};
+    const loc1 = {part: 'queryParams', param: 'param1'};
+    const loc2 = {part: 'queryParams', param: 'param2'};
 
     const atomA = atom<string>({
       key: 'recoil-url-sync read/write upgrade type',
