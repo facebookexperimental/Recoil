@@ -24,7 +24,7 @@ const React = require('react');
 const {string} = require('refine');
 
 test('Push URLs in browser history', async () => {
-  const loc = {part: 'search', queryParam: 'push'};
+  const loc = {part: 'queryParams'};
 
   const atomA = atom({
     key: 'recoil-url-sync replace',

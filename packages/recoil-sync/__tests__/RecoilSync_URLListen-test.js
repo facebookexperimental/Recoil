@@ -25,8 +25,8 @@ const React = require('react');
 const {string} = require('refine');
 
 test('Listen to URL changes', async () => {
-  const locFoo = {part: 'search', queryParam: 'foo'};
-  const locBar = {part: 'search', queryParam: 'bar'};
+  const locFoo = {part: 'queryParams', param: 'foo'};
+  const locBar = {part: 'queryParams', param: 'bar'};
 
   const atomA = atom({
     key: 'recoil-url-sync listen',
