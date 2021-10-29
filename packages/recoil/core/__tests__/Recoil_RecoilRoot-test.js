@@ -241,9 +241,8 @@ describe('override prop', () => {
         default: 'DEFAULT',
       });
 
-      const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(
-        myAtom,
-      );
+      const [ReadsWritesAtom, setAtom] =
+        componentThatReadsAndWritesAtom(myAtom);
 
       const container = renderElements(
         <RecoilRoot>
@@ -269,9 +268,8 @@ describe('override prop', () => {
         default: 'DEFAULT',
       });
 
-      const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(
-        myAtom,
-      );
+      const [ReadsWritesAtom, setAtom] =
+        componentThatReadsAndWritesAtom(myAtom);
 
       const container = renderElements(
         <RecoilRoot>
@@ -300,9 +298,8 @@ describe('override prop', () => {
         default: 'DEFAULT',
       });
 
-      const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(
-        myAtom,
-      );
+      const [ReadsWritesAtom, setAtom] =
+        componentThatReadsAndWritesAtom(myAtom);
 
       let setRenderNestedRoot;
       const NestedRootContainer = () => {
@@ -340,9 +337,8 @@ describe('override prop', () => {
         default: 'DEFAULT',
       });
 
-      const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(
-        myAtom,
-      );
+      const [ReadsWritesAtom, setAtom] =
+        componentThatReadsAndWritesAtom(myAtom);
 
       const container = renderElements(
         <RecoilRoot override={false}>
