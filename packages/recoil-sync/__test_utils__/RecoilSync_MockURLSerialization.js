@@ -15,6 +15,7 @@ const {
   flushPromisesAndTimers,
 } = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
 const {useRecoilURLSync} = require('../RecoilSync_URL');
+const nullthrows = require('../util/RecoilSync_nullthrows');
 const React = require('react');
 
 // ////////////////////////////
@@ -22,17 +23,17 @@ const React = require('react');
 // ////////////////////////////
 
 function TestURLSync({
-  syncKey,
+  storeKey,
   location,
 }: {
-  syncKey?: string,
+  storeKey?: string,
   location: LocationOption,
 }): React.Node {
   useRecoilURLSync({
-    syncKey,
+    storeKey,
     location,
     serialize: items => {
-      const str = JSON.stringify(items);
+      const str = nullthrows(JSON.stringify(items));
       return location.part === 'href'
         ? `/TEST#${encodeURIComponent(str)}`
         : str;
@@ -40,27 +41,13 @@ function TestURLSync({
     deserialize: str => {
       const stateStr =
         location.part === 'href' ? decodeURIComponent(str.split('#')[1]) : str;
-      // Skip the default URL parts which don't conform to the serialized standard
-      if (
-        stateStr == null ||
-        stateStr === 'anchor' ||
-        stateStr === 'foo=bar' ||
-        stateStr === 'bar'
-      ) {
+      // Skip the default URL parts which don't conform to the serialized standard.
+      // 'bar' also doesn't conform, but we want to test coexistence of foreign
+      // query parameters.
+      if (stateStr == null || stateStr === 'anchor' || stateStr === 'foo=bar') {
         return {};
       }
-      try {
-        return JSON.parse(stateStr);
-      } catch (e) {
-        // eslint-disable-next-line fb-www/no-console
-        console.error(
-          'Error parsing: ',
-          location,
-          stateStr,
-          decodeURI(stateStr),
-        );
-        throw e;
-      }
+      return JSON.parse(stateStr);
     },
   });
   return null;
@@ -81,14 +68,20 @@ function encodeURLPart(href: string, loc: LocationOption, obj): string {
       url.hash = encodeState(obj);
       break;
     case 'search': {
-      const {queryParam} = loc;
-      if (queryParam == null) {
-        url.search = encodeState(obj);
+      url.search = encodeState(obj);
+      break;
+    }
+    case 'queryParams': {
+      const {param} = loc;
+      const {searchParams} = url;
+      if (param != null) {
+        searchParams.set(param, JSON.stringify(obj));
       } else {
-        const searchParams = url.searchParams;
-        searchParams.set(queryParam, JSON.stringify(obj));
-        url.search = searchParams.toString();
+        for (const [key, value] of Object.entries(obj)) {
+          searchParams.set(key, JSON.stringify(value) ?? '');
+        }
       }
+      url.search = searchParams.toString() || '?';
       break;
     }
   }

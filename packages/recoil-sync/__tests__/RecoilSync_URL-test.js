@@ -38,12 +38,12 @@ describe('Test URL Persistence', () => {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [urlSyncEffect({key: 'a', refine: string()})],
+      effects_UNSTABLE: [urlSyncEffect({itemKey: 'a', refine: string()})],
     });
     const atomB = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [urlSyncEffect({key: 'b', refine: string()})],
+      effects_UNSTABLE: [urlSyncEffect({itemKey: 'b', refine: string()})],
     });
     const ignoreAtom = atom({
       key: nextKey(),
@@ -93,27 +93,32 @@ describe('Test URL Persistence', () => {
       expect(new URL(location.href).searchParams.get('foo')).toBe(null);
       expect(new URL(location.href).searchParams.get('bar')).toBe(null);
     }));
-  test('Write to URL - Query Search Param', () =>
-    testWriteToURL({part: 'search', queryParam: 'bar'}, () => {
+  test('Write to URL - Query Params', () =>
+    testWriteToURL({part: 'queryParams'}, () => {
+      expect(location.hash).toBe('#anchor');
+      expect(new URL(location.href).searchParams.get('foo')).toBe('bar');
+    }));
+  test('Write to URL - Query Param', () =>
+    testWriteToURL({part: 'queryParams', param: 'bar'}, () => {
       expect(location.hash).toBe('#anchor');
       expect(new URL(location.href).searchParams.get('foo')).toBe('bar');
     }));
 
   test('Write to multiple params', async () => {
-    const locA = {part: 'search', queryParam: 'paramA'};
-    const locB = {part: 'search', queryParam: 'paramB'};
+    const locA = {part: 'queryParams', param: 'paramA'};
+    const locB = {part: 'queryParams', param: 'paramB'};
     const atomA = atom({
       key: 'recoil-url-sync multiple param A',
       default: 'DEFAULT',
       effects_UNSTABLE: [
-        syncEffect({syncKey: 'A', key: 'x', refine: string()}),
+        syncEffect({storeKey: 'A', itemKey: 'x', refine: string()}),
       ],
     });
     const atomB = atom({
       key: 'recoil-url-sync multiple param B',
       default: 'DEFAULT',
       effects_UNSTABLE: [
-        syncEffect({syncKey: 'B', key: 'x', refine: string()}),
+        syncEffect({storeKey: 'B', itemKey: 'x', refine: string()}),
       ],
     });
 
@@ -121,8 +126,8 @@ describe('Test URL Persistence', () => {
     const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
     renderElements(
       <>
-        <TestURLSync syncKey="A" location={locA} />
-        <TestURLSync syncKey="B" location={locB} />
+        <TestURLSync storeKey="A" location={locA} />
+        <TestURLSync storeKey="B" location={locB} />
         <AtomA />
         <AtomB />
       </>,
@@ -140,17 +145,17 @@ describe('Test URL Persistence', () => {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({key: 'a', refine: string()})],
+      effects_UNSTABLE: [syncEffect({itemKey: 'a', refine: string()})],
     });
     const atomB = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({key: 'b', refine: string()})],
+      effects_UNSTABLE: [syncEffect({itemKey: 'b', refine: string()})],
     });
     const atomC = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({key: 'c', refine: string()})],
+      effects_UNSTABLE: [syncEffect({itemKey: 'c', refine: string()})],
     });
 
     history.replaceState(
@@ -182,10 +187,12 @@ describe('Test URL Persistence', () => {
   test('Read from URL', () => testReadFromURL({part: 'href'}));
   test('Read from URL - Anchor Hash', () => testReadFromURL({part: 'hash'}));
   test('Read from URL - Search Query', () => testReadFromURL({part: 'search'}));
-  test('Read from URL - Search Query Param', () =>
-    testReadFromURL({part: 'search', queryParam: 'param'}));
-  test('Read from URL - Search Query Param with other param', () =>
-    testReadFromURL({part: 'search', queryParam: 'other'}));
+  test('Read from URL - Query Params', () =>
+    testReadFromURL({part: 'queryParams'}));
+  test('Read from URL - Query Param', () =>
+    testReadFromURL({part: 'queryParams', param: 'param'}));
+  test('Read from URL - Query Param with other param', () =>
+    testReadFromURL({part: 'queryParams', param: 'other'}));
 
   test('Read from URL upgrade', async () => {
     const loc = {part: 'hash'};
@@ -258,8 +265,8 @@ describe('Test URL Persistence', () => {
   });
 
   test('Read/Write from URL with upgrade', async () => {
-    const loc1 = {part: 'search', queryParam: 'param1'};
-    const loc2 = {part: 'search', queryParam: 'param2'};
+    const loc1 = {part: 'queryParams', param: 'param1'};
+    const loc2 = {part: 'queryParams', param: 'param2'};
 
     const atomA = atom<string>({
       key: 'recoil-url-sync read/write upgrade type',
@@ -277,8 +284,8 @@ describe('Test URL Persistence', () => {
       key: 'recoil-url-sync read/write upgrade key',
       default: 'DEFAULT',
       effects_UNSTABLE: [
-        syncEffect({key: 'OLD KEY', refine: string()}),
-        syncEffect({key: 'NEW KEY', refine: string()}),
+        syncEffect({itemKey: 'OLD KEY', refine: string()}),
+        syncEffect({itemKey: 'NEW KEY', refine: string()}),
       ],
     });
     const atomC = atom({
@@ -286,7 +293,7 @@ describe('Test URL Persistence', () => {
       default: 'DEFAULT',
       effects_UNSTABLE: [
         syncEffect({refine: string()}),
-        syncEffect({syncKey: 'SYNC_2', refine: string()}),
+        syncEffect({storeKey: 'SYNC_2', refine: string()}),
       ],
     });
 
@@ -317,7 +324,7 @@ describe('Test URL Persistence', () => {
     const container = renderElements(
       <>
         <TestURLSync location={loc1} />
-        <TestURLSync location={loc2} syncKey="SYNC_2" />
+        <TestURLSync location={loc2} storeKey="SYNC_2" />
         <AtomA />
         <AtomB />
         <AtomC />
