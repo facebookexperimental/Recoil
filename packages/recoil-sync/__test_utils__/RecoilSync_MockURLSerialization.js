@@ -23,14 +23,14 @@ const React = require('react');
 // ////////////////////////////
 
 function TestURLSync({
-  syncKey,
+  storeKey,
   location,
 }: {
-  syncKey?: string,
+  storeKey?: string,
   location: LocationOption,
 }): React.Node {
   useRecoilURLSync({
-    syncKey,
+    storeKey,
     location,
     serialize: items => {
       const str = nullthrows(JSON.stringify(items));
