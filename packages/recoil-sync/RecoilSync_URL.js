@@ -20,8 +20,10 @@ const err = require('./util/RecoilSync_err');
 const objectFromEntries = require('./util/RecoilSync_objectFromEntries');
 const React = require('react');
 const {useCallback, useEffect, useMemo, useRef} = require('react');
+const {assertion, mixed, writableDict} = require('refine');
 
 type NodeKey = string;
+type ItemsState = {[ItemKey]: mixed};
 type AtomRegistration = {
   history: HistoryOption,
   itemKeys: Set<ItemKey>,
@@ -29,39 +31,71 @@ type AtomRegistration = {
 
 const registries: Map<SyncKey, Map<NodeKey, AtomRegistration>> = new Map();
 
-function parseURL(loc: LocationOption): ?string {
+const refineState = assertion(writableDict(mixed()));
+
+function parseURL(
+  loc: LocationOption,
+  deserialize: string => mixed,
+): ?ItemsState {
   switch (loc.part) {
     case 'href':
-      return `${location.pathname}${location.search}${location.hash}`;
+      return refineState(
+        deserialize(`${location.pathname}${location.search}${location.hash}`),
+      );
     case 'hash':
-      return location.hash ? decodeURIComponent(location.hash.substr(1)) : null;
-    case 'search': {
-      const {queryParam} = loc;
-      if (queryParam == null) {
-        return location.search
-          ? decodeURIComponent(location.search.substr(1))
-          : null;
+      return location.hash
+        ? refineState(deserialize(decodeURIComponent(location.hash.substr(1))))
+        : null;
+    case 'search':
+      return location.search
+        ? refineState(
+            deserialize(decodeURIComponent(location.search.substr(1))),
+          )
+        : null;
+    case 'queryParams': {
+      const searchParams = new URLSearchParams(location.search);
+      const {param} = loc;
+      if (param != null) {
+        const stateStr = searchParams.get(param);
+        return stateStr != null ? refineState(deserialize(stateStr)) : null;
       }
-      const param = new URLSearchParams(location.search).get(queryParam);
-      return param != null ? param : null;
+      return objectFromEntries(
+        Array.from(searchParams.entries()).map(([key, value]) => [
+          key,
+          deserialize(value),
+        ]),
+      );
     }
   }
   throw err(`Unknown URL location part: "${loc.part}"`);
 }
 
-function updateURL(loc: LocationOption, serialization): string {
+function updateURL(
+  loc: LocationOption,
+  items: ItemsState,
+  resetItemKey: Set<ItemKey>,
+  serialize: mixed => string,
+): string {
   switch (loc.part) {
     case 'href':
-      return serialization;
+      return serialize(items);
     case 'hash':
-      return `#${encodeURIComponent(serialization)}`;
-    case 'search': {
-      const {queryParam} = loc;
-      if (queryParam == null) {
-        return `?${encodeURIComponent(serialization)}${location.hash}`;
-      }
+      return `#${encodeURIComponent(serialize(items))}`;
+    case 'search':
+      return `?${encodeURIComponent(serialize(items))}${location.hash}`;
+    case 'queryParams': {
+      const {param} = loc;
       const searchParams = new URLSearchParams(location.search);
-      searchParams.set(queryParam, serialization);
+      if (param != null) {
+        searchParams.set(param, serialize(items));
+      } else {
+        for (const itemKey of resetItemKey) {
+          searchParams.delete(itemKey);
+        }
+        for (const [itemKey, value] of Object.entries(items)) {
+          searchParams.set(itemKey, serialize(value));
+        }
+      }
       return `?${searchParams.toString()}${location.hash}`;
     }
   }
@@ -74,13 +108,13 @@ function updateURL(loc: LocationOption, serialization): string {
 export type LocationOption =
   | {part: 'href'}
   | {part: 'hash'}
-  | {part: 'search', queryParam?: string};
-export type ItemsState = {[ItemKey]: mixed};
+  | {part: 'search'}
+  | {part: 'queryParams', param?: string};
 type RecoilURLSyncOptions = {
   syncKey?: SyncKey,
   location: LocationOption,
-  serialize: ItemsState => string,
-  deserialize: string => ItemsState,
+  serialize: mixed => string,
+  deserialize: string => mixed,
 };
 
 function useRecoilURLSync({
@@ -90,15 +124,12 @@ function useRecoilURLSync({
   deserialize,
 }: RecoilURLSyncOptions): void {
   // Parse and cache the current state from the URL
-  const parseCurrentState = useCallback(
-    (loc: LocationOption) => {
-      const stateStr = parseURL(loc);
-      return stateStr != null ? deserialize(stateStr) : null;
-    },
+  const parseCurrentState: LocationOption => ?ItemsState = useCallback(
+    loc => parseURL(loc, deserialize),
     [deserialize],
   );
-  const updateCachedState = useCallback(
-    (loc: LocationOption) => {
+  const updateCachedState: LocationOption => void = useCallback(
+    loc => {
       cachedState.current = parseCurrentState(loc);
     },
     [parseCurrentState],
@@ -128,6 +159,11 @@ function useRecoilURLSync({
         .filter(([, loadable]) => loadable?.state === 'hasValue')
         .map(([key, loadable]) => [key, loadable?.contents]),
     );
+    const resetKeys = new Set(
+      Array.from(allItems.entries())
+        .filter(([, loadable]) => loadable == null)
+        .map(([key]) => key),
+    );
     updateCachedState(location);
 
     // This could be optimized with an itemKey-based registery if necessary to avoid
@@ -150,7 +186,7 @@ function useRecoilURLSync({
           )
         : null;
 
-    const replaceState = cachedState.current;
+    const replaceState: ?ItemsState = cachedState.current;
     if (itemsToPush?.size && replaceState != null) {
       // First, repalce the URL with any atoms that replace the URL history
       for (const [key] of allItems) {
@@ -160,15 +196,23 @@ function useRecoilURLSync({
             : delete replaceState[key];
         }
       }
-      const replaceURL = updateURL(location, serialize(replaceState));
+      const replacedResetKeys = new Set(
+        Array.from(resetKeys).filter(key => !itemsToPush.has(key)),
+      );
+      const replaceURL = updateURL(
+        location,
+        replaceState,
+        replacedResetKeys,
+        serialize,
+      );
       history.replaceState(null, '', replaceURL);
 
       // Next, push the URL with any atoms that caused a new URL history entry
-      const pushURL = updateURL(location, serialize(newState));
+      const pushURL = updateURL(location, newState, resetKeys, serialize);
       history.pushState(null, '', pushURL);
     } else {
       // Just replace the URL with the new state
-      const newURL = updateURL(location, serialize(newState));
+      const newURL = updateURL(location, newState, resetKeys, serialize);
       history.replaceState(null, '', newURL);
     }
     cachedState.current = newState;
