@@ -81,6 +81,7 @@
     "rollup": "^2.10.0",
     "rollup-plugin-includepaths": "^0.2.3",
     "rollup-plugin-terser": "^5.3.0",
+    "transit-js": "^0.8.874",
     "typescript": "^3.9.5"
   },
   "husky": {
