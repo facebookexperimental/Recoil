@@ -414,7 +414,10 @@ testRecoil(
       key: 'notDefinedYetAtomFamilyFallbackSel',
       default: selectorFamily({
         key: 'notDefinedYetAtomFamilyFallbackSelFallback',
-        get: ({num}) => () => (num === 1 ? 456 : 789),
+        get:
+          ({num}) =>
+          () =>
+            num === 1 ? 456 : 789,
       }),
       persistence_UNSTABLE: {
         type: 'url',

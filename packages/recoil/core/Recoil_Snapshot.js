@@ -244,14 +244,13 @@ class Snapshot {
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  asyncMap: (
-    (MutableSnapshot) => Promise<void>,
-  ) => Promise<Snapshot> = async mapper => {
-    this.checkRefCount_INTERNAL();
-    const mutableSnapshot = new MutableSnapshot(this, batchUpdates);
-    await mapper(mutableSnapshot);
-    return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
-  };
+  asyncMap: ((MutableSnapshot) => Promise<void>) => Promise<Snapshot> =
+    async mapper => {
+      this.checkRefCount_INTERNAL();
+      const mutableSnapshot = new MutableSnapshot(this, batchUpdates);
+      await mapper(mutableSnapshot);
+      return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
+    };
 }
 
 function cloneStoreState(

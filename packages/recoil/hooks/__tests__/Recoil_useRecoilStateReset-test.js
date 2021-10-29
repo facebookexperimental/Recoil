@@ -43,9 +43,8 @@ testRecoil('useRecoilValueReset - value default', () => {
     default: 'default',
   });
 
-  const [Component, setValue, resetValue] = componentThatReadsAndWritesAtom(
-    myAtom,
-  );
+  const [Component, setValue, resetValue] =
+    componentThatReadsAndWritesAtom(myAtom);
   const container = renderElements(<Component />);
   expect(container.textContent).toBe('"default"');
   act(() => setValue('set value'));
@@ -64,9 +63,8 @@ testRecoil('useResetRecoilState - sync selector default', () => {
     default: mySelector,
   });
 
-  const [Component, setValue, resetValue] = componentThatReadsAndWritesAtom(
-    myAtom,
-  );
+  const [Component, setValue, resetValue] =
+    componentThatReadsAndWritesAtom(myAtom);
   const container = renderElements(<Component />);
   expect(container.textContent).toBe('"fallback"');
   act(() => setValue('set value'));
@@ -83,9 +81,8 @@ testRecoil('useResetRecoilState - async selector default', () => {
     default: mySelector,
   });
 
-  const [Component, setValue, resetValue] = componentThatReadsAndWritesAtom(
-    myAtom,
-  );
+  const [Component, setValue, resetValue] =
+    componentThatReadsAndWritesAtom(myAtom);
   const container = renderElements(<Component />);
   expect(container.textContent).toBe('loading');
   act(() => setValue('set value'));
@@ -109,9 +106,8 @@ testRecoil('useResetRecoilState - scoped atom', () => {
     ],
   });
 
-  const [Component, setValue, resetValue] = componentThatReadsAndWritesAtom(
-    myAtom,
-  );
+  const [Component, setValue, resetValue] =
+    componentThatReadsAndWritesAtom(myAtom);
   const container = renderElements(<Component />);
   expect(container.textContent).toBe('"default"');
   act(() => setValue('set value'));
@@ -165,9 +161,8 @@ testRecoil('useResetRecoilState - selector', () => {
     set: ({set}, value) => set(myAtom, value),
   });
 
-  const [Component, setValue, resetValue] = componentThatReadsAndWritesAtom(
-    mySelector,
-  );
+  const [Component, setValue, resetValue] =
+    componentThatReadsAndWritesAtom(mySelector);
   const container = renderElements(<Component />);
   expect(container.textContent).toBe('"default"');
   act(() => setValue('set value'));
@@ -183,8 +178,14 @@ testRecoil('useResetRecoilState - parameterized selector', () => {
   });
   const mySelector = selectorFamily({
     key: 'useResetRecoilState/parameterized_selector',
-    get: () => ({get}) => get(myAtom),
-    set: () => ({set}, value) => set(myAtom, value),
+    get:
+      () =>
+      ({get}) =>
+        get(myAtom),
+    set:
+      () =>
+      ({set}, value) =>
+        set(myAtom, value),
   });
 
   const [Component, setValue, resetValue] = componentThatReadsAndWritesAtom(

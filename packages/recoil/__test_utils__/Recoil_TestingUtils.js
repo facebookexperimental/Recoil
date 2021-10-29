@@ -268,36 +268,35 @@ type TestOptions = {
 };
 type TestFn = (string, AssertionsFn, TestOptions | void) => void;
 
-const testGKs = (
-  reloadImports: ReloadImports,
-  gks: Array<Array<string>>,
-): TestFn => (
-  testDescription: string,
-  assertionsFn: AssertionsFn,
-  {gks: additionalGKs = []}: TestOptions = {},
-) => {
-  test.each([
-    ...[...gks, ...additionalGKs].map(gksToTest => [
-      !gksToTest.length
-        ? testDescription
-        : `${testDescription} [${gksToTest.join(', ')}]`,
-      gksToTest,
-    ]),
-  ])('%s', async (_title, gksToTest) => {
-    jest.resetModules();
+const testGKs =
+  (reloadImports: ReloadImports, gks: Array<Array<string>>): TestFn =>
+  (
+    testDescription: string,
+    assertionsFn: AssertionsFn,
+    {gks: additionalGKs = []}: TestOptions = {},
+  ) => {
+    test.each([
+      ...[...gks, ...additionalGKs].map(gksToTest => [
+        !gksToTest.length
+          ? testDescription
+          : `${testDescription} [${gksToTest.join(', ')}]`,
+        gksToTest,
+      ]),
+    ])('%s', async (_title, gksToTest) => {
+      jest.resetModules();
 
-    const gkx = require('../util/Recoil_gkx');
+      const gkx = require('../util/Recoil_gkx');
 
-    gksToTest.forEach(gkx.setPass);
+      gksToTest.forEach(gkx.setPass);
 
-    const after = reloadImports();
-    await assertionsFn(gksToTest);
+      const after = reloadImports();
+      await assertionsFn(gksToTest);
 
-    gksToTest.forEach(gkx.setFail);
+      gksToTest.forEach(gkx.setFail);
 
-    after?.();
-  });
-};
+      after?.();
+    });
+  };
 
 // TODO Remove the recoil_suppress_rerender_in_callback GK checks
 const WWW_GKS_TO_TEST = [

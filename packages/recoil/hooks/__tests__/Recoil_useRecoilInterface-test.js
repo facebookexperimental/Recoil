@@ -57,9 +57,8 @@ testRecoil('Interface for non-react code - useRecoilState', () => {
 
 testRecoil('Interface for non-react code - useRecoilStateNoThrow', () => {
   function nonReactCode(recoilInterface) {
-    const [loadable, setValue] = recoilInterface.getRecoilStateLoadable(
-      counterAtom,
-    );
+    const [loadable, setValue] =
+      recoilInterface.getRecoilStateLoadable(counterAtom);
     const value = loadable.state === 'hasValue' ? loadable.contents : null;
     return [value, setValue];
   }

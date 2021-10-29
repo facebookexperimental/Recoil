@@ -74,7 +74,7 @@
     "install-peers-cli": "^2.2.0",
     "jest-cli": "^26.0.1",
     "lint-staged": ">=10",
-    "prettier": "^2.0.5",
+    "prettier": "^2.1.4",
     "promise-polyfill": "^8.1.3",
     "react": ">=16.13.1",
     "react-dom": ">=16.13.1",
