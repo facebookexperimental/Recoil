@@ -360,38 +360,38 @@ function syncEffect<T>({
             throw error;
           }
         }
-      }
 
-      // Persist on Initial Read
-      const writeToStorage = storages.get(storeKey)?.write;
-      if (syncDefault === true && writeToStorage != null) {
-        setTimeout(() => {
-          const loadable = getLoadable(node);
-          if (loadable.state === 'hasValue') {
-            // TODO Atom syncEffect() Write
+        // Persist on Initial Read
+        const writeToStorage = storages.get(storeKey)?.write;
+        if (syncDefault === true && writeToStorage != null) {
+          setTimeout(() => {
+            const loadable = getLoadable(node);
+            if (loadable.state === 'hasValue') {
+              // TODO Atom syncEffect() Write
 
-            // Lazy load "allItems" only if needed.
-            const writeInterface = new Proxy(
-              ({
-                diff: new Map([[key, loadable]]),
-                allItems: (null: any), // flowlint-line unclear-type:off
-              }: WriteInterface),
-              {
-                get: (target, prop) => {
-                  if (prop === 'allItems' && target.allItems == null) {
-                    target.allItems = itemsFromSnapshot(
-                      storeKey,
-                      getInfo_UNSTABLE,
-                    );
-                  }
-                  return target[prop];
+              // Lazy load "allItems" only if needed.
+              const writeInterface = new Proxy(
+                ({
+                  diff: new Map([[key, loadable]]),
+                  allItems: (null: any), // flowlint-line unclear-type:off
+                }: WriteInterface),
+                {
+                  get: (target, prop) => {
+                    if (prop === 'allItems' && target.allItems == null) {
+                      target.allItems = itemsFromSnapshot(
+                        storeKey,
+                        getInfo_UNSTABLE,
+                      );
+                    }
+                    return target[prop];
+                  },
                 },
-              },
-            );
+              );
 
-            writeToStorage(writeInterface);
-          }
-        }, 0);
+              writeToStorage(writeInterface);
+            }
+          }, 0);
+        }
       }
     }
 
