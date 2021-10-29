@@ -1,0 +1,54 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { RecoilValue } from '../core/Recoil_RecoilValue';
+
+const {
+  useStoreRef
+} = require('../core/Recoil_RecoilRoot.react');
+
+const {
+  SUSPENSE_TIMEOUT_MS
+} = require('../core/Recoil_Retention');
+
+const {
+  updateRetainCount
+} = require('../core/Recoil_Retention');
+
+const {
+  RetentionZone
+} = require('../core/Recoil_RetentionZone');
+
+const {
+  isSSR
+} = require('../util/Recoil_Environment');
+
+const gkx = require('../util/Recoil_gkx');
+
+const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
+
+const usePrevious = require('../util/Recoil_usePrevious');
+
+const {
+  useEffect,
+  useRef
+} = require('react'); // I don't see a way to avoid the any type here because we want to accept readable
+// and writable values with any type parameter, but normally with writable ones
+// RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
+
+
+type ToRetain = RecoilValue<any> // flowlint-line unclear-type:off
+| RetentionZone | $ReadOnlyArray<RecoilValue<any> | RetentionZone>; // flowlint-line unclear-type:off
+
+declare function useRetain(toRetain: ToRetain): void;
+declare function useRetain_ACTUAL(toRetain: ToRetain): void;
+module.exports = useRetain;

@@ -17,7 +17,7 @@ const {
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot
-} = require('../../hooks/Recoil_Hooks');
+} = require('../../hooks/Recoil_SnapshotHooks');
 
 const React = require('react');
 

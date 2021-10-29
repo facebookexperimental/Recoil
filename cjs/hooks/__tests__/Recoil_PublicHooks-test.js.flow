@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+recoil
- * @flow
+ * @flow strict-local
  * @format
  */
 
@@ -59,24 +59,25 @@ const testRecoil = getRecoilTestFn(() => {
     useRecoilValue,
     useRecoilValueLoadable,
     useSetRecoilState,
-    useSetUnvalidatedAtomValues,
-    useTransactionObservation_DEPRECATED
+    useSetUnvalidatedAtomValues
   } = require('../Recoil_Hooks'));
+  ({
+    useTransactionObservation_DEPRECATED
+  } = require('../Recoil_SnapshotHooks'));
   invariant = require('../../util/Recoil_invariant');
 });
-let fbOnlyTest = test.skip; // @fb-only: fbOnlyTest = test;
-
 let nextID = 0;
 declare function counterAtom(persistence?: PersistenceSettings<number>): any;
 declare function booleanAtom(persistence?: PersistenceSettings<boolean>): any;
 declare function plusOneSelector(dep: RecoilValue<number>): any;
 declare function plusOneAsyncSelector(dep: RecoilValue<number>): [RecoilValueReadOnly<number>, (number) => void];
-declare function additionSelector(depA: RecoilValue<number>, depB: RecoilValue<number>): any;
+declare function additionSelector(depA: RecoilValue<number>, depB: RecoilValue<number>): any; // flowlint-next-line unclear-type:off
+
 declare function asyncSelectorThatPushesPromisesOntoArray(dep: RecoilValue<any>): any;
-declare function componentThatReadsAndWritesAtom<T>(atom: RecoilState<T>): [React.AbstractComponent<{...}>, (((T) => T) | T) => void];
-declare function componentThatWritesAtom<T>(atom: RecoilState<T>): [any, (((T) => T) | T) => void];
+declare function componentThatReadsAndWritesAtom<T>(recoilState: RecoilState<T>): [React.AbstractComponent<{...}>, (((T) => T) | T) => void];
+declare function componentThatWritesAtom<T>(recoilState: RecoilState<T>): [any, (((T) => T) | T) => void];
 declare function componentThatReadsTwoAtoms(one: any, two: any): any;
-declare function componentThatReadsAtomWithCommitCount(atom: any): any;
+declare function componentThatReadsAtomWithCommitCount(recoilState: any): any;
 declare function componentThatToggles(a: any, b: any): any;
 declare function ObservesTransactions(arg0: any): any;
 declare function advanceTimersBy(ms: any): any;
@@ -169,7 +170,7 @@ testRecoil('Async selectors can depend on async selectors', async () => {
     expect(container.textContent).toEqual('3');
   }
 });
-testRecoil('Dep of upstream selector can change while pending', async gks => {
+testRecoil('Dep of upstream selector can change while pending', async () => {
   const anAtom = counterAtom();
   const [upstreamSel, upstreamResolvers] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
   const [downstreamSel, downstreamResolvers] = asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
@@ -448,11 +449,12 @@ testRecoil('Components unsubscribe from atoms when rendered without using them',
   const [WriteA, updateValueA] = componentThatWritesAtom(atomA);
   const [WriteB, updateValueB] = componentThatWritesAtom(atomB);
   const Component = (jest.fn(function Read({
-    atom
+    state
   }) {
-    const [value] = useRecoilState(atom);
+    const [value] = useRecoilState(state);
     return value;
-  }): any);
+  }): any); // flowlint-line unclear-type:off
+
   let toggleSwitch;
   declare var Switch: () => any;
   const container = renderElements(<>
@@ -769,7 +771,7 @@ testRecoil('Ability to not use Suspense', () => {
   declare function ReadsAtomWithoutSuspense(arg0: any): any;
   const container = renderElements(<>
       <Component />
-      <ReadsAtomWithoutSuspense atom={aSelector} />
+      <ReadsAtomWithoutSuspense state={aSelector} />
     </>); // Begins in loading state, then shows initial value:
 
   expect(container.textContent).toEqual('loading not with suspense');
@@ -792,7 +794,7 @@ testRecoil('Ability to not use Suspense - with value instead of loadable', () =>
   declare function ReadsAtomWithoutSuspense(arg0: any): any;
   const container = renderElements(<>
         <Component />
-        <ReadsAtomWithoutSuspense atom={aSelector} />
+        <ReadsAtomWithoutSuspense state={aSelector} />
       </>); // Begins in loading state, then shows initial value:
 
   expect(container.textContent).toEqual('loading not with suspense');
@@ -1042,7 +1044,8 @@ testRecoil('Wakeup from Suspense to previous value', async gks => {
 testRecoil('useTransactionObservation_DEPRECATED: Transaction dirty atoms are set', async () => {
   const anAtom = counterAtom({
     type: 'url',
-    validator: x => (x: any)
+    validator: x => (x: any) // flowlint-line unclear-type:off
+
   });
   const [aSelector, _] = plusOneSelector(anAtom);
   const [anAsyncSelector, __] = plusOneAsyncSelector(aSelector);
@@ -1107,7 +1110,8 @@ testRecoil('Can restore persisted values before atom def code is loaded', () => 
 testRecoil('useTransactionObservation_DEPRECATED: Nonvalidated atoms are included in transaction observation', () => {
   const anAtom = counterAtom({
     type: 'url',
-    validator: x => (x: any)
+    validator: x => (x: any) // flowlint-line unclear-type:off
+
   });
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
   let setUnvalidatedAtomValues;

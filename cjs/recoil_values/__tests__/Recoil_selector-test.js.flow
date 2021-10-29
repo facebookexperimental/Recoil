@@ -34,13 +34,13 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('ReactTestUtils'));
   atom = require('../Recoil_atom');
   ({
-    useRecoilCallback,
     useRecoilState,
     useRecoilValue,
     useRecoilValueLoadable,
     useSetRecoilState,
     useResetRecoilState
   } = require('../../hooks/Recoil_Hooks'));
+  useRecoilCallback = require('../../hooks/Recoil_useRecoilCallback');
   constSelector = require('../Recoil_constSelector');
   errorSelector = require('../Recoil_errorSelector');
   nullthrows = require('../../util/Recoil_nullthrows');

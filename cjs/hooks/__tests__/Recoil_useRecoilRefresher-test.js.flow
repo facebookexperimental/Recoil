@@ -22,8 +22,8 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     renderElements
   } = require('../../__test_utils__/Recoil_TestingUtils'));
+  useRecoilRefresher = require('../Recoil_useRecoilRefresher');
   ({
-    useRecoilRefresher,
     useRecoilValue,
     useSetRecoilState
   } = require('../Recoil_Hooks'));

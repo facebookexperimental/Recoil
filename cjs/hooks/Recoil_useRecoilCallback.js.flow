@@ -1,0 +1,63 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { TransactionInterface } from '../core/Recoil_AtomicUpdates';
+import type { RecoilState } from '../core/Recoil_RecoilValue';
+
+const {
+  atomicUpdater
+} = require('../core/Recoil_AtomicUpdates');
+
+const {
+  batchUpdates
+} = require('../core/Recoil_Batching');
+
+const {
+  DEFAULT_VALUE
+} = require('../core/Recoil_Node');
+
+const {
+  useStoreRef
+} = require('../core/Recoil_RecoilRoot.react');
+
+const {
+  setRecoilValue
+} = require('../core/Recoil_RecoilValueInterface');
+
+const {
+  Snapshot,
+  cloneSnapshot
+} = require('../core/Recoil_Snapshot');
+
+const err = require('../util/Recoil_err');
+
+const invariant = require('../util/Recoil_invariant');
+
+const {
+  useGotoRecoilSnapshot
+} = require('./Recoil_SnapshotHooks');
+
+const {
+  useCallback
+} = require('react');
+
+export type RecoilCallbackInterface = $ReadOnly<{
+  set: <T>(RecoilState<T>, ((T) => T) | T) => void,
+  reset: <T>(RecoilState<T>) => void,
+  snapshot: Snapshot,
+  gotoSnapshot: (Snapshot) => void,
+  transact_UNSTABLE: ((TransactionInterface) => void) => void,
+}>;
+declare class Sentinel {}
+const SENTINEL = new Sentinel();
+declare function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(fn: (RecoilCallbackInterface) => (...Args) => Return, deps?: $ReadOnlyArray<mixed>): (...Args) => Return;
+module.exports = useRecoilCallback;

@@ -34,7 +34,7 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('../../__test_utils__/Recoil_TestingUtils'));
   ({
     useRecoilTransactionObserver
-  } = require('../Recoil_Hooks'));
+  } = require('../Recoil_SnapshotHooks'));
 });
 declare function TransactionObserver(arg0: any): any; // Run test first since it deals with all registered atoms
 

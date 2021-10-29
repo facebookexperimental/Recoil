@@ -39,7 +39,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     useGotoRecoilSnapshot,
     useRecoilSnapshot
-  } = require('../Recoil_Hooks'));
+  } = require('../Recoil_SnapshotHooks'));
 });
 testRecoil('useRecoilSnapshot - subscribe to updates', () => {
   const myAtom = atom({

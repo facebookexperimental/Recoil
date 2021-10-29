@@ -33,8 +33,11 @@ const {
 
 const {
   RetentionZone
-} = require('./Recoil_RetentionZone');
+} = require('./Recoil_RetentionZone'); // Components that aren't mounted after suspending for this long will be assumed
+// to be discarded and their resources released.
 
+
+const SUSPENSE_TIMEOUT_MS = 120000;
 const emptySet = new Set();
 declare function releaseRetainablesNowOnCurrentTree(store: Store, retainables: Set<Retainable>): any;
 declare function findReleasableNodes(store: Store, searchFromNodes: Set<NodeKey>): Set<NodeKey>; // Children before parents
@@ -49,6 +52,7 @@ declare function updateRetainCountToZero(store: Store, retainable: Retainable): 
 declare function releaseScheduledRetainablesNow(store: Store): any;
 declare function retainedByOptionWithDefault(r: RetainedBy | void): RetainedBy;
 module.exports = {
+  SUSPENSE_TIMEOUT_MS,
   updateRetainCount,
   updateRetainCountToZero,
   releaseScheduledRetainablesNow,

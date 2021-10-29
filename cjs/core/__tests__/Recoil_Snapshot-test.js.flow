@@ -23,7 +23,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     useGotoRecoilSnapshot,
     useRecoilTransactionObserver
-  } = require('../../hooks/Recoil_Hooks'));
+  } = require('../../hooks/Recoil_SnapshotHooks'));
   atom = require('../../recoil_values/Recoil_atom');
   constSelector = require('../../recoil_values/Recoil_constSelector');
   selector = require('../../recoil_values/Recoil_selector');

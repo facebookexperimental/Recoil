@@ -11,24 +11,17 @@
 'use strict';
 
 import type { Loadable } from '../adt/Recoil_Loadable';
-import type { TransactionInterface } from '../core/Recoil_AtomicUpdates';
-import type { DefaultValue, PersistenceType } from '../core/Recoil_Node';
+import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
 import type { ComponentSubscription } from '../core/Recoil_RecoilValueInterface';
-import type { NodeKey, Store, TreeState } from '../core/Recoil_State';
-
-const {
-  atomicUpdater
-} = require('../core/Recoil_AtomicUpdates');
+import type { NodeKey } from '../core/Recoil_State';
 
 const {
   batchUpdates
 } = require('../core/Recoil_Batching');
 
 const {
-  DEFAULT_VALUE,
-  getNode,
-  nodes
+  DEFAULT_VALUE
 } = require('../core/Recoil_Node');
 
 const {
@@ -44,23 +37,9 @@ const {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
   setRecoilValue,
-  setRecoilValueLoadable,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue
 } = require('../core/Recoil_RecoilValueInterface');
-
-const {
-  updateRetainCount
-} = require('../core/Recoil_Retention');
-
-const {
-  RetentionZone
-} = require('../core/Recoil_RetentionZone');
-
-const {
-  Snapshot,
-  cloneSnapshot
-} = require('../core/Recoil_Snapshot');
 
 const {
   setByAddingToSet
@@ -68,38 +47,20 @@ const {
 
 const differenceSets = require('../util/Recoil_differenceSets');
 
-const {
-  isSSR
-} = require('../util/Recoil_Environment');
-
 const err = require('../util/Recoil_err');
 
 const expectationViolation = require('../util/Recoil_expectationViolation');
 
-const filterMap = require('../util/Recoil_filterMap');
-
-const filterSet = require('../util/Recoil_filterSet');
-
 const gkx = require('../util/Recoil_gkx');
-
-const invariant = require('../util/Recoil_invariant');
-
-const mapMap = require('../util/Recoil_mapMap');
-
-const mergeMaps = require('../util/Recoil_mergeMaps');
 
 const {
   mutableSourceExists,
   useMutableSource
 } = require('../util/Recoil_mutableSource');
 
-const nullthrows = require('../util/Recoil_nullthrows');
-
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
-
-const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
-
 const useComponentName = require('../util/Recoil_useComponentName');
+
+const useRetain = require('./Recoil_useRetain');
 
 const {
   useCallback,
@@ -107,11 +68,8 @@ const {
   useMemo,
   useRef,
   useState
-} = require('react'); // Components that aren't mounted after suspending for this long will be assumed
-// to be discarded and their resources released.
+} = require('react');
 
-
-const SUSPENSE_TIMEOUT_MS = 120000;
 declare function handleLoadable<T>(loadable: Loadable<T>, recoilValue: RecoilValue<T>, storeRef: any): T;
 declare function validateRecoilValue(recoilValue: any, hookName: any): any;
 export type SetterOrUpdater<T> = (((T) => T) | T) => void;
@@ -176,97 +134,15 @@ declare function useRecoilState<T>(recoilState: RecoilState<T>): [T, SetterOrUpd
 */
 
 declare function useRecoilStateLoadable<T>(recoilState: RecoilState<T>): [Loadable<T>, SetterOrUpdater<T>];
-declare function useTransactionSubscription(callback: (Store) => void): any;
-declare function externallyVisibleAtomValuesInState(state: TreeState): Map<NodeKey, mixed>;
-type ExternallyVisibleAtomInfo = {
-  persistence_UNSTABLE: {
-    type: PersistenceType,
-    backButton: boolean,
-    ...
-  },
-  ...
-};
-/**
-  Calls the given callback after any atoms have been modified and the consequent
-  component re-renders have been committed. This is intended for persisting
-  the values of the atoms to storage. The stored values can then be restored
-  using the useSetUnvalidatedAtomValues hook.
-
-  The callback receives the following info:
-
-  atomValues: The current value of every atom that is both persistable (persistence
-              type not set to 'none') and whose value is available (not in an
-              error or loading state).
-
-  previousAtomValues: The value of every persistable and available atom before
-               the transaction began.
-
-  atomInfo: A map containing the persistence settings for each atom. Every key
-            that exists in atomValues will also exist in atomInfo.
-
-  modifiedAtoms: The set of atoms that were written to during the transaction.
-
-  transactionMetadata: Arbitrary information that was added via the
-          useSetUnvalidatedAtomValues hook. Useful for ignoring the useSetUnvalidatedAtomValues
-          transaction, to avoid loops.
-*/
-
-declare function useTransactionObservation_DEPRECATED(callback: ({
-  atomValues: Map<NodeKey, mixed>,
-  previousAtomValues: Map<NodeKey, mixed>,
-  atomInfo: Map<NodeKey, ExternallyVisibleAtomInfo>,
-  modifiedAtoms: $ReadOnlySet<NodeKey>,
-  transactionMetadata: {
-    [NodeKey]: mixed,
-    ...
-  },
-}) => void): any;
-declare function useRecoilTransactionObserver(callback: ({
-  snapshot: Snapshot,
-  previousSnapshot: Snapshot,
-}) => void): any;
-declare function usePrevious<T>(value: T): T | void; // Return a snapshot of the current state and subscribe to all state changes
-
-declare function useRecoilSnapshot(): Snapshot;
-declare function useGotoRecoilSnapshot(): (Snapshot) => void;
 declare function useSetUnvalidatedAtomValues(): (values: Map<NodeKey, mixed>, transactionMetadata?: {...}) => void;
-export type RecoilCallbackInterface = $ReadOnly<{
-  set: <T>(RecoilState<T>, ((T) => T) | T) => void,
-  reset: <T>(RecoilState<T>) => void,
-  snapshot: Snapshot,
-  gotoSnapshot: (Snapshot) => void,
-  transact_UNSTABLE: ((TransactionInterface) => void) => void,
-}>;
-declare class Sentinel {}
-const SENTINEL = new Sentinel();
-declare function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(fn: (RecoilCallbackInterface) => (...Args) => Return, deps?: $ReadOnlyArray<mixed>): (...Args) => Return; // I don't see a way to avoid the any type here because we want to accept readable
-// and writable values with any type parameter, but normally with writable ones
-// RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
-
-type ToRetain = RecoilValue<any> // flowlint-line unclear-type:off
-| RetentionZone | $ReadOnlyArray<RecoilValue<any> | RetentionZone>; // flowlint-line unclear-type:off
-
-declare function useRetain(toRetain: ToRetain): void;
-declare function useRetain_ACTUAL(toRetain: ToRetain): void;
-declare function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(fn: (TransactionInterface) => (...Arguments) => void, deps?: $ReadOnlyArray<mixed>): (...Arguments) => void;
-declare function useRecoilRefresher<T>(recoilValue: RecoilValue<T>): () => void;
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
-  useRecoilRefresher,
-  useGotoRecoilSnapshot,
-  useRecoilCallback,
   useRecoilInterface: useRecoilInterface_DEPRECATED,
-  useRecoilSnapshot,
   useRecoilState,
   useRecoilStateLoadable,
-  useRecoilTransaction,
-  useRecoilTransactionObserver,
   useRecoilValue,
   useRecoilValueLoadable,
-  useRetain,
   useResetRecoilState,
   useSetRecoilState,
-  useSetUnvalidatedAtomValues,
-  useTransactionObservation_DEPRECATED,
-  useTransactionSubscription_DEPRECATED: useTransactionSubscription
+  useSetUnvalidatedAtomValues
 };
