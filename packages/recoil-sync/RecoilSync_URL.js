@@ -134,7 +134,7 @@ export type LocationOption =
   | {part: 'hash'}
   | {part: 'search'}
   | {part: 'queryParams', param?: string};
-type RecoilURLSyncOptions = {
+export type RecoilURLSyncOptions = {
   storeKey?: StoreKey,
   location: LocationOption,
   serialize: mixed => string,

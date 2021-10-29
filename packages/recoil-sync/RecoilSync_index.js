@@ -16,6 +16,10 @@ const {
   urlSyncEffect,
   useRecoilURLSync,
 } = require('./RecoilSync_URL');
+const {
+  RecoilURLSyncJSON,
+  useRecoilURLSyncJSON,
+} = require('./RecoilSync_URLJSON');
 
 module.exports = {
   // Core Recoil Sync
@@ -25,6 +29,8 @@ module.exports = {
 
   // Recoil Sync URL
   useRecoilURLSync,
+  useRecoilURLSyncJSON,
   RecoilURLSync,
+  RecoilURLSyncJSON,
   urlSyncEffect,
 };
