@@ -125,7 +125,7 @@ export type AtomEffect<T> = ({
   resetSelf: () => void,
   // Subscribe callbacks to events.
   // Atom effect observers are called before global transaction observers
-  onSet: ((newValue: T, oldValue: T | DefaultValue) => void) => void,
+  onSet: ((newValue: T, oldValue: T | DefaultValue, isReset: boolean) => void) => void,
   // Accessors to read other atoms/selectors
   getPromise: <S>(RecoilValue<S>) => Promise<S>,
   getLoadable: <S>(RecoilValue<S>) => Loadable<S>,

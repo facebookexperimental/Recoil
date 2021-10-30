@@ -7452,7 +7452,7 @@ function baseAtom(options) {
             // case, it was kind of a noop, so the semantics are debatable..
 
             if (((_pendingSetSelf = pendingSetSelf) === null || _pendingSetSelf === void 0 ? void 0 : _pendingSetSelf.effect) !== effect || ((_pendingSetSelf2 = pendingSetSelf) === null || _pendingSetSelf2 === void 0 ? void 0 : _pendingSetSelf2.value) !== newValue) {
-              handler(newValue, oldValue);
+              handler(newValue, oldValue, !currentTree.atomValues.has(key));
             } else if (((_pendingSetSelf3 = pendingSetSelf) === null || _pendingSetSelf3 === void 0 ? void 0 : _pendingSetSelf3.effect) === effect) {
               pendingSetSelf = null;
             }

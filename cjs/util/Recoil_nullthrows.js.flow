@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const err = require('../util/Recoil_err');
+const err = require('./Recoil_err');
 
 declare function nullthrows<T>(x: ?T, message: ?string): T;
 module.exports = nullthrows;
