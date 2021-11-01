@@ -92,8 +92,7 @@ class ValueLoadable<T> extends BaseLoadable<T> {
         ? loadableWithPromise(next)
         : isLoadable(next)
         ? next
-        : // $FlowIssue[incompatible-type-arg]
-          loadableWithValue(next);
+        : loadableWithValue(next);
     } catch (e) {
       return isPromise(e)
         ? // If we "suspended", then try again.
