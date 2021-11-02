@@ -171,8 +171,7 @@ class ValueLoadable extends BaseLoadable {
   map(map) {
     try {
       const next = map(this.contents);
-      return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? next : // $FlowIssue[incompatible-type-arg]
-      loadableWithValue(next);
+      return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? next : loadableWithValue(next);
     } catch (e) {
       return Recoil_isPromise(e) ? // If we "suspended", then try again.
       // errors and subsequent retries will be handled in 'loading' case
