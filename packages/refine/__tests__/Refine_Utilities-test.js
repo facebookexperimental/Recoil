@@ -341,4 +341,13 @@ describe('custom', () => {
     const threeResult = checkOneOrTwo(3);
     invariant(threeResult.type === 'failure', 'should fail');
   });
+
+  it('catch errors as failures', () => {
+    function userValidator() {
+      throw new Error('MY ERROR');
+    }
+    const result = custom(userValidator)();
+    invariant(result.type === 'failure', 'should fail');
+    expect(result.message).toEqual('MY ERROR');
+  });
 });

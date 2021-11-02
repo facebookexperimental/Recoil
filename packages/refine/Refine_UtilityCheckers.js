@@ -341,10 +341,14 @@ function custom<T>(
   failureMessage: string = `failed to return non-null from custom checker.`,
 ): Checker<T> {
   return (value, path = new Path()) => {
-    const checked = checkValue(value);
-    return checked != null
-      ? success(checked, [])
-      : failure(failureMessage, path);
+    try {
+      const checked = checkValue(value);
+      return checked != null
+        ? success(checked, [])
+        : failure(failureMessage, path);
+    } catch (error) {
+      return failure(error.message, path);
+    }
   };
 }
 
