@@ -4,24 +4,25 @@
 
 ***Add new changes here as they land***
 
-- Added `useRecoilRefresher_UNSTABLE()` hook which forces a selector to re-run it's `get()`, and is a no-op for an atom. (#972)
-- Atom effect improvements:
-  - Add `getLoadable()`, `getPromise()`, and `getInfo_UNSTABLE()` to Atom Effects interface for reading other atoms.
-  - Add `isReset` parameter to `onSet()` callback to know if the atom is being reset or not. (#1358, #1345)
-- `Loadable` improvements:
-  - Publish `RecoilLoadable` interface with factories and type checking for Loadables.
-  - Ability to map Loadables with other Loadables.
-  - Re-implement Loadable as classes.
-- Improved dev-mode checks:
-  - Atoms freeze default, initialized, and async values.  Selectors should not freeze upstream dependencies. (#1261, #1259)
-  - Perform runtime check that required options are provided when creating atoms and selectors. (#1324)
-- Allow class instances in family parameters for Flow
-
 ### Pending
 - Memory management
 - useTransition() compatibility
 - Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
 
+## 0.5.0 (2021-11-03)
+
+- Added `useRecoilRefresher_UNSTABLE()` hook which forces a selector to re-run it's `get()`, and is a no-op for an atom. (#972, #1294, #1302)
+- Atom effect improvements:
+  - Add `getLoadable()`, `getPromise()`, and `getInfo_UNSTABLE()` to Atom Effects interface for reading other atoms. (#1205, #1210)
+  - Add `isReset` parameter to `onSet()` callback to know if the atom is being reset or not. (#1358, #1345)
+- `Loadable` improvements:
+  - Publish `RecoilLoadable` interface with factories and type checking for Loadables. (#1263, #1264, #1312)
+  - Ability to map Loadables with other Loadables. (#1180)
+  - Re-implement Loadable as classes. (#1315)
+- Improved dev-mode checks:
+  - Atoms freeze default, initialized, and async values.  Selectors should not freeze upstream dependencies. (#1261, #1259)
+  - Perform runtime check that required options are provided when creating atoms and selectors. (#1324)
+- Allow class instances in family parameters for Flow
 
 ## 0.4.1 (2021-08-26)
 
