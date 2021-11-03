@@ -158,7 +158,7 @@ function loadableTest(loadable: Loadable<number>) {
       loadable.promiseOrThrow(); // $ExpectType Promise<number>
       break;
     case 'loading':
-      loadable.contents; // $ExpectType LoadablePromise<number>
+      loadable.contents; // $ExpectType Promise<number>
       loadable.getValue(); // $ExpectType number
       loadable.toPromise(); // $ExpectType Promise<number>
       loadable.valueMaybe(); // $ExpectType undefined
@@ -719,6 +719,6 @@ isRecoilValue(mySelector1);
     x.void; // $ExpectError
   });
 
-  Load.isLoadable(false); // $ExpectType boolean
-  Load.isLoadable(Load.of('x')); // $ExpectType boolean
+  RecoilLoadable.isLoadable(false); // $ExpectType boolean
+  RecoilLoadable.isLoadable(RecoilLoadable.of('x')); // $ExpectType boolean
 }
