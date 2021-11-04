@@ -23,7 +23,7 @@ describe('json', () => {
     );
 
     const result = parse('{"a": "test", "c": true}');
-    expect(result).toEqual({a: 'test', b: null, c: true});
+    expect(result).toEqual({a: 'test', b: undefined, c: true});
     invariant(result != null, 'should not be null');
     expect(result.a).toEqual('test');
   });
@@ -36,7 +36,11 @@ describe('json', () => {
       MESSAGE,
     );
 
-    expect(parse('{"a": "a", "c": true}')).toEqual({a: 'a', b: null, c: true});
+    expect(parse('{"a": "a", "c": true}')).toEqual({
+      a: 'a',
+      b: undefined,
+      c: true,
+    });
     expect(() => parse('{"a": "a", "d": true}')).toThrow(new RegExp(MESSAGE));
     expect(() => parse(null)).toThrow(new RegExp(MESSAGE));
   });
