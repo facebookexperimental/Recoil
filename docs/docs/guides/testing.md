@@ -7,7 +7,7 @@ title: Testing
 It can be helpful to test Recoil state when testing a component. You can compare the new state  against expected values using this pattern. It uses a React functional component, `useRecoilValue` and `useEffect`, to observe an `atom`/`selector`'s changes and execute a callback every time the user performs an action that modifies the state.
 
 ```jsx
-export const RecoilObserver = ({node, onChange} => {
+export const RecoilObserver = ({node, onChange}) => {
   const value = useRecoilValue(node);
   useEffect(() => onChange(value), [onChange, value]);
   return null;
