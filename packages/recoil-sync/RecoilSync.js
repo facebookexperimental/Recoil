@@ -22,7 +22,7 @@ const {
 
 const err = require('./util/RecoilSync_err');
 const React = require('react');
-const {useCallback, useEffect} = require('react');
+const {useCallback, useEffect, useRef} = require('react');
 
 type NodeKey = string;
 export type ItemKey = string;
@@ -135,8 +135,14 @@ function useRecoilSync({
 }: RecoilSyncOptions): void {
   // Subscribe to Recoil state changes
   const snapshot = useRecoilSnapshot();
+  const previousSnapshotRef = useRef(snapshot);
   useEffect(() => {
     if (write != null) {
+      if (snapshot === previousSnapshotRef.current) {
+        return;
+      } else {
+        previousSnapshotRef.current = snapshot;
+      }
       const diff: ItemDiff = new Map();
       const atomRegistry = registries.getAtomRegistry(storeKey);
       const modifiedAtoms = snapshot.getNodes_UNSTABLE({isModified: true});
