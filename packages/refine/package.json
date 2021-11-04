@@ -1,10 +1,10 @@
 {
   "name": "refine",
   "description": "This is the internal package.json enabling CommonJS module",
-  "main": "Refine_index.js",
+  "main": "refine.js",
   "haste_commonjs": true,
   "files": [
-    "Refine_index.js"
+    "refine.js"
   ],
   "directories": {
     "": "./"

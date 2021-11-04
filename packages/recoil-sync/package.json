@@ -1,10 +1,10 @@
 {
   "name": "recoil-sync",
   "description": "This is the internal package.json enabling CommonJS module",
-  "main": "RecoilSync_index.js",
+  "main": "recoil-sync.js",
   "haste_commonjs": true,
   "files": [
-    "RecoilSync_index.js"
+    "recoil-sync.js"
   ],
   "directories": {
     "": "./"
