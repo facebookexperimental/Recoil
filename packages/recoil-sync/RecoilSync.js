@@ -300,7 +300,7 @@ export type SyncEffectOptions<T> = {
 
   // If there is a failure reading or refining the value, should the atom
   // silently use the default value or be put in an error state
-  actionOnFailure?: ActionOnFailure,
+  actionOnFailure_UNSTABLE?: ActionOnFailure,
 };
 
 function syncEffect<T>({
@@ -308,7 +308,7 @@ function syncEffect<T>({
   itemKey,
   refine,
   syncDefault,
-  actionOnFailure = 'errorState',
+  actionOnFailure_UNSTABLE: actionOnFailure = 'errorState',
 }: SyncEffectOptions<T>): AtomEffect<T> {
   return ({node, trigger, setSelf, getLoadable, getInfo_UNSTABLE}) => {
     const key = itemKey ?? node.key;

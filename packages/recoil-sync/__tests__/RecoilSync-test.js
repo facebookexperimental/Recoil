@@ -220,7 +220,7 @@ test('Read from storage error', async () => {
     key: 'recoil-sync read error B',
     default: 'DEFAULT',
     effects_UNSTABLE: [
-      syncEffect({refine: string(), actionOnFailure: 'defaultValue'}),
+      syncEffect({refine: string(), actionOnFailure_UNSTABLE: 'defaultValue'}),
     ],
   });
   const atomC = atom({
@@ -237,7 +237,7 @@ test('Read from storage error', async () => {
       syncEffect({
         itemKey: 'error',
         refine: string(),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
     ],
   });
@@ -256,7 +256,7 @@ test('Read from storage error', async () => {
     effects_UNSTABLE: [
       syncEffect({
         refine: string(),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
     ],
   });
@@ -298,78 +298,81 @@ test('Read from storage error', async () => {
   );
 });
 
-test('Read from storage upgrade', async () => {
+test('Read from storage upgrade - multiple effects', async () => {
   // Fail validation
   const atomA = atom<string>({
-    key: 'recoil-sync fail validation',
+    key: 'recoil-sync fail validation - multi',
     default: 'DEFAULT',
     effects_UNSTABLE: [
       // No matching sync effect
-      syncEffect({refine: string(), actionOnFailure: 'defaultValue'}),
+      syncEffect({refine: string(), actionOnFailure_UNSTABLE: 'defaultValue'}),
     ],
   });
 
   // Upgrade from number
   const atomB = atom<string>({
-    key: 'recoil-sync upgrade number',
+    key: 'recoil-sync upgrade number - multi',
     default: 'DEFAULT',
     effects_UNSTABLE: [
       // This sync effect is ignored
       syncEffect({
         refine: asType(string(), () => 'IGNORE'),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
       syncEffect({
         refine: asType(number(), num => `${num}`),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
       // This sync effect is ignored
       syncEffect({
         refine: asType(string(), () => 'IGNORE'),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
     ],
   });
 
   // Upgrade from string
   const atomC = atom<number>({
-    key: 'recoil-sync upgrade string',
+    key: 'recoil-sync upgrade string - multi',
     default: 0,
     effects_UNSTABLE: [
       // This sync effect is ignored
       syncEffect({
         refine: asType(number(), () => 999),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
       syncEffect({
         refine: asType(string(), Number),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
       // This sync effect is ignored
       syncEffect({
         refine: asType(number(), () => 999),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
     ],
   });
 
   // Upgrade from async
   const atomD = atom<string>({
-    key: 'recoil-sync upgrade async',
+    key: 'recoil-sync upgrade async - multi',
     default: 'DEFAULT',
     effects_UNSTABLE: [
       syncEffect({
         refine: asType(number(), num => `${num}`),
-        actionOnFailure: 'defaultValue',
+        actionOnFailure_UNSTABLE: 'defaultValue',
       }),
     ],
   });
 
   const storage = new Map([
-    ['recoil-sync fail validation', RecoilLoadable.of(123)],
-    ['recoil-sync upgrade number', RecoilLoadable.of(123)],
-    ['recoil-sync upgrade string', RecoilLoadable.of('123')],
-    ['recoil-sync upgrade async', RecoilLoadable.of(Promise.resolve(123))],
+    ['recoil-sync fail validation - multi', RecoilLoadable.of(123)],
+    ['recoil-sync upgrade number - multi', RecoilLoadable.of(123)],
+    ['recoil-sync upgrade string - multi', RecoilLoadable.of('123')],
+    [
+      'recoil-sync upgrade async - multi',
+      RecoilLoadable.of(Promise.resolve(123)),
+    ],
   ]);
 
   const container = renderElements(
@@ -387,20 +390,20 @@ test('Read from storage upgrade', async () => {
   expect(container.textContent).toBe('"DEFAULT""123"123"123"');
 });
 
-test('Read from storage upgrade - single effect', async () => {
+test('Read from storage upgrade', async () => {
   // Fail validation
   const atomA = atom<string>({
-    key: 'recoil-sync fail validation - single',
+    key: 'recoil-sync fail validation',
     default: 'DEFAULT',
     effects_UNSTABLE: [
       // No matching sync effect
-      syncEffect({refine: string(), actionOnFailure: 'defaultValue'}),
+      syncEffect({refine: string(), actionOnFailure_UNSTABLE: 'defaultValue'}),
     ],
   });
 
   // Upgrade from number
   const atomB = atom<string>({
-    key: 'recoil-sync upgrade number - single',
+    key: 'recoil-sync upgrade number',
     default: 'DEFAULT',
     effects_UNSTABLE: [
       syncEffect({
@@ -415,7 +418,7 @@ test('Read from storage upgrade - single effect', async () => {
 
   // Upgrade from string
   const atomC = atom<number>({
-    key: 'recoil-sync upgrade string - single',
+    key: 'recoil-sync upgrade string',
     default: 0,
     effects_UNSTABLE: [
       syncEffect({
@@ -430,7 +433,7 @@ test('Read from storage upgrade - single effect', async () => {
 
   // Upgrade from async
   const atomD = atom<string>({
-    key: 'recoil-sync upgrade async - single',
+    key: 'recoil-sync upgrade async',
     default: 'DEFAULT',
     effects_UNSTABLE: [
       syncEffect({
@@ -443,13 +446,10 @@ test('Read from storage upgrade - single effect', async () => {
   });
 
   const storage = new Map([
-    ['recoil-sync fail validation - single', RecoilLoadable.of(123)],
-    ['recoil-sync upgrade number - single', RecoilLoadable.of(123)],
-    ['recoil-sync upgrade string - single', RecoilLoadable.of('123')],
-    [
-      'recoil-sync upgrade async - single',
-      RecoilLoadable.of(Promise.resolve(123)),
-    ],
+    ['recoil-sync fail validation', RecoilLoadable.of(123)],
+    ['recoil-sync upgrade number', RecoilLoadable.of(123)],
+    ['recoil-sync upgrade string', RecoilLoadable.of('123')],
+    ['recoil-sync upgrade async', RecoilLoadable.of(Promise.resolve(123))],
   ]);
 
   const container = renderElements(
