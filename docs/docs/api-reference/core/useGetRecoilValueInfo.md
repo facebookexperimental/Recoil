@@ -3,13 +3,13 @@ title: useGetRecoilValueInfo_UNSTABLE()
 sidebar_label: useGetRecoilValueInfo()
 ---
 
-This hook allows a component to "peek" at the current state, value, and other information about an atom or selector.  This is similar to the [`getInfo_UNSTABLE()`](/docs/api-reference/core/Snapshot#debug-information) method in [`Snapshot`](docs/api-reference/core/Snapshot)
+This hook allows a component to "peek" at the current state, value, and other information about an atom or selector.  This is similar to the `getInfo_UNSTABLE()` method in [`Snapshot`](/docs/api-reference/core/Snapshot#debug-information) and [atom effects](/docs/guides/atom-effects)
 
 
 ```jsx
-function useGetRecoilValueInfo_UNSTABLE(): RecoilValue<T> => AtomInfo<T>;
+function useGetRecoilValueInfo_UNSTABLE(): RecoilValue<T> => RecoilValueInfo<T>;
 
-interface AtomInfo<T> {
+interface RecoilValueInfo<T> {
   loadable?: Loadable<T>;
   isActive: boolean;
   isSet: boolean;
@@ -46,7 +46,7 @@ function ButtonToShowCurrentSubscriptions() {
     const {subscribers} = getRecoilValueInfo(myAtom);
     console.debug(
       'Current Subscriber Nodes:',
-      Array.from(subscribers.nodes).map(({key})=>key),
+      Array.from(subscribers.nodes).map(({key}) => key),
     );
   }
 

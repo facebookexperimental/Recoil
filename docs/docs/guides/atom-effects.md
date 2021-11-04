@@ -5,12 +5,6 @@ sidebar_label: Atom Effects
 
 Atom Effects are a new experimental API for managing side-effects and initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are defined as part of the atom definition, so each atom can specify and compose their own policies.  This API is still evolving, and thus marked as `_UNSTABLE`.
 
-----
-## *IMPORTANT NOTE*
-***This API is currently under development and will change.  Please stay tuned...***
-
-----
-
 An *atom effect* is a *function* with the following definition.
 
 ```jsx
@@ -32,9 +26,13 @@ type AtomEffect<T> = ({
   // Subscribe to changes in the atom value.
   // The callback is not called due to changes from this effect's own setSelf().
   onSet: (
-    (newValue: T, oldValue: T | DefaultValue) => void,
+    (newValue: T, oldValue: T | DefaultValue, isReset: boolean) => void,
   ) => void,
 
+  // Callbacks to read other atoms/selectors
+  getPromise: <S>(RecoilValue<S>) => Promise<S>,
+  getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
+  getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
 }) => void | () => void; // Optionally return a cleanup handler
 ```
 
@@ -54,7 +52,7 @@ const myState = atom({
 });
 ```
 
-[Atom families](/docs/api-reference/utils/atomFamily) also support parameterized or non-parameterized effects:
+[Atom families](/docs/api-reference/utils/atomFamily) support either parameterized or non-parameterized effects:
 
 ```jsx
 const myStateFamily = atomFamily({
@@ -69,6 +67,8 @@ const myStateFamily = atomFamily({
   ],
 });
 ```
+
+See [`useGetRecoilValueInfo()`](/docs/api-reference/core/useGetRecoilValueInfo) for documentation about the information returned by  `getInfo_UNSTABLE()`.
 
 ### Compared to React Effects
 
@@ -100,7 +100,7 @@ function MyApp(): React.Node {
 
 ### Compared to Snapshots
 
-The [`Snapshot hooks`](/docs/api-reference/core/Snapshot#hooks) API can also monitor atom state changes and the `initializeState` prop in [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) can initialize values for initial render. However, these APIs monitor all state changes and can be awkward to manage dynamic atoms, particularly atom families.  With atom effects, the side-effect can be defined per-atom alongside the atom definition and multiple policies can be easily composed.
+The [`Snapshot hooks`](/docs/api-reference/core/Snapshot#hooks) API can also monitor atom state changes and the `initializeState` prop in [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) can initialize values for initial render. However, these APIs monitor all state changes and can be awkward to manage dynamic atoms, particularly atom families.  With atom effects the side-effect can be defined per-atom alongside the atom definition, and multiple policies can be easily composed.
 
 ## Logging Example
 
@@ -223,8 +223,10 @@ const localStorageEffect = key => ({setSelf, onSet}) => {
     setSelf(JSON.parse(savedValue));
   }
 
-  onSet(newValue => {
-    localStorage.setItem(key, JSON.stringify(newValue));
+  onSet((newValue, _, isReset) => {
+    isReset
+      ? localStorage.removeItem(key)
+      : localStorage.setItem(key, JSON.stringify(newValue));
   });
 };
 
@@ -257,8 +259,11 @@ const localForageEffect = key => ({setSelf, onSet}) => {
       : new DefaultValue() // Abort initialization if no value was stored
   ));
 
-  onSet(newValue => {
-    localStorage.setItem(key, JSON.stringify(newValue));
+  // Subscribe to state changes and persist them to localForage
+  onSet((newValue, _, isReset) => {
+    isReset
+      ? localForage.removeItem(key)
+      : localForage.setItem(key, JSON.stringify(newValue));
   });
 };
 
@@ -277,7 +282,7 @@ const currentUserIDState = atom({
 With this approach, you can asynchronously call `setSelf()` when the value is available.  Unlike initializing to a `Promise`, the atom's default value will be used initially, so `<Suspense>` will not show a fallback unless the atom's default is a `Promise` or async selector.  If the atom is set to a value before the `setSelf()` is called, then it will be overwritten by the `setSelf()`.  This approach isn't just limited to `await`, but for any asynchronous usage of `setSelf()`, such as `setTimeout()`.
 
 ```jsx
-const localForageEffect = key => ({setSelf, onSet}) => {
+const localForageEffect = key => ({setSelf, onSet, trigger}) => {
   // If there's a persisted value - set it on load
   const loadPersisted = async () => {
     const savedValue = await localForage.getItem(key);
@@ -287,12 +292,16 @@ const localForageEffect = key => ({setSelf, onSet}) => {
     }
   };
 
-  // Load the persisted data
-  loadPersisted();
+  // Asynchronously set the persisted data
+  if (trigger === 'get') {
+    loadPersisted();
+  }
 
   // Subscribe to state changes and persist them to localForage
-  onSet(newValue => {
-    localForage.setItem(key, JSON.stringify(newValue));
+  onSet((newValue, _, isReset) => {
+    isReset
+      ? localForage.removeItem(key)
+      : localForage.setItem(key, JSON.stringify(newValue));
   });
 };
 
@@ -361,8 +370,10 @@ const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onS
     options.restorer(savedValue ?? new DefaultValue(), new DefaultValue(), savedValues),
   );
 
-  onSet(newValue => {
-    localStorage.setItem(options.key, JSON.stringify(newValue));
+  onSet((newValue, _, isReset) => {
+    isReset
+      ? localForage.removeItem(key)
+      : localForage.setItem(key, JSON.stringify(newValue));
   });
 };
 
@@ -395,4 +406,4 @@ Atom state can also be persisted and synced with the browser URL history.  This 
 
 ## Error Handling
 
-If there is an error thrown during the execution of an atom effect then the atom will be initialized in an error state with that error.  This can then be handled with the React `<ErrorBoundary>` mechanism at render time.
+If there is an error thrown during the execution of an atom effect, then the atom will be initialized in an error state with that error.  This can then be handled with the React `<ErrorBoundary>` mechanism at render time.

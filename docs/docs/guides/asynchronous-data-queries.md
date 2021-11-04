@@ -317,12 +317,40 @@ function UserInfo({userID}) {
 
 ## Query Refresh
 
-When using selectors to model data queries, it's important to remember that selector evaluation should always provide a consistent value for a given state.  Selectors represent state derived from other atom and selector states.  Thus, selector evaluation functions should be idempotent for a given input, as it may be cached or executed multiple times.  Practically, that means a single selector should not be used for a query where you expect the results to vary during the application's lifetime.
+When using selectors to model data queries, selector evaluation should always provide a consistent value for a given state.  Selectors represent state derived from other atom and selector states.  Thus, selector evaluation functions should be idempotent for a given input, as it may be cached or executed multiple times.  However, if selectors obtain data from data queries it may be helpful for them to re-query in order to refresh with newer data or re-try after a failure.  There are a few ways to achieve this:
 
-There are a few patterns you can use for working with mutable data:
+### `useRecoilRefresher()`
+
+The [`useRecoilRefresher_UNSTABLE()`](/docs/api-reference/core/useRecoilRefresher) hook can be used to get a callback which you can call to clear any caches and force it to re-evaluate.
+
+```jsx
+const userInfoQuery = selectorFamily({
+  key: 'UserInfoQuery',
+  get: userID => async () => {
+    const response = await myDBQuery({userID});
+    if (response.error) {
+      throw response.error;
+    }
+    return response.data;
+  }
+})
+
+function CurrentUserInfo() {
+  const currentUserID = useRecoilValue(currentUserIDState);
+  const currentUserInfo = useRecoilValue(userInfoQuery(currentUserID));
+  const refresh = useRecoilRefresher_UNSTABLE();
+
+  return (
+    <div>
+      <h1>{currentUserInfo.name}</h1>
+      <button onClick={() => refresh(userInfoQuery(currentUserID))}>Refresh</button>
+    </div>
+  );
+}
+```
 
 ### Use a Request ID
-Selector evaluation should provide a consistent value for a given state based on input (dependent state or family parameters).  So, you could add a request ID as either a family parameter or a dependency to your query.  For example:
+Selector evaluation should provide a consistent value for a given state based on its input (dependent state or family parameters).  So, you could add a request ID as either a family parameter or a dependency to your query.  For example:
 
 ```jsx
 const userInfoQueryRequestIDState = atomFamily({
@@ -338,7 +366,7 @@ const userInfoQuery = selectorFamily({
     if (response.error) {
       throw response.error;
     }
-    return response;
+    return response.data;
   },
 });
 
@@ -356,7 +384,7 @@ function CurrentUserInfo() {
 
   return (
     <div>
-      <h1>{currentUser.name}</h1>
+      <h1>{currentUserInfo.name}</h1>
       <button onClick={refreshUserInfo}>Refresh</button>
     </div>
   );
@@ -389,6 +417,6 @@ function RefreshUserInfo({userID}) {
 }
 ```
 
-One downside to this approach is that atoms do not *currently* support accepting a `Promise` as the new value in order to automatically take advantage of React Suspense while the query refresh is pending, if that is your desired behavior.  However, you could store an object which manually encodes the loading status as well as the results if desired.
+Note that atoms do not *currently* support accepting a `Promise` as the new value.  So, you cannot currently put the atom in a pending state for React Suspense while the query refresh is pending, if that is your desired behavior.  However, you could store an object which manually encodes the current loading status as well as the actual results to explicitly handle this.
 
 Also consider [atom effects](/docs/guides/atom-effects) for query synchronization of atoms.
