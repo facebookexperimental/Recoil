@@ -71,7 +71,7 @@ Notice that `set()` and `reset()` have the same signature as callbacks provided 
 
 ## Going to a Snapshot
 
-The following hook can be used for navigating the current Recoil state to the provided `Snapshot`:
+The following hook can be used for updating the current Recoil state to match the provided `Snapshot`:
 - [`useGotoRecoilSnapshot()`](/docs/api-reference/core/useGotoRecoilSnapshot) - Update current state to match a Snapshot
 
 
