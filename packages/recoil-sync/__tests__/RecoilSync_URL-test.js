@@ -203,7 +203,10 @@ describe('Test URL Persistence', () => {
       default: 'DEFAULT',
       effects_UNSTABLE: [
         // No matching sync effect
-        syncEffect({refine: string(), actionOnFailure: 'defaultValue'}),
+        syncEffect({
+          refine: string(),
+          actionOnFailure_UNSTABLE: 'defaultValue',
+        }),
       ],
     });
 
