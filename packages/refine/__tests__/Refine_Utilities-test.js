@@ -22,6 +22,7 @@ const {
   custom,
   lazy,
   match,
+  maybe,
   nullable,
   or,
   union,
@@ -182,6 +183,92 @@ describe('nullable', () => {
     invariant(result.type === 'success', 'should succeed to validate');
     expect(result.warnings?.[0]?.path.toString()).toEqual('<root>.b.c');
     expect(result.warnings?.[1]?.path.toString()).toEqual('<root>.b.d.f');
+  });
+});
+
+describe('maybe', () => {
+  it('should correctly parse value when undefined is provided', () => {
+    const coerce = maybe(string());
+    const result = coerce(undefined);
+
+    invariant(result.type === 'success', 'should succeed');
+    invariant(result.value === undefined, 'value should be true');
+  });
+
+  it('should correctly parse value when null is provided', () => {
+    const coerce = maybe(string());
+    const result = coerce(null);
+
+    invariant(result.type === 'success', 'should succeed');
+    invariant(result.value === null, 'value should be true');
+  });
+
+  it('should correctly parse value when non-void value is provided', () => {
+    const coerce = maybe(string());
+    const result = coerce('test');
+
+    invariant(result.type === 'success', 'should succeed');
+    invariant(result.value === 'test', 'value should be true');
+  });
+
+  it('should correctly parse invalid', () => {
+    const coerce = maybe(string());
+    const result = coerce(1);
+
+    invariant(result.type === 'failure', 'should fail');
+  });
+
+  it('should validate the value, but return undefined if invalid', () => {
+    const coerce = maybe(string(), {
+      whenInvalid: 'VOID',
+    });
+
+    const result = coerce(1);
+    invariant(result.type === 'success', 'should succeed');
+    invariant(result.value === undefined, 'value should be true');
+    expect(result.warnings?.length).toBe(1);
+  });
+
+  it('should validate the value, but return null if invalid', () => {
+    const coerce = maybe(string(), {
+      whenInvalid: 'NULL',
+    });
+
+    const result = coerce(1);
+    invariant(result.type === 'success', 'should succeed');
+    invariant(result.value === null, 'value should be true');
+    expect(result.warnings?.length).toBe(1);
+  });
+
+  it('should pass along warnings in child result', () => {
+    const coerce = object({
+      field: maybe(
+        object({
+          child: maybe(string(), {
+            whenInvalid: 'VOID',
+          }),
+        }),
+      ),
+    });
+
+    const result = coerce({field: {child: 1}});
+    invariant(result.type === 'success', 'should succeed');
+    expect(result.warnings?.length).toBe(1);
+    const warning = result.warnings?.[0];
+    invariant(warning != null, 'should have warning');
+    expect(warning.path.toString()).toEqual('<root>.field.child');
+  });
+
+  it('should correctly parse omitted voidable keys in record', () => {
+    const coerce = object({
+      description: maybe(string()),
+      title: string(),
+    });
+
+    const result = coerce({title: 'test'});
+    invariant(result.type === 'success', 'should succeed');
+    invariant(result.value.title === 'test', 'value should be true');
+    invariant(result.value.description === undefined, 'value should be true');
   });
 });
 

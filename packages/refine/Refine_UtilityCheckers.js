@@ -233,6 +233,75 @@ function voidable<T>(
 }
 
 /**
+ * wraps a given checker, making the valid value assignable to either null or
+ * undefined without coercing the value.
+ *
+ * By default, a value passed to maybe must match the checker spec exactly
+ * when it is not null or undefined, or it will fail.
+ *
+ * passing the `whenInvalid` option set to 'VOID' or 'NULL' enables gracefully
+ * handling invalid values that are less important -- if the provided checker is
+ * invalid, the new checker will return undefined or null, respectively.
+ *
+ * For example:
+ *
+ * ```javascript
+ * import {nullable, record, string} from 'refine';
+ *
+ * const Options = record({
+ *   // this must be a non-null string,
+ *   // or Options is not valid
+ *   filename: string(),
+ *
+ *   // if this field is not a string,
+ *   // it will be null and Options will pass the checker
+ *   description: maybe(string(), {
+ *     whenInvalid: 'NULL',
+ *   })
+ * })
+ *
+ * const result = Options({filename: 'test', description: 1});
+ *
+ * invariant(result.type === 'success');
+ * invariant(result.value.description === null);
+ * invariant(result.warnings.length === 1); // there will be a warning
+ * ```
+ */
+function maybe<T>(
+  checker: Checker<T>,
+  options?: {whenInvalid: 'NULL' | 'VOID' | 'THROW'},
+): Checker<?T> {
+  const {whenInvalid = 'THROW'} = options ?? {};
+
+  return (value, parentPath = new Path()): CheckResult<?T> => {
+    if (value == null) {
+      return success(value, []);
+    }
+
+    const result = checker(value, parentPath);
+    if (result.type === 'success') {
+      const {value: resultVal, warnings} = result;
+      return success(resultVal, warnings);
+    }
+
+    // if this is enabled, "succeed" the checker with a warning
+    // if the non-null value does not match expectation
+    if (whenInvalid === 'NULL') {
+      return success(null, [result]);
+    }
+
+    // if this is enabled, "succeed" the checker with a warning
+    // if the non-null value does not match expectation
+    if (whenInvalid === 'VOID') {
+      return success(undefined, [result]);
+    }
+
+    const {message, path} = result;
+    return failure(message, path);
+  };
+}
+
+/**
  * a checker that provides a withDefault value if the provided value is nullable.
  *
  * For example:
@@ -357,6 +426,7 @@ module.exports = {
   union,
   match,
   nullable,
+  maybe,
   voidable,
   withDefault,
   constraint,
