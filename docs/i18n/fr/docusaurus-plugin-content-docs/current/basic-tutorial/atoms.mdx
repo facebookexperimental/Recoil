@@ -66,14 +66,14 @@ function TodoItemCreator() {
   );
 }
 
-// utilitair pour créer un identifiant unique
+// utilitaire pour créer un identifiant unique
 let id = 0;
 function getId() {
   return id++;
 }
 ```
 
-Notez que nous utilisons la forme **mise à jour** de la fonction s'assignement afin que nous puissions créer une nouvelle liste de tâches basée sur l'ancienne liste de tâches.
+Notez que nous utilisons la forme **mise à jour** de la fonction d'assignement afin que nous puissions créer une nouvelle liste de tâches basée sur l'ancienne liste de tâches.
 
 Le composant `TodoItem` affichera la valeur de la tâche tout en permettant de changer son texte et de supprimer l'élément. Nous utilisons `useRecoilState()` pour lire `todoListState` et pour obtenir une fonction d'assignement que nous utilisons pour mettre à jour le texte de l'élément, le marquer comme terminé et le supprimer:
 
