@@ -109,6 +109,14 @@ describe('nullable', () => {
     invariant(result.value === null, 'value should be true');
   });
 
+  it('should correctly parse value when undefined is provided', () => {
+    const coerce = nullable(string());
+    const result = coerce(undefined);
+
+    invariant(result.type === 'success', 'should succeed');
+    invariant(result.value === undefined, 'value should be true');
+  });
+
   it('should correctly parse nullable value when not null', () => {
     const coerce = nullable(string());
     const result = coerce('test');

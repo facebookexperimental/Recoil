@@ -144,7 +144,7 @@ function nullable<T>(
 
   return (value, parentPath = new Path()): CheckResult<?T> => {
     if (value == null) {
-      return success(null, []);
+      return success(value, []);
     }
 
     const result = checker(value, parentPath);
