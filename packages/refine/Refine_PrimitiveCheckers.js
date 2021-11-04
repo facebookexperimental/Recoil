@@ -102,6 +102,20 @@ function string(regex?: RegExp): Checker<string> {
  *   bar: 'eggs',
  * });
  * ```
+ *
+ * It can be useful to have a single source of truth for your literals.  To
+ * only specify them once and use it for both the Flow union type and the
+ * runtime checker you can use the following pattern:
+ * ```jsx
+ * const suits = {
+ *   heart: 'heart',
+ *   spade: 'spade',
+ *   club: 'club',
+ *   diamond: 'diamond',
+ * };
+ * type Suit = $Values<typeof suits>;
+ * const suitChecker = stringLiterls(suits);
+ * ```
  */
 function stringLiterals<T>(enumValues: {+[string]: T}): Checker<T> {
   return (value, path = new Path()) => {
