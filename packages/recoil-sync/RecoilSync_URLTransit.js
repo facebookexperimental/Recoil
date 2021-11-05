@@ -19,24 +19,61 @@ const {useCallback, useMemo} = require('react');
 // $FlowExpectedError[untyped-import]
 const transit = require('transit-js');
 
+type Handler<T, S> = {
+  tag: string,
+  class: Class<T>,
+  write: T => S,
+  read: S => T,
+};
+
 type RecoilURLSyncTrnsitOptions = $Rest<
-  RecoilURLSyncOptions,
+  {
+    ...RecoilURLSyncOptions,
+    // $FlowIssue[unclear-type]
+    handlers?: $ReadOnlyArray<Handler<any, any>>,
+  },
   {
     serialize: mixed => string,
     deserialize: string => mixed,
   },
 >;
 
-function useRecoilURLSyncTransit(options: RecoilURLSyncTrnsitOptions): void {
+function useRecoilURLSyncTransit({
+  handlers,
+  ...options
+}: RecoilURLSyncTrnsitOptions): void {
   if (options.location.part === 'href') {
     throw err('"href" location is not supported for Transit encoding');
   }
 
-  const writer = useMemo(() => transit.writer('json'), []);
+  const writer = useMemo(
+    () =>
+      transit.writer('json', {
+        handlers:
+          handlers == null
+            ? undefined
+            : transit.map(
+                handlers
+                  .map(handler => [
+                    handler.class,
+                    transit.makeWriteHandler({
+                      tag: () => handler.tag,
+                      rep: handler.write,
+                    }),
+                  ])
+                  .flat(1),
+              ),
+      }),
+    [handlers],
+  );
   const serialize = useCallback(x => writer.write(x), [writer]);
   const reader = useMemo(
     () =>
       transit.reader('json', {
+        handlers: handlers?.reduce((c, {tag, read}) => {
+          c[tag] = read;
+          return c;
+        }, {}),
         mapBuilder: {
           init: () => ({}),
           add: (ret, key, val) => {
@@ -46,7 +83,7 @@ function useRecoilURLSyncTransit(options: RecoilURLSyncTrnsitOptions): void {
           finalize: ret => ret,
         },
       }),
-    [],
+    [handlers],
   );
   const deserialize = useCallback(x => reader.read(x), [reader]);
 
