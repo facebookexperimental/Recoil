@@ -17,7 +17,7 @@ const err = require('./util/RecoilSync_err');
 const nullthrows = require('./util/RecoilSync_nullthrows');
 const React = require('react');
 
-type RecoilURLSyncJSONOptions = $Rest<
+export type RecoilURLSyncJSONOptions = $Rest<
   RecoilURLSyncOptions,
   {
     serialize: mixed => string,

@@ -10,6 +10,9 @@
  */
 'use strict';
 
+import type {RecoilURLSyncOptions} from './RecoilSync_URL';
+import type {RecoilURLSyncJSONOptions} from './RecoilSync_URLJSON';
+
 const {RecoilSync, syncEffect, useRecoilSync} = require('./RecoilSync');
 const {
   RecoilURLSync,
@@ -20,6 +23,9 @@ const {
   RecoilURLSyncJSON,
   useRecoilURLSyncJSON,
 } = require('./RecoilSync_URLJSON');
+
+export type {RecoilURLSyncOptions};
+export type {RecoilURLSyncJSONOptions};
 
 module.exports = {
   // Core Recoil Sync
