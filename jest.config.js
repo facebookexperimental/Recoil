@@ -20,6 +20,11 @@ module.exports = {
     '^recoil-sync$': '<rootDir>/packages/recoil-sync',
     '^refine$': '<rootDir>/packages/refine',
   },
-  testPathIgnorePatterns: ['/node_modules/', '/packages-ext/'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/packages-ext/',
+    // Temporarily skip recoil-sync until we enable transit-js dependency
+    '/packages/recoil-sync',
+  ],
   setupFiles: ['./setupJestMock.js'],
 };
