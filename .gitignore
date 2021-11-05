@@ -103,5 +103,16 @@ dist
 # TernJS port file
 .tern-port
 
+# build outputs
+cjs
+es
+native
+umd
+/index.d.ts
+nightly-build-files
+
 # Mac
 .DS_Store
+
+# NPM Pakcage lock since we use yarn.lock
+package-lock.json
