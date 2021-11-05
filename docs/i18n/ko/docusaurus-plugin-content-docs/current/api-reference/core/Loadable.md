@@ -14,7 +14,7 @@ Loadable은 최신 상태에 접근하기 위한 도우미 메서드를 가지�
 - `toPromise()`: selector가 resolve되면 resolve될 `Promise` 를 리턴합니다. selector가 동기이거나 이미 resolve된 상태라면, 즉시 resolve 되는 `Promise` 를 리턴합니다.
 - `valueMaybe()` - 가능하다면 값을 리턴하며 다른 경우에는 `undefined` 를 리턴합니다.
 - `valueOrThrow()` - 가능하다면 값을 리턴하거나 Error를 던집니다.
-- `map()` - Loadable의 값을 변형하기 위한 함수를 받으며 새로운 Lodable을 변형된 값과 함께 리턴합니다. 변형 함수는 값의 매개변수를 받아 새로운 값을 리턴합니다. 던져진 에러나 suspense를 전파할 수도 있습니다.
+- `map()` - Loadable의 값을 변형하기 위한 함수를 받으며 새로운 Loadable을 변형된 값과 함께 리턴합니다. 변형 함수는 값의 매개변수를 받아 새로운 값을 리턴합니다. 던져진 에러나 suspense를 전파할 수도 있습니다.
 
 ### Example
 
