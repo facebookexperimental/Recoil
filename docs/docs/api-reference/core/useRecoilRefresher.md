@@ -25,7 +25,7 @@ const myQuery = selector({
 
 function MyComponent() {
   const data = useRecoilValue(myQuery);
-  const refresh = useRecoilRefreshed_UNSTABLE();
+  const refresh = useRecoilRefresher_UNSTABLE();
 
   return (
     <div>
