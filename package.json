@@ -1,6 +1,6 @@
 {
   "name": "recoil",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Recoil - A state management library for React",
   "main": "cjs/recoil.js",
   "module": "es/recoil.js",

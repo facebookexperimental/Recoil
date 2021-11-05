@@ -224,8 +224,8 @@ useResetRecoilState(readOnlySelectorSel); // $ExpectError
 useResetRecoilState({}); // $ExpectError
 
 useGetRecoilValueInfo_UNSTABLE(myAtom); // $ExpectError
-useGetRecoilValueInfo_UNSTABLE()(myAtom); // $ExpectType AtomInfo<number>
-useGetRecoilValueInfo_UNSTABLE()(mySelector2); // $ExpectType AtomInfo<string>
+useGetRecoilValueInfo_UNSTABLE()(myAtom); // $ExpectType RecoilStateInfo<number>
+useGetRecoilValueInfo_UNSTABLE()(mySelector2); // $ExpectType RecoilStateInfo<string>
 useGetRecoilValueInfo_UNSTABLE()({}); // $ExpectError
 
 useRecoilCallback(({ snapshot, set, reset, gotoSnapshot, transact_UNSTABLE }) => async () => {
@@ -559,7 +559,7 @@ isRecoilValue(mySelector1);
     key: 'thisismyrandomkey',
     default: 0,
     effects_UNSTABLE: [
-      ({setSelf, onSet, resetSelf}) => {
+      ({node, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
         setSelf(1);
         setSelf('a'); // $ExpectError
 
@@ -572,6 +572,16 @@ isRecoilValue(mySelector1);
 
         resetSelf();
         resetSelf('a'); // $ExpectError
+
+        getPromise(); // $ExpectError
+        getPromise('a'); // $ExpectError
+        getPromise(node); // $ExpectType Promise<number>
+        getLoadable(); // $ExpectError
+        getLoadable('a'); // $ExpectError
+        getLoadable(node); // $ExpectType Loadable<number>
+        getInfo_UNSTABLE(); // $ExpectError
+        getInfo_UNSTABLE('a'); // $ExpectError
+        getInfo_UNSTABLE(node); // $ExpectType RecoilStateInfo<number>
       },
     ],
   });
@@ -585,7 +595,7 @@ isRecoilValue(mySelector1);
     key: 'myrandomatomfamilykey',
     default: (param: number) => param,
     effects_UNSTABLE: (param) => [
-      ({setSelf, onSet, resetSelf}) => {
+      ({node, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
         param; // $ExpectType number
 
         setSelf(1);
@@ -598,6 +608,16 @@ isRecoilValue(mySelector1);
 
         resetSelf();
         resetSelf('a'); // $ExpectError
+
+        getPromise(); // $ExpectError
+        getPromise('a'); // $ExpectError
+        getPromise(node); // $ExpectType Promise<number>
+        getLoadable(); // $ExpectError
+        getLoadable('a'); // $ExpectError
+        getLoadable(node); // $ExpectType Loadable<number>
+        getInfo_UNSTABLE(); // $ExpectError
+        getInfo_UNSTABLE('a'); // $ExpectError
+        getInfo_UNSTABLE(node); // $ExpectType RecoilStateInfo<number>
       },
     ],
   });
