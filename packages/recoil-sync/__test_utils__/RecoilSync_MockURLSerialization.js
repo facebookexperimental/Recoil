@@ -9,7 +9,7 @@
 
 // TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
 
-import type {LocationOption} from '../RecoilSync_URL';
+import type {BrowserInterface, LocationOption} from '../RecoilSync_URL';
 
 const {
   flushPromisesAndTimers,
@@ -25,9 +25,11 @@ const React = require('react');
 function TestURLSync({
   storeKey,
   location,
+  browserInterface,
 }: {
   storeKey?: string,
   location: LocationOption,
+  browserInterface?: BrowserInterface,
 }): React.Node {
   useRecoilURLSync({
     storeKey,
@@ -49,6 +51,7 @@ function TestURLSync({
       }
       return JSON.parse(stateStr);
     },
+    browserInterface,
   });
   return null;
 }
@@ -88,16 +91,22 @@ function encodeURLPart(href: string, loc: LocationOption, obj): string {
   return url.href;
 }
 
-function encodeURL(parts: Array<[LocationOption, {...}]>): string {
-  let href = window.location.href;
+function encodeURL(
+  parts: Array<[LocationOption, {...}]>,
+  url: string = window.location.href,
+): string {
+  let href = url;
   for (const [loc, obj] of parts) {
     href = encodeURLPart(href, loc, obj);
   }
   return href;
 }
 
-function expectURL(parts: Array<[LocationOption, {...}]>) {
-  expect(window.location.href).toBe(encodeURL(parts));
+function expectURL(
+  parts: Array<[LocationOption, {...}]>,
+  url: string = window.location.href,
+) {
+  expect(url).toBe(encodeURL(parts, url));
 }
 
 async function gotoURL(parts: Array<[LocationOption, {...}]>) {

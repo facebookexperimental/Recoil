@@ -57,24 +57,23 @@ const unwrapState = (state: ItemSnapshot): ItemState =>
   );
 
 function parseURL(
+  url: URL,
   loc: LocationOption,
   deserialize: string => mixed,
 ): ?ItemSnapshot {
   switch (loc.part) {
     case 'href':
-      return wrapState(
-        deserialize(`${location.pathname}${location.search}${location.hash}`),
-      );
+      return wrapState(deserialize(`${url.pathname}${url.search}${url.hash}`));
     case 'hash':
-      return location.hash
-        ? wrapState(deserialize(decodeURIComponent(location.hash.substr(1))))
+      return url.hash
+        ? wrapState(deserialize(decodeURIComponent(url.hash.substr(1))))
         : null;
     case 'search':
-      return location.search
-        ? wrapState(deserialize(decodeURIComponent(location.search.substr(1))))
+      return url.search
+        ? wrapState(deserialize(decodeURIComponent(url.search.substr(1))))
         : null;
     case 'queryParams': {
-      const searchParams = new URLSearchParams(location.search);
+      const searchParams = new URLSearchParams(url.search);
       const {param} = loc;
       if (param != null) {
         const stateStr = searchParams.get(param);
@@ -95,6 +94,7 @@ function parseURL(
 }
 
 function updateURL(
+  url: URL,
   loc: LocationOption,
   items: ItemSnapshot,
   serialize: mixed => string,
@@ -105,12 +105,10 @@ function updateURL(
     case 'hash':
       return `#${encodeURIComponent(serialize(unwrapState(items)))}`;
     case 'search':
-      return `?${encodeURIComponent(serialize(unwrapState(items)))}${
-        location.hash
-      }`;
+      return `?${encodeURIComponent(serialize(unwrapState(items)))}${url.hash}`;
     case 'queryParams': {
       const {param} = loc;
-      const searchParams = new URLSearchParams(location.search);
+      const searchParams = new URLSearchParams(url.search);
       if (param != null) {
         searchParams.set(param, serialize(unwrapState(items)));
       } else {
@@ -120,7 +118,7 @@ function updateURL(
             : searchParams.delete(itemKey);
         }
       }
-      return `?${searchParams.toString()}${location.hash}`;
+      return `?${searchParams.toString()}${url.hash}`;
     }
   }
   throw err(`Unknown URL location part: "${loc.part}"`);
@@ -134,107 +132,121 @@ export type LocationOption =
   | {part: 'hash'}
   | {part: 'search'}
   | {part: 'queryParams', param?: string};
+export type BrowserInterface = {
+  replaceURL?: string => void,
+  pushURL?: string => void,
+  getURL?: () => URL,
+  listenChangeURL?: (handler: () => void) => () => void,
+};
 export type RecoilURLSyncOptions = {
   storeKey?: StoreKey,
   location: LocationOption,
   serialize: mixed => string,
   deserialize: string => mixed,
+  browserInterface?: BrowserInterface,
+};
+
+const DEFAULT_BROWSER_INTERFACE = {
+  replaceURL: url => history.replaceState(null, '', url),
+  pushURL: url => history.pushState(null, '', url),
+  getURL: () => new URL(window.document.location),
+  listenChangeURL: handleUpdate => {
+    window.addEventListener('popstate', handleUpdate);
+    return () => window.removeEventListener('popstate', handleUpdate);
+  },
 };
 
 function useRecoilURLSync({
   storeKey,
-  location,
+  location: loc,
   serialize,
   deserialize,
+  browserInterface,
 }: RecoilURLSyncOptions): void {
+  const {getURL, replaceURL, pushURL, listenChangeURL} = {
+    ...DEFAULT_BROWSER_INTERFACE,
+    ...(browserInterface ?? {}),
+  };
+
   // Parse and cache the current state from the URL
-  const parseCurrentState: LocationOption => ?ItemSnapshot = useCallback(
-    loc => parseURL(loc, deserialize),
-    [deserialize],
-  );
-  const updateCachedState: LocationOption => void = useCallback(
-    loc => {
-      cachedState.current = parseCurrentState(loc);
-    },
-    [parseCurrentState],
-  );
-  const firstRender = useRef(true); // Avoid executing parseCurrentState() on each render
-  const cachedState = useRef<?ItemSnapshot>(
-    firstRender.current ? parseCurrentState(location) : null,
-  );
-  firstRender.current = false;
   // Update cached URL parsing if properties of location prop change, but not
   // based on just the object reference itself.
-  const myLocation = useMemo(
-    () => location,
+  const memoizedLoc = useMemo(
+    () => loc,
     // Complications with disjoint uniont
     // $FlowIssue[prop-missing]
-    [location.part, location.queryParam], // eslint-disable-line fb-www/react-hooks-deps
+    [loc.part, loc.queryParam], // eslint-disable-line fb-www/react-hooks-deps
   );
-  useEffect(
-    () => updateCachedState(myLocation),
-    [myLocation, updateCachedState],
+  const updateCachedState: () => void = useCallback(() => {
+    cachedState.current = parseURL(getURL(), memoizedLoc, deserialize);
+  }, [getURL, memoizedLoc, deserialize]);
+  const firstRender = useRef(true); // Avoid executing parseCurrentState() on each render
+  const cachedState = useRef<?ItemSnapshot>(null);
+  firstRender.current && updateCachedState();
+  firstRender.current = false;
+  useEffect(updateCachedState, [updateCachedState]);
+
+  const write = useCallback(
+    ({diff, allItems}) => {
+      updateCachedState(); // Just to be safe...
+
+      // This could be optimized with an itemKey-based registery if necessary to avoid
+      // atom traversal.
+      const atomRegistry = registries.get(storeKey);
+      const itemsToPush =
+        atomRegistry != null
+          ? new Set(
+              Array.from(atomRegistry)
+                .filter(
+                  ([, {history, itemKeys}]) =>
+                    history === 'push' &&
+                    Array.from(itemKeys).some(key => diff.has(key)),
+                )
+                .map(([, {itemKeys}]) => itemKeys)
+                .reduce(
+                  (itemKeys, keys) => itemKeys.concat(Array.from(keys)),
+                  [],
+                ),
+            )
+          : null;
+
+      if (itemsToPush?.size && cachedState.current != null) {
+        const replaceItems: ItemSnapshot = cachedState.current;
+        // First, repalce the URL with any atoms that replace the URL history
+        for (const [key, loadable] of allItems) {
+          if (!itemsToPush.has(key)) {
+            replaceItems.set(key, loadable);
+          }
+        }
+        replaceURL(updateURL(getURL(), loc, replaceItems, serialize));
+
+        // Next, push the URL with any atoms that caused a new URL history entry
+        pushURL(updateURL(getURL(), loc, allItems, serialize));
+      } else {
+        // Just replace the URL with the new state
+        replaceURL(updateURL(getURL(), loc, allItems, serialize));
+      }
+      cachedState.current = allItems;
+    },
+    [getURL, loc, pushURL, replaceURL, serialize, storeKey, updateCachedState],
   );
 
-  function write({diff, allItems}) {
-    updateCachedState(location);
+  const read: ItemKey => ?Loadable<mixed> = useCallback(itemKey => {
+    return cachedState.current?.get(itemKey);
+  }, []);
 
-    // This could be optimized with an itemKey-based registery if necessary to avoid
-    // atom traversal.
-    const atomRegistry = registries.get(storeKey);
-    const itemsToPush =
-      atomRegistry != null
-        ? new Set(
-            Array.from(atomRegistry)
-              .filter(
-                ([, {history, itemKeys}]) =>
-                  history === 'push' &&
-                  Array.from(itemKeys).some(key => diff.has(key)),
-              )
-              .map(([, {itemKeys}]) => itemKeys)
-              .reduce(
-                (itemKeys, keys) => itemKeys.concat(Array.from(keys)),
-                [],
-              ),
-          )
-        : null;
-
-    if (itemsToPush?.size && cachedState.current != null) {
-      const replaceState: ItemSnapshot = cachedState.current;
-      // First, repalce the URL with any atoms that replace the URL history
-      for (const [key, loadable] of allItems) {
-        if (!itemsToPush.has(key)) {
-          replaceState.set(key, loadable);
+  const listen = useCallback(
+    ({updateAllKnownItems}) => {
+      function handleUpdate() {
+        updateCachedState();
+        if (cachedState.current != null) {
+          updateAllKnownItems(cachedState.current);
         }
       }
-      const replaceURL = updateURL(location, replaceState, serialize);
-      history.replaceState(null, '', replaceURL);
-
-      // Next, push the URL with any atoms that caused a new URL history entry
-      const pushURL = updateURL(location, allItems, serialize);
-      history.pushState(null, '', pushURL);
-    } else {
-      // Just replace the URL with the new state
-      const newURL = updateURL(location, allItems, serialize);
-      history.replaceState(null, '', newURL);
-    }
-    cachedState.current = allItems;
-  }
-
-  function read(itemKey): ?Loadable<mixed> {
-    return cachedState.current?.get(itemKey);
-  }
-
-  function listen({updateAllKnownItems}) {
-    function handleUpdate() {
-      updateCachedState(location);
-      if (cachedState.current != null) {
-        updateAllKnownItems(cachedState.current);
-      }
-    }
-    window.addEventListener('popstate', handleUpdate);
-    return () => window.removeEventListener('popstate', handleUpdate);
-  }
+      return listenChangeURL(handleUpdate);
+    },
+    [listenChangeURL, updateCachedState],
+  );
 
   useRecoilSync({storeKey, read, write, listen});
 }
