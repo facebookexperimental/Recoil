@@ -95,6 +95,10 @@
   onSet: (
     param: (newValue: T, oldValue: T | DefaultValue, isReset: boolean) => void,
   ) => void,
+
+  getPromise<S>(recoilValue: RecoilValue<S>): Promise<S>,
+  getLoadable<S>(recoilValue: RecoilValue<S>): Loadable<S>,
+  getInfo_UNSTABLE<S>(recoilValue: RecoilValue<S>): AtomInfo<S>,
  }) => void | (() => void);
 
  // atom.d.ts
