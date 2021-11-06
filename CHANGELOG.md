@@ -1,13 +1,16 @@
 # Change Log
 
 ## UPCOMING
-
 ***Add new changes here as they land***
 
 ### Pending
 - Memory management
 - useTransition() compatibility
 - Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
+
+## 0.5.1 (2021-11-05)
+
+- Fix TypeScript exports (#1389)
 
 ## 0.5.0 (2021-11-03)
 

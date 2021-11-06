@@ -47,7 +47,7 @@
   name: string;
  }
 
- interface AtomInfo<T> {
+ interface RecoilStateInfo<T> {
   loadable?: Loadable<T>;
   isActive: boolean;
   isSet: boolean;
@@ -65,7 +65,7 @@
   getLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
   getPromise<T>(recoilValue: RecoilValue<T>): Promise<T>;
   getNodes_UNSTABLE(opts?: { isModified?: boolean, isInitialized?: boolean }): Iterable<RecoilValue<unknown>>;
-  getInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): AtomInfo<T>;
+  getInfo_UNSTABLE<T>(recoilValue: RecoilValue<T>): RecoilStateInfo<T>;
   map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
   asyncMap(cb: (mutableSnapshot: MutableSnapshot) => Promise<void>): Promise<Snapshot>;
   retain(): () => void;
@@ -95,6 +95,11 @@
   onSet: (
     param: (newValue: T, oldValue: T | DefaultValue, isReset: boolean) => void,
   ) => void,
+
+  // Accessors to read other atoms/selectors
+  getPromise: <S>(recoilValue: RecoilValue<S>) => Promise<S>,
+  getLoadable: <S>(recoilValue: RecoilValue<S>) => Loadable<S>,
+  getInfo_UNSTABLE: <S>(recoilValue: RecoilValue<S>) => RecoilStateInfo<S>,
  }) => void | (() => void);
 
  // atom.d.ts
@@ -225,7 +230,7 @@ export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
  /**
   * Returns current info about an atom
   */
- export function useGetRecoilValueInfo_UNSTABLE(): <T>(recoilValue: RecoilValue<T>) => AtomInfo<T>;
+ export function useGetRecoilValueInfo_UNSTABLE(): <T>(recoilValue: RecoilValue<T>) => RecoilStateInfo<T>;
 
  /**
   * Returns a function that will run the callback that was passed when
