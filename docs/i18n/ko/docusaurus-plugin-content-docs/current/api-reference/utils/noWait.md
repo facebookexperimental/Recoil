@@ -3,7 +3,7 @@ title: noWait(state)
 sidebar_label: noWait()
 ---
 
-제공된 [`atom`](/docs/api-reference/core/atom) 혹은 [`selector`](/docs/api-reference/core/selector)의 현재 상태에 대한 [`Loadable`](/docs/api-reference/core/Loadable)객체를 반환하는 selector helper다.
+제공된 [`atom`](/docs/api-reference/core/atom) 혹은 [`selector`](/docs/api-reference/core/selector)의 현재 상태에 대한 [`Loadable`](/docs/api-reference/core/Loadable)객체를 반환하는 selector helper입니다.
 
 ```jsx
 function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T>>
