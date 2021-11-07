@@ -1,5 +1,5 @@
 ---
-title: useRecoilRefresher_UNSTABLE()
+title: useRecoilRefresher_UNSTABLE(state)
 sidebar_label: useRecoilRefresher()
 ---
 
@@ -8,9 +8,9 @@ The `useRecoilRefresher_UNSTABLE()` hook returns a callback which can be called 
 ---
 
 ```jsx
-type Refresher = (RecoilValue) => void;
+type Refresher = () => void;
 
-function useRecoilRefresher_UNSTABLE(): Refresher
+function useRecoilRefresher_UNSTABLE(state: RecoilValue): Refresher
 ```
 
 It is currently a no-op to "refresh" an atom, it will retain its current state.  Selectors will have their caches cleared.  Because wrapper selectors are often used as abstractions, refreshing a selector will also recursively refresh the caches of all selectors that it depends on.
@@ -25,12 +25,12 @@ const myQuery = selector({
 
 function MyComponent() {
   const data = useRecoilValue(myQuery);
-  const refresh = useRecoilRefresher_UNSTABLE();
+  const refresh = useRecoilRefresher_UNSTABLE(myQuery);
 
   return (
     <div>
       Data: {data}
-      <button onClick={() => refresh(myQuery)}>Refresh</button>
+      <button onClick={() => refresh()}>Refresh</button>
     </div>
   );
 }

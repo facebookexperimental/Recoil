@@ -338,12 +338,12 @@ const userInfoQuery = selectorFamily({
 function CurrentUserInfo() {
   const currentUserID = useRecoilValue(currentUserIDState);
   const currentUserInfo = useRecoilValue(userInfoQuery(currentUserID));
-  const refresh = useRecoilRefresher_UNSTABLE();
+  const refreshUserInfo = useRecoilRefresher_UNSTABLE(userInfoQuery(currentUserID));
 
   return (
     <div>
       <h1>{currentUserInfo.name}</h1>
-      <button onClick={() => refresh(userInfoQuery(currentUserID))}>Refresh</button>
+      <button onClick={() => refreshUserInfo()}>Refresh</button>
     </div>
   );
 }
