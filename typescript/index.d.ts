@@ -272,7 +272,7 @@ export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
  /**
   * Clears the cache for a selector causing it to be reevaluated.
   */
- export function useRecoilRefresher_UNSTABLE(): (recoilValue: RecoilValue<any>) => void;
+ export function useRecoilRefresher_UNSTABLE(recoilValue: RecoilValue<any>): () => void;
 
  // useRecoilBridgeAcrossReactRoots.d.ts
  export const RecoilBridge: React.FC;
