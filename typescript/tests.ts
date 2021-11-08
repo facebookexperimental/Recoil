@@ -312,10 +312,12 @@ const transact: (p: number) => void = useRecoilTransaction_UNSTABLE(({get, set, 
  * useRecoilRefresher()
  */
 {
+  useRecoilRefresher_UNSTABLE(); // $ExpectError
   useRecoilRefresher_UNSTABLE(false); // $ExpectError
-  const refresher = useRecoilRefresher_UNSTABLE();
+  const refresher = useRecoilRefresher_UNSTABLE(mySelector1);
   refresher(false); // $ExpectError
-  refresher(mySelector1); // $ExpectType void
+  refresher(mySelector1); // $ExpectError
+  refresher(); // $ExpectType void
 }
 
 /**
