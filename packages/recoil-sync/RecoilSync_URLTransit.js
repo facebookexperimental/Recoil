@@ -16,7 +16,6 @@ const {useRecoilURLSync} = require('./RecoilSync_URL');
 const err = require('./util/RecoilSync_err');
 const React = require('react');
 const {useCallback, useMemo} = require('react');
-// $FlowExpectedError[untyped-import]
 const transit = require('transit-js');
 
 type Handler<T, S> = {
