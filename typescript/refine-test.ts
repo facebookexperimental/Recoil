@@ -34,7 +34,7 @@ import {
   writableArray,
   writableDict,
   optional,
-} from './refine';
+} from 'refine';
 
 // turn of lint for unused test vars
 /* eslint-disable @typescript-eslint/no-unused-vars */

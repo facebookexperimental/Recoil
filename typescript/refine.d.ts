@@ -197,7 +197,7 @@ export type OptionalPropertyChecker<T> = {
  * assert(checker({a: 1}).type === 'success');
  * ```
  */
-declare function optional<T>(checker: Checker<T>): OptionalPropertyChecker<T>;
+export declare function optional<T>(checker: Checker<T>): OptionalPropertyChecker<T>;
 
 type CheckerObject = Readonly<{
   [key: string]: Checker<unknown> | OptionalPropertyChecker<unknown>;
@@ -592,3 +592,5 @@ export declare function custom<T>(
   checkValue: (value: unknown) => null | T,
   failureMessage?: string,
 ): Checker<T>;
+
+export {};
