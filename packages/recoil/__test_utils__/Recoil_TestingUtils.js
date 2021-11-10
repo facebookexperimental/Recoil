@@ -187,6 +187,7 @@ const errorThrowingAsyncSelector: <T, S>(
 
 const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
   value: T,
+  // $FlowFixMe[incompatible-type]
 ): RecoilValueReadOnly<T> | RecoilValueReadOnly<mixed> =>
   selector({
     key: `ResolvingSelector${id++}`,

@@ -232,6 +232,7 @@ class Snapshot {
     key,
   }: RecoilValue<T>) => {
     this.checkRefCount_INTERNAL();
+    // $FlowFixMe[escaped-generic]
     return peekNodeInfo(this._store, this._store.getState().currentTree, key);
   };
 

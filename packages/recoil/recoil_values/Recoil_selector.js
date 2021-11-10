@@ -1213,6 +1213,7 @@ function selector<T>(
       }
 
       const ret = set(
+        // $FlowFixMe[incompatible-call]
         {set: setRecoilState, get: getRecoilValue, reset: resetRecoilState},
         newValue,
       );
