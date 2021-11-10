@@ -85,3 +85,6 @@ nightly-build-files
 
 # Mac
 .DS_Store
+
+# NPM Package lock since we use yarn.lock
+package-lock.json
