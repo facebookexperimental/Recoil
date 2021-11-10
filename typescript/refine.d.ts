@@ -21,7 +21,7 @@ export type Get<V> = V extends Checker<infer Result> ? Result : never;
  * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
  */
 
-export declare class Path {
+export class Path {
   constructor(parent?: Path | null, field?: string);
   extend(field: string): Path;
   toString(): string;
@@ -61,7 +61,7 @@ export type Checker<V> = (value: unknown, path?: Path) => CheckResult<V>;
 /**
  * wrap value in an object signifying successful checking
  */
-export declare function success<V>(
+export function success<V>(
   value: V,
   warnings: ReadonlyArray<CheckFailure>,
 ): CheckSuccess<V>;
@@ -69,12 +69,12 @@ export declare function success<V>(
 /**
  * indicate typecheck failed
  */
-export declare function failure(message: string, path: Path): CheckFailure;
+export function failure(message: string, path: Path): CheckFailure;
 
 /**
  * utility function for composing checkers
  */
-export declare function compose<T, V>(
+export function compose<T, V>(
   checker: Checker<T>,
   next: (success: CheckSuccess<T>, path: Path) => CheckResult<V>,
 ): Checker<V>;
@@ -87,7 +87,7 @@ export type AssertionFunction<V> = (value: unknown) => V;
 /**
  * function to coerce a given value to a checker type, returning null if invalid
  */
-export type CoercionFunction<V> = (value: unknown) => V | null | void;
+export type CoercionFunction<V> = (value: unknown) => V | null | undefined;
 
 /**
  * create a function to assert a value matches a checker, throwing otherwise
@@ -105,7 +105,7 @@ export type CoercionFunction<V> = (value: unknown) => V | null | void;
  * }
  * ```
  */
-export declare function assertion<T>(
+export function assertion<T>(
   checker: Checker<T>,
   errorMessage?: string,
 ): AssertionFunction<T>;
@@ -136,7 +136,7 @@ export declare function assertion<T>(
  * const person = coerce(value);
  * ```
  */
-export declare function coercion<T>(
+export function coercion<T>(
   checker: Checker<T>,
   onResult?: (checker: CheckResult<T>) => void,
 ): CoercionFunction<T>;
@@ -145,7 +145,7 @@ export declare function coercion<T>(
  * checker to assert if a mixed value is an array of
  * values determined by a provided checker
  */
-export declare function array<V>(
+export function array<V>(
   valueChecker: Checker<V>,
 ): Checker<ReadonlyArray<V>>;
 
@@ -163,7 +163,7 @@ export declare function array<V>(
  * const checker = tuple( number(), voidable(string()));
  * ```
  */
-export declare function tuple<Checkers extends [...unknown[]]>(
+export function tuple<Checkers extends [...unknown[]]>(
   ...checkers: Checkers
 ): Checker<Readonly<{[K in keyof Checkers]: CheckerResult<Checkers[K]>}>>;
 
@@ -171,16 +171,14 @@ export declare function tuple<Checkers extends [...unknown[]]>(
  * checker to assert if a mixed value is a string-keyed dict of
  * values determined by a provided checker
  */
-export declare function dict<V>(
+export function dict<V>(
   valueChecker: Checker<V>,
 ): Checker<Readonly<{[key: string]: V}>>;
-
-
 
 // expose opaque version of optional property as public api,
 // forcing consistent usage of built-in `optional` to define optional properties
 declare const __opaque: unique symbol;
-export type OptionalPropertyChecker<T> = {
+export interface OptionalPropertyChecker<T> {
   readonly [__opaque]: T;
 }
 
@@ -197,7 +195,7 @@ export type OptionalPropertyChecker<T> = {
  * assert(checker({a: 1}).type === 'success');
  * ```
  */
-declare function optional<T>(checker: Checker<T>): OptionalPropertyChecker<T>;
+export function optional<T>(checker: Checker<T>): OptionalPropertyChecker<T>;
 
 type CheckerObject = Readonly<{
   [key: string]: Checker<unknown> | OptionalPropertyChecker<unknown>;
@@ -205,10 +203,10 @@ type CheckerObject = Readonly<{
 
 type CheckersToValues<Checkers extends CheckerObject> = {
   [K in keyof Checkers]: CheckerResult<Checkers[K]>;
-}
+};
 
 type WhereValue<Checkers extends CheckerObject, Condition> = Pick<Checkers, {
-  [Key in keyof Checkers]: Checkers[Key] extends Condition ? Key : never
+  [Key in keyof Checkers]: Checkers[Key] extends Condition ? Key : never;
 }[keyof Checkers]>;
 
 type RequiredCheckerProperties<Checkers extends CheckerObject> = WhereValue<
@@ -250,19 +248,19 @@ type ObjectCheckerResult<Checkers extends CheckerObject> =
  * });
  * ```
  */
-export declare function object<Checkers extends CheckerObject>(
+export function object<Checkers extends CheckerObject>(
   checkers: Checkers
 ): Checker<Readonly<ObjectCheckerResult<Checkers>>>;
 
 /**
  * checker to assert if a mixed value is a Set type
  */
-export declare function set<T>(checker: Checker<T>): Checker<ReadonlySet<T>>;
+export function set<T>(checker: Checker<T>): Checker<ReadonlySet<T>>;
 
 /**
  * checker to assert if a mixed value is a Map.
  */
-export declare function map<K, V>(
+export function map<K, V>(
   keyChecker: Checker<K>,
   valueChecker: Checker<V>,
 ): Checker<ReadonlyMap<K, V>>;
@@ -270,21 +268,21 @@ export declare function map<K, V>(
 /**
  * identical to `array()` except the resulting value is a writable flow type.
  */
-export declare function writableArray<V>(
+export function writableArray<V>(
   valueChecker: Checker<V>,
-): Checker<Array<V>>;
+): Checker<V[]>;
 
 /**
  * identical to `dict()` except the resulting value is a writable flow type.
  */
-export declare function writableDict<V>(
+export function writableDict<V>(
   valueChecker: Checker<V>,
 ): Checker<{[key: string]: V}>;
 
 /**
  * identical to `object()` except the resulting value is a writable flow type.
  */
-export declare function writableObject<
+export function writableObject<
   Checkers extends CheckerObject,
 >(
   checkers: Checkers,
@@ -294,12 +292,12 @@ export declare function writableObject<
  * function which takes a json string, parses it,
  * and matches it with a checker (returning null if no match)
  */
-export type JSONParser<T> = (input: string | null | void) => T;
+export type JSONParser<T> = (input: string | null | undefined) => T;
 
 /**
  * creates a JSON parser which will error if the resulting value is invalid
  */
-export declare function jsonParserEnforced<T>(
+export function jsonParserEnforced<T>(
   checker: Checker<T>,
   suffix?: string,
 ): JSONParser<T>;
@@ -308,38 +306,38 @@ export declare function jsonParserEnforced<T>(
  * convienience function to wrap a checker in a function
  * for easy JSON string parsing.
  */
-export declare function jsonParser<T>(
+export function jsonParser<T>(
   checker: Checker<T>,
-): JSONParser<T | void | null>;
+): JSONParser<T | undefined | null>;
 
 /**
  * a mixed (i.e. untyped) value
  */
-export declare function mixed(): Checker<unknown>;
+export function mixed(): Checker<unknown>;
 
 /**
  * checker to assert if a mixed value matches a literal value
  */
-export declare function literal<
-  T extends string | boolean | number | null | void,
+export function literal<
+  T extends string | boolean | number | null | undefined,
 >(literalValue: T): Checker<T>;
 
 /**
  * boolean value checker
  */
-export declare function boolean(): Checker<boolean>;
+export function boolean(): Checker<boolean>;
 
 /**
  * checker to assert if a mixed value is a number
  */
-export declare function number(): Checker<number>;
+export function number(): Checker<number>;
 
 /**
  * Checker to assert if a mixed value is a string.
  *
  * Provide an optional RegExp template to match string against.
  */
-export declare function string(regex?: RegExp): Checker<string>;
+export function string(regex?: RegExp): Checker<string>;
 
 /**
  * checker to assert if a mixed value matches a union of string literals.
@@ -350,14 +348,14 @@ export declare function string(regex?: RegExp): Checker<string>;
  * ```jsx
  * ```
  */
-export declare function stringLiterals<T>(enumValues: {
+export function stringLiterals<T>(enumValues: {
   readonly [key: string]: T;
 }): Checker<T>;
 
 /**
  * checker to assert if a mixed value is a Date object
  */
-export declare function date(): Checker<Date>;
+export function date(): Checker<Date>;
 
 /**
  * Cast the type of a value after passing a given checker
@@ -372,7 +370,7 @@ export declare function date(): Checker<Date>;
  * const IDChecker: Checker<ID> = asType(string(), s => (s: ID));
  * ```
  */
-export declare function asType<A, B>(
+export function asType<A, B>(
   checker: Checker<A>,
   cast: (input: A) => B,
 ): Checker<B>;
@@ -381,7 +379,7 @@ export declare function asType<A, B>(
  * checker which asserts the value matches
  * at least one of the two provided checkers
  */
-export declare function or<A, B>(
+export function or<A, B>(
   aChecker: Checker<A>,
   bChecker: Checker<B>,
 ): Checker<A | B>;
@@ -392,7 +390,7 @@ type ElementType<T> = T extends unknown[] ? T[number] : T;
  * checker which asserts the value matches
  * at least one of the provided checkers
  */
-export declare function union<Checkers extends ReadonlyArray<Checker<unknown>>>(
+export function union<Checkers extends ReadonlyArray<Checker<unknown>>>(
   ...checkers: Checkers
 ): Checker<ElementType<{[K in keyof Checkers]: CheckerResult<Checkers[K]>}>>;
 
@@ -412,7 +410,7 @@ export declare function union<Checkers extends ReadonlyArray<Checker<unknown>>>(
  * );
  * ```
  */
-export declare function match<T>(
+export function match<T>(
   ...checkers: ReadonlyArray<Checker<T>>
 ): Checker<T>;
 
@@ -450,7 +448,7 @@ export declare function match<T>(
  * invariant(result.warnings.length === 1); // there will be a warning
  * ```
  */
-export declare function nullable<T>(
+export function nullable<T>(
   checker: Checker<T>,
   options?: Readonly<{
     // if this is true, the checker will not fail
@@ -458,7 +456,7 @@ export declare function nullable<T>(
     // returning null and including a warning as to the invalid type.
     nullWithWarningWhenInvalid?: boolean;
   }>,
-): Checker<T | null | void>;
+): Checker<T | null | undefined>;
 
 /**
  * wraps a given checker, making the valid value voidable
@@ -497,7 +495,7 @@ export declare function nullable<T>(
  * invariant(result.warnings.length === 1); // there will be a warning
  * ```
  */
-export declare function voidable<T>(
+export function voidable<T>(
   checker: Checker<T>,
   options?: Readonly<{
     // if this is true, the checker will not fail
@@ -505,7 +503,7 @@ export declare function voidable<T>(
     // returning undefined and including a warning as to the invalid type.
     undefinedWithWarningWhenInvalid?: boolean;
   }>,
-): Checker<T | void>;
+): Checker<T | undefined>;
 
 /**
  * a checker that provides a withDefault value if the provided value is nullable.
@@ -518,7 +516,7 @@ export declare function voidable<T>(
  * ```
  * Both `{}` and `{num: 123}` will refine to `{num: 123}`
  */
-export declare function withDefault<T>(
+export function withDefault<T>(
   checker: Checker<T>,
   fallback: T,
 ): Checker<T>;
@@ -546,7 +544,7 @@ export declare function withDefault<T>(
  * // fails.type === 'failure';
  * ```
  */
-export declare function constraint<T>(
+export function constraint<T>(
   checker: Checker<T>,
   predicate: (value: T) => boolean | [boolean, string],
 ): Checker<T>;
@@ -570,7 +568,7 @@ export declare function constraint<T>(
  * const nestedArray = array(entry);
  * ```
  */
-export declare function lazy<T>(getChecker: () => Checker<T>): Checker<T>;
+export function lazy<T>(getChecker: () => Checker<T>): Checker<T>;
 
 /**
  * helper to create a custom checker from a provided function.
@@ -588,7 +586,9 @@ export declare function lazy<T>(getChecker: () => Checker<T>): Checker<T>;
  *   nullable(custom(x => x instanceof MyClass ? x : null));
  * ```
  */
-export declare function custom<T>(
+export function custom<T>(
   checkValue: (value: unknown) => null | T,
   failureMessage?: string,
 ): Checker<T>;
+
+export {};

@@ -34,7 +34,7 @@ import {
   writableArray,
   writableDict,
   optional,
-} from './refine';
+} from 'refine';
 
 // turn of lint for unused test vars
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -49,11 +49,11 @@ import {
   type MyType = Get<typeof checker>;
   const x: MyType = {
     a: 1,
-  }
+  };
 
   const y: MyType = {
     a: 'test', // $ExpectError
-  }
+  };
 }
 
 /**
@@ -63,56 +63,56 @@ import {
  */
 {
   const rboolean = boolean()({});
-  if (rboolean.type == 'success') {
+  if (rboolean.type === 'success') {
     const v: boolean = rboolean.value;
   }
 
   const rstring = string()({});
-  if (rstring.type == 'success') {
+  if (rstring.type === 'success') {
     const v: string = rstring.value;
   }
 
   const rnumber = number()({});
-  if (rnumber.type == 'success') {
+  if (rnumber.type === 'success') {
     const v: number = rnumber.value;
   }
 
   const runknown = mixed()({});
-  if (runknown.type == 'success') {
+  if (runknown.type === 'success') {
     const v: unknown = runknown.value;
   }
 
   const rliterals = stringLiterals<'a' | 'b'>({a: 'a', b: 'b'})({});
-  if (rliterals.type == 'success') {
+  if (rliterals.type === 'success') {
     const v: 'a' | 'b' = rliterals.value;
   }
 
   const rsorn = or(string(), number())({});
-  if (rsorn.type == 'success') {
+  if (rsorn.type === 'success') {
     const v: string | number = rsorn.value;
   }
 
   const rsunionn = union(string(), number(), boolean())({});
-  if (rsunionn.type == 'success') {
+  if (rsunionn.type === 'success') {
     const v: string | number | boolean = rsunionn.value;
   }
 
   const rvoidablestring = voidable(string())({});
-  if (rvoidablestring.type == 'success') {
-    const v: void | string = rvoidablestring.value;
+  if (rvoidablestring.type === 'success') {
+    const v: undefined | string = rvoidablestring.value;
     const x: string = rvoidablestring.value; // $ExpectError
     const z: string | null = rvoidablestring.value; // $ExpectError
   }
 
   const rnullable = nullable(string())({});
-  if (rnullable.type == 'success') {
-    const v: null | string | void = rnullable.value;
+  if (rnullable.type === 'success') {
+    const v: null | string | undefined = rnullable.value;
     const x: string = rnullable.value; // $ExpectError
-    const z: string | void = rnullable.value; // $ExpectError
+    const z: string | undefined = rnullable.value; // $ExpectError
   }
 
   const rdate = date()({});
-  if (rdate.type == 'success') {
+  if (rdate.type === 'success') {
     const v: Date = rdate.value;
   }
 }
@@ -159,7 +159,7 @@ import {
   }
 
   const rwobject = writableObject({c: number()})({});
-  if (rwobject.type == 'success') {
+  if (rwobject.type === 'success') {
     rwobject.value.c = 1;
     const v: {c: number} = rwobject.value;
   }
@@ -167,12 +167,12 @@ import {
 
 {
   const rdict = dict(string())({});
-  if (rdict.type == 'success') {
+  if (rdict.type === 'success') {
     const v: {readonly [key: string]: string} = rdict.value;
   }
 
   const rwdict = writableDict(number())({});
-  if (rwdict.type == 'success') {
+  if (rwdict.type === 'success') {
     rwdict.value.key = 1;
     const v: {[key: string]: number} = rwdict.value;
   }
@@ -199,7 +199,6 @@ import {
   }
 }
 
-
 /**
  *
  * utilities
@@ -207,7 +206,7 @@ import {
  */
 {
   const rasnum = asType(string(), s => parseInt(s, 10))({});
-  if (rasnum.type == 'success') {
+  if (rasnum.type === 'success') {
     const v: number = rasnum.value;
   }
 
@@ -217,7 +216,7 @@ import {
     string()
   )({});
 
-  if (rmatch.type == 'success') {
+  if (rmatch.type === 'success') {
     const v: string = rmatch.value;
   }
 
@@ -226,7 +225,7 @@ import {
   const isCustomClass = custom(value => value instanceof Custom ? value : null);
   const rcustomclass = isCustomClass({});
 
-  if (rcustomclass.type == 'success') {
+  if (rcustomclass.type === 'success') {
     const v: Custom = rcustomclass.value;
   }
 }
