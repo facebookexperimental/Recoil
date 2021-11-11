@@ -3356,7 +3356,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       _defineProperty(this, "getInfo_UNSTABLE", ({
         key
       }) => {
-        this.checkRefCount_INTERNAL();
+        this.checkRefCount_INTERNAL(); // $FlowFixMe[escaped-generic]
+
         return peekNodeInfo$1(this._store, this._store.getState().currentTree, key);
       });
 
@@ -7162,7 +7163,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           setRecoilState(recoilState, DEFAULT_VALUE$6);
         }
 
-        const ret = set({
+        const ret = set( // $FlowFixMe[incompatible-call]
+        {
           set: setRecoilState,
           get: getRecoilValue,
           reset: resetRecoilState
