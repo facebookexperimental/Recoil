@@ -33,9 +33,9 @@ class TreeCache<T = mixed> {
   _numLeafs: number;
   _root: TreeCacheNode<T> | null;
 
-  _onHit: $NonMaybeType<$PropertyType<Options<T>, 'onHit'>>;
-  _onSet: $NonMaybeType<$PropertyType<Options<T>, 'onSet'>>;
-  _mapNodeValue: $NonMaybeType<$PropertyType<Options<T>, 'mapNodeValue'>>;
+  _onHit: $NonMaybeType<Options<T>['onHit']>;
+  _onSet: $NonMaybeType<Options<T>['onSet']>;
+  _mapNodeValue: $NonMaybeType<Options<T>['mapNodeValue']>;
 
   constructor(options?: Options<T>) {
     this._numLeafs = 0;
