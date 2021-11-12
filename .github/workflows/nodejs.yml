@@ -30,6 +30,7 @@ jobs:
     - run: yarn install --frozen-lockfile
     - run: yarn flow
     - run: yarn test
+    - run: yarn test:typescript
     - run: yarn lint
     - run: yarn build
     - run: yarn pack
