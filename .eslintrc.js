@@ -22,7 +22,7 @@ module.exports = {
     es2020: true,
   },
   extends: ['plugin:react/recommended'],
-  parser: 'babel-eslint',
+  parser: 'hermes-eslint',
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
