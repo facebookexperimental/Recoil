@@ -19,7 +19,7 @@ function logErrors(err) {
 }
 
 console.log('Copying index.d.ts for TypeScript support...');
-// $FlowFixMe Flow typing for copyFile() is incorrect.
+// $FlowIssue Flow typing for copyFile() is incorrect.
 fs.copyFile('./typescript/index.d.ts', './index.d.ts', logErrors);
 
 console.log('Generating Flow type files...');
