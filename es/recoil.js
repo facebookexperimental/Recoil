@@ -616,7 +616,7 @@ function deleteNodeConfigIfPossible(key) {
 
   const node = nodes.get(key);
 
-  if (node === null || node === void 0 ? void 0 : (_node$shouldDeleteCon = node.shouldDeleteConfigOnRelease) === null || _node$shouldDeleteCon === void 0 ? void 0 : _node$shouldDeleteCon.call(node)) {
+  if (node !== null && node !== void 0 && (_node$shouldDeleteCon = node.shouldDeleteConfigOnRelease) !== null && _node$shouldDeleteCon !== void 0 && _node$shouldDeleteCon.call(node)) {
     var _getConfigDeletionHan;
 
     nodes.delete(key);
@@ -4749,7 +4749,7 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
 
       const newLoadable = getRecoilValueAsLoadable$2(store, recoilValue, store.getState().currentTree);
 
-      if (!((_prevLoadableRef$curr = prevLoadableRef.current) === null || _prevLoadableRef$curr === void 0 ? void 0 : _prevLoadableRef$curr.is(newLoadable))) {
+      if (!((_prevLoadableRef$curr = prevLoadableRef.current) !== null && _prevLoadableRef$curr !== void 0 && _prevLoadableRef$curr.is(newLoadable))) {
         forceUpdate(newLoadable);
       }
 
@@ -4786,7 +4786,7 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
 
       const newLoadable = getRecoilValueAsLoadable$2(store, recoilValue, store.getState().currentTree);
 
-      if (!((_prevLoadableRef$curr2 = prevLoadableRef.current) === null || _prevLoadableRef$curr2 === void 0 ? void 0 : _prevLoadableRef$curr2.is(newLoadable))) {
+      if (!((_prevLoadableRef$curr2 = prevLoadableRef.current) !== null && _prevLoadableRef$curr2 !== void 0 && _prevLoadableRef$curr2.is(newLoadable))) {
         forceUpdate(newLoadable);
       }
 
@@ -7354,8 +7354,8 @@ function baseAtom(options) {
           // Cast T to S
           const retValue = initValue; // flowlint-line unclear-type:off
 
-          return retValue instanceof DefaultValue$2 ? defaultLoadable : // flowlint-line unclear-type:off
-          Recoil_isPromise(retValue) ? loadableWithPromise$2(retValue.then(v => v instanceof DefaultValue$2 ? // Cast T to S
+          return retValue instanceof DefaultValue$2 ? defaultLoadable // flowlint-line unclear-type:off
+          : Recoil_isPromise(retValue) ? loadableWithPromise$2(retValue.then(v => v instanceof DefaultValue$2 ? // Cast T to S
           defaultLoadable.toPromise() // flowlint-line unclear-type:off
           : v)) : loadableWithValue$3(retValue);
         }
@@ -7610,16 +7610,16 @@ function atom(options) {
   // for now, since scoped atoms don't support async defaults
   // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
   ) {
-      return atomWithFallback({ ...restOptions,
-        default: optionsDefault // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    return atomWithFallback({ ...restOptions,
+      default: optionsDefault // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
 
-      }); // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
-      // @fb-only: return scopedAtom<T>({
-      // @fb-only: ...restOptions,
-      // @fb-only: default: optionsDefault,
-      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
-      // @fb-only: });
-    } else {
+    }); // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
+    // @fb-only: return scopedAtom<T>({
+    // @fb-only: ...restOptions,
+    // @fb-only: default: optionsDefault,
+    // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    // @fb-only: });
+  } else {
     return baseAtom({ ...restOptions,
       default: optionsDefault
     });
