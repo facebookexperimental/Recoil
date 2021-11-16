@@ -3,6 +3,8 @@
 ## UPCOMING
 ***Add new changes here as they land***
 
+- Fix transitive selector refresh for some cases (#1409)
+
 ### Pending
 - Memory management
 - useTransition() compatibility

@@ -233,7 +233,7 @@ function selector<T>(
     }
   }
 
-  // This is every discovered dependency across executions
+  // This is every discovered dependency across all executions
   const discoveredDependencyNodeKeys = new Set();
 
   const cache: TreeCacheImplementation<Loadable<T>> = treeCacheFromPolicy(
@@ -670,6 +670,7 @@ function selector<T>(
         store.getState()?.nextTree?.version ??
           store.getState().currentTree.version,
       );
+      deps.forEach(nodeKey => discoveredDependencyNodeKeys.add(nodeKey));
     }
   }
 
@@ -830,13 +831,8 @@ function selector<T>(
         },
         {
           onNodeVisit: node => {
-            if (
-              node.type === 'branch' &&
-              node.nodeKey !== key &&
-              typeof node.nodeKey === 'string'
-            ) {
+            if (node.type === 'branch' && node.nodeKey !== key) {
               depsAfterCacheDone.add(node.nodeKey);
-              discoveredDependencyNodeKeys.add(node.nodeKey);
             }
           },
         },
@@ -1153,6 +1149,7 @@ function selector<T>(
       const node = getNode(nodeKey);
       node.clearCache?.(store, treeState);
     }
+    discoveredDependencyNodeKeys.clear();
     invalidateSelector(treeState);
     cache.clear();
     markRecoilValueModified(store, recoilValue);
