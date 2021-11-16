@@ -228,7 +228,7 @@ useGetRecoilValueInfo_UNSTABLE()(myAtom); // $ExpectType RecoilStateInfo<number>
 useGetRecoilValueInfo_UNSTABLE()(mySelector2); // $ExpectType RecoilStateInfo<string>
 useGetRecoilValueInfo_UNSTABLE()({}); // $ExpectError
 
-useRecoilCallback(({ snapshot, set, reset, gotoSnapshot, transact_UNSTABLE }) => async () => {
+useRecoilCallback(({ snapshot, set, reset, refresh, gotoSnapshot, transact_UNSTABLE }) => async () => {
   snapshot; // $ExpectType Snapshot
   snapshot.getID(); // $ExpectType SnapshotID
   await snapshot.getPromise(mySelector1); // $ExpectType number
@@ -245,6 +245,7 @@ useRecoilCallback(({ snapshot, set, reset, gotoSnapshot, transact_UNSTABLE }) =>
   set(myAtom, 5);
   set(myAtom, 'hello'); // $ExpectError
   reset(myAtom);
+  refresh(myAtom);
 
   const release = snapshot.retain(); // $ExpectType () => void
   release(); // $ExpectType void

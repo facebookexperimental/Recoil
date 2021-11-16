@@ -3,6 +3,7 @@
 ## UPCOMING
 ***Add new changes here as they land***
 
+- Add `refresh` to Recoil callback interface
 - Fix transitive selector refresh for some cases (#1409)
 
 ### Pending

@@ -11,13 +11,16 @@
 'use strict';
 
 import type {TransactionInterface} from '../core/Recoil_AtomicUpdates';
-import type {RecoilState} from '../core/Recoil_RecoilValue';
+import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 
 const {atomicUpdater} = require('../core/Recoil_AtomicUpdates');
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE} = require('../core/Recoil_Node');
 const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
-const {setRecoilValue} = require('../core/Recoil_RecoilValueInterface');
+const {
+  refreshRecoilValue,
+  setRecoilValue,
+} = require('../core/Recoil_RecoilValueInterface');
 const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
 const err = require('../util/Recoil_err');
 const invariant = require('../util/Recoil_invariant');
@@ -27,6 +30,7 @@ const {useCallback} = require('react');
 export type RecoilCallbackInterface = $ReadOnly<{
   set: <T>(RecoilState<T>, (T => T) | T) => void,
   reset: <T>(RecoilState<T>) => void,
+  refresh: <T>(RecoilValue<T>) => void,
   snapshot: Snapshot,
   gotoSnapshot: Snapshot => void,
   transact_UNSTABLE: ((TransactionInterface) => void) => void,
@@ -55,6 +59,10 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
         setRecoilValue(storeRef.current, recoilState, DEFAULT_VALUE);
       }
 
+      function refresh<T>(recoilValue: RecoilValue<T>) {
+        refreshRecoilValue(storeRef.current, recoilValue);
+      }
+
       // Use currentTree for the snapshot to show the currently committed state
       const snapshot = cloneSnapshot(storeRef.current); // FIXME massive gains from doing this lazily
 
@@ -76,6 +84,7 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
         const cb = (fn: any)({
           set,
           reset,
+          refresh,
           snapshot,
           gotoSnapshot,
           transact_UNSTABLE: atomicUpdate,
