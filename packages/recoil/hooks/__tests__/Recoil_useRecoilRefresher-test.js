@@ -29,9 +29,9 @@ const testRecoil = getRecoilTestFn(() => {
   ({useRecoilValue, useSetRecoilState} = require('../Recoil_Hooks'));
 });
 
-testRecoil('useRerunRecoilValue - no-op for atom', async () => {
+testRecoil('useRecoilRefresher - no-op for atom', async () => {
   const myAtom = atom({
-    key: 'useRerunRecoilValue/atom',
+    key: 'useRecoilRefresher no-op',
     default: 'default',
   });
 
@@ -48,10 +48,10 @@ testRecoil('useRerunRecoilValue - no-op for atom', async () => {
   expect(container.textContent).toBe('default');
 });
 
-testRecoil('useRerunRecoilValue - re-executes selector', async () => {
+testRecoil('useRecoilRefresher - re-executes selector', async () => {
   let i = 0;
   const myselector = selector({
-    key: 'useRerunRecoilValue/selector',
+    key: 'useRecoilRefresher re-execute',
     get: () => i++,
   });
 
@@ -68,15 +68,15 @@ testRecoil('useRerunRecoilValue - re-executes selector', async () => {
   expect(container.textContent).toBe('1');
 });
 
-testRecoil('useRerunRecoilValue - clears entire cache', async () => {
+testRecoil('useRecoilRefresher - clears entire cache', async () => {
   const myatom = atom({
-    key: 'useRerunRecoilValue/myatom',
+    key: 'useRecoilRefresher entire cache atom',
     default: 'a',
   });
 
   let i = 0;
   const myselector = selector({
-    key: 'useRerunRecoilValue/selector',
+    key: 'useRecoilRefresher entire cache selector',
     get: ({get}) => [get(myatom), i++],
   });
 
@@ -100,4 +100,42 @@ testRecoil('useRerunRecoilValue - clears entire cache', async () => {
 
   act(() => setMyAtom('a'));
   expect(container.textContent).toBe('a-3');
+});
+
+testRecoil('useRecoilRefresher - clears ancestor selectors', async () => {
+  const getA = jest.fn(() => 'A');
+  const selectorA = selector({
+    key: 'useRecoilRefresher ancestors A',
+    get: getA,
+  });
+
+  const getB = jest.fn(({get}) => get(selectorA) + 'B');
+  const selectorB = selector({
+    key: 'useRecoilRefresher ancestors B',
+    get: getB,
+  });
+
+  const getC = jest.fn(({get}) => get(selectorB) + 'C');
+  const selectorC = selector({
+    key: 'useRecoilRefresher ancestors C',
+    get: getC,
+  });
+
+  let refresh;
+  function Component() {
+    refresh = useRecoilRefresher(selectorC);
+    return useRecoilValue(selectorC);
+  }
+
+  const container = renderElements(<Component />);
+  expect(container.textContent).toBe('ABC');
+  expect(getC).toHaveBeenCalledTimes(1);
+  expect(getB).toHaveBeenCalledTimes(1);
+  expect(getA).toHaveBeenCalledTimes(1);
+
+  act(() => refresh());
+  expect(container.textContent).toBe('ABC');
+  expect(getC).toHaveBeenCalledTimes(2);
+  expect(getB).toHaveBeenCalledTimes(2);
+  expect(getA).toHaveBeenCalledTimes(2);
 });
