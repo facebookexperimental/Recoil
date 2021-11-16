@@ -28,7 +28,7 @@ const {
   getNodeLoadable,
   setNodeValue,
 } = require('./Recoil_FunctionalCore');
-const {getNodeMaybe} = require('./Recoil_Node');
+const {getNode, getNodeMaybe} = require('./Recoil_Node');
 const {DefaultValue, RecoilValueNotReady} = require('./Recoil_Node');
 const {
   AbstractRecoilValue,
@@ -322,7 +322,6 @@ function subscribeToRecoilValue<T>(
 
   return {
     release: () => {
-      const storeState = store.getState();
       const subs = storeState.nodeToComponentSubscriptions.get(key);
       if (subs === undefined || !subs.has(subID)) {
         recoverableViolation(
@@ -337,6 +336,15 @@ function subscribeToRecoilValue<T>(
       }
     },
   };
+}
+
+function refreshRecoilValue<T>(
+  store: Store,
+  recoilValue: AbstractRecoilValue<T>,
+): void {
+  const {currentTree} = store.getState();
+  const node = getNode(recoilValue.key);
+  node.clearCache?.(store, currentTree);
 }
 
 module.exports = {
@@ -355,5 +363,6 @@ module.exports = {
   writeLoadableToTreeState,
   invalidateDownstreams,
   copyTreeState,
+  refreshRecoilValue,
   invalidateDownstreams_FOR_TESTING: invalidateDownstreams,
 };

@@ -19,6 +19,7 @@ let act,
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
+  refreshRecoilValue,
   a,
   dependsOnAFn,
   dependsOnA,
@@ -37,6 +38,7 @@ const testRecoil = getRecoilTestFn(() => {
     setRecoilValue,
     setUnvalidatedRecoilValue,
     subscribeToRecoilValue,
+    refreshRecoilValue,
   } = require('../Recoil_RecoilValueInterface'));
 
   a = atom<number>({key: 'a', default: 0});
@@ -131,6 +133,44 @@ testRecoil('selector function is evaluated only on first read', () => {
   expect(dependsOnAFn).toHaveBeenCalledTimes(2); // called again on read following upstream change
   getRecoilValueAsLoadable(store, dependsOnA);
   expect(dependsOnAFn).toHaveBeenCalledTimes(2); // not called on subsequent read with no upstream change
+});
+
+testRecoil('selector cache refresh', () => {
+  const getA = jest.fn(() => 'A');
+  const selectorA = selector({
+    key: 'useRecoilRefresher ancestors A',
+    get: getA,
+  });
+
+  const getB = jest.fn(({get}) => get(selectorA) + 'B');
+  const selectorB = selector({
+    key: 'useRecoilRefresher ancestors B',
+    get: getB,
+  });
+
+  const getC = jest.fn(({get}) => get(selectorB) + 'C');
+  const selectorC = selector({
+    key: 'useRecoilRefresher ancestors C',
+    get: getC,
+  });
+
+  expect(getRecoilValueAsLoadable(store, selectorC).contents).toEqual('ABC');
+  expect(getC).toHaveBeenCalledTimes(1);
+  expect(getB).toHaveBeenCalledTimes(1);
+  expect(getA).toHaveBeenCalledTimes(1);
+
+  expect(getRecoilValueAsLoadable(store, selectorC).contents).toEqual('ABC');
+  expect(getC).toHaveBeenCalledTimes(1);
+  expect(getB).toHaveBeenCalledTimes(1);
+  expect(getA).toHaveBeenCalledTimes(1);
+
+  act(() => {
+    refreshRecoilValue(store, selectorC);
+  });
+  expect(getRecoilValueAsLoadable(store, selectorC).contents).toEqual('ABC');
+  expect(getC).toHaveBeenCalledTimes(2);
+  expect(getB).toHaveBeenCalledTimes(2);
+  expect(getA).toHaveBeenCalledTimes(2);
 });
 
 testRecoil('atom can go from unvalidated to normal value', () => {
