@@ -21,6 +21,7 @@ const {
   array,
   boolean,
   custom,
+  literal,
   number,
   object,
   string,
@@ -34,6 +35,11 @@ class MyClass {
   }
 }
 
+const atomNull = atom({
+  key: 'null',
+  default: null,
+  effects_UNSTABLE: [syncEffect({refine: literal(null), syncDefault: true})],
+});
 const atomBoolean = atom({
   key: 'boolean',
   default: true,
@@ -104,34 +110,34 @@ describe('URL Transit Encode', () => {
   test('Anchor - primitives', async () =>
     testTransit(
       {part: 'hash'},
-      [atomBoolean, atomNumber, atomString],
-      'true123"STRING"',
+      [atomNull, atomBoolean, atomNumber, atomString],
+      'nulltrue123"STRING"',
       '/path/page.html?foo=bar',
-      '/path/page.html?foo=bar#%5B%22%5E%20%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D',
+      '/path/page.html?foo=bar#%5B%22%5E%20%22%2C%22null%22%2Cnull%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D',
     ));
   test('Search - primitives', async () =>
     testTransit(
       {part: 'search'},
-      [atomBoolean, atomNumber, atomString],
-      'true123"STRING"',
+      [atomNull, atomBoolean, atomNumber, atomString],
+      'nulltrue123"STRING"',
       '/path/page.html#anchor',
-      '/path/page.html?%5B%22%5E%20%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D#anchor',
+      '/path/page.html?%5B%22%5E%20%22%2C%22null%22%2Cnull%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D#anchor',
     ));
   test('Query Param - primitives', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
-      [atomBoolean, atomNumber, atomString],
-      'true123"STRING"',
+      [atomNull, atomBoolean, atomNumber, atomString],
+      'nulltrue123"STRING"',
       '/path/page.html?foo=bar#anchor',
-      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22null%22%2Cnull%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D#anchor',
     ));
   test('Query Params - primitives', async () =>
     testTransit(
       {part: 'queryParams'},
-      [atomBoolean, atomNumber, atomString],
-      'true123"STRING"',
+      [atomNull, atomBoolean, atomNumber, atomString],
+      'nulltrue123"STRING"',
       '/path/page.html#anchor',
-      '/path/page.html?boolean=%5B%22%7E%23%27%22%2Ctrue%5D&number=%5B%22%7E%23%27%22%2C123%5D&string=%5B%22%7E%23%27%22%2C%22STRING%22%5D#anchor',
+      '/path/page.html?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Ctrue%5D&number=%5B%22%7E%23%27%22%2C123%5D&string=%5B%22%7E%23%27%22%2C%22STRING%22%5D#anchor',
     ));
   test('Query Param - containers', async () =>
     testTransit(
@@ -171,34 +177,34 @@ describe('URL Transit Parse', () => {
   test('Anchor - primitives', async () =>
     testTransit(
       {part: 'hash'},
-      [atomBoolean, atomNumber, atomString],
-      'false456"SET"',
-      '/#["^ ","boolean",false,"number",456,"string","SET"]',
-      '/#%5B%22%5E%20%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
+      [atomNull, atomBoolean, atomNumber, atomString],
+      'nullfalse456"SET"',
+      '/#["^ ","null",null,"boolean",false,"number",456,"string","SET"]',
+      '/#%5B%22%5E%20%22%2C%22null%22%2Cnull%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
     ));
   test('Search - primitives', async () =>
     testTransit(
       {part: 'search'},
-      [atomBoolean, atomNumber, atomString],
-      'false456"SET"',
-      '/?["^ ","boolean",false,"number",456,"string","SET"]',
-      '/?%5B%22%5E%20%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
+      [atomNull, atomBoolean, atomNumber, atomString],
+      'nullfalse456"SET"',
+      '/?["^ ","null",null,"boolean",false,"number",456,"string","SET"]',
+      '/?%5B%22%5E%20%22%2C%22null%22%2Cnull%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
     ));
   test('Query Param - primitives', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
-      [atomBoolean, atomNumber, atomString],
-      'false456"SET"',
-      '/?param=["^ ","boolean",false,"number",456,"string","SET"]',
-      '/?param=%5B%22%5E+%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
+      [atomNull, atomBoolean, atomNumber, atomString],
+      'nullfalse456"SET"',
+      '/?param=["^ ","null",null,"boolean",false,"number",456,"string","SET"]',
+      '/?param=%5B%22%5E+%22%2C%22null%22%2Cnull%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
     ));
   test('Query Params - primitives', async () =>
     testTransit(
       {part: 'queryParams'},
-      [atomBoolean, atomNumber, atomString],
-      'false456"SET"',
-      '/?boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
-      '/?boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
+      [atomNull, atomBoolean, atomNumber, atomString],
+      'nullfalse456"SET"',
+      '/?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
+      '/?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
     ));
   test('Query Param - containers', async () =>
     testTransit(
