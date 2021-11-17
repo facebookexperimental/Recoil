@@ -25,6 +25,7 @@ const {
   literal,
   number,
   object,
+  set,
   string,
   tuple,
 } = require('refine');
@@ -69,6 +70,11 @@ const atomObject = atom({
   effects_UNSTABLE: [
     syncEffect({refine: object({foo: array(number())}), syncDefault: true}),
   ],
+});
+const atomSet = atom({
+  key: 'set',
+  default: new Set([1, 2]),
+  effects_UNSTABLE: [syncEffect({refine: set(number()), syncDefault: true})],
 });
 const atomDate = atom({
   key: 'date',
@@ -144,7 +150,7 @@ describe('URL Transit Encode', () => {
       '/path/page.html#anchor',
       '/path/page.html?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Ctrue%5D&number=%5B%22%7E%23%27%22%2C123%5D&string=%5B%22%7E%23%27%22%2C%22STRING%22%5D#anchor',
     ));
-  test('Query Param - containers', async () =>
+  test('Query Param - objects', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
       [atomArray, atomObject],
@@ -152,13 +158,29 @@ describe('URL Transit Encode', () => {
       '/path/page.html?foo=bar#anchor',
       '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22array%22%2C%5B1%2C%22a%22%5D%2C%22object%22%2C%5B%22%5E+%22%2C%22foo%22%2C%5B1%2C2%5D%5D%5D#anchor',
     ));
-  test('Query Params - containers', async () =>
+  test('Query Params - objects', async () =>
     testTransit(
       {part: 'queryParams'},
       [atomArray, atomObject],
       '[1,"a"]{"foo":[1,2]}',
       '/path/page.html#anchor',
       '/path/page.html?array=%5B1%2C%22a%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B1%2C2%5D%5D#anchor',
+    ));
+  test('Query Param - containers', async () =>
+    testTransit(
+      {part: 'queryParams', param: 'param'},
+      [atomSet],
+      '[1,2]',
+      '/path/page.html?foo=bar#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22set%22%2C%5B%22%7E%23Set%22%2C%5B1%2C2%5D%5D%5D#anchor',
+    ));
+  test('Query Params - containers', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomSet],
+      '[1,2]',
+      '/path/page.html#anchor',
+      '/path/page.html?set=%5B%22%7E%23Set%22%2C%5B1%2C2%5D%5D#anchor',
     ));
   test('Query Param - classes', async () =>
     testTransit(
@@ -211,7 +233,7 @@ describe('URL Transit Parse', () => {
       '/?null=["~%23\'",null]&boolean=["~%23\'",false]&number=["~%23\'",456]&string=["~%23\'","SET"]',
       '/?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
     ));
-  test('Query Param - containers', async () =>
+  test('Query Param - objects', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
       [atomArray, atomObject],
@@ -219,13 +241,29 @@ describe('URL Transit Parse', () => {
       '/?param=["^ ","array",[2,"b"],"object",["^ ","foo",[]]]',
       '/?param=%5B%22%5E+%22%2C%22array%22%2C%5B2%2C%22b%22%5D%2C%22object%22%2C%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D%5D',
     ));
-  test('Query Params - containers', async () =>
+  test('Query Params - objects', async () =>
     testTransit(
       {part: 'queryParams'},
       [atomArray, atomObject],
       '[2,"b"]{"foo":[]}',
       '/?array=[2,"b"]&object=["^+","foo",[]]',
       '/?array=%5B2%2C%22b%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D',
+    ));
+  test('Query Param - containers', async () =>
+    testTransit(
+      {part: 'queryParams', param: 'param'},
+      [atomSet],
+      '[3,4]',
+      '/?param=["^+","set",["~%23Set",[3,4]]]',
+      '/?param=%5B%22%5E+%22%2C%22set%22%2C%5B%22%7E%23Set%22%2C%5B3%2C4%5D%5D%5D',
+    ));
+  test('Query Params - containers', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomSet],
+      '[3,4]',
+      '/?set=["~%23Set",[3,4]]',
+      '/?set=%5B%22%7E%23Set%22%2C%5B3%2C4%5D%5D',
     ));
   test('Query Param - classes', async () =>
     testTransit(
