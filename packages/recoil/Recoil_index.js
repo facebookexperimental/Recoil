@@ -128,7 +128,7 @@ module.exports = {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
-  useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED,
+  useTransactionObservation_DEPRECATED,
   useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
   snapshot_UNSTABLE: freshSnapshot,
 
