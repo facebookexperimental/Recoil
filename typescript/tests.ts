@@ -571,7 +571,11 @@ isRecoilValue(mySelector1);
     key: 'thisismyrandomkey',
     default: 0,
     effects_UNSTABLE: [
-      ({node, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
+      ({node, storeID, trigger, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
+        node; // $ExpectType RecoilState<number>
+        storeID; // $ExpectType StoreID
+        trigger; // $ExpectType "get" | "set"
+
         setSelf(1);
         setSelf('a'); // $ExpectError
 
@@ -607,8 +611,12 @@ isRecoilValue(mySelector1);
     key: 'myrandomatomfamilykey',
     default: (param: number) => param,
     effects_UNSTABLE: (param) => [
-      ({node, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
+      ({node, storeID, trigger, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
         param; // $ExpectType number
+
+        node; // $ExpectType RecoilState<number>
+        storeID; // $ExpectType StoreID
+        trigger; // $ExpectType "get" | "set"
 
         setSelf(1);
         setSelf('a'); // $ExpectError
