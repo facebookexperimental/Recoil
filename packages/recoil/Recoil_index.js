@@ -10,6 +10,7 @@
  */
 'use strict';
 
+export type {StoreID} from './core/Recoil_Keys';
 export type {PersistenceType} from './core/Recoil_Node';
 export type {
   RecoilValue,
@@ -42,7 +43,10 @@ export type {
 
 const {RecoilLoadable} = require('./adt/Recoil_Loadable');
 const {DefaultValue} = require('./core/Recoil_Node');
-const {RecoilRoot} = require('./core/Recoil_RecoilRoot.react');
+const {
+  RecoilRoot,
+  useRecoilStoreID,
+} = require('./core/Recoil_RecoilRoot.react');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {retentionZone} = require('./core/Recoil_RetentionZone');
 const {freshSnapshot} = require('./core/Recoil_Snapshot');
@@ -90,6 +94,7 @@ module.exports = {
 
   // Recoil Root
   RecoilRoot,
+  useRecoilStoreID,
   useRecoilBridgeAcrossReactRoots_UNSTABLE: useRecoilBridgeAcrossReactRoots,
 
   // Atoms/Selectors

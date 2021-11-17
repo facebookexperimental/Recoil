@@ -29,6 +29,7 @@
   Loadable, RecoilLoadable,
   useRecoilTransaction_UNSTABLE,
   useRecoilRefresher_UNSTABLE,
+  useRecoilStoreID,
 } from 'recoil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -329,6 +330,14 @@ const transact: (p: number) => void = useRecoilTransaction_UNSTABLE(({get, set, 
   RecoilBridgeComponent({});
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   RecoilBridgeComponent({initializeState: () => {}}); // $ExpectError
+}
+
+/**
+ * ueRecoilStoreID()
+ */
+{
+  useRecoilStoreID(2); // $ExpectError
+  useRecoilStoreID(); // $ExpectType StoreID
 }
 
 // Other

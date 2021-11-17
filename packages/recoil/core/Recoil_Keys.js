@@ -15,5 +15,15 @@ export type NodeKey = string;
 export type ComponentID = number;
 export type Version = number;
 export type StateID = number;
+export type StoreID = number;
 
-module.exports = ({}: {...});
+let nextTreeStateVersion = 0;
+const getNextTreeStateVersion = (): Version => nextTreeStateVersion++;
+
+let nextStoreID = 0;
+const getNextStoreID = (): StoreID => nextStoreID++;
+
+module.exports = {
+  getNextTreeStateVersion,
+  getNextStoreID,
+};
