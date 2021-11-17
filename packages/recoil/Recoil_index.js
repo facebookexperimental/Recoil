@@ -53,13 +53,11 @@ const {
   useRecoilValueLoadable,
   useResetRecoilState,
   useSetRecoilState,
-  useSetUnvalidatedAtomValues,
 } = require('./hooks/Recoil_Hooks');
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
   useRecoilTransactionObserver,
-  useTransactionObservation_DEPRECATED,
 } = require('./hooks/Recoil_SnapshotHooks');
 const useGetRecoilValueInfo = require('./hooks/Recoil_useGetRecoilValueInfo');
 const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
@@ -128,8 +126,6 @@ module.exports = {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
-  useTransactionObservation_DEPRECATED,
-  useSetUnvalidatedAtomValues_DEPRECATED: useSetUnvalidatedAtomValues,
   snapshot_UNSTABLE: freshSnapshot,
 
   // Memory Management
