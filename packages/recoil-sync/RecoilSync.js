@@ -10,13 +10,14 @@
  */
 'use strict';
 
-import type {AtomEffect, Loadable, RecoilState} from 'Recoil';
+import type {AtomEffect, Loadable, RecoilState, StoreID} from 'Recoil';
 import type {Checker} from 'refine';
 
 const {
   DefaultValue,
   RecoilLoadable,
   useRecoilSnapshot,
+  useRecoilStoreID,
   useRecoilTransaction_UNSTABLE,
 } = require('Recoil');
 
@@ -60,20 +61,28 @@ type AtomRegistration<T> = {
 // TODO Scope this per <RecoilRoot>
 class Registries {
   atomRegistries: Map<
-    StoreKey,
-    Map<NodeKey, AtomRegistration<any>>, // flowlint-line unclear-type:off
+    StoreID,
+    Map<
+      StoreKey,
+      Map<NodeKey, AtomRegistration<any>>, // flowlint-line unclear-type:off
+    >,
   > = new Map();
 
   getAtomRegistry(
-    storeKey: StoreKey,
+    recoilStoreID: StoreID,
+    externalStoreKey: StoreKey,
     // flowlint-next-line unclear-type:off
   ): Map<NodeKey, AtomRegistration<any>> {
-    const registry = this.atomRegistries.get(storeKey);
+    if (!this.atomRegistries.has(recoilStoreID)) {
+      this.atomRegistries.set(recoilStoreID, new Map());
+    }
+    const storeRegistries = this.atomRegistries.get(recoilStoreID);
+    const registry = storeRegistries?.get(externalStoreKey);
     if (registry != null) {
       return registry;
     }
     const newRegistry = new Map();
-    this.atomRegistries.set(storeKey, newRegistry);
+    storeRegistries?.set(externalStoreKey, newRegistry);
     return newRegistry;
   }
 }
@@ -103,9 +112,16 @@ const validateLoadable = <T>(
     throw err(`[${result.path.toString()}]: ${result.message}`);
   });
 
-const itemsFromSnapshot = (storeKey, getInfo): ItemSnapshot => {
+const itemsFromSnapshot = (
+  recoilStoreID: StoreID,
+  storeKey: StoreKey,
+  getInfo,
+): ItemSnapshot => {
   const items: ItemSnapshot = new Map();
-  for (const [, {atom, itemKeys}] of registries.getAtomRegistry(storeKey)) {
+  for (const [, {atom, itemKeys}] of registries.getAtomRegistry(
+    recoilStoreID,
+    storeKey,
+  )) {
     // TODO syncEffect()'s write()
     for (const [itemKey, {syncDefault}] of itemKeys) {
       const atomInfo = getInfo(atom);
@@ -133,6 +149,8 @@ function useRecoilSync({
   read,
   listen,
 }: RecoilSyncOptions): void {
+  const recoilStoreID = useRecoilStoreID();
+
   // Subscribe to Recoil state changes
   const snapshot = useRecoilSnapshot();
   const previousSnapshotRef = useRef(snapshot);
@@ -144,7 +162,7 @@ function useRecoilSync({
         previousSnapshotRef.current = snapshot;
       }
       const diff: ItemDiff = new Map();
-      const atomRegistry = registries.getAtomRegistry(storeKey);
+      const atomRegistry = registries.getAtomRegistry(recoilStoreID, storeKey);
       const modifiedAtoms = snapshot.getNodes_UNSTABLE({isModified: true});
       for (const atom of modifiedAtoms) {
         const registration = atomRegistry.get(atom.key);
@@ -181,6 +199,7 @@ function useRecoilSync({
           get: (target, prop) => {
             if (prop === 'allItems' && target.allItems == null) {
               target.allItems = itemsFromSnapshot(
+                recoilStoreID,
                 storeKey,
                 snapshot.getInfo_UNSTABLE,
               );
@@ -193,13 +212,16 @@ function useRecoilSync({
         write(writeInterface);
       }
     }
-  }, [snapshot, storeKey, write]);
+  }, [recoilStoreID, snapshot, storeKey, write]);
 
   // Subscribe to Sync storage changes
   const updateItems = useRecoilTransaction_UNSTABLE(
     ({set, reset}) =>
       (diff: ItemDiff) => {
-        const atomRegistry = registries.getAtomRegistry(storeKey);
+        const atomRegistry = registries.getAtomRegistry(
+          recoilStoreID,
+          storeKey,
+        );
         for (const [, registration] of atomRegistry) {
           let resetAtom = false;
           // Go through registered item keys in reverse order so later syncEffects
@@ -247,7 +269,7 @@ function useRecoilSync({
           }
         }
       },
-    [storeKey],
+    [recoilStoreID, storeKey],
   );
   const updateItem = useCallback(
     (itemKey: ItemKey, loadable: ?Loadable<mixed>) => {
@@ -259,7 +281,7 @@ function useRecoilSync({
     itemSnapshot => {
       // Reset the value of any items that are registered and not included in
       // the user-provided snapshot.
-      const atomRegistry = registries.getAtomRegistry(storeKey);
+      const atomRegistry = registries.getAtomRegistry(recoilStoreID, storeKey);
       for (const [, registration] of atomRegistry) {
         for (const [itemKey] of registration.itemKeys) {
           if (!itemSnapshot.has(itemKey)) {
@@ -269,7 +291,7 @@ function useRecoilSync({
       }
       updateItems(itemSnapshot);
     },
-    [storeKey, updateItems],
+    [recoilStoreID, storeKey, updateItems],
   );
   useEffect(
     () =>
@@ -316,11 +338,11 @@ function syncEffect<T>({
   syncDefault,
   actionOnFailure_UNSTABLE: actionOnFailure = 'errorState',
 }: SyncEffectOptions<T>): AtomEffect<T> {
-  return ({node, trigger, setSelf, getLoadable, getInfo_UNSTABLE}) => {
+  return ({node, trigger, storeID, setSelf, getLoadable, getInfo_UNSTABLE}) => {
     const key = itemKey ?? node.key;
 
     // Register Atom
-    const atomRegistry = registries.getAtomRegistry(storeKey);
+    const atomRegistry = registries.getAtomRegistry(storeID, storeKey);
     const registration = atomRegistry.get(node.key);
     const entry = {refine, syncDefault, actionOnFailure};
     registration != null
@@ -386,6 +408,7 @@ function syncEffect<T>({
                 get: (target, prop) => {
                   if (prop === 'allItems' && target.allItems == null) {
                     target.allItems = itemsFromSnapshot(
+                      storeID,
                       storeKey,
                       getInfo_UNSTABLE,
                     );

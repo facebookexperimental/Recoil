@@ -13,6 +13,7 @@ import type {ItemKey, ItemSnapshot, ListenInterface} from '../RecoilSync';
 const {act} = require('ReactTestUtils');
 const {
   RecoilLoadable,
+  RecoilRoot,
   atom,
   atomFamily,
   selectorFamily,
@@ -957,4 +958,45 @@ test('Reading before sync hook', async () => {
   const container = renderElements(<MyRoot />);
 
   expect(container.textContent).toBe('"A"BC"D""E"');
+});
+
+test('Sibling <RecoilRoot>', async () => {
+  const atomA = atom({
+    key: 'recoil-sync sibling root A',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      syncEffect({itemKey: 'a', refine: string(), syncDefault: true}),
+    ],
+  });
+
+  const atomB = atom({
+    key: 'recoil-sync sibling root B',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      syncEffect({itemKey: 'b', refine: string(), syncDefault: true}),
+    ],
+  });
+
+  const storageA = new Map([['a', RecoilLoadable.of('A')]]);
+  const storageB = new Map([]);
+
+  const container = renderElements(
+    <>
+      <RecoilRoot>
+        <TestRecoilSync storage={storageA} />
+        <ReadsAtom atom={atomA} />
+      </RecoilRoot>
+      <RecoilRoot>
+        <TestRecoilSync storage={storageB} />
+        <ReadsAtom atom={atomB} />
+      </RecoilRoot>
+    </>,
+  );
+
+  expect(container.textContent).toEqual('"A""DEFAULT"');
+  await flushPromisesAndTimers();
+  expect(storageA.size).toBe(1);
+  expect(storageB.size).toBe(1);
+  expect(storageA.get('a')?.contents).toBe('A');
+  expect(storageB.get('b')?.contents).toBe('DEFAULT');
 });
