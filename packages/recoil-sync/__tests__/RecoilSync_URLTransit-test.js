@@ -74,7 +74,7 @@ const atomUser = atom({
   ],
 });
 
-async function testTransit(loc, contents, beforeURL, afterURL) {
+async function testTransit(loc, atoms, contents, beforeURL, afterURL) {
   history.replaceState(null, '', beforeURL);
 
   const container = renderElements(
@@ -90,12 +90,9 @@ async function testTransit(loc, contents, beforeURL, afterURL) {
           },
         ]}
       />
-      <ReadsAtom atom={atomBoolean} />
-      <ReadsAtom atom={atomNumber} />
-      <ReadsAtom atom={atomString} />
-      <ReadsAtom atom={atomArray} />
-      <ReadsAtom atom={atomObject} />
-      <ReadsAtom atom={atomUser} />
+      {atoms.map(testAtom => (
+        <ReadsAtom atom={testAtom} />
+      ))}
     </>,
   );
   expect(container.textContent).toBe(contents);
@@ -104,64 +101,135 @@ async function testTransit(loc, contents, beforeURL, afterURL) {
 }
 
 describe('URL Transit Encode', () => {
-  test('Anchor', async () =>
+  test('Anchor - primitives', async () =>
     testTransit(
       {part: 'hash'},
-      'true123"STRING"[1,"a"]{"foo":[1,2]}{"prop":"CUSTOM"}',
+      [atomBoolean, atomNumber, atomString],
+      'true123"STRING"',
       '/path/page.html?foo=bar',
-      '/path/page.html?foo=bar#%5B%22%5E%20%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%2C%22array%22%2C%5B1%2C%22a%22%5D%2C%22object%22%2C%5B%22%5E%20%22%2C%22foo%22%2C%5B1%2C2%5D%5D%2C%22user%22%2C%5B%22~%23USER%22%2C%5B%22CUSTOM%22%5D%5D%5D',
+      '/path/page.html?foo=bar#%5B%22%5E%20%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D',
     ));
-  test('Search', async () =>
+  test('Search - primitives', async () =>
     testTransit(
       {part: 'search'},
-      'true123"STRING"[1,"a"]{"foo":[1,2]}{"prop":"CUSTOM"}',
+      [atomBoolean, atomNumber, atomString],
+      'true123"STRING"',
       '/path/page.html#anchor',
-      '/path/page.html?%5B%22%5E%20%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%2C%22array%22%2C%5B1%2C%22a%22%5D%2C%22object%22%2C%5B%22%5E%20%22%2C%22foo%22%2C%5B1%2C2%5D%5D%2C%22user%22%2C%5B%22~%23USER%22%2C%5B%22CUSTOM%22%5D%5D%5D#anchor',
+      '/path/page.html?%5B%22%5E%20%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D#anchor',
     ));
-  test('Query Params', async () =>
-    testTransit(
-      {part: 'queryParams'},
-      'true123"STRING"[1,"a"]{"foo":[1,2]}{"prop":"CUSTOM"}',
-      '/path/page.html#anchor',
-      '/path/page.html?boolean=%5B%22%7E%23%27%22%2Ctrue%5D&number=%5B%22%7E%23%27%22%2C123%5D&string=%5B%22%7E%23%27%22%2C%22STRING%22%5D&array=%5B1%2C%22a%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B1%2C2%5D%5D&user=%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D#anchor',
-    ));
-  test('Query Param', async () =>
+  test('Query Param - primitives', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
-      'true123"STRING"[1,"a"]{"foo":[1,2]}{"prop":"CUSTOM"}',
+      [atomBoolean, atomNumber, atomString],
+      'true123"STRING"',
       '/path/page.html?foo=bar#anchor',
-      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%2C%22array%22%2C%5B1%2C%22a%22%5D%2C%22object%22%2C%5B%22%5E+%22%2C%22foo%22%2C%5B1%2C2%5D%5D%2C%22user%22%2C%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D%5D#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22boolean%22%2Ctrue%2C%22number%22%2C123%2C%22string%22%2C%22STRING%22%5D#anchor',
+    ));
+  test('Query Params - primitives', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomBoolean, atomNumber, atomString],
+      'true123"STRING"',
+      '/path/page.html#anchor',
+      '/path/page.html?boolean=%5B%22%7E%23%27%22%2Ctrue%5D&number=%5B%22%7E%23%27%22%2C123%5D&string=%5B%22%7E%23%27%22%2C%22STRING%22%5D#anchor',
+    ));
+  test('Query Param - containers', async () =>
+    testTransit(
+      {part: 'queryParams', param: 'param'},
+      [atomArray, atomObject],
+      '[1,"a"]{"foo":[1,2]}',
+      '/path/page.html?foo=bar#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22array%22%2C%5B1%2C%22a%22%5D%2C%22object%22%2C%5B%22%5E+%22%2C%22foo%22%2C%5B1%2C2%5D%5D%5D#anchor',
+    ));
+  test('Query Params - containers', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomArray, atomObject],
+      '[1,"a"]{"foo":[1,2]}',
+      '/path/page.html#anchor',
+      '/path/page.html?array=%5B1%2C%22a%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B1%2C2%5D%5D#anchor',
+    ));
+  test('Query Param - classes', async () =>
+    testTransit(
+      {part: 'queryParams', param: 'param'},
+      [atomUser],
+      '{"prop":"CUSTOM"}',
+      '/path/page.html?foo=bar#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22user%22%2C%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D%5D#anchor',
+    ));
+  test('Query Params - classes', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomUser],
+      '{"prop":"CUSTOM"}',
+      '/path/page.html#anchor',
+      '/path/page.html?user=%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D#anchor',
     ));
 });
 
 describe('URL Transit Parse', () => {
-  test('Anchor', async () =>
+  test('Anchor - primitives', async () =>
     testTransit(
       {part: 'hash'},
-      'false456"SET"[2,"b"]{"foo":[]}{"prop":"PROP"}',
-      '/#["^ ","boolean",false,"number",456,"string","SET","array",[2,"b"],"object",["^ ","foo",[]],"user",["~#USER",["PROP"]]]',
-      '/#%5B%22%5E%20%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%2C%22array%22%2C%5B2%2C%22b%22%5D%2C%22object%22%2C%5B%22%5E%20%22%2C%22foo%22%2C%5B%5D%5D%2C%22user%22%2C%5B%22~%23USER%22%2C%5B%22PROP%22%5D%5D%5D',
+      [atomBoolean, atomNumber, atomString],
+      'false456"SET"',
+      '/#["^ ","boolean",false,"number",456,"string","SET"]',
+      '/#%5B%22%5E%20%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
     ));
-  test('Search', async () =>
+  test('Search - primitives', async () =>
     testTransit(
       {part: 'search'},
-      'false456"SET"[2,"b"]{"foo":[]}{"prop":"PROP"}',
-      // '/?["^ ","boolean",false,"number",456,"string","SET","array",[2,"b"],"object",["^ ","foo",[]]]',
-      '/?["^ ","boolean",false,"number",456,"string","SET","array",[2,"b"],"object",["^ ","foo",[]],"user",["~%23USER",["PROP"]]]',
-      '/?%5B%22%5E%20%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%2C%22array%22%2C%5B2%2C%22b%22%5D%2C%22object%22%2C%5B%22%5E%20%22%2C%22foo%22%2C%5B%5D%5D%2C%22user%22%2C%5B%22~%23USER%22%2C%5B%22PROP%22%5D%5D%5D',
+      [atomBoolean, atomNumber, atomString],
+      'false456"SET"',
+      '/?["^ ","boolean",false,"number",456,"string","SET"]',
+      '/?%5B%22%5E%20%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
     ));
-  test('Query Params', async () =>
-    testTransit(
-      {part: 'queryParams'},
-      'false456"SET"[2,"b"]{"foo":[]}{"prop":"PROP"}',
-      '/?boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D&array=%5B2%2C%22b%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D&user=%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D',
-      '/?boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D&array=%5B2%2C%22b%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D&user=%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D',
-    ));
-  test('Query Param', async () =>
+  test('Query Param - primitives', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
-      'false456"SET"[2,"b"]{"foo":[]}{"prop":"PROP"}',
-      '/?param=["^ ","boolean",false,"number",456,"string","SET","array",[2,"b"],"object",["^ ","foo",[]],"user",["~%23USER",["PROP"]]]',
-      '/?param=%5B%22%5E+%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%2C%22array%22%2C%5B2%2C%22b%22%5D%2C%22object%22%2C%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D%2C%22user%22%2C%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D%5D',
+      [atomBoolean, atomNumber, atomString],
+      'false456"SET"',
+      '/?param=["^ ","boolean",false,"number",456,"string","SET"]',
+      '/?param=%5B%22%5E+%22%2C%22boolean%22%2Cfalse%2C%22number%22%2C456%2C%22string%22%2C%22SET%22%5D',
+    ));
+  test('Query Params - primitives', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomBoolean, atomNumber, atomString],
+      'false456"SET"',
+      '/?boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
+      '/?boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
+    ));
+  test('Query Param - containers', async () =>
+    testTransit(
+      {part: 'queryParams', param: 'param'},
+      [atomArray, atomObject],
+      '[2,"b"]{"foo":[]}',
+      '/?param=["^ ","array",[2,"b"],"object",["^ ","foo",[]]]',
+      '/?param=%5B%22%5E+%22%2C%22array%22%2C%5B2%2C%22b%22%5D%2C%22object%22%2C%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D%5D',
+    ));
+  test('Query Params - containers', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomArray, atomObject],
+      '[2,"b"]{"foo":[]}',
+      '/?array=%5B2%2C%22b%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D',
+      '/?array=%5B2%2C%22b%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D',
+    ));
+  test('Query Param - classes', async () =>
+    testTransit(
+      {part: 'queryParams', param: 'param'},
+      [atomUser],
+      '{"prop":"PROP"}',
+      '/?param=["^ ","user",["~%23USER",["PROP"]]]',
+      '/?param=%5B%22%5E+%22%2C%22user%22%2C%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D%5D',
+    ));
+  test('Query Params - classes', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomUser],
+      '{"prop":"PROP"}',
+      '/?user=%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D',
+      '/?user=%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D',
     ));
 });
