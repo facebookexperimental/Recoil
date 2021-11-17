@@ -86,7 +86,7 @@ class Registries {
     return newRegistry;
   }
 }
-const registries = new Registries();
+const registries: Registries = new Registries();
 
 type Storage = {
   write?: WriteItems,
@@ -435,4 +435,5 @@ module.exports = {
   useRecoilSync,
   RecoilSync,
   syncEffect,
+  registries_FOR_TESTING: registries,
 };
