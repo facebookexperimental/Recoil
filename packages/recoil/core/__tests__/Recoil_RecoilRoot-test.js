@@ -352,4 +352,51 @@ describe('override prop', () => {
       expect(container.textContent).toEqual('"SET"');
     },
   );
+
+  testRecoil('initializeState is only called once', () => {
+    const myAtom = atom({
+      key: 'RecoilRoot/override/atom',
+      default: 'DEFAULT',
+    });
+    const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+
+    const initializeState = jest.fn(({set}) => set(myAtom, 'INIT'));
+    let forceUpdate = () => {
+      throw new Error('not rendered');
+    };
+    let setRootKey = _ => {
+      throw new Error('');
+    };
+    function MyRoot() {
+      const [counter, setCounter] = useState(0);
+      forceUpdate = () => setCounter(counter + 1);
+      const [key, setKey] = useState(0);
+      setRootKey = setKey;
+      return (
+        <RecoilRoot key={key} initializeState={initializeState}>
+          {counter}
+          <ReadsWritesAtom />
+        </RecoilRoot>
+      );
+    }
+    const container = renderElements(<MyRoot />);
+
+    expect(container.textContent).toEqual('0"INIT"');
+
+    act(forceUpdate);
+    expect(initializeState).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toEqual('1"INIT"');
+
+    act(() => setAtom('SET'));
+    expect(initializeState).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toEqual('1"SET"');
+
+    act(forceUpdate);
+    expect(initializeState).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toEqual('2"SET"');
+
+    act(() => setRootKey(1));
+    expect(initializeState).toHaveBeenCalledTimes(2);
+    expect(container.textContent).toEqual('2"INIT"');
+  });
 });

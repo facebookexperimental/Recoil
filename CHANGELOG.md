@@ -3,8 +3,9 @@
 ## UPCOMING
 ***Add new changes here as they land***
 
-- Add `refresh` to Recoil callback interface
+- Add `refresh` to Recoil callback interface (#1413)
 - Fix transitive selector refresh for some cases (#1409)
+- `<RecoilRoot>` will only call `initializeState()` during initial render. (#1372)
 
 ### Pending
 - Memory management
@@ -32,6 +33,7 @@
 - Improved dev-mode checks:
   - Atoms freeze default, initialized, and async values.  Selectors should not freeze upstream dependencies. (#1261, #1259)
   - Perform runtime check that required options are provided when creating atoms and selectors. (#1324)
+- Fix user-thrown promises in selectors for some cases.
 - Allow class instances in family parameters for Flow
 
 ## 0.4.1 (2021-08-26)

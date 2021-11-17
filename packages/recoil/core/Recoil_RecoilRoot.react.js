@@ -344,10 +344,10 @@ function RecoilRoot_INTERNAL({
     // @fb-only: }
   // @fb-only: }, []);
 
-  let storeState; // eslint-disable-line prefer-const
+  let storeStateRef: {current: StoreState}; // eslint-disable-line prefer-const
 
   const getGraph = version => {
-    const graphs = storeState.current.graphsByVersion;
+    const graphs = storeStateRef.current.graphsByVersion;
     if (graphs.has(version)) {
       return nullthrows(graphs.get(version));
     }
@@ -398,10 +398,9 @@ function RecoilRoot_INTERNAL({
   };
 
   const replaceState = replacer => {
-    const storeState = storeRef.current.getState();
     startNextTreeIfNeeded(storeRef.current);
     // Use replacer to get the next state:
-    const nextTree = nullthrows(storeState.nextTree);
+    const nextTree = nullthrows(storeStateRef.current.nextTree);
     let replaced;
     try {
       stateReplacerIsBeingExecuted = true;
@@ -420,9 +419,9 @@ function RecoilRoot_INTERNAL({
     }
 
     // Save changes to nextTree and schedule a React update:
-    storeState.nextTree = replaced;
+    storeStateRef.current.nextTree = replaced;
     if (gkx('recoil_early_rendering_2021')) {
-      notifyComponents(store, storeState, replaced);
+      notifyComponents(store, storeStateRef.current, replaced);
     }
     nullthrows(notifyBatcherOfChange.current)();
   };
@@ -435,13 +434,8 @@ function RecoilRoot_INTERNAL({
     [notifyBatcherOfChange],
   );
 
-  // FIXME T2710559282599660
-  const createMutableSource =
-    (React: any).createMutableSource ?? // flowlint-line unclear-type:off
-    (React: any).unstable_createMutableSource; // flowlint-line unclear-type:off
-
   const store: Store = storeProp ?? {
-    getState: () => storeState.current,
+    getState: () => storeStateRef.current,
     replaceState,
     getGraph,
     subscribeToTransactions,
@@ -449,23 +443,33 @@ function RecoilRoot_INTERNAL({
   };
 
   const storeRef = useRef(store);
-  storeState = useRef(
-    initializeState_DEPRECATED != null
-      ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED)
-      : initializeState != null
-      ? initialStoreState(initializeState)
-      : makeEmptyStoreState(),
-  );
+
+  // Only call initializeState() for the first render.
+  // $FlowExpectedError[incompatible-type]
+  storeStateRef = useRef(null);
+  if (storeStateRef.current == null) {
+    storeStateRef.current =
+      initializeState_DEPRECATED != null
+        ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED)
+        : initializeState != null
+        ? initialStoreState(initializeState)
+        : makeEmptyStoreState();
+  }
+
+  // FIXME T2710559282599660
+  const createMutableSource =
+    (React: any).createMutableSource ?? // flowlint-line unclear-type:off
+    (React: any).unstable_createMutableSource; // flowlint-line unclear-type:off
 
   const mutableSource = useMemo(
     () =>
       createMutableSource
         ? createMutableSource(
-            storeState,
-            () => storeState.current.currentTree.version,
+            storeStateRef,
+            () => storeStateRef.current.currentTree.version,
           )
         : null,
-    [createMutableSource, storeState],
+    [createMutableSource, storeStateRef],
   );
 
   // Cleanup when the <RecoilRoot> is unmounted
