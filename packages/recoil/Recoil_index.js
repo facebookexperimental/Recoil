@@ -129,7 +129,7 @@ module.exports = {
   useRecoilSnapshot,
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
   useTransactionObservation_DEPRECATED,
-  useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
+  useSetUnvalidatedAtomValues_DEPRECATED: useSetUnvalidatedAtomValues,
   snapshot_UNSTABLE: freshSnapshot,
 
   // Memory Management
