@@ -2471,6 +2471,7 @@ const {
 } = Recoil_FunctionalCore;
 
 const {
+  getNode: getNode$2,
   getNodeMaybe: getNodeMaybe$2
 } = Recoil_Node;
 
@@ -2733,7 +2734,6 @@ function subscribeToRecoilValue(store, {
 
   return {
     release: () => {
-      const storeState = store.getState();
       const subs = storeState.nodeToComponentSubscriptions.get(key);
 
       if (subs === undefined || !subs.has(subID)) {
@@ -2748,6 +2748,16 @@ function subscribeToRecoilValue(store, {
       }
     }
   };
+}
+
+function refreshRecoilValue(store, recoilValue) {
+  var _node$clearCache;
+
+  const {
+    currentTree
+  } = store.getState();
+  const node = getNode$2(recoilValue.key);
+  (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, currentTree);
 }
 
 var Recoil_RecoilValueInterface = {
@@ -2767,6 +2777,7 @@ var Recoil_RecoilValueInterface = {
   writeLoadableToTreeState,
   invalidateDownstreams,
   copyTreeState,
+  refreshRecoilValue,
   invalidateDownstreams_FOR_TESTING: invalidateDownstreams
 };
 
@@ -2810,7 +2821,7 @@ const {
 
 const {
   deleteNodeConfigIfPossible: deleteNodeConfigIfPossible$1,
-  getNode: getNode$2
+  getNode: getNode$3
 } = Recoil_Node;
 
 const {
@@ -2870,7 +2881,7 @@ function findReleasableNodes(store, searchFromNodes) {
       var _storeState$retention;
 
       // Not releasable if configured to be retained forever:
-      if (getNode$2(node).retainedBy === 'recoilRoot') {
+      if (getNode$3(node).retainedBy === 'recoilRoot') {
         nonReleasableNodes.add(node);
         continue;
       } // Not releasable if retained directly by a component:
@@ -3017,7 +3028,7 @@ function nodesRetainedByZone(storeState, zone) {
 }
 
 function zonesThatCouldRetainNode(node) {
-  const retainedBy = getNode$2(node).retainedBy;
+  const retainedBy = getNode$3(node).retainedBy;
 
   if (retainedBy === undefined || retainedBy === 'components' || retainedBy === 'recoilRoot') {
     return [];
@@ -3904,10 +3915,10 @@ function RecoilRoot_INTERNAL({
   // @fb-only: }
   // @fb-only: }
   // @fb-only: }, []);
-  let storeState; // eslint-disable-line prefer-const
+  let storeStateRef; // eslint-disable-line prefer-const
 
   const getGraph = version => {
-    const graphs = storeState.current.graphsByVersion;
+    const graphs = storeStateRef.current.graphsByVersion;
 
     if (graphs.has(version)) {
       return Recoil_nullthrows(graphs.get(version));
@@ -3968,10 +3979,9 @@ function RecoilRoot_INTERNAL({
   };
 
   const replaceState = replacer => {
-    const storeState = storeRef.current.getState();
     startNextTreeIfNeeded(storeRef.current); // Use replacer to get the next state:
 
-    const nextTree = Recoil_nullthrows(storeState.nextTree);
+    const nextTree = Recoil_nullthrows(storeStateRef.current.nextTree);
     let replaced;
 
     try {
@@ -3992,10 +4002,10 @@ function RecoilRoot_INTERNAL({
     } // Save changes to nextTree and schedule a React update:
 
 
-    storeState.nextTree = replaced;
+    storeStateRef.current.nextTree = replaced;
 
     if (Recoil_gkx_1('recoil_early_rendering_2021')) {
-      notifyComponents(store, storeState, replaced);
+      notifyComponents(store, storeStateRef.current, replaced);
     }
 
     Recoil_nullthrows(notifyBatcherOfChange.current)();
@@ -4004,21 +4014,28 @@ function RecoilRoot_INTERNAL({
   const notifyBatcherOfChange = useRef(null);
   const setNotifyBatcherOfChange = useCallback(x => {
     notifyBatcherOfChange.current = x;
-  }, [notifyBatcherOfChange]); // FIXME T2710559282599660
-
-  const createMutableSource = (_createMutableSource = react.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : // flowlint-line unclear-type:off
-  react.unstable_createMutableSource; // flowlint-line unclear-type:off
-
+  }, [notifyBatcherOfChange]);
   const store = storeProp !== null && storeProp !== void 0 ? storeProp : {
-    getState: () => storeState.current,
+    getState: () => storeStateRef.current,
     replaceState,
     getGraph,
     subscribeToTransactions,
     addTransactionMetadata
   };
-  const storeRef = useRef(store);
-  storeState = useRef(initializeState_DEPRECATED != null ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED) : initializeState != null ? initialStoreState(initializeState) : makeEmptyStoreState$2());
-  const mutableSource = useMemo(() => createMutableSource ? createMutableSource(storeState, () => storeState.current.currentTree.version) : null, [createMutableSource, storeState]); // Cleanup when the <RecoilRoot> is unmounted
+  const storeRef = useRef(store); // Only call initializeState() for the first render.
+  // $FlowExpectedError[incompatible-type]
+
+  storeStateRef = useRef(null);
+
+  if (storeStateRef.current == null) {
+    storeStateRef.current = initializeState_DEPRECATED != null ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED) : initializeState != null ? initialStoreState(initializeState) : makeEmptyStoreState$2();
+  } // FIXME T2710559282599660
+
+
+  const createMutableSource = (_createMutableSource = react.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : // flowlint-line unclear-type:off
+  react.unstable_createMutableSource; // flowlint-line unclear-type:off
+
+  const mutableSource = useMemo(() => createMutableSource ? createMutableSource(storeStateRef, () => storeStateRef.current.currentTree.version) : null, [createMutableSource, storeStateRef]); // Cleanup when the <RecoilRoot> is unmounted
 
   useEffect(() => () => {
     for (const atomKey of storeRef.current.getState().knownAtoms) {
@@ -5025,7 +5042,7 @@ const {
 
 const {
   DEFAULT_VALUE: DEFAULT_VALUE$3,
-  getNode: getNode$3,
+  getNode: getNode$4,
   nodes: nodes$1
 } = Recoil_Node;
 
@@ -5083,7 +5100,7 @@ function useTransactionSubscription(callback) {
 function externallyVisibleAtomValuesInState(state) {
   const atomValues = state.atomValues.toMap();
   const persistedAtomContentsValues = Recoil_mapMap(Recoil_filterMap(atomValues, (v, k) => {
-    const node = getNode$3(k);
+    const node = getNode$4(k);
     const persistence = node.persistence_UNSTABLE;
     return persistence != null && persistence.type !== 'none' && v.state === 'hasValue';
   }), v => v.contents); // Merge in nonvalidated atoms; we may not have defs for them but they will
@@ -5209,7 +5226,7 @@ function useGotoRecoilSnapshot() {
         for (const key of keys) {
           var _prev$atomValues$get, _next$atomValues$get;
 
-          if (((_prev$atomValues$get = prev.atomValues.get(key)) === null || _prev$atomValues$get === void 0 ? void 0 : _prev$atomValues$get.contents) !== ((_next$atomValues$get = next.atomValues.get(key)) === null || _next$atomValues$get === void 0 ? void 0 : _next$atomValues$get.contents) && getNode$3(key).shouldRestoreFromSnapshots) {
+          if (((_prev$atomValues$get = prev.atomValues.get(key)) === null || _prev$atomValues$get === void 0 ? void 0 : _prev$atomValues$get.contents) !== ((_next$atomValues$get = next.atomValues.get(key)) === null || _next$atomValues$get === void 0 ? void 0 : _next$atomValues$get.contents) && getNode$4(key).shouldRestoreFromSnapshots) {
             keysToUpdate.add(key);
           }
         }
@@ -5287,7 +5304,7 @@ const {
 
 const {
   DEFAULT_VALUE: DEFAULT_VALUE$4,
-  getNode: getNode$4
+  getNode: getNode$5
 } = Recoil_Node;
 
 const {
@@ -5300,7 +5317,7 @@ const {
 
 
 function isAtom(recoilValue) {
-  return getNode$4(recoilValue.key).nodeType === 'atom';
+  return getNode$5(recoilValue.key).nodeType === 'atom';
 }
 
 class TransactionInterfaceImpl {
@@ -5437,6 +5454,7 @@ const {
 } = Recoil_RecoilRoot_react;
 
 const {
+  refreshRecoilValue: refreshRecoilValue$1,
   setRecoilValue: setRecoilValue$3
 } = Recoil_RecoilValueInterface;
 
@@ -5471,6 +5489,10 @@ function useRecoilCallback(fn, deps) {
 
     function reset(recoilState) {
       setRecoilValue$3(storeRef.current, recoilState, DEFAULT_VALUE$5);
+    }
+
+    function refresh(recoilValue) {
+      refreshRecoilValue$1(storeRef.current, recoilValue);
     } // Use currentTree for the snapshot to show the currently committed state
 
 
@@ -5489,6 +5511,7 @@ function useRecoilCallback(fn, deps) {
       const cb = fn({
         set,
         reset,
+        refresh,
         snapshot,
         gotoSnapshot,
         transact_UNSTABLE: atomicUpdate
@@ -5509,12 +5532,12 @@ function useRecoilCallback(fn, deps) {
 var Recoil_useRecoilCallback = useRecoilCallback;
 
 const {
-  getNode: getNode$5
-} = Recoil_Node;
-
-const {
   useStoreRef: useStoreRef$7
 } = Recoil_RecoilRoot_react;
+
+const {
+  refreshRecoilValue: refreshRecoilValue$2
+} = Recoil_RecoilValueInterface;
 
 const {
   useCallback: useCallback$4
@@ -5523,14 +5546,8 @@ const {
 function useRecoilRefresher(recoilValue) {
   const storeRef = useStoreRef$7();
   return useCallback$4(() => {
-    var _node$clearCache;
-
     const store = storeRef.current;
-    const {
-      currentTree
-    } = store.getState();
-    const node = getNode$5(recoilValue.key);
-    (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, currentTree);
+    refreshRecoilValue$2(store, recoilValue);
   }, [recoilValue, storeRef]);
 }
 
@@ -6375,7 +6392,7 @@ function selector(options) {
     if (typeof get !== 'function') {
       throw Recoil_err('Selectors must specify a get callback option to get the selector value.');
     }
-  } // This is every discovered dependency across executions
+  } // This is every discovered dependency across all executions
 
 
   const discoveredDependencyNodeKeys = new Set();
@@ -6731,6 +6748,7 @@ function selector(options) {
       var _store$getState$nextT, _store$getState3, _store$getState3$next;
 
       saveDependencyMapToStore$1(new Map([[key, deps]]), store, (_store$getState$nextT = (_store$getState3 = store.getState()) === null || _store$getState3 === void 0 ? void 0 : (_store$getState3$next = _store$getState3.nextTree) === null || _store$getState3$next === void 0 ? void 0 : _store$getState3$next.version) !== null && _store$getState$nextT !== void 0 ? _store$getState$nextT : store.getState().currentTree.version);
+      deps.forEach(nodeKey => discoveredDependencyNodeKeys.add(nodeKey));
     }
   }
 
@@ -6860,9 +6878,8 @@ function selector(options) {
         return loadable.contents;
       }, {
         onNodeVisit: node => {
-          if (node.type === 'branch' && node.nodeKey !== key && typeof node.nodeKey === 'string') {
+          if (node.type === 'branch' && node.nodeKey !== key) {
             depsAfterCacheDone.add(node.nodeKey);
-            discoveredDependencyNodeKeys.add(node.nodeKey);
           }
         }
       });
@@ -7109,6 +7126,7 @@ function selector(options) {
       (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, treeState);
     }
 
+    discoveredDependencyNodeKeys.clear();
     invalidateSelector(treeState);
     cache.clear();
     markRecoilValueModified$1(store, recoilValue);
