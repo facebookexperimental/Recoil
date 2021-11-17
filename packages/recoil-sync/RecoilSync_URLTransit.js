@@ -12,6 +12,8 @@
 
 import type {RecoilURLSyncOptions} from './RecoilSync_URL';
 
+const {DefaultValue} = require('Recoil');
+
 const {useRecoilURLSync} = require('./RecoilSync_URL');
 const err = require('./util/RecoilSync_err');
 const React = require('react');
@@ -55,6 +57,12 @@ const BUILTIN_HANDLERS = [
     class: Map,
     write: x => Array.from(x.entries()),
     read: arr => new Map(arr),
+  },
+  {
+    tag: '__DV',
+    class: DefaultValue,
+    write: () => 0, // number encodes the smallest in URL
+    read: () => new DefaultValue(),
   },
 ];
 
