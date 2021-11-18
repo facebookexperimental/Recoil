@@ -59,6 +59,7 @@ import type {
   NodeCacheRoute,
   TreeCacheImplementation,
 } from '../caches/Recoil_TreeCacheImplementationType';
+import type {StateID} from '../core/Recoil_Keys';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {
   RecoilState,
@@ -174,7 +175,7 @@ type ExecutionInfo<T> = {
   depValuesDiscoveredSoFarDuringAsyncWork: ?DepValues,
   latestLoadable: ?Loadable<T>,
   latestExecutionId: ?ExecutionId,
-  stateVersion: ?number,
+  stateVersion: ?StateID,
 };
 
 // An object to hold the current state for loading dependencies for a particular

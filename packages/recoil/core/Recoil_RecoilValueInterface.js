@@ -28,6 +28,7 @@ const {
   getNodeLoadable,
   setNodeValue,
 } = require('./Recoil_FunctionalCore');
+const {getNextComponentID} = require('./Recoil_Keys');
 const {getNode, getNodeMaybe} = require('./Recoil_Node');
 const {DefaultValue, RecoilValueNotReady} = require('./Recoil_Node');
 const {
@@ -294,14 +295,13 @@ function setUnvalidatedRecoilValue<T>(
 }
 
 export type ComponentSubscription = {release: () => void};
-let subscriptionID = 0;
 function subscribeToRecoilValue<T>(
   store: Store,
   {key}: AbstractRecoilValue<T>,
   callback: TreeState => void,
   componentDebugName: ?string = null,
 ): ComponentSubscription {
-  const subID = subscriptionID++;
+  const subID = getNextComponentID();
   const storeState = store.getState();
   if (!storeState.nodeToComponentSubscriptions.has(key)) {
     storeState.nodeToComponentSubscriptions.set(key, new Map());
@@ -322,7 +322,8 @@ function subscribeToRecoilValue<T>(
 
   return {
     release: () => {
-      const subs = storeState.nodeToComponentSubscriptions.get(key);
+      const releaseStoreState = store.getState();
+      const subs = releaseStoreState.nodeToComponentSubscriptions.get(key);
       if (subs === undefined || !subs.has(subID)) {
         recoverableViolation(
           `Subscription missing at release time for atom ${key}. This is a bug in Recoil.`,
@@ -332,7 +333,7 @@ function subscribeToRecoilValue<T>(
       }
       subs.delete(subID);
       if (subs.size === 0) {
-        storeState.nodeToComponentSubscriptions.delete(key);
+        releaseStoreState.nodeToComponentSubscriptions.delete(key);
       }
     },
   };
