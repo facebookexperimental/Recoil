@@ -27,6 +27,7 @@ let store: Store,
   useRecoilValue,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
+  useRecoilStoreID,
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
@@ -46,7 +47,10 @@ const testRecoil = getRecoilTestFn(() => {
   ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({act} = require('ReactTestUtils'));
 
-  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot.react'));
+  ({
+    RecoilRoot,
+    useRecoilStoreID,
+  } = require('../../core/Recoil_RecoilRoot.react'));
   ({
     getRecoilValueAsLoadable,
     setRecoilValue,
@@ -138,7 +142,7 @@ testRecoil('Works with parameterized default', () => {
 testRecoil('Works with date as parameter', () => {
   const dateAtomFamily = atomFamily({
     key: 'dateFamily',
-    default: date => 0,
+    default: _date => 0,
   });
   // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(0);
@@ -326,8 +330,8 @@ testRecoil('Returns the fallback for parameterized atoms', () => {
     const [param, setParam] = useState({num: 1});
     setAtomParam = setParam;
     // flowlint-next-line unclear-type:off
-    const atom: any = getAtom();
-    const [value, setValue] = useRecoilState(atom(param));
+    const myAtom: any = getAtom();
+    const [value, setValue] = useRecoilState(myAtom(param));
     setAtomValue = setValue;
     return value;
   }
@@ -391,8 +395,8 @@ testRecoil(
       const [param, setParam] = useState({num: 10});
       setAtomParam = setParam;
       // flowlint-next-line unclear-type:off
-      const atom: any = getAtom();
-      const [value, setValue] = useRecoilState(atom(param));
+      const myAtom: any = getAtom();
+      const [value, setValue] = useRecoilState(myAtom(param));
       setAtomValue = setValue;
       return value;
     }
@@ -598,7 +602,60 @@ describe('Effects', () => {
     expect(c.textContent).toBe('');
     expect(refCounts).toEqual({A: 0, B: 0});
   });
-});
 
-// TODO add non-current-entry tests
-// TODO add persistence tests
+  testRecoil('storeID matches <RecoilRoot>', async () => {
+    const atoms = atomFamily({
+      key: 'atomFamily effect - storeID',
+      default: 'DEFAULT',
+      effects_UNSTABLE: rootKey => [
+        ({storeID, setSelf}) => {
+          expect(storeID).toEqual(storeIDs[rootKey]);
+          setSelf(rootKey);
+        },
+      ],
+    });
+
+    const storeIDs = {};
+    function StoreID({rootKey}) {
+      const storeID = useRecoilStoreID();
+      storeIDs[rootKey] = storeID;
+      return null;
+    }
+
+    function MyApp() {
+      return (
+        <div>
+          <RecoilRoot>
+            <StoreID rootKey="A" />
+            <ReadsAtom atom={atoms('A')} />
+            <RecoilRoot>
+              <StoreID rootKey="A1" />
+              <ReadsAtom atom={atoms('A1')} />
+            </RecoilRoot>
+            <RecoilRoot override={false}>
+              <StoreID rootKey="A2" />
+              <ReadsAtom atom={atoms('A2')} />
+            </RecoilRoot>
+          </RecoilRoot>
+          <RecoilRoot>
+            <StoreID rootKey="B" />
+            <ReadsAtom atom={atoms('B')} />
+          </RecoilRoot>
+        </div>
+      );
+    }
+
+    const c = renderElements(<MyApp />);
+    expect(c.textContent).toEqual('"A""A1""A2""B"');
+
+    expect('A' in storeIDs).toEqual(true);
+    expect('A1' in storeIDs).toEqual(true);
+    expect('A2' in storeIDs).toEqual(true);
+    expect('B' in storeIDs).toEqual(true);
+    expect(storeIDs.A).not.toEqual(storeIDs.B);
+    expect(storeIDs.A).not.toEqual(storeIDs.A1);
+    expect(storeIDs.A).toEqual(storeIDs.A2);
+    expect(storeIDs.B).not.toEqual(storeIDs.A1);
+    expect(storeIDs.B).not.toEqual(storeIDs.A2);
+  });
+});
