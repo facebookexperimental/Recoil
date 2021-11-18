@@ -8,26 +8,19 @@
  * @flow strict
  * @format
  */
-
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {PersistentMap} from '../adt/Recoil_PersistentMap';
 import type {Graph} from './Recoil_GraphTypes';
-import type {
-  ComponentID,
-  NodeKey,
-  StateID,
-  StoreID,
-  Version,
-} from './Recoil_Keys';
+import type {ComponentID, NodeKey, StateID, StoreID} from './Recoil_Keys';
 import type {RetentionZone} from './Recoil_RetentionZone';
 
 const {persistentMap} = require('../adt/Recoil_PersistentMap');
 const {graph} = require('./Recoil_Graph');
 const {getNextTreeStateVersion} = require('./Recoil_Keys');
 
-export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
+export type {ComponentID, NodeKey, StateID, StoreID} from './Recoil_Keys';
 
 // flowlint-next-line unclear-type:off
 export type AtomValues = PersistentMap<NodeKey, Loadable<any>>;
@@ -44,7 +37,7 @@ export type Retainable = RetentionZone | NodeKey;
 export type TreeState = $ReadOnly<{
   // Version always increments when moving from one state to another, even
   // if the same state has been seen before.
-  version: Version,
+  version: StateID,
 
   // State ID usually increments, but when going to a snapshot that was
   // previously rendered the state ID will be re-used:
@@ -87,7 +80,7 @@ export type StoreState = {
   // Added to when components commit or suspend after reading a version.
   // Removed from when components (1) unmount (2) commit another version
   // or (3) wake from suspense.
-  +versionsUsedByComponent: Map<ComponentID, Version>,
+  +versionsUsedByComponent: Map<ComponentID, StateID>,
 
   +retention: {
     referenceCounts: Map<NodeKey | RetentionZone, number>,
@@ -116,7 +109,7 @@ export type StoreState = {
   // In case of async request completion, we walk downward from updated selector
   // In (future) case of component subscriptions updated, we walk upwards from
   // component and then downward from any no-longer-depended on nodes
-  +graphsByVersion: Map<Version, Graph>,
+  +graphsByVersion: Map<StateID, Graph>,
   // Side note: it would be useful to consider async request completion as
   // another type of transaction since it should increase version etc. and many
   // things have to happen in both of these cases.
@@ -140,7 +133,7 @@ export type Store = $ReadOnly<{
   storeID: StoreID,
   getState: () => StoreState,
   replaceState: ((TreeState) => TreeState) => void,
-  getGraph: Version => Graph,
+  getGraph: StateID => Graph,
   subscribeToTransactions: ((Store) => void, ?NodeKey) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
 }>;
