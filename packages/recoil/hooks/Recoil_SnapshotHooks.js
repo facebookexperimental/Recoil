@@ -236,7 +236,7 @@ function useGotoRecoilSnapshot(): Snapshot => void {
         storeRef.current.replaceState(state => {
           return {
             ...state,
-            stateID: snapshot.getID_INTERNAL(),
+            stateID: snapshot.getID(),
           };
         });
       });
