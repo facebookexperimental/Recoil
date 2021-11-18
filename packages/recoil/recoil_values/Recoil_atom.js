@@ -60,6 +60,7 @@
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilValueInfo} from '../core/Recoil_FunctionalCore';
+import type {StoreID} from '../core/Recoil_Keys';
 import type {
   PersistenceInfo,
   ReadWriteNodeOptions,
@@ -115,6 +116,7 @@ type NewValueOrUpdater<T> =
 // Effect is called the first time a node is used with a <RecoilRoot>
 export type AtomEffect<T> = ({
   node: RecoilState<T>,
+  storeID: StoreID,
   trigger: Trigger,
 
   // Call synchronously to initialize value or async to change it later
@@ -394,6 +396,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       for (const effect of options.effects_UNSTABLE ?? []) {
         const cleanup = effect({
           node,
+          storeID: store.storeID,
           trigger,
           setSelf: setSelf(effect),
           resetSelf: resetSelf(effect),
