@@ -12,7 +12,7 @@
 'use strict';
 
 import type {DependencyMap, Graph} from './Recoil_GraphTypes';
-import type {NodeKey, Version} from './Recoil_Keys';
+import type {NodeKey, StateID} from './Recoil_Keys';
 import type {Store} from './Recoil_State';
 
 const differenceSets = require('../util/Recoil_differenceSets');
@@ -21,7 +21,7 @@ const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 export type {DependencyMap, Graph} from './Recoil_GraphTypes';
 
-function graph(): Graph {
+function makeGraph(): Graph {
   return {
     nodeDeps: new Map(),
     nodeToNodeSubscriptions: new Map(),
@@ -96,7 +96,7 @@ function mergeDependencyMapIntoGraph(
 function saveDependencyMapToStore(
   dependencyMap: DependencyMap,
   store: Store,
-  version: Version,
+  version: StateID,
 ): void {
   const storeState = store.getState();
   if (
@@ -162,7 +162,7 @@ function addToDependencyMap(
 module.exports = {
   addToDependencyMap,
   cloneGraph,
-  graph,
+  graph: makeGraph,
   mergeDepsIntoDependencyMap,
   saveDependencyMapToStore,
 };
