@@ -10,6 +10,7 @@
  */
 'use strict';
 
+import type {StoreID as InternalStoreID} from './Recoil_Keys';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
@@ -37,6 +38,7 @@ const {
 } = require('./Recoil_FunctionalCore');
 const {graph} = require('./Recoil_Graph');
 const {cloneGraph} = require('./Recoil_Graph');
+const {getNextStoreID} = require('./Recoil_Keys');
 const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
 const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
 const {freshSnapshot} = require('./Recoil_Snapshot');
@@ -65,6 +67,7 @@ function notInAContext() {
 }
 
 const defaultStore: Store = Object.freeze({
+  storeID: getNextStoreID(),
   getState: notInAContext,
   replaceState: notInAContext,
   getGraph: notInAContext,
@@ -421,7 +424,7 @@ function RecoilRoot_INTERNAL({
     // Save changes to nextTree and schedule a React update:
     storeStateRef.current.nextTree = replaced;
     if (gkx('recoil_early_rendering_2021')) {
-      notifyComponents(store, storeStateRef.current, replaced);
+      notifyComponents(storeRef.current, storeStateRef.current, replaced);
     }
     nullthrows(notifyBatcherOfChange.current)();
   };
@@ -434,15 +437,20 @@ function RecoilRoot_INTERNAL({
     [notifyBatcherOfChange],
   );
 
-  const store: Store = storeProp ?? {
-    getState: () => storeStateRef.current,
-    replaceState,
-    getGraph,
-    subscribeToTransactions,
-    addTransactionMetadata,
-  };
-
-  const storeRef = useRef(store);
+  // $FlowExpectedError[incompatible-call]
+  const storeRef = useRef<Store>(null);
+  if (storeProp != null) {
+    storeRef.current = storeProp;
+  } else if (storeRef.current == null) {
+    storeRef.current = {
+      storeID: getNextStoreID(),
+      getState: () => storeStateRef.current,
+      replaceState,
+      getGraph,
+      subscribeToTransactions,
+      addTransactionMetadata,
+    };
+  }
 
   // Only call initializeState() for the first render.
   // $FlowExpectedError[incompatible-type]
@@ -450,7 +458,10 @@ function RecoilRoot_INTERNAL({
   if (storeStateRef.current == null) {
     storeStateRef.current =
       initializeState_DEPRECATED != null
-        ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED)
+        ? initialStoreState_DEPRECATED(
+            storeRef.current,
+            initializeState_DEPRECATED,
+          )
         : initializeState != null
         ? initialStoreState(initializeState)
         : makeEmptyStoreState();
@@ -529,10 +540,17 @@ function RecoilRoot(props: Props): React.Node {
   return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
 }
 
+// Opaque at this surface because it's part of the public API from here.
+export opaque type StoreID = InternalStoreID;
+function useRecoilStoreID(): StoreID {
+  return useStoreRef().current.storeID;
+}
+
 module.exports = {
+  RecoilRoot,
   useStoreRef,
   useRecoilMutableSource,
-  RecoilRoot,
+  useRecoilStoreID,
   notifyComponents_FOR_TESTING: notifyComponents,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,
 };
