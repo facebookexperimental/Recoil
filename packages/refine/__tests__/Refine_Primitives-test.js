@@ -17,6 +17,7 @@ const {coercion} = require('../Refine_API');
 const {
   boolean,
   date,
+  jsonDate,
   literal,
   number,
   string,
@@ -172,5 +173,15 @@ describe('date', () => {
     const myDate = new Date();
     expect(coerce(myDate)).toEqual(myDate);
     expect(coerce(new Date('invalid'))).toEqual(null);
+  });
+});
+
+describe('jsonDate', () => {
+  it('should parse date strings', () => {
+    const coerce = coercion(jsonDate());
+    expect(coerce('Oct 26, 1985')).toEqual(new Date('Oct 26, 1985'));
+    expect(coerce('1955-11-05T07:00:00.000Z')).toEqual(
+      new Date('1955-11-05T07:00:00.000Z'),
+    );
   });
 });
