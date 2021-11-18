@@ -17,6 +17,7 @@ const {
 const {useRecoilURLSync} = require('../RecoilSync_URL');
 const nullthrows = require('../util/RecoilSync_nullthrows');
 const React = require('react');
+const {useCallback} = require('react');
 
 // ////////////////////////////
 // // Mock Serialization
@@ -31,16 +32,17 @@ function TestURLSync({
   location: LocationOption,
   browserInterface?: BrowserInterface,
 }): React.Node {
-  useRecoilURLSync({
-    storeKey,
-    location,
-    serialize: items => {
+  const serialize = useCallback(
+    items => {
       const str = nullthrows(JSON.stringify(items));
       return location.part === 'href'
         ? `/TEST#${encodeURIComponent(str)}`
         : str;
     },
-    deserialize: str => {
+    [location.part],
+  );
+  const deserialize = useCallback(
+    str => {
       const stateStr =
         location.part === 'href' ? decodeURIComponent(str.split('#')[1]) : str;
       // Skip the default URL parts which don't conform to the serialized standard.
@@ -51,6 +53,13 @@ function TestURLSync({
       }
       return JSON.parse(stateStr);
     },
+    [location.part],
+  );
+  useRecoilURLSync({
+    storeKey,
+    location,
+    serialize,
+    deserialize,
     browserInterface,
   });
   return null;

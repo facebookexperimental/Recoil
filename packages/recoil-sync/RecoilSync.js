@@ -111,7 +111,7 @@ class Registries {
     this.storageRegistries.get(recoilStoreID)?.delete(externalStoreKey);
   }
 }
-const registries = new Registries();
+const registries: Registries = new Registries();
 
 const validateLoadable = <T>(
   loadable: Loadable<mixed>,
@@ -457,4 +457,5 @@ module.exports = {
   useRecoilSync,
   RecoilSync,
   syncEffect,
+  registries_FOR_TESTING: registries,
 };

@@ -26,8 +26,13 @@ const {
   flushPromisesAndTimers,
   renderElements,
 } = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
-const {syncEffect, useRecoilSync} = require('../RecoilSync');
+const {
+  registries_FOR_TESTING,
+  syncEffect,
+  useRecoilSync,
+} = require('../RecoilSync');
 const React = require('react');
+const {useCallback, useState} = require('react');
 const {asType, match, number, string} = require('refine');
 
 ////////////////////////////
@@ -1050,4 +1055,99 @@ test('Sibling <RecoilRoot>', async () => {
   expect(storageA.get('shared')?.contents).toBe('SHARED_A');
   expect(storageB.get('b')?.contents).toBe('SET_B');
   expect(storageB.get('shared')?.contents).toBe('SHARED_B');
+});
+
+test('Unregister store and atoms', () => {
+  const key = 'recoil-sync unregister';
+  const atomCleanups = [];
+  const myAtom = atom({
+    key,
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({storeID}) => {
+        expect(registries_FOR_TESTING.getAtomRegistry(storeID).has(key)).toBe(
+          false,
+        );
+      },
+      syncEffect({refine: string()}),
+      ({storeID}) => {
+        expect(registries_FOR_TESTING.getAtomRegistry(storeID).has(key)).toBe(
+          true,
+        );
+        return () => {
+          expect(registries_FOR_TESTING.getAtomRegistry(storeID).has(key)).toBe(
+            false,
+          );
+          atomCleanups.push(true);
+        };
+      },
+    ],
+  });
+
+  const subscriberRefCounts = [];
+  const unregister = jest.fn(idx => {
+    subscriberRefCounts[idx]--;
+  });
+  const register = jest.fn(idx => {
+    subscriberRefCounts[idx] = (subscriberRefCounts[idx] ?? 0) + 1;
+    return () => unregister(idx);
+  });
+  function TestSyncUnregister({idx}) {
+    const listen = useCallback(() => register(idx), [idx]);
+    useRecoilSync({listen});
+    return null;
+  }
+
+  let setNumRoots;
+  function MyRoots() {
+    const [roots, setRoots] = useState(0);
+    setNumRoots = setRoots;
+    return Array.from(Array(roots).keys()).map(i => (
+      <RecoilRoot key={i}>
+        {i}
+        <TestSyncUnregister idx={i} />
+        <ReadsAtom atom={myAtom} />
+      </RecoilRoot>
+    ));
+  }
+
+  const container = renderElements(<MyRoots />);
+  expect(container.textContent).toEqual('');
+  expect(register).toHaveBeenCalledTimes(0);
+  expect(unregister).toHaveBeenCalledTimes(0);
+  expect(subscriberRefCounts[0]).toEqual(undefined);
+  expect(subscriberRefCounts[1]).toEqual(undefined);
+  expect(atomCleanups.length).toEqual(0);
+
+  act(() => setNumRoots(1));
+  expect(container.textContent).toEqual('0"DEFAULT"');
+  expect(register).toHaveBeenCalledTimes(1);
+  expect(unregister).toHaveBeenCalledTimes(0);
+  expect(subscriberRefCounts[0]).toEqual(1);
+  expect(subscriberRefCounts[1]).toEqual(undefined);
+  expect(atomCleanups.length).toEqual(0);
+
+  act(() => setNumRoots(2));
+  expect(container.textContent).toEqual('0"DEFAULT"1"DEFAULT"');
+  expect(register).toHaveBeenCalledTimes(2);
+  expect(unregister).toHaveBeenCalledTimes(0);
+  expect(subscriberRefCounts[0]).toEqual(1);
+  expect(subscriberRefCounts[1]).toEqual(1);
+  expect(atomCleanups.length).toEqual(0);
+
+  act(() => setNumRoots(1));
+  expect(container.textContent).toEqual('0"DEFAULT"');
+  expect(register).toHaveBeenCalledTimes(2);
+  expect(unregister).toHaveBeenCalledTimes(1);
+  expect(subscriberRefCounts[0]).toEqual(1);
+  expect(subscriberRefCounts[1]).toEqual(0);
+  expect(atomCleanups.length).toEqual(1);
+
+  act(() => setNumRoots(0));
+  expect(container.textContent).toEqual('');
+  expect(register).toHaveBeenCalledTimes(2);
+  expect(unregister).toHaveBeenCalledTimes(2);
+  expect(subscriberRefCounts[0]).toEqual(0);
+  expect(subscriberRefCounts[1]).toEqual(0);
+  expect(atomCleanups.length).toEqual(2);
 });
