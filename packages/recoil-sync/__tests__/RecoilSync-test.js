@@ -13,6 +13,7 @@ import type {ItemKey, ItemSnapshot, ListenInterface} from '../RecoilSync';
 const {act} = require('ReactTestUtils');
 const {
   RecoilLoadable,
+  RecoilRoot,
   atom,
   atomFamily,
   selectorFamily,
@@ -921,7 +922,8 @@ test('Sync Atom Family', async () => {
   expect(container.textContent).toBe('"A""B""DEFAULT"');
 });
 
-// Test that using atoms before the sync hook initialize properly
+// Currently useRecoilSync() must be called in React component tree
+// before the first use of atoms to be initialized.
 test('Reading before sync hook', async () => {
   const atoms = atomFamily({
     key: 'recoil-sync order',
@@ -956,5 +958,96 @@ test('Reading before sync hook', async () => {
 
   const container = renderElements(<MyRoot />);
 
-  expect(container.textContent).toBe('"A"BC"D""E"');
+  expect(container.textContent).toBe('"DEFAULT"DEFAULTC"D""E"');
+});
+
+test('Sibling <RecoilRoot>', async () => {
+  const atomA = atom({
+    key: 'recoil-sync sibling root A',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      syncEffect({itemKey: 'a', refine: string(), syncDefault: true}),
+    ],
+  });
+
+  const atomB = atom({
+    key: 'recoil-sync sibling root B',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      syncEffect({itemKey: 'b', refine: string(), syncDefault: true}),
+    ],
+  });
+
+  const atomShared = atom({
+    key: 'recoil-sync sibling root shared',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      syncEffect({itemKey: 'shared', refine: string(), syncDefault: true}),
+    ],
+  });
+
+  const storageA = new Map([['a', RecoilLoadable.of('A')]]);
+  const storageB = new Map([['shared', RecoilLoadable.of('SHARED')]]);
+
+  const [AtomA, setA] = componentThatReadsAndWritesAtom(atomA);
+  const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
+  const [SharedInA, setSharedInA] = componentThatReadsAndWritesAtom(atomShared);
+  const [SharedInB, setSharedInB] = componentThatReadsAndWritesAtom(atomShared);
+  const container = renderElements(
+    <>
+      <RecoilRoot>
+        <TestRecoilSync storage={storageA} />
+        <AtomA />
+        <SharedInA />
+      </RecoilRoot>
+      <RecoilRoot>
+        <AtomB />
+        <TestRecoilSync storage={storageB} />
+        <SharedInB />
+      </RecoilRoot>
+    </>,
+  );
+
+  expect(container.textContent).toEqual('"A""DEFAULT""DEFAULT""SHARED"');
+  await flushPromisesAndTimers();
+  expect(storageA.size).toBe(2);
+  expect(storageB.size).toBe(1);
+  expect(storageA.get('a')?.contents).toBe('A');
+  expect(storageA.get('shared')?.contents).toBe('DEFAULT');
+  expect(storageB.get('shared')?.contents).toBe('SHARED');
+
+  act(() => setA('SET_A'));
+  expect(container.textContent).toEqual('"SET_A""DEFAULT""DEFAULT""SHARED"');
+  expect(storageA.size).toBe(2);
+  expect(storageB.size).toBe(1);
+  expect(storageA.get('a')?.contents).toBe('SET_A');
+  expect(storageA.get('shared')?.contents).toBe('DEFAULT');
+  expect(storageB.get('shared')?.contents).toBe('SHARED');
+
+  act(() => setB('SET_B'));
+  expect(container.textContent).toEqual('"SET_A""DEFAULT""SET_B""SHARED"');
+  expect(storageA.size).toBe(2);
+  expect(storageB.size).toBe(2);
+  expect(storageA.get('a')?.contents).toBe('SET_A');
+  expect(storageA.get('shared')?.contents).toBe('DEFAULT');
+  expect(storageB.get('b')?.contents).toBe('SET_B');
+  expect(storageB.get('shared')?.contents).toBe('SHARED');
+
+  act(() => setSharedInA('SHARED_A'));
+  expect(container.textContent).toEqual('"SET_A""SHARED_A""SET_B""SHARED"');
+  expect(storageA.size).toBe(2);
+  expect(storageB.size).toBe(2);
+  expect(storageA.get('a')?.contents).toBe('SET_A');
+  expect(storageA.get('shared')?.contents).toBe('SHARED_A');
+  expect(storageB.get('b')?.contents).toBe('SET_B');
+  expect(storageB.get('shared')?.contents).toBe('SHARED');
+
+  act(() => setSharedInB('SHARED_B'));
+  expect(container.textContent).toEqual('"SET_A""SHARED_A""SET_B""SHARED_B"');
+  expect(storageA.size).toBe(2);
+  expect(storageB.size).toBe(2);
+  expect(storageA.get('a')?.contents).toBe('SET_A');
+  expect(storageA.get('shared')?.contents).toBe('SHARED_A');
+  expect(storageB.get('b')?.contents).toBe('SET_B');
+  expect(storageB.get('shared')?.contents).toBe('SHARED_B');
 });
