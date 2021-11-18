@@ -53,7 +53,7 @@ const {
 } = require('./Recoil_State');
 
 // Opaque at this surface because it's part of the public API from here.
-export opaque type SnapshotID = StateID;
+export type SnapshotID = StateID;
 
 const retainWarning = `
 Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, do this:
@@ -164,11 +164,6 @@ class Snapshot {
   }
 
   getID(): SnapshotID {
-    this.checkRefCount_INTERNAL();
-    return this.getID_INTERNAL();
-  }
-
-  getID_INTERNAL(): StateID {
     this.checkRefCount_INTERNAL();
     return this._store.getState().currentTree.stateID;
   }
