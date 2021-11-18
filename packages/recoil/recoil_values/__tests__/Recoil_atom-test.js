@@ -24,6 +24,7 @@ let React,
   useRecoilState,
   useRecoilCallback,
   useRecoilValue,
+  useRecoilStoreID,
   selector,
   useRecoilTransactionObserver,
   useResetRecoilState,
@@ -44,7 +45,10 @@ const testRecoil = getRecoilTestFn(() => {
   ({act} = require('ReactTestUtils'));
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
-  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot.react'));
+  ({
+    RecoilRoot,
+    useRecoilStoreID,
+  } = require('../../core/Recoil_RecoilRoot.react'));
   ({
     getRecoilValueAsLoadable,
     setRecoilValue,
@@ -1190,6 +1194,37 @@ describe('Effects', () => {
       act(() => setMyAtom('SET_ATOM'));
       await setTest;
     });
+  });
+
+  testRecoil('storeID matches <RecoilRoot>', async () => {
+    let effectStoreID;
+    const myAtom = atom({
+      key: 'atom effect - storeID',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({storeID, setSelf}) => {
+          effectStoreID = storeID;
+          setSelf('INIT');
+        },
+      ],
+    });
+
+    let rootStoreID;
+    function StoreID() {
+      rootStoreID = useRecoilStoreID();
+      return null;
+    }
+
+    const c = renderElements(
+      <div>
+        <StoreID />
+        <ReadsAtom atom={myAtom} />
+      </div>,
+    );
+
+    expect(c.textContent).toEqual('"INIT"');
+    expect(effectStoreID).not.toEqual(undefined);
+    expect(effectStoreID).toEqual(rootStoreID);
   });
 });
 
