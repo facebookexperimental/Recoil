@@ -14,11 +14,18 @@
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {PersistentMap} from '../adt/Recoil_PersistentMap';
 import type {Graph} from './Recoil_GraphTypes';
-import type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
+import type {
+  ComponentID,
+  NodeKey,
+  StateID,
+  StoreID,
+  Version,
+} from './Recoil_Keys';
 import type {RetentionZone} from './Recoil_RetentionZone';
 
 const {persistentMap} = require('../adt/Recoil_PersistentMap');
 const {graph} = require('./Recoil_Graph');
+const {getNextTreeStateVersion} = require('./Recoil_Keys');
 
 export type {ComponentID, NodeKey, StateID, Version} from './Recoil_Keys';
 
@@ -130,6 +137,7 @@ export type StoreState = {
 // The Store is just the interface that is made available via the context.
 // It is constant within a given Recoil root.
 export type Store = $ReadOnly<{
+  storeID: StoreID,
   getState: () => StoreState,
   replaceState: ((TreeState) => TreeState) => void,
   getGraph: Version => Graph,
@@ -140,9 +148,6 @@ export type Store = $ReadOnly<{
 export type StoreRef = {
   current: Store,
 };
-
-let nextTreeStateVersion = 0;
-const getNextTreeStateVersion = (): Version => nextTreeStateVersion++;
 
 function makeEmptyTreeState(): TreeState {
   const version = getNextTreeStateVersion();
