@@ -52,15 +52,13 @@ const {
   useRecoilValue,
   useRecoilValueLoadable,
   useResetRecoilState,
-  useSetRecoilState,
-  useSetUnvalidatedAtomValues
+  useSetRecoilState
 } = require('./hooks/Recoil_Hooks');
 
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-  useRecoilTransactionObserver,
-  useTransactionObservation_DEPRECATED
+  useRecoilTransactionObserver
 } = require('./hooks/Recoil_SnapshotHooks');
 
 const useGetRecoilValueInfo = require('./hooks/Recoil_useGetRecoilValueInfo');
@@ -136,8 +134,6 @@ module.exports = {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
-  useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED,
-  useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues,
   snapshot_UNSTABLE: freshSnapshot,
   // Memory Management
   useRetain,

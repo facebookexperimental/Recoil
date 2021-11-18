@@ -8265,15 +8265,13 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     useRecoilValue: useRecoilValue$1,
     useRecoilValueLoadable: useRecoilValueLoadable$1,
     useResetRecoilState: useResetRecoilState$1,
-    useSetRecoilState: useSetRecoilState$1,
-    useSetUnvalidatedAtomValues: useSetUnvalidatedAtomValues$1
+    useSetRecoilState: useSetRecoilState$1
   } = Recoil_Hooks;
 
   const {
     useGotoRecoilSnapshot: useGotoRecoilSnapshot$2,
     useRecoilSnapshot: useRecoilSnapshot$1,
-    useRecoilTransactionObserver: useRecoilTransactionObserver$1,
-    useTransactionObservation_DEPRECATED: useTransactionObservation_DEPRECATED$1
+    useRecoilTransactionObserver: useRecoilTransactionObserver$1
   } = Recoil_SnapshotHooks;
 
 
@@ -8349,8 +8347,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     useGotoRecoilSnapshot: useGotoRecoilSnapshot$2,
     useRecoilSnapshot: useRecoilSnapshot$1,
     useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver$1,
-    useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED$1,
-    useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues$1,
     snapshot_UNSTABLE: freshSnapshot$2,
     // Memory Management
     useRetain: Recoil_useRetain,
@@ -8386,11 +8382,9 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_index_28 = Recoil_index.useGotoRecoilSnapshot;
   var Recoil_index_29 = Recoil_index.useRecoilSnapshot;
   var Recoil_index_30 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
-  var Recoil_index_31 = Recoil_index.useTransactionObservation_UNSTABLE;
-  var Recoil_index_32 = Recoil_index.useSetUnvalidatedAtomValues_UNSTABLE;
-  var Recoil_index_33 = Recoil_index.snapshot_UNSTABLE;
-  var Recoil_index_34 = Recoil_index.useRetain;
-  var Recoil_index_35 = Recoil_index.retentionZone;
+  var Recoil_index_31 = Recoil_index.snapshot_UNSTABLE;
+  var Recoil_index_32 = Recoil_index.useRetain;
+  var Recoil_index_33 = Recoil_index.retentionZone;
 
   exports.DefaultValue = Recoil_index_1;
   exports.RecoilLoadable = Recoil_index_3;
@@ -8403,10 +8397,10 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   exports.isRecoilValue = Recoil_index_2;
   exports.noWait = Recoil_index_13;
   exports.readOnlySelector = Recoil_index_12;
-  exports.retentionZone = Recoil_index_35;
+  exports.retentionZone = Recoil_index_33;
   exports.selector = Recoil_index_7;
   exports.selectorFamily = Recoil_index_9;
-  exports.snapshot_UNSTABLE = Recoil_index_33;
+  exports.snapshot_UNSTABLE = Recoil_index_31;
   exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_24;
   exports.useGotoRecoilSnapshot = Recoil_index_28;
   exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = Recoil_index_5;
@@ -8420,10 +8414,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   exports.useRecoilValue = Recoil_index_18;
   exports.useRecoilValueLoadable = Recoil_index_19;
   exports.useResetRecoilState = Recoil_index_23;
-  exports.useRetain = Recoil_index_34;
+  exports.useRetain = Recoil_index_32;
   exports.useSetRecoilState = Recoil_index_22;
-  exports.useSetUnvalidatedAtomValues_UNSTABLE = Recoil_index_32;
-  exports.useTransactionObservation_UNSTABLE = Recoil_index_31;
   exports.waitForAll = Recoil_index_16;
   exports.waitForAllSettled = Recoil_index_17;
   exports.waitForAny = Recoil_index_15;

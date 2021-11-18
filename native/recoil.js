@@ -8260,15 +8260,13 @@ const {
   useRecoilValue: useRecoilValue$1,
   useRecoilValueLoadable: useRecoilValueLoadable$1,
   useResetRecoilState: useResetRecoilState$1,
-  useSetRecoilState: useSetRecoilState$1,
-  useSetUnvalidatedAtomValues: useSetUnvalidatedAtomValues$1
+  useSetRecoilState: useSetRecoilState$1
 } = Recoil_Hooks;
 
 const {
   useGotoRecoilSnapshot: useGotoRecoilSnapshot$2,
   useRecoilSnapshot: useRecoilSnapshot$1,
-  useRecoilTransactionObserver: useRecoilTransactionObserver$1,
-  useTransactionObservation_DEPRECATED: useTransactionObservation_DEPRECATED$1
+  useRecoilTransactionObserver: useRecoilTransactionObserver$1
 } = Recoil_SnapshotHooks;
 
 
@@ -8344,8 +8342,6 @@ var Recoil_index = {
   useGotoRecoilSnapshot: useGotoRecoilSnapshot$2,
   useRecoilSnapshot: useRecoilSnapshot$1,
   useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver$1,
-  useTransactionObservation_UNSTABLE: useTransactionObservation_DEPRECATED$1,
-  useSetUnvalidatedAtomValues_UNSTABLE: useSetUnvalidatedAtomValues$1,
   snapshot_UNSTABLE: freshSnapshot$2,
   // Memory Management
   useRetain: Recoil_useRetain,
@@ -8381,11 +8377,9 @@ var Recoil_index_27 = Recoil_index.useRecoilTransaction_UNSTABLE;
 var Recoil_index_28 = Recoil_index.useGotoRecoilSnapshot;
 var Recoil_index_29 = Recoil_index.useRecoilSnapshot;
 var Recoil_index_30 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
-var Recoil_index_31 = Recoil_index.useTransactionObservation_UNSTABLE;
-var Recoil_index_32 = Recoil_index.useSetUnvalidatedAtomValues_UNSTABLE;
-var Recoil_index_33 = Recoil_index.snapshot_UNSTABLE;
-var Recoil_index_34 = Recoil_index.useRetain;
-var Recoil_index_35 = Recoil_index.retentionZone;
+var Recoil_index_31 = Recoil_index.snapshot_UNSTABLE;
+var Recoil_index_32 = Recoil_index.useRetain;
+var Recoil_index_33 = Recoil_index.retentionZone;
 
 export default Recoil_index;
-export { Recoil_index_1 as DefaultValue, Recoil_index_3 as RecoilLoadable, Recoil_index_4 as RecoilRoot, Recoil_index_6 as atom, Recoil_index_8 as atomFamily, Recoil_index_10 as constSelector, Recoil_index_11 as errorSelector, Recoil_index_2 as isRecoilValue, Recoil_index_13 as noWait, Recoil_index_12 as readOnlySelector, Recoil_index_35 as retentionZone, Recoil_index_7 as selector, Recoil_index_9 as selectorFamily, Recoil_index_33 as snapshot_UNSTABLE, Recoil_index_24 as useGetRecoilValueInfo_UNSTABLE, Recoil_index_28 as useGotoRecoilSnapshot, Recoil_index_5 as useRecoilBridgeAcrossReactRoots_UNSTABLE, Recoil_index_26 as useRecoilCallback, Recoil_index_25 as useRecoilRefresher_UNSTABLE, Recoil_index_29 as useRecoilSnapshot, Recoil_index_20 as useRecoilState, Recoil_index_21 as useRecoilStateLoadable, Recoil_index_30 as useRecoilTransactionObserver_UNSTABLE, Recoil_index_27 as useRecoilTransaction_UNSTABLE, Recoil_index_18 as useRecoilValue, Recoil_index_19 as useRecoilValueLoadable, Recoil_index_23 as useResetRecoilState, Recoil_index_34 as useRetain, Recoil_index_22 as useSetRecoilState, Recoil_index_32 as useSetUnvalidatedAtomValues_UNSTABLE, Recoil_index_31 as useTransactionObservation_UNSTABLE, Recoil_index_16 as waitForAll, Recoil_index_17 as waitForAllSettled, Recoil_index_15 as waitForAny, Recoil_index_14 as waitForNone };
+export { Recoil_index_1 as DefaultValue, Recoil_index_3 as RecoilLoadable, Recoil_index_4 as RecoilRoot, Recoil_index_6 as atom, Recoil_index_8 as atomFamily, Recoil_index_10 as constSelector, Recoil_index_11 as errorSelector, Recoil_index_2 as isRecoilValue, Recoil_index_13 as noWait, Recoil_index_12 as readOnlySelector, Recoil_index_33 as retentionZone, Recoil_index_7 as selector, Recoil_index_9 as selectorFamily, Recoil_index_31 as snapshot_UNSTABLE, Recoil_index_24 as useGetRecoilValueInfo_UNSTABLE, Recoil_index_28 as useGotoRecoilSnapshot, Recoil_index_5 as useRecoilBridgeAcrossReactRoots_UNSTABLE, Recoil_index_26 as useRecoilCallback, Recoil_index_25 as useRecoilRefresher_UNSTABLE, Recoil_index_29 as useRecoilSnapshot, Recoil_index_20 as useRecoilState, Recoil_index_21 as useRecoilStateLoadable, Recoil_index_30 as useRecoilTransactionObserver_UNSTABLE, Recoil_index_27 as useRecoilTransaction_UNSTABLE, Recoil_index_18 as useRecoilValue, Recoil_index_19 as useRecoilValueLoadable, Recoil_index_23 as useResetRecoilState, Recoil_index_32 as useRetain, Recoil_index_22 as useSetRecoilState, Recoil_index_16 as waitForAll, Recoil_index_17 as waitForAllSettled, Recoil_index_15 as waitForAny, Recoil_index_14 as waitForNone };
