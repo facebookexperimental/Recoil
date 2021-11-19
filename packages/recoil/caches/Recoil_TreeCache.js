@@ -20,8 +20,8 @@ import type {
   TreeCacheNode,
 } from './Recoil_TreeCacheImplementationType';
 
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 export type Options<T> = {
   mapNodeValue?: (value: mixed) => mixed,

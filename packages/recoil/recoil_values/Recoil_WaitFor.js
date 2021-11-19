@@ -21,8 +21,8 @@ const {
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
-const isPromise = require('../util/Recoil_isPromise');
 const selectorFamily = require('./Recoil_selectorFamily');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
 
 /////////////////
 //  TRUTH TABLE

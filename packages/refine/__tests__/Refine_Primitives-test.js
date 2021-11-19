@@ -12,7 +12,6 @@
 
 import type {Get} from '../Refine_Checkers';
 
-const invariant = require('../__test_utils__/Refine_invariant');
 const {coercion} = require('../Refine_API');
 const {
   boolean,
@@ -24,6 +23,7 @@ const {
   stringLiterals,
 } = require('../Refine_PrimitiveCheckers');
 const {asType} = require('../Refine_UtilityCheckers');
+const invariant = require('recoil-shared/util/Recoil_invariant');
 
 describe('literal', () => {
   it('should correctly parse exact string', () => {

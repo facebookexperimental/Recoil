@@ -22,15 +22,15 @@ const {
 } = require('../core/Recoil_RecoilValueInterface');
 const {SUSPENSE_TIMEOUT_MS} = require('../core/Recoil_Retention');
 const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
-const {isSSR} = require('../util/Recoil_Environment');
-const filterMap = require('../util/Recoil_filterMap');
-const filterSet = require('../util/Recoil_filterSet');
-const mapMap = require('../util/Recoil_mapMap');
-const mergeMaps = require('../util/Recoil_mergeMaps');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const usePrevious = require('../util/Recoil_usePrevious');
 const {useCallback, useEffect, useRef, useState} = require('react');
+const {isSSR} = require('recoil-shared/util/Recoil_Environment');
+const filterMap = require('recoil-shared/util/Recoil_filterMap');
+const filterSet = require('recoil-shared/util/Recoil_filterSet');
+const mapMap = require('recoil-shared/util/Recoil_mapMap');
+const mergeMaps = require('recoil-shared/util/Recoil_mergeMaps');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+const usePrevious = require('recoil-shared/util/Recoil_usePrevious');
 
 function useTransactionSubscription(callback: Store => void) {
   const storeRef = useStoreRef();

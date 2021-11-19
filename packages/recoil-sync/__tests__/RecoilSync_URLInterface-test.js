@@ -14,12 +14,12 @@ const {
   TestURLSync,
   expectURL: testExpectURL,
 } = require('../__test_utils__/RecoilSync_MockURLSerialization');
+const {urlSyncEffect} = require('../RecoilSync_URL');
+const React = require('react');
 const {
   componentThatReadsAndWritesAtom,
   renderElements,
-} = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
-const {urlSyncEffect} = require('../RecoilSync_URL');
-const React = require('react');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {string} = require('refine');
 
 const urls: Array<string> = [];

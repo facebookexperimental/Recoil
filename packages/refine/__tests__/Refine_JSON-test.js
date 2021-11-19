@@ -10,11 +10,11 @@
  */
 'use strict';
 
-const invariant = require('../__test_utils__/Refine_invariant');
 const {object} = require('../Refine_ContainerCheckers');
 const {jsonParser, jsonParserEnforced} = require('../Refine_JSON');
 const {boolean, number, string} = require('../Refine_PrimitiveCheckers');
 const {nullable} = require('../Refine_UtilityCheckers');
+const invariant = require('recoil-shared/util/Recoil_invariant');
 
 describe('json', () => {
   it('should correctly parse valid json', () => {

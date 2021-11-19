@@ -12,8 +12,8 @@
 
 import type {RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
 
-const err = require('../util/Recoil_err');
 const selectorFamily = require('./Recoil_selectorFamily');
+const err = require('recoil-shared/util/Recoil_err');
 
 // flowlint-next-line unclear-type:off
 const throwingSelector = selectorFamily<any, any>({

@@ -22,7 +22,7 @@ const {
   invalidateDownstreams,
   writeLoadableToTreeState,
 } = require('../core/Recoil_RecoilValueInterface');
-const err = require('../util/Recoil_err');
+const err = require('recoil-shared/util/Recoil_err');
 
 export interface TransactionInterface {
   get: <T>(RecoilValue<T>) => T;

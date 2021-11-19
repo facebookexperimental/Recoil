@@ -30,18 +30,18 @@ const {
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
 } = require('../core/Recoil_RecoilValueInterface');
-const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
-const differenceSets = require('../util/Recoil_differenceSets');
-const err = require('../util/Recoil_err');
-const expectationViolation = require('../util/Recoil_expectationViolation');
-const gkx = require('../util/Recoil_gkx');
+const useRetain = require('./Recoil_useRetain');
+const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
+const {setByAddingToSet} = require('recoil-shared/util/Recoil_CopyOnWrite');
+const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
+const err = require('recoil-shared/util/Recoil_err');
+const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
+const gkx = require('recoil-shared/util/Recoil_gkx');
 const {
   mutableSourceExists,
   useMutableSource,
-} = require('../util/Recoil_mutableSource');
-const useComponentName = require('../util/Recoil_useComponentName');
-const useRetain = require('./Recoil_useRetain');
-const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
+} = require('recoil-shared/util/Recoil_mutableSource');
+const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 
 function handleLoadable<T>(
   loadable: Loadable<T>,

@@ -21,13 +21,6 @@ import type {NodeKey} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
-const concatIterables = require('../util/Recoil_concatIterables');
-const {isSSR} = require('../util/Recoil_Environment');
-const err = require('../util/Recoil_err');
-const filterIterable = require('../util/Recoil_filterIterable');
-const gkx = require('../util/Recoil_gkx');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const {batchUpdates} = require('./Recoil_Batching');
 const {
   initializeNodeIfNewToStore,
@@ -51,6 +44,13 @@ const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
 } = require('./Recoil_State');
+const concatIterables = require('recoil-shared/util/Recoil_concatIterables');
+const {isSSR} = require('recoil-shared/util/Recoil_Environment');
+const err = require('recoil-shared/util/Recoil_err');
+const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 // Opaque at this surface because it's part of the public API from here.
 export type SnapshotID = StateID;

@@ -9,15 +9,15 @@
 
 const {atom} = require('Recoil');
 
-const {
-  ReadsAtom,
-  flushPromisesAndTimers,
-  renderElements,
-} = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
 const {syncEffect} = require('../RecoilSync');
 const {RecoilURLSyncJSON} = require('../RecoilSync_URLJSON');
 const {RecoilURLSyncTransit} = require('../RecoilSync_URLTransit');
 const React = require('react');
+const {
+  ReadsAtom,
+  flushPromisesAndTimers,
+  renderElements,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {array, boolean, number, object, string, tuple} = require('refine');
 
 const atomBoolean = atom({

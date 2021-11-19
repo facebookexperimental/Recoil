@@ -18,8 +18,10 @@ import type {
 } from '../../core/Recoil_RecoilValue';
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
-let {mutableSourceExists} = require('../../util/Recoil_mutableSource');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+let {mutableSourceExists} = require('recoil-shared/util/Recoil_mutableSource');
 
 let React,
   useEffect,
@@ -64,8 +66,8 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers,
     renderElements,
     renderElementsWithSuspenseCount,
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
-  ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
+  ({mutableSourceExists} = require('recoil-shared/util/Recoil_mutableSource'));
   ({
     recoilComponentGetRecoilValueCount_FOR_TESTING,
     useRecoilState,
@@ -77,7 +79,7 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('../Recoil_Hooks'));
   ({useTransactionObservation_DEPRECATED} = require('../Recoil_SnapshotHooks'));
 
-  invariant = require('../../util/Recoil_invariant');
+  invariant = require('recoil-shared/util/Recoil_invariant');
 });
 
 let nextID = 0;

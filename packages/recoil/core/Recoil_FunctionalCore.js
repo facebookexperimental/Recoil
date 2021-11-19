@@ -16,12 +16,12 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
-const {setByAddingToSet} = require('../util/Recoil_CopyOnWrite');
-const filterIterable = require('../util/Recoil_filterIterable');
-const gkx = require('../util/Recoil_gkx');
-const mapIterable = require('../util/Recoil_mapIterable');
 const {getNode, getNodeMaybe, recoilValuesForKeys} = require('./Recoil_Node');
 const {RetentionZone} = require('./Recoil_RetentionZone');
+const {setByAddingToSet} = require('recoil-shared/util/Recoil_CopyOnWrite');
+const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
 
 // flowlint-next-line unclear-type:off
 const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());

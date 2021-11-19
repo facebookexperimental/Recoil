@@ -12,11 +12,11 @@
 
 import type {CheckResult} from '../Refine_Checkers';
 
-const invariant = require('../__test_utils__/Refine_invariant');
 const {assertion, coercion} = require('../Refine_API');
 const {array} = require('../Refine_ContainerCheckers');
 const {date, number, string} = require('../Refine_PrimitiveCheckers');
 const {or} = require('../Refine_UtilityCheckers');
+const invariant = require('recoil-shared/util/Recoil_invariant');
 
 describe('assertion', () => {
   it('should not throw if value is valid', () => {

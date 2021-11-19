@@ -15,9 +15,9 @@
  */
 'use strict';
 
-const err = require('../util/Recoil_err');
-const isPromise = require('../util/Recoil_isPromise');
-const nullthrows = require('../util/Recoil_nullthrows');
+const err = require('recoil-shared/util/Recoil_err');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
 class BaseLoadable<T> {
   getValue(): T {

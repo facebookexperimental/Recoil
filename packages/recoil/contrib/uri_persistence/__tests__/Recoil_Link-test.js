@@ -12,11 +12,6 @@
 
 const {Simulate, act} = require('ReactTestUtils');
 
-const {
-  componentThatReadsAndWritesAtom,
-  flushPromisesAndTimers,
-  renderElements,
-} = require('../../../__test_utils__/Recoil_TestingUtils');
 const {freshSnapshot} = require('../../../core/Recoil_Snapshot');
 const atom = require('../../../recoil_values/Recoil_atom');
 const {
@@ -24,6 +19,11 @@ const {
   LinkToRecoilStateChange,
 } = require('../Recoil_Link');
 const React = require('react');
+const {
+  componentThatReadsAndWritesAtom,
+  flushPromisesAndTimers,
+  renderElements,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 const myAtom = atom<string>({key: 'Link Snapshot', default: 'DEFAULT'});
 const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);

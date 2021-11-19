@@ -10,7 +10,9 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
   useEffect,
@@ -32,7 +34,7 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../../recoil_values/Recoil_atom');
   ({
     componentThatReadsAndWritesAtom,
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 });
 

@@ -16,11 +16,11 @@ const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
 const {SUSPENSE_TIMEOUT_MS} = require('../core/Recoil_Retention');
 const {updateRetainCount} = require('../core/Recoil_Retention');
 const {RetentionZone} = require('../core/Recoil_RetentionZone');
-const {isSSR} = require('../util/Recoil_Environment');
-const gkx = require('../util/Recoil_gkx');
-const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
-const usePrevious = require('../util/Recoil_usePrevious');
 const {useEffect, useRef} = require('react');
+const {isSSR} = require('recoil-shared/util/Recoil_Environment');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const shallowArrayEqual = require('recoil-shared/util/Recoil_shallowArrayEqual');
+const usePrevious = require('recoil-shared/util/Recoil_usePrevious');
 
 // I don't see a way to avoid the any type here because we want to accept readable
 // and writable values with any type parameter, but normally with writable ones

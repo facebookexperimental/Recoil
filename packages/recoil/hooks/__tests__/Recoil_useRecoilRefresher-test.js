@@ -8,7 +8,9 @@
 
 'use strict';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
   act,
@@ -24,7 +26,9 @@ const testRecoil = getRecoilTestFn(() => {
   ({act} = require('ReactTestUtils'));
   atom = require('../../recoil_values/Recoil_atom');
   selector = require('../../recoil_values/Recoil_selector');
-  ({renderElements} = require('../../__test_utils__/Recoil_TestingUtils'));
+  ({
+    renderElements,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   useRecoilRefresher = require('../Recoil_useRecoilRefresher');
   ({useRecoilValue, useSetRecoilState} = require('../Recoil_Hooks'));
 });

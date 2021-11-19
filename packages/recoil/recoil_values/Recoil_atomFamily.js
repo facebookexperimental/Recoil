@@ -18,8 +18,8 @@ import type {AtomEffect, AtomOptions} from './Recoil_atom';
 
 const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
 const {setConfigDeletionHandler} = require('../core/Recoil_Node');
-const stableStringify = require('../util/Recoil_stableStringify');
 const atom = require('./Recoil_atom');
+const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
 
 type Primitive = void | null | boolean | number | string;
 interface HasToJSON {

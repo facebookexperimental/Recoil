@@ -15,15 +15,15 @@ const {
   encodeURL,
   expectURL,
 } = require('../__test_utils__/RecoilSync_MockURLSerialization');
+const {syncEffect} = require('../RecoilSync');
+const {urlSyncEffect} = require('../RecoilSync_URL');
+const React = require('react');
 const {
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
-} = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
-const {syncEffect} = require('../RecoilSync');
-const {urlSyncEffect} = require('../RecoilSync_URL');
-const React = require('react');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {asType, match, number, string} = require('refine');
 
 let atomIndex = 0;

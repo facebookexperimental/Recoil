@@ -10,34 +10,30 @@
  */
 'use strict';
 
-import type {
-  RecoilState,
-  RecoilValue,
-  RecoilValueReadOnly,
-} from '../core/Recoil_RecoilValue';
-import type {Store} from '../core/Recoil_State';
+import type {RecoilState, RecoilValue, RecoilValueReadOnly} from 'Recoil';
+import type {Store} from '../../recoil/core/Recoil_State';
 
 // @fb-only: const ReactDOMComet = require('ReactDOMComet');
 const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
 const {act} = require('ReactTestUtils');
-
-const {graph} = require('../core/Recoil_Graph');
-const {getNextStoreID} = require('../core/Recoil_Keys');
 const {
   RecoilRoot,
-  notifyComponents_FOR_TESTING,
-  sendEndOfBatchNotifications_FOR_TESTING,
-} = require('../core/Recoil_RecoilRoot.react');
-const {
-  invalidateDownstreams_FOR_TESTING,
-} = require('../core/Recoil_RecoilValueInterface');
-const {makeEmptyStoreState} = require('../core/Recoil_State');
-const {
+  selector,
   useRecoilValue,
   useResetRecoilState,
   useSetRecoilState,
-} = require('../hooks/Recoil_Hooks');
-const selector = require('../recoil_values/Recoil_selector');
+} = require('Recoil');
+
+const {graph} = require('../../recoil/core/Recoil_Graph');
+const {getNextStoreID} = require('../../recoil/core/Recoil_Keys');
+const {
+  notifyComponents_FOR_TESTING,
+  sendEndOfBatchNotifications_FOR_TESTING,
+} = require('../../recoil/core/Recoil_RecoilRoot.react');
+const {
+  invalidateDownstreams_FOR_TESTING,
+} = require('../../recoil/core/Recoil_RecoilValueInterface');
+const {makeEmptyStoreState} = require('../../recoil/core/Recoil_State');
 const invariant = require('../util/Recoil_invariant');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
@@ -60,7 +56,7 @@ function makeStore(): Store {
       // FIXME: does not increment state version number
       currentStoreState.currentTree = replacer(currentStoreState.currentTree); // no batching so nextTree is never active
       invalidateDownstreams_FOR_TESTING(store, currentStoreState.currentTree);
-      const gkx = require('../util/Recoil_gkx');
+      const gkx = require('recoil-shared/util/Recoil_gkx');
       if (gkx('recoil_early_rendering_2021')) {
         notifyComponents_FOR_TESTING(
           store,
@@ -288,7 +284,7 @@ const testGKs =
     ])('%s', async (_title, gksToTest) => {
       jest.resetModules();
 
-      const gkx = require('../util/Recoil_gkx');
+      const gkx = require('recoil-shared/util/Recoil_gkx');
 
       gksToTest.forEach(gkx.setPass);
 
