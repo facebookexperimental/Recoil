@@ -21,6 +21,7 @@ const {
   array,
   boolean,
   custom,
+  date,
   literal,
   number,
   object,
@@ -69,6 +70,11 @@ const atomObject = atom({
     syncEffect({refine: object({foo: array(number())}), syncDefault: true}),
   ],
 });
+const atomDate = atom({
+  key: 'date',
+  default: new Date('October 26, 1985'),
+  effects_UNSTABLE: [syncEffect({refine: date(), syncDefault: true})],
+});
 const atomUser = atom({
   key: 'user',
   default: new MyClass('CUSTOM'),
@@ -80,22 +86,21 @@ const atomUser = atom({
   ],
 });
 
+const HANDLERS = [
+  {
+    tag: 'USER',
+    class: MyClass,
+    write: x => [x.prop],
+    read: ([x]) => new MyClass(x),
+  },
+];
+
 async function testTransit(loc, atoms, contents, beforeURL, afterURL) {
   history.replaceState(null, '', beforeURL);
 
   const container = renderElements(
     <>
-      <RecoilURLSyncTransit
-        location={loc}
-        handlers={[
-          {
-            tag: 'USER',
-            class: MyClass,
-            write: x => [x.prop],
-            read: ([x]) => new MyClass(x),
-          },
-        ]}
-      />
+      <RecoilURLSyncTransit location={loc} handlers={HANDLERS} />
       {atoms.map(testAtom => (
         <ReadsAtom atom={testAtom} />
       ))}
@@ -158,18 +163,18 @@ describe('URL Transit Encode', () => {
   test('Query Param - classes', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
-      [atomUser],
-      '{"prop":"CUSTOM"}',
+      [atomDate, atomUser],
+      '"1985-10-26T07:00:00.000Z"{"prop":"CUSTOM"}',
       '/path/page.html?foo=bar#anchor',
-      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22user%22%2C%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D%5D#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22date%22%2C%5B%22%7E%23Date%22%2C%221985-10-26T07%3A00%3A00.000Z%22%5D%2C%22user%22%2C%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D%5D#anchor',
     ));
   test('Query Params - classes', async () =>
     testTransit(
       {part: 'queryParams'},
-      [atomUser],
-      '{"prop":"CUSTOM"}',
+      [atomDate, atomUser],
+      '"1985-10-26T07:00:00.000Z"{"prop":"CUSTOM"}',
       '/path/page.html#anchor',
-      '/path/page.html?user=%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D#anchor',
+      '/path/page.html?date=%5B%22%7E%23Date%22%2C%221985-10-26T07%3A00%3A00.000Z%22%5D&user=%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D#anchor',
     ));
 });
 
@@ -203,7 +208,7 @@ describe('URL Transit Parse', () => {
       {part: 'queryParams'},
       [atomNull, atomBoolean, atomNumber, atomString],
       'nullfalse456"SET"',
-      '/?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
+      '/?null=["~%23\'",null]&boolean=["~%23\'",false]&number=["~%23\'",456]&string=["~%23\'","SET"]',
       '/?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
     ));
   test('Query Param - containers', async () =>
@@ -219,23 +224,23 @@ describe('URL Transit Parse', () => {
       {part: 'queryParams'},
       [atomArray, atomObject],
       '[2,"b"]{"foo":[]}',
-      '/?array=%5B2%2C%22b%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D',
+      '/?array=[2,"b"]&object=["^+","foo",[]]',
       '/?array=%5B2%2C%22b%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D',
     ));
   test('Query Param - classes', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
-      [atomUser],
-      '{"prop":"PROP"}',
-      '/?param=["^ ","user",["~%23USER",["PROP"]]]',
-      '/?param=%5B%22%5E+%22%2C%22user%22%2C%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D%5D',
+      [atomDate, atomUser],
+      '"1955-11-05T07:00:00.000Z"{"prop":"PROP"}',
+      '/?param=["^ ","date",["~%23Date","1955-11-05T07:00:00.000Z"],"user",["~%23USER",["PROP"]]]',
+      '/?param=%5B%22%5E+%22%2C%22date%22%2C%5B%22%7E%23Date%22%2C%221955-11-05T07%3A00%3A00.000Z%22%5D%2C%22user%22%2C%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D%5D',
     ));
   test('Query Params - classes', async () =>
     testTransit(
       {part: 'queryParams'},
-      [atomUser],
-      '{"prop":"PROP"}',
-      '/?user=%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D',
-      '/?user=%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D',
+      [atomDate, atomUser],
+      '"1955-11-05T07:00:00.000Z"{"prop":"PROP"}',
+      '/?date=["~%23Date","1955-11-05T07:00:00.000Z"]&user=["~%23USER",["PROP"]]',
+      '/?date=%5B%22%7E%23Date%22%2C%221955-11-05T07%3A00%3A00.000Z%22%5D&user=%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D',
     ));
 });
