@@ -50,6 +50,12 @@ const BUILTIN_HANDLERS = [
     write: x => Array.from(x),
     read: arr => new Set(arr),
   },
+  {
+    tag: 'Map',
+    class: Map,
+    write: x => Array.from(x.entries()),
+    read: arr => new Map(arr),
+  },
 ];
 
 function useRecoilURLSyncTransit({
