@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type {StoreID as InternalStoreID} from './Recoil_Keys';
+import type {StoreID} from './Recoil_Keys';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
@@ -540,8 +540,6 @@ function RecoilRoot(props: Props): React.Node {
   return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
 }
 
-// Opaque at this surface because it's part of the public API from here.
-export opaque type StoreID = InternalStoreID;
 function useRecoilStoreID(): StoreID {
   return useStoreRef().current.storeID;
 }

@@ -8,22 +8,24 @@
  * @flow strict
  * @format
  */
-
 'use strict';
 
 export type NodeKey = string;
-export type ComponentID = number;
-export type Version = number;
-export type StateID = number;
-export type StoreID = number;
+export opaque type StateID = number;
+export opaque type StoreID = number;
+export opaque type ComponentID = number;
 
 let nextTreeStateVersion = 0;
-const getNextTreeStateVersion = (): Version => nextTreeStateVersion++;
+const getNextTreeStateVersion: () => StateID = () => nextTreeStateVersion++;
 
 let nextStoreID = 0;
-const getNextStoreID = (): StoreID => nextStoreID++;
+const getNextStoreID: () => StoreID = () => nextStoreID++;
+
+let nextComponentID = 0;
+const getNextComponentID: () => ComponentID = () => nextComponentID++;
 
 module.exports = {
   getNextTreeStateVersion,
   getNextStoreID,
+  getNextComponentID,
 };
