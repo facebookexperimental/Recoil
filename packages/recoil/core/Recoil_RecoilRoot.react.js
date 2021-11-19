@@ -30,6 +30,7 @@ const gkx = require('../util/Recoil_gkx');
 const nullthrows = require('../util/Recoil_nullthrows');
 const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const unionSets = require('../util/Recoil_unionSets');
+const useRefInitOnce = require('../util/Recoil_useRefInitOnce');
 const {
   cleanUpNode,
   getDownstreamNodes,
@@ -437,35 +438,31 @@ function RecoilRoot_INTERNAL({
     [notifyBatcherOfChange],
   );
 
-  // $FlowExpectedError[incompatible-call]
-  const storeRef = useRef<Store>(null);
+  const storeRef = useRefInitOnce(
+    () =>
+      storeProp ?? {
+        storeID: getNextStoreID(),
+        getState: () => storeStateRef.current,
+        replaceState,
+        getGraph,
+        subscribeToTransactions,
+        addTransactionMetadata,
+      },
+  );
   if (storeProp != null) {
     storeRef.current = storeProp;
-  } else if (storeRef.current == null) {
-    storeRef.current = {
-      storeID: getNextStoreID(),
-      getState: () => storeStateRef.current,
-      replaceState,
-      getGraph,
-      subscribeToTransactions,
-      addTransactionMetadata,
-    };
   }
 
-  // Only call initializeState() for the first render.
-  // $FlowExpectedError[incompatible-type]
-  storeStateRef = useRef(null);
-  if (storeStateRef.current == null) {
-    storeStateRef.current =
-      initializeState_DEPRECATED != null
-        ? initialStoreState_DEPRECATED(
-            storeRef.current,
-            initializeState_DEPRECATED,
-          )
-        : initializeState != null
-        ? initialStoreState(initializeState)
-        : makeEmptyStoreState();
-  }
+  storeStateRef = useRefInitOnce(() =>
+    initializeState_DEPRECATED != null
+      ? initialStoreState_DEPRECATED(
+          storeRef.current,
+          initializeState_DEPRECATED,
+        )
+      : initializeState != null
+      ? initialStoreState(initializeState)
+      : makeEmptyStoreState(),
+  );
 
   // FIXME T2710559282599660
   const createMutableSource =
