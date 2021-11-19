@@ -16,6 +16,7 @@ const {useRecoilURLSync} = require('./RecoilSync_URL');
 const err = require('./util/RecoilSync_err');
 const nullthrows = require('./util/RecoilSync_nullthrows');
 const React = require('react');
+const {useCallback} = require('react');
 
 export type RecoilURLSyncJSONOptions = $Rest<
   RecoilURLSyncOptions,
@@ -29,12 +30,12 @@ function useRecoilURLSyncJSON(options: RecoilURLSyncJSONOptions): void {
   if (options.location.part === 'href') {
     throw err('"href" location is not supported for JSON encoding');
   }
-  useRecoilURLSync({
-    ...options,
-    serialize: x =>
-      nullthrows(JSON.stringify(x), 'Unable to serialize state with JSON'),
-    deserialize: x => JSON.parse(x),
-  });
+  const serialize = useCallback(
+    x => nullthrows(JSON.stringify(x), 'Unable to serialize state with JSON'),
+    [],
+  );
+  const deserialize = useCallback(x => JSON.parse(x), []);
+  useRecoilURLSync({...options, serialize, deserialize});
 }
 
 function RecoilURLSyncJSON(props: RecoilURLSyncJSONOptions): React.Node {
