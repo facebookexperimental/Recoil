@@ -15,7 +15,7 @@
 
 import type {Checker} from './Refine_Checkers';
 
-const {Path, failure, success} = require('./Refine_Checkers');
+const {Path, compose, failure, success} = require('./Refine_Checkers');
 
 /**
  * a mixed (i.e. untyped) value
@@ -92,7 +92,7 @@ function string(regex?: RegExp): Checker<string> {
  *   diamond: 'diamond',
  * });
  *
- * const suit: 'heart' | 'spade' | 'club' | 'diamond' = assertion(suitChecker(x));
+ * const suit: 'heart' | 'spade' | 'club' | 'diamond' = assertion(suitChecker())(x);
  * ```
  *
  * Strings can also be mapped to new values:
@@ -135,6 +135,13 @@ function stringLiterals<T>(enumValues: {+[string]: T}): Checker<T> {
 
 /**
  * checker to assert if a mixed value is a Date object
+ *
+ * For example:
+ * ```jsx
+ * const dateChecker = date();
+ *
+ * assertion(dateChecker())(new Date());
+ * ```
  */
 function date(): Checker<Date> {
   return (value, path = new Path()) => {
@@ -148,6 +155,28 @@ function date(): Checker<Date> {
   };
 }
 
+/**
+ * checker to coerce a date string to a Date object.  This is useful for input
+ * that was from a JSON encoded `Date` object.
+ *
+ * For example:
+ * ```jsx
+ * const jsonDateChecker = coerce(jsonDate({encoding: 'string'}));
+ *
+ * jsonDateChecker('October 26, 1985');
+ * jsonDateChecker('1955-11-05T07:00:00.000Z');
+ * jsonDateChecker(JSON.stringify(new Date()));
+ * ```
+ */
+function jsonDate(): Checker<Date> {
+  return compose(string(), ({value, warnings}, path) => {
+    const parsedDate = new Date(value);
+    return Number.isNaN(parsedDate)
+      ? failure('value is not valid date string', path)
+      : success(parsedDate, warnings);
+  });
+}
+
 module.exports = {
   mixed,
   literal,
@@ -156,4 +185,5 @@ module.exports = {
   string,
   stringLiterals,
   date,
+  jsonDate,
 };

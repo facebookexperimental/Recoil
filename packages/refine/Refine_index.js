@@ -39,6 +39,7 @@ const {jsonParser, jsonParserEnforced} = require('./Refine_JSON');
 const {
   boolean,
   date,
+  jsonDate,
   literal,
   mixed,
   number,
@@ -73,6 +74,7 @@ module.exports = {
   string,
   stringLiterals,
   date,
+  jsonDate,
 
   // Checkers - Utility
   asType,
