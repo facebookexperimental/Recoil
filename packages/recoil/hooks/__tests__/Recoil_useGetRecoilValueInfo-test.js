@@ -10,7 +10,9 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
   act,
@@ -31,7 +33,7 @@ const testRecoil = getRecoilTestFn(() => {
     ReadsAtom,
     componentThatReadsAndWritesAtom,
     renderElements,
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   useGetRecoilValueInfo = require('../Recoil_useGetRecoilValueInfo');
 });
 

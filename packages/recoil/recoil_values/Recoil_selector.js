@@ -102,14 +102,16 @@ const {
 } = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const {cloneSnapshot} = require('../core/Recoil_Snapshot');
-const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
-const err = require('../util/Recoil_err');
-const gkx = require('../util/Recoil_gkx');
-const invariant = require('../util/Recoil_invariant');
-const isPromise = require('../util/Recoil_isPromise');
-const nullthrows = require('../util/Recoil_nullthrows');
-const {startPerfBlock} = require('../util/Recoil_PerformanceTimings');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
+const err = require('recoil-shared/util/Recoil_err');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const invariant = require('recoil-shared/util/Recoil_invariant');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const {
+  startPerfBlock,
+} = require('recoil-shared/util/Recoil_PerformanceTimings');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 export type GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(
   fn: ($ReadOnly<{snapshot: Snapshot}>) => (...Args) => Return,

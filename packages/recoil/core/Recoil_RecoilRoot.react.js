@@ -24,13 +24,6 @@ const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
 } = require('../core/Recoil_State');
-const err = require('../util/Recoil_err');
-const expectationViolation = require('../util/Recoil_expectationViolation');
-const gkx = require('../util/Recoil_gkx');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const unionSets = require('../util/Recoil_unionSets');
-const useRefInitOnce = require('../util/Recoil_useRefInitOnce');
 const {
   cleanUpNode,
   getDownstreamNodes,
@@ -52,6 +45,13 @@ const {
   useRef,
   useState,
 } = require('react');
+const err = require('recoil-shared/util/Recoil_err');
+const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+const unionSets = require('recoil-shared/util/Recoil_unionSets');
+const useRefInitOnce = require('recoil-shared/util/Recoil_useRefInitOnce');
 
 type InternalProps = {
   initializeState_DEPRECATED?: ({

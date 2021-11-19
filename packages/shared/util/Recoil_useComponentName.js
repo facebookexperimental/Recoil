@@ -10,9 +10,9 @@
  */
 'use strict';
 
-const gkx = require('../util/Recoil_gkx');
-const stackTraceParser = require('../util/Recoil_stackTraceParser');
 const {useRef} = require('react');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const stackTraceParser = require('recoil-shared/util/Recoil_stackTraceParser');
 
 function useComponentName(): string {
   const nameRef = useRef();

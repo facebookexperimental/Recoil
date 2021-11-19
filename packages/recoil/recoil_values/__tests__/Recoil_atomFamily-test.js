@@ -12,7 +12,9 @@
 
 import type {Store} from '../../core/Recoil_State';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let store: Store,
   React,
@@ -40,7 +42,9 @@ let store: Store,
   pAtom;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
+  const {
+    makeStore,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({Profiler, useState} = require('react'));
@@ -66,9 +70,9 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements,
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
-  ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
-  stableStringify = require('../../util/Recoil_stableStringify');
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
+  ({mutableSourceExists} = require('recoil-shared/util/Recoil_mutableSource'));
+  stableStringify = require('recoil-shared/util/Recoil_stableStringify');
   atom = require('../Recoil_atom');
   atomFamily = require('../Recoil_atomFamily');
   selectorFamily = require('../Recoil_selectorFamily');

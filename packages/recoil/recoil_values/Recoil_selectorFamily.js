@@ -30,8 +30,8 @@ import type {
 
 const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
 const {setConfigDeletionHandler} = require('../core/Recoil_Node');
-const stableStringify = require('../util/Recoil_stableStringify');
 const selector = require('./Recoil_selector');
+const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
 
 // Keep in mind the parameter needs to be serializable as a cahche key
 // using Recoil_stableStringify

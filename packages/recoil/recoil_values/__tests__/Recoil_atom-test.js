@@ -9,7 +9,9 @@
 
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
   useState,
@@ -37,7 +39,9 @@ let React,
   store;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
+  const {
+    makeStore,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({useState, Profiler} = require('react'));
@@ -67,7 +71,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements,
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   atom = require('../Recoil_atom');
   selector = require('../Recoil_selector');
   immutable = require('immutable');

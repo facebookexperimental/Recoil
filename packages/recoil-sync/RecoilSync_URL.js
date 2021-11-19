@@ -22,10 +22,10 @@ import type {Get} from 'refine';
 const {RecoilLoadable} = require('Recoil');
 
 const {syncEffect, useRecoilSync} = require('./RecoilSync');
-const err = require('./util/RecoilSync_err');
-const objectFromEntries = require('./util/RecoilSync_objectFromEntries');
 const React = require('react');
 const {useCallback, useEffect, useMemo, useRef} = require('react');
+const err = require('recoil-shared/util/Recoil_err');
+const objectFromEntries = require('recoil-shared/util/Recoil_objectFromEntries');
 const {assertion, mixed, writableDict} = require('refine');
 
 type NodeKey = string;

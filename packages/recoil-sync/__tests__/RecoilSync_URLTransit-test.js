@@ -9,14 +9,14 @@
 
 const {atom} = require('Recoil');
 
+const {syncEffect} = require('../RecoilSync');
+const {RecoilURLSyncTransit} = require('../RecoilSync_URLTransit');
+const React = require('react');
 const {
   ReadsAtom,
   flushPromisesAndTimers,
   renderElements,
-} = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
-const {syncEffect} = require('../RecoilSync');
-const {RecoilURLSyncTransit} = require('../RecoilSync_URLTransit');
-const React = require('react');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {
   array,
   boolean,

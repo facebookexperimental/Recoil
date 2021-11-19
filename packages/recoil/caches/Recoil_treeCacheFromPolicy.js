@@ -17,11 +17,11 @@ import type {
 } from './Recoil_CachePolicy';
 import type {TreeCacheImplementation} from './Recoil_TreeCacheImplementationType';
 
-const err = require('../util/Recoil_err');
-const nullthrows = require('../util/Recoil_nullthrows');
-const stableStringify = require('../util/Recoil_stableStringify');
 const {TreeCache} = require('./Recoil_TreeCache');
 const treeCacheLRU = require('./Recoil_treeCacheLRU');
+const err = require('recoil-shared/util/Recoil_err');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
 
 const defaultPolicy = {
   equality: 'reference',

@@ -15,12 +15,12 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
-const expectationViolation = require('../util/Recoil_expectationViolation');
-const gkx = require('../util/Recoil_gkx');
-const mapIterable = require('../util/Recoil_mapIterable');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const RecoilValueClasses = require('./Recoil_RecoilValue');
+const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 class DefaultValue {}
 const DEFAULT_VALUE: DefaultValue = new DefaultValue();

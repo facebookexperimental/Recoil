@@ -16,12 +16,12 @@ const {
   expectURL,
   gotoURL,
 } = require('../__test_utils__/RecoilSync_MockURLSerialization');
+const {syncEffect} = require('../RecoilSync');
+const React = require('react');
 const {
   ReadsAtom,
   renderElements,
-} = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
-const {syncEffect} = require('../RecoilSync');
-const React = require('react');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {string} = require('refine');
 
 test('Listen to URL changes', async () => {

@@ -15,10 +15,10 @@ import type {DependencyMap, Graph} from './Recoil_GraphTypes';
 import type {NodeKey, StateID} from './Recoil_Keys';
 import type {Store} from './Recoil_State';
 
-const differenceSets = require('../util/Recoil_differenceSets');
-const mapMap = require('../util/Recoil_mapMap');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
+const mapMap = require('recoil-shared/util/Recoil_mapMap');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 export type {DependencyMap, Graph} from './Recoil_GraphTypes';
 
 function makeGraph(): Graph {

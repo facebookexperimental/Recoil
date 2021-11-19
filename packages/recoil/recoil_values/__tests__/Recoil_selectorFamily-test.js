@@ -12,7 +12,9 @@
 
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let atom,
   DefaultValue,
@@ -23,7 +25,9 @@ let atom,
   myAtom;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
+  const {
+    makeStore,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   atom = require('../Recoil_atom');
   ({DefaultValue} = require('../../core/Recoil_Node'));
