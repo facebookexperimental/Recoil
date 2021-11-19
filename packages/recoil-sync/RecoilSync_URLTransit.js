@@ -37,39 +37,51 @@ type RecoilURLSyncTrnsitOptions = $Rest<
   },
 >;
 
+const BUILTIN_HANDLERS = [
+  {
+    tag: 'Date',
+    class: Date,
+    write: x => x.toISOString(),
+    read: str => new Date(str),
+  },
+];
+
 function useRecoilURLSyncTransit({
-  handlers,
+  handlers: handlersProp = [],
   ...options
 }: RecoilURLSyncTrnsitOptions): void {
   if (options.location.part === 'href') {
     throw err('"href" location is not supported for Transit encoding');
   }
 
+  const handlers = useMemo(
+    () => [...BUILTIN_HANDLERS, ...handlersProp],
+    [handlersProp],
+  );
+
   const writer = useMemo(
     () =>
       transit.writer('json', {
-        handlers:
-          handlers == null
-            ? undefined
-            : transit.map(
-                handlers
-                  .map(handler => [
-                    handler.class,
-                    transit.makeWriteHandler({
-                      tag: () => handler.tag,
-                      rep: handler.write,
-                    }),
-                  ])
-                  .flat(1),
-              ),
+        handlers: transit.map(
+          handlers
+            .map(handler => [
+              handler.class,
+              transit.makeWriteHandler({
+                tag: () => handler.tag,
+                rep: handler.write,
+              }),
+            ])
+            .flat(1),
+        ),
       }),
     [handlers],
   );
   const serialize = useCallback(x => writer.write(x), [writer]);
+
   const reader = useMemo(
     () =>
       transit.reader('json', {
-        handlers: handlers?.reduce((c, {tag, read}) => {
+        handlers: handlers.reduce((c, {tag, read}) => {
           c[tag] = read;
           return c;
         }, {}),
