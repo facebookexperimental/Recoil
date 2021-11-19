@@ -79,6 +79,7 @@
  // Effect is called the first time a node is used with a <RecoilRoot>
  export type AtomEffect<T> = (param: {
   node: RecoilState<T>,
+  storeID: StoreID,
   trigger: 'set' | 'get',
 
   // Call synchronously to initialize value or async to change it later
