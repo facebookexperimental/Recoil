@@ -20,9 +20,6 @@ import type {
   TreeState,
 } from './Recoil_State';
 
-const gkx = require('../util/Recoil_gkx');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const {
   getDownstreamNodes,
   getNodeLoadable,
@@ -37,6 +34,9 @@ const {
   RecoilValueReadOnly,
   isRecoilValue,
 } = require('./Recoil_RecoilValue');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 function getRecoilValueAsLoadable<T>(
   store: Store,

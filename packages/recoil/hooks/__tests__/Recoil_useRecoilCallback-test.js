@@ -10,7 +10,9 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
   useRef,
@@ -46,8 +48,8 @@ const testRecoil = getRecoilTestFn(() => {
     ReadsAtom,
     flushPromisesAndTimers,
     renderElements,
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
-  invariant = require('../../util/Recoil_invariant');
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
+  invariant = require('recoil-shared/util/Recoil_invariant');
 });
 
 testRecoil('Reads Recoil values', async () => {

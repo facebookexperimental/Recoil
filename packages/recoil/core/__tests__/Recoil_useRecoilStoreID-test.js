@@ -7,13 +7,17 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React, renderElements, RecoilRoot, useRecoilStoreID;
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
-  ({renderElements} = require('../../__test_utils__/Recoil_TestingUtils'));
+  ({
+    renderElements,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({RecoilRoot} = require('../Recoil_RecoilRoot.react'));
   ({useRecoilStoreID} = require('../Recoil_RecoilRoot.react'));
 });

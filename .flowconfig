@@ -25,6 +25,7 @@ module.name_mapper='recoil-sync' -> '<PROJECT_ROOT>/packages/recoil-syync'
 module.name_mapper='refine' -> '<PROJECT_ROOT>/packages/refine'
 
 module.name_mapper='@shared' -> '<PROJECT_ROOT>/packages/shared'
+module.name_mapper='recoil-shared' -> '<PROJECT_ROOT>/packages/shared'
 
 exact_by_default=true
 

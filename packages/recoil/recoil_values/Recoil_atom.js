@@ -93,13 +93,13 @@ const {
   setRecoilValueLoadable,
 } = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
-const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
-const err = require('../util/Recoil_err');
-const expectationViolation = require('../util/Recoil_expectationViolation');
-const isPromise = require('../util/Recoil_isPromise');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
 const selector = require('./Recoil_selector');
+const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
+const err = require('recoil-shared/util/Recoil_err');
+const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 export type PersistenceSettings<Stored> = $ReadOnly<{
   ...PersistenceInfo,

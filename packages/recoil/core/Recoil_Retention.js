@@ -15,13 +15,13 @@ import type {NodeKey} from './Recoil_Keys';
 import type {RetainedBy} from './Recoil_RetainedBy';
 import type {Retainable, Store, StoreState, TreeState} from './Recoil_State';
 
-const gkx = require('../util/Recoil_gkx');
-const nullthrows = require('../util/Recoil_nullthrows');
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
-const someSet = require('../util/Recoil_someSet');
 const {cleanUpNode} = require('./Recoil_FunctionalCore');
 const {deleteNodeConfigIfPossible, getNode} = require('./Recoil_Node');
 const {RetentionZone} = require('./Recoil_RetentionZone');
+const gkx = require('recoil-shared/util/Recoil_gkx');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+const someSet = require('recoil-shared/util/Recoil_someSet');
 
 // Components that aren't mounted after suspending for this long will be assumed
 // to be discarded and their resources released.

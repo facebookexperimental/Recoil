@@ -46,6 +46,10 @@ const commonPlugins = [
         find: '@shared',
         replacement: path.resolve(projectRootDir, 'packages/shared'),
       },
+      {
+        find: 'recoil-shared',
+        replacement: path.resolve(projectRootDir, 'packages/shared'),
+      },
     ],
   }),
   nodeResolvePlugin,

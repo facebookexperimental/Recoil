@@ -9,7 +9,7 @@
  * @format
  */
 'use strict';
-const invariant = require('../__test_utils__/Refine_invariant');
+
 const {coercion} = require('../Refine_API');
 const {
   array,
@@ -25,6 +25,7 @@ const {
 } = require('../Refine_ContainerCheckers');
 const {number, string} = require('../Refine_PrimitiveCheckers');
 const {lazy, nullable, or, voidable} = require('../Refine_UtilityCheckers');
+const invariant = require('recoil-shared/util/Recoil_invariant');
 
 describe('array', () => {
   it('should succeed in coercing correct array', () => {

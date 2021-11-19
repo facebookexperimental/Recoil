@@ -13,7 +13,9 @@
 import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
   store,
@@ -46,7 +48,9 @@ let React,
   freshSnapshot;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
+  const {
+    makeStore,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({useEffect, useState, Profiler} = require('react'));
@@ -62,7 +66,7 @@ const testRecoil = getRecoilTestFn(() => {
   useRecoilCallback = require('../../hooks/Recoil_useRecoilCallback');
   constSelector = require('../Recoil_constSelector');
   errorSelector = require('../Recoil_errorSelector');
-  nullthrows = require('../../util/Recoil_nullthrows');
+  nullthrows = require('recoil-shared/util/Recoil_nullthrows');
   ({
     getRecoilValueAsLoadable,
     setRecoilValue,
@@ -76,10 +80,10 @@ const testRecoil = getRecoilTestFn(() => {
     resolvingAsyncSelector,
     loadingAsyncSelector,
     flushPromisesAndTimers,
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({noWait} = require('../Recoil_WaitFor'));
   ({DefaultValue} = require('../../core/Recoil_Node'));
-  ({mutableSourceExists} = require('../../util/Recoil_mutableSource'));
+  ({mutableSourceExists} = require('recoil-shared/util/Recoil_mutableSource'));
 
   store = makeStore();
 });

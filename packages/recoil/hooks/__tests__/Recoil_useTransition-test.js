@@ -14,7 +14,7 @@
 const {
   IS_INTERNAL,
   getRecoilTestFn,
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
   act,
@@ -29,12 +29,12 @@ const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({useTransition} = React);
   ({act} = require('ReactTestUtils'));
-  gkx = require('../../util/Recoil_gkx');
+  gkx = require('recoil-shared/util/Recoil_gkx');
   ({useRecoilState, atom} = require('../../Recoil_index'));
   ({
     renderElementsInConcurrentRoot,
     flushPromisesAndTimers,
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
 
   const initialGKValue = gkx('recoil_early_rendering_2021');
   gkx.setPass('recoil_early_rendering_2021');

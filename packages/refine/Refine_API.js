@@ -15,7 +15,7 @@
 
 import type {Checker, CheckFailure, CheckResult} from './Refine_Checkers';
 
-const err = require('./util/Refine_err');
+const err = require('recoil-shared/util/Recoil_err');
 
 /**
  * function to assert that a given value matches a checker

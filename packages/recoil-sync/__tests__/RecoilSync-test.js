@@ -21,18 +21,18 @@ const {
 } = require('Recoil');
 
 const {
-  ReadsAtom,
-  componentThatReadsAndWritesAtom,
-  flushPromisesAndTimers,
-  renderElements,
-} = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
-const {
   registries_FOR_TESTING,
   syncEffect,
   useRecoilSync,
 } = require('../RecoilSync');
 const React = require('react');
 const {useCallback, useState} = require('react');
+const {
+  ReadsAtom,
+  componentThatReadsAndWritesAtom,
+  flushPromisesAndTimers,
+  renderElements,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {asType, match, number, string} = require('refine');
 
 ////////////////////////////

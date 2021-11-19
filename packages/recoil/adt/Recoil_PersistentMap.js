@@ -13,8 +13,8 @@
 
 import type {HAMTPlusMap} from 'hamt_plus';
 
-const gkx = require('../util/Recoil_gkx');
 const hamt = require('hamt_plus');
+const gkx = require('recoil-shared/util/Recoil_gkx');
 
 export interface PersistentMap<K: string, V> {
   keys(): Iterable<K>;

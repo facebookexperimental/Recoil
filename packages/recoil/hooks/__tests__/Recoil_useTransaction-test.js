@@ -10,7 +10,9 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React, atom, useRecoilValue, useRecoilTransaction, renderElements;
 
@@ -21,7 +23,9 @@ const testRecoil = getRecoilTestFn(() => {
     useRecoilTransaction_UNSTABLE: useRecoilTransaction,
     useRecoilValue,
   } = require('../../Recoil_index'));
-  ({renderElements} = require('../../__test_utils__/Recoil_TestingUtils'));
+  ({
+    renderElements,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
 });
 
 testRecoil(

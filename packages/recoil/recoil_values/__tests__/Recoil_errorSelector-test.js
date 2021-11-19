@@ -10,12 +10,16 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let store, getRecoilValueAsLoadable, errorSelector;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
+  const {
+    makeStore,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   ({
     getRecoilValueAsLoadable,

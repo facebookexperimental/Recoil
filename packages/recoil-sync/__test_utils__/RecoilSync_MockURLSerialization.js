@@ -7,17 +7,15 @@
  */
 'use strict';
 
-// TODO UPDATE IMPORTS TO USE PUBLIC INTERFACE
-
 import type {BrowserInterface, LocationOption} from '../RecoilSync_URL';
 
-const {
-  flushPromisesAndTimers,
-} = require('../../../packages/recoil/__test_utils__/Recoil_TestingUtils');
 const {useRecoilURLSync} = require('../RecoilSync_URL');
-const nullthrows = require('../util/RecoilSync_nullthrows');
 const React = require('react');
 const {useCallback} = require('react');
+const {
+  flushPromisesAndTimers,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
 // ////////////////////////////
 // // Mock Serialization

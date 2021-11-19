@@ -10,15 +10,19 @@
  */
 'use strict';
 
-const {getRecoilTestFn} = require('../../__test_utils__/Recoil_TestingUtils');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let a, atom, store, nullthrows, getNodeLoadable, setNodeValue;
 
 const testRecoil = getRecoilTestFn(() => {
-  const {makeStore} = require('../../__test_utils__/Recoil_TestingUtils');
+  const {
+    makeStore,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   atom = require('../../recoil_values/Recoil_atom');
-  nullthrows = require('../../util/Recoil_nullthrows');
+  nullthrows = require('recoil-shared/util/Recoil_nullthrows');
   ({getNodeLoadable, setNodeValue} = require('../Recoil_FunctionalCore'));
 
   a = atom<number>({key: 'a', default: 0}).key;

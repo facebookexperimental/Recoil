@@ -38,7 +38,6 @@ describe('stableStringify', () => {
   });
 
   test('Symbol', () => {
-    // eslint-disable-next-line fb-www/no-symbol
     expect(stableStringify(Symbol('foo'))).toBe('Symbol(foo)');
   });
 

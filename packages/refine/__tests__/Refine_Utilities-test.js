@@ -12,7 +12,6 @@
 
 import type {Checker} from '../Refine_Checkers';
 
-const invariant = require('../__test_utils__/Refine_invariant');
 const {coercion} = require('../Refine_API');
 const {array, object} = require('../Refine_ContainerCheckers');
 const {boolean, number, string} = require('../Refine_PrimitiveCheckers');
@@ -28,6 +27,7 @@ const {
   voidable,
   withDefault,
 } = require('../Refine_UtilityCheckers');
+const invariant = require('recoil-shared/util/Recoil_invariant');
 
 // opaque flow test
 opaque type ID = string;
