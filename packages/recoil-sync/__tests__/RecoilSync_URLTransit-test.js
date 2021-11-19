@@ -7,7 +7,7 @@
  */
 'use strict';
 
-const {atom} = require('Recoil');
+const {atom, selector} = require('Recoil');
 
 const {syncEffect} = require('../RecoilSync');
 const {RecoilURLSyncTransit} = require('../RecoilSync_URLTransit');
@@ -99,6 +99,11 @@ const atomUser = atom({
     }),
   ],
 });
+const atomWithFallback = atom({
+  key: 'withFallback',
+  default: selector({key: 'fallback selector', get: () => 'FALLBACK'}),
+  effects_UNSTABLE: [syncEffect({refine: string(), syncDefault: true})],
+});
 
 const HANDLERS = [
   {
@@ -158,6 +163,7 @@ describe('URL Transit Encode', () => {
       '/path/page.html#anchor',
       '/path/page.html?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Ctrue%5D&number=%5B%22%7E%23%27%22%2C123%5D&string=%5B%22%7E%23%27%22%2C%22STRING%22%5D#anchor',
     ));
+
   test('Query Param - objects', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
@@ -174,6 +180,7 @@ describe('URL Transit Encode', () => {
       '/path/page.html#anchor',
       '/path/page.html?array=%5B1%2C%22a%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B1%2C2%5D%5D#anchor',
     ));
+
   test('Query Param - containers', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
@@ -190,6 +197,7 @@ describe('URL Transit Encode', () => {
       '/path/page.html#anchor',
       '/path/page.html?set=%5B%22%7E%23Set%22%2C%5B1%2C2%5D%5D&map=%5B%22%7E%23Map%22%2C%5B%5B1%2C%22a%22%5D%5D%5D#anchor',
     ));
+
   test('Query Param - classes', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
@@ -205,6 +213,23 @@ describe('URL Transit Encode', () => {
       '"1985-10-26T07:00:00.000Z"{"prop":"CUSTOM"}',
       '/path/page.html#anchor',
       '/path/page.html?date=%5B%22%7E%23Date%22%2C%221985-10-26T07%3A00%3A00.000Z%22%5D&user=%5B%22%7E%23USER%22%2C%5B%22CUSTOM%22%5D%5D#anchor',
+    ));
+
+  test('Query Param - fallback', async () =>
+    testTransit(
+      {part: 'queryParams', param: 'param'},
+      [atomWithFallback],
+      '"FALLBACK"',
+      '/path/page.html?foo=bar#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22withFallback%22%2C%5B%22%7E%23__DV%22%2C0%5D%5D#anchor',
+    ));
+  test('Query Params - fallback', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomWithFallback],
+      '"FALLBACK"',
+      '/path/page.html#anchor',
+      '/path/page.html?withFallback=%5B%22%7E%23__DV%22%2C0%5D#anchor',
     ));
 });
 
@@ -241,6 +266,7 @@ describe('URL Transit Parse', () => {
       '/?null=["~%23\'",null]&boolean=["~%23\'",false]&number=["~%23\'",456]&string=["~%23\'","SET"]',
       '/?null=%5B%22%7E%23%27%22%2Cnull%5D&boolean=%5B%22%7E%23%27%22%2Cfalse%5D&number=%5B%22%7E%23%27%22%2C456%5D&string=%5B%22%7E%23%27%22%2C%22SET%22%5D',
     ));
+
   test('Query Param - objects', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
@@ -257,6 +283,7 @@ describe('URL Transit Parse', () => {
       '/?array=[2,"b"]&object=["^+","foo",[]]',
       '/?array=%5B2%2C%22b%22%5D&object=%5B%22%5E+%22%2C%22foo%22%2C%5B%5D%5D',
     ));
+
   test('Query Param - containers', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
@@ -273,6 +300,7 @@ describe('URL Transit Parse', () => {
       '/?set=["~%23Set",[3,4]]&map=["~%23Map",[[2,"b"]]]',
       '/?set=%5B%22%7E%23Set%22%2C%5B3%2C4%5D%5D&map=%5B%22%7E%23Map%22%2C%5B%5B2%2C%22b%22%5D%5D%5D',
     ));
+
   test('Query Param - classes', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
@@ -288,5 +316,22 @@ describe('URL Transit Parse', () => {
       '"1955-11-05T07:00:00.000Z"{"prop":"PROP"}',
       '/?date=["~%23Date","1955-11-05T07:00:00.000Z"]&user=["~%23USER",["PROP"]]',
       '/?date=%5B%22%7E%23Date%22%2C%221955-11-05T07%3A00%3A00.000Z%22%5D&user=%5B%22%7E%23USER%22%2C%5B%22PROP%22%5D%5D',
+    ));
+
+  test('Query Param - fallback', async () =>
+    testTransit(
+      {part: 'queryParams', param: 'param'},
+      [atomWithFallback],
+      '"SET"',
+      '/?param=["^ ","withFallback","SET"]',
+      '/?param=%5B%22%5E+%22%2C%22withFallback%22%2C%22SET%22%5D',
+    ));
+  test('Query Params - fallback', async () =>
+    testTransit(
+      {part: 'queryParams'},
+      [atomWithFallback],
+      '"SET"',
+      '/?withFallback="SET"',
+      '/?withFallback=%5B%22%7E%23%27%22%2C%22SET%22%5D',
     ));
 });
