@@ -44,6 +44,12 @@ const BUILTIN_HANDLERS = [
     write: x => x.toISOString(),
     read: str => new Date(str),
   },
+  {
+    tag: 'Set',
+    class: Set,
+    write: x => Array.from(x),
+    read: arr => new Set(arr),
+  },
 ];
 
 function useRecoilURLSyncTransit({
