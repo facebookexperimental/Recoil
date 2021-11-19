@@ -25,7 +25,6 @@ const {syncEffect, useRecoilSync} = require('./RecoilSync');
 const React = require('react');
 const {useCallback, useEffect, useMemo, useRef} = require('react');
 const err = require('recoil-shared/util/Recoil_err');
-const objectFromEntries = require('recoil-shared/util/Recoil_objectFromEntries');
 const {assertion, mixed, writableDict} = require('refine');
 
 type NodeKey = string;
@@ -49,7 +48,7 @@ const wrapState = (x: mixed): ItemSnapshot => {
   );
 };
 const unwrapState = (state: ItemSnapshot): ItemState =>
-  objectFromEntries(
+  Object.fromEntries(
     Array.from(state.entries())
       // Only serialize atoms in a non-default value state.
       .filter(([, loadable]) => loadable?.state === 'hasValue')
