@@ -23,6 +23,7 @@ const {
   custom,
   date,
   literal,
+  map,
   number,
   object,
   set,
@@ -75,6 +76,13 @@ const atomSet = atom({
   key: 'set',
   default: new Set([1, 2]),
   effects_UNSTABLE: [syncEffect({refine: set(number()), syncDefault: true})],
+});
+const atomMap = atom({
+  key: 'map',
+  default: new Map([[1, 'a']]),
+  effects_UNSTABLE: [
+    syncEffect({refine: map(number(), string()), syncDefault: true}),
+  ],
 });
 const atomDate = atom({
   key: 'date',
@@ -169,18 +177,18 @@ describe('URL Transit Encode', () => {
   test('Query Param - containers', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
-      [atomSet],
-      '[1,2]',
+      [atomSet, atomMap],
+      '[1,2]{"1":"a"}',
       '/path/page.html?foo=bar#anchor',
-      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22set%22%2C%5B%22%7E%23Set%22%2C%5B1%2C2%5D%5D%5D#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22set%22%2C%5B%22%7E%23Set%22%2C%5B1%2C2%5D%5D%2C%22map%22%2C%5B%22%7E%23Map%22%2C%5B%5B1%2C%22a%22%5D%5D%5D%5D#anchor',
     ));
   test('Query Params - containers', async () =>
     testTransit(
       {part: 'queryParams'},
-      [atomSet],
-      '[1,2]',
+      [atomSet, atomMap],
+      '[1,2]{"1":"a"}',
       '/path/page.html#anchor',
-      '/path/page.html?set=%5B%22%7E%23Set%22%2C%5B1%2C2%5D%5D#anchor',
+      '/path/page.html?set=%5B%22%7E%23Set%22%2C%5B1%2C2%5D%5D&map=%5B%22%7E%23Map%22%2C%5B%5B1%2C%22a%22%5D%5D%5D#anchor',
     ));
   test('Query Param - classes', async () =>
     testTransit(
@@ -252,18 +260,18 @@ describe('URL Transit Parse', () => {
   test('Query Param - containers', async () =>
     testTransit(
       {part: 'queryParams', param: 'param'},
-      [atomSet],
-      '[3,4]',
-      '/?param=["^+","set",["~%23Set",[3,4]]]',
-      '/?param=%5B%22%5E+%22%2C%22set%22%2C%5B%22%7E%23Set%22%2C%5B3%2C4%5D%5D%5D',
+      [atomSet, atomMap],
+      '[3,4]{"2":"b"}',
+      '/?param=["^+","set",["~%23Set",[3,4]],"map",["~%23Map",[[2,"b"]]]]',
+      '/?param=%5B%22%5E+%22%2C%22set%22%2C%5B%22%7E%23Set%22%2C%5B3%2C4%5D%5D%2C%22map%22%2C%5B%22%7E%23Map%22%2C%5B%5B2%2C%22b%22%5D%5D%5D%5D',
     ));
   test('Query Params - containers', async () =>
     testTransit(
       {part: 'queryParams'},
-      [atomSet],
-      '[3,4]',
-      '/?set=["~%23Set",[3,4]]',
-      '/?set=%5B%22%7E%23Set%22%2C%5B3%2C4%5D%5D',
+      [atomSet, atomMap],
+      '[3,4]{"2":"b"}',
+      '/?set=["~%23Set",[3,4]]&map=["~%23Map",[[2,"b"]]]',
+      '/?set=%5B%22%7E%23Set%22%2C%5B3%2C4%5D%5D&map=%5B%22%7E%23Map%22%2C%5B%5B2%2C%22b%22%5D%5D%5D',
     ));
   test('Query Param - classes', async () =>
     testTransit(
