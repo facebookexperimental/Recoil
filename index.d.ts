@@ -79,6 +79,7 @@
  // Effect is called the first time a node is used with a <RecoilRoot>
  export type AtomEffect<T> = (param: {
   node: RecoilState<T>,
+  storeID: StoreID,
   trigger: 'set' | 'get',
 
   // Call synchronously to initialize value or async to change it later
@@ -282,6 +283,16 @@ export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
   * as the current <RecoilRoot>.
   */
  export function useRecoilBridgeAcrossReactRoots_UNSTABLE(): typeof RecoilBridge;
+
+ // useRecoilStoreID
+ declare const StoreID_OPAQUE: unique symbol;
+ export interface StoreID {
+  readonly [StoreID_OPAQUE]: true;
+ }
+ /**
+  * Returns an ID for the currently active state store of the host <RecoilRoot>
+  */
+ export function useRecoilStoreID(): StoreID;
 
  // loadable.d.ts
  interface BaseLoadable<T> {

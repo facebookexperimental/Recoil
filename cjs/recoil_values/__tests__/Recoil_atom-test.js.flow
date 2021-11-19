@@ -11,13 +11,13 @@ import type { RecoilValue } from '../../core/Recoil_RecoilValue';
 
 const {
   getRecoilTestFn
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, useState, Profiler, ReactDOM, act, DEFAULT_VALUE, DefaultValue, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilCallback, useRecoilValue, selector, useRecoilTransactionObserver, useResetRecoilState, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, atom, immutable, store;
+let React, useState, Profiler, ReactDOM, act, DEFAULT_VALUE, DefaultValue, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilCallback, useRecoilValue, useRecoilStoreID, selector, useRecoilTransactionObserver, useResetRecoilState, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, atom, immutable, store;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
-  } = require('../../__test_utils__/Recoil_TestingUtils');
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({
@@ -33,7 +33,8 @@ const testRecoil = getRecoilTestFn(() => {
     DefaultValue
   } = require('../../core/Recoil_Node'));
   ({
-    RecoilRoot
+    RecoilRoot,
+    useRecoilStoreID
   } = require('../../core/Recoil_RecoilRoot.react'));
   ({
     getRecoilValueAsLoadable,
@@ -53,7 +54,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   atom = require('../Recoil_atom');
   selector = require('../Recoil_selector');
   immutable = require('immutable');
@@ -969,6 +970,29 @@ describe('Effects', () => {
       act(() => setMyAtom('SET_ATOM'));
       await setTest;
     });
+  });
+  testRecoil('storeID matches <RecoilRoot>', async () => {
+    let effectStoreID;
+    const myAtom = atom({
+      key: 'atom effect - storeID',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [({
+        storeID,
+        setSelf
+      }) => {
+        effectStoreID = storeID;
+        setSelf('INIT');
+      }]
+    });
+    let rootStoreID;
+    declare function StoreID(): any;
+    const c = renderElements(<div>
+        <StoreID />
+        <ReadsAtom atom={myAtom} />
+      </div>);
+    expect(c.textContent).toEqual('"INIT"');
+    expect(effectStoreID).not.toEqual(undefined);
+    expect(effectStoreID).toEqual(rootStoreID);
   });
 });
 testRecoil('object is frozen when stored in atom', async () => {

@@ -11,7 +11,17 @@
 'use strict';
 
 export type NodeKey = string;
-export type ComponentID = number;
-export type Version = number;
-export type StateID = number;
-module.exports = ({}: {...});
+export opaque type StateID = number;
+export opaque type StoreID = number;
+export opaque type ComponentID = number;
+let nextTreeStateVersion = 0;
+declare var getNextTreeStateVersion: () => any;
+let nextStoreID = 0;
+declare var getNextStoreID: () => any;
+let nextComponentID = 0;
+declare var getNextComponentID: () => any;
+module.exports = {
+  getNextTreeStateVersion,
+  getNextStoreID,
+  getNextComponentID
+};

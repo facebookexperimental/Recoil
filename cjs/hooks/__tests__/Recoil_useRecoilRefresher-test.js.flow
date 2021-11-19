@@ -9,7 +9,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React, act, atom, selector, renderElements, useRecoilValue, useSetRecoilState, useRecoilRefresher;
 const testRecoil = getRecoilTestFn(() => {
@@ -21,7 +21,7 @@ const testRecoil = getRecoilTestFn(() => {
   selector = require('../../recoil_values/Recoil_selector');
   ({
     renderElements
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   useRecoilRefresher = require('../Recoil_useRecoilRefresher');
   ({
     useRecoilValue,

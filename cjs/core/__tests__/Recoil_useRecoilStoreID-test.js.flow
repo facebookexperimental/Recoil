@@ -1,0 +1,41 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+const {
+  getRecoilTestFn
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+
+let React, renderElements, RecoilRoot, useRecoilStoreID;
+const testRecoil = getRecoilTestFn(() => {
+  React = require('react');
+  ({
+    renderElements
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
+  ({
+    RecoilRoot
+  } = require('../Recoil_RecoilRoot.react'));
+  ({
+    useRecoilStoreID
+  } = require('../Recoil_RecoilRoot.react'));
+});
+testRecoil('useRecoilStoreID', () => {
+  const storeIDs = {};
+  declare function StoreID(arg0: any): any;
+  declare function MyApp(): any;
+  renderElements(<MyApp />);
+  expect('A' in storeIDs).toEqual(true);
+  expect('A1' in storeIDs).toEqual(true);
+  expect('A2' in storeIDs).toEqual(true);
+  expect('B' in storeIDs).toEqual(true);
+  expect(storeIDs.A).not.toEqual(storeIDs.B);
+  expect(storeIDs.A).not.toEqual(storeIDs.A1);
+  expect(storeIDs.A).toEqual(storeIDs.A2);
+  expect(storeIDs.B).not.toEqual(storeIDs.A1);
+  expect(storeIDs.B).not.toEqual(storeIDs.A2);
+});

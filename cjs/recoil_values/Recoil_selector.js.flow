@@ -56,6 +56,7 @@
 import type { Loadable } from '../adt/Recoil_Loadable';
 import type { CachePolicy } from '../caches/Recoil_CachePolicy';
 import type { NodeCacheRoute, TreeCacheImplementation } from '../caches/Recoil_TreeCacheImplementationType';
+import type { StateID } from '../core/Recoil_Keys';
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
@@ -110,23 +111,23 @@ const {
   cloneSnapshot
 } = require('../core/Recoil_Snapshot');
 
-const deepFreezeValue = require('../util/Recoil_deepFreezeValue');
+const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
 
-const err = require('../util/Recoil_err');
+const err = require('recoil-shared/util/Recoil_err');
 
-const gkx = require('../util/Recoil_gkx');
+const gkx = require('recoil-shared/util/Recoil_gkx');
 
-const invariant = require('../util/Recoil_invariant');
+const invariant = require('recoil-shared/util/Recoil_invariant');
 
-const isPromise = require('../util/Recoil_isPromise');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
 
-const nullthrows = require('../util/Recoil_nullthrows');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
 const {
   startPerfBlock
-} = require('../util/Recoil_PerformanceTimings');
+} = require('recoil-shared/util/Recoil_PerformanceTimings');
 
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 export type GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(fn: ($ReadOnly<{
   snapshot: Snapshot
@@ -186,7 +187,7 @@ type ExecutionInfo<T> = {
   depValuesDiscoveredSoFarDuringAsyncWork: ?DepValues,
   latestLoadable: ?Loadable<T>,
   latestExecutionId: ?ExecutionId,
-  stateVersion: ?number,
+  stateVersion: ?StateID,
 }; // An object to hold the current state for loading dependencies for a particular
 // execution of a selector.  This is used for async selector handling to know
 // which dependency was pending or if a user-promise was thrown.  An object is

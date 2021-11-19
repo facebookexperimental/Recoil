@@ -11,30 +11,30 @@
 'use strict';
 
 import type { DependencyMap, Graph } from './Recoil_GraphTypes';
-import type { NodeKey, Version } from './Recoil_Keys';
+import type { NodeKey, StateID } from './Recoil_Keys';
 import type { Store } from './Recoil_State';
 
-const differenceSets = require('../util/Recoil_differenceSets');
+const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
 
-const mapMap = require('../util/Recoil_mapMap');
+const mapMap = require('recoil-shared/util/Recoil_mapMap');
 
-const nullthrows = require('../util/Recoil_nullthrows');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 export type { DependencyMap, Graph } from './Recoil_GraphTypes';
-declare function graph(): Graph;
+declare function makeGraph(): Graph;
 declare function cloneGraph(graph: Graph): Graph; // Note that this overwrites the deps of existing nodes, rather than unioning
 // the new deps with the old deps.
 
 declare function mergeDependencyMapIntoGraph(deps: DependencyMap, graph: Graph, olderGraph?: Graph): void;
-declare function saveDependencyMapToStore(dependencyMap: DependencyMap, store: Store, version: Version): void;
+declare function saveDependencyMapToStore(dependencyMap: DependencyMap, store: Store, version: StateID): void;
 declare function mergeDepsIntoDependencyMap(from: DependencyMap, into: DependencyMap): void;
 declare function addToDependencyMap(downstream: NodeKey, upstream: NodeKey, dependencyMap: DependencyMap): void;
 module.exports = {
   addToDependencyMap,
   cloneGraph,
-  graph,
+  graph: makeGraph,
   mergeDepsIntoDependencyMap,
   saveDependencyMapToStore
 };

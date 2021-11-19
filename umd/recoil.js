@@ -373,6 +373,55 @@
    * @format
    */
 
+  // eslint-disable-next-line no-unused-vars
+  class AbstractRecoilValue {
+    constructor(newKey) {
+      _defineProperty(this, "key", void 0);
+
+      this.key = newKey;
+    }
+
+  }
+
+  class RecoilState extends AbstractRecoilValue {}
+
+  class RecoilValueReadOnly extends AbstractRecoilValue {}
+
+  function isRecoilValue(x) {
+    return x instanceof RecoilState || x instanceof RecoilValueReadOnly;
+  }
+
+  var Recoil_RecoilValue = {
+    AbstractRecoilValue,
+    RecoilState,
+    RecoilValueReadOnly,
+    isRecoilValue
+  };
+
+  var Recoil_RecoilValue_1 = Recoil_RecoilValue.AbstractRecoilValue;
+  var Recoil_RecoilValue_2 = Recoil_RecoilValue.RecoilState;
+  var Recoil_RecoilValue_3 = Recoil_RecoilValue.RecoilValueReadOnly;
+  var Recoil_RecoilValue_4 = Recoil_RecoilValue.isRecoilValue;
+
+  var Recoil_RecoilValue$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    AbstractRecoilValue: Recoil_RecoilValue_1,
+    RecoilState: Recoil_RecoilValue_2,
+    RecoilValueReadOnly: Recoil_RecoilValue_3,
+    isRecoilValue: Recoil_RecoilValue_4
+  });
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+
   function sprintf(format, ...args) {
     let index = 0;
     return format.replace(/%s/g, () => String(args[index++]));
@@ -494,55 +543,6 @@
 
 
   var Recoil_recoverableViolation = recoverableViolation_1;
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  // eslint-disable-next-line no-unused-vars
-  class AbstractRecoilValue {
-    constructor(newKey) {
-      _defineProperty(this, "key", void 0);
-
-      this.key = newKey;
-    }
-
-  }
-
-  class RecoilState extends AbstractRecoilValue {}
-
-  class RecoilValueReadOnly extends AbstractRecoilValue {}
-
-  function isRecoilValue(x) {
-    return x instanceof RecoilState || x instanceof RecoilValueReadOnly;
-  }
-
-  var Recoil_RecoilValue = {
-    AbstractRecoilValue,
-    RecoilState,
-    RecoilValueReadOnly,
-    isRecoilValue
-  };
-
-  var Recoil_RecoilValue_1 = Recoil_RecoilValue.AbstractRecoilValue;
-  var Recoil_RecoilValue_2 = Recoil_RecoilValue.RecoilState;
-  var Recoil_RecoilValue_3 = Recoil_RecoilValue.RecoilValueReadOnly;
-  var Recoil_RecoilValue_4 = Recoil_RecoilValue.isRecoilValue;
-
-  var Recoil_RecoilValue$1 = /*#__PURE__*/Object.freeze({
-    __proto__: null,
-    AbstractRecoilValue: Recoil_RecoilValue_1,
-    RecoilState: Recoil_RecoilValue_2,
-    RecoilValueReadOnly: Recoil_RecoilValue_3,
-    isRecoilValue: Recoil_RecoilValue_4
-  });
 
   class DefaultValue {}
 
@@ -1954,7 +1954,7 @@
 
   var Recoil_mapMap = mapMap;
 
-  function graph() {
+  function makeGraph() {
     return {
       nodeDeps: new Map(),
       nodeToNodeSubscriptions: new Map()
@@ -2069,9 +2069,38 @@
   var Recoil_Graph = {
     addToDependencyMap,
     cloneGraph,
-    graph,
+    graph: makeGraph,
     mergeDepsIntoDependencyMap,
     saveDependencyMapToStore
+  };
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+
+  let nextTreeStateVersion = 0;
+
+  const getNextTreeStateVersion = () => nextTreeStateVersion++;
+
+  let nextStoreID = 0;
+
+  const getNextStoreID = () => nextStoreID++;
+
+  let nextComponentID = 0;
+
+  const getNextComponentID = () => nextComponentID++;
+
+  var Recoil_Keys = {
+    getNextTreeStateVersion,
+    getNextStoreID,
+    getNextComponentID
   };
 
   const {
@@ -2079,15 +2108,15 @@
   } = Recoil_PersistentMap$1;
 
   const {
-    graph: graph$1
+    graph
   } = Recoil_Graph;
 
-  let nextTreeStateVersion = 0;
-
-  const getNextTreeStateVersion = () => nextTreeStateVersion++;
+  const {
+    getNextTreeStateVersion: getNextTreeStateVersion$1
+  } = Recoil_Keys;
 
   function makeEmptyTreeState() {
-    const version = getNextTreeStateVersion();
+    const version = getNextTreeStateVersion$1();
     return {
       version,
       stateID: version,
@@ -2112,7 +2141,7 @@
       nodeToComponentSubscriptions: new Map(),
       queuedComponentCallbacks_DEPRECATED: [],
       suspendedComponentResolvers: new Set(),
-      graphsByVersion: new Map().set(currentTree.version, graph$1()),
+      graphsByVersion: new Map().set(currentTree.version, graph()),
       versionsUsedByComponent: new Map(),
       retention: {
         referenceCounts: new Map(),
@@ -2126,7 +2155,7 @@
   var Recoil_State = {
     makeEmptyTreeState,
     makeEmptyStoreState,
-    getNextTreeStateVersion
+    getNextTreeStateVersion: getNextTreeStateVersion$1
   };
 
   /**
@@ -2140,19 +2169,16 @@
    * @format
    */
 
-  function unionSets(...sets) {
-    const result = new Set();
+  class RetentionZone {}
 
-    for (const set of sets) {
-      for (const value of set) {
-        result.add(value);
-      }
-    }
-
-    return result;
+  function retentionZone() {
+    return new RetentionZone();
   }
 
-  var Recoil_unionSets = unionSets;
+  var Recoil_RetentionZone = {
+    RetentionZone,
+    retentionZone
+  };
 
   /**
    * Copyright (c) Facebook, Inc. and its affiliates.
@@ -2240,27 +2266,15 @@
 
   var Recoil_filterIterable = filterIterable;
 
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
+  const {
+    getNode: getNode$1,
+    getNodeMaybe: getNodeMaybe$1,
+    recoilValuesForKeys: recoilValuesForKeys$1
+  } = Recoil_Node;
 
-  class RetentionZone {}
-
-  function retentionZone() {
-    return new RetentionZone();
-  }
-
-  var Recoil_RetentionZone = {
-    RetentionZone,
-    retentionZone
-  };
+  const {
+    RetentionZone: RetentionZone$1
+  } = Recoil_RetentionZone;
 
   const {
     setByAddingToSet: setByAddingToSet$1
@@ -2270,17 +2284,7 @@
 
 
 
-
-
-  const {
-    getNode: getNode$1,
-    getNodeMaybe: getNodeMaybe$1,
-    recoilValuesForKeys: recoilValuesForKeys$1
-  } = Recoil_Node;
-
-  const {
-    RetentionZone: RetentionZone$1
-  } = Recoil_RetentionZone; // flowlint-next-line unclear-type:off
+   // flowlint-next-line unclear-type:off
 
 
   const emptySet = Object.freeze(new Set());
@@ -2477,6 +2481,10 @@
   } = Recoil_FunctionalCore;
 
   const {
+    getNextComponentID: getNextComponentID$1
+  } = Recoil_Keys;
+
+  const {
     getNode: getNode$2,
     getNodeMaybe: getNodeMaybe$2
   } = Recoil_Node;
@@ -2492,6 +2500,12 @@
     RecoilValueReadOnly: RecoilValueReadOnly$1,
     isRecoilValue: isRecoilValue$1
   } = Recoil_RecoilValue$1;
+
+
+
+
+
+
 
   function getRecoilValueAsLoadable(store, {
     key
@@ -2715,12 +2729,10 @@
     });
   }
 
-  let subscriptionID = 0;
-
   function subscribeToRecoilValue(store, {
     key
   }, callback, componentDebugName = null) {
-    const subID = subscriptionID++;
+    const subID = getNextComponentID$1();
     const storeState = store.getState();
 
     if (!storeState.nodeToComponentSubscriptions.has(key)) {
@@ -2740,7 +2752,8 @@
 
     return {
       release: () => {
-        const subs = storeState.nodeToComponentSubscriptions.get(key);
+        const releaseStoreState = store.getState();
+        const subs = releaseStoreState.nodeToComponentSubscriptions.get(key);
 
         if (subs === undefined || !subs.has(subID)) {
           Recoil_recoverableViolation(`Subscription missing at release time for atom ${key}. This is a bug in Recoil.`);
@@ -2750,7 +2763,7 @@
         subs.delete(subID);
 
         if (subs.size === 0) {
-          storeState.nodeToComponentSubscriptions.delete(key);
+          releaseStoreState.nodeToComponentSubscriptions.delete(key);
         }
       }
     };
@@ -2832,7 +2845,15 @@
 
   const {
     RetentionZone: RetentionZone$2
-  } = Recoil_RetentionZone; // Components that aren't mounted after suspending for this long will be assumed
+  } = Recoil_RetentionZone;
+
+
+
+
+
+
+
+   // Components that aren't mounted after suspending for this long will be assumed
   // to be discarded and their resources released.
 
 
@@ -3114,57 +3135,6 @@
    * @emails oncall+recoil
    * 
    * @format
-   */
-  /**
-   * Combines multiple Iterables into a single Iterable.
-   * Traverses the input Iterables in the order provided and maintains the order
-   * of their elements.
-   *
-   * Example:
-   * ```
-   * const r = Array.from(concatIterables(['a', 'b'], ['c'], ['d', 'e', 'f']));
-   * r == ['a', 'b', 'c', 'd', 'e', 'f'];
-   * ```
-   */
-
-  function* concatIterables(iters) {
-    for (const iter of iters) {
-      for (const val of iter) {
-        yield val;
-      }
-    }
-  }
-
-  var Recoil_concatIterables = concatIterables;
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  const isSSR = typeof window === 'undefined';
-  const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
-
-  var Recoil_Environment = {
-    isSSR,
-    isReactNative
-  };
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
    *
    * This is to export esstiential functions from react-dom
    * for our web build
@@ -3261,19 +3231,56 @@
     batchUpdates
   };
 
-  const {
-    isSSR: isSSR$1
-  } = Recoil_Environment;
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+  /**
+   * Combines multiple Iterables into a single Iterable.
+   * Traverses the input Iterables in the order provided and maintains the order
+   * of their elements.
+   *
+   * Example:
+   * ```
+   * const r = Array.from(concatIterables(['a', 'b'], ['c'], ['d', 'e', 'f']));
+   * r == ['a', 'b', 'c', 'd', 'e', 'f'];
+   * ```
+   */
 
+  function* concatIterables(iters) {
+    for (const iter of iters) {
+      for (const val of iter) {
+        yield val;
+      }
+    }
+  }
 
+  var Recoil_concatIterables = concatIterables;
 
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
 
+  const isSSR = typeof window === 'undefined';
+  const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
-
-
-
-
-
+  var Recoil_Environment = {
+    isSSR,
+    isReactNative
+  };
 
   const {
     batchUpdates: batchUpdates$1
@@ -3285,8 +3292,12 @@
   } = Recoil_FunctionalCore;
 
   const {
-    graph: graph$2
+    graph: graph$1
   } = Recoil_Graph;
+
+  const {
+    getNextStoreID: getNextStoreID$1
+  } = Recoil_Keys;
 
   const {
     DEFAULT_VALUE: DEFAULT_VALUE$1,
@@ -3306,9 +3317,25 @@
   } = Recoil_Retention;
 
   const {
-    getNextTreeStateVersion: getNextTreeStateVersion$1,
+    getNextTreeStateVersion: getNextTreeStateVersion$2,
     makeEmptyStoreState: makeEmptyStoreState$1
-  } = Recoil_State; // Opaque at this surface because it's part of the public API from here.
+  } = Recoil_State;
+
+
+
+  const {
+    isSSR: isSSR$1
+  } = Recoil_Environment;
+
+
+
+
+
+
+
+
+
+   // Opaque at this surface because it's part of the public API from here.
 
 
   const retainWarning = `
@@ -3388,6 +3415,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       });
 
       this._store = {
+        storeID: getNextStoreID$1(),
         getState: () => storeState,
         replaceState: replacer => {
           storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
@@ -3399,7 +3427,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
             return Recoil_nullthrows(graphs.get(version));
           }
 
-          const newGraph = graph$2();
+          const newGraph = graph$1();
           graphs.set(version, newGraph);
           return newGraph;
         },
@@ -3473,11 +3501,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
     getID() {
       this.checkRefCount_INTERNAL();
-      return this.getID_INTERNAL();
-    }
-
-    getID_INTERNAL() {
-      this.checkRefCount_INTERNAL();
       return this._store.getState().currentTree.stateID;
     } // We want to allow the methods to be destructured and used as accessors
     // eslint-disable-next-line fb-www/extra-arrow-initializer
@@ -3487,7 +3510,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   function cloneStoreState(store, treeState, bumpVersion = false) {
     const storeState = store.getState();
-    const version = bumpVersion ? getNextTreeStateVersion$1() : treeState.version;
+    const version = bumpVersion ? getNextTreeStateVersion$2() : treeState.version;
     return {
       currentTree: bumpVersion ? {
         // TODO snapshots shouldn't really have versions because a new version number
@@ -3604,27 +3627,67 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     cloneSnapshot: Recoil_Snapshot_4
   });
 
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+
+  function unionSets(...sets) {
+    const result = new Set();
+
+    for (const set of sets) {
+      for (const value of set) {
+        result.add(value);
+      }
+    }
+
+    return result;
+  }
+
+  var Recoil_unionSets = unionSets;
+
+  const {
+    useRef
+  } = react;
+  /**
+   * The same as `useRef()` except that if a function is specified then it will
+   * call that function to get the value to initialize the reference with.
+   * This is similar to how `useState()` behaves when given a function.  It allows
+   * the user to avoid generating the initial value for subsequent renders.
+   * The tradeoff is that to set the reference to a function itself you need to
+   * nest it: useRefInitOnce(() => () => {...});
+   */
+
+
+  function useRefInitOnce(initialValue) {
+    // $FlowExpectedError[incompatible-call]
+    const ref = useRef(initialValue);
+
+    if (ref.current === initialValue && typeof initialValue === 'function') {
+      // $FlowExpectedError[incompatible-use]
+      ref.current = initialValue();
+    }
+
+    return ref;
+  }
+
+  var Recoil_useRefInitOnce = useRefInitOnce;
+
   // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
   // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
   // @fb-only: const URI = require('URI');
 
 
   const {
-    getNextTreeStateVersion: getNextTreeStateVersion$2,
+    getNextTreeStateVersion: getNextTreeStateVersion$3,
     makeEmptyStoreState: makeEmptyStoreState$2
   } = Recoil_State;
-
-
-
-
-
-
-
-
-
-
-
-
 
   const {
     cleanUpNode: cleanUpNode$2,
@@ -3634,12 +3697,16 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   } = Recoil_FunctionalCore;
 
   const {
-    graph: graph$3
+    graph: graph$2
   } = Recoil_Graph;
 
   const {
     cloneGraph: cloneGraph$1
   } = Recoil_Graph;
+
+  const {
+    getNextStoreID: getNextStoreID$2
+  } = Recoil_Keys;
 
   const {
     applyAtomValueWrites: applyAtomValueWrites$1
@@ -3660,15 +3727,30 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     useContext,
     useEffect,
     useMemo,
-    useRef,
+    useRef: useRef$1,
     useState
   } = react;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   function notInAContext() {
     throw Recoil_err('This component must be used inside a <RecoilRoot> component.');
   }
 
   const defaultStore = Object.freeze({
+    storeID: getNextStoreID$2(),
     getState: notInAContext,
     replaceState: notInAContext,
     getGraph: notInAContext,
@@ -3696,7 +3778,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       }
 
       const version = storeState.currentTree.version;
-      const nextVersion = getNextTreeStateVersion$2();
+      const nextVersion = getNextTreeStateVersion$3();
       storeState.nextTree = { ...storeState.currentTree,
         version: nextVersion,
         stateID: nextVersion,
@@ -3930,7 +4012,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         return Recoil_nullthrows(graphs.get(version));
       }
 
-      const newGraph = graph$3();
+      const newGraph = graph$2();
       graphs.set(version, newGraph);
       return newGraph;
     };
@@ -4011,32 +4093,30 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       storeStateRef.current.nextTree = replaced;
 
       if (Recoil_gkx_1('recoil_early_rendering_2021')) {
-        notifyComponents(store, storeStateRef.current, replaced);
+        notifyComponents(storeRef.current, storeStateRef.current, replaced);
       }
 
       Recoil_nullthrows(notifyBatcherOfChange.current)();
     };
 
-    const notifyBatcherOfChange = useRef(null);
+    const notifyBatcherOfChange = useRef$1(null);
     const setNotifyBatcherOfChange = useCallback(x => {
       notifyBatcherOfChange.current = x;
     }, [notifyBatcherOfChange]);
-    const store = storeProp !== null && storeProp !== void 0 ? storeProp : {
+    const storeRef = Recoil_useRefInitOnce(() => storeProp !== null && storeProp !== void 0 ? storeProp : {
+      storeID: getNextStoreID$2(),
       getState: () => storeStateRef.current,
       replaceState,
       getGraph,
       subscribeToTransactions,
       addTransactionMetadata
-    };
-    const storeRef = useRef(store); // Only call initializeState() for the first render.
-    // $FlowExpectedError[incompatible-type]
+    });
 
-    storeStateRef = useRef(null);
+    if (storeProp != null) {
+      storeRef.current = storeProp;
+    }
 
-    if (storeStateRef.current == null) {
-      storeStateRef.current = initializeState_DEPRECATED != null ? initialStoreState_DEPRECATED(store, initializeState_DEPRECATED) : initializeState != null ? initialStoreState(initializeState) : makeEmptyStoreState$2();
-    } // FIXME T2710559282599660
-
+    storeStateRef = Recoil_useRefInitOnce(() => initializeState_DEPRECATED != null ? initialStoreState_DEPRECATED(storeRef.current, initializeState_DEPRECATED) : initializeState != null ? initialStoreState(initializeState) : makeEmptyStoreState$2()); // FIXME T2710559282599660
 
     const createMutableSource = (_createMutableSource = react.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : // flowlint-line unclear-type:off
     react.unstable_createMutableSource; // flowlint-line unclear-type:off
@@ -4073,13 +4153,172 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     return /*#__PURE__*/react.createElement(RecoilRoot_INTERNAL, propsExceptOverride);
   }
 
+  function useRecoilStoreID() {
+    return useStoreRef().current.storeID;
+  }
+
   var Recoil_RecoilRoot_react = {
+    RecoilRoot,
     useStoreRef,
     useRecoilMutableSource,
-    RecoilRoot,
+    useRecoilStoreID,
     notifyComponents_FOR_TESTING: notifyComponents,
     sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications
   };
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+
+  function shallowArrayEqual(a, b) {
+    if (a === b) {
+      return true;
+    }
+
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    for (let i = 0, l = a.length; i < l; i++) {
+      if (a[i] !== b[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  var Recoil_shallowArrayEqual = shallowArrayEqual;
+
+  const {
+    useEffect: useEffect$1,
+    useRef: useRef$2
+  } = react;
+
+  function usePrevious(value) {
+    const ref = useRef$2();
+    useEffect$1(() => {
+      ref.current = value;
+    });
+    return ref.current;
+  }
+
+  var Recoil_usePrevious = usePrevious;
+
+  const {
+    useStoreRef: useStoreRef$1
+  } = Recoil_RecoilRoot_react;
+
+  const {
+    SUSPENSE_TIMEOUT_MS: SUSPENSE_TIMEOUT_MS$1
+  } = Recoil_Retention;
+
+  const {
+    updateRetainCount: updateRetainCount$2
+  } = Recoil_Retention;
+
+  const {
+    RetentionZone: RetentionZone$3
+  } = Recoil_RetentionZone;
+
+  const {
+    useEffect: useEffect$2,
+    useRef: useRef$3
+  } = react;
+
+  const {
+    isSSR: isSSR$2
+  } = Recoil_Environment;
+
+
+
+
+
+   // I don't see a way to avoid the any type here because we want to accept readable
+  // and writable values with any type parameter, but normally with writable ones
+  // RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
+
+
+  // flowlint-line unclear-type:off
+  function useRetain(toRetain) {
+    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
+      return;
+    } // eslint-disable-next-line fb-www/react-hooks
+
+
+    return useRetain_ACTUAL(toRetain);
+  }
+
+  function useRetain_ACTUAL(toRetain) {
+    const array = Array.isArray(toRetain) ? toRetain : [toRetain];
+    const retainables = array.map(a => a instanceof RetentionZone$3 ? a : a.key);
+    const storeRef = useStoreRef$1();
+    useEffect$2(() => {
+      if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
+        return;
+      }
+
+      const store = storeRef.current;
+
+      if (timeoutID.current && !isSSR$2) {
+        // Already performed a temporary retain on render, simply cancel the release
+        // of that temporary retain.
+        window.clearTimeout(timeoutID.current);
+        timeoutID.current = null;
+      } else {
+        for (const r of retainables) {
+          updateRetainCount$2(store, r, 1);
+        }
+      }
+
+      return () => {
+        for (const r of retainables) {
+          updateRetainCount$2(store, r, -1);
+        }
+      }; // eslint-disable-next-line fb-www/react-hooks-deps
+    }, [storeRef, ...retainables]); // We want to retain if the component suspends. This is terrible but the Suspense
+    // API affords us no better option. If we suspend and never commit after some
+    // seconds, then release. The 'actual' retain/release in the effect above
+    // cancels this.
+
+    const timeoutID = useRef$3();
+    const previousRetainables = Recoil_usePrevious(retainables);
+
+    if (!isSSR$2 && (previousRetainables === undefined || !Recoil_shallowArrayEqual(previousRetainables, retainables))) {
+      const store = storeRef.current;
+
+      for (const r of retainables) {
+        updateRetainCount$2(store, r, 1);
+      }
+
+      if (previousRetainables) {
+        for (const r of previousRetainables) {
+          updateRetainCount$2(store, r, -1);
+        }
+      }
+
+      if (timeoutID.current) {
+        window.clearTimeout(timeoutID.current);
+      }
+
+      timeoutID.current = window.setTimeout(() => {
+        timeoutID.current = null;
+
+        for (const r of retainables) {
+          updateRetainCount$2(store, r, -1);
+        }
+      }, SUSPENSE_TIMEOUT_MS$1);
+    }
+  }
+
+  var Recoil_useRetain = useRetain;
 
   /**
    * Copyright (c) Facebook, Inc. and its affiliates.
@@ -4250,11 +4489,15 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_stackTraceParser = stackTraceParser;
 
   const {
-    useRef: useRef$1
+    useRef: useRef$4
   } = react;
 
+
+
+
+
   function useComponentName() {
-    const nameRef = useRef$1();
+    const nameRef = useRef$4();
 
     {
       if (Recoil_gkx_1('recoil_infer_component_names')) {
@@ -4294,160 +4537,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   var Recoil_useComponentName = useComponentName;
 
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  function shallowArrayEqual(a, b) {
-    if (a === b) {
-      return true;
-    }
-
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    for (let i = 0, l = a.length; i < l; i++) {
-      if (a[i] !== b[i]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  var Recoil_shallowArrayEqual = shallowArrayEqual;
-
-  const {
-    useEffect: useEffect$1,
-    useRef: useRef$2
-  } = react;
-
-  function usePrevious(value) {
-    const ref = useRef$2();
-    useEffect$1(() => {
-      ref.current = value;
-    });
-    return ref.current;
-  }
-
-  var Recoil_usePrevious = usePrevious;
-
-  const {
-    useStoreRef: useStoreRef$1
-  } = Recoil_RecoilRoot_react;
-
-  const {
-    SUSPENSE_TIMEOUT_MS: SUSPENSE_TIMEOUT_MS$1
-  } = Recoil_Retention;
-
-  const {
-    updateRetainCount: updateRetainCount$2
-  } = Recoil_Retention;
-
-  const {
-    RetentionZone: RetentionZone$3
-  } = Recoil_RetentionZone;
-
-  const {
-    isSSR: isSSR$2
-  } = Recoil_Environment;
-
-
-
-
-
-
-
-  const {
-    useEffect: useEffect$2,
-    useRef: useRef$3
-  } = react; // I don't see a way to avoid the any type here because we want to accept readable
-  // and writable values with any type parameter, but normally with writable ones
-  // RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
-
-
-  // flowlint-line unclear-type:off
-  function useRetain(toRetain) {
-    if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-      return;
-    } // eslint-disable-next-line fb-www/react-hooks
-
-
-    return useRetain_ACTUAL(toRetain);
-  }
-
-  function useRetain_ACTUAL(toRetain) {
-    const array = Array.isArray(toRetain) ? toRetain : [toRetain];
-    const retainables = array.map(a => a instanceof RetentionZone$3 ? a : a.key);
-    const storeRef = useStoreRef$1();
-    useEffect$2(() => {
-      if (!Recoil_gkx_1('recoil_memory_managament_2020')) {
-        return;
-      }
-
-      const store = storeRef.current;
-
-      if (timeoutID.current && !isSSR$2) {
-        // Already performed a temporary retain on render, simply cancel the release
-        // of that temporary retain.
-        window.clearTimeout(timeoutID.current);
-        timeoutID.current = null;
-      } else {
-        for (const r of retainables) {
-          updateRetainCount$2(store, r, 1);
-        }
-      }
-
-      return () => {
-        for (const r of retainables) {
-          updateRetainCount$2(store, r, -1);
-        }
-      }; // eslint-disable-next-line fb-www/react-hooks-deps
-    }, [storeRef, ...retainables]); // We want to retain if the component suspends. This is terrible but the Suspense
-    // API affords us no better option. If we suspend and never commit after some
-    // seconds, then release. The 'actual' retain/release in the effect above
-    // cancels this.
-
-    const timeoutID = useRef$3();
-    const previousRetainables = Recoil_usePrevious(retainables);
-
-    if (!isSSR$2 && (previousRetainables === undefined || !Recoil_shallowArrayEqual(previousRetainables, retainables))) {
-      const store = storeRef.current;
-
-      for (const r of retainables) {
-        updateRetainCount$2(store, r, 1);
-      }
-
-      if (previousRetainables) {
-        for (const r of previousRetainables) {
-          updateRetainCount$2(store, r, -1);
-        }
-      }
-
-      if (timeoutID.current) {
-        window.clearTimeout(timeoutID.current);
-      }
-
-      timeoutID.current = window.setTimeout(() => {
-        timeoutID.current = null;
-
-        for (const r of retainables) {
-          updateRetainCount$2(store, r, -1);
-        }
-      }, SUSPENSE_TIMEOUT_MS$1);
-    }
-  }
-
-  var Recoil_useRetain = useRetain;
-
   const {
     batchUpdates: batchUpdates$2
   } = Recoil_Batching;
@@ -4473,6 +4562,16 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     subscribeToRecoilValue: subscribeToRecoilValue$1
   } = Recoil_RecoilValueInterface;
 
+
+
+  const {
+    useCallback: useCallback$1,
+    useEffect: useEffect$3,
+    useMemo: useMemo$1,
+    useRef: useRef$5,
+    useState: useState$1
+  } = react;
+
   const {
     setByAddingToSet: setByAddingToSet$2
   } = Recoil_CopyOnWrite;
@@ -4491,16 +4590,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   } = Recoil_mutableSource;
 
 
-
-
-
-  const {
-    useCallback: useCallback$1,
-    useEffect: useEffect$3,
-    useMemo: useMemo$1,
-    useRef: useRef$4,
-    useState: useState$1
-  } = react;
 
   function handleLoadable(loadable, recoilValue, storeRef) {
     // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -4535,11 +4624,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   function useRecoilInterface_DEPRECATED() {
     const storeRef = useStoreRef$2();
     const [, forceUpdate] = useState$1([]);
-    const recoilValuesUsed = useRef$4(new Set());
+    const recoilValuesUsed = useRef$5(new Set());
     recoilValuesUsed.current = new Set(); // Track the RecoilValues used just during this render
 
-    const previousSubscriptions = useRef$4(new Set());
-    const subscriptions = useRef$4(new Map());
+    const previousSubscriptions = useRef$5(new Set());
+    const subscriptions = useRef$5(new Map());
     const unsubscribeFrom = useCallback$1(key => {
       const sub = subscriptions.current.get(key);
 
@@ -4744,7 +4833,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     }, [storeRef, recoilValue, componentName, getLoadable]);
     const source = useRecoilMutableSource$1();
     const loadable = useMutableSource$1(source, getLoadableWithTesting, subscribe);
-    const prevLoadableRef = useRef$4(loadable);
+    const prevLoadableRef = useRef$5(loadable);
     useEffect$3(() => {
       prevLoadableRef.current = loadable;
     });
@@ -4819,7 +4908,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       return subscription.release;
     }, [componentName, recoilValue, storeRef]);
     const loadable = getRecoilValueAsLoadable$2(storeRef.current, recoilValue);
-    const prevLoadableRef = useRef$4(loadable);
+    const prevLoadableRef = useRef$5(loadable);
     useEffect$3(() => {
       prevLoadableRef.current = loadable;
     });
@@ -5071,6 +5160,13 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   } = Recoil_Snapshot$1;
 
   const {
+    useCallback: useCallback$2,
+    useEffect: useEffect$4,
+    useRef: useRef$6,
+    useState: useState$2
+  } = react;
+
+  const {
     isSSR: isSSR$3
   } = Recoil_Environment;
 
@@ -5087,13 +5183,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
 
 
-
-  const {
-    useCallback: useCallback$2,
-    useEffect: useEffect$4,
-    useRef: useRef$5,
-    useState: useState$2
-  } = react;
 
   function useTransactionSubscription(callback) {
     const storeRef = useStoreRef$3();
@@ -5191,7 +5280,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     const storeRef = useStoreRef$3();
     const [snapshot, setSnapshot] = useState$2(() => cloneSnapshot$1(storeRef.current));
     const previousSnapshot = Recoil_usePrevious(snapshot);
-    const timeoutID = useRef$5();
+    const timeoutID = useRef$6();
     useEffect$4(() => {
       if (timeoutID.current && !isSSR$3) {
         window.clearTimeout(timeoutID.current);
@@ -5243,7 +5332,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         });
         storeRef.current.replaceState(state => {
           return { ...state,
-            stateID: snapshot.getID_INTERNAL()
+            stateID: snapshot.getID()
           };
         });
       });
@@ -5469,10 +5558,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     cloneSnapshot: cloneSnapshot$2
   } = Recoil_Snapshot$1;
 
-
-
-
-
   const {
     useGotoRecoilSnapshot: useGotoRecoilSnapshot$1
   } = Recoil_SnapshotHooks;
@@ -5480,6 +5565,10 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     useCallback: useCallback$3
   } = react;
+
+
+
+
 
   class Sentinel {}
 
@@ -5583,243 +5672,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   }
 
   var Recoil_useRecoilTransaction = useRecoilTransaction;
-
-  /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
-   *
-   * This source code is licensed under the MIT license found in the
-   * LICENSE file in the root directory of this source tree.
-   *
-   * @emails oncall+recoil
-   * 
-   * @format
-   */
-
-  function isNode(object) {
-    var _ownerDocument, _doc$defaultView;
-
-    if (typeof window === 'undefined') {
-      return false;
-    }
-
-    const doc = object != null ? (_ownerDocument = object.ownerDocument) !== null && _ownerDocument !== void 0 ? _ownerDocument : object : document;
-    const defaultView = (_doc$defaultView = doc.defaultView) !== null && _doc$defaultView !== void 0 ? _doc$defaultView : window;
-    return !!(object != null && (typeof defaultView.Node === 'function' ? object instanceof defaultView.Node : typeof object === 'object' && typeof object.nodeType === 'number' && typeof object.nodeName === 'string'));
-  }
-
-  var Recoil_isNode = isNode;
-
-  const {
-    isReactNative: isReactNative$1,
-    isSSR: isSSR$4
-  } = Recoil_Environment;
-
-
-
-
-
-  function shouldNotBeFrozen(value) {
-    // Primitives and functions:
-    if (value === null || typeof value !== 'object') {
-      return true;
-    } // React elements:
-
-
-    switch (typeof value.$$typeof) {
-      case 'symbol':
-        return true;
-
-      case 'number':
-        return true;
-    } // Immutable structures:
-
-
-    if (value['@@__IMMUTABLE_ITERABLE__@@'] != null || value['@@__IMMUTABLE_KEYED__@@'] != null || value['@@__IMMUTABLE_INDEXED__@@'] != null || value['@@__IMMUTABLE_ORDERED__@@'] != null || value['@@__IMMUTABLE_RECORD__@@'] != null) {
-      return true;
-    } // DOM nodes:
-
-
-    if (Recoil_isNode(value)) {
-      return true;
-    }
-
-    if (Recoil_isPromise(value)) {
-      return true;
-    }
-
-    if (value instanceof Error) {
-      return true;
-    }
-
-    if (ArrayBuffer.isView(value)) {
-      return true;
-    } // Some environments, just as Jest, don't work with the instanceof check
-
-
-    if (!isSSR$4 && !isReactNative$1 && ( // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
-    value === window || value instanceof Window)) {
-      return true;
-    }
-
-    return false;
-  } // Recursively freeze a value to enforce it is read-only.
-  // This may also have minimal performance improvements for enumerating
-  // objects (based on browser implementations, of course)
-
-
-  function deepFreezeValue(value) {
-    if (typeof value !== 'object' || shouldNotBeFrozen(value)) {
-      return;
-    }
-
-    Object.freeze(value); // Make all properties read-only
-
-    for (const key in value) {
-      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
-      if (Object.prototype.hasOwnProperty.call(value, key)) {
-        const prop = value[key]; // Prevent infinite recurssion for circular references.
-
-        if (typeof prop === 'object' && prop != null && !Object.isFrozen(prop)) {
-          deepFreezeValue(prop);
-        }
-      }
-    }
-
-    Object.seal(value); // This also makes existing properties non-configurable.
-  }
-
-  var Recoil_deepFreezeValue = deepFreezeValue;
-
-  const TIME_WARNING_THRESHOLD_MS = 15;
-
-  function stringify(x, opt, key) {
-    // A optimization to avoid the more expensive JSON.stringify() for simple strings
-    // This may lose protection for u2028 and u2029, though.
-    if (typeof x === 'string' && !x.includes('"') && !x.includes('\\')) {
-      return `"${x}"`;
-    } // Handle primitive types
-
-
-    switch (typeof x) {
-      case 'undefined':
-        return '';
-      // JSON.stringify(undefined) returns undefined, but we always want to return a string
-
-      case 'boolean':
-        return x ? 'true' : 'false';
-
-      case 'number':
-      case 'symbol':
-        // case 'bigint': // BigInt is not supported in www
-        return String(x);
-
-      case 'string':
-        // Add surrounding quotes and escape internal quotes
-        return JSON.stringify(x);
-
-      case 'function':
-        if ((opt === null || opt === void 0 ? void 0 : opt.allowFunctions) !== true) {
-          throw Recoil_err('Attempt to serialize function in a Recoil cache key');
-        }
-
-        return `__FUNCTION(${x.name})__`;
-    }
-
-    if (x === null) {
-      return 'null';
-    } // Fallback case for unknown types
-
-
-    if (typeof x !== 'object') {
-      var _JSON$stringify;
-
-      return (_JSON$stringify = JSON.stringify(x)) !== null && _JSON$stringify !== void 0 ? _JSON$stringify : '';
-    } // Deal with all promises as equivalent for now.
-
-
-    if (Recoil_isPromise(x)) {
-      return '__PROMISE__';
-    } // Arrays handle recursive stringification
-
-
-    if (Array.isArray(x)) {
-      return `[${x.map((v, i) => stringify(v, opt, i.toString()))}]`;
-    } // If an object defines a toJSON() method, then use that to override the
-    // serialization.  This matches the behavior of JSON.stringify().
-    // Pass the key for compatibility.
-    // Immutable.js collections define this method to allow us to serialize them.
-
-
-    if (typeof x.toJSON === 'function') {
-      // flowlint-next-line unclear-type: off
-      return stringify(x.toJSON(key), opt, key);
-    } // For built-in Maps, sort the keys in a stable order instead of the
-    // default insertion order.  Support non-string keys.
-
-
-    if (x instanceof Map) {
-      const obj = {};
-
-      for (const [k, v] of x) {
-        // Stringify will escape any nested quotes
-        obj[typeof k === 'string' ? k : stringify(k, opt)] = v;
-      }
-
-      return stringify(obj, opt, key);
-    } // For built-in Sets, sort the keys in a stable order instead of the
-    // default insertion order.
-
-
-    if (x instanceof Set) {
-      return stringify(Array.from(x).sort((a, b) => stringify(a, opt).localeCompare(stringify(b, opt))), opt, key);
-    } // Anything else that is iterable serialize as an Array.
-
-
-    if (Symbol !== undefined && x[Symbol.iterator] != null && typeof x[Symbol.iterator] === 'function') {
-      // flowlint-next-line unclear-type: off
-      return stringify(Array.from(x), opt, key);
-    } // For all other Objects, sort the keys in a stable order.
-
-
-    return `{${Object.keys(x).filter(k => x[k] !== undefined).sort() // stringify the key to add quotes and escape any nested slashes or quotes.
-  .map(k => `${stringify(k, opt)}:${stringify(x[k], opt, k)}`).join(',')}}`;
-  } // Utility similar to JSON.stringify() except:
-  // * Serialize built-in Sets as an Array
-  // * Serialize built-in Maps as an Object.  Supports non-string keys.
-  // * Serialize other iterables as arrays
-  // * Sort the keys of Objects and Maps to have a stable order based on string conversion.
-  //    This overrides their default insertion order.
-  // * Still uses toJSON() of any object to override serialization
-  // * Support Symbols (though don't guarantee uniqueness)
-  // * We could support BigInt, but Flow doesn't seem to like it.
-  // See Recoil_stableStringify-test.js for examples
-
-
-  function stableStringify(x, opt = {
-    allowFunctions: false
-  }) {
-    {
-      if (typeof window !== 'undefined') {
-        const startTime = window.performance ? window.performance.now() : 0;
-        const str = stringify(x, opt);
-        const endTime = window.performance ? window.performance.now() : 0;
-
-        if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
-          /* eslint-disable fb-www/no-console */
-          console.groupCollapsed(`Recoil: Spent ${endTime - startTime}ms computing a cache key`);
-          console.warn(x, str);
-          console.groupEnd();
-          /* eslint-enable fb-www/no-console */
-        }
-
-        return str;
-      }
-    }
-
-    return stringify(x, opt);
-  }
-
-  var Recoil_stableStringify = stableStringify;
 
   class TreeCache {
     constructor(options) {
@@ -6211,9 +6063,146 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   var Recoil_treeCacheLRU = treeCacheLRU;
 
+  const TIME_WARNING_THRESHOLD_MS = 15;
+
+  function stringify(x, opt, key) {
+    // A optimization to avoid the more expensive JSON.stringify() for simple strings
+    // This may lose protection for u2028 and u2029, though.
+    if (typeof x === 'string' && !x.includes('"') && !x.includes('\\')) {
+      return `"${x}"`;
+    } // Handle primitive types
+
+
+    switch (typeof x) {
+      case 'undefined':
+        return '';
+      // JSON.stringify(undefined) returns undefined, but we always want to return a string
+
+      case 'boolean':
+        return x ? 'true' : 'false';
+
+      case 'number':
+      case 'symbol':
+        // case 'bigint': // BigInt is not supported in www
+        return String(x);
+
+      case 'string':
+        // Add surrounding quotes and escape internal quotes
+        return JSON.stringify(x);
+
+      case 'function':
+        if ((opt === null || opt === void 0 ? void 0 : opt.allowFunctions) !== true) {
+          throw Recoil_err('Attempt to serialize function in a Recoil cache key');
+        }
+
+        return `__FUNCTION(${x.name})__`;
+    }
+
+    if (x === null) {
+      return 'null';
+    } // Fallback case for unknown types
+
+
+    if (typeof x !== 'object') {
+      var _JSON$stringify;
+
+      return (_JSON$stringify = JSON.stringify(x)) !== null && _JSON$stringify !== void 0 ? _JSON$stringify : '';
+    } // Deal with all promises as equivalent for now.
+
+
+    if (Recoil_isPromise(x)) {
+      return '__PROMISE__';
+    } // Arrays handle recursive stringification
+
+
+    if (Array.isArray(x)) {
+      return `[${x.map((v, i) => stringify(v, opt, i.toString()))}]`;
+    } // If an object defines a toJSON() method, then use that to override the
+    // serialization.  This matches the behavior of JSON.stringify().
+    // Pass the key for compatibility.
+    // Immutable.js collections define this method to allow us to serialize them.
+
+
+    if (typeof x.toJSON === 'function') {
+      // flowlint-next-line unclear-type: off
+      return stringify(x.toJSON(key), opt, key);
+    } // For built-in Maps, sort the keys in a stable order instead of the
+    // default insertion order.  Support non-string keys.
+
+
+    if (x instanceof Map) {
+      const obj = {};
+
+      for (const [k, v] of x) {
+        // Stringify will escape any nested quotes
+        obj[typeof k === 'string' ? k : stringify(k, opt)] = v;
+      }
+
+      return stringify(obj, opt, key);
+    } // For built-in Sets, sort the keys in a stable order instead of the
+    // default insertion order.
+
+
+    if (x instanceof Set) {
+      return stringify(Array.from(x).sort((a, b) => stringify(a, opt).localeCompare(stringify(b, opt))), opt, key);
+    } // Anything else that is iterable serialize as an Array.
+
+
+    if (Symbol !== undefined && x[Symbol.iterator] != null && typeof x[Symbol.iterator] === 'function') {
+      // flowlint-next-line unclear-type: off
+      return stringify(Array.from(x), opt, key);
+    } // For all other Objects, sort the keys in a stable order.
+
+
+    return `{${Object.keys(x).filter(k => x[k] !== undefined).sort() // stringify the key to add quotes and escape any nested slashes or quotes.
+  .map(k => `${stringify(k, opt)}:${stringify(x[k], opt, k)}`).join(',')}}`;
+  } // Utility similar to JSON.stringify() except:
+  // * Serialize built-in Sets as an Array
+  // * Serialize built-in Maps as an Object.  Supports non-string keys.
+  // * Serialize other iterables as arrays
+  // * Sort the keys of Objects and Maps to have a stable order based on string conversion.
+  //    This overrides their default insertion order.
+  // * Still uses toJSON() of any object to override serialization
+  // * Support Symbols (though don't guarantee uniqueness)
+  // * We could support BigInt, but Flow doesn't seem to like it.
+  // See Recoil_stableStringify-test.js for examples
+
+
+  function stableStringify(x, opt = {
+    allowFunctions: false
+  }) {
+    {
+      if (typeof window !== 'undefined') {
+        const startTime = window.performance ? window.performance.now() : 0;
+        const str = stringify(x, opt);
+        const endTime = window.performance ? window.performance.now() : 0;
+
+        if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
+          /* eslint-disable fb-www/no-console */
+          console.groupCollapsed(`Recoil: Spent ${endTime - startTime}ms computing a cache key`);
+          console.warn(x, str);
+          console.groupEnd();
+          /* eslint-enable fb-www/no-console */
+        }
+
+        return str;
+      }
+    }
+
+    return stringify(x, opt);
+  }
+
+  var Recoil_stableStringify = stableStringify;
+
   const {
     TreeCache: TreeCache$2
   } = Recoil_TreeCache$1;
+
+
+
+
+
+
 
 
 
@@ -6264,6 +6253,112 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   }
 
   var Recoil_treeCacheFromPolicy = treeCacheFromPolicy;
+
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+
+  function isNode(object) {
+    var _ownerDocument, _doc$defaultView;
+
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    const doc = object != null ? (_ownerDocument = object.ownerDocument) !== null && _ownerDocument !== void 0 ? _ownerDocument : object : document;
+    const defaultView = (_doc$defaultView = doc.defaultView) !== null && _doc$defaultView !== void 0 ? _doc$defaultView : window;
+    return !!(object != null && (typeof defaultView.Node === 'function' ? object instanceof defaultView.Node : typeof object === 'object' && typeof object.nodeType === 'number' && typeof object.nodeName === 'string'));
+  }
+
+  var Recoil_isNode = isNode;
+
+  const {
+    isReactNative: isReactNative$1,
+    isSSR: isSSR$4
+  } = Recoil_Environment;
+
+
+
+
+
+  function shouldNotBeFrozen(value) {
+    // Primitives and functions:
+    if (value === null || typeof value !== 'object') {
+      return true;
+    } // React elements:
+
+
+    switch (typeof value.$$typeof) {
+      case 'symbol':
+        return true;
+
+      case 'number':
+        return true;
+    } // Immutable structures:
+
+
+    if (value['@@__IMMUTABLE_ITERABLE__@@'] != null || value['@@__IMMUTABLE_KEYED__@@'] != null || value['@@__IMMUTABLE_INDEXED__@@'] != null || value['@@__IMMUTABLE_ORDERED__@@'] != null || value['@@__IMMUTABLE_RECORD__@@'] != null) {
+      return true;
+    } // DOM nodes:
+
+
+    if (Recoil_isNode(value)) {
+      return true;
+    }
+
+    if (Recoil_isPromise(value)) {
+      return true;
+    }
+
+    if (value instanceof Error) {
+      return true;
+    }
+
+    if (ArrayBuffer.isView(value)) {
+      return true;
+    } // Some environments, just as Jest, don't work with the instanceof check
+
+
+    if (!isSSR$4 && !isReactNative$1 && ( // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+    value === window || value instanceof Window)) {
+      return true;
+    }
+
+    return false;
+  } // Recursively freeze a value to enforce it is read-only.
+  // This may also have minimal performance improvements for enumerating
+  // objects (based on browser implementations, of course)
+
+
+  function deepFreezeValue(value) {
+    if (typeof value !== 'object' || shouldNotBeFrozen(value)) {
+      return;
+    }
+
+    Object.freeze(value); // Make all properties read-only
+
+    for (const key in value) {
+      // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+      if (Object.prototype.hasOwnProperty.call(value, key)) {
+        const prop = value[key]; // Prevent infinite recurssion for circular references.
+
+        if (typeof prop === 'object' && prop != null && !Object.isFrozen(prop)) {
+          deepFreezeValue(prop);
+        }
+      }
+    }
+
+    Object.seal(value); // This also makes existing properties non-configurable.
+  }
+
+  var Recoil_deepFreezeValue = deepFreezeValue;
 
   /**
    * Copyright (c) Facebook, Inc. and its affiliates.
@@ -7490,6 +7585,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
           const cleanup = effect({
             node,
+            storeID: store.storeID,
             trigger,
             setSelf: setSelf(effect),
             resetSelf: resetSelf(effect),
@@ -7746,6 +7842,12 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     MapCache: MapCache$1
   } = Recoil_MapCache$1;
+
+
+
+
+
+
 
   const defaultPolicy$1 = {
     equality: 'reference',
@@ -8244,7 +8346,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   } = Recoil_Node;
 
   const {
-    RecoilRoot: RecoilRoot$2
+    RecoilRoot: RecoilRoot$2,
+    useRecoilStoreID: useRecoilStoreID$1
   } = Recoil_RecoilRoot_react;
 
   const {
@@ -8315,6 +8418,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     RecoilLoadable,
     // Recoil Root
     RecoilRoot: RecoilRoot$2,
+    useRecoilStoreID: useRecoilStoreID$1,
     useRecoilBridgeAcrossReactRoots_UNSTABLE: Recoil_useRecoilBridgeAcrossReactRoots,
     // Atoms/Selectors
     atom: Recoil_atom,
@@ -8356,70 +8460,72 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_index_2 = Recoil_index.isRecoilValue;
   var Recoil_index_3 = Recoil_index.RecoilLoadable;
   var Recoil_index_4 = Recoil_index.RecoilRoot;
-  var Recoil_index_5 = Recoil_index.useRecoilBridgeAcrossReactRoots_UNSTABLE;
-  var Recoil_index_6 = Recoil_index.atom;
-  var Recoil_index_7 = Recoil_index.selector;
-  var Recoil_index_8 = Recoil_index.atomFamily;
-  var Recoil_index_9 = Recoil_index.selectorFamily;
-  var Recoil_index_10 = Recoil_index.constSelector;
-  var Recoil_index_11 = Recoil_index.errorSelector;
-  var Recoil_index_12 = Recoil_index.readOnlySelector;
-  var Recoil_index_13 = Recoil_index.noWait;
-  var Recoil_index_14 = Recoil_index.waitForNone;
-  var Recoil_index_15 = Recoil_index.waitForAny;
-  var Recoil_index_16 = Recoil_index.waitForAll;
-  var Recoil_index_17 = Recoil_index.waitForAllSettled;
-  var Recoil_index_18 = Recoil_index.useRecoilValue;
-  var Recoil_index_19 = Recoil_index.useRecoilValueLoadable;
-  var Recoil_index_20 = Recoil_index.useRecoilState;
-  var Recoil_index_21 = Recoil_index.useRecoilStateLoadable;
-  var Recoil_index_22 = Recoil_index.useSetRecoilState;
-  var Recoil_index_23 = Recoil_index.useResetRecoilState;
-  var Recoil_index_24 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
-  var Recoil_index_25 = Recoil_index.useRecoilRefresher_UNSTABLE;
-  var Recoil_index_26 = Recoil_index.useRecoilCallback;
-  var Recoil_index_27 = Recoil_index.useRecoilTransaction_UNSTABLE;
-  var Recoil_index_28 = Recoil_index.useGotoRecoilSnapshot;
-  var Recoil_index_29 = Recoil_index.useRecoilSnapshot;
-  var Recoil_index_30 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
-  var Recoil_index_31 = Recoil_index.snapshot_UNSTABLE;
-  var Recoil_index_32 = Recoil_index.useRetain;
-  var Recoil_index_33 = Recoil_index.retentionZone;
+  var Recoil_index_5 = Recoil_index.useRecoilStoreID;
+  var Recoil_index_6 = Recoil_index.useRecoilBridgeAcrossReactRoots_UNSTABLE;
+  var Recoil_index_7 = Recoil_index.atom;
+  var Recoil_index_8 = Recoil_index.selector;
+  var Recoil_index_9 = Recoil_index.atomFamily;
+  var Recoil_index_10 = Recoil_index.selectorFamily;
+  var Recoil_index_11 = Recoil_index.constSelector;
+  var Recoil_index_12 = Recoil_index.errorSelector;
+  var Recoil_index_13 = Recoil_index.readOnlySelector;
+  var Recoil_index_14 = Recoil_index.noWait;
+  var Recoil_index_15 = Recoil_index.waitForNone;
+  var Recoil_index_16 = Recoil_index.waitForAny;
+  var Recoil_index_17 = Recoil_index.waitForAll;
+  var Recoil_index_18 = Recoil_index.waitForAllSettled;
+  var Recoil_index_19 = Recoil_index.useRecoilValue;
+  var Recoil_index_20 = Recoil_index.useRecoilValueLoadable;
+  var Recoil_index_21 = Recoil_index.useRecoilState;
+  var Recoil_index_22 = Recoil_index.useRecoilStateLoadable;
+  var Recoil_index_23 = Recoil_index.useSetRecoilState;
+  var Recoil_index_24 = Recoil_index.useResetRecoilState;
+  var Recoil_index_25 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
+  var Recoil_index_26 = Recoil_index.useRecoilRefresher_UNSTABLE;
+  var Recoil_index_27 = Recoil_index.useRecoilCallback;
+  var Recoil_index_28 = Recoil_index.useRecoilTransaction_UNSTABLE;
+  var Recoil_index_29 = Recoil_index.useGotoRecoilSnapshot;
+  var Recoil_index_30 = Recoil_index.useRecoilSnapshot;
+  var Recoil_index_31 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
+  var Recoil_index_32 = Recoil_index.snapshot_UNSTABLE;
+  var Recoil_index_33 = Recoil_index.useRetain;
+  var Recoil_index_34 = Recoil_index.retentionZone;
 
   exports.DefaultValue = Recoil_index_1;
   exports.RecoilLoadable = Recoil_index_3;
   exports.RecoilRoot = Recoil_index_4;
-  exports.atom = Recoil_index_6;
-  exports.atomFamily = Recoil_index_8;
-  exports.constSelector = Recoil_index_10;
+  exports.atom = Recoil_index_7;
+  exports.atomFamily = Recoil_index_9;
+  exports.constSelector = Recoil_index_11;
   exports.default = Recoil_index;
-  exports.errorSelector = Recoil_index_11;
+  exports.errorSelector = Recoil_index_12;
   exports.isRecoilValue = Recoil_index_2;
-  exports.noWait = Recoil_index_13;
-  exports.readOnlySelector = Recoil_index_12;
-  exports.retentionZone = Recoil_index_33;
-  exports.selector = Recoil_index_7;
-  exports.selectorFamily = Recoil_index_9;
-  exports.snapshot_UNSTABLE = Recoil_index_31;
-  exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_24;
-  exports.useGotoRecoilSnapshot = Recoil_index_28;
-  exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = Recoil_index_5;
-  exports.useRecoilCallback = Recoil_index_26;
-  exports.useRecoilRefresher_UNSTABLE = Recoil_index_25;
-  exports.useRecoilSnapshot = Recoil_index_29;
-  exports.useRecoilState = Recoil_index_20;
-  exports.useRecoilStateLoadable = Recoil_index_21;
-  exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_30;
-  exports.useRecoilTransaction_UNSTABLE = Recoil_index_27;
-  exports.useRecoilValue = Recoil_index_18;
-  exports.useRecoilValueLoadable = Recoil_index_19;
-  exports.useResetRecoilState = Recoil_index_23;
-  exports.useRetain = Recoil_index_32;
-  exports.useSetRecoilState = Recoil_index_22;
-  exports.waitForAll = Recoil_index_16;
-  exports.waitForAllSettled = Recoil_index_17;
-  exports.waitForAny = Recoil_index_15;
-  exports.waitForNone = Recoil_index_14;
+  exports.noWait = Recoil_index_14;
+  exports.readOnlySelector = Recoil_index_13;
+  exports.retentionZone = Recoil_index_34;
+  exports.selector = Recoil_index_8;
+  exports.selectorFamily = Recoil_index_10;
+  exports.snapshot_UNSTABLE = Recoil_index_32;
+  exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_25;
+  exports.useGotoRecoilSnapshot = Recoil_index_29;
+  exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = Recoil_index_6;
+  exports.useRecoilCallback = Recoil_index_27;
+  exports.useRecoilRefresher_UNSTABLE = Recoil_index_26;
+  exports.useRecoilSnapshot = Recoil_index_30;
+  exports.useRecoilState = Recoil_index_21;
+  exports.useRecoilStateLoadable = Recoil_index_22;
+  exports.useRecoilStoreID = Recoil_index_5;
+  exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_31;
+  exports.useRecoilTransaction_UNSTABLE = Recoil_index_28;
+  exports.useRecoilValue = Recoil_index_19;
+  exports.useRecoilValueLoadable = Recoil_index_20;
+  exports.useResetRecoilState = Recoil_index_24;
+  exports.useRetain = Recoil_index_33;
+  exports.useSetRecoilState = Recoil_index_23;
+  exports.waitForAll = Recoil_index_17;
+  exports.waitForAllSettled = Recoil_index_18;
+  exports.waitForAny = Recoil_index_16;
+  exports.waitForNone = Recoil_index_15;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

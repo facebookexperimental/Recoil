@@ -12,16 +12,16 @@
 
 const {
   getRecoilTestFn
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let a, atom, store, nullthrows, getNodeLoadable, setNodeValue;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
-  } = require('../../__test_utils__/Recoil_TestingUtils');
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   atom = require('../../recoil_values/Recoil_atom');
-  nullthrows = require('../../util/Recoil_nullthrows');
+  nullthrows = require('recoil-shared/util/Recoil_nullthrows');
   ({
     getNodeLoadable,
     setNodeValue

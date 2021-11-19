@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const nullthrows = require('../util/Recoil_nullthrows');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
 type CacheNode<K, V> = {
   key: K,

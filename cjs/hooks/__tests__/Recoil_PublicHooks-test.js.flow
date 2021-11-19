@@ -17,11 +17,11 @@ import type { PersistenceSettings } from '../../recoil_values/Recoil_atom';
 
 const {
   getRecoilTestFn
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let {
   mutableSourceExists
-} = require('../../util/Recoil_mutableSource');
+} = require('recoil-shared/util/Recoil_mutableSource');
 
 let React, useEffect, useState, Profiler, act, Queue, batchUpdates, atom, errorSelector, selector, ReadsAtom, asyncSelector, errorThrowingAsyncSelector, flushPromisesAndTimers, renderElements, renderElementsWithSuspenseCount, recoilComponentGetRecoilValueCount_FOR_TESTING, useRecoilState, useRecoilStateLoadable, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useSetUnvalidatedAtomValues, useTransactionObservation_DEPRECATED, invariant;
 const testRecoil = getRecoilTestFn(() => {
@@ -48,10 +48,10 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers,
     renderElements,
     renderElementsWithSuspenseCount
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({
     mutableSourceExists
-  } = require('../../util/Recoil_mutableSource'));
+  } = require('recoil-shared/util/Recoil_mutableSource'));
   ({
     recoilComponentGetRecoilValueCount_FOR_TESTING,
     useRecoilState,
@@ -64,7 +64,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     useTransactionObservation_DEPRECATED
   } = require('../Recoil_SnapshotHooks'));
-  invariant = require('../../util/Recoil_invariant');
+  invariant = require('recoil-shared/util/Recoil_invariant');
 });
 let nextID = 0;
 declare function counterAtom(persistence?: PersistenceSettings<number>): any;

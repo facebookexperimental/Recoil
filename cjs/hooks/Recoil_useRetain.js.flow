@@ -29,19 +29,19 @@ const {
 } = require('../core/Recoil_RetentionZone');
 
 const {
-  isSSR
-} = require('../util/Recoil_Environment');
-
-const gkx = require('../util/Recoil_gkx');
-
-const shallowArrayEqual = require('../util/Recoil_shallowArrayEqual');
-
-const usePrevious = require('../util/Recoil_usePrevious');
-
-const {
   useEffect,
   useRef
-} = require('react'); // I don't see a way to avoid the any type here because we want to accept readable
+} = require('react');
+
+const {
+  isSSR
+} = require('recoil-shared/util/Recoil_Environment');
+
+const gkx = require('recoil-shared/util/Recoil_gkx');
+
+const shallowArrayEqual = require('recoil-shared/util/Recoil_shallowArrayEqual');
+
+const usePrevious = require('recoil-shared/util/Recoil_usePrevious'); // I don't see a way to avoid the any type here because we want to accept readable
 // and writable values with any type parameter, but normally with writable ones
 // RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
 

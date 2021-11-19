@@ -15,7 +15,7 @@ import type { Store } from '../../core/Recoil_State';
 
 const {
   getRecoilTestFn
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React, useState, act, getRecoilValueAsLoadable, setRecoilValue, subscribeToRecoilValue, useRecoilState, useSetUnvalidatedAtomValues, componentThatReadsAndWritesAtom, renderElements, atom, constSelector, store: Store;
 let fallbackAtom: RecoilValue<number>, hasFallbackAtom: RecoilValue<number>;
@@ -23,7 +23,7 @@ let id = 0;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
-  } = require('../../__test_utils__/Recoil_TestingUtils');
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({
@@ -44,7 +44,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     componentThatReadsAndWritesAtom,
     renderElements
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   atom = require('../Recoil_atom');
   constSelector = require('../Recoil_constSelector');
   store = makeStore();

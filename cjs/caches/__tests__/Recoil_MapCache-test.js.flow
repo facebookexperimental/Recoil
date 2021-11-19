@@ -9,7 +9,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let MapCache;
 const testRecoil = getRecoilTestFn(() => {

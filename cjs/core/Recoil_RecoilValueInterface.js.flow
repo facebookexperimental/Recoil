@@ -14,17 +14,15 @@ import type { Loadable } from '../adt/Recoil_Loadable';
 import type { ValueOrUpdater } from '../recoil_values/Recoil_callbackTypes';
 import type { AtomValues, AtomWrites, NodeKey, Store, TreeState } from './Recoil_State';
 
-const gkx = require('../util/Recoil_gkx');
-
-const nullthrows = require('../util/Recoil_nullthrows');
-
-const recoverableViolation = require('../util/Recoil_recoverableViolation');
-
 const {
   getDownstreamNodes,
   getNodeLoadable,
   setNodeValue
 } = require('./Recoil_FunctionalCore');
+
+const {
+  getNextComponentID
+} = require('./Recoil_Keys');
 
 const {
   getNode,
@@ -42,6 +40,12 @@ const {
   RecoilValueReadOnly,
   isRecoilValue
 } = require('./Recoil_RecoilValue');
+
+const gkx = require('recoil-shared/util/Recoil_gkx');
+
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 declare function getRecoilValueAsLoadable<T>(store: Store, arg1: AbstractRecoilValue<T>, treeState: TreeState): Loadable<T>;
 declare function applyAtomValueWrites(atomValues: AtomValues, writes: AtomWrites): AtomValues;
@@ -77,7 +81,6 @@ declare function setUnvalidatedRecoilValue<T>(store: Store, recoilValue: Abstrac
 export type ComponentSubscription = {
   release: () => void
 };
-let subscriptionID = 0;
 declare function subscribeToRecoilValue<T>(store: Store, arg1: AbstractRecoilValue<T>, callback: (TreeState) => void, componentDebugName: ?string): ComponentSubscription;
 declare function refreshRecoilValue<T>(store: Store, recoilValue: AbstractRecoilValue<T>): void;
 module.exports = {

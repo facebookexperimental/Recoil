@@ -12,7 +12,7 @@
 
 const {
   getRecoilTestFn
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React, act, selector, constSelector, errorSelector, asyncSelector, renderElements, useRecoilValueLoadable, flushPromisesAndTimers;
 const testRecoil = getRecoilTestFn(() => {
@@ -27,7 +27,7 @@ const testRecoil = getRecoilTestFn(() => {
     asyncSelector,
     renderElements,
     flushPromisesAndTimers
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({
     useRecoilValueLoadable
   } = require('../Recoil_Hooks'));

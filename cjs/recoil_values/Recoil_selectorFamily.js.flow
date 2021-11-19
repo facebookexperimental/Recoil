@@ -23,9 +23,9 @@ const {
   setConfigDeletionHandler
 } = require('../core/Recoil_Node');
 
-const stableStringify = require('../util/Recoil_stableStringify');
+const selector = require('./Recoil_selector');
 
-const selector = require('./Recoil_selector'); // Keep in mind the parameter needs to be serializable as a cahche key
+const stableStringify = require('recoil-shared/util/Recoil_stableStringify'); // Keep in mind the parameter needs to be serializable as a cahche key
 // using Recoil_stableStringify
 
 

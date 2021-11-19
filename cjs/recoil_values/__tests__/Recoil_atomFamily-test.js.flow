@@ -14,13 +14,13 @@ import type { Store } from '../../core/Recoil_State';
 
 const {
   getRecoilTestFn
-} = require('../../__test_utils__/Recoil_TestingUtils');
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let store: Store, React, Profiler, useState, ReactDOM, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, mutableSourceExists, stableStringify, atom, atomFamily, selectorFamily, pAtom;
+let store: Store, React, Profiler, useState, ReactDOM, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, useRecoilStoreID, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, mutableSourceExists, stableStringify, atom, atomFamily, selectorFamily, pAtom;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
-  } = require('../../__test_utils__/Recoil_TestingUtils');
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
   ({
@@ -32,7 +32,8 @@ const testRecoil = getRecoilTestFn(() => {
     act
   } = require('ReactTestUtils'));
   ({
-    RecoilRoot
+    RecoilRoot,
+    useRecoilStoreID
   } = require('../../core/Recoil_RecoilRoot.react'));
   ({
     getRecoilValueAsLoadable,
@@ -49,11 +50,11 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements
-  } = require('../../__test_utils__/Recoil_TestingUtils'));
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({
     mutableSourceExists
-  } = require('../../util/Recoil_mutableSource'));
-  stableStringify = require('../../util/Recoil_stableStringify');
+  } = require('recoil-shared/util/Recoil_mutableSource'));
+  stableStringify = require('recoil-shared/util/Recoil_stableStringify');
   atom = require('../Recoil_atom');
   atomFamily = require('../Recoil_atomFamily');
   selectorFamily = require('../Recoil_selectorFamily');
@@ -156,7 +157,7 @@ testRecoil('Works with parameterized default', () => {
 testRecoil('Works with date as parameter', () => {
   const dateAtomFamily = atomFamily({
     key: 'dateFamily',
-    default: date => 0
+    default: _date => 0
   }); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
 
   expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(0); // $FlowFixMe[incompatible-call] added when improving typing for this parameters
@@ -689,5 +690,31 @@ describe('Effects', () => {
       B: 0
     });
   });
-}); // TODO add non-current-entry tests
-// TODO add persistence tests
+  testRecoil('storeID matches <RecoilRoot>', async () => {
+    const atoms = atomFamily({
+      key: 'atomFamily effect - storeID',
+      default: 'DEFAULT',
+      effects_UNSTABLE: rootKey => [({
+        storeID,
+        setSelf
+      }) => {
+        expect(storeID).toEqual(storeIDs[rootKey]);
+        setSelf(rootKey);
+      }]
+    });
+    const storeIDs = {};
+    declare function StoreID(arg0: any): any;
+    declare function MyApp(): any;
+    const c = renderElements(<MyApp />);
+    expect(c.textContent).toEqual('"A""A1""A2""B"');
+    expect('A' in storeIDs).toEqual(true);
+    expect('A1' in storeIDs).toEqual(true);
+    expect('A2' in storeIDs).toEqual(true);
+    expect('B' in storeIDs).toEqual(true);
+    expect(storeIDs.A).not.toEqual(storeIDs.B);
+    expect(storeIDs.A).not.toEqual(storeIDs.A1);
+    expect(storeIDs.A).toEqual(storeIDs.A2);
+    expect(storeIDs.B).not.toEqual(storeIDs.A1);
+    expect(storeIDs.B).not.toEqual(storeIDs.A2);
+  });
+});

@@ -14,7 +14,7 @@ const {
 
 const {
   unstable_batchedUpdates
-} = require('../util/Recoil_ReactBatchedUpdates');
+} = require('recoil-shared/util/Recoil_ReactBatchedUpdates');
 
 let batcher = unstable_batchedUpdates; // flowlint-next-line unclear-type:off
 
