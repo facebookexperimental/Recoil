@@ -22,6 +22,7 @@ const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
 const {act} = require('ReactTestUtils');
 
 const {graph} = require('../core/Recoil_Graph');
+const {getNextStoreID} = require('../core/Recoil_Keys');
 const {
   RecoilRoot,
   notifyComponents_FOR_TESTING,
@@ -51,7 +52,8 @@ const IS_INTERNAL = false; // @oss-only
 // TODO Use Snapshot for testing instead of this thunk?
 function makeStore(): Store {
   const storeState = makeEmptyStoreState();
-  const store = {
+  const store: Store = {
+    storeID: getNextStoreID(),
     getState: () => storeState,
     replaceState: replacer => {
       const currentStoreState = store.getState();

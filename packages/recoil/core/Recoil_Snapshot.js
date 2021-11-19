@@ -34,6 +34,7 @@ const {
   peekNodeInfo,
 } = require('./Recoil_FunctionalCore');
 const {graph} = require('./Recoil_Graph');
+const {getNextStoreID} = require('./Recoil_Keys');
 const {
   DEFAULT_VALUE,
   recoilValues,
@@ -76,6 +77,7 @@ class Snapshot {
 
   constructor(storeState: StoreState) {
     this._store = {
+      storeID: getNextStoreID(),
       getState: () => storeState,
       replaceState: replacer => {
         storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
