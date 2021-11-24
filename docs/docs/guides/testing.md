@@ -77,6 +77,87 @@ describe('The form state should', () => {
 });
 ```
 
+## Testing Recoil state with asyncronous default inside of a React component
+
+A common pattern for the default state of atoms is to have an asynchronous function fetch the default state of an atom. However, while testing, the component is immediately suspended upon mounting and will not update in the dom without acting. To test this scenario, we need a helper function:
+
+```jsx
+// testing-utils.js
+import {act} from '@testing-library/react'
+
+// act and advance jest timers
+export function flushPromisesAndTimers(): Promise<void> {
+  return act(
+    () =>
+      new Promise(resolve => {
+        setTimeout(resolve, 100);
+        jest.runAllTimers();
+      }),
+  );
+}
+```
+
+### Example: Title with data returned from asnychronous data query
+
+#### Component
+
+```jsx
+import {atom, useRecoilState} from 'recoil';
+
+const getDefaultTitleAtomState = async () => {
+  const response = await fetch('https://example.com/returns/a/json');
+  return await response.json(); // { title: 'real title' };
+}
+
+export const titleAtom = atom({
+  key: 'titleAtom',
+  default: getDefaultTitleAtomState(),
+});
+
+function Title() {
+  const data = useRecoilValue(titleAtom);
+  return (
+    <div>
+      <h1>{data.title}</h1>
+    </div>
+  );
+}
+
+export default Title;
+```
+
+#### Test
+
+```jsx
+import {RecoilRoot} from 'recoil';
+import {screen, render} from '@testing-library/react';
+import {flushPromisesAndTimers} from './testing-utils';
+import Title, {titleAtom} from './title';
+
+describe('Title Component', () => {
+  test('display the title correctly', async () => {
+    const mockState = { title: 'test title' };
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockState),
+      })
+    );
+    
+    render(
+      <RecoilRoot>
+        <Suspense fallback={<div>loading...</div>}>
+          <Title />
+        </Suspense>
+      </RecoilRoot>
+    );
+    await flushPromisesAndTimers();
+    
+    expect(screen.getByText(mockState.title)).toBeInTheDocument()
+    expect(screen.getByText('Loading...')).not.toBeInTheDocument()
+  });
+});
+```
+
 ## Testing Recoil state outside of React
 
 It can be useful to manipulate and evaluate Recoil selectors outside of a React context for testing.  This can be done by working with a Recoil [`Snapshot`](/docs/api-reference/core/Snapshot).  You can build a fresh snapshot using `snapshot_UNSTABLE()` and then use that `Snapshot` to evaluate selectors for testing.
