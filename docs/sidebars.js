@@ -31,7 +31,13 @@ module.exports = {
       //     ],
       //   },
       'guides/asynchronous-data-queries',
-      'guides/atom-effects',
+      {
+        'Syncing with External State': [
+          'guides/atom-effects',
+          'guides/recoil-sync',
+          'guides/url-persistence',
+        ],
+      },
       'guides/testing',
       'guides/dev-tools',
       //   'guides/code-splitting',
@@ -75,6 +81,30 @@ module.exports = {
           'api-reference/core/useRecoilTransactionObserver',
           'api-reference/core/useRecoilSnapshot',
           'api-reference/core/useGotoRecoilSnapshot',
+        ],
+        'Recoil Sync': [
+          'api-reference/recoil-sync/syncEffect',
+          'api-reference/recoil-sync/useRecoilSync',
+          'api-reference/recoil-sync/RecoilSync',
+          {
+            'URL Persistence': [
+              'api-reference/recoil-sync/RecoilURLSync',
+              'api-reference/recoil-sync/useRecoilURLSync',
+              'api-reference/recoil-sync/urlSyncEffect',
+              {
+                JSON: [
+                  'api-reference/recoil-sync/RecoilURLSyncJSON',
+                  'api-reference/recoil-sync/useRecoilURLSyncJSON',
+                ],
+              },
+              {
+                Transit: [
+                  'api-reference/recoil-sync/RecoilURLSyncTransit',
+                  'api-reference/recoil-sync/useRecoilURLSyncTransit',
+                ],
+              },
+            ],
+          },
         ],
         Misc: [
           'api-reference/core/useRecoilStoreID',
