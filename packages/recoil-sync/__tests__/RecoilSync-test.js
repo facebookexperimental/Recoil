@@ -33,7 +33,7 @@ const {
   flushPromisesAndTimers,
   renderElements,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
-const {asType, match, number, string} = require('refine');
+const {asType, dict, match, number, string} = require('refine');
 
 ////////////////////////////
 // Mock Storage
@@ -1048,6 +1048,32 @@ describe('Complex Mappings', () => {
 
     expect(storage.size).toEqual(2);
     expect(storage.get('self')?.contents).toEqual('OTHER_SELF');
+  });
+
+  test('read from multiple items', () => {
+    const myAtom = atom({
+      key: 'recoil-sync read from multiple',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        syncEffect({
+          refine: dict(string()),
+          read: ({read}) => RecoilLoadable.all({a: read('a'), b: read('b')}),
+        }),
+      ],
+    });
+
+    const storage = new Map([
+      ['a', RecoilLoadable.of('A')],
+      ['b', RecoilLoadable.of('B')],
+    ]);
+    const container = renderElements(
+      <>
+        <TestRecoilSync storage={storage} />
+        <ReadsAtom atom={myAtom} />
+      </>,
+    );
+
+    expect(container.textContent).toBe('{"a":"A","b":"B"}');
   });
 });
 
