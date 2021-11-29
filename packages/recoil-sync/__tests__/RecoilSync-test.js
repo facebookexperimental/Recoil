@@ -1015,6 +1015,40 @@ describe('Complex Mappings', () => {
     expect(allItemsRef.current.get('b1')?.contents).toEqual('B1');
     expect(allItemsRef.current.get('b2')?.contents).toEqual('B2');
   });
+
+  test('read while writing', async () => {
+    const myAtom = atom({
+      key: 'recoil-sync read while writing',
+      default: 'SELF',
+      effects_UNSTABLE: [
+        syncEffect({
+          refine: string(),
+          write: ({write, read}, loadable) => {
+            write(
+              'self',
+              read('other')?.map(x => loadable?.map(y => `${String(x)}_${y}`)),
+            );
+          },
+          syncDefault: true,
+        }),
+      ],
+    });
+
+    const storage = new Map([['other', RecoilLoadable.of('OTHER')]]);
+
+    const container = renderElements(
+      <>
+        <TestRecoilSync storage={storage} />
+        <ReadsAtom atom={myAtom} />
+      </>,
+    );
+
+    expect(container.textContent).toBe('"SELF"');
+    await flushPromisesAndTimers();
+
+    expect(storage.size).toEqual(2);
+    expect(storage.get('self')?.contents).toEqual('OTHER_SELF');
+  });
 });
 
 // Currently useRecoilSync() must be called in React component tree
