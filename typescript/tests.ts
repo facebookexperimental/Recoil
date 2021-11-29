@@ -759,6 +759,16 @@ isRecoilValue(mySelector1);
     x.void; // $ExpectError
   });
 
+  const mixedAllLoadableArray = RecoilLoadable.all([
+    RecoilLoadable.of('str'),
+    'str',
+    Promise.resolve('str'),
+  ]).map(x => {
+    x[0]; // $ExpectType string
+    x[1]; // $ExpectType string
+    x[2]; // $ExpectType string
+  });
+
   RecoilLoadable.isLoadable(false); // $ExpectType boolean
   RecoilLoadable.isLoadable(RecoilLoadable.of('x')); // $ExpectType boolean
 }
