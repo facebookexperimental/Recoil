@@ -36,7 +36,7 @@ const mockBrowserURL = {
     urls[urls.length - 1] = absoluteURL(url);
   },
   pushURL: url => void urls.push(absoluteURL(url)),
-  getURL: () => new URL(absoluteURL(currentURL())),
+  getURL: () => absoluteURL(currentURL()),
   listenChangeURL: handler => {
     subscriptions.add(handler);
     return () => void subscriptions.delete(handler);

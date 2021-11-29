@@ -56,10 +56,11 @@ const unwrapState = (state: ItemSnapshot): ItemState =>
   );
 
 function parseURL(
-  url: URL,
+  href: string,
   loc: LocationOption,
   deserialize: string => mixed,
 ): ?ItemSnapshot {
+  const url = new URL(href);
   switch (loc.part) {
     case 'href':
       return wrapState(deserialize(`${url.pathname}${url.search}${url.hash}`));
@@ -92,19 +93,22 @@ function parseURL(
   throw err(`Unknown URL location part: "${loc.part}"`);
 }
 
-function updateURL(
-  url: URL,
+function encodeURL(
+  href: string,
   loc: LocationOption,
   items: ItemSnapshot,
   serialize: mixed => string,
 ): string {
+  const url = new URL(href);
   switch (loc.part) {
     case 'href':
       return serialize(unwrapState(items));
     case 'hash':
-      return `#${encodeURIComponent(serialize(unwrapState(items)))}`;
+      url.hash = encodeURIComponent(serialize(unwrapState(items)));
+      break;
     case 'search':
-      return `?${encodeURIComponent(serialize(unwrapState(items)))}${url.hash}`;
+      url.search = encodeURIComponent(serialize(unwrapState(items)));
+      break;
     case 'queryParams': {
       const {param} = loc;
       const searchParams = new URLSearchParams(url.search);
@@ -117,10 +121,13 @@ function updateURL(
             : searchParams.delete(itemKey);
         }
       }
-      return `?${searchParams.toString()}${url.hash}`;
+      url.search = searchParams.toString();
+      break;
     }
+    default:
+      throw err(`Unknown URL location part: "${loc.part}"`);
   }
-  throw err(`Unknown URL location part: "${loc.part}"`);
+  return url.href;
 }
 
 ///////////////////////
@@ -134,7 +141,7 @@ export type LocationOption =
 export type BrowserInterface = {
   replaceURL?: string => void,
   pushURL?: string => void,
-  getURL?: () => URL,
+  getURL?: () => string,
   listenChangeURL?: (handler: () => void) => () => void,
 };
 export type RecoilURLSyncOptions = {
@@ -148,7 +155,7 @@ export type RecoilURLSyncOptions = {
 const DEFAULT_BROWSER_INTERFACE = {
   replaceURL: url => history.replaceState(null, '', url),
   pushURL: url => history.pushState(null, '', url),
-  getURL: () => new URL(window.document.location),
+  getURL: () => window.document.location,
   listenChangeURL: handleUpdate => {
     window.addEventListener('popstate', handleUpdate);
     return () => window.removeEventListener('popstate', handleUpdate);
@@ -217,13 +224,13 @@ function useRecoilURLSync({
             replaceItems.set(key, loadable);
           }
         }
-        replaceURL(updateURL(getURL(), loc, replaceItems, serialize));
+        replaceURL(encodeURL(getURL(), loc, replaceItems, serialize));
 
         // Next, push the URL with any atoms that caused a new URL history entry
-        pushURL(updateURL(getURL(), loc, allItems, serialize));
+        pushURL(encodeURL(getURL(), loc, allItems, serialize));
       } else {
         // Just replace the URL with the new state
-        replaceURL(updateURL(getURL(), loc, allItems, serialize));
+        replaceURL(encodeURL(getURL(), loc, allItems, serialize));
       }
       cachedState.current = allItems;
     },
