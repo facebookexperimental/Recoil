@@ -22,15 +22,13 @@ export const RecoilObserver = ({node, onChange}) => {
 #### Component
 
 ```jsx
-import {atom, useRecoilState} from 'recoil';
-
-export const nameAtom = atom({
+const nameState = atom({
   key: 'nameAtom',
   default: '',
 });
 
 function Form() {
-  const [name, setName] = useRecoilState(nameAtom);
+  const [name, setName] = useRecoilState(nameState);
   return (
     <form>
       <input
@@ -42,19 +40,11 @@ function Form() {
     </form>
   );
 }
-
-export default Form;
 ```
 
 #### Test
 
 ```jsx
-import {RecoilRoot} from 'recoil';
-import {fireEvent, render, screen} from '@testing-library/react';
-
-import Form, {nameAtom} from './form';
-import {RecoilObserver} from './RecoilObserver';
-
 describe('The form state should', () => {
   test('change when the user enters a name.', () => {
     const onChange = jest.fn();
@@ -77,16 +67,13 @@ describe('The form state should', () => {
 });
 ```
 
-## Testing Recoil state with asyncronous default inside of a React component
+## Testing Recoil state with asyncronous queries inside of a React component
 
-A common pattern for the default state of atoms is to have an asynchronous function fetch the default state of an atom. However, while testing, the component is immediately suspended upon mounting and will not update in the dom without acting. To test this scenario, we need a helper function:
+A common pattern for atoms is using asynchronous queries fetch the state of the atom, in a selector, or as part of an effect. This causes the component to be suspended. However, while testing, the component is suspended will not update in the DOM without acting. To test this scenario, we need a helper function:
 
 ```jsx
-// testing-utils.js
-import {act} from '@testing-library/react'
-
 // act and advance jest timers
-export function flushPromisesAndTimers(): Promise<void> {
+function flushPromisesAndTimers(): Promise<void> {
   return act(
     () =>
       new Promise(resolve => {
@@ -102,38 +89,29 @@ export function flushPromisesAndTimers(): Promise<void> {
 #### Component
 
 ```jsx
-import {atom, useRecoilState} from 'recoil';
-
 const getDefaultTitleAtomState = async () => {
   const response = await fetch('https://example.com/returns/a/json');
   return await response.json(); // { title: 'real title' };
 }
 
-export const titleAtom = atom({
-  key: 'titleAtom',
+const titleState = atom({
+  key: 'titleState',
   default: getDefaultTitleAtomState(),
 });
 
 function Title() {
-  const data = useRecoilValue(titleAtom);
+  const data = useRecoilValue(titleState);
   return (
     <div>
       <h1>{data.title}</h1>
     </div>
   );
 }
-
-export default Title;
 ```
 
 #### Test
 
 ```jsx
-import {RecoilRoot} from 'recoil';
-import {screen, render} from '@testing-library/react';
-import {flushPromisesAndTimers} from './testing-utils';
-import Title, {titleAtom} from './title';
-
 describe('Title Component', () => {
   test('display the title correctly', async () => {
     const mockState = { title: 'test title' };
@@ -153,7 +131,7 @@ describe('Title Component', () => {
     await flushPromisesAndTimers();
     
     expect(screen.getByText(mockState.title)).toBeInTheDocument()
-    expect(screen.getByText('Loading...')).not.toBeInTheDocument()
+    expect(screen.getByText('loading...')).not.toBeInTheDocument()
   });
 });
 ```
