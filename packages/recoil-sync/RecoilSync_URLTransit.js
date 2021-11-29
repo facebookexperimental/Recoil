@@ -20,18 +20,18 @@ const React = require('react');
 const {useCallback, useMemo} = require('react');
 const transit = require('transit-js');
 
-type Handler<T, S> = {
+export type TransitHandler<T, S> = {
   tag: string,
   class: Class<T>,
   write: T => S,
   read: S => T,
 };
 
-type RecoilURLSyncTrnsitOptions = $Rest<
+export type RecoilURLSyncTransitOptions = $Rest<
   {
     ...RecoilURLSyncOptions,
     // $FlowIssue[unclear-type]
-    handlers?: $ReadOnlyArray<Handler<any, any>>,
+    handlers?: $ReadOnlyArray<TransitHandler<any, any>>,
   },
   {
     serialize: mixed => string,
@@ -69,7 +69,7 @@ const BUILTIN_HANDLERS = [
 function useRecoilURLSyncTransit({
   handlers: handlersProp = [],
   ...options
-}: RecoilURLSyncTrnsitOptions): void {
+}: RecoilURLSyncTransitOptions): void {
   if (options.location.part === 'href') {
     throw err('"href" location is not supported for Transit encoding');
   }
@@ -121,7 +121,7 @@ function useRecoilURLSyncTransit({
   useRecoilURLSync({...options, serialize, deserialize});
 }
 
-function RecoilURLSyncTransit(props: RecoilURLSyncTrnsitOptions): React.Node {
+function RecoilURLSyncTransit(props: RecoilURLSyncTransitOptions): React.Node {
   useRecoilURLSyncTransit(props);
   return null;
 }
