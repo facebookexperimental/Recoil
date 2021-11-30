@@ -3,14 +3,14 @@ title: urlSyncEffect(...)
 sidebar_label: urlSyncEffect()
 ---
 
-An optional effect that may be used instead of [`syncEffect()`](/docs/api-reference/recoil-sync/syncEffect) for [URL Persistence](/docs/guides/url-persistence) to specify additional options such as if state changes should replace the URL or push a new entry in the browser history stack.
+An optional effect that may be used instead of [`syncEffect()`](/docs/api-reference/recoil-sync/syncEffect) for [URL Persistence](/docs/guides/url-persistence) in order to specify additional options, such as if state changes should replace the URL or push a new entry in the browser history stack.
 
 ---
 
 ```jsx
 function urlSyncEffect<T>(options: {
   ...SyncEffectOptions<T>,
-  history?: 'push' | 'replace',
+  history?: 'replace' | 'push',
 }): AtomEffect<T>
 ```
 
