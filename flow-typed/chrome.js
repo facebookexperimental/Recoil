@@ -60,7 +60,8 @@ declare var chrome: {
     getURL: (path: string) => string,
     sendMessage: (config: Object) => void,
     connect: (
-      config: Object
+      extensionId?: string,
+      connectInfo?: Object
     ) => {
       disconnect: () => void,
       onMessage: {

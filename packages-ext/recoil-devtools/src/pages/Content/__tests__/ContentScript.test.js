@@ -86,7 +86,7 @@ describe('initializing Content Script listeners', () => {
     });
     expect(bg.postMessage).toHaveBeenCalledWith({
       action: RecoilDevToolsActions.INIT,
-      data: {},
+      props: undefined
     });
   });
 
