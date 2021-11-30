@@ -40,7 +40,7 @@ function TodoList() {
 ```jsx
 function TodoItemCreator() {
   const [inputValue, setInputValue] = useState('');
-  const setTodoList = useSetRecoilState(todoListState);
+  const [todoList, setTodoList] = useSetRecoilState(todoListState);
 
   const addItem = () => {
     setTodoList((oldTodoList) => [
