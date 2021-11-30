@@ -117,7 +117,9 @@ function string(regex?: RegExp): Checker<string> {
  * const suitChecker = stringLiterls(suits);
  * ```
  */
-function stringLiterals<T>(enumValues: {+[string]: T}): Checker<T> {
+function stringLiterals<T: {+[string]: string}>(
+  enumValues: T,
+): Checker<$Values<T>> {
   return (value, path = new Path()) => {
     if (!(typeof value === 'string')) {
       return failure('value must be a string', path);

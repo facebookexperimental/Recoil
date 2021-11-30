@@ -12,7 +12,7 @@
 
 import type {Get} from '../Refine_Checkers';
 
-const {coercion} = require('../Refine_API');
+const {assertion, coercion} = require('../Refine_API');
 const {
   boolean,
   date,
@@ -150,6 +150,14 @@ describe('stringLiterals', () => {
 
     // Confirm it can be typed as a union of string literals
     const _x: null | void | 'eggs' | 'spam' = coerce('foo');
+  });
+
+  it('will cast value into string literal union type', () => {
+    const food = Object.freeze({foo: 'eggs', bar: 'spam'});
+    const assert = assertion(stringLiterals(food));
+    const value = assert('foo');
+    // $FlowExpectedError - it is expected to fail
+    ('invalid': typeof value);
   });
 });
 
