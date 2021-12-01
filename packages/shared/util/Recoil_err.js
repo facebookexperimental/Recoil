@@ -12,6 +12,6 @@
 
 // @fb-only: const {err} = require('fb-error');
 
-const err = require('@shared/polyfill/err.js'); // @oss-only
+const err = require('recoil-shared/polyfill/err.js'); // @oss-only
 
 module.exports = err;
