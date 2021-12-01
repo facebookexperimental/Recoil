@@ -1024,6 +1024,8 @@ describe('Complex Mappings', () => {
         syncEffect({
           refine: string(),
           write: ({write, read}, loadable) => {
+            write('self', RecoilLoadable.of('TMP'));
+            expect(read('self')?.getValue()).toEqual('TMP');
             write(
               'self',
               read('other')?.map(x => loadable?.map(y => `${String(x)}_${y}`)),

@@ -137,10 +137,9 @@ function writeAtomItems<T>(
   readFromStorage?: ReadItem,
   loadable: ?Loadable<T>,
 ) {
-  const write = <S>(k, l: ?Loadable<S>) => void diff.set(k, l);
-  const read =
+  const readFromStorageRequired =
     readFromStorage ??
-    (() =>
+    (_ =>
       RecoilLoadable.error(
         `Read functionality not provided for ${
           options.storeKey != null ? `"${options.storeKey}" ` : ''
@@ -148,6 +147,9 @@ function writeAtomItems<T>(
           options.itemKey
         }".`,
       ));
+  const read = itemKey =>
+    diff.has(itemKey) ? diff.get(itemKey) : readFromStorageRequired(itemKey);
+  const write = <S>(k, l: ?Loadable<S>) => void diff.set(k, l);
   options.write({write, read}, loadable);
   return diff;
 }
