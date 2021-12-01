@@ -8,6 +8,7 @@
 - `useRecoilStoreID()` hook to get an ID for the current <RecoilRoot> store. (#1417)
 - `storeID` added to atom effects interface (#1414)
 - `<RecoilRoot>` will only call `initializeState()` during initial render. (#1372)
+- `RecoilLoadable.all()` accepts literal values and async Promises in addition to Loadables.
 
 ### Pending
 - Memory management
