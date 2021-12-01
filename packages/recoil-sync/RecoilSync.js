@@ -34,8 +34,9 @@ export type ItemDiff = Map<ItemKey, ?Loadable<any>>; // null means reset
 export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>; // null means default
 export type ReadItem = ItemKey => ?Loadable<mixed>;
 export type WriteInterface = {diff: ItemDiff, allItems: ItemSnapshot};
+export type WriteItem = <T>(ItemKey, ?Loadable<T>) => void;
 export type WriteItems = WriteInterface => void;
-export type UpdateItem = (ItemKey, ?Loadable<mixed>) => void;
+export type UpdateItem = <T>(ItemKey, ?Loadable<T>) => void;
 export type UpdateAllKnownItems = ItemSnapshot => void;
 export type ListenInterface = {
   updateItem: UpdateItem,
@@ -50,6 +51,7 @@ type AtomSyncOptions<T> = {
   ...SyncEffectOptions<T>,
   // Mark some items as required
   itemKey: ItemKey,
+  write: WriteAtom<T>,
 };
 type AtomRegistration<T> = {
   atom: RecoilState<T>,
@@ -131,14 +133,21 @@ const validateLoadable = <T>(
 function writeAtomItems<T>(
   diff: ItemDiff,
   options: AtomSyncOptions<T>,
+  readFromStorage?: ReadItem,
   loadable: ?Loadable<T>,
 ) {
-  if (options.write != null) {
-    const write = (k, l) => void diff.set(k, l);
-    options.write({write}, loadable);
-  } else {
-    diff.set(options.itemKey, loadable);
-  }
+  const write = <S>(k, l: ?Loadable<S>) => void diff.set(k, l);
+  const read =
+    readFromStorage ??
+    (() =>
+      RecoilLoadable.error(
+        `Read functionality not provided for ${
+          options.storeKey != null ? `"${options.storeKey}" ` : ''
+        }store in useRecoilSync() hook while writing item "${
+          options.itemKey
+        }".`,
+      ));
+  options.write({write, read}, loadable);
   return diff;
 }
 
@@ -157,6 +166,7 @@ const itemsFromSnapshot = (
       writeAtomItems(
         items,
         opt,
+        registries.getStorage(recoilStoreID, storeKey)?.read,
         atomInfo.isSet || opt.syncDefault === true ? atomInfo.loadable : null,
       );
     }
@@ -187,7 +197,7 @@ function writeInterfaceItems(
 ///////////////////////
 // useRecoilSync()
 ///////////////////////
-type RecoilSyncOptions = {
+export type RecoilSyncOptions = {
   storeKey?: StoreKey,
   write?: WriteItems,
   read?: ReadItem,
@@ -231,6 +241,7 @@ function useRecoilSync({
               writeAtomItems(
                 diff,
                 options,
+                read,
                 atomInfo.isSet || options.syncDefault === true
                   ? atomInfo.loadable
                   : null,
@@ -251,7 +262,7 @@ function useRecoilSync({
         );
       }
     }
-  }, [recoilStoreID, snapshot, storeKey, write]);
+  }, [read, recoilStoreID, snapshot, storeKey, write]);
 
   // Subscribe to Sync storage changes
   const updateItems = useRecoilTransaction_UNSTABLE(
@@ -357,10 +368,9 @@ function RecoilSync(props: RecoilSyncOptions): React.Node {
 ///////////////////////
 // syncEffect()
 ///////////////////////
-export type WriteItem = (ItemKey, ?Loadable<mixed>) => void;
 export type WriteAtomInterface = {
   write: WriteItem,
-  // read: ReadItem, // TODO
+  read: ReadItem,
 };
 type WriteAtom<T> = (WriteAtomInterface, ?Loadable<T>) => void;
 export type SyncEffectOptions<T> = {
@@ -384,6 +394,7 @@ function syncEffect<T>(opt: SyncEffectOptions<T>): AtomEffect<T> {
   return ({node, trigger, storeID, setSelf, getLoadable, getInfo_UNSTABLE}) => {
     const options: AtomSyncOptions<T> = {
       itemKey: node.key,
+      write: ({write}, loadable) => write(opt.itemKey ?? node.key, loadable),
       syncDefault: false,
       actionOnFailure_UNSTABLE: 'errorState',
       ...opt,
@@ -443,7 +454,12 @@ function syncEffect<T>(opt: SyncEffectOptions<T>): AtomEffect<T> {
         setImmediate(() => {
           const loadable = getLoadable(node);
           if (loadable.state === 'hasValue') {
-            const diff = writeAtomItems(new Map(), options, loadable);
+            const diff = writeAtomItems(
+              new Map(),
+              options,
+              storage?.read,
+              loadable,
+            );
             writeToStorage(
               writeInterfaceItems(storeID, storeKey, diff, getInfo_UNSTABLE),
             );
