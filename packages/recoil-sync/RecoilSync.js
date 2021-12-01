@@ -21,9 +21,9 @@ const {
   useRecoilTransaction_UNSTABLE,
 } = require('Recoil');
 
-const err = require('./util/RecoilSync_err');
 const React = require('react');
 const {useCallback, useEffect, useRef} = require('react');
+const err = require('recoil-shared/util/Recoil_err');
 
 type NodeKey = string;
 export type ItemKey = string;

@@ -15,9 +15,9 @@ import type {RecoilURLSyncOptions} from './RecoilSync_URL';
 const {DefaultValue} = require('Recoil');
 
 const {useRecoilURLSync} = require('./RecoilSync_URL');
-const err = require('./util/RecoilSync_err');
 const React = require('react');
 const {useCallback, useMemo} = require('react');
+const err = require('recoil-shared/util/Recoil_err');
 const transit = require('transit-js');
 
 type Handler<T, S> = {
