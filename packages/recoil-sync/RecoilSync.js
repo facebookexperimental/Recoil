@@ -51,6 +51,7 @@ type AtomSyncOptions<T> = {
   ...SyncEffectOptions<T>,
   // Mark some items as required
   itemKey: ItemKey,
+  read: ReadAtom,
   write: WriteAtom<T>,
 };
 type AtomRegistration<T> = {
@@ -368,18 +369,18 @@ function RecoilSync(props: RecoilSyncOptions): React.Node {
 ///////////////////////
 // syncEffect()
 ///////////////////////
-export type WriteAtomInterface = {
-  write: WriteItem,
-  read: ReadItem,
-};
-type WriteAtom<T> = (WriteAtomInterface, ?Loadable<T>) => void;
+export type ReadAtomInterface = {read: ReadItem};
+export type ReadAtom = ReadAtomInterface => ?Loadable<mixed>;
+export type WriteAtomInterface = {write: WriteItem, read: ReadItem};
+export type WriteAtom<T> = (WriteAtomInterface, ?Loadable<T>) => void;
+
 export type SyncEffectOptions<T> = {
   storeKey?: StoreKey,
   itemKey?: ItemKey,
 
   refine: Checker<T>,
 
-  read?: ({read: ReadItem}) => mixed,
+  read?: ReadAtom,
   write?: WriteAtom<T>,
 
   // Sync actual default value instead of empty when atom is in default state
@@ -392,14 +393,16 @@ export type SyncEffectOptions<T> = {
 
 function syncEffect<T>(opt: SyncEffectOptions<T>): AtomEffect<T> {
   return ({node, trigger, storeID, setSelf, getLoadable, getInfo_UNSTABLE}) => {
+    const itemKey = opt.itemKey ?? node.key;
     const options: AtomSyncOptions<T> = {
-      itemKey: node.key,
-      write: ({write}, loadable) => write(opt.itemKey ?? node.key, loadable),
+      itemKey,
+      read: ({read}) => read(itemKey),
+      write: ({write}, loadable) => write(itemKey, loadable),
       syncDefault: false,
       actionOnFailure_UNSTABLE: 'errorState',
       ...opt,
     };
-    const {storeKey, itemKey} = options;
+    const {storeKey} = options;
     const storage = registries.getStorage(storeID, storeKey);
 
     // Register Atom
@@ -417,8 +420,7 @@ function syncEffect<T>(opt: SyncEffectOptions<T>): AtomEffect<T> {
       const readFromStorage = storage?.read;
       if (readFromStorage != null) {
         try {
-          // TODO syncEffect() read
-          const loadable = readFromStorage(itemKey);
+          const loadable = options.read({read: readFromStorage});
           if (loadable != null) {
             if (!RecoilLoadable.isLoadable(loadable)) {
               throw err('Sync read must provide a Loadable');
