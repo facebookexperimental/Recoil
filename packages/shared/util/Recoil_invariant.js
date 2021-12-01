@@ -13,6 +13,6 @@
 
 // @fb-only: const invariant = require('invariant');
 
-const invariant = require('@shared/polyfill/invariant.js'); // @oss-only
+const invariant = require('recoil-shared/polyfill/invariant.js'); // @oss-only
 
 module.exports = invariant;
