@@ -177,57 +177,84 @@ test('Loadable Factory Interface', async () => {
   expect(errorLoadable.contents).toBe('ERROR');
 });
 
-test('Load All Array', async () => {
-  expect(
-    RecoilLoadable.all([RecoilLoadable.of('x'), RecoilLoadable.of(123)])
-      .contents,
-  ).toEqual(['x', 123]);
-  await expect(
-    RecoilLoadable.all([
-      RecoilLoadable.of(Promise.resolve('x')),
-      RecoilLoadable.of(123),
-    ]).contents,
-  ).resolves.toEqual(['x', 123]);
-  expect(
-    RecoilLoadable.all([
-      RecoilLoadable.of('x'),
-      RecoilLoadable.of(123),
-      RecoilLoadable.error('ERROR'),
-    ]).contents,
-  ).toEqual('ERROR');
+describe('Loadable All', () => {
+  test('Array', async () => {
+    expect(
+      RecoilLoadable.all([RecoilLoadable.of('x'), RecoilLoadable.of(123)])
+        .contents,
+    ).toEqual(['x', 123]);
+    await expect(
+      RecoilLoadable.all([
+        RecoilLoadable.of(Promise.resolve('x')),
+        RecoilLoadable.of(123),
+      ]).contents,
+    ).resolves.toEqual(['x', 123]);
+    expect(
+      RecoilLoadable.all([
+        RecoilLoadable.of('x'),
+        RecoilLoadable.of(123),
+        RecoilLoadable.error('ERROR'),
+      ]).contents,
+    ).toEqual('ERROR');
 
-  expect(
-    RecoilLoadable.all([
-      RecoilLoadable.of('x'),
-      RecoilLoadable.all([RecoilLoadable.of(1), RecoilLoadable.of(2)]),
-    ]).contents,
-  ).toEqual(['x', [1, 2]]);
-});
+    expect(
+      RecoilLoadable.all([
+        RecoilLoadable.of('x'),
+        RecoilLoadable.all([RecoilLoadable.of(1), RecoilLoadable.of(2)]),
+      ]).contents,
+    ).toEqual(['x', [1, 2]]);
+  });
 
-test('Load All Object', async () => {
-  expect(
-    RecoilLoadable.all({
-      str: RecoilLoadable.of('x'),
-      num: RecoilLoadable.of(123),
-    }).contents,
-  ).toEqual({
-    str: 'x',
-    num: 123,
+  test('Object', async () => {
+    expect(
+      RecoilLoadable.all({
+        str: RecoilLoadable.of('x'),
+        num: RecoilLoadable.of(123),
+      }).contents,
+    ).toEqual({
+      str: 'x',
+      num: 123,
+    });
+    await expect(
+      RecoilLoadable.all({
+        str: RecoilLoadable.of(Promise.resolve('x')),
+        num: RecoilLoadable.of(123),
+      }).contents,
+    ).resolves.toEqual({
+      str: 'x',
+      num: 123,
+    });
+    expect(
+      RecoilLoadable.all({
+        str: RecoilLoadable.of('x'),
+        num: RecoilLoadable.of(123),
+        err: RecoilLoadable.error('ERROR'),
+      }).contents,
+    ).toEqual('ERROR');
   });
-  await expect(
-    RecoilLoadable.all({
-      str: RecoilLoadable.of(Promise.resolve('x')),
-      num: RecoilLoadable.of(123),
-    }).contents,
-  ).resolves.toEqual({
-    str: 'x',
-    num: 123,
+
+  test('mixed values', async () => {
+    expect(RecoilLoadable.all([RecoilLoadable.of('A'), 'B']).contents).toEqual([
+      'A',
+      'B',
+    ]);
+
+    await expect(
+      RecoilLoadable.all([RecoilLoadable.of('A'), Promise.resolve('B')])
+        .contents,
+    ).resolves.toEqual(['A', 'B']);
+
+    await expect(
+      RecoilLoadable.all([RecoilLoadable.of('A'), Promise.reject('B')])
+        .contents,
+    ).rejects.toEqual('B');
+
+    await expect(
+      RecoilLoadable.all({
+        a: 'A',
+        b: RecoilLoadable.of('B'),
+        c: Promise.resolve('C'),
+      }).contents,
+    ).resolves.toEqual({a: 'A', b: 'B', c: 'C'});
   });
-  expect(
-    RecoilLoadable.all({
-      str: RecoilLoadable.of('x'),
-      num: RecoilLoadable.of(123),
-      err: RecoilLoadable.error('ERROR'),
-    }).contents,
-  ).toEqual('ERROR');
 });

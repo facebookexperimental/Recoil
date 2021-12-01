@@ -217,12 +217,16 @@ function loadableLoading<+T>(): $ReadOnly<LoadingLoadable<T>> {
 }
 
 type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
-type LoadableAllOfTuple = <Tuple: $ReadOnlyArray<Loadable<mixed>>>(
+type LoadableAllOfTuple = <
+  Tuple: $ReadOnlyArray<Loadable<mixed> | Promise<mixed> | mixed>,
+>(
   tuple: Tuple,
-) => Loadable<$TupleMap<Tuple, <V>(Loadable<V>) => V>>;
-type LoadableAllOfObj = <Obj: $ReadOnly<{[string]: Loadable<mixed>, ...}>>(
+) => Loadable<$TupleMap<Tuple, <V>(Loadable<V> | Promise<V> | V) => V>>;
+type LoadableAllOfObj = <
+  Obj: $ReadOnly<{[string]: Loadable<mixed> | Promise<mixed> | mixed, ...}>,
+>(
   obj: Obj,
-) => Loadable<$ObjMap<Obj, <V>(Loadable<V>) => V>>;
+) => Loadable<$ObjMap<Obj, <V>(Loadable<V> | Promise<V> | V) => V>>;
 type LoadableAll = LoadableAllOfTuple & LoadableAllOfObj;
 
 function loadableAllArray<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
@@ -242,15 +246,22 @@ function loadableAllArray<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
 
 function loadableAll<
   Inputs:
-    | $ReadOnlyArray<Loadable<mixed>>
-    | $ReadOnly<{[string]: Loadable<mixed>, ...}>,
+    | $ReadOnlyArray<Loadable<mixed> | Promise<mixed> | mixed>
+    | $ReadOnly<{[string]: Loadable<mixed> | Promise<mixed> | mixed, ...}>,
 >(
   inputs: Inputs,
 ): Loadable<$ReadOnlyArray<mixed> | $ReadOnly<{[string]: mixed, ...}>> {
   const unwrapedInputs = Array.isArray(inputs)
     ? inputs
     : Object.getOwnPropertyNames(inputs).map(key => inputs[key]);
-  const output = loadableAllArray(unwrapedInputs);
+  const normalizedInputs = unwrapedInputs.map(x =>
+    isLoadable(x)
+      ? x
+      : isPromise(x)
+      ? loadableWithPromise(x)
+      : loadableWithValue(x),
+  );
+  const output = loadableAllArray(normalizedInputs);
   return Array.isArray(inputs)
     ? // $FlowIssue[incompatible-return]
       output
