@@ -13,10 +13,10 @@
 import type {RecoilURLSyncOptions} from './RecoilSync_URL';
 
 const {useRecoilURLSync} = require('./RecoilSync_URL');
-const err = require('./util/RecoilSync_err');
-const nullthrows = require('./util/RecoilSync_nullthrows');
 const React = require('react');
 const {useCallback} = require('react');
+const err = require('recoil-shared/util/Recoil_err');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
 export type RecoilURLSyncJSONOptions = $Rest<
   RecoilURLSyncOptions,
