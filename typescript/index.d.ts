@@ -492,8 +492,8 @@ export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T
   param: RecoilValues,
  ): RecoilValueReadOnly<UnwrapRecoilValueLoadables<RecoilValues>>;
 
-  export type UnwrapLoadable<T> = T extends Loadable<infer R> ? R : never;
-  export type UnwrapLoadables<T extends Array<Loadable<any>> | { [key: string]: Loadable<any> }> = {
+  export type UnwrapLoadable<T> = T extends Loadable<infer R> ? R : T extends Promise<infer P> ? P : T;
+  export type UnwrapLoadables<T extends any[] | { [key: string]: any }> = {
     [P in keyof T]: UnwrapLoadable<T[P]>;
   };
 
@@ -512,9 +512,10 @@ export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T
      * Factory to make a Loadable which is resolved when all of the Loadables provided
      * to it are resolved or any one has an error.  The value is an array of the values
      * of all of the provided Loadables.  This is comparable to Promise.all() for Loadables.
+     * Similar to Promise.all(), inputs may be Loadables, Promises, or literal values.
      */
-    function all<Inputs extends Array<Loadable<any>> | [Loadable<any>]>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
-    function all<Inputs extends {[key: string]: Loadable<any>}>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
+    function all<Inputs extends any[] | [Loadable<any>]>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
+    function all<Inputs extends {[key: string]: any}>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
     /**
      * Returns true if the provided parameter is a Loadable type.
      */
