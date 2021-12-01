@@ -42,10 +42,12 @@ function TestRecoilSync({
   storeKey,
   storage,
   regListen,
+  allItemsRef,
 }: {
   storeKey?: string,
   storage: Map<string, Loadable<mixed>>,
   regListen?: ListenInterface => void,
+  allItemsRef?: {current: Map<string, ?Loadable<mixed>>},
 }) {
   useRecoilSync({
     storeKey,
@@ -61,6 +63,9 @@ function TestRecoilSync({
       }
       for (const [itemKey, loadable] of diff) {
         expect(allItems.get(itemKey)?.contents).toEqual(loadable?.contents);
+      }
+      if (allItemsRef != null) {
+        allItemsRef.current = allItems;
       }
     },
     listen: listenInterface => {
@@ -925,6 +930,91 @@ test('Sync Atom Family', async () => {
   );
 
   expect(container.textContent).toBe('"A""B""DEFAULT"');
+});
+
+describe('Complex Mappings', () => {
+  test('write to multiple items', async () => {
+    const atomA = atom({
+      key: 'recoil-sync write multiple A',
+      default: 'A',
+      effects_UNSTABLE: [
+        syncEffect({
+          itemKey: 'a', // UNUSED
+          refine: string(),
+          write: ({write}, loadable) => {
+            write(
+              'a1',
+              loadable?.map(x => x + '1'),
+            );
+            write(
+              'a2',
+              loadable?.map(x => x + '2'),
+            );
+          },
+          syncDefault: true,
+        }),
+      ],
+    });
+
+    const atomB = atom({
+      key: 'recoil-sync write multiple B',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        syncEffect({
+          itemKey: 'b', // UNUSED
+          refine: string(),
+          write: ({write}, loadable) => {
+            write(
+              'b1',
+              loadable?.map(x => x + '1'),
+            );
+            write(
+              'b2',
+              loadable?.map(x => x + '2'),
+            );
+          },
+        }),
+      ],
+    });
+    const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
+
+    const storage = new Map();
+    const allItemsRef = {current: new Map()};
+    const container = renderElements(
+      <>
+        <TestRecoilSync storage={storage} allItemsRef={allItemsRef} />
+        <ReadsAtom atom={atomA} />
+        <AtomB />
+      </>,
+    );
+
+    expect(container.textContent).toBe('"A""DEFAULT"');
+    await flushPromisesAndTimers();
+
+    // Test mapping when syncing default value
+    expect(storage.size).toEqual(2);
+    expect(storage.has('a')).toEqual(false);
+    expect(storage.get('a1')?.contents).toEqual('A1');
+    expect(storage.get('a2')?.contents).toEqual('A2');
+
+    // Test mapping with allItems
+    expect(allItemsRef.current.size).toEqual(4);
+    expect(allItemsRef.current.get('a1')?.contents).toEqual('A1');
+    expect(allItemsRef.current.get('a2')?.contents).toEqual('A2');
+    expect(allItemsRef.current.get('b1')?.contents).toEqual(undefined);
+    expect(allItemsRef.current.get('b2')?.contents).toEqual(undefined);
+
+    // Test mapping when writing state changes
+    act(() => setB('B'));
+    expect(container.textContent).toBe('"A""B"');
+    expect(storage.size).toEqual(4);
+    expect(storage.has('b')).toEqual(false);
+    expect(storage.get('b1')?.contents).toEqual('B1');
+    expect(storage.get('b2')?.contents).toEqual('B2');
+    expect(allItemsRef.current.size).toEqual(4);
+    expect(allItemsRef.current.get('b1')?.contents).toEqual('B1');
+    expect(allItemsRef.current.get('b2')?.contents).toEqual('B2');
+  });
 });
 
 // Currently useRecoilSync() must be called in React component tree
