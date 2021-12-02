@@ -435,7 +435,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       liveStoresCount--;
       cleanupEffectsByStore.get(store)?.forEach(cleanup => cleanup());
       cleanupEffectsByStore.delete(store);
-      store.getState().knownAtoms.delete(key); // FIXME remove knownAtoms?
+      store.getState().knownAtoms.delete(key);
     };
   }
 

@@ -58,15 +58,13 @@ function initializeRetentionForNode(
     if (!gkx('recoil_memory_managament_2020')) {
       return;
     }
-    const nodesRetainedByZone = store.getState().retention.nodesRetainedByZone;
+    const {retention} = store.getState();
 
     function deleteFromZone(zone: RetentionZone) {
-      const set = nodesRetainedByZone.get(zone);
-      if (set) {
-        set.delete(nodeKey);
-      }
+      const set = retention.nodesRetainedByZone.get(zone);
+      set?.delete(nodeKey);
       if (set && set.size === 0) {
-        nodesRetainedByZone.delete(zone);
+        retention.nodesRetainedByZone.delete(zone);
       }
     }
 
@@ -101,6 +99,10 @@ function initializeNodeIfNewToStore(
     nodeCleanup();
     retentionCleanup();
   });
+}
+
+function initNode(store: Store, key: NodeKey): void {
+  initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
 }
 
 function cleanUpNode(store: Store, key: NodeKey) {
@@ -249,9 +251,9 @@ module.exports = {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
+  initNode,
   cleanUpNode,
   setUnvalidatedAtomValue_DEPRECATED,
   peekNodeInfo,
   getDownstreamNodes,
-  initializeNodeIfNewToStore,
 };

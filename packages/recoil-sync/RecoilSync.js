@@ -218,12 +218,8 @@ function useRecoilSync({
   const snapshot = useRecoilSnapshot();
   const previousSnapshotRef = useRef(snapshot);
   useEffect(() => {
-    if (write != null) {
-      if (snapshot === previousSnapshotRef.current) {
-        return;
-      } else {
-        previousSnapshotRef.current = snapshot;
-      }
+    if (write != null && snapshot !== previousSnapshotRef.current) {
+      previousSnapshotRef.current = snapshot;
       const diff: ItemDiff = new Map();
       const atomRegistry = registries.getAtomRegistry(recoilStoreID, storeKey);
       const modifiedAtoms = snapshot.getNodes_UNSTABLE({isModified: true});
