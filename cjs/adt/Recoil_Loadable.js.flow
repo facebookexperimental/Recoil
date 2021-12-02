@@ -75,15 +75,15 @@ declare function loadableWithError<+T>(error: mixed): $ReadOnly<ErrorLoadable<T>
 declare function loadableWithPromise<+T>(promise: Promise<T>): $ReadOnly<LoadingLoadable<T>>;
 declare function loadableLoading<+T>(): $ReadOnly<LoadingLoadable<T>>;
 type UnwrapLoadables<Loadables> = $TupleMap<Loadables, <T>(Loadable<T>) => T>;
-type LoadableAllOfTuple = <Tuple: $ReadOnlyArray<Loadable<mixed>>>(tuple: Tuple) => Loadable<$TupleMap<Tuple, <V>(Loadable<V>) => V>>;
+type LoadableAllOfTuple = <Tuple: $ReadOnlyArray<Loadable<mixed> | Promise<mixed> | mixed>>(tuple: Tuple) => Loadable<$TupleMap<Tuple, <V>(Loadable<V> | Promise<V> | V) => V>>;
 type LoadableAllOfObj = <Obj: $ReadOnly<{
-  [string]: Loadable<mixed>,
+  [string]: Loadable<mixed> | Promise<mixed> | mixed,
   ...
-}>>(obj: Obj) => Loadable<$ObjMap<Obj, <V>(Loadable<V>) => V>>;
+}>>(obj: Obj) => Loadable<$ObjMap<Obj, <V>(Loadable<V> | Promise<V> | V) => V>>;
 type LoadableAll = LoadableAllOfTuple & LoadableAllOfObj;
 declare function loadableAllArray<Inputs: $ReadOnlyArray<Loadable<mixed>>>(inputs: Inputs): Loadable<UnwrapLoadables<Inputs>>;
-declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed>> | $ReadOnly<{
-  [string]: Loadable<mixed>,
+declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed> | Promise<mixed> | mixed> | $ReadOnly<{
+  [string]: Loadable<mixed> | Promise<mixed> | mixed,
   ...
 }>>(inputs: Inputs): Loadable<$ReadOnlyArray<mixed> | $ReadOnly<{
   [string]: mixed,

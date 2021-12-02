@@ -313,7 +313,8 @@
 
   function loadableAll(inputs) {
     const unwrapedInputs = Array.isArray(inputs) ? inputs : Object.getOwnPropertyNames(inputs).map(key => inputs[key]);
-    const output = loadableAllArray(unwrapedInputs);
+    const normalizedInputs = unwrapedInputs.map(x => isLoadable(x) ? x : Recoil_isPromise(x) ? loadableWithPromise(x) : loadableWithValue(x));
+    const output = loadableAllArray(normalizedInputs);
     return Array.isArray(inputs) ? // $FlowIssue[incompatible-return]
     output : // Object.getOwnPropertyNames() has consistent key ordering with ES6
     // $FlowIssue[incompatible-call]
