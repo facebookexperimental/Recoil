@@ -632,6 +632,11 @@ test('Listen to storage', async () => {
   // Avoid feedback loops
   expect(storage1.get('recoil-sync listen')?.getValue()).toBe('A');
 
+  // Subscribe to reset
+  act(() => updateItem1('recoil-sync listen', null));
+  expect(container.textContent).toBe('"DEFAULT""B""C2"');
+  act(() => updateItem1('recoil-sync listen', RecoilLoadable.of('AA')));
+
   // Subscribe to new value from different key
   act(() => updateItem1('KEY A', RecoilLoadable.of('BB')));
   expect(container.textContent).toBe('"AA""BB""C2"');
@@ -642,11 +647,6 @@ test('Listen to storage', async () => {
   expect(container.textContent).toBe('"AA""BBB""C2"');
   expect(storage1.get('KEY A')?.getValue()).toBe('B');
   expect(storage1.get('KEY B')?.getValue()).toBe(undefined);
-
-  // TODO
-  // // Updating older key won't override newer key
-  // act(() => updateItem1('KEY A', RecoilLoadable.of('IGNORE')));
-  // expect(container.textContent).toBe('"AA""BBB""C2"');
 
   // Subscribe to new value from different storage
   act(() =>
@@ -741,6 +741,13 @@ test('Listen to storage', async () => {
     ),
   );
   expect(container.textContent).toBe('"AAA""BBBB""DEFAULT"');
+
+  // Update All Items
+  // Not providing an item causes it to revert to default
+  act(() =>
+    updateAll1(new Map([['recoil-sync listen', RecoilLoadable.of('AAA')]])),
+  );
+  expect(container.textContent).toBe('"AAA""DEFAULT""DEFAULT"');
 
   // TODO Async Atom support
   // act(() =>
@@ -1058,24 +1065,36 @@ describe('Complex Mappings', () => {
       default: 'DEFAULT',
       effects_UNSTABLE: [
         syncEffect({
-          refine: dict(string()),
+          refine: dict(number()),
           read: ({read}) => RecoilLoadable.all({a: read('a'), b: read('b')}),
         }),
       ],
     });
 
     const storage = new Map([
-      ['a', RecoilLoadable.of('A')],
-      ['b', RecoilLoadable.of('B')],
+      ['a', RecoilLoadable.of(1)],
+      ['b', RecoilLoadable.of(2)],
     ]);
+    let updateItem;
     const container = renderElements(
       <>
-        <TestRecoilSync storage={storage} />
+        <TestRecoilSync
+          storage={storage}
+          regListen={listenInterface => {
+            updateItem = listenInterface.updateItem;
+          }}
+        />
         <ReadsAtom atom={myAtom} />
       </>,
     );
 
-    expect(container.textContent).toBe('{"a":"A","b":"B"}');
+    // Test mapping while initializing values
+    expect(container.textContent).toBe('{"a":1,"b":2}');
+
+    // TODO
+    // Test subscribing to multiple items
+    act(() => updateItem('a', RecoilLoadable.of(10)));
+    // expect(container.textContent).toBe('{"a":10,"b":2}');
   });
 });
 
@@ -1227,9 +1246,10 @@ test('Unregister store and atoms', () => {
           true,
         );
         return () => {
-          expect(registries_FOR_TESTING.getAtomRegistry(storeID).has(key)).toBe(
-            false,
-          );
+          expect(
+            registries_FOR_TESTING.getAtomRegistry(storeID).get(key)?.effects
+              .size,
+          ).toBe(0);
           atomCleanups.push(true);
         };
       },
