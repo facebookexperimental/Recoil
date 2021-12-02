@@ -179,8 +179,9 @@ function useRecoilURLSync({
   const updateCachedState: () => void = useCallback(() => {
     cachedState.current = parseURL(getURL(), memoizedLoc, deserialize);
   }, [getURL, memoizedLoc, deserialize]);
-  const firstRender = useRef(true); // Avoid executing parseCurrentState() on each render
   const cachedState = useRef<?ItemSnapshot>(null);
+  // Avoid executing updateCachedState() on each render
+  const firstRender = useRef(true);
   firstRender.current && updateCachedState();
   firstRender.current = false;
   useEffect(updateCachedState, [updateCachedState]);

@@ -22,10 +22,7 @@ import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
 const {batchUpdates} = require('./Recoil_Batching');
-const {
-  initializeNodeIfNewToStore,
-  peekNodeInfo,
-} = require('./Recoil_FunctionalCore');
+const {initNode, peekNodeInfo} = require('./Recoil_FunctionalCore');
 const {graph} = require('./Recoil_Graph');
 const {getNextStoreID} = require('./Recoil_Keys');
 const {
@@ -98,13 +95,8 @@ class Snapshot {
     };
     // Initialize any nodes that are live in the parent store (primarily so that this
     // snapshot gets counted towards the node's live stores count).
-    for (const nodeKey of this._store.getState().nodeCleanupFunctions.keys()) {
-      initializeNodeIfNewToStore(
-        this._store,
-        storeState.currentTree,
-        nodeKey,
-        'get',
-      );
+    for (const nodeKey of this._store.getState().knownAtoms) {
+      initNode(this._store, nodeKey);
       updateRetainCount(this._store, nodeKey, 1);
     }
     this.retain();
@@ -142,7 +134,7 @@ class Snapshot {
     if (this._refCount === 0) {
       // Temporarily nerfing this to allow us to find broken call sites without
       // actually breaking anybody yet.
-      // for (const k of this._store.getState().nodeCleanupFunctions.keys()) {
+      // for (const k of this._store.getState().knownAtoms) {
       //   updateRetainCountToZero(this._store, k);
       // }
     }

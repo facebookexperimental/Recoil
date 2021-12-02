@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type {StoreID} from './Recoil_Keys';
+import type {NodeKey, StoreID} from './Recoil_Keys';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
@@ -27,6 +27,7 @@ const {
 const {
   cleanUpNode,
   getDownstreamNodes,
+  initNode,
   setNodeValue,
   setUnvalidatedAtomValue_DEPRECATED,
 } = require('./Recoil_FunctionalCore');
@@ -251,8 +252,19 @@ function Batcher({
 }) {
   const storeRef = useStoreRef();
 
-  const [_, setState] = useState([]);
+  const [, setState] = useState([]);
   setNotifyBatcherOfChange(() => setState({}));
+  useEffect(() => {
+    setNotifyBatcherOfChange(() => setState({}));
+
+    // If an asynchronous selector resolves after the Batcher is unmounted,
+    // notifyBatcherOfChange will still be called. An error gets thrown whenever
+    // setState is called after a component is already unmounted, so this sets
+    // notifyBatcherOfChange to be a no-op.
+    return () => {
+      setNotifyBatcherOfChange(() => {});
+    };
+  }, [setNotifyBatcherOfChange]);
 
   useEffect(() => {
     // enqueueExecution runs this function immediately; it is only used to
@@ -262,16 +274,6 @@ function Batcher({
       endBatch(storeRef);
     });
   });
-
-  // If an asynchronous selector resolves after the Batcher is unmounted,
-  // notifyBatcherOfChange will still be called. An error gets thrown whenever
-  // setState is called after a component is already unmounted, so this sets
-  // notifyBatcherOfChange to be a no-op.
-  useEffect(() => {
-    return () => {
-      setNotifyBatcherOfChange(() => {});
-    };
-  }, [setNotifyBatcherOfChange]);
 
   return null;
 }
@@ -481,14 +483,32 @@ function RecoilRoot_INTERNAL({
   );
 
   // Cleanup when the <RecoilRoot> is unmounted
-  useEffect(
-    () => () => {
-      for (const atomKey of storeRef.current.getState().knownAtoms) {
+  const cleanedUpNodesRef = useRefInitOnce<Map<StoreID, Set<NodeKey>>>(
+    () => new Map(),
+  );
+  useEffect(() => {
+    // React is free to call effect cleanup handlers and effects at will, the
+    // deps array is only an optimization.  For example, React strict mode
+    // will execute each effect twice for testing.  Therefore, we need symmetry
+    // to re-initialize all known atoms after they were cleaned up.
+    const store = storeRef.current;
+    for (const atomKey of cleanedUpNodesRef.current.get(store.storeID) ?? []) {
+      initNode(store, atomKey);
+    }
+    cleanedUpNodesRef.current.delete(store.storeID);
+
+    return () => {
+      const {knownAtoms} = store.getState();
+      // Save the set of known atoms from this cleanup in case the effect is just
+      // being cleaned up and then executed again so we can re-initialize the
+      // atoms above.
+      // eslint-disable-next-line fb-www/react-hooks-deps
+      cleanedUpNodesRef.current.set(store.storeID, new Set(knownAtoms));
+      for (const atomKey of knownAtoms) {
         cleanUpNode(storeRef.current, atomKey);
       }
-    },
-    [],
-  );
+    };
+  }, [storeRef, cleanedUpNodesRef]);
 
   return (
     <AppContext.Provider value={storeRef}>
