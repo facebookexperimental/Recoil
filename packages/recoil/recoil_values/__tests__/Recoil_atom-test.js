@@ -16,7 +16,6 @@ const {
 let React,
   useState,
   Profiler,
-  ReactDOM,
   act,
   DEFAULT_VALUE,
   DefaultValue,
@@ -45,7 +44,6 @@ const testRecoil = getRecoilTestFn(() => {
 
   React = require('react');
   ({useState, Profiler} = require('react'));
-  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({act} = require('ReactTestUtils'));
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
@@ -905,10 +903,7 @@ describe('Effects', () => {
       );
     }
 
-    const c = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<App />, c);
-    });
+    const c = renderElements(<App />);
 
     expect(c.textContent).toBe('');
     expect(refCountsA).toEqual([0, 0]);

@@ -20,7 +20,6 @@ let store: Store,
   React,
   Profiler,
   useState,
-  ReactDOM,
   act,
   RecoilRoot,
   getRecoilValueAsLoadable,
@@ -48,7 +47,6 @@ const testRecoil = getRecoilTestFn(() => {
 
   React = require('react');
   ({Profiler, useState} = require('react'));
-  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({act} = require('ReactTestUtils'));
 
   ({
@@ -582,10 +580,7 @@ describe('Effects', () => {
       );
     }
 
-    const c = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<App />, c);
-    });
+    const c = renderElements(<App />);
 
     expect(c.textContent).toBe('');
     expect(refCounts).toEqual({A: 0, B: 0});
