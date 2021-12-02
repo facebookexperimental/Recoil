@@ -93,8 +93,8 @@ export type RecoilInterface = {
 };
 
 /**
- * Various things are broken with useRecoilInterface, particularly concurrent mode
- * and memory management. They will not be fixed.
+ * Various things are broken with useRecoilInterface, particularly concurrent
+ * mode, React strict mode, and memory management. They will not be fixed.
  * */
 function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const storeRef = useStoreRef();
