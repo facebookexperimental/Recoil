@@ -1035,7 +1035,7 @@ describe('Effects', () => {
   );
 
   describe('Other Atoms', () => {
-    test('init from other atom', () => {
+    testRecoil('init from other atom', () => {
       const myAtom = atom({
         key: 'atom effect - init from other atom',
         default: 'DEFAULT',
@@ -1061,7 +1061,7 @@ describe('Effects', () => {
       expect(getValue(myAtom)).toEqual('OTHER');
     });
 
-    test('init from other atom async', async () => {
+    testRecoil('init from other atom async', async () => {
       const myAtom = atom({
         key: 'atom effect - init from other atom async',
         default: 'DEFAULT',
@@ -1083,7 +1083,7 @@ describe('Effects', () => {
       ).resolves.toEqual('OTHER');
     });
 
-    test('async get other atoms', async () => {
+    testRecoil('async get other atoms', async () => {
       let initTest1 = new Promise(() => {});
       let initTest2 = new Promise(() => {});
       let initTest3 = new Promise(() => {});
