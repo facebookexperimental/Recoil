@@ -28,6 +28,13 @@ const {
   tuple,
 } = require('refine');
 
+const atomUndefined = atom({
+  key: 'void',
+  default: undefined,
+  effects_UNSTABLE: [
+    syncEffect({refine: literal(undefined), syncDefault: true}),
+  ],
+});
 const atomNull = atom({
   key: 'null',
   default: null,
@@ -74,6 +81,7 @@ async function testJSON(loc, contents, beforeURL, afterURL) {
   const container = renderElements(
     <>
       <RecoilURLSyncJSON location={loc} />
+      <ReadsAtom atom={atomUndefined} />
       <ReadsAtom atom={atomNull} />
       <ReadsAtom atom={atomBoolean} />
       <ReadsAtom atom={atomNumber} />
@@ -115,7 +123,7 @@ describe('URL JSON Encode', () => {
       {part: 'queryParams'},
       'nulltrue123"STRING"[1,"a"]{"foo":[1,2]}"1985-10-26T07:00:00.000Z"',
       '/path/page.html#anchor',
-      '/path/page.html?null=null&boolean=true&number=123&string=%22STRING%22&array=%5B1%2C%22a%22%5D&object=%7B%22foo%22%3A%5B1%2C2%5D%7D&date=%221985-10-26T07%3A00%3A00.000Z%22#anchor',
+      '/path/page.html?void=&null=null&boolean=true&number=123&string=%22STRING%22&array=%5B1%2C%22a%22%5D&object=%7B%22foo%22%3A%5B1%2C2%5D%7D&date=%221985-10-26T07%3A00%3A00.000Z%22#anchor',
     ));
 });
 
@@ -146,6 +154,6 @@ describe('URL JSON Parse', () => {
       {part: 'queryParams'},
       'nullfalse456"SET"[2,"b"]{"foo":[]}"1955-11-05T07:00:00.000Z"',
       '/?null=null&boolean=false&number=456&string="SET"&array=[2,"b"]&object={"foo":[]}&date="1955-11-05T07:00:00.000Z"',
-      '/?null=null&boolean=false&number=456&string=%22SET%22&array=%5B2%2C%22b%22%5D&object=%7B%22foo%22%3A%5B%5D%7D&date=%221955-11-05T07%3A00%3A00.000Z%22',
+      '/?null=null&boolean=false&number=456&string=%22SET%22&array=%5B2%2C%22b%22%5D&object=%7B%22foo%22%3A%5B%5D%7D&date=%221955-11-05T07%3A00%3A00.000Z%22&void=',
     ));
 });
