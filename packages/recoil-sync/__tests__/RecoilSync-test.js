@@ -1091,10 +1091,16 @@ describe('Complex Mappings', () => {
     // Test mapping while initializing values
     expect(container.textContent).toBe('{"a":1,"b":2}');
 
-    // TODO
     // Test subscribing to multiple items
     act(() => updateItem('a', RecoilLoadable.of(10)));
-    // expect(container.textContent).toBe('{"a":10,"b":2}');
+    expect(container.textContent).toBe('{"a":10,"b":2}');
+
+    // Avoid feedback loops
+    expect(storage.get('a')?.contents).toEqual(1);
+    storage.set('a', RecoilLoadable.of(10)); // Keep storage in sync
+
+    act(() => updateItem('b', RecoilLoadable.of(20)));
+    expect(container.textContent).toBe('{"a":10,"b":20}');
   });
 });
 
