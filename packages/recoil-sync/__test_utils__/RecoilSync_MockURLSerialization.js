@@ -91,7 +91,7 @@ function encodeURLPart(href: string, loc: LocationOption, obj): string {
           searchParams.set(key, JSON.stringify(value) ?? '');
         }
       }
-      url.search = searchParams.toString() || '?';
+      url.search = searchParams.toString();
       break;
     }
   }
