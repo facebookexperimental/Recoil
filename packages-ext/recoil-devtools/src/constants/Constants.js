@@ -1,5 +1,5 @@
 /**
- * Copyright 2004-present Facebook. All Rights Reserved.
+ * (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
  *
  * This Recoil Plugin adds support for Redux Dev Tools (https://fburl.com/sjb1mvms).
  * It allows you to watch Recoil state changes as they happen.
