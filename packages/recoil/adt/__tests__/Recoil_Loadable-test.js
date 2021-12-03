@@ -167,14 +167,25 @@ test('Loadable Factory Interface', async () => {
   const valueLoadable = RecoilLoadable.of('VALUE');
   expect(valueLoadable.state).toBe('hasValue');
   expect(valueLoadable.contents).toBe('VALUE');
+  const valueLoadable2 = RecoilLoadable.of(RecoilLoadable.of('VALUE'));
+  expect(valueLoadable2.state).toBe('hasValue');
+  expect(valueLoadable2.contents).toBe('VALUE');
 
   const promiseLoadable = RecoilLoadable.of(Promise.resolve('ASYNC'));
   expect(promiseLoadable.state).toBe('loading');
   await expect(promiseLoadable.contents).resolves.toBe('ASYNC');
+  const promiseLoadable2 = RecoilLoadable.of(
+    RecoilLoadable.of(Promise.resolve('ASYNC')),
+  );
+  expect(promiseLoadable2.state).toBe('loading');
+  await expect(promiseLoadable2.contents).resolves.toBe('ASYNC');
 
   const errorLoadable = RecoilLoadable.error('ERROR');
   expect(errorLoadable.state).toBe('hasError');
   expect(errorLoadable.contents).toBe('ERROR');
+  const errorLoadable2 = RecoilLoadable.of(RecoilLoadable.error('ERROR'));
+  expect(errorLoadable2.state).toBe('hasError');
+  expect(errorLoadable2.contents).toBe('ERROR');
 });
 
 describe('Loadable All', () => {

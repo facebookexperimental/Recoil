@@ -280,8 +280,12 @@ function isLoadable(x: mixed): boolean %checks {
 }
 
 const LoadableStaticInterface = {
-  of: <T>(value: Promise<T> | T): Loadable<T> =>
-    isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
+  of: <T>(value: Promise<T> | Loadable<T> | T): Loadable<T> =>
+    isPromise(value)
+      ? loadableWithPromise(value)
+      : isLoadable(value)
+      ? value
+      : loadableWithValue(value),
   error: <T>(error: mixed): $ReadOnly<ErrorLoadable<T>> =>
     loadableWithError(error),
   // $FlowIssue[unclear-type]
