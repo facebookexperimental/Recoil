@@ -16,7 +16,7 @@ const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let store: Store, React, Profiler, useState, ReactDOM, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, useRecoilStoreID, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, mutableSourceExists, stableStringify, atom, atomFamily, selectorFamily, pAtom;
+let store: Store, React, Profiler, useState, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, useRecoilStoreID, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, mutableSourceExists, stableStringify, atom, atomFamily, selectorFamily, pAtom;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
@@ -27,7 +27,6 @@ const testRecoil = getRecoilTestFn(() => {
     Profiler,
     useState
   } = require('react'));
-  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({
     act
   } = require('ReactTestUtils'));
@@ -656,10 +655,7 @@ describe('Effects', () => {
     });
     let setNumRoots;
     declare function App(): any;
-    const c = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<App />, c);
-    });
+    const c = renderElements(<App />);
     expect(c.textContent).toBe('');
     expect(refCounts).toEqual({
       A: 0,

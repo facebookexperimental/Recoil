@@ -83,8 +83,8 @@ export type RecoilInterface = {
   getResetRecoilState: <T>(RecoilState<T>) => Resetter,
 };
 /**
- * Various things are broken with useRecoilInterface, particularly concurrent mode
- * and memory management. They will not be fixed.
+ * Various things are broken with useRecoilInterface, particularly concurrent
+ * mode, React strict mode, and memory management. They will not be fixed.
  * */
 
 declare function useRecoilInterface_DEPRECATED(): RecoilInterface;

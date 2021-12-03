@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type { StoreID } from './Recoil_Keys';
+import type { NodeKey, StoreID } from './Recoil_Keys';
 import type { RecoilValue } from './Recoil_RecoilValue';
 import type { MutableSnapshot } from './Recoil_Snapshot';
 import type { Store, StoreRef, StoreState, TreeState } from './Recoil_State'; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
@@ -27,6 +27,7 @@ const {
 const {
   cleanUpNode,
   getDownstreamNodes,
+  initNode,
   setNodeValue,
   setUnvalidatedAtomValue_DEPRECATED
 } = require('./Recoil_FunctionalCore');

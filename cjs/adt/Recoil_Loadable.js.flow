@@ -91,7 +91,7 @@ declare function loadableAll<Inputs: $ReadOnlyArray<Loadable<mixed> | Promise<mi
 }>>;
 declare function isLoadable(x: mixed): boolean;
 const LoadableStaticInterface = {
-  of: <T>(value: Promise<T> | T): Loadable<T> => isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
+  of: <T>(value: Promise<T> | Loadable<T> | T): Loadable<T> => isPromise(value) ? loadableWithPromise(value) : isLoadable(value) ? value : loadableWithValue(value),
   error: <T>(error: mixed): $ReadOnly<ErrorLoadable<T>> => loadableWithError(error),
   // $FlowIssue[unclear-type]
   all: ((loadableAll: any): LoadableAll),

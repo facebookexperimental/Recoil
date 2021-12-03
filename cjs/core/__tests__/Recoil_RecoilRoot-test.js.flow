@@ -13,13 +13,12 @@ const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, useState, ReactDOM, act, useSetRecoilState, atom, constSelector, selector, ReadsAtom, componentThatReadsAndWritesAtom, renderElements, RecoilRoot, useStoreRef;
+let React, useState, act, useSetRecoilState, atom, constSelector, selector, ReadsAtom, componentThatReadsAndWritesAtom, renderElements, RecoilRoot, useStoreRef;
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({
     useState
   } = require('react'));
-  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({
     act
   } = require('ReactTestUtils'));
@@ -50,13 +49,10 @@ describe('initializeState', () => {
 
     const mySelector = constSelector(myAtom);
     declare function initializeState(arg0: any): any;
-    const container = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<RecoilRoot initializeState={initializeState}>
-          <ReadsAtom atom={myAtom} />
-          <ReadsAtom atom={mySelector} />
-        </RecoilRoot>, container);
-    });
+    const container = renderElements(<RecoilRoot initializeState={initializeState}>
+        <ReadsAtom atom={myAtom} />
+        <ReadsAtom atom={mySelector} />
+      </RecoilRoot>);
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
   });
   testRecoil('initialize selector', () => {
@@ -74,13 +70,10 @@ describe('initializeState', () => {
       }, newValue) => set(myAtom, newValue)
     });
     declare function initializeState(arg0: any): any;
-    const container = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<RecoilRoot initializeState={initializeState}>
-          <ReadsAtom atom={myAtom} />
-          <ReadsAtom atom={mySelector} />
-        </RecoilRoot>, container);
-    });
+    const container = renderElements(<RecoilRoot initializeState={initializeState}>
+        <ReadsAtom atom={myAtom} />
+        <ReadsAtom atom={mySelector} />
+      </RecoilRoot>);
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
   });
   testRecoil('Atom Effects run with global initialization', () => {
@@ -101,19 +94,13 @@ describe('initializeState', () => {
     });
     declare function initializeState(arg0: any): any;
     expect(effectRan).toEqual(0);
-    const container1 = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<RecoilRoot initializeState={initializeState}>NO READ</RecoilRoot>, container1);
-    }); // Effects are run when initialized with initializeState, even if not read.
+    const container1 = renderElements(<RecoilRoot initializeState={initializeState}>NO READ</RecoilRoot>); // Effects are run when initialized with initializeState, even if not read.
 
     expect(container1.textContent).toEqual('NO READ');
     expect(effectRan).toEqual(1);
-    const container2 = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<RecoilRoot initializeState={initializeState}>
-          <ReadsAtom atom={myAtom} />
-        </RecoilRoot>, container2);
-    }); // Effects are run first, initializeState() takes precedence
+    const container2 = renderElements(<RecoilRoot initializeState={initializeState}>
+        <ReadsAtom atom={myAtom} />
+      </RecoilRoot>); // Effects are run first, initializeState() takes precedence
 
     expect(container2.textContent).toEqual('"INITIALIZE"');
     expect(effectRan).toEqual(2);
@@ -122,22 +109,19 @@ describe('initializeState', () => {
     declare var GetStore: (arg0: {
       children: (Store) => React.Node
     }) => any;
-    const container = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<RecoilRoot>
-          <GetStore>
-            {storeA => <RecoilRoot store_INTERNAL={storeA}>
-                <GetStore>
-                  {storeB => {
-                expect(storeA === storeB).toBe(true);
-                return 'NESTED_ROOT/';
-              }}
-                </GetStore>
-              </RecoilRoot>}
-          </GetStore>
-          ROOT
-        </RecoilRoot>, container);
-    });
+    const container = renderElements(<RecoilRoot>
+        <GetStore>
+          {storeA => <RecoilRoot store_INTERNAL={storeA}>
+              <GetStore>
+                {storeB => {
+              expect(storeA === storeB).toBe(true);
+              return 'NESTED_ROOT/';
+            }}
+              </GetStore>
+            </RecoilRoot>}
+        </GetStore>
+        ROOT
+      </RecoilRoot>);
     expect(container.textContent).toEqual('NESTED_ROOT/ROOT');
   });
 });

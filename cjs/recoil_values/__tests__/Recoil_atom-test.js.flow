@@ -13,7 +13,7 @@ const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, useState, Profiler, ReactDOM, act, DEFAULT_VALUE, DefaultValue, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilCallback, useRecoilValue, useRecoilStoreID, selector, useRecoilTransactionObserver, useResetRecoilState, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, atom, immutable, store;
+let React, useState, Profiler, act, DEFAULT_VALUE, DefaultValue, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilCallback, useRecoilValue, useRecoilStoreID, selector, useRecoilTransactionObserver, useResetRecoilState, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, atom, immutable, store;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
@@ -24,7 +24,6 @@ const testRecoil = getRecoilTestFn(() => {
     useState,
     Profiler
   } = require('react'));
-  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({
     act
   } = require('ReactTestUtils'));
@@ -730,10 +729,7 @@ describe('Effects', () => {
     });
     let setNumRoots;
     declare function App(): any;
-    const c = document.createElement('div');
-    act(() => {
-      ReactDOM.render(<App />, c);
-    });
+    const c = renderElements(<App />);
     expect(c.textContent).toBe('');
     expect(refCountsA).toEqual([0, 0]);
     expect(refCountsB).toEqual([0, 0]);
@@ -817,7 +813,7 @@ describe('Effects', () => {
     expect(numTimesEffectInit).toBe(2);
   });
   describe('Other Atoms', () => {
-    test('init from other atom', () => {
+    testRecoil('init from other atom', () => {
       const myAtom = atom({
         key: 'atom effect - init from other atom',
         default: 'DEFAULT',
@@ -841,7 +837,7 @@ describe('Effects', () => {
       });
       expect(getValue(myAtom)).toEqual('OTHER');
     });
-    test('init from other atom async', async () => {
+    testRecoil('init from other atom async', async () => {
       const myAtom = atom({
         key: 'atom effect - init from other atom async',
         default: 'DEFAULT',
@@ -859,7 +855,7 @@ describe('Effects', () => {
       });
       await expect(getRecoilStateLoadable(myAtom).promiseOrThrow()).resolves.toEqual('OTHER');
     });
-    test('async get other atoms', async () => {
+    testRecoil('async get other atoms', async () => {
       let initTest1 = new Promise(() => {});
       let initTest2 = new Promise(() => {});
       let initTest3 = new Promise(() => {});

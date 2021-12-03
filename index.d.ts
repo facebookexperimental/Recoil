@@ -503,7 +503,7 @@ export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T
      * Factory to make a Loadable object.  If a Promise is provided the Loadable will
      * be in a 'loading' state until the Promise is either resolved or rejected.
      */
-    function of<T>(x: T | Promise<T>): Loadable<T>;
+    function of<T>(x: T | Promise<T> | Loadable<T>): Loadable<T>;
     /**
      * Factory to make a Loadable object in an error state.
      */

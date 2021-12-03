@@ -22,7 +22,7 @@ const {
 } = require('./Recoil_Batching');
 
 const {
-  initializeNodeIfNewToStore,
+  initNode,
   peekNodeInfo
 } = require('./Recoil_FunctionalCore');
 

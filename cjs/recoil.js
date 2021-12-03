@@ -328,7 +328,7 @@ function isLoadable(x) {
 }
 
 const LoadableStaticInterface = {
-  of: value => Recoil_isPromise(value) ? loadableWithPromise(value) : loadableWithValue(value),
+  of: value => Recoil_isPromise(value) ? loadableWithPromise(value) : isLoadable(value) ? value : loadableWithValue(value),
   error: error => loadableWithError(error),
   // $FlowIssue[unclear-type]
   all: loadableAll,
@@ -2324,17 +2324,16 @@ function initializeRetentionForNode(store, nodeKey, retainedBy) {
       return;
     }
 
-    const nodesRetainedByZone = store.getState().retention.nodesRetainedByZone;
+    const {
+      retention
+    } = store.getState();
 
     function deleteFromZone(zone) {
-      const set = nodesRetainedByZone.get(zone);
-
-      if (set) {
-        set.delete(nodeKey);
-      }
+      const set = retention.nodesRetainedByZone.get(zone);
+      set === null || set === void 0 ? void 0 : set.delete(nodeKey);
 
       if (set && set.size === 0) {
-        nodesRetainedByZone.delete(zone);
+        retention.nodesRetainedByZone.delete(zone);
       }
     }
 
@@ -2362,6 +2361,10 @@ function initializeNodeIfNewToStore(store, treeState, key, trigger) {
     nodeCleanup();
     retentionCleanup();
   });
+}
+
+function initNode(store, key) {
+  initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
 }
 
 function cleanUpNode(store, key) {
@@ -2468,11 +2471,11 @@ var Recoil_FunctionalCore = {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
+  initNode,
   cleanUpNode,
   setUnvalidatedAtomValue_DEPRECATED,
   peekNodeInfo,
-  getDownstreamNodes,
-  initializeNodeIfNewToStore
+  getDownstreamNodes
 };
 
 const {
@@ -3288,7 +3291,7 @@ const {
 } = Recoil_Batching;
 
 const {
-  initializeNodeIfNewToStore: initializeNodeIfNewToStore$1,
+  initNode: initNode$1,
   peekNodeInfo: peekNodeInfo$1
 } = Recoil_FunctionalCore;
 
@@ -3441,8 +3444,8 @@ class Snapshot {
     }; // Initialize any nodes that are live in the parent store (primarily so that this
     // snapshot gets counted towards the node's live stores count).
 
-    for (const nodeKey of this._store.getState().nodeCleanupFunctions.keys()) {
-      initializeNodeIfNewToStore$1(this._store, storeState.currentTree, nodeKey, 'get');
+    for (const nodeKey of this._store.getState().knownAtoms) {
+      initNode$1(this._store, nodeKey);
       updateRetainCount$1(this._store, nodeKey, 1);
     }
 
@@ -3693,6 +3696,7 @@ const {
 const {
   cleanUpNode: cleanUpNode$2,
   getDownstreamNodes: getDownstreamNodes$2,
+  initNode: initNode$2,
   setNodeValue: setNodeValue$2,
   setUnvalidatedAtomValue_DEPRECATED: setUnvalidatedAtomValue_DEPRECATED$1
 } = Recoil_FunctionalCore;
@@ -3911,8 +3915,18 @@ function Batcher({
   setNotifyBatcherOfChange
 }) {
   const storeRef = useStoreRef();
-  const [_, setState] = useState([]);
+  const [, setState] = useState([]);
   setNotifyBatcherOfChange(() => setState({}));
+  useEffect(() => {
+    setNotifyBatcherOfChange(() => setState({})); // If an asynchronous selector resolves after the Batcher is unmounted,
+    // notifyBatcherOfChange will still be called. An error gets thrown whenever
+    // setState is called after a component is already unmounted, so this sets
+    // notifyBatcherOfChange to be a no-op.
+
+    return () => {
+      setNotifyBatcherOfChange(() => {});
+    };
+  }, [setNotifyBatcherOfChange]);
   useEffect(() => {
     // enqueueExecution runs this function immediately; it is only used to
     // manipulate the order of useEffects during tests, since React seems to
@@ -3920,16 +3934,7 @@ function Batcher({
     Recoil_Queue.enqueueExecution('Batcher', () => {
       endBatch(storeRef);
     });
-  }); // If an asynchronous selector resolves after the Batcher is unmounted,
-  // notifyBatcherOfChange will still be called. An error gets thrown whenever
-  // setState is called after a component is already unmounted, so this sets
-  // notifyBatcherOfChange to be a no-op.
-
-  useEffect(() => {
-    return () => {
-      setNotifyBatcherOfChange(() => {});
-    };
-  }, [setNotifyBatcherOfChange]);
+  });
   return null;
 }
 
@@ -4124,11 +4129,36 @@ function RecoilRoot_INTERNAL({
 
   const mutableSource = useMemo(() => createMutableSource ? createMutableSource(storeStateRef, () => storeStateRef.current.currentTree.version) : null, [createMutableSource, storeStateRef]); // Cleanup when the <RecoilRoot> is unmounted
 
-  useEffect(() => () => {
-    for (const atomKey of storeRef.current.getState().knownAtoms) {
-      cleanUpNode$2(storeRef.current, atomKey);
+  const cleanedUpNodesRef = Recoil_useRefInitOnce(() => new Map());
+  useEffect(() => {
+    // React is free to call effect cleanup handlers and effects at will, the
+    // deps array is only an optimization.  For example, React strict mode
+    // will execute each effect twice for testing.  Therefore, we need symmetry
+    // to re-initialize all known atoms after they were cleaned up.
+    const store = storeRef.current;
+
+    for (const atomKey of (_cleanedUpNodesRef$cu = cleanedUpNodesRef.current.get(store.storeID)) !== null && _cleanedUpNodesRef$cu !== void 0 ? _cleanedUpNodesRef$cu : []) {
+      var _cleanedUpNodesRef$cu;
+
+      initNode$2(store, atomKey);
     }
-  }, []);
+
+    cleanedUpNodesRef.current.delete(store.storeID);
+    return () => {
+      const {
+        knownAtoms
+      } = store.getState(); // Save the set of known atoms from this cleanup in case the effect is just
+      // being cleaned up and then executed again so we can re-initialize the
+      // atoms above.
+      // eslint-disable-next-line fb-www/react-hooks-deps
+
+      cleanedUpNodesRef.current.set(store.storeID, new Set(knownAtoms));
+
+      for (const atomKey of knownAtoms) {
+        cleanUpNode$2(storeRef.current, atomKey);
+      }
+    };
+  }, [storeRef, cleanedUpNodesRef]);
   return /*#__PURE__*/react.createElement(AppContext.Provider, {
     value: storeRef
   }, /*#__PURE__*/react.createElement(MutableSourceContext.Provider, {
@@ -4619,8 +4649,8 @@ function validateRecoilValue(recoilValue, hookName) {
 }
 
 /**
- * Various things are broken with useRecoilInterface, particularly concurrent mode
- * and memory management. They will not be fixed.
+ * Various things are broken with useRecoilInterface, particularly concurrent
+ * mode, React strict mode, and memory management. They will not be fixed.
  * */
 function useRecoilInterface_DEPRECATED() {
   const storeRef = useStoreRef$2();
@@ -7626,7 +7656,7 @@ function baseAtom(options) {
       liveStoresCount--;
       (_cleanupEffectsByStor2 = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor2 === void 0 ? void 0 : _cleanupEffectsByStor2.forEach(cleanup => cleanup());
       cleanupEffectsByStore.delete(store);
-      store.getState().knownAtoms.delete(key); // FIXME remove knownAtoms?
+      store.getState().knownAtoms.delete(key);
     };
   }
 
