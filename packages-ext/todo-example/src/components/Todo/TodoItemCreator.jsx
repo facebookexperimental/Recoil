@@ -13,7 +13,7 @@ import {todoListState} from './Todo_state';
 import React, {useState} from 'react';
 import {useSetRecoilState} from 'recoil';
 
-export const TodoItemCreator = () => {
+export const TodoItemCreator = (): React$Element<"div"> => {
   const [inputValue, setInputValue] = useState('');
   const setTodoList = useSetRecoilState(todoListState);
 

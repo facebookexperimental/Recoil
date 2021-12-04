@@ -10,10 +10,10 @@
  */
 'use strict';
 
-const ExtensionSource = __DEV__
+const ExtensionSource: string = __DEV__
   ? 'recoil-dev-tools-DEV-MODE'
   : 'recoil-dev-tools';
-const ExtensionSourceContentScript = __DEV__
+const ExtensionSourceContentScript: string = __DEV__
   ? 'recoil-dev-tools-content-script-DEV-MODE'
   : 'recoil-dev-tools-content-script';
 

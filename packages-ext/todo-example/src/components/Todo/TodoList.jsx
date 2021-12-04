@@ -17,7 +17,7 @@ import {TodoListStats} from './TodoListStats';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 
-export const TodoList = () => {
+export const TodoList = (): React$Element<React$FragmentType> => {
   const todoList = useRecoilValue(filteredTodoListState);
 
   return (

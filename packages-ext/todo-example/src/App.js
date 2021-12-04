@@ -14,7 +14,9 @@ import {TodoList} from './components/Todo/TodoList';
 import React from 'react';
 import {RecoilRoot} from 'recoil';
 
-function App() {
+type Props = {};
+
+function App(): React$MixedElement {
   return (
     <RecoilRoot>
       <div className="todo-container">

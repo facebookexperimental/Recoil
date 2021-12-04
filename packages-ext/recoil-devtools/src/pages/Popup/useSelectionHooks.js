@@ -8,17 +8,17 @@
  * @format
  */
 'use strict';
-
+import type {SetterOrUpdater} from 'recoil/hooks/Recoil_Hooks';
 import type {RecoilState} from 'recoil';
 
-const {atom, useRecoilState} = require('recoil');
+import {atom, useRecoilState} from 'recoil';
 
 const FilterAtom = atom({
   key: 'filter-atom',
   default: '',
 });
 
-const useFilter = () => {
+const useFilter = (): [string, SetterOrUpdater<string>] => {
   return useRecoilState<string>(FilterAtom);
 };
 
@@ -27,7 +27,7 @@ const SelectecTransactionAtom = atom({
   default: 0,
 });
 
-const useSelectedTransaction = () => {
+const useSelectedTransaction = (): [number, SetterOrUpdater<number>] => {
   return useRecoilState<number>(SelectecTransactionAtom);
 };
 

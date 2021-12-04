@@ -15,7 +15,7 @@ import {todoListState} from './Todo_state';
 import React from 'react';
 import {useRecoilState} from 'recoil';
 
-export const TodoItem = ({item, index}: {item: TItem, index: number}) => {
+export const TodoItem = ({item, index}: {item: TItem, index: number}): React$Element<"div"> => {
   const [todoList, setTodoList] = useRecoilState(todoListState);
 
   const editItemText = ({target: {value}}) => {

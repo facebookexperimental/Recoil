@@ -8,6 +8,7 @@
  * @format
  */
 'use strict';
+import type Connection from '../../utils/Connection';
 
 import type {TransactionType} from '../../types/DevtoolsTypes';
 import type Store from '../../utils/Store';
@@ -23,7 +24,11 @@ type AppProps = {
   store: Store,
 };
 
-function PopupApp({store}: AppProps) {
+function PopupApp({
+  store,
+}: AppProps): React$Element<
+  React$ComponentType<{children?: React$Node, value: ?Connection, ...}>,
+> {
   const tabId = chrome.devtools?.inspectedWindow?.tabId ?? null;
   const [selectedConnection, setSelectedConnection] = useState(tabId);
   const [maxTransactionId, setMaxTransactionId] = useState(

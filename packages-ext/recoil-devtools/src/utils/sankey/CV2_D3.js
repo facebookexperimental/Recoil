@@ -45,17 +45,25 @@ const OPTION_DEFAULTS: Options = {
 };
 
 class Selection<T> {
+  // $FlowFixMe
   all: D3Selection;
+  // $FlowFixMe
   new: D3Selection;
+  // $FlowFixMe
   old: D3Selection;
+  // $FlowFixMe
   update: D3Selection;
   options: Options;
 
   constructor(
     props: {
+      // $FlowFixMe
       all: D3Selection,
+      // $FlowFixMe
       new: D3Selection,
+      // $FlowFixMe
       old: D3Selection,
+      // $FlowFixMe
       update: D3Selection,
     },
     options: Options,

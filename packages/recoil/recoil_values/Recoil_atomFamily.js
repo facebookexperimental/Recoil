@@ -58,16 +58,15 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
 }>;
 
 // Process scopeRules to handle any entries which are functions taking parameters
-// prettier-ignore
 // @fb-only: function mapScopeRules<P>(
-  // @fb-only: scopeRules?: ParameterizedScopeRules<P>,
-  // @fb-only: param: P,
+// @fb-only:   scopeRules?: ParameterizedScopeRules<P>,
+// @fb-only:   param: P,
 // @fb-only: ): ScopeRules | void {
-  // @fb-only: return scopeRules?.map(rule =>
-    // @fb-only: Array.isArray(rule)
-      // @fb-only: ? rule.map(entry => (typeof entry === 'function' ? entry(param) : entry))
-      // @fb-only: : rule,
-  // @fb-only: );
+// @fb-only:   return scopeRules?.map(rule =>
+// @fb-only:     Array.isArray(rule)
+// @fb-only:       ? rule.map(entry => (typeof entry === 'function' ? entry(param) : entry))
+// @fb-only:       : rule,
+// @fb-only:   );
 // @fb-only: }
 
 /*

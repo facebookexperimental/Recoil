@@ -12,7 +12,7 @@
 export const getStyle = (
   source: {[key: string]: {[key: string]: string | number}},
   entries: {[key: string]: boolean},
-) => {
+): {...} | {[string]: number | string} => {
   return Object.entries(entries).reduce((acc, [key, value]) => {
     let nextAcc = {...acc};
     if (Boolean(value)) {
