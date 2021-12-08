@@ -2,7 +2,6 @@
 .*/__tests__.*
 .*/node_modules.*
 <PROJECT_ROOT>/cjs/.*
-# <PROJECT_ROOT>/packages-ext/.*
 <PROJECT_ROOT>/packages/recoil-sync/.*
 
 [include]
