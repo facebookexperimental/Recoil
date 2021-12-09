@@ -445,7 +445,7 @@ testRecoil(
   },
 );
 
-testRecoil('Independent atom subscriptions', gks => {
+testRecoil('Independent atom subscriptions', ({gks}) => {
   const BASE_CALLS =
     mutableSourceExists() ||
     gks.includes('recoil_suppress_rerender_in_callback')

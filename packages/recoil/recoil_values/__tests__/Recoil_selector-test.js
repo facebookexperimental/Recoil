@@ -691,7 +691,7 @@ testRecoil("Selector can't call getCallback during evaluation", () => {
   getError(mySelector);
 });
 
-testRecoil("Updating with same value doesn't rerender", gks => {
+testRecoil("Updating with same value doesn't rerender", ({gks}) => {
   if (!gks.includes('recoil_suppress_rerender_in_callback')) {
     return;
   }
@@ -763,7 +763,7 @@ testRecoil("Updating with same value doesn't rerender", gks => {
 //
 // Step 2 may be problematic if we attempt to suppress re-renders and don't
 // properly keep track of previous component values when the mutable source changes.
-testRecoil('Updating with changed selector', gks => {
+testRecoil('Updating with changed selector', ({gks}) => {
   if (!gks.includes('recoil_suppress_rerender_in_callback')) {
     return;
   }
