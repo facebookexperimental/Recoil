@@ -10,18 +10,19 @@
  */
 'use strict';
 
-import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
-import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 import type {ValueOrUpdater} from '../recoil_values/Recoil_callbackTypes';
+import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
+import type {NodeKey, Store, TreeState} from './Recoil_State';
 
 const {loadableWithValue} = require('../adt/Recoil_Loadable');
-const {DEFAULT_VALUE, getNode} = require('../core/Recoil_Node');
+const {initializeNode} = require('./Recoil_FunctionalCore');
+const {DEFAULT_VALUE, getNode} = require('./Recoil_Node');
 const {
   copyTreeState,
   getRecoilValueAsLoadable,
   invalidateDownstreams,
   writeLoadableToTreeState,
-} = require('../core/Recoil_RecoilValueInterface');
+} = require('./Recoil_RecoilValueInterface');
 const err = require('recoil-shared/util/Recoil_err');
 
 export interface TransactionInterface {
@@ -80,10 +81,14 @@ class TransactionInterfaceImpl {
     if (!isAtom(recoilState)) {
       throw err('Setting selectors within atomicUpdate is not supported');
     }
+
     if (typeof valueOrUpdater === 'function') {
       const current = this.get(recoilState);
       this._changes.set(recoilState.key, (valueOrUpdater: any)(current)); // flowlint-line unclear-type:off
     } else {
+      // Initialize atom and run effects if not initialized yet
+      initializeNode(this._store, recoilState.key);
+
       this._changes.set(recoilState.key, valueOrUpdater);
     }
   };
