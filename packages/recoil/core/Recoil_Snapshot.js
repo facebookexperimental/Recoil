@@ -22,7 +22,7 @@ import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
 const {batchUpdates} = require('./Recoil_Batching');
-const {initNode, peekNodeInfo} = require('./Recoil_FunctionalCore');
+const {initializeNode, peekNodeInfo} = require('./Recoil_FunctionalCore');
 const {graph} = require('./Recoil_Graph');
 const {getNextStoreID} = require('./Recoil_Keys');
 const {
@@ -96,7 +96,7 @@ class Snapshot {
     // Initialize any nodes that are live in the parent store (primarily so that this
     // snapshot gets counted towards the node's live stores count).
     for (const nodeKey of this._store.getState().knownAtoms) {
-      initNode(this._store, nodeKey);
+      initializeNode(this._store, nodeKey);
       updateRetainCount(this._store, nodeKey, 1);
     }
     this.retain();

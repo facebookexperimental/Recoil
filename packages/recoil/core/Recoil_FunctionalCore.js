@@ -101,8 +101,18 @@ function initializeNodeIfNewToStore(
   });
 }
 
-function initNode(store: Store, key: NodeKey): void {
+function initializeNode(store: Store, key: NodeKey): void {
   initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
+}
+
+function reinitializeNode(store: Store, key: NodeKey): void {
+  const storeState = store.getState();
+  // If this atom was previously initialized (set in knownAtoms), but was
+  // cleaned up (not set in nodeCleanupFunctions), then re-initialize it.
+  if (!storeState.nodeCleanupFunctions.has(key)) {
+    storeState.knownAtoms.delete(key); // Force atom to re-initialize
+  }
+  initializeNodeIfNewToStore(store, storeState.currentTree, key, 'get');
 }
 
 function cleanUpNode(store: Store, key: NodeKey) {
@@ -251,7 +261,8 @@ module.exports = {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
-  initNode,
+  initializeNode,
+  reinitializeNode,
   cleanUpNode,
   setUnvalidatedAtomValue_DEPRECATED,
   peekNodeInfo,

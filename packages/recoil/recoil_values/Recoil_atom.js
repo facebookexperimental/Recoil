@@ -229,9 +229,17 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     initState: TreeState,
     trigger: Trigger,
   ): () => void {
-    liveStoresCount++;
-    const alreadyKnown = store.getState().knownAtoms.has(key);
+    const cleanupAtom = () => {
+      liveStoresCount--;
+      cleanupEffectsByStore.get(store)?.forEach(cleanup => cleanup());
+      cleanupEffectsByStore.delete(store);
+    };
+
+    if (store.getState().knownAtoms.has(key)) {
+      return cleanupAtom;
+    }
     store.getState().knownAtoms.add(key);
+    liveStoresCount++;
 
     // Setup async defaults to notify subscribers when they resolve
     if (defaultLoadable.state === 'loading') {
@@ -246,17 +254,19 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         .catch(notifyDefaultSubscribers);
     }
 
+    ///////////////////
     // Run Atom Effects
+    ///////////////////
 
-    // This state is scoped by Store, since this is in the initAtom() closure
-    let initValue: NewValue<T> = DEFAULT_VALUE;
-    let pendingSetSelf: ?{
-      effect: AtomEffect<T>,
-      value: T | DefaultValue,
-    } = null;
-
-    if (options.effects_UNSTABLE != null && !alreadyKnown) {
+    if (options.effects_UNSTABLE != null) {
+      // This state is scoped by Store, since this is in the initAtom() closure
       let duringInit = true;
+      let initValue: NewValue<T> = DEFAULT_VALUE;
+      let isInitError: boolean = false;
+      let pendingSetSelf: ?{
+        effect: AtomEffect<T>,
+        value: T | DefaultValue,
+      } = null;
 
       function getLoadable<S>(recoilValue: RecoilValue<S>): Loadable<S> {
         // Normally we can just get the current value of another atom.
@@ -394,49 +404,51 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         };
 
       for (const effect of options.effects_UNSTABLE ?? []) {
-        const cleanup = effect({
-          node,
-          storeID: store.storeID,
-          trigger,
-          setSelf: setSelf(effect),
-          resetSelf: resetSelf(effect),
-          onSet: onSet(effect),
-          getPromise,
-          getLoadable,
-          getInfo_UNSTABLE,
-        });
-        if (cleanup != null) {
-          cleanupEffectsByStore.set(store, [
-            ...(cleanupEffectsByStore.get(store) ?? []),
-            cleanup,
-          ]);
+        try {
+          const cleanup = effect({
+            node,
+            storeID: store.storeID,
+            trigger,
+            setSelf: setSelf(effect),
+            resetSelf: resetSelf(effect),
+            onSet: onSet(effect),
+            getPromise,
+            getLoadable,
+            getInfo_UNSTABLE,
+          });
+          if (cleanup != null) {
+            cleanupEffectsByStore.set(store, [
+              ...(cleanupEffectsByStore.get(store) ?? []),
+              cleanup,
+            ]);
+          }
+        } catch (error) {
+          initValue = error;
+          isInitError = true;
         }
       }
 
       duringInit = false;
+
+      // Mutate initial state in place since we know there are no other subscribers
+      // since we are the ones initializing on first use.
+      if (!(initValue instanceof DefaultValue)) {
+        const frozenInitValue = maybeFreezeValueOrPromise(initValue);
+        const initLoadable = isInitError
+          ? loadableWithError(initValue)
+          : isPromise(frozenInitValue)
+          ? loadableWithPromise(wrapPendingPromise(store, frozenInitValue))
+          : loadableWithValue(frozenInitValue);
+        initState.atomValues.set(key, initLoadable);
+
+        // If there is a pending transaction, then also mutate the next state tree.
+        // This could happen if the atom was first initialized in an action that
+        // also updated some other atom's state.
+        store.getState().nextTree?.atomValues.set(key, initLoadable);
+      }
     }
 
-    // Mutate initial state in place since we know there are no other subscribers
-    // since we are the ones initializing on first use.
-    if (!(initValue instanceof DefaultValue)) {
-      const frozenInitValue = maybeFreezeValueOrPromise(initValue);
-      const initLoadable = isPromise(frozenInitValue)
-        ? loadableWithPromise(wrapPendingPromise(store, frozenInitValue))
-        : loadableWithValue(frozenInitValue);
-      initState.atomValues.set(key, initLoadable);
-
-      // If there is a pending transaction, then also mutate the next state tree.
-      // This could happen if the atom was first initialized in an action that
-      // also updated some other atom's state.
-      store.getState().nextTree?.atomValues.set(key, initLoadable);
-    }
-
-    return () => {
-      liveStoresCount--;
-      cleanupEffectsByStore.get(store)?.forEach(cleanup => cleanup());
-      cleanupEffectsByStore.delete(store);
-      store.getState().knownAtoms.delete(key);
-    };
+    return cleanupAtom;
   }
 
   function peekAtom(_store, state: TreeState): ?Loadable<T> {
