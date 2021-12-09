@@ -30,7 +30,7 @@ const {getNextStoreID} = require('../../recoil/core/Recoil_Keys');
 const {
   notifyComponents_FOR_TESTING,
   sendEndOfBatchNotifications_FOR_TESTING,
-} = require('../../recoil/core/Recoil_RecoilRoot.react');
+} = require('../../recoil/core/Recoil_RecoilRoot');
 const {
   invalidateDownstreams_FOR_TESTING,
 } = require('../../recoil/core/Recoil_RecoilValueInterface');

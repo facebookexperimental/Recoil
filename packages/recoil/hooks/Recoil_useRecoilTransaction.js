@@ -13,7 +13,7 @@
 import type {TransactionInterface} from '../core/Recoil_AtomicUpdates';
 
 const {atomicUpdater} = require('../core/Recoil_AtomicUpdates');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 const {useMemo} = require('react');
 
 function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(

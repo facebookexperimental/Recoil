@@ -40,8 +40,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
-  ({RecoilRoot} = require('../Recoil_RecoilRoot.react'));
-  ({useStoreRef} = require('../Recoil_RecoilRoot.react'));
+  ({RecoilRoot, useStoreRef} = require('../Recoil_RecoilRoot'));
 });
 
 describe('initializeState', () => {

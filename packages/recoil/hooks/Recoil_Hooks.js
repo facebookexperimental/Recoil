@@ -21,7 +21,7 @@ const {DEFAULT_VALUE} = require('../core/Recoil_Node');
 const {
   useRecoilMutableSource,
   useStoreRef,
-} = require('../core/Recoil_RecoilRoot.react');
+} = require('../core/Recoil_RecoilRoot');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   AbstractRecoilValue,

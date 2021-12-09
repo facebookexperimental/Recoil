@@ -18,8 +18,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
-  ({RecoilRoot} = require('../Recoil_RecoilRoot.react'));
-  ({useRecoilStoreID} = require('../Recoil_RecoilRoot.react'));
+  ({RecoilRoot, useRecoilStoreID} = require('../Recoil_RecoilRoot'));
 });
 
 testRecoil('useRecoilStoreID', () => {

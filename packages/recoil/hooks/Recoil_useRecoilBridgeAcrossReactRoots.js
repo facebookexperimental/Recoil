@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const {RecoilRoot, useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {RecoilRoot, useStoreRef} = require('../core/Recoil_RecoilRoot');
 const React = require('react');
 const {useMemo} = require('react');
 

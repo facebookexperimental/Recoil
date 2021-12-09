@@ -30,7 +30,7 @@ const testRecoil = getRecoilTestFn(() => {
   ReactDOM = require('ReactDOMLegacy_DEPRECATED');
   ({act} = require('ReactTestUtils'));
 
-  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot.react'));
+  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot'));
   atom = require('../../recoil_values/Recoil_atom');
   ({
     componentThatReadsAndWritesAtom,
