@@ -266,7 +266,7 @@ testRecoil('Effects going to previous snapshot', () => {
   act(forceUpdate);
   expect(init).toEqual(1);
 
-  gotoRecoilSnapshot?.(freshSnapshot());
+  act(() => gotoRecoilSnapshot?.(freshSnapshot()));
   expect(init).toEqual(1);
   act(forceUpdate);
   expect(init).toEqual(1);
