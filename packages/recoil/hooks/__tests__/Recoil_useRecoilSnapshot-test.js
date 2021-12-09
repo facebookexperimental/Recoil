@@ -51,7 +51,10 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('../Recoil_SnapshotHooks'));
 });
 
-testRecoil('useRecoilSnapshot - subscribe to updates', () => {
+testRecoil('useRecoilSnapshot - subscribe to updates', ({strictMode}) => {
+  if (strictMode) {
+    return;
+  }
   const myAtom = atom({
     key: 'useRecoilSnapshot - subscribe',
     default: 'DEFAULT',
@@ -95,7 +98,10 @@ testRecoil('useRecoilSnapshot - subscribe to updates', () => {
   expect(snapshots[2].getLoadable(myAtom).contents).toEqual('DEFAULT');
 });
 
-testRecoil('useRecoilSnapshot - goto snapshots', () => {
+testRecoil('useRecoilSnapshot - goto snapshots', ({strictMode}) => {
+  if (strictMode) {
+    return;
+  }
   const atomA = atom({
     key: 'useRecoilSnapshot - goto A',
     default: 'DEFAULT',
