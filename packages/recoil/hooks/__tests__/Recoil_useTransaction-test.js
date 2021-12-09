@@ -10,6 +10,8 @@
  */
 'use strict';
 
+const {act} = require('ReactTestUtils');
+
 const {
   getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
@@ -28,84 +30,174 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
 });
 
-testRecoil(
-  'Atom effects are initialized once if first seen on transaction and then on root store',
-  () => {
-    let numTimesEffectInit = 0;
+describe('Atoms', () => {
+  testRecoil('Get with transaction', () => {
+    const myAtom = atom({key: 'useTransaction atom get', default: 'DEFAULT'});
 
+    let readAtom;
+    let ranTransaction = false;
+    function Component() {
+      readAtom = useRecoilTransaction(({get}) => () => {
+        expect(get(myAtom)).toEqual('DEFAULT');
+        ranTransaction = true;
+      });
+      return null;
+    }
+    renderElements(<Component />);
+    expect(ranTransaction).toBe(false);
+
+    act(readAtom);
+    expect(ranTransaction).toBe(true);
+  });
+
+  // TODO Unable to test setting from a transaction as Jest complains about
+  // updates not wrapped in act(...)...
+  // testRecoil('Set with transaction', () => {
+  //   const myAtom = atom<string>({
+  //     key: 'useTransaction atom set',
+  //     default: 'DEFAULT',
+  //   });
+
+  //   let setAtom;
+  //   let updateAtom;
+  //   function Component() {
+  //     setAtom = useRecoilTransaction(({set}) => value => {
+  //       act(() => {
+  //         set(myAtom, value);
+  //       });
+  //     });
+  //     updateAtom = useRecoilTransaction(({set}) => value => {
+  //       set(myAtom, old => {
+  //         expect(old).toEqual('SET');
+  //         return value;
+  //       });
+  //     });
+  //     return null;
+  //   }
+  //   const c = renderElements(
+  //     <>
+  //       <ReadsAtom atom={myAtom} />
+  //       <Component />
+  //     </>,
+  //   );
+  //   expect(c.textContent).toEqual('"DEFAULT"');
+
+  //   act(() => setAtom('SET'));
+  //   expect(c.textContent).toEqual('"SET"');
+
+  //   act(() => updateAtom('UPDATE'));
+  //   expect(c.textContent).toEqual('UPDATE');
+  // });
+});
+
+describe('Atom Effects', () => {
+  testRecoil('Atom effects can initialize for a transaction', async () => {
+    let numTimesEffectInit = 0;
     const atomWithEffect = atom({
-      key: 'atomWithEffect',
-      default: 0,
+      key: 'atom effect init transaction',
+      default: 'DEFAULT',
       effects_UNSTABLE: [
-        () => {
+        ({setSelf}) => {
+          setSelf('INIT');
           numTimesEffectInit++;
         },
       ],
     });
 
+    let initAtomWithTransaction;
     const Component = () => {
-      const readAtomFromSnapshot = useRecoilTransaction(({get}) => () => {
-        get(atomWithEffect);
+      initAtomWithTransaction = useRecoilTransaction(({get}) => () => {
+        expect(get(atomWithEffect)).toEqual('INIT');
       });
-
-      readAtomFromSnapshot(); // first initialization
-
-      expect(numTimesEffectInit).toBe(1);
-
-      /**
-       * Transactions do not use a snapshot under the hood, so any initialized
-       * effects from a transaction will be reflected in root store
-       */
-      useRecoilValue(atomWithEffect);
-
-      expect(numTimesEffectInit).toBe(1);
-
       return null;
     };
 
     renderElements(<Component />);
 
+    act(() => initAtomWithTransaction());
+
     expect(numTimesEffectInit).toBe(1);
-  },
-);
+  });
 
-testRecoil(
-  'Atom effects are initialized once if first seen on root store and then on snapshot',
-  () => {
-    let numTimesEffectInit = 0;
+  testRecoil(
+    'Atom effects are initialized once if first seen on transaction and then on root store',
+    () => {
+      let numTimesEffectInit = 0;
 
-    const atomWithEffect = atom({
-      key: 'atomWithEffect2',
-      default: 0,
-      effects_UNSTABLE: [
-        () => {
-          numTimesEffectInit++;
-        },
-      ],
-    });
-
-    const Component = () => {
-      const readAtomFromSnapshot = useRecoilTransaction(({get}) => () => {
-        get(atomWithEffect);
+      const atomWithEffect = atom({
+        key: 'useTransaction effect first get transaction',
+        default: 0,
+        effects_UNSTABLE: [
+          () => {
+            numTimesEffectInit++;
+          },
+        ],
       });
 
-      useRecoilValue(atomWithEffect); // first initialization
+      const Component = () => {
+        const readAtomFromSnapshot = useRecoilTransaction(({get}) => () => {
+          get(atomWithEffect);
+        });
+
+        readAtomFromSnapshot(); // first initialization
+
+        expect(numTimesEffectInit).toBe(1);
+
+        /**
+         * Transactions do not use a snapshot under the hood, so any initialized
+         * effects from a transaction will be reflected in root store
+         */
+        useRecoilValue(atomWithEffect);
+
+        expect(numTimesEffectInit).toBe(1);
+
+        return null;
+      };
+
+      renderElements(<Component />);
 
       expect(numTimesEffectInit).toBe(1);
+    },
+  );
 
-      /**
-       * Transactions do not use a snapshot under the hood, so any initialized
-       * effects from a transaction will be reflected in root store
-       */
-      readAtomFromSnapshot();
+  testRecoil(
+    'Atom effects are initialized once if first seen on root store and then on snapshot',
+    () => {
+      let numTimesEffectInit = 0;
+
+      const atomWithEffect = atom({
+        key: 'atom effect first get root',
+        default: 0,
+        effects_UNSTABLE: [
+          () => {
+            numTimesEffectInit++;
+          },
+        ],
+      });
+
+      const Component = () => {
+        const readAtomFromSnapshot = useRecoilTransaction(({get}) => () => {
+          get(atomWithEffect);
+        });
+
+        useRecoilValue(atomWithEffect); // first initialization
+
+        expect(numTimesEffectInit).toBe(1);
+
+        /**
+         * Transactions do not use a snapshot under the hood, so any initialized
+         * effects from a transaction will be reflected in root store
+         */
+        readAtomFromSnapshot();
+
+        expect(numTimesEffectInit).toBe(1);
+
+        return null;
+      };
+
+      renderElements(<Component />);
 
       expect(numTimesEffectInit).toBe(1);
-
-      return null;
-    };
-
-    renderElements(<Component />);
-
-    expect(numTimesEffectInit).toBe(1);
-  },
-);
+    },
+  );
+});
