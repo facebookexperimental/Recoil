@@ -27,7 +27,7 @@ const {
 const {
   useRecoilMutableSource,
   useStoreRef
-} = require('../core/Recoil_RecoilRoot.react');
+} = require('../core/Recoil_RecoilRoot');
 
 const {
   isRecoilValue

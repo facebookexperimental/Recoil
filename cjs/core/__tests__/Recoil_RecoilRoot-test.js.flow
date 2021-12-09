@@ -34,11 +34,9 @@ const testRecoil = getRecoilTestFn(() => {
     renderElements
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({
-    RecoilRoot
-  } = require('../Recoil_RecoilRoot.react'));
-  ({
+    RecoilRoot,
     useStoreRef
-  } = require('../Recoil_RecoilRoot.react'));
+  } = require('../Recoil_RecoilRoot'));
 });
 describe('initializeState', () => {
   testRecoil('initialize atom', () => {
@@ -76,7 +74,10 @@ describe('initializeState', () => {
       </RecoilRoot>);
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
   });
-  testRecoil('Atom Effects run with global initialization', () => {
+  testRecoil('Atom Effects run with global initialization', ({
+    strictMode
+  }) => {
+    const sm = strictMode ? 2 : 1;
     let effectRan = 0;
     const myAtom = atom<string>({
       key: 'RecoilRoot - initializeState - atom effects',
@@ -97,13 +98,13 @@ describe('initializeState', () => {
     const container1 = renderElements(<RecoilRoot initializeState={initializeState}>NO READ</RecoilRoot>); // Effects are run when initialized with initializeState, even if not read.
 
     expect(container1.textContent).toEqual('NO READ');
-    expect(effectRan).toEqual(1);
+    expect(effectRan).toEqual(1 * sm);
     const container2 = renderElements(<RecoilRoot initializeState={initializeState}>
         <ReadsAtom atom={myAtom} />
       </RecoilRoot>); // Effects are run first, initializeState() takes precedence
 
     expect(container2.textContent).toEqual('"INITIALIZE"');
-    expect(effectRan).toEqual(2);
+    expect(effectRan).toEqual(2 * sm);
   });
   testRecoil('initialize with nested store', () => {
     declare var GetStore: (arg0: {
@@ -123,6 +124,39 @@ describe('initializeState', () => {
         ROOT
       </RecoilRoot>);
     expect(container.textContent).toEqual('NESTED_ROOT/ROOT');
+  });
+  testRecoil('initializeState is only called once', ({
+    strictMode
+  }) => {
+    if (strictMode) {
+      return;
+    }
+
+    const myAtom = atom({
+      key: 'RecoilRoot/override/atom',
+      default: 'DEFAULT'
+    });
+    const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+    const initializeState = jest.fn(({
+      set
+    }) => set(myAtom, 'INIT'));
+    declare var forceUpdate: () => any;
+    declare var setRootKey: (_: any) => any;
+    declare function MyRoot(): any;
+    const container = renderElements(<MyRoot />);
+    expect(container.textContent).toEqual('0"INIT"');
+    act(forceUpdate);
+    expect(initializeState).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toEqual('1"INIT"');
+    act(() => setAtom('SET'));
+    expect(initializeState).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toEqual('1"SET"');
+    act(forceUpdate);
+    expect(initializeState).toHaveBeenCalledTimes(1);
+    expect(container.textContent).toEqual('2"SET"');
+    act(() => setRootKey(1));
+    expect(initializeState).toHaveBeenCalledTimes(2);
+    expect(container.textContent).toEqual('2"INIT"');
   });
 });
 testRecoil('Impure state updater functions that trigger atom updates are detected', () => {
@@ -211,32 +245,5 @@ describe('override prop', () => {
     expect(container.textContent).toEqual('"DEFAULT"');
     act(() => setAtom('SET'));
     expect(container.textContent).toEqual('"SET"');
-  });
-  testRecoil('initializeState is only called once', () => {
-    const myAtom = atom({
-      key: 'RecoilRoot/override/atom',
-      default: 'DEFAULT'
-    });
-    const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
-    const initializeState = jest.fn(({
-      set
-    }) => set(myAtom, 'INIT'));
-    declare var forceUpdate: () => any;
-    declare var setRootKey: (_: any) => any;
-    declare function MyRoot(): any;
-    const container = renderElements(<MyRoot />);
-    expect(container.textContent).toEqual('0"INIT"');
-    act(forceUpdate);
-    expect(initializeState).toHaveBeenCalledTimes(1);
-    expect(container.textContent).toEqual('1"INIT"');
-    act(() => setAtom('SET'));
-    expect(initializeState).toHaveBeenCalledTimes(1);
-    expect(container.textContent).toEqual('1"SET"');
-    act(forceUpdate);
-    expect(initializeState).toHaveBeenCalledTimes(1);
-    expect(container.textContent).toEqual('2"SET"');
-    act(() => setRootKey(1));
-    expect(initializeState).toHaveBeenCalledTimes(2);
-    expect(container.textContent).toEqual('2"INIT"');
   });
 });

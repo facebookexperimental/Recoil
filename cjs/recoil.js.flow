@@ -34,7 +34,7 @@ const {
 const {
   RecoilRoot,
   useRecoilStoreID
-} = require('./core/Recoil_RecoilRoot.react');
+} = require('./core/Recoil_RecoilRoot');
 
 const {
   isRecoilValue

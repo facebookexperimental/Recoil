@@ -2363,8 +2363,19 @@
     });
   }
 
-  function initNode(store, key) {
+  function initializeNode(store, key) {
     initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
+  }
+
+  function reinitializeNode(store, key) {
+    const storeState = store.getState(); // If this atom was previously initialized (set in knownAtoms), but was
+    // cleaned up (not set in nodeCleanupFunctions), then re-initialize it.
+
+    if (!storeState.nodeCleanupFunctions.has(key)) {
+      storeState.knownAtoms.delete(key); // Force atom to re-initialize
+    }
+
+    initializeNodeIfNewToStore(store, storeState.currentTree, key, 'get');
   }
 
   function cleanUpNode(store, key) {
@@ -2471,7 +2482,8 @@
     getNodeLoadable,
     peekNodeLoadable,
     setNodeValue,
-    initNode,
+    initializeNode,
+    reinitializeNode,
     cleanUpNode,
     setUnvalidatedAtomValue_DEPRECATED,
     peekNodeInfo,
@@ -3291,7 +3303,7 @@
   } = Recoil_Batching;
 
   const {
-    initNode: initNode$1,
+    initializeNode: initializeNode$1,
     peekNodeInfo: peekNodeInfo$1
   } = Recoil_FunctionalCore;
 
@@ -3445,7 +3457,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       // snapshot gets counted towards the node's live stores count).
 
       for (const nodeKey of this._store.getState().knownAtoms) {
-        initNode$1(this._store, nodeKey);
+        initializeNode$1(this._store, nodeKey);
         updateRetainCount$1(this._store, nodeKey, 1);
       }
 
@@ -3696,7 +3708,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     cleanUpNode: cleanUpNode$2,
     getDownstreamNodes: getDownstreamNodes$2,
-    initNode: initNode$2,
+    reinitializeNode: reinitializeNode$1,
     setNodeValue: setNodeValue$2,
     setUnvalidatedAtomValue_DEPRECATED: setUnvalidatedAtomValue_DEPRECATED$1
   } = Recoil_FunctionalCore;
@@ -4129,7 +4141,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
     const mutableSource = useMemo(() => createMutableSource ? createMutableSource(storeStateRef, () => storeStateRef.current.currentTree.version) : null, [createMutableSource, storeStateRef]); // Cleanup when the <RecoilRoot> is unmounted
 
-    const cleanedUpNodesRef = Recoil_useRefInitOnce(() => new Map());
     useEffect(() => {
       // React is free to call effect cleanup handlers and effects at will, the
       // deps array is only an optimization.  For example, React strict mode
@@ -4137,28 +4148,16 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       // to re-initialize all known atoms after they were cleaned up.
       const store = storeRef.current;
 
-      for (const atomKey of (_cleanedUpNodesRef$cu = cleanedUpNodesRef.current.get(store.storeID)) !== null && _cleanedUpNodesRef$cu !== void 0 ? _cleanedUpNodesRef$cu : []) {
-        var _cleanedUpNodesRef$cu;
-
-        initNode$2(store, atomKey);
+      for (const atomKey of new Set(store.getState().knownAtoms)) {
+        reinitializeNode$1(store, atomKey);
       }
 
-      cleanedUpNodesRef.current.delete(store.storeID);
       return () => {
-        const {
-          knownAtoms
-        } = store.getState(); // Save the set of known atoms from this cleanup in case the effect is just
-        // being cleaned up and then executed again so we can re-initialize the
-        // atoms above.
-        // eslint-disable-next-line fb-www/react-hooks-deps
-
-        cleanedUpNodesRef.current.set(store.storeID, new Set(knownAtoms));
-
-        for (const atomKey of knownAtoms) {
-          cleanUpNode$2(storeRef.current, atomKey);
+        for (const atomKey of store.getState().knownAtoms) {
+          cleanUpNode$2(store, atomKey);
         }
       };
-    }, [storeRef, cleanedUpNodesRef]);
+    }, [storeRef]);
     return /*#__PURE__*/react.createElement(AppContext.Provider, {
       value: storeRef
     }, /*#__PURE__*/react.createElement(MutableSourceContext.Provider, {
@@ -4188,7 +4187,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     return useStoreRef().current.storeID;
   }
 
-  var Recoil_RecoilRoot_react = {
+  var Recoil_RecoilRoot = {
     RecoilRoot,
     useStoreRef,
     useRecoilMutableSource,
@@ -4245,7 +4244,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   const {
     useStoreRef: useStoreRef$1
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
   const {
     SUSPENSE_TIMEOUT_MS: SUSPENSE_TIMEOUT_MS$1
@@ -4579,7 +4578,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     useRecoilMutableSource: useRecoilMutableSource$1,
     useStoreRef: useStoreRef$2
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
   const {
     isRecoilValue: isRecoilValue$2
@@ -5174,7 +5173,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   const {
     useStoreRef: useStoreRef$3
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
   const {
     AbstractRecoilValue: AbstractRecoilValue$4,
@@ -5384,7 +5383,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   const {
     useStoreRef: useStoreRef$4
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
   function useGetRecoilValueInfo() {
     const storeRef = useStoreRef$4();
@@ -5398,7 +5397,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     RecoilRoot: RecoilRoot$1,
     useStoreRef: useStoreRef$5
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
 
 
@@ -5577,7 +5576,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   const {
     useStoreRef: useStoreRef$6
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
   const {
     refreshRecoilValue: refreshRecoilValue$1,
@@ -5659,7 +5658,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   const {
     useStoreRef: useStoreRef$7
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
   const {
     refreshRecoilValue: refreshRecoilValue$2
@@ -5685,7 +5684,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   const {
     useStoreRef: useStoreRef$8
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
   const {
     useMemo: useMemo$3
@@ -7470,9 +7469,20 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     }
 
     function initAtom(store, initState, trigger) {
-      liveStoresCount++;
-      const alreadyKnown = store.getState().knownAtoms.has(key);
-      store.getState().knownAtoms.add(key); // Setup async defaults to notify subscribers when they resolve
+      const cleanupAtom = () => {
+        var _cleanupEffectsByStor;
+
+        liveStoresCount--;
+        (_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor === void 0 ? void 0 : _cleanupEffectsByStor.forEach(cleanup => cleanup());
+        cleanupEffectsByStore.delete(store);
+      };
+
+      if (store.getState().knownAtoms.has(key)) {
+        return cleanupAtom;
+      }
+
+      store.getState().knownAtoms.add(key);
+      liveStoresCount++; // Setup async defaults to notify subscribers when they resolve
 
       if (defaultLoadable.state === 'loading') {
         const notifyDefaultSubscribers = () => {
@@ -7486,15 +7496,17 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         };
 
         defaultLoadable.contents.then(notifyDefaultSubscribers).catch(notifyDefaultSubscribers);
-      } // Run Atom Effects
-      // This state is scoped by Store, since this is in the initAtom() closure
+      } ///////////////////
+      // Run Atom Effects
+      ///////////////////
 
 
-      let initValue = DEFAULT_VALUE$7;
-      let pendingSetSelf = null;
-
-      if (options.effects_UNSTABLE != null && !alreadyKnown) {
+      if (options.effects_UNSTABLE != null) {
+        // This state is scoped by Store, since this is in the initAtom() closure
         let duringInit = true;
+        let initValue = DEFAULT_VALUE$7;
+        let isInitError = false;
+        let pendingSetSelf = null;
 
         function getLoadable(recoilValue) {
           // Normally we can just get the current value of another atom.
@@ -7614,50 +7626,47 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         for (const effect of (_options$effects_UNST = options.effects_UNSTABLE) !== null && _options$effects_UNST !== void 0 ? _options$effects_UNST : []) {
           var _options$effects_UNST;
 
-          const cleanup = effect({
-            node,
-            storeID: store.storeID,
-            trigger,
-            setSelf: setSelf(effect),
-            resetSelf: resetSelf(effect),
-            onSet: onSet(effect),
-            getPromise,
-            getLoadable,
-            getInfo_UNSTABLE
-          });
+          try {
+            const cleanup = effect({
+              node,
+              storeID: store.storeID,
+              trigger,
+              setSelf: setSelf(effect),
+              resetSelf: resetSelf(effect),
+              onSet: onSet(effect),
+              getPromise,
+              getLoadable,
+              getInfo_UNSTABLE
+            });
 
-          if (cleanup != null) {
-            var _cleanupEffectsByStor;
+            if (cleanup != null) {
+              var _cleanupEffectsByStor2;
 
-            cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor !== void 0 ? _cleanupEffectsByStor : []), cleanup]);
+              cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor2 = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor2 !== void 0 ? _cleanupEffectsByStor2 : []), cleanup]);
+            }
+          } catch (error) {
+            initValue = error;
+            isInitError = true;
           }
         }
 
-        duringInit = false;
-      } // Mutate initial state in place since we know there are no other subscribers
-      // since we are the ones initializing on first use.
+        duringInit = false; // Mutate initial state in place since we know there are no other subscribers
+        // since we are the ones initializing on first use.
 
+        if (!(initValue instanceof DefaultValue$2)) {
+          var _store$getState$nextT5;
 
-      if (!(initValue instanceof DefaultValue$2)) {
-        var _store$getState$nextT5;
+          const frozenInitValue = maybeFreezeValueOrPromise(initValue);
+          const initLoadable = isInitError ? loadableWithError$2(initValue) : Recoil_isPromise(frozenInitValue) ? loadableWithPromise$2(wrapPendingPromise(store, frozenInitValue)) : loadableWithValue$3(frozenInitValue);
+          initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
+          // This could happen if the atom was first initialized in an action that
+          // also updated some other atom's state.
 
-        const frozenInitValue = maybeFreezeValueOrPromise(initValue);
-        const initLoadable = Recoil_isPromise(frozenInitValue) ? loadableWithPromise$2(wrapPendingPromise(store, frozenInitValue)) : loadableWithValue$3(frozenInitValue);
-        initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
-        // This could happen if the atom was first initialized in an action that
-        // also updated some other atom's state.
-
-        (_store$getState$nextT5 = store.getState().nextTree) === null || _store$getState$nextT5 === void 0 ? void 0 : _store$getState$nextT5.atomValues.set(key, initLoadable);
+          (_store$getState$nextT5 = store.getState().nextTree) === null || _store$getState$nextT5 === void 0 ? void 0 : _store$getState$nextT5.atomValues.set(key, initLoadable);
+        }
       }
 
-      return () => {
-        var _cleanupEffectsByStor2;
-
-        liveStoresCount--;
-        (_cleanupEffectsByStor2 = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor2 === void 0 ? void 0 : _cleanupEffectsByStor2.forEach(cleanup => cleanup());
-        cleanupEffectsByStore.delete(store);
-        store.getState().knownAtoms.delete(key);
-      };
+      return cleanupAtom;
     }
 
     function peekAtom(_store, state) {
@@ -8379,7 +8388,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     RecoilRoot: RecoilRoot$2,
     useRecoilStoreID: useRecoilStoreID$1
-  } = Recoil_RecoilRoot_react;
+  } = Recoil_RecoilRoot;
 
   const {
     isRecoilValue: isRecoilValue$5

@@ -239,29 +239,39 @@ testRecoil('Rejected promises are propogated through selectors (later rejection)
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('error');
 });
-testRecoil('Component subscribed to atom is rendered just once', gks => {
+testRecoil('Component subscribed to atom is rendered just once', ({
+  gks,
+  strictMode
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
+  const sm = strictMode ? 2 : 1;
   const anAtom = counterAtom();
   const [Component, updateValue] = componentThatReadsAndWritesAtom(anAtom);
   renderElements(<>
-      <Component />
-    </>);
-  expect(Component).toHaveBeenCalledTimes(BASE_CALLS + 1);
+        <Component />
+      </>);
+  expect(Component).toHaveBeenCalledTimes((BASE_CALLS + 1) * sm);
   act(() => updateValue(1));
-  expect(Component).toHaveBeenCalledTimes(BASE_CALLS + 2);
+  expect(Component).toHaveBeenCalledTimes((BASE_CALLS + 2) * sm);
 });
-testRecoil('Write-only components are not subscribed', () => {
+testRecoil('Write-only components are not subscribed', ({
+  strictMode
+}) => {
   const anAtom = counterAtom();
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
   renderElements(<>
       <Component />
     </>);
-  expect(Component).toHaveBeenCalledTimes(1);
+  expect(Component).toHaveBeenCalledTimes(strictMode ? 2 : 1);
   act(() => updateValue(1));
-  expect(Component).toHaveBeenCalledTimes(1);
+  expect(Component).toHaveBeenCalledTimes(strictMode ? 2 : 1);
 });
-testRecoil('Component that depends on atom in multiple ways is rendered just once', gks => {
+testRecoil('Component that depends on atom in multiple ways is rendered just once', ({
+  gks,
+  strictMode
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
+  const sm = strictMode ? 2 : 1;
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneSelector(anAtom);
   const [WriteComp, updateValue] = componentThatWritesAtom(anAtom);
@@ -270,9 +280,9 @@ testRecoil('Component that depends on atom in multiple ways is rendered just onc
         <WriteComp />
         <ReadComp />
       </>);
-  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 1);
+  expect(ReadComp).toHaveBeenCalledTimes((BASE_CALLS + 1) * sm);
   act(() => updateValue(1));
-  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 2);
+  expect(ReadComp).toHaveBeenCalledTimes((BASE_CALLS + 2) * sm);
 });
 testRecoil('Selector functions are evaluated just once', () => {
   const anAtom = counterAtom();
@@ -306,7 +316,9 @@ testRecoil('Selector functions are evaluated just once even if multiple upstream
   });
   expect(selectorFn).toHaveBeenCalledTimes(2);
 });
-testRecoil('Component that depends on multiple atoms via selector is rendered just once', gks => {
+testRecoil('Component that depends on multiple atoms via selector is rendered just once', ({
+  gks
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
   const atomA = counterAtom();
   const atomB = counterAtom();
@@ -328,8 +340,12 @@ testRecoil('Component that depends on multiple atoms via selector is rendered ju
   });
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
 });
-testRecoil('Component that depends on multiple atoms directly is rendered just once', gks => {
+testRecoil('Component that depends on multiple atoms directly is rendered just once', ({
+  gks,
+  strictMode
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
+  const sm = strictMode ? 2 : 1;
   const atomA = counterAtom();
   const atomB = counterAtom();
   const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
@@ -340,16 +356,18 @@ testRecoil('Component that depends on multiple atoms directly is rendered just o
         <ComponentB />
         <ReadComp />
       </>);
-  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 1);
+  expect(ReadComp).toHaveBeenCalledTimes((BASE_CALLS + 1) * sm);
   act(() => {
     batchUpdates(() => {
       updateValueA(1);
       updateValueB(1);
     });
   });
-  expect(ReadComp).toHaveBeenCalledTimes(BASE_CALLS + 2);
+  expect(ReadComp).toHaveBeenCalledTimes((BASE_CALLS + 2) * sm);
 });
-testRecoil('Component is rendered just once when atom is changed twice', gks => {
+testRecoil('Component is rendered just once when atom is changed twice', ({
+  gks
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
   const atomA = counterAtom();
   const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
@@ -442,8 +460,12 @@ testRecoil('Atom values are retained when atom has no subscribers', () => {
   act(() => setVisible(true));
   expect(container.textContent).toEqual('1337');
 });
-testRecoil('Components unsubscribe from atoms when rendered without using them', gks => {
+testRecoil('Components unsubscribe from atoms when rendered without using them', ({
+  gks,
+  strictMode
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
+  const sm = strictMode ? 2 : 1;
   const atomA = counterAtom();
   const atomB = counterAtom();
   const [WriteA, updateValueA] = componentThatWritesAtom(atomA);
@@ -464,10 +486,10 @@ testRecoil('Components unsubscribe from atoms when rendered without using them',
       </>);
   let baseCalls = BASE_CALLS;
   expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(baseCalls + 1);
+  expect(Component).toHaveBeenCalledTimes((baseCalls + 1) * sm);
   act(() => updateValueA(1));
   expect(container.textContent).toEqual('1');
-  expect(Component).toHaveBeenCalledTimes(baseCalls + 2);
+  expect(Component).toHaveBeenCalledTimes((baseCalls + 2) * sm);
 
   if (!mutableSourceExists()) {
     baseCalls += 1;
@@ -475,7 +497,7 @@ testRecoil('Components unsubscribe from atoms when rendered without using them',
 
   act(() => toggleSwitch());
   expect(container.textContent).toEqual('0');
-  expect(Component).toHaveBeenCalledTimes(baseCalls + 3); // Now update the atom that it used to be subscribed to but should be no longer:
+  expect(Component).toHaveBeenCalledTimes((baseCalls + 3) * sm); // Now update the atom that it used to be subscribed to but should be no longer:
 
   act(() => updateValueA(2));
   expect(container.textContent).toEqual('0'); // TODO: find out why OSS has additional render
@@ -484,12 +506,12 @@ testRecoil('Components unsubscribe from atoms when rendered without using them',
     baseCalls += 1; // @oss-only
   }
 
-  expect(Component).toHaveBeenCalledTimes(baseCalls + 3); // Important part: same as before
+  expect(Component).toHaveBeenCalledTimes((baseCalls + 3) * sm); // Important part: same as before
   // It is subscribed to the atom that it switched to:
 
   act(() => updateValueB(3));
   expect(container.textContent).toEqual('3');
-  expect(Component).toHaveBeenCalledTimes(baseCalls + 4);
+  expect(Component).toHaveBeenCalledTimes((baseCalls + 4) * sm);
 });
 testRecoil('Selectors unsubscribe from upstream when they have no subscribers', () => {
   const atomA = counterAtom();
@@ -611,7 +633,9 @@ testRecoil('Selector dependencies can change over time', () => {
   act(() => updateValueA(2));
   expect(container.textContent).toEqual('2');
 });
-testRecoil('Selectors can gain and lose depnedencies', gks => {
+testRecoil('Selectors can gain and lose depnedencies', ({
+  gks
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
   const switchAtom = booleanAtom();
   const inputAtom = counterAtom(); // Depends on inputAtom only when switchAtom is true:
@@ -948,7 +972,9 @@ testRecoil('Can use an already-resolved promise', async () => {
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('2');
 });
-testRecoil('Resolution of suspense causes render just once', async gks => {
+testRecoil('Resolution of suspense causes render just once', async ({
+  gks
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
   jest.useFakeTimers();
   const anAtom = counterAtom();
@@ -976,7 +1002,9 @@ testRecoil('Resolution of suspense causes render just once', async gks => {
   expect(suspense).toHaveBeenCalledTimes(2);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
 });
-testRecoil('Wakeup from Suspense to previous value', async gks => {
+testRecoil('Wakeup from Suspense to previous value', async ({
+  gks
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
   const myAtom = atom({
     key: `atom${nextID++}`,

@@ -34,7 +34,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     RecoilRoot,
     useRecoilStoreID
-  } = require('../../core/Recoil_RecoilRoot.react'));
+  } = require('../../core/Recoil_RecoilRoot'));
   ({
     getRecoilValueAsLoadable,
     setRecoilValue
@@ -741,6 +741,14 @@ describe('Effects', () => {
     expect(c.textContent).toBe('"A""B""A""B"');
     expect(refCountsA).toEqual([2, 2]);
     expect(refCountsB).toEqual([2, 2]);
+    act(() => setNumRoots(1));
+    expect(c.textContent).toBe('"A""B"');
+    expect(refCountsA).toEqual([1, 1]);
+    expect(refCountsB).toEqual([1, 1]);
+    act(() => setNumRoots(0));
+    expect(c.textContent).toBe('');
+    expect(refCountsA).toEqual([0, 0]);
+    expect(refCountsB).toEqual([0, 0]);
     act(() => setNumRoots(1));
     expect(c.textContent).toBe('"A""B"');
     expect(refCountsA).toEqual([1, 1]);

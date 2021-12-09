@@ -18,7 +18,7 @@ const {
 
 const {
   useStoreRef
-} = require('../core/Recoil_RecoilRoot.react');
+} = require('../core/Recoil_RecoilRoot');
 
 const {
   useMemo

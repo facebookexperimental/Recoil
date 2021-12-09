@@ -29,7 +29,9 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   useGetRecoilValueInfo = require('../Recoil_useGetRecoilValueInfo');
 });
-testRecoil('useGetRecoilValueInfo', gks => {
+testRecoil('useGetRecoilValueInfo', ({
+  gks
+}) => {
   const myAtom = atom<string>({
     key: 'useGetRecoilValueInfo atom',
     default: 'DEFAULT'

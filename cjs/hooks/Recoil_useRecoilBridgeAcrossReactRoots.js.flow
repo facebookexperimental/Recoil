@@ -13,7 +13,7 @@
 const {
   RecoilRoot,
   useStoreRef
-} = require('../core/Recoil_RecoilRoot.react');
+} = require('../core/Recoil_RecoilRoot');
 
 const React = require('react');
 

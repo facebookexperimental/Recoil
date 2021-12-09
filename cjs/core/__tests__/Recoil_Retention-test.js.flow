@@ -54,29 +54,64 @@ declare function switchComponent(defaultVisible: any): any; // Mounts a componen
 // is still observed. If otherChildren is provided, it will be mounted throughout this,
 // then at the end it will be unmounted and the atom expected to be released.
 
-declare function testWhetherAtomIsRetained(shouldBeRetained: boolean, atom: RecoilState<number>, otherChildren: any): void;
+declare function testWhetherAtomIsRetained(shouldBeRetained: boolean, node: RecoilState<number>, otherChildren: any): void;
 describe('Default retention', () => {
-  testRecoil('By default, atoms are retained for the lifetime of the root', () => {
+  testRecoil('By default, atoms are retained for the lifetime of the root', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     testWhetherAtomIsRetained(true, atomRetainedBy(undefined));
   });
 });
 describe('Component-level retention', () => {
-  testRecoil('With retainedBy: components, atoms are released when not in use', () => {
+  testRecoil('With retainedBy: components, atoms are released when not in use', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     testWhetherAtomIsRetained(false, atomRetainedBy('components'));
   });
-  testRecoil('An atom is retained by a component being subscribed to it', () => {
+  testRecoil('An atom is retained by a component being subscribed to it', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     const anAtom = atomRetainedBy('components');
     declare function Subscribes(): any;
     testWhetherAtomIsRetained(true, anAtom, <Subscribes />);
   });
-  testRecoil('An atom is retained by a component retaining it explicitly', () => {
+  testRecoil('An atom is retained by a component retaining it explicitly', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     const anAtom = atomRetainedBy('components');
     declare function Retains(): any;
     testWhetherAtomIsRetained(true, anAtom, <Retains />);
   });
 });
 describe('RetentionZone retention', () => {
-  testRecoil('An atom can be retained via a retention zone', () => {
+  testRecoil('An atom can be retained via a retention zone', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     const zone = retentionZone();
     const anAtom = atomRetainedBy(zone);
     declare function RetainsZone(): any;
@@ -84,7 +119,14 @@ describe('RetentionZone retention', () => {
   });
 });
 describe('Retention of and via selectors', () => {
-  testRecoil('An atom is retained when a depending selector is retained', () => {
+  testRecoil('An atom is retained when a depending selector is retained', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     const anAtom = atomRetainedBy('components');
     const aSelector = selector({
       key: '...',
@@ -99,7 +141,14 @@ describe('Retention of and via selectors', () => {
     testWhetherAtomIsRetained(true, anAtom, <SubscribesToSelector />);
   });
   declare var flushPromises: () => any;
-  testRecoil('An async selector is not released when its only subscribed component suspends', async () => {
+  testRecoil('An async selector is not released when its only subscribed component suspends', async ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     let resolve;
     let evalCount = 0;
     const anAtom = atomRetainedBy('components');
@@ -129,7 +178,14 @@ describe('Retention of and via selectors', () => {
     expect(c.textContent).toEqual('123');
     expect(evalCount).toBe(1); // Still in cache, hence wasn't released.
   });
-  testRecoil('An async selector ignores promises that settle after it is released', async () => {
+  testRecoil('An async selector ignores promises that settle after it is released', async ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     let resolve;
     let evalCount = 0;
     const anAtom = atomRetainedBy('components');
@@ -165,7 +221,14 @@ describe('Retention of and via selectors', () => {
     await flushPromises();
     expect(c.textContent).toEqual('123');
   });
-  testRecoil('Selector changing deps releases old deps, retains new ones', () => {
+  testRecoil('Selector changing deps releases old deps, retains new ones', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     const switchAtom = atom({
       key: 'switch',
       default: false
@@ -223,7 +286,14 @@ describe('Retention of and via selectors', () => {
   });
 });
 describe('Retention during a transaction', () => {
-  testRecoil('Atoms are not released if unmounted and mounted within the same transaction', () => {
+  testRecoil('Atoms are not released if unmounted and mounted within the same transaction', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     const anAtom = atomRetainedBy('components');
     const [ReaderA, setAtom] = componentThatReadsAndWritesAtom(anAtom);
     const [ReaderB] = componentThatReadsAndWritesAtom(anAtom);
@@ -244,7 +314,14 @@ describe('Retention during a transaction', () => {
     });
     expect(container.textContent).toEqual('123');
   });
-  testRecoil('An atom is released when two zones retaining it are released at the same time', () => {
+  testRecoil('An atom is released when two zones retaining it are released at the same time', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     const zoneA = retentionZone();
     const zoneB = retentionZone();
     const anAtom = atomRetainedBy([zoneA, zoneB]);
@@ -256,7 +333,14 @@ describe('Retention during a transaction', () => {
           <RetainsZone zone={zoneB} />
         </>);
   });
-  testRecoil('An atom is released when both direct-retainer and zone-retainer are released at the same time', () => {
+  testRecoil('An atom is released when both direct-retainer and zone-retainer are released at the same time', ({
+    strictMode
+  }) => {
+    // TODO Retention does not work properly in strict mode
+    if (strictMode) {
+      return;
+    }
+
     const zone = retentionZone();
     const anAtom = atomRetainedBy(zone);
     declare function RetainsZone(): any;

@@ -26,7 +26,7 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('ReactTestUtils'));
   ({
     useStoreRef
-  } = require('../../core/Recoil_RecoilRoot.react'));
+  } = require('../../core/Recoil_RecoilRoot'));
   ({
     atom,
     atomFamily,

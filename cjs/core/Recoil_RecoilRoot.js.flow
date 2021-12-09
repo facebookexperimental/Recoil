@@ -1,0 +1,168 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { StoreID } from './Recoil_Keys';
+import type { RecoilValue } from './Recoil_RecoilValue';
+import type { MutableSnapshot } from './Recoil_Snapshot';
+import type { Store, StoreRef, StoreState, TreeState } from './Recoil_State'; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+// @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
+// @fb-only: const URI = require('URI');
+
+const Queue = require('../adt/Recoil_Queue');
+
+const {
+  getNextTreeStateVersion,
+  makeEmptyStoreState
+} = require('../core/Recoil_State');
+
+const {
+  cleanUpNode,
+  getDownstreamNodes,
+  reinitializeNode,
+  setNodeValue,
+  setUnvalidatedAtomValue_DEPRECATED
+} = require('./Recoil_FunctionalCore');
+
+const {
+  graph
+} = require('./Recoil_Graph');
+
+const {
+  cloneGraph
+} = require('./Recoil_Graph');
+
+const {
+  getNextStoreID
+} = require('./Recoil_Keys');
+
+const {
+  applyAtomValueWrites
+} = require('./Recoil_RecoilValueInterface');
+
+const {
+  releaseScheduledRetainablesNow
+} = require('./Recoil_Retention');
+
+const {
+  freshSnapshot
+} = require('./Recoil_Snapshot');
+
+const React = require('react');
+
+const {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} = require('react');
+
+const err = require('recoil-shared/util/Recoil_err');
+
+const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
+
+const gkx = require('recoil-shared/util/Recoil_gkx');
+
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+
+const unionSets = require('recoil-shared/util/Recoil_unionSets');
+
+const useRefInitOnce = require('recoil-shared/util/Recoil_useRefInitOnce');
+
+type InternalProps = {
+  initializeState_DEPRECATED?: ({
+    set: <T>(RecoilValue<T>, T) => void,
+    setUnvalidatedAtomValues: (Map<string, mixed>) => void,
+  }) => void,
+  initializeState?: (MutableSnapshot) => void,
+  store_INTERNAL?: Store,
+  children: React.Node,
+};
+declare function notInAContext(): any;
+const defaultStore: Store = Object.freeze({
+  storeID: getNextStoreID(),
+  getState: notInAContext,
+  replaceState: notInAContext,
+  getGraph: notInAContext,
+  subscribeToTransactions: notInAContext,
+  addTransactionMetadata: notInAContext
+});
+let stateReplacerIsBeingExecuted: boolean = false;
+declare function startNextTreeIfNeeded(store: Store): void;
+const AppContext = React.createContext<StoreRef>({
+  current: defaultStore
+});
+declare var useStoreRef: () => StoreRef;
+const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
+
+declare function useRecoilMutableSource(): mixed;
+declare function notifyComponents(store: Store, storeState: StoreState, treeState: TreeState): void;
+declare function sendEndOfBatchNotifications(store: Store): any;
+declare function endBatch(storeRef: any): any;
+/*
+ * The purpose of the Batcher is to observe when React batches end so that
+ * Recoil state changes can be batched. Whenever Recoil state changes, we call
+ * setState on the batcher. Then we wait for that change to be committed, which
+ * signifies the end of the batch. That's when we respond to the Recoil change.
+ */
+
+declare function Batcher(arg0: {
+  setNotifyBatcherOfChange: (() => void) => void
+}): any;
+
+if (__DEV__) {
+  if (typeof window !== 'undefined' && !window.$recoilDebugStates) {
+    window.$recoilDebugStates = [];
+  }
+} // When removing this deprecated function, remove stateBySettingRecoilValue
+// which will no longer be needed.
+
+
+declare function initialStoreState_DEPRECATED(store: any, initializeState: any): StoreState;
+declare function initialStoreState(initializeState: any): StoreState;
+let nextID = 0;
+declare function RecoilRoot_INTERNAL(arg0: InternalProps): React.Node;
+type Props = {
+  initializeState_DEPRECATED?: ({
+    set: <T>(RecoilValue<T>, T) => void,
+    setUnvalidatedAtomValues: (Map<string, mixed>) => void,
+  }) => void,
+  initializeState?: (MutableSnapshot) => void,
+  store_INTERNAL?: Store,
+  override?: true,
+  children: React.Node,
+} | {
+  store_INTERNAL?: Store,
+
+  /**
+   * Defaults to true. If override is true, this RecoilRoot will create a
+   * new Recoil scope. If override is false and this RecoilRoot is nested
+   * within another RecoilRoot, this RecoilRoot will perform no function.
+   * Children of this RecoilRoot will access the Recoil values of the
+   * nearest ancestor RecoilRoot.
+   */
+  override: false,
+  children: React.Node,
+};
+declare function RecoilRoot(props: Props): React.Node;
+declare function useRecoilStoreID(): StoreID;
+module.exports = {
+  RecoilRoot,
+  useStoreRef,
+  useRecoilMutableSource,
+  useRecoilStoreID,
+  notifyComponents_FOR_TESTING: notifyComponents,
+  sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications
+};

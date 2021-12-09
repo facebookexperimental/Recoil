@@ -14,7 +14,7 @@ import type { RecoilValue } from '../core/Recoil_RecoilValue';
 
 const {
   useStoreRef
-} = require('../core/Recoil_RecoilRoot.react');
+} = require('../core/Recoil_RecoilRoot');
 
 const {
   refreshRecoilValue

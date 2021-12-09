@@ -33,7 +33,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     RecoilRoot,
     useRecoilStoreID
-  } = require('../../core/Recoil_RecoilRoot.react'));
+  } = require('../../core/Recoil_RecoilRoot'));
   ({
     getRecoilValueAsLoadable,
     setRecoilValue
@@ -573,7 +573,9 @@ testRecoil('Returns the fallback for parameterized atoms with a selector as the 
   });
   expect(container.textContent).toBe('456');
 });
-testRecoil('Independent atom subscriptions', gks => {
+testRecoil('Independent atom subscriptions', ({
+  gks
+}) => {
   const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
   const myAtom = atomFamily({
     key: 'atomFamily/independent subscriptions',
