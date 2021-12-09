@@ -23,6 +23,7 @@ const {
   useResetRecoilState,
   useSetRecoilState,
 } = require('Recoil');
+// @fb-only: const StrictMode = require('StrictMode');
 
 const {graph} = require('../../recoil/core/Recoil_Graph');
 const {getNextStoreID} = require('../../recoil/core/Recoil_Keys');
@@ -37,10 +38,12 @@ const {makeEmptyStoreState} = require('../../recoil/core/Recoil_State');
 const invariant = require('../util/Recoil_invariant');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
+const {isStrictModeEnabled} = require('./Recoil_StrictMode');
 const React = require('react');
 const {useEffect} = require('react');
 
 const ReactDOMComet = require('ReactDOMLegacy_DEPRECATED'); // @oss-only
+const StrictMode = React.StrictMode; // @oss-only
 
 // @fb-only: const IS_INTERNAL = true;
 const IS_INTERNAL = false; // @oss-only
@@ -116,15 +119,24 @@ function renderElementsInternal(
   createReactRoot,
 ): HTMLDivElement {
   const container = document.createElement('div');
+  const Content = () => (
+    <RecoilRoot>
+      {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
+      <ErrorBoundary>
+        <React.Suspense fallback="loading">{elements}</React.Suspense>
+      </ErrorBoundary>
+    </RecoilRoot>
+  );
   act(() => {
     createReactRoot(
       container,
-      <RecoilRoot>
-        {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
-        <ErrorBoundary>
-          <React.Suspense fallback="loading">{elements}</React.Suspense>
-        </ErrorBoundary>
-      </RecoilRoot>,
+      isStrictModeEnabled() ? (
+        <StrictMode>
+          <Content />
+        </StrictMode>
+      ) : (
+        <Content />
+      ),
     );
   });
   return container;
@@ -147,15 +159,24 @@ function renderElementsWithSuspenseCount(
     useEffect(suspenseCommit);
     return 'loading';
   }
+  const Content = () => (
+    <RecoilRoot>
+      {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
+      <ErrorBoundary>
+        <React.Suspense fallback={<Fallback />}>{elements}</React.Suspense>
+      </ErrorBoundary>
+    </RecoilRoot>
+  );
   act(() => {
     createLegacyReactRoot(
       container,
-      <RecoilRoot>
-        {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
-        <ErrorBoundary>
-          <React.Suspense fallback={<Fallback />}>{elements}</React.Suspense>
-        </ErrorBoundary>
-      </RecoilRoot>,
+      isStrictModeEnabled() ? (
+        <StrictMode>
+          <Content />
+        </StrictMode>
+      ) : (
+        <Content />
+      ),
     );
   });
   return [container, suspenseCommit];
@@ -261,7 +282,10 @@ function flushPromisesAndTimers(): Promise<void> {
 }
 
 type ReloadImports = () => void | (() => void);
-type AssertionsFn = (gks: Array<string>) => ?Promise<mixed>;
+type AssertionsFn = ({
+  gks: Array<string>,
+  strictMode: boolean,
+}) => ?Promise<mixed>;
 type TestOptions = {
   gks?: Array<Array<string>>,
 };
@@ -274,27 +298,37 @@ const testGKs =
     assertionsFn: AssertionsFn,
     {gks: additionalGKs = []}: TestOptions = {},
   ) => {
-    test.each([
-      ...[...gks, ...additionalGKs].map(gksToTest => [
-        !gksToTest.length
-          ? testDescription
-          : `${testDescription} [${gksToTest.join(', ')}]`,
-        gksToTest,
-      ]),
-    ])('%s', async (_title, gksToTest) => {
-      jest.resetModules();
+    function runTests(strictMode: boolean) {
+      test.each([
+        ...[...gks, ...additionalGKs].map(gksToTest => [
+          (!gksToTest.length
+            ? testDescription
+            : `${testDescription} [${gksToTest.join(', ')}]`) +
+            (strictMode ? ' [StrictMode]' : ''),
+          gksToTest,
+        ]),
+      ])('%s', async (_title, gksToTest) => {
+        jest.resetModules();
 
-      const gkx = require('recoil-shared/util/Recoil_gkx');
+        const gkx = require('recoil-shared/util/Recoil_gkx');
+        const {setStrictMode} = require('./Recoil_StrictMode');
+        setStrictMode(strictMode);
 
-      gksToTest.forEach(gkx.setPass);
+        gksToTest.forEach(gkx.setPass);
 
-      const after = reloadImports();
-      await assertionsFn(gksToTest);
+        const after = reloadImports();
+        await assertionsFn({gks: gksToTest, strictMode});
 
-      gksToTest.forEach(gkx.setFail);
+        gksToTest.forEach(gkx.setFail);
 
-      after?.();
-    });
+        after?.();
+        setStrictMode(false);
+      });
+    }
+
+    // Run tests with Strict mode enabled and disabled
+    runTests(true);
+    runTests(false);
   };
 
 // TODO Remove the recoil_suppress_rerender_in_callback GK checks

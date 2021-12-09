@@ -39,7 +39,7 @@ const testRecoil = getRecoilTestFn(() => {
 
 testRecoil(
   'useGetRecoilValueInfo',
-  gks => {
+  ({gks}) => {
     const myAtom = atom<string>({
       key: 'useGetRecoilValueInfo atom',
       default: 'DEFAULT',
