@@ -928,6 +928,16 @@ describe('Effects', () => {
     expect(c.textContent).toBe('');
     expect(refCountsA).toEqual([0, 0]);
     expect(refCountsB).toEqual([0, 0]);
+
+    act(() => setNumRoots(1));
+    expect(c.textContent).toBe('"A""B"');
+    expect(refCountsA).toEqual([1, 1]);
+    expect(refCountsB).toEqual([1, 1]);
+
+    act(() => setNumRoots(0));
+    expect(c.textContent).toBe('');
+    expect(refCountsA).toEqual([0, 0]);
+    expect(refCountsB).toEqual([0, 0]);
   });
 
   // Test that effects can initialize state when an atom is first used after an
