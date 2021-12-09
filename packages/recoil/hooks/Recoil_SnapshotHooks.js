@@ -15,7 +15,7 @@ import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 const {
   AbstractRecoilValue,
   setRecoilValueLoadable,

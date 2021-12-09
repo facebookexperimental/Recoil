@@ -12,7 +12,7 @@
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
-const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 const {refreshRecoilValue} = require('../core/Recoil_RecoilValueInterface');
 const {useCallback} = require('react');
 

@@ -12,7 +12,7 @@
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
-const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 const {SUSPENSE_TIMEOUT_MS} = require('../core/Recoil_Retention');
 const {updateRetainCount} = require('../core/Recoil_Retention');
 const {RetentionZone} = require('../core/Recoil_RetentionZone');

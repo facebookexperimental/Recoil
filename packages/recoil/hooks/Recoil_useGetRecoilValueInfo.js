@@ -11,7 +11,7 @@ import type {RecoilValueInfo} from '../core/Recoil_FunctionalCore';
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
 const {peekNodeInfo} = require('../core/Recoil_FunctionalCore');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 
 function useGetRecoilValueInfo(): <T>(RecoilValue<T>) => RecoilValueInfo<T> {
   const storeRef = useStoreRef();

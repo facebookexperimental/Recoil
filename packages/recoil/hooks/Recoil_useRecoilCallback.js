@@ -16,7 +16,7 @@ import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 const {atomicUpdater} = require('../core/Recoil_AtomicUpdates');
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE} = require('../core/Recoil_Node');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot.react');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 const {
   refreshRecoilValue,
   setRecoilValue,
