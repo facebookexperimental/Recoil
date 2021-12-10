@@ -42,7 +42,6 @@ export type WriteItems = WriteInterface => void;
 export type ResetItem = ItemKey => void;
 
 export type ReadItem = ItemKey =>
-  | void
   | DefaultValue
   | Promise<DefaultValue | mixed>
   | Loadable<DefaultValue | mixed>
@@ -232,7 +231,7 @@ function readAtomItems<T>(
   } catch (error) {
     return RecoilLoadable.error(error);
   }
-  return value === undefined || value instanceof DefaultValue
+  return value instanceof DefaultValue
     ? null
     : validateLoadable(value, options);
 }
@@ -403,10 +402,15 @@ function useRecoilSync({
               if (loadable != null) {
                 switch (loadable.state) {
                   case 'hasValue':
-                    atomRegistration.pendingUpdate = {
-                      value: loadable.contents,
-                    };
-                    set(atomRegistration.atom, loadable.contents);
+                    if (loadable.contents instanceof DefaultValue) {
+                      atomRegistration.pendingUpdate = {value: DEFAULT_VALUE};
+                      reset(atomRegistration.atom);
+                    } else {
+                      atomRegistration.pendingUpdate = {
+                        value: loadable.contents,
+                      };
+                      set(atomRegistration.atom, loadable.contents);
+                    }
                     break;
                   case 'hasError':
                     if (options.actionOnFailure_UNSTABLE === 'errorState') {

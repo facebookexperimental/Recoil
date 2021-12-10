@@ -233,7 +233,9 @@ function useRecoilURLSync({
   );
 
   const read: ReadItem = useCallback(itemKey => {
-    return cachedState.current?.get(itemKey);
+    return cachedState.current?.has(itemKey)
+      ? cachedState.current?.get(itemKey)
+      : new DefaultValue();
   }, []);
 
   const listen = useCallback(
