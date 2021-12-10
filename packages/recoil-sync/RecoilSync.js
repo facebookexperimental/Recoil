@@ -31,13 +31,24 @@ export type StoreKey = string | void;
 type EffectKey = number;
 
 // $FlowIssue[unclear-type]
-export type ItemDiff = Map<ItemKey, ?Loadable<any>>; // null means reset
-export type ItemSnapshot = Map<ItemKey, ?Loadable<mixed>>; // null means default
-export type ReadItem = ItemKey => ?Loadable<mixed>;
-export type WriteInterface = {diff: ItemDiff, allItems: ItemSnapshot};
-export type WriteItem = <T>(ItemKey, ?Loadable<T>) => void;
+export type ItemDiff = Map<ItemKey, DefaultValue | any>;
+export type ItemSnapshot = Map<ItemKey, DefaultValue | mixed>;
+export type WriteInterface = {
+  diff: ItemDiff,
+  allItems: ItemSnapshot,
+};
+export type WriteItem = <T>(ItemKey, DefaultValue | T) => void;
 export type WriteItems = WriteInterface => void;
-export type UpdateItem = <T>(ItemKey, ?Loadable<T>) => void;
+export type ResetItem = ItemKey => void;
+
+export type ReadItem = ItemKey =>
+  | void
+  | DefaultValue
+  | Promise<DefaultValue | mixed>
+  | Loadable<DefaultValue | mixed>
+  | mixed;
+
+export type UpdateItem = <T>(ItemKey, DefaultValue | T) => void;
 export type UpdateAllKnownItems = ItemSnapshot => void;
 export type ListenInterface = {
   updateItem: UpdateItem,
@@ -161,13 +172,17 @@ class Registries {
 const registries: Registries = new Registries();
 
 function validateLoadable<T>(
-  loadable: Loadable<mixed>,
+  input:
+    | DefaultValue
+    | Promise<mixed | DefaultValue>
+    | Loadable<mixed | DefaultValue>
+    | mixed,
   {refine, actionOnFailure_UNSTABLE}: AtomSyncOptions<T>,
 ): Loadable<T | DefaultValue> {
-  if (!RecoilLoadable.isLoadable(loadable)) {
-    throw err('Sync read must provide a Loadable');
-  }
-  return loadable.map<T | DefaultValue>(x => {
+  return RecoilLoadable.of(input).map<T | DefaultValue>(x => {
+    if (x instanceof DefaultValue) {
+      return x;
+    }
     const result = refine(x);
     if (result.type === 'success') {
       return result.value;
@@ -195,15 +210,31 @@ function readAtomItems<T>(
       ));
 
   effectRegistration.subscribedItemKeys = new Set();
-  const read = itemKey => {
+  const read: ReadItem = itemKey => {
     effectRegistration.subscribedItemKeys.add(itemKey);
-    return diff != null && diff.has(itemKey)
-      ? diff.get(itemKey)
+    const value = diff?.has(itemKey)
+      ? diff?.get(itemKey)
       : readFromStorageRequired(itemKey);
+
+    if (RecoilLoadable.isLoadable(value)) {
+      // $FlowIssue[incompatible-type]
+      const loadable: Loadable<mixed> = value;
+      if (loadable.state === 'hasError') {
+        throw loadable.contents;
+      }
+    }
+    return value;
   };
 
-  const loadable = options.read({read});
-  return loadable && validateLoadable(loadable, options);
+  let value;
+  try {
+    value = options.read({read});
+  } catch (error) {
+    return RecoilLoadable.error(error);
+  }
+  return value === undefined || value instanceof DefaultValue
+    ? null
+    : validateLoadable(value, options);
 }
 
 function writeAtomItemsToDiff<T>(
@@ -211,21 +242,30 @@ function writeAtomItemsToDiff<T>(
   options: AtomSyncOptions<T>,
   readFromStorage?: ReadItem,
   loadable: ?Loadable<T>,
-) {
+): ItemDiff {
+  if (loadable != null && loadable?.state !== 'hasValue') {
+    return diff;
+  }
   const readFromStorageRequired =
     readFromStorage ??
-    (_ =>
-      RecoilLoadable.error(
+    (_ => {
+      throw err(
         `Read functionality not provided for ${
           options.storeKey != null ? `"${options.storeKey}" ` : ''
         }store in useRecoilSync() hook while writing item "${
           options.itemKey
         }".`,
-      ));
+      );
+    });
   const read = itemKey =>
     diff.has(itemKey) ? diff.get(itemKey) : readFromStorageRequired(itemKey);
-  const write = <S>(k, l: ?Loadable<S>) => void diff.set(k, l);
-  options.write({write, read}, loadable);
+  const write = <S>(k, l: DefaultValue | S) => void diff.set(k, l);
+  const reset = k => void diff.set(k, DEFAULT_VALUE);
+
+  options.write(
+    {write, reset, read},
+    loadable == null ? DEFAULT_VALUE : loadable.contents,
+  );
   return diff;
 }
 
@@ -400,8 +440,8 @@ function useRecoilSync({
     [recoilStoreID, storeKey, read],
   );
   const updateItem = useCallback(
-    <T>(itemKey: ItemKey, loadable: ?Loadable<T>) => {
-      updateItems(new Map([[itemKey, loadable]]));
+    <T>(itemKey: ItemKey, newValue: DefaultValue | T) => {
+      updateItems(new Map([[itemKey, newValue]]));
     },
     [updateItems],
   );
@@ -415,7 +455,7 @@ function useRecoilSync({
         for (const [, {subscribedItemKeys}] of registration.effects) {
           for (const itemKey of subscribedItemKeys) {
             if (!itemSnapshot.has(itemKey)) {
-              itemSnapshot.set(itemKey, null);
+              itemSnapshot.set(itemKey, DEFAULT_VALUE);
             }
           }
         }
@@ -449,9 +489,17 @@ function RecoilSync(props: RecoilSyncOptions): React.Node {
 // syncEffect()
 ///////////////////////
 export type ReadAtomInterface = {read: ReadItem};
-export type ReadAtom = ReadAtomInterface => ?Loadable<mixed>;
-export type WriteAtomInterface = {write: WriteItem, read: ReadItem};
-export type WriteAtom<T> = (WriteAtomInterface, ?Loadable<T>) => void;
+export type ReadAtom = ReadAtomInterface =>
+  | DefaultValue
+  | Promise<DefaultValue | mixed>
+  | Loadable<DefaultValue | mixed>
+  | mixed;
+export type WriteAtomInterface = {
+  write: WriteItem,
+  reset: ResetItem,
+  read: ReadItem,
+};
+export type WriteAtom<T> = (WriteAtomInterface, DefaultValue | T) => void;
 
 export type SyncEffectOptions<T> = {
   storeKey?: StoreKey,

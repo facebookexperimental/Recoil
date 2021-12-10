@@ -8,7 +8,7 @@
 'use strict';
 
 const {act} = require('ReactTestUtils');
-const {RecoilLoadable, atom, atomFamily} = require('Recoil');
+const {DefaultValue, atom, atomFamily} = require('Recoil');
 
 const {
   encodeURL,
@@ -69,17 +69,15 @@ test('Many items to one atom', async () => {
   const manyToOneSyncEffct = () =>
     syncEffect({
       refine: dict(nullable(number())),
-      read: ({read}) =>
-        RecoilLoadable.all({foo: read('foo'), bar: read('bar')}),
-      write: ({write}, loadable) => {
-        if (loadable == null) {
-          write('foo');
-          write('bar');
+      read: ({read}) => ({foo: read('foo'), bar: read('bar')}),
+      write: ({write, reset}, newValue) => {
+        if (newValue instanceof DefaultValue) {
+          reset('foo');
+          reset('bar');
+          return;
         }
-        if (loadable?.state === 'hasValue') {
-          for (const key of Object.keys(loadable.contents)) {
-            write(key, RecoilLoadable.of(loadable.contents[key]));
-          }
+        for (const key of Object.keys(newValue)) {
+          write(key, newValue[key]);
         }
       },
     });
@@ -123,19 +121,15 @@ test('One item to multiple atoms', async () => {
   const oneToManySyncEffect = (prop: string) =>
     syncEffect({
       refine: nullable(number()),
-      read: ({read}) => read('compound')?.map(x => input(x)[prop]),
-      write: ({write, read}, loadable) =>
-        write(
-          'compound',
-          read('compound')?.map(compound => {
-            const x = {...input(compound)};
-            if (loadable == null) {
-              delete x[prop];
-              return x;
-            }
-            return loadable.map(newValue => ({...x, [prop]: newValue}));
-          }),
-        ),
+      read: ({read}) => input(read('compound'))[prop],
+      write: ({write, read}, newValue) => {
+        const compound = {...input(read('compound'))};
+        if (newValue instanceof DefaultValue) {
+          delete compound[prop];
+          return write('compound', compound);
+        }
+        return write('compound', {...compound, [prop]: newValue});
+      },
     });
 
   const fooAtom = atom({
@@ -146,7 +140,7 @@ test('One item to multiple atoms', async () => {
 
   const barAtom = atom({
     key: 'recoil-url-sync one-to-many bar',
-    default: undefined,
+    default: null,
     effects_UNSTABLE: [oneToManySyncEffect('bar')],
   });
 
@@ -163,7 +157,7 @@ test('One item to multiple atoms', async () => {
   );
 
   // Test initialize value from URL
-  expect(container.textContent).toBe('1');
+  expect(container.textContent).toBe('1null');
 
   // Test subscribe to URL updates
   gotoURL([[loc, {compound: {foo: 1, bar: 2}}]]);
@@ -182,7 +176,7 @@ test('One item to multiple atoms', async () => {
   expect(container.textContent).toBe('04');
   expectURL([[loc, {compound: {bar: 4}}]]);
   act(resetBar);
-  expect(container.textContent).toBe('0');
+  expect(container.textContent).toBe('0null');
   expectURL([[loc, {compound: {}}]]);
 });
 
@@ -193,24 +187,20 @@ test('One item to atom family', async () => {
   const oneToFamilyEffect = (prop: string) =>
     syncEffect({
       refine: nullable(number()),
-      read: ({read}) => read('compound')?.map(x => input(x)[prop]),
-      write: ({write, read}, loadable) =>
-        write(
-          'compound',
-          read('compound')?.map(compound => {
-            const x = {...input(compound)};
-            if (loadable == null) {
-              delete x[prop];
-              return x;
-            }
-            return loadable.map(newValue => ({...x, [prop]: newValue}));
-          }),
-        ),
+      read: ({read}) => input(read('compound'))[prop],
+      write: ({write, read}, newValue) => {
+        const compound = {...input(read('compound'))};
+        if (newValue instanceof DefaultValue) {
+          delete compound[prop];
+          return write('compound', compound);
+        }
+        return write('compound', {...compound, [prop]: newValue});
+      },
     });
 
   const myAtoms = atomFamily({
     key: 'recoil-rul-sync one-to-family',
-    default: undefined,
+    default: null,
     effects_UNSTABLE: prop => [oneToFamilyEffect(prop)],
   });
 
@@ -231,7 +221,7 @@ test('One item to atom family', async () => {
   );
 
   // Test initialize value from URL
-  expect(container.textContent).toBe('1');
+  expect(container.textContent).toBe('1null');
 
   // Test subscribe to URL updates
   gotoURL([[loc, {compound: {foo: 1, bar: 2}}]]);
@@ -247,9 +237,9 @@ test('One item to atom family', async () => {
 
   // Test reseting atoms will update URL
   act(resetFoo);
-  expect(container.textContent).toBe('4');
+  expect(container.textContent).toBe('null4');
   expectURL([[loc, {compound: {bar: 4}}]]);
   act(resetBar);
-  expect(container.textContent).toBe('');
+  expect(container.textContent).toBe('nullnull');
   expectURL([[loc, {compound: {}}]]);
 });
