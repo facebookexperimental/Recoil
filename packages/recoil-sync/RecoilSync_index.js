@@ -17,6 +17,7 @@ import type {
   ReadAtomInterface,
   ReadItem,
   RecoilSyncOptions,
+  ResetItem,
   StoreKey,
   SyncEffectOptions,
   WriteAtom,
@@ -60,6 +61,7 @@ export type {
   ReadAtom,
   WriteAtomInterface,
   WriteAtom,
+  ResetItem,
   // URL Synchronization
   RecoilURLSyncOptions,
   RecoilURLSyncJSONOptions,

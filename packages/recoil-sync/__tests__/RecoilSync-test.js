@@ -12,6 +12,7 @@ import type {ItemKey, ItemSnapshot, ListenInterface} from '../RecoilSync';
 
 const {act} = require('ReactTestUtils');
 const {
+  DefaultValue,
   RecoilLoadable,
   RecoilRoot,
   atom,
@@ -45,9 +46,9 @@ function TestRecoilSync({
   allItemsRef,
 }: {
   storeKey?: string,
-  storage: Map<string, Loadable<mixed>>,
+  storage: Map<string, mixed>,
   regListen?: ListenInterface => void,
-  allItemsRef?: {current: Map<string, ?Loadable<mixed>>},
+  allItemsRef?: {current: Map<string, DefaultValue | mixed>},
 }) {
   useRecoilSync({
     storeKey,
@@ -55,14 +56,16 @@ function TestRecoilSync({
       if (itemKey === 'error') {
         throw new Error('READ ERROR');
       }
-      return storage.get(itemKey);
+      return storage.has(itemKey) ? storage.get(itemKey) : undefined;
     },
     write: ({diff, allItems}) => {
-      for (const [key, loadable] of diff.entries()) {
-        loadable != null ? storage.set(key, loadable) : storage.delete(key);
+      for (const [key, value] of diff.entries()) {
+        value instanceof DefaultValue
+          ? storage.delete(key)
+          : storage.set(key, value);
       }
-      for (const [itemKey, loadable] of diff) {
-        expect(allItems.get(itemKey)?.contents).toEqual(loadable?.contents);
+      for (const [itemKey, value] of diff) {
+        expect(allItems.get(itemKey)).toEqual(value);
       }
       if (allItemsRef != null) {
         allItemsRef.current = allItems;
@@ -116,15 +119,15 @@ test('Write to storage', async () => {
   act(() => setIgnore('IGNORE'));
   expect(container.textContent).toBe('"A""B""IGNORE"');
   expect(storage.size).toBe(2);
-  expect(storage.get('recoil-sync write A')?.getValue()).toBe('A');
-  expect(storage.get('recoil-sync write B')?.getValue()).toBe('B');
+  expect(storage.get('recoil-sync write A')).toBe('A');
+  expect(storage.get('recoil-sync write B')).toBe('B');
 
   act(() => resetA());
   act(() => setB('BB'));
   expect(container.textContent).toBe('"DEFAULT""BB""IGNORE"');
   expect(storage.size).toBe(1);
   expect(storage.has('recoil-sync write A')).toBe(false);
-  expect(storage.get('recoil-sync write B')?.getValue()).toBe('BB');
+  expect(storage.get('recoil-sync write B')).toBe('BB');
 });
 
 test('Write to multiple storages', async () => {
@@ -160,8 +163,8 @@ test('Write to multiple storages', async () => {
   act(() => setB('B'));
   expect(storageA.size).toBe(1);
   expect(storageB.size).toBe(1);
-  expect(storageA.get('recoil-sync multiple storage A')?.getValue()).toBe('A');
-  expect(storageB.get('recoil-sync multiple storage B')?.getValue()).toBe('B');
+  expect(storageA.get('recoil-sync multiple storage A')).toBe('A');
+  expect(storageB.get('recoil-sync multiple storage B')).toBe('B');
 });
 
 test('Read from storage', async () => {
@@ -182,8 +185,8 @@ test('Read from storage', async () => {
   });
 
   const storage = new Map([
-    ['recoil-sync read A', RecoilLoadable.of('A')],
-    ['recoil-sync read B', RecoilLoadable.of('B')],
+    ['recoil-sync read A', 'A'],
+    ['recoil-sync read B', 'B'],
   ]);
 
   const container = renderElements(
@@ -205,9 +208,7 @@ test('Read from storage async', async () => {
     effects_UNSTABLE: [syncEffect({refine: string()})],
   });
 
-  const storage = new Map([
-    ['recoil-sync read async', RecoilLoadable.of(Promise.resolve('A'))],
-  ]);
+  const storage = new Map([['recoil-sync read async', Promise.resolve('A')]]);
 
   const container = renderElements(
     <>
@@ -288,8 +289,8 @@ test('Read from storage error', async () => {
   const storage = new Map([
     ['recoil-sync read error A', RecoilLoadable.error(new Error('ERROR A'))],
     ['recoil-sync read error B', RecoilLoadable.error(new Error('ERROR B'))],
-    ['recoil-sync read error E', RecoilLoadable.of(999)],
-    ['recoil-sync read error F', RecoilLoadable.of(999)],
+    ['recoil-sync read error E', 999],
+    ['recoil-sync read error F', 999],
   ]);
 
   const container = renderElements(
@@ -307,6 +308,50 @@ test('Read from storage error', async () => {
   expect(container.textContent).toBe(
     '"ERROR A""DEFAULT""READ ERROR""DEFAULT""[<root>]: value is not a string""DEFAULT"',
   );
+});
+
+test('Abort read', async () => {
+  const atomA = atom({
+    key: 'recoil-sync abort read A',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: string()})],
+  });
+  const atomB = atom({
+    key: 'recoil-sync abort read B',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: string()})],
+  });
+  const atomC = atom({
+    key: 'recoil-sync abort read C',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: string()})],
+  });
+  const atomD = atom({
+    key: 'recoil-sync abort read D',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: string()})],
+  });
+
+  const storage = new Map([
+    ['recoil-sync abort read A', undefined],
+    ['recoil-sync abort read B', new DefaultValue()],
+    ['recoil-sync abort read C', Promise.resolve(new DefaultValue())],
+    ['recoil-sync abort read D', RecoilLoadable.of(new DefaultValue())],
+  ]);
+
+  const container = renderElements(
+    <>
+      <TestRecoilSync storage={storage} />
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+      <ReadsAtom atom={atomC} />
+      <ReadsAtom atom={atomD} />
+    </>,
+  );
+
+  expect(container.textContent).toBe('loading');
+  await flushPromisesAndTimers();
+  expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT""DEFAULT"');
 });
 
 test('Read from storage upgrade - multiple effects', async () => {
@@ -377,13 +422,10 @@ test('Read from storage upgrade - multiple effects', async () => {
   });
 
   const storage = new Map([
-    ['recoil-sync fail validation - multi', RecoilLoadable.of(123)],
-    ['recoil-sync upgrade number - multi', RecoilLoadable.of(123)],
-    ['recoil-sync upgrade string - multi', RecoilLoadable.of('123')],
-    [
-      'recoil-sync upgrade async - multi',
-      RecoilLoadable.of(Promise.resolve(123)),
-    ],
+    ['recoil-sync fail validation - multi', 123],
+    ['recoil-sync upgrade number - multi', 123],
+    ['recoil-sync upgrade string - multi', '123'],
+    ['recoil-sync upgrade async - multi', Promise.resolve(123)],
   ]);
 
   const container = renderElements(
@@ -457,10 +499,10 @@ test('Read from storage upgrade', async () => {
   });
 
   const storage = new Map([
-    ['recoil-sync fail validation', RecoilLoadable.of(123)],
-    ['recoil-sync upgrade number', RecoilLoadable.of(123)],
-    ['recoil-sync upgrade string', RecoilLoadable.of('123')],
-    ['recoil-sync upgrade async', RecoilLoadable.of(Promise.resolve(123))],
+    ['recoil-sync fail validation', 123],
+    ['recoil-sync upgrade number', 123],
+    ['recoil-sync upgrade string', '123'],
+    ['recoil-sync upgrade async', Promise.resolve(123)],
   ]);
 
   const container = renderElements(
@@ -509,12 +551,12 @@ test('Read/Write from storage upgrade', async () => {
   });
 
   const storage1 = new Map([
-    ['recoil-sync read/write upgrade type', RecoilLoadable.of(123)],
-    ['OLD KEY', RecoilLoadable.of('OLD')],
-    ['recoil-sync read/write upgrade storage', RecoilLoadable.of('STR1')],
+    ['recoil-sync read/write upgrade type', 123],
+    ['OLD KEY', 'OLD'],
+    ['recoil-sync read/write upgrade storage', 'STR1'],
   ]);
   const storage2 = new Map([
-    ['recoil-sync read/write upgrade storage', RecoilLoadable.of('STR2')],
+    ['recoil-sync read/write upgrade storage', 'STR2'],
   ]);
 
   const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
@@ -538,18 +580,12 @@ test('Read/Write from storage upgrade', async () => {
   act(() => setC('C'));
   expect(container.textContent).toBe('"A""B""C"');
   expect(storage1.size).toBe(4);
-  expect(storage1.get('recoil-sync read/write upgrade type')?.getValue()).toBe(
-    'A',
-  );
-  expect(storage1.get('OLD KEY')?.getValue()).toBe('B');
-  expect(storage1.get('NEW KEY')?.getValue()).toBe('B');
-  expect(
-    storage1.get('recoil-sync read/write upgrade storage')?.getValue(),
-  ).toBe('C');
+  expect(storage1.get('recoil-sync read/write upgrade type')).toBe('A');
+  expect(storage1.get('OLD KEY')).toBe('B');
+  expect(storage1.get('NEW KEY')).toBe('B');
+  expect(storage1.get('recoil-sync read/write upgrade storage')).toBe('C');
   expect(storage2.size).toBe(1);
-  expect(
-    storage2.get('recoil-sync read/write upgrade storage')?.getValue(),
-  ).toBe('C');
+  expect(storage2.get('recoil-sync read/write upgrade storage')).toBe('C');
 
   act(() => resetA());
   act(() => resetB());
@@ -583,21 +619,20 @@ test('Listen to storage', async () => {
   });
 
   const storage1 = new Map([
-    ['recoil-sync listen', RecoilLoadable.of('A')],
-    ['KEY A', RecoilLoadable.of('B')],
-    ['recoil-sync listen to multiple storage', RecoilLoadable.of('C1')],
+    ['recoil-sync listen', 'A'],
+    ['KEY A', 'B'],
+    ['recoil-sync listen to multiple storage', 'C1'],
   ]);
-  const storage2 = new Map([
-    ['recoil-sync listen to multiple storage', RecoilLoadable.of('C2')],
-  ]);
+  const storage2 = new Map([['recoil-sync listen to multiple storage', 'C2']]);
 
-  let updateItem1: (ItemKey, ?Loadable<mixed>) => void = () => {
-    throw new Error('Failed to register 1');
-  };
+  let updateItem1: (ItemKey, DefaultValue | Loadable<string> | string) => void =
+    () => {
+      throw new Error('Failed to register 1');
+    };
   let updateAll1: ItemSnapshot => void = _ => {
     throw new Error('Failed to register 1');
   };
-  let updateItem2: (ItemKey, ?Loadable<mixed>) => void = () => {
+  let updateItem2: (ItemKey, DefaultValue | string) => void = () => {
     throw new Error('Failed to register 2');
   };
   const container = renderElements(
@@ -627,81 +662,54 @@ test('Listen to storage', async () => {
   expect(storage1.size).toBe(3);
 
   // Subscribe to new value
-  act(() => updateItem1('recoil-sync listen', RecoilLoadable.of('AA')));
+  act(() => updateItem1('recoil-sync listen', 'AA'));
   expect(container.textContent).toBe('"AA""B""C2"');
   // Avoid feedback loops
-  expect(storage1.get('recoil-sync listen')?.getValue()).toBe('A');
+  expect(storage1.get('recoil-sync listen')).toBe('A');
 
   // Subscribe to reset
-  act(() => updateItem1('recoil-sync listen', null));
+  act(() => updateItem1('recoil-sync listen', new DefaultValue()));
   expect(container.textContent).toBe('"DEFAULT""B""C2"');
-  act(() => updateItem1('recoil-sync listen', RecoilLoadable.of('AA')));
+  act(() => updateItem1('recoil-sync listen', 'AA'));
 
   // Subscribe to new value from different key
-  act(() => updateItem1('KEY A', RecoilLoadable.of('BB')));
+  act(() => updateItem1('KEY A', 'BB'));
   expect(container.textContent).toBe('"AA""BB""C2"');
   // Neither key in same storage will be updated to avoid feedback loops
-  expect(storage1.get('KEY A')?.getValue()).toBe('B');
-  expect(storage1.get('KEY B')?.getValue()).toBe(undefined);
-  act(() => updateItem1('KEY B', RecoilLoadable.of('BBB')));
+  expect(storage1.get('KEY A')).toBe('B');
+  expect(storage1.get('KEY B')).toBe(undefined);
+  act(() => updateItem1('KEY B', 'BBB'));
   expect(container.textContent).toBe('"AA""BBB""C2"');
-  expect(storage1.get('KEY A')?.getValue()).toBe('B');
-  expect(storage1.get('KEY B')?.getValue()).toBe(undefined);
+  expect(storage1.get('KEY A')).toBe('B');
+  expect(storage1.get('KEY B')).toBe(undefined);
 
   // Subscribe to new value from different storage
-  act(() =>
-    updateItem1(
-      'recoil-sync listen to multiple storage',
-      RecoilLoadable.of('CC1'),
-    ),
-  );
+  act(() => updateItem1('recoil-sync listen to multiple storage', 'CC1'));
   expect(container.textContent).toBe('"AA""BBB""CC1"');
   // Avoid feedback loops, do not update storage based on listening to the storage
-  expect(
-    storage1.get('recoil-sync listen to multiple storage')?.getValue(),
-  ).toBe('C1');
+  expect(storage1.get('recoil-sync listen to multiple storage')).toBe('C1');
   // But, we should update other storages to stay in sync
-  expect(
-    storage2.get('recoil-sync listen to multiple storage')?.getValue(),
-  ).toBe('CC1');
+  expect(storage2.get('recoil-sync listen to multiple storage')).toBe('CC1');
 
-  act(() =>
-    updateItem2(
-      'recoil-sync listen to multiple storage',
-      RecoilLoadable.of('CC2'),
-    ),
-  );
+  act(() => updateItem2('recoil-sync listen to multiple storage', 'CC2'));
   expect(container.textContent).toBe('"AA""BBB""CC2"');
-  expect(
-    storage1.get('recoil-sync listen to multiple storage')?.getValue(),
-  ).toBe('CC2');
-  expect(
-    storage2.get('recoil-sync listen to multiple storage')?.getValue(),
-  ).toBe('CC1');
+  expect(storage1.get('recoil-sync listen to multiple storage')).toBe('CC2');
+  expect(storage2.get('recoil-sync listen to multiple storage')).toBe('CC1');
 
-  act(() =>
-    updateItem1(
-      'recoil-sync listen to multiple storage',
-      RecoilLoadable.of('CCC1'),
-    ),
-  );
+  act(() => updateItem1('recoil-sync listen to multiple storage', 'CCC1'));
   expect(container.textContent).toBe('"AA""BBB""CCC1"');
-  expect(
-    storage1.get('recoil-sync listen to multiple storage')?.getValue(),
-  ).toBe('CC2');
-  expect(
-    storage2.get('recoil-sync listen to multiple storage')?.getValue(),
-  ).toBe('CCC1');
+  expect(storage1.get('recoil-sync listen to multiple storage')).toBe('CC2');
+  expect(storage2.get('recoil-sync listen to multiple storage')).toBe('CCC1');
 
   // Subscribe to reset
-  act(() => updateItem1('recoil-sync listen to multiple storage', null));
+  act(() =>
+    updateItem1('recoil-sync listen to multiple storage', new DefaultValue()),
+  );
   expect(container.textContent).toBe('"AA""BBB""DEFAULT"');
-  expect(
-    storage1.get('recoil-sync listen to multiple storage')?.getValue(),
-  ).toBe('CC2');
-  expect(
-    storage2.get('recoil-sync listen to multiple storage')?.getValue(),
-  ).toBe(undefined);
+  expect(storage1.get('recoil-sync listen to multiple storage')).toBe('CC2');
+  expect(storage2.get('recoil-sync listen to multiple storage')).toBe(
+    undefined,
+  );
 
   // Subscribe to error
   const ERROR = new Error('ERROR');
@@ -712,9 +720,7 @@ test('Listen to storage', async () => {
 
   // Update All Items
   // Set A while resetting B
-  act(() =>
-    updateAll1(new Map([['recoil-sync listen', RecoilLoadable.of('AAA')]])),
-  );
+  act(() => updateAll1(new Map([['recoil-sync listen', 'AAA']])));
   expect(container.textContent).toBe('"AAA""DEFAULT""DEFAULT"');
 
   // Update All Items
@@ -722,8 +728,8 @@ test('Listen to storage', async () => {
   act(() =>
     updateAll1(
       new Map([
-        ['recoil-sync listen', RecoilLoadable.of('AAA')],
-        ['KEY A', RecoilLoadable.of('BBB')],
+        ['recoil-sync listen', 'AAA'],
+        ['KEY A', 'BBB'],
       ]),
     ),
   );
@@ -734,9 +740,9 @@ test('Listen to storage', async () => {
   act(() =>
     updateAll1(
       new Map([
-        ['recoil-sync listen', RecoilLoadable.of('AAA')],
-        ['KEY A', RecoilLoadable.of('IGNORE')],
-        ['KEY B', RecoilLoadable.of('BBBB')],
+        ['recoil-sync listen', 'AAA'],
+        ['KEY A', 'IGNORE'],
+        ['KEY B', 'BBBB'],
       ]),
     ),
   );
@@ -744,16 +750,14 @@ test('Listen to storage', async () => {
 
   // Update All Items
   // Not providing an item causes it to revert to default
-  act(() =>
-    updateAll1(new Map([['recoil-sync listen', RecoilLoadable.of('AAA')]])),
-  );
+  act(() => updateAll1(new Map([['recoil-sync listen', 'AAA']])));
   expect(container.textContent).toBe('"AAA""DEFAULT""DEFAULT"');
 
   // TODO Async Atom support
   // act(() =>
   //   updateItem1(
   //     'recoil-sync listen',
-  //     RecoilLoadable.of(Promise.resolve( 'ASYNC')),
+  //     (Promise.resolve( 'ASYNC')),
   //   ),
   // );
   // await flushPromisesAndTimers();
@@ -761,7 +765,7 @@ test('Listen to storage', async () => {
 
   // act(() =>
   //   updateItem1(
-  //     'KEY B', RecoilLoadable.of(Promise.reject(new Error('ERROR B'))),
+  //     'KEY B', (Promise.reject(new Error('ERROR B'))),
   //   ),
   // );
   // await flushPromisesAndTimers();
@@ -800,12 +804,8 @@ test('Persist on read', async () => {
   await flushPromisesAndTimers();
 
   expect(storage.size).toBe(2);
-  expect(storage.get('recoil-sync persist on read default')?.getValue()).toBe(
-    'DEFAULT',
-  );
-  expect(storage.get('recoil-sync persist on read init')?.getValue()).toBe(
-    'INIT_AFTER',
-  );
+  expect(storage.get('recoil-sync persist on read default')).toBe('DEFAULT');
+  expect(storage.get('recoil-sync persist on read init')).toBe('INIT_AFTER');
 });
 
 test('Persist on read - async', async () => {
@@ -870,19 +870,18 @@ test('Persist on read - async', async () => {
   await flushPromisesAndTimers();
   expect(container.textContent).toBe('"ASYNC_DEFAULT""ASYNC_INIT_AFTER"');
   expect(storage.size).toBe(2);
-  expect(
-    storage.get('recoil-sync persist on read default async')?.getValue(),
-  ).toBe('ASYNC_DEFAULT');
-  expect(
-    storage.get('recoil-sync persist on read init async')?.getValue(),
-  ).toBe('ASYNC_INIT_AFTER');
+  expect(storage.get('recoil-sync persist on read default async')).toBe(
+    'ASYNC_DEFAULT',
+  );
+  expect(storage.get('recoil-sync persist on read init async')).toBe(
+    'ASYNC_INIT_AFTER',
+  );
 });
 
 test('Sync based on component props', async () => {
   function SyncWithProps(props) {
     useRecoilSync({
-      read: itemKey =>
-        itemKey in props ? RecoilLoadable.of(props[itemKey]) : null,
+      read: itemKey => (itemKey in props ? props[itemKey] : undefined),
     });
     return null;
   }
@@ -923,8 +922,8 @@ test('Sync Atom Family', async () => {
   });
 
   const storage = new Map([
-    ['a', RecoilLoadable.of('A')],
-    ['b', RecoilLoadable.of('B')],
+    ['a', 'A'],
+    ['b', 'B'],
   ]);
 
   const container = renderElements(
@@ -948,14 +947,14 @@ describe('Complex Mappings', () => {
         syncEffect({
           itemKey: 'a', // UNUSED
           refine: string(),
-          write: ({write}, loadable) => {
+          write: ({write}, newValue) => {
             write(
               'a1',
-              loadable?.map(x => x + '1'),
+              newValue instanceof DefaultValue ? newValue : newValue + '1',
             );
             write(
               'a2',
-              loadable?.map(x => x + '2'),
+              newValue instanceof DefaultValue ? newValue : newValue + '2',
             );
           },
           syncDefault: true,
@@ -970,20 +969,19 @@ describe('Complex Mappings', () => {
         syncEffect({
           itemKey: 'b', // UNUSED
           refine: string(),
-          write: ({write}, loadable) => {
-            write(
-              'b1',
-              loadable?.map(x => x + '1'),
-            );
-            write(
-              'b2',
-              loadable?.map(x => x + '2'),
-            );
+          write: ({write, reset}, newValue) => {
+            if (newValue instanceof DefaultValue) {
+              reset('b1');
+              reset('b2');
+            } else {
+              write('b1', newValue + '1');
+              write('b2', newValue + '2');
+            }
           },
         }),
       ],
     });
-    const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
+    const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
 
     const storage = new Map();
     const allItemsRef = {current: new Map()};
@@ -1001,26 +999,37 @@ describe('Complex Mappings', () => {
     // Test mapping when syncing default value
     expect(storage.size).toEqual(2);
     expect(storage.has('a')).toEqual(false);
-    expect(storage.get('a1')?.contents).toEqual('A1');
-    expect(storage.get('a2')?.contents).toEqual('A2');
+    expect(storage.get('a1')).toEqual('A1');
+    expect(storage.get('a2')).toEqual('A2');
 
     // Test mapping with allItems
     expect(allItemsRef.current.size).toEqual(4);
-    expect(allItemsRef.current.get('a1')?.contents).toEqual('A1');
-    expect(allItemsRef.current.get('a2')?.contents).toEqual('A2');
-    expect(allItemsRef.current.get('b1')?.contents).toEqual(undefined);
-    expect(allItemsRef.current.get('b2')?.contents).toEqual(undefined);
+    expect(allItemsRef.current.get('a1')).toEqual('A1');
+    expect(allItemsRef.current.get('a2')).toEqual('A2');
+    expect(allItemsRef.current.get('b1')).toEqual(new DefaultValue());
+    expect(allItemsRef.current.get('b2')).toEqual(new DefaultValue());
 
     // Test mapping when writing state changes
     act(() => setB('B'));
     expect(container.textContent).toBe('"A""B"');
     expect(storage.size).toEqual(4);
     expect(storage.has('b')).toEqual(false);
-    expect(storage.get('b1')?.contents).toEqual('B1');
-    expect(storage.get('b2')?.contents).toEqual('B2');
+    expect(storage.get('b1')).toEqual('B1');
+    expect(storage.get('b2')).toEqual('B2');
     expect(allItemsRef.current.size).toEqual(4);
-    expect(allItemsRef.current.get('b1')?.contents).toEqual('B1');
-    expect(allItemsRef.current.get('b2')?.contents).toEqual('B2');
+    expect(allItemsRef.current.get('b1')).toEqual('B1');
+    expect(allItemsRef.current.get('b2')).toEqual('B2');
+
+    // Test mapping when reseting state
+    act(resetB);
+    expect(container.textContent).toBe('"A""DEFAULT"');
+    expect(storage.size).toEqual(2);
+    expect(storage.has('b')).toEqual(false);
+    expect(storage.has('b1')).toEqual(false);
+    expect(storage.has('b2')).toEqual(false);
+    expect(allItemsRef.current.size).toEqual(4);
+    expect(allItemsRef.current.get('b1')).toEqual(new DefaultValue());
+    expect(allItemsRef.current.get('b2')).toEqual(new DefaultValue());
   });
 
   test('read while writing', async () => {
@@ -1030,20 +1039,21 @@ describe('Complex Mappings', () => {
       effects_UNSTABLE: [
         syncEffect({
           refine: string(),
-          write: ({write, read}, loadable) => {
-            write('self', RecoilLoadable.of('TMP'));
-            expect(read('self')?.getValue()).toEqual('TMP');
-            write(
-              'self',
-              read('other')?.map(x => loadable?.map(y => `${String(x)}_${y}`)),
-            );
+          write: ({write, read}, newValue) => {
+            if (newValue instanceof DefaultValue) {
+              write('self', newValue);
+              return;
+            }
+            write('self', 'TMP');
+            expect(read('self')).toEqual('TMP');
+            write('self', `${String(read('other'))}_${newValue}`);
           },
           syncDefault: true,
         }),
       ],
     });
 
-    const storage = new Map([['other', RecoilLoadable.of('OTHER')]]);
+    const storage = new Map([['other', 'OTHER']]);
 
     const container = renderElements(
       <>
@@ -1056,7 +1066,7 @@ describe('Complex Mappings', () => {
     await flushPromisesAndTimers();
 
     expect(storage.size).toEqual(2);
-    expect(storage.get('self')?.contents).toEqual('OTHER_SELF');
+    expect(storage.get('self')).toEqual('OTHER_SELF');
   });
 
   test('read from multiple items', () => {
@@ -1066,14 +1076,14 @@ describe('Complex Mappings', () => {
       effects_UNSTABLE: [
         syncEffect({
           refine: dict(number()),
-          read: ({read}) => RecoilLoadable.all({a: read('a'), b: read('b')}),
+          read: ({read}) => ({a: read('a'), b: read('b')}),
         }),
       ],
     });
 
     const storage = new Map([
-      ['a', RecoilLoadable.of(1)],
-      ['b', RecoilLoadable.of(2)],
+      ['a', 1],
+      ['b', 2],
     ]);
     let updateItem;
     const container = renderElements(
@@ -1092,14 +1102,14 @@ describe('Complex Mappings', () => {
     expect(container.textContent).toBe('{"a":1,"b":2}');
 
     // Test subscribing to multiple items
-    act(() => updateItem('a', RecoilLoadable.of(10)));
+    act(() => updateItem('a', 10));
     expect(container.textContent).toBe('{"a":10,"b":2}');
 
     // Avoid feedback loops
-    expect(storage.get('a')?.contents).toEqual(1);
-    storage.set('a', RecoilLoadable.of(10)); // Keep storage in sync
+    expect(storage.get('a')).toEqual(1);
+    storage.set('a', 10); // Keep storage in sync
 
-    act(() => updateItem('b', RecoilLoadable.of(20)));
+    act(() => updateItem('b', 20));
     expect(container.textContent).toBe('{"a":10,"b":20}');
   });
 });
@@ -1116,7 +1126,7 @@ test('Reading before sync hook', async () => {
   function SyncOrder() {
     const b = useRecoilValue(atoms('b'));
     useRecoilSync({
-      read: itemKey => RecoilLoadable.of(itemKey.toUpperCase()),
+      read: itemKey => itemKey.toUpperCase(),
     });
     const c = useRecoilValue(atoms('c'));
     return (
@@ -1168,8 +1178,8 @@ test('Sibling <RecoilRoot>', async () => {
     ],
   });
 
-  const storageA = new Map([['a', RecoilLoadable.of('A')]]);
-  const storageB = new Map([['shared', RecoilLoadable.of('SHARED')]]);
+  const storageA = new Map([['a', 'A']]);
+  const storageB = new Map([['shared', 'SHARED']]);
 
   const [AtomA, setA] = componentThatReadsAndWritesAtom(atomA);
   const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
@@ -1194,44 +1204,44 @@ test('Sibling <RecoilRoot>', async () => {
   await flushPromisesAndTimers();
   expect(storageA.size).toBe(2);
   expect(storageB.size).toBe(1);
-  expect(storageA.get('a')?.contents).toBe('A');
-  expect(storageA.get('shared')?.contents).toBe('DEFAULT');
-  expect(storageB.get('shared')?.contents).toBe('SHARED');
+  expect(storageA.get('a')).toBe('A');
+  expect(storageA.get('shared')).toBe('DEFAULT');
+  expect(storageB.get('shared')).toBe('SHARED');
 
   act(() => setA('SET_A'));
   expect(container.textContent).toEqual('"SET_A""DEFAULT""DEFAULT""SHARED"');
   expect(storageA.size).toBe(2);
   expect(storageB.size).toBe(1);
-  expect(storageA.get('a')?.contents).toBe('SET_A');
-  expect(storageA.get('shared')?.contents).toBe('DEFAULT');
-  expect(storageB.get('shared')?.contents).toBe('SHARED');
+  expect(storageA.get('a')).toBe('SET_A');
+  expect(storageA.get('shared')).toBe('DEFAULT');
+  expect(storageB.get('shared')).toBe('SHARED');
 
   act(() => setB('SET_B'));
   expect(container.textContent).toEqual('"SET_A""DEFAULT""SET_B""SHARED"');
   expect(storageA.size).toBe(2);
   expect(storageB.size).toBe(2);
-  expect(storageA.get('a')?.contents).toBe('SET_A');
-  expect(storageA.get('shared')?.contents).toBe('DEFAULT');
-  expect(storageB.get('b')?.contents).toBe('SET_B');
-  expect(storageB.get('shared')?.contents).toBe('SHARED');
+  expect(storageA.get('a')).toBe('SET_A');
+  expect(storageA.get('shared')).toBe('DEFAULT');
+  expect(storageB.get('b')).toBe('SET_B');
+  expect(storageB.get('shared')).toBe('SHARED');
 
   act(() => setSharedInA('SHARED_A'));
   expect(container.textContent).toEqual('"SET_A""SHARED_A""SET_B""SHARED"');
   expect(storageA.size).toBe(2);
   expect(storageB.size).toBe(2);
-  expect(storageA.get('a')?.contents).toBe('SET_A');
-  expect(storageA.get('shared')?.contents).toBe('SHARED_A');
-  expect(storageB.get('b')?.contents).toBe('SET_B');
-  expect(storageB.get('shared')?.contents).toBe('SHARED');
+  expect(storageA.get('a')).toBe('SET_A');
+  expect(storageA.get('shared')).toBe('SHARED_A');
+  expect(storageB.get('b')).toBe('SET_B');
+  expect(storageB.get('shared')).toBe('SHARED');
 
   act(() => setSharedInB('SHARED_B'));
   expect(container.textContent).toEqual('"SET_A""SHARED_A""SET_B""SHARED_B"');
   expect(storageA.size).toBe(2);
   expect(storageB.size).toBe(2);
-  expect(storageA.get('a')?.contents).toBe('SET_A');
-  expect(storageA.get('shared')?.contents).toBe('SHARED_A');
-  expect(storageB.get('b')?.contents).toBe('SET_B');
-  expect(storageB.get('shared')?.contents).toBe('SHARED_B');
+  expect(storageA.get('a')).toBe('SET_A');
+  expect(storageA.get('shared')).toBe('SHARED_A');
+  expect(storageB.get('b')).toBe('SET_B');
+  expect(storageB.get('shared')).toBe('SHARED_B');
 });
 
 test('Unregister store and atoms', () => {
