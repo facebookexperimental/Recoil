@@ -18,7 +18,7 @@ const FilterAtom = atom({
   default: '',
 });
 
-const useFilter = (): [string, SetterOrUpdater<string>] => {
+export const useFilter = (): [string, SetterOrUpdater<string>] => {
   return useRecoilState<string>(FilterAtom);
 };
 
@@ -27,8 +27,6 @@ const SelectecTransactionAtom = atom({
   default: 0,
 });
 
-const useSelectedTransaction = (): [number, SetterOrUpdater<number>] => {
+export const useSelectedTransaction = (): [number, SetterOrUpdater<number>] => {
   return useRecoilState<number>(SelectecTransactionAtom);
 };
-
-module.exports = {useFilter, useSelectedTransaction};
