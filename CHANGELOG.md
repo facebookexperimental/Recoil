@@ -10,6 +10,7 @@
 - `storeID` added to atom effects interface (#1414)
 - `<RecoilRoot>` will only call `initializeState()` during initial render. (#1372)
 - `RecoilLoadable.all()` and `RecoilLoadable.of()` accept either literal values, async Promises, or Loadables.
+- Selector `getCallback()` callbacks can now mutate, refresh, and transact Recoil state in addition to reading it.
 
 ### Pending
 - Memory management

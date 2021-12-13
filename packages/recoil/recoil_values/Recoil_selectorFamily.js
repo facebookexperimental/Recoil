@@ -46,20 +46,27 @@ export type Parameter =
   | $ReadOnly<{...}>;
 // | $ReadOnly<{[string]: Parameter}>; // TODO Better enforce object is serializable
 
-type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
+type SelectorFamilyGet<T, P, Node> = P => ({
+  get: GetRecoilValue,
+  getCallback: GetCallback<Node>,
+}) => Promise<T> | RecoilValue<T> | T;
+
+type BaseSelectorFamilyOptions<P: Parameter> = $ReadOnly<{
   key: string,
-  get: P => ({get: GetRecoilValue, getCallback: GetCallback}) =>
-    | Promise<T>
-    | RecoilValue<T>
-    | T,
   cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction,
   cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
   retainedBy_UNSTABLE?: RetainedBy | (P => RetainedBy),
 }>;
 
+type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
+  ...BaseSelectorFamilyOptions<P>,
+  get: SelectorFamilyGet<T, P, RecoilValueReadOnly<T>>,
+}>;
+
 export type ReadWriteSelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
-  ...ReadOnlySelectorFamilyOptions<T, P>,
+  ...BaseSelectorFamilyOptions<P>,
+  get: SelectorFamilyGet<T, P, RecoilState<T>>,
   set: P => (
     {set: SetRecoilState, get: GetRecoilValue, reset: ResetRecoilState},
     newValue: T | DefaultValue,
@@ -122,6 +129,7 @@ function selectorFamily<T, Params: Parameter>(
       }) ?? 'void'
     }/${nextIndex++}`; // Append index in case values serialize to the same key string
 
+    // $FlowIssue[incompatible-call]
     const myGet = callbacks => options.get(params)(callbacks);
     const myCachePolicy = options.cachePolicy_UNSTABLE;
 

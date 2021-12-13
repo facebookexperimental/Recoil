@@ -114,12 +114,31 @@
  /**
   * Creates an atom, which represents a piece of writeable state
   */
-export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+ export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+
+ export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
+ export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
+ export type Resetter = () => void;
+ export interface TransactionInterface_UNSTABLE {
+  get<T>(a: RecoilValue<T>): T;
+  set<T>(s: RecoilState<T>, u: ((currVal: T) => T) | T): void;
+  reset(s: RecoilState<any>): void;
+ }
+ export interface CallbackInterface {
+  set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
+  reset: (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  refresh: (recoilValue: RecoilValue<any>) => void;
+  snapshot: Snapshot;
+  gotoSnapshot: (snapshot: Snapshot) => void;
+  transact_UNSTABLE: (cb: (i: TransactionInterface_UNSTABLE) => void) => void;
+ }
 
  // selector.d.ts
- export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
+ export interface SelectorCallbackInterface extends CallbackInterface {
+   node: RecoilState<unknown>; // TODO This isn't properly typed
+ }
  export type GetCallback = <Args extends ReadonlyArray<unknown>, Return>(
-  fn: (interface: Readonly<{snapshot: Snapshot}>) => (...args: Args) => Return,
+  fn: (interface: SelectorCallbackInterface) => (...args: Args) => Return,
  ) => (...args: Args) => Return;
 
  export type SetRecoilState = <T>(
@@ -174,21 +193,6 @@ export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
  export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
 
  // hooks.d.ts
- export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
- export type Resetter = () => void;
- export interface TransactionInterface_UNSTABLE {
-  get<T>(a: RecoilValue<T>): T;
-  set<T>(s: RecoilState<T>, u: ((currVal: T) => T) | T): void;
-  reset(s: RecoilState<any>): void;
- }
- export type CallbackInterface = Readonly<{
-  set: <T>(recoilVal: RecoilState<T>, valOrUpdater: ((currVal: T) => T) | T) => void;
-  reset: (recoilVal: RecoilState<any>) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
-  refresh: (recoilValue: RecoilValue<any>) => void;
-  snapshot: Snapshot,
-  gotoSnapshot: (snapshot: Snapshot) => void,
-  transact_UNSTABLE: (cb: (i: TransactionInterface_UNSTABLE) => void) => void;
- }>;
 
  /**
   * Returns the value of an atom or selector (readonly or writeable) and

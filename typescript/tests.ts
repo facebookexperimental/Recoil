@@ -31,6 +31,7 @@
   useRecoilRefresher_UNSTABLE,
   useRecoilStoreID,
 } from 'recoil';
+import { string } from 'refine';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -90,7 +91,17 @@ const writeableSelector = selector({
 const callbackSelector = selector({
   key: 'CallbackSelector',
   get: ({ getCallback }) => {
-    return getCallback(({snapshot}) => () => {
+    return getCallback(({snapshot, set, reset, refresh, transact_UNSTABLE}) => () => {
+      set(myAtom, 5);
+      reset(myAtom);
+      refresh(myAtom);
+
+      transact_UNSTABLE(({get, set, reset}) => {
+        get(myAtom); // $ExpectType number
+        set(myAtom, 5);
+        reset(myAtom);
+      });
+
       const ret = snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
       return ret;
     });
@@ -574,7 +585,7 @@ isRecoilValue(mySelector1);
       ({node, storeID, trigger, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
         node; // $ExpectType RecoilState<number>
         storeID; // $ExpectType StoreID
-        trigger; // $ExpectType "get" | "set"
+        trigger; // $ExpectType "set" | "get"
 
         setSelf(1);
         setSelf('a'); // $ExpectError
@@ -616,7 +627,7 @@ isRecoilValue(mySelector1);
 
         node; // $ExpectType RecoilState<number>
         storeID; // $ExpectType StoreID
-        trigger; // $ExpectType "get" | "set"
+        trigger; // $ExpectType "set" | "get"
 
         setSelf(1);
         setSelf('a'); // $ExpectError

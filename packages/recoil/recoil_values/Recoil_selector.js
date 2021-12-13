@@ -67,8 +67,8 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
-import type {Snapshot} from '../core/Recoil_Snapshot';
 import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
+import type {RecoilCallbackInterface} from '../hooks/Recoil_useRecoilCallback';
 import type {
   GetRecoilValue,
   ResetRecoilState,
@@ -101,7 +101,7 @@ const {
   setRecoilValueLoadable,
 } = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
-const {cloneSnapshot} = require('../core/Recoil_Snapshot');
+const {recoilCallback} = require('../hooks/Recoil_useRecoilCallback');
 const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
 const err = require('recoil-shared/util/Recoil_err');
 const gkx = require('recoil-shared/util/Recoil_gkx');
@@ -113,25 +113,35 @@ const {
 } = require('recoil-shared/util/Recoil_PerformanceTimings');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
-export type GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(
-  fn: ($ReadOnly<{snapshot: Snapshot}>) => (...Args) => Return,
+type SelectorCallbackInterface<Node> = $ReadOnly<{
+  node: Node,
+  ...RecoilCallbackInterface,
+}>;
+export type GetCallback<Node> = <Args: $ReadOnlyArray<mixed>, Return>(
+  fn: (SelectorCallbackInterface<Node>) => (...Args) => Return,
 ) => (...Args) => Return;
 
-type ReadOnlySelectorOptions<T> = $ReadOnly<{
+type SelectorGet<T, Node> = ({
+  get: GetRecoilValue,
+  getCallback: GetCallback<Node>,
+}) => Promise<T> | RecoilValue<T> | T;
+
+type BaseSelectorOptions = $ReadOnly<{
   key: string,
-  get: ({get: GetRecoilValue, getCallback: GetCallback}) =>
-    | Promise<T>
-    | RecoilValue<T>
-    | T,
 
   dangerouslyAllowMutability?: boolean,
-
   retainedBy_UNSTABLE?: RetainedBy,
   cachePolicy_UNSTABLE?: CachePolicy,
 }>;
 
+type ReadOnlySelectorOptions<T> = $ReadOnly<{
+  ...BaseSelectorOptions,
+  get: SelectorGet<T, RecoilValueReadOnly<T>>,
+}>;
+
 type ReadWriteSelectorOptions<T> = $ReadOnly<{
-  ...ReadOnlySelectorOptions<T>,
+  ...BaseSelectorOptions,
+  get: SelectorGet<T, RecoilState<T>>,
   set: (
     {set: SetRecoilState, get: GetRecoilValue, reset: ResetRecoilState},
     newValue: T | DefaultValue,
@@ -742,8 +752,8 @@ function selector<T>(
     }
 
     let gateCallback = false;
-    const getCallback: GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(
-      fn: ($ReadOnly<{snapshot: Snapshot}>) => (...Args) => Return,
+    const getCallback = <Args: $ReadOnlyArray<mixed>, Return>(
+      fn: (SelectorCallbackInterface<RecoilValue<T>>) => (...Args) => Return,
     ): ((...Args) => Return) => {
       return (...args) => {
         if (!gateCallback) {
@@ -751,18 +761,13 @@ function selector<T>(
             'getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can obtain the current Recoil state without a subscription.',
           );
         }
-        const snapshot = cloneSnapshot(store);
-        const cb = fn({snapshot});
-        if (typeof cb !== 'function') {
-          throw err(
-            'getCallback() expects a function that returns a function.',
-          );
-        }
-        return cb(...args);
+        invariant(recoilValue != null, 'Recoil Value can never be null');
+        return recoilCallback(store, fn, args, {node: recoilValue});
       };
     };
 
     try {
+      // $FlowIssue[incompatible-call]
       result = get({get: getRecoilValue, getCallback});
       result = isRecoilValue(result) ? getRecoilValue(result) : result;
       gateCallback = true;

@@ -40,7 +40,7 @@ const testRecoil = getRecoilTestFn(() => {
     useRecoilValue,
     useRecoilValueLoadable,
   } = require('../../hooks/Recoil_Hooks'));
-  useRecoilCallback = require('../../hooks/Recoil_useRecoilCallback');
+  ({useRecoilCallback} = require('../../hooks/Recoil_useRecoilCallback'));
   useRetain = require('../../hooks/Recoil_useRetain');
   atom = require('../../recoil_values/Recoil_atom');
   selector = require('../../recoil_values/Recoil_selector');
