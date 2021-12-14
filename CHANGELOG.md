@@ -6,6 +6,7 @@
 - Fix Recoil with React strict mode that re-executes effects multiple times.
 - Add `refresh` to Recoil callback interface (#1413)
 - Fix transitive selector refresh for some cases (#1409)
+- Run atom effects when set from `useRecoilTransaction_UNSTABLE()` (#1466)
 - `useRecoilStoreID()` hook to get an ID for the current <RecoilRoot> store. (#1417)
 - `storeID` added to atom effects interface (#1414)
 - `<RecoilRoot>` will only call `initializeState()` during initial render. (#1372)

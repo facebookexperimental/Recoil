@@ -4730,7 +4730,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       // eslint-disable-next-line no-shadow
       function useSetRecoilState(recoilState) {
         {
-          // $FlowFixMe[escaped-generic]
           validateRecoilValue(recoilState, 'useSetRecoilState');
         }
 
@@ -4742,7 +4741,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
       function useResetRecoilState(recoilState) {
         {
-          // $FlowFixMe[escaped-generic]
           validateRecoilValue(recoilState, 'useResetRecoilState');
         }
 
@@ -4754,7 +4752,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         var _storeState$nextTree;
 
         {
-          // $FlowFixMe[escaped-generic]
           validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
         }
 
@@ -4770,7 +4767,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
       function useRecoilValue(recoilValue) {
         {
-          // $FlowFixMe[escaped-generic]
           validateRecoilValue(recoilValue, 'useRecoilValue');
         }
 
@@ -4781,7 +4777,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
       function useRecoilState(recoilState) {
         {
-          // $FlowFixMe[escaped-generic]
           validateRecoilValue(recoilState, 'useRecoilState');
         }
 
@@ -4791,7 +4786,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
       function useRecoilStateLoadable(recoilState) {
         {
-          // $FlowFixMe[escaped-generic]
           validateRecoilValue(recoilState, 'useRecoilStateLoadable');
         }
 
@@ -4814,11 +4808,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   };
 
   function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
-    {
-      // $FlowFixMe[escaped-generic]
-      validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
-    }
-
     const storeRef = useStoreRef$2();
     const getLoadable = useCallback$1(() => {
       var _storeState$nextTree2;
@@ -4871,11 +4860,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   }
 
   function useRecoilValueLoadable_LEGACY(recoilValue) {
-    {
-      // $FlowFixMe[escaped-generic]
-      validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
-    }
-
     const storeRef = useStoreRef$2();
     const [_, forceUpdate] = useState$1([]);
     const componentName = Recoil_useComponentName();
@@ -4951,6 +4935,10 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
 
   function useRecoilValueLoadable(recoilValue) {
+    {
+      validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
+    }
+
     if (Recoil_gkx_1('recoil_memory_managament_2020')) {
       // eslint-disable-next-line fb-www/react-hooks
       Recoil_useRetain(recoilValue);
@@ -4974,7 +4962,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   function useRecoilValue(recoilValue) {
     {
-      // $FlowFixMe[escaped-generic]
       validateRecoilValue(recoilValue, 'useRecoilValue');
     }
 
@@ -4990,7 +4977,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   function useSetRecoilState(recoilState) {
     {
-      // $FlowFixMe[escaped-generic]
       validateRecoilValue(recoilState, 'useSetRecoilState');
     }
 
@@ -5006,7 +4992,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   function useResetRecoilState(recoilState) {
     {
-      // $FlowFixMe[escaped-generic]
       validateRecoilValue(recoilState, 'useResetRecoilState');
     }
 
@@ -5026,7 +5011,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   function useRecoilState(recoilState) {
     {
-      // $FlowFixMe[escaped-generic]
       validateRecoilValue(recoilState, 'useRecoilState');
     }
 
@@ -5041,7 +5025,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   function useRecoilStateLoadable(recoilState) {
     {
-      // $FlowFixMe[escaped-generic]
       validateRecoilValue(recoilState, 'useRecoilStateLoadable');
     }
 
@@ -5428,6 +5411,10 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   } = Recoil_Loadable$1;
 
   const {
+    initializeNode: initializeNode$2
+  } = Recoil_FunctionalCore;
+
+  const {
     DEFAULT_VALUE: DEFAULT_VALUE$4,
     getNode: getNode$5
   } = Recoil_Node;
@@ -5485,6 +5472,9 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           this._changes.set(recoilState.key, valueOrUpdater(current)); // flowlint-line unclear-type:off
 
         } else {
+          // Initialize atom and run effects if not initialized yet
+          initializeNode$2(this._store, recoilState.key);
+
           this._changes.set(recoilState.key, valueOrUpdater);
         }
       });

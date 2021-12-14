@@ -71,7 +71,7 @@ const {
 const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 
 declare function handleLoadable<T>(loadable: Loadable<T>, recoilValue: RecoilValue<T>, storeRef: any): T;
-declare function validateRecoilValue(recoilValue: any, hookName: any): any;
+declare function validateRecoilValue<T>(recoilValue: RecoilValue<T>, hookName: any): any;
 export type SetterOrUpdater<T> = (((T) => T) | T) => void;
 export type Resetter = () => void;
 export type RecoilInterface = {

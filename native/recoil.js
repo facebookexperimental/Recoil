@@ -4725,7 +4725,6 @@ function useRecoilInterface_DEPRECATED() {
     // eslint-disable-next-line no-shadow
     function useSetRecoilState(recoilState) {
       if (process.env.NODE_ENV !== "production") {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilState, 'useSetRecoilState');
       }
 
@@ -4737,7 +4736,6 @@ function useRecoilInterface_DEPRECATED() {
 
     function useResetRecoilState(recoilState) {
       if (process.env.NODE_ENV !== "production") {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilState, 'useResetRecoilState');
       }
 
@@ -4749,7 +4747,6 @@ function useRecoilInterface_DEPRECATED() {
       var _storeState$nextTree;
 
       if (process.env.NODE_ENV !== "production") {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
       }
 
@@ -4765,7 +4762,6 @@ function useRecoilInterface_DEPRECATED() {
 
     function useRecoilValue(recoilValue) {
       if (process.env.NODE_ENV !== "production") {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilValue, 'useRecoilValue');
       }
 
@@ -4776,7 +4772,6 @@ function useRecoilInterface_DEPRECATED() {
 
     function useRecoilState(recoilState) {
       if (process.env.NODE_ENV !== "production") {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilState, 'useRecoilState');
       }
 
@@ -4786,7 +4781,6 @@ function useRecoilInterface_DEPRECATED() {
 
     function useRecoilStateLoadable(recoilState) {
       if (process.env.NODE_ENV !== "production") {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilState, 'useRecoilStateLoadable');
       }
 
@@ -4809,11 +4803,6 @@ const recoilComponentGetRecoilValueCount_FOR_TESTING = {
 };
 
 function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
-  if (process.env.NODE_ENV !== "production") {
-    // $FlowFixMe[escaped-generic]
-    validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
-  }
-
   const storeRef = useStoreRef$2();
   const getLoadable = useCallback$1(() => {
     var _storeState$nextTree2;
@@ -4866,11 +4855,6 @@ function useRecoilValueLoadable_MUTABLESOURCE(recoilValue) {
 }
 
 function useRecoilValueLoadable_LEGACY(recoilValue) {
-  if (process.env.NODE_ENV !== "production") {
-    // $FlowFixMe[escaped-generic]
-    validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
-  }
-
   const storeRef = useStoreRef$2();
   const [_, forceUpdate] = useState$1([]);
   const componentName = Recoil_useComponentName();
@@ -4946,6 +4930,10 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
 
 
 function useRecoilValueLoadable(recoilValue) {
+  if (process.env.NODE_ENV !== "production") {
+    validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
+  }
+
   if (Recoil_gkx_1('recoil_memory_managament_2020')) {
     // eslint-disable-next-line fb-www/react-hooks
     Recoil_useRetain(recoilValue);
@@ -4969,7 +4957,6 @@ function useRecoilValueLoadable(recoilValue) {
 
 function useRecoilValue(recoilValue) {
   if (process.env.NODE_ENV !== "production") {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilValue, 'useRecoilValue');
   }
 
@@ -4985,7 +4972,6 @@ function useRecoilValue(recoilValue) {
 
 function useSetRecoilState(recoilState) {
   if (process.env.NODE_ENV !== "production") {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilState, 'useSetRecoilState');
   }
 
@@ -5001,7 +4987,6 @@ function useSetRecoilState(recoilState) {
 
 function useResetRecoilState(recoilState) {
   if (process.env.NODE_ENV !== "production") {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilState, 'useResetRecoilState');
   }
 
@@ -5021,7 +5006,6 @@ function useResetRecoilState(recoilState) {
 
 function useRecoilState(recoilState) {
   if (process.env.NODE_ENV !== "production") {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilState, 'useRecoilState');
   }
 
@@ -5036,7 +5020,6 @@ function useRecoilState(recoilState) {
 
 function useRecoilStateLoadable(recoilState) {
   if (process.env.NODE_ENV !== "production") {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilState, 'useRecoilStateLoadable');
   }
 
@@ -5423,6 +5406,10 @@ const {
 } = Recoil_Loadable$1;
 
 const {
+  initializeNode: initializeNode$2
+} = Recoil_FunctionalCore;
+
+const {
   DEFAULT_VALUE: DEFAULT_VALUE$4,
   getNode: getNode$5
 } = Recoil_Node;
@@ -5480,6 +5467,9 @@ class TransactionInterfaceImpl {
         this._changes.set(recoilState.key, valueOrUpdater(current)); // flowlint-line unclear-type:off
 
       } else {
+        // Initialize atom and run effects if not initialized yet
+        initializeNode$2(this._store, recoilState.key);
+
         this._changes.set(recoilState.key, valueOrUpdater);
       }
     });

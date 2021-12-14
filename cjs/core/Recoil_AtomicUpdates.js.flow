@@ -10,25 +10,29 @@
  */
 'use strict';
 
-import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
-import type { NodeKey, Store, TreeState } from '../core/Recoil_State';
 import type { ValueOrUpdater } from '../recoil_values/Recoil_callbackTypes';
+import type { RecoilState, RecoilValue } from './Recoil_RecoilValue';
+import type { NodeKey, Store, TreeState } from './Recoil_State';
 
 const {
   loadableWithValue
 } = require('../adt/Recoil_Loadable');
 
 const {
+  initializeNode
+} = require('./Recoil_FunctionalCore');
+
+const {
   DEFAULT_VALUE,
   getNode
-} = require('../core/Recoil_Node');
+} = require('./Recoil_Node');
 
 const {
   copyTreeState,
   getRecoilValueAsLoadable,
   invalidateDownstreams,
   writeLoadableToTreeState
-} = require('../core/Recoil_RecoilValueInterface');
+} = require('./Recoil_RecoilValueInterface');
 
 const err = require('recoil-shared/util/Recoil_err');
 
