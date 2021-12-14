@@ -1,16 +1,16 @@
 ---
-title: Utilities
+title: Refine Utilities
 sidebar_label: Utilities
 ---
 
-In addition to the core [Checker](/docs/guides/refine/Checkers) combinators provided by refine, the library also exposes some utility functions to help with things like JSON parsing and assertion functions.
+In addition to the core [Checker](/docs/api-reference/refine/Checkers) combinators provided by [Refine](/docs/api-reference/refine/Refine), the library also exposes some utility functions to help with things like JSON parsing and assertion functions.
 
 
-## `jsonParser` / `jsonParserEnforced`
+## `jsonParser()` / `jsonParserEnforced()`
 
-Easily create a json parser from your checker function.
+Easily create a JSON parser from your checker function.
 
-```javascript
+```jsx
 // @flow strict
 import {array, number, jsonParser, jsonParserEnforced} from 'refine';
 
@@ -20,7 +20,7 @@ const parse = jsonParser(array(number()));
 const result = parse('[1,2,3]']);
 ```
 
-If you would like to throw on invalid / null json, you can use `jsonParserEnforced`
+If you would like to throw on invalid / null JSON, you can use `jsonParserEnforced()`
 
 ```javascript
 // creates a json parser which will throw on invalid values
@@ -37,7 +37,7 @@ const result = parse('...');
 result.a.includes(...);
 ```
 
-## `coercion`
+## `coercion()`
 
 Easily create a function for null-coercing values (with an optional check result callback)
 
@@ -63,7 +63,7 @@ assert(callbackResult != null, 'should be set');
 assert(callbackResult.type == 'success', 'should succeed');
 ```
 
-## `assertion`
+## `assertion()`
 
 Easily create an assertion function from your checker function.
 

@@ -1,11 +1,11 @@
 ---
-title: Collection Checkers
+title: Refine Collection Checkers
 sidebar_label: Collection Checkers
 ---
 
-Collection checkers can be combined with primitives to refine more complex values.
+Collection [checkers](/docs/api-reference/refine/Checkers) can be combined with [primitive checkers](/docs/api-reference/refine/Primitive_Checkers) to refine more complex values.
 
-## `array`
+## `array()`
 
 Validates a value as a `$ReadOnlyArray<T>`, given a value checker of type `Checker<T>`.
 
@@ -28,7 +28,7 @@ assert(check('test').type === 'failure');
 assert(check(['test', 'other']).type === 'failure');
 ```
 
-## `dict`
+## `dict()`
 
 Validates a value as a `$ReadOnly<{[key: string]: T}>`, given a value checker of type `Checker<T>`.
 
@@ -52,7 +52,7 @@ assert(check({a: 'test', b: 'other', c: 3}).type === 'failure');
 ```
 
 
-## `object`
+## `object()`
 
 Validates a value as a `$ReadOnly<{[key: K]: T}>`, given an object of checkers of type `{[key: K]: Checker<T>}`.
 
@@ -80,9 +80,9 @@ assert(check({a: 'test', b: 1}).type === 'failure');
 assert(check({a: 1, c: 'test'}).type === 'failure');
 ```
 
-## `writableArray`
+## `writableArray()`
 
-Identical to `array`, but the returned type is a `Array<>` instead of `$ReadOnlyArray<>`
+Identical to `array()`, but the returned type is a `Array<>` instead of `$ReadOnlyArray<>`
 
 ```javascript
 // @flow strict
@@ -95,7 +95,7 @@ assert(result.type === 'success', 'should succeed');
 result.value[0] = 3;
 ```
 
-## `writableObject`
+## `writableObject()`
 
 Identical to `object`, but the returned type is a writable object instead of `$ReadOnly<>`
 
@@ -118,9 +118,9 @@ assert(result.type === 'success', 'should succeed');
 result.value.name = 'MechaElsa';
 ```
 
-## `writableDict`
+## `writableDict()`
 
-Identical to `dict`, but the returned type is a writable object instead of `$ReadOnly<>`
+Identical to `dict()`, but the returned type is a writable object instead of `$ReadOnly<>`
 
 ```javascript
 // @flow strict

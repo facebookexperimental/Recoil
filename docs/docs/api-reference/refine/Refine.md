@@ -3,19 +3,19 @@ title: Refine
 sidebar_label: Refine
 ---
 
-**Refine** is a type-refinement / validator combinator library for mixed / unknown values in flow or typescript.
+**Refine** is a type-refinement / validator combinator library for mixed / unknown values in Flow or TypeScript.
 
 ## Getting Started
 
-To get started learning about Refine, check out the documentation on the core concept of [Checkers](/docs/guides/refine/Checkers).
+To get started learning about Refine, check out the documentation on the core concepts of [Utilities](/docs/api-reference/refine/Utilities) and [Checkers](/docs/api-reference/refine/Checkers).
 
-## Why would I want to use refine?
-- Refine is useful when your code encounters mixed flow-type (or unknown typescript) values, and you need to assert those values have a specific static type.
-- Refine provides an api for building type-refinement helper functions which can validate an unknown value conforms to an expected type.
+## Why would I want to use Refine?
+- Refine is useful when your code encounters mixed Flow-type (or unknown TypeScript) values, and you need to assert those values have a specific static type.
+- Refine provides an api for building type-refinement helper functions which can validate that an unknown value conforms to an expected type.
 
 ## Quick Example
 
-```
+```jsx
 import {array, object, number, jsonParser} from 'refine';
 
 const myParser = jsonParser(
@@ -34,4 +34,4 @@ if (result != null) {
 
 ## Usage in Recoil Sync
 
-[Recoil Sync](/docs/guides/recoil-sync) leverages refine in within the [RecoilURLSyncJSON](/docs/guides/recoil-sync/RecoilURLSyncJSON) component. See the component documentation for more details.
+[Recoil Sync](/docs/guides/recoil-sync) leverages Refine for type refinement, input validation, and upgrading types for backward compatibility.  See the library docs for more details.

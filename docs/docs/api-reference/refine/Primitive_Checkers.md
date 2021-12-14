@@ -1,13 +1,13 @@
 ---
-title: Primitive Checkers
+title: Refine Primitive Checkers
 sidebar_label: Primitive Checkers
 ---
 
-The starting place for building a refine checker is with the primitive combinators.
+The starting place for building a [Refine checker](/docs/api-reference/refine/Checkers) is with the primitive combinators.
 
 These are the initial building blocks which can be composed into higher order combinators using collections or other custom combinators.
 
-## `boolean`
+## `boolean()`
 
 Validates a value as a `boolean`
 
@@ -30,7 +30,7 @@ const failedResult = check(1);
 assert(failedResult.type === 'failure');
 ```
 
-## `number`
+## `number()`
 
 Validates a value as a `number`
 
@@ -53,7 +53,7 @@ const failedResult = check(false);
 assert(failedResult.type === 'failure');
 ```
 
-## `string`
+## `string()`
 
 Validates a value as a `string`
 
@@ -98,7 +98,7 @@ assert(failedResult.type === 'failure');
 ```
 
 
-## `literal`
+## `literal()`
 
 Validates a value as a given literal type
 
@@ -122,7 +122,7 @@ const failedResult = check('remove_todo');
 assert(failedResult.type === 'failure');
 ```
 
-## `date`
+## `date()`
 
 Validates a value as a javascript `Date` object
 
@@ -145,7 +145,7 @@ const failedResult = check(1);
 assert(failedResult.type === 'failure');
 ```
 
-## `mixed`
+## `mixed()`
 
 Placeholder / default checker to allow skipping checking of certain values. Always succeeds.
 
@@ -176,7 +176,7 @@ const Request = object({
 });
 ```
 
-## `nullable`
+## `nullable()`
 
 creates a nullable version of a given checker
 
@@ -223,7 +223,7 @@ assert(result.value.description === null);
 assert(result.warnings.length === 1);
 ```
 
-## `voidable`
+## `voidable()`
 
 Similar to `nullable`, creates a version of a given checker which returns `T | void`.
 

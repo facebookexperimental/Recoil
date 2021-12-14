@@ -1,13 +1,13 @@
 ---
-title: Advanced Checkers
+title: Advanced Refine Checkers
 sidebar_label: Advanced Checkers
 ---
 
-In addition to collections and primitives, more complex types can be modeled using the following combinator checkers.
+In addition to [collections](/docs/api-reference/refine/Collection_Checkers) and [primitives](/docs/api-reference/refine/Primitive_Checkers), more complex types can be modeled using the following combinator checkers.
 
-## lazy: recursive collections
+## `lazy()`: Recursive Collections
 
-The `lazy` utility allows for defining recursive checkers.
+The `lazy()` utility allows for defining recursive checkers.
 
 ```javascript
 // @flow strict
@@ -43,9 +43,9 @@ alice.friends.push(alice);
 Person(alice);
 ```
 
-## `or`
+## `or()`
 
-Validates a value as a one of two given checkers
+Validates a value as a one of two given checkers.
 
 ```javascript
 // @flow strict
@@ -60,9 +60,9 @@ assert(check(['one']).type === 'success');
 assert(check(true).type === 'failure');
 ```
 
-## `union`
+## `unioni()`
 
-Generalized version of `or` to multiple values
+Generalized version of `or()` to multiple values.
 
 ```javascript
 // @flow strict
@@ -80,7 +80,7 @@ assert(check([1]).type === 'failure');
 
 # Custom Types
 
-## `custom`
+## `custom()`
 
 The `custom` utility makes it simple to define a quick custom type, such as an enum.
 
@@ -105,9 +105,9 @@ assert(check([SourceType.A]).type === 'success');
 assert(check([3]).type === 'failure');
 ```
 
-## `asType`
+## `asType()`
 
-If you want to coerce a value to an opaque type, you can use `asType`.
+If you want to coerce a value to an opaque type, you can use `asType()`.
 
 ```javascript
 import {string, asType} from 'refine';
@@ -117,9 +117,9 @@ opaque type ID = string;
 const IDChecker: Checker<ID> = asType(string(), s => (s: ID));
 ```
 
-## `constraint`
+## `constraint()`
 
-If you would like to require that a value passes a logical predicate, you can use `constraint`
+If you would like to require that a value passes a logical predicate, you can use `constraint()`.
 
 ```javascript
 import {number, constraint} from 'refine';

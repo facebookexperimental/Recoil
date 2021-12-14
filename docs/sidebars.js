@@ -79,6 +79,18 @@ module.exports = {
         Misc: [
           'api-reference/core/useRecoilBridgeAcrossReactRoots',
         ],
+        Refine: [
+          'api-reference/refine/Refine',
+          'api-reference/refine/Utilities',
+          'api-reference/refine/Checkers',
+          {
+            Checkers: [
+              'api-reference/refine/Primitive_Checkers',
+              'api-reference/refine/Collection_Checkers',
+              'api-reference/refine/Advanced_Checkers',
+            ],
+          },
+        ],
       },
     ],
   },
