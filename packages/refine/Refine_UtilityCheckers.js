@@ -89,7 +89,7 @@ function union<V>(...checkers: $ReadOnlyArray<Checker<V>>): Checker<V> {
  * const backwardCompatibilityChecker: Checker<string> = match(
  *   string(),
  *   asType(number(), num => `${num}`),
- *   asType(record({num: number()}), obj => `${obj.num}`),
+ *   asType(object({num: number()}), obj => `${obj.num}`),
  * );
  * ```
  */
@@ -112,7 +112,7 @@ function match<T>(...checkers: $ReadOnlyArray<Checker<T>>): Checker<T> {
  * ```javascript
  * import {nullable, record, string} from 'refine';
  *
- * const Options = record({
+ * const Options = object({
  *   // this must be a non-null string,
  *   // or Options is not valid
  *   filename: string(),
@@ -178,7 +178,7 @@ function nullable<T>(
  * ```javascript
  * import {voidable, record, string} from 'refine';
  *
- * const Options = record({
+ * const Options = object({
  *   // this must be a string, or Options is not valid
  *   filename: string(),
  *
@@ -237,7 +237,7 @@ function voidable<T>(
  *
  * For example:
  * ```jsx
- * const objPropertyWithDefault = record({
+ * const objPropertyWithDefault = object({
  *   foo: withDefault(number(), 123),
  * });
  * ```
@@ -300,7 +300,7 @@ function constraint<T>(
  * another checker. For example:
  *
  * ```javascript
- * const user = record({
+ * const user = object({
  *   id: number(),
  *   name: string(),
  *   friends: array(lazy(() => user))
