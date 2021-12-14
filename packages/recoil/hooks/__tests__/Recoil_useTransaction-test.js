@@ -91,6 +91,72 @@ describe('Atoms', () => {
 });
 
 describe('Atom Effects', () => {
+  testRecoil(
+    'Atom effects are run when first get from a transaction',
+    async () => {
+      let numTimesEffectInit = 0;
+
+      const atomWithEffect = atom({
+        key: 'atom effect first get transaction',
+        default: 'DEFAULT',
+        effects_UNSTABLE: [
+          ({trigger}) => {
+            expect(trigger).toEqual('get');
+            numTimesEffectInit++;
+          },
+        ],
+      });
+
+      let getAtomWithTransaction;
+      const Component = () => {
+        getAtomWithTransaction = useRecoilTransaction(({get}) => () => {
+          expect(get(atomWithEffect)).toEqual('DEFAULT');
+        });
+        return null;
+      };
+
+      renderElements(<Component />);
+
+      act(() => getAtomWithTransaction());
+
+      expect(numTimesEffectInit).toBe(1);
+    },
+  );
+
+  // TODO Unable to test setting from a transaction as Jest complains about
+  // updates not wrapped in act(...)...
+  // testRecoil(
+  //   'Atom effects are run when first set with a transaction',
+  //   async () => {
+  //     let numTimesEffectInit = 0;
+
+  //     const atomWithEffect = atom({
+  //       key: 'atom effect first set transaction',
+  //       default: 'DEFAULT',
+  //       effects_UNSTABLE: [
+  //         ({trigger}) => {
+  //           expect(trigger).toEqual('set');
+  //           numTimesEffectInit++;
+  //         },
+  //       ],
+  //     });
+
+  //     let setAtomWithTransaction;
+  //     const Component = () => {
+  //       setAtomWithTransaction = useRecoilTransaction(({set}) => () => {
+  //         set(atomWithEffect, 'SET');
+  //       });
+  //       return null;
+  //     };
+
+  //     renderElements(<Component />);
+
+  //     act(() => setAtomWithTransaction());
+
+  //     expect(numTimesEffectInit).toBe(1);
+  //   },
+  // );
+
   testRecoil('Atom effects can initialize for a transaction', async () => {
     let numTimesEffectInit = 0;
     const atomWithEffect = atom({
