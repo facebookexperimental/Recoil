@@ -69,7 +69,7 @@ function handleLoadable<T>(
   }
 }
 
-function validateRecoilValue(recoilValue, hookName) {
+function validateRecoilValue<T>(recoilValue: RecoilValue<T>, hookName) {
   if (!isRecoilValue(recoilValue)) {
     throw err(
       `Invalid argument to ${hookName}: expected an atom or selector but got ${String(
@@ -194,7 +194,6 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       recoilState: RecoilState<T>,
     ): SetterOrUpdater<T> {
       if (__DEV__) {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilState, 'useSetRecoilState');
       }
       return (
@@ -207,7 +206,6 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     // eslint-disable-next-line no-shadow
     function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
       if (__DEV__) {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilState, 'useResetRecoilState');
       }
       return () => setRecoilValue(storeRef.current, recoilState, DEFAULT_VALUE);
@@ -218,7 +216,6 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       recoilValue: RecoilValue<T>,
     ): Loadable<T> {
       if (__DEV__) {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
       }
       if (!recoilValuesUsed.current.has(recoilValue.key)) {
@@ -241,7 +238,6 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     // eslint-disable-next-line no-shadow
     function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
       if (__DEV__) {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilValue, 'useRecoilValue');
       }
       const loadable = useRecoilValueLoadable(recoilValue);
@@ -253,7 +249,6 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       recoilState: RecoilState<T>,
     ): [T, SetterOrUpdater<T>] {
       if (__DEV__) {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilState, 'useRecoilState');
       }
       return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
@@ -264,7 +259,6 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       recoilState: RecoilState<T>,
     ): [Loadable<T>, SetterOrUpdater<T>] {
       if (__DEV__) {
-        // $FlowFixMe[escaped-generic]
         validateRecoilValue(recoilState, 'useRecoilStateLoadable');
       }
       return [
@@ -289,10 +283,6 @@ const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
 function useRecoilValueLoadable_MUTABLESOURCE<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
-  if (__DEV__) {
-    // $FlowFixMe[escaped-generic]
-    validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
-  }
   const storeRef = useStoreRef();
 
   const getLoadable = useCallback(() => {
@@ -355,10 +345,6 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
 function useRecoilValueLoadable_LEGACY<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
-  if (__DEV__) {
-    // $FlowFixMe[escaped-generic]
-    validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
-  }
   const storeRef = useStoreRef();
   const [_, forceUpdate] = useState([]);
 
@@ -439,6 +425,9 @@ function useRecoilValueLoadable_LEGACY<T>(
   just undefined if not available for any reason, such as pending or error.
 */
 function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
+  if (__DEV__) {
+    validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
+  }
   if (gkx('recoil_memory_managament_2020')) {
     // eslint-disable-next-line fb-www/react-hooks
     useRetain(recoilValue);
@@ -460,7 +449,6 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   */
 function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
   if (__DEV__) {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilValue, 'useRecoilValue');
   }
   const storeRef = useStoreRef();
@@ -474,7 +462,6 @@ function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
 */
 function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
   if (__DEV__) {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilState, 'useSetRecoilState');
   }
   const storeRef = useStoreRef();
@@ -491,7 +478,6 @@ function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
 */
 function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
   if (__DEV__) {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilState, 'useResetRecoilState');
   }
   const storeRef = useStoreRef();
@@ -511,7 +497,6 @@ function useRecoilState<T>(
   recoilState: RecoilState<T>,
 ): [T, SetterOrUpdater<T>] {
   if (__DEV__) {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilState, 'useRecoilState');
   }
   return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
@@ -526,7 +511,6 @@ function useRecoilStateLoadable<T>(
   recoilState: RecoilState<T>,
 ): [Loadable<T>, SetterOrUpdater<T>] {
   if (__DEV__) {
-    // $FlowFixMe[escaped-generic]
     validateRecoilValue(recoilState, 'useRecoilStateLoadable');
   }
   return [useRecoilValueLoadable(recoilState), useSetRecoilState(recoilState)];
