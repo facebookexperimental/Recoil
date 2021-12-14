@@ -60,7 +60,7 @@ assert(check(['one']).type === 'success');
 assert(check(true).type === 'failure');
 ```
 
-## `unioni()`
+## `union()`
 
 Generalized version of `or()` to multiple values.
 
