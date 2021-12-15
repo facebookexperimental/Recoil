@@ -37,6 +37,7 @@ const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
 const err = require('recoil-shared/util/Recoil_err');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
+const gkx_early_rendering = require('recoil-shared/util/Recoil_gkx_early_rendering');
 const {
   mutableSourceExists,
   useMutableSource,
@@ -229,7 +230,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       return getRecoilValueAsLoadable(
         storeRef.current,
         recoilValue,
-        gkx('recoil_early_rendering_2021')
+        gkx_early_rendering()
           ? storeState.nextTree ?? storeState.currentTree
           : storeState.currentTree,
       );
@@ -288,7 +289,7 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   const getLoadable = useCallback(() => {
     const store = storeRef.current;
     const storeState = store.getState();
-    const treeState = gkx('recoil_early_rendering_2021')
+    const treeState = gkx_early_rendering()
       ? storeState.nextTree ?? storeState.currentTree
       : storeState.currentTree;
     return getRecoilValueAsLoadable(store, recoilValue, treeState);

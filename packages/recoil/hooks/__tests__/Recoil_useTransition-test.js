@@ -12,13 +12,14 @@
 'use strict';
 
 const {
-  IS_INTERNAL,
   getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+const {
+  mutableSourceExists,
+} = require('recoil-shared/util/Recoil_mutableSource');
 
 let React,
   act,
-  gkx,
   useTransition,
   useRecoilState,
   atom,
@@ -29,25 +30,22 @@ const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({useTransition} = React);
   ({act} = require('ReactTestUtils'));
-  gkx = require('recoil-shared/util/Recoil_gkx');
   ({useRecoilState, atom} = require('../../Recoil_index'));
   ({
     renderElementsInConcurrentRoot,
     flushPromisesAndTimers,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
-
-  const initialGKValue = gkx('recoil_early_rendering_2021');
-  gkx.setPass('recoil_early_rendering_2021');
-  return () => {
-    initialGKValue || gkx.setFail('recoil_early_rendering_2021');
-  };
 });
 
 let nextID = 0;
 
-testRecoil('Works with useTransition', async () => {
-  if (!IS_INTERNAL) {
-    return; // FIXME: these tests do not work in OSS, possibly due to differing ReactDOM in OSS and internal
+testRecoil('Works with useTransition', async ({gks}) => {
+  // recoil_early_rendering_2021 is currently coupled with recoil_suppress_rerender_in_callback
+  if (!gks.includes('recoil_early_rendering_2021')) {
+    return;
+  }
+  if (!mutableSourceExists()) {
+    return;
   }
 
   const indexAtom = atom({

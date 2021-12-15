@@ -49,6 +49,7 @@ const {
 const err = require('recoil-shared/util/Recoil_err');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
+const gkx_early_rendering = require('recoil-shared/util/Recoil_gkx_early_rendering');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 const unionSets = require('recoil-shared/util/Recoil_unionSets');
@@ -174,10 +175,7 @@ function sendEndOfBatchNotifications(store: Store) {
       subscription(store);
     }
 
-    if (
-      !gkx('recoil_early_rendering_2021') ||
-      storeState.suspendedComponentResolvers.size
-    ) {
+    if (!gkx_early_rendering() || storeState.suspendedComponentResolvers.size) {
       // Notifying components is needed to wake from suspense, even when using
       // early rendering.
       notifyComponents(store, storeState, treeState);
@@ -426,7 +424,7 @@ function RecoilRoot_INTERNAL({
 
     // Save changes to nextTree and schedule a React update:
     storeStateRef.current.nextTree = replaced;
-    if (gkx('recoil_early_rendering_2021')) {
+    if (gkx_early_rendering()) {
       notifyComponents(storeRef.current, storeStateRef.current, replaced);
     }
     nullthrows(notifyBatcherOfChange.current)();
