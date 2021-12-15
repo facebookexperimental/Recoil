@@ -14,9 +14,6 @@
 const {
   getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
-const {
-  mutableSourceExists,
-} = require('recoil-shared/util/Recoil_mutableSource');
 
 let React,
   act,
@@ -24,6 +21,7 @@ let React,
   useRecoilState,
   atom,
   renderElementsInConcurrentRoot,
+  reactMode,
   flushPromisesAndTimers;
 
 const testRecoil = getRecoilTestFn(() => {
@@ -35,16 +33,13 @@ const testRecoil = getRecoilTestFn(() => {
     renderElementsInConcurrentRoot,
     flushPromisesAndTimers,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
+  ({reactMode} = require('../../core/Recoil_ReactMode'));
 });
 
 let nextID = 0;
 
-testRecoil('Works with useTransition', async ({gks}) => {
-  // recoil_early_rendering_2021 is currently coupled with recoil_suppress_rerender_in_callback
-  if (!gks.includes('recoil_early_rendering_2021')) {
-    return;
-  }
-  if (!mutableSourceExists()) {
+testRecoil('Works with useTransition', async () => {
+  if (!reactMode().concurrent) {
     return;
   }
 

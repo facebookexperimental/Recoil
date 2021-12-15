@@ -11,6 +11,7 @@
 'use strict';
 
 import type {StoreID} from './Recoil_Keys';
+import type {MutableSource} from './Recoil_ReactMode';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
@@ -34,6 +35,7 @@ const {
 const {graph} = require('./Recoil_Graph');
 const {cloneGraph} = require('./Recoil_Graph');
 const {getNextStoreID} = require('./Recoil_Keys');
+const {createMutableSource, reactMode} = require('./Recoil_ReactMode');
 const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
 const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
 const {freshSnapshot} = require('./Recoil_Snapshot');
@@ -49,7 +51,6 @@ const {
 const err = require('recoil-shared/util/Recoil_err');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
-const gkx_early_rendering = require('recoil-shared/util/Recoil_gkx_early_rendering');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 const unionSets = require('recoil-shared/util/Recoil_unionSets');
@@ -119,8 +120,9 @@ function startNextTreeIfNeeded(store: Store): void {
 const AppContext = React.createContext<StoreRef>({current: defaultStore});
 const useStoreRef = (): StoreRef => useContext(AppContext);
 
-const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
-function useRecoilMutableSource(): mixed {
+// $FlowExpectedError[incompatible-call]
+const MutableSourceContext = React.createContext<MutableSource>(null);
+function useRecoilMutableSource(): MutableSource {
   const mutableSource = useContext(MutableSourceContext);
   if (mutableSource == null) {
     expectationViolation(
@@ -175,7 +177,7 @@ function sendEndOfBatchNotifications(store: Store) {
       subscription(store);
     }
 
-    if (!gkx_early_rendering() || storeState.suspendedComponentResolvers.size) {
+    if (!reactMode().early || storeState.suspendedComponentResolvers.size) {
       // Notifying components is needed to wake from suspense, even when using
       // early rendering.
       notifyComponents(store, storeState, treeState);
@@ -424,7 +426,7 @@ function RecoilRoot_INTERNAL({
 
     // Save changes to nextTree and schedule a React update:
     storeStateRef.current.nextTree = replaced;
-    if (gkx_early_rendering()) {
+    if (reactMode().early) {
       notifyComponents(storeRef.current, storeStateRef.current, replaced);
     }
     nullthrows(notifyBatcherOfChange.current)();
@@ -464,20 +466,13 @@ function RecoilRoot_INTERNAL({
       : makeEmptyStoreState(),
   );
 
-  // FIXME T2710559282599660
-  const createMutableSource =
-    (React: any).createMutableSource ?? // flowlint-line unclear-type:off
-    (React: any).unstable_createMutableSource; // flowlint-line unclear-type:off
-
   const mutableSource = useMemo(
     () =>
-      createMutableSource
-        ? createMutableSource(
-            storeStateRef,
-            () => storeStateRef.current.currentTree.version,
-          )
-        : null,
-    [createMutableSource, storeStateRef],
+      createMutableSource?.(
+        storeStateRef,
+        () => storeStateRef.current.currentTree.version,
+      ),
+    [storeStateRef],
   );
 
   // Cleanup when the <RecoilRoot> is unmounted
