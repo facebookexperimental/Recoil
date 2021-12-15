@@ -59,8 +59,8 @@ function makeStore(): Store {
       // FIXME: does not increment state version number
       currentStoreState.currentTree = replacer(currentStoreState.currentTree); // no batching so nextTree is never active
       invalidateDownstreams_FOR_TESTING(store, currentStoreState.currentTree);
-      const gkx = require('recoil-shared/util/Recoil_gkx');
-      if (gkx('recoil_early_rendering_2021')) {
+      const {reactMode} = require('../../recoil/core/Recoil_ReactMode');
+      if (reactMode().early) {
         notifyComponents_FOR_TESTING(
           store,
           currentStoreState,
@@ -331,28 +331,47 @@ const testGKs =
     runTests(false);
   };
 
-// TODO Remove the recoil_suppress_rerender_in_callback GK checks
 const WWW_GKS_TO_TEST = [
-  ['recoil_hamt_2020'],
+  // OSS for React <18:
+  ['recoil_hamt_2020', 'recoil_suppress_rerender_in_callback'],
+  // Current internal default:
+  ['recoil_hamt_2020', 'recoil_mutable_source'],
+  // Internal with suppress, early rendering, and useTransition() support:
   [
-    'recoil_suppress_rerender_in_callback',
-    'recoil_early_rendering_2021', // coupled with recoil_suppress_rerender_in_callback in Recoil_gkx_early_rendering.js
     'recoil_hamt_2020',
+    'recoil_mutable_source',
+    'recoil_suppress_rerender_in_callback',
   ],
+  // OSS for React 18, test internally:
   [
-    'recoil_suppress_rerender_in_callback',
-    'recoil_early_rendering_2021', // coupled with recoil_suppress_rerender_in_callback in Recoil_gkx_early_rendering.js
     'recoil_hamt_2020',
+    'recoil_sync_external_store',
+    'recoil_suppress_rerender_in_callback', // Only used for fallback if no useSyncExternalStore()
+  ],
+  // Latest with GC:
+  [
+    'recoil_hamt_2020',
+    'recoil_sync_external_store',
+    'recoil_suppress_rerender_in_callback',
     'recoil_memory_managament_2020',
     'recoil_release_on_cascading_update_killswitch_2021',
   ],
+  // Experimental mode for useTransition() support:
+  // ['recoil_hamt_2020', 'recoil_concurrent_legacy'],
 ];
 
 /**
  * GK combinations to exclude in OSS, presumably because these combinations pass
  * in FB internally but not in OSS. Ideally this array would be empty.
  */
-const OSS_GK_COMBINATION_EXCLUSIONS = [['recoil_hamt_2020']];
+const OSS_GK_COMBINATION_EXCLUSIONS = [
+  ['recoil_hamt_2020', 'recoil_mutable_source'],
+  [
+    'recoil_hamt_2020',
+    'recoil_mutable_source',
+    'recoil_suppress_rerender_in_callback',
+  ],
+];
 
 // eslint-disable-next-line no-unused-vars
 const OSS_GKS_TO_TEST = WWW_GKS_TO_TEST.filter(

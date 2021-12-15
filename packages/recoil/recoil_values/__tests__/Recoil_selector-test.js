@@ -44,7 +44,6 @@ let React,
   loadingAsyncSelector,
   flushPromisesAndTimers,
   DefaultValue,
-  mutableSourceExists,
   freshSnapshot;
 
 const testRecoil = getRecoilTestFn(() => {
@@ -83,7 +82,6 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({noWait} = require('../Recoil_WaitFor'));
   ({DefaultValue} = require('../../core/Recoil_Node'));
-  ({mutableSourceExists} = require('recoil-shared/util/Recoil_mutableSource'));
 
   store = makeStore();
 });
@@ -1162,25 +1160,23 @@ describe('Async selector resolution notifies all stores that read pending', () =
       />,
     );
 
-    if (mutableSourceExists()) {
-      expect(rootA.textContent).toEqual('SELECTOR A');
-      expect(rootB.textContent).toEqual('SELECTOR A');
+    expect(rootA.textContent).toEqual('SELECTOR A');
+    expect(rootB.textContent).toEqual('SELECTOR A');
 
-      act(() => setRootASelector(true)); // cause rootA to read the selector
-      expect(rootA.textContent).toEqual('loading');
-      expect(rootB.textContent).toEqual('SELECTOR A');
+    act(() => setRootASelector(true)); // cause rootA to read the selector
+    expect(rootA.textContent).toEqual('loading');
+    expect(rootB.textContent).toEqual('SELECTOR A');
 
-      act(() => setRootBSelector(true)); // cause rootB to read the selector
-      expect(rootA.textContent).toEqual('loading');
-      expect(rootB.textContent).toEqual('loading');
+    act(() => setRootBSelector(true)); // cause rootB to read the selector
+    expect(rootA.textContent).toEqual('loading');
+    expect(rootB.textContent).toEqual('loading');
 
-      act(() => resolve('SELECTOR B'));
+    act(() => resolve('SELECTOR B'));
 
-      await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
 
-      expect(rootA.textContent).toEqual('SELECTOR B');
-      expect(rootB.textContent).toEqual('SELECTOR B');
-    }
+    expect(rootA.textContent).toEqual('SELECTOR B');
+    expect(rootB.textContent).toEqual('SELECTOR B');
   });
 });
 

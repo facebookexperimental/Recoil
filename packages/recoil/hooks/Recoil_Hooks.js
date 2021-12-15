@@ -19,6 +19,11 @@ import type {NodeKey} from '../core/Recoil_State';
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE} = require('../core/Recoil_Node');
 const {
+  reactMode,
+  useMutableSource,
+  useSyncExternalStore,
+} = require('../core/Recoil_ReactMode');
+const {
   useRecoilMutableSource,
   useStoreRef,
 } = require('../core/Recoil_RecoilRoot');
@@ -37,11 +42,6 @@ const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
 const err = require('recoil-shared/util/Recoil_err');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
-const gkx_early_rendering = require('recoil-shared/util/Recoil_gkx_early_rendering');
-const {
-  mutableSourceExists,
-  useMutableSource,
-} = require('recoil-shared/util/Recoil_mutableSource');
 const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 
 function handleLoadable<T>(
@@ -230,7 +230,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       return getRecoilValueAsLoadable(
         storeRef.current,
         recoilValue,
-        gkx_early_rendering()
+        reactMode().early
           ? storeState.nextTree ?? storeState.currentTree
           : storeState.currentTree,
       );
@@ -281,7 +281,63 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
 
 const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
 
-function useRecoilValueLoadable_MUTABLESOURCE<T>(
+function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
+  recoilValue: RecoilValue<T>,
+): Loadable<T> {
+  const storeRef = useStoreRef();
+  const componentName = useComponentName();
+
+  const getSnapshot = useCallback(() => {
+    if (__DEV__) {
+      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
+    }
+    const store = storeRef.current;
+    const storeState = store.getState();
+    const treeState = reactMode().early
+      ? storeState.nextTree ?? storeState.currentTree
+      : storeState.currentTree;
+    const loadable = getRecoilValueAsLoadable(store, recoilValue, treeState);
+    return {loadable, key: recoilValue.key};
+  }, [storeRef, recoilValue]);
+
+  // Memoize the state to avoid unnecessary rerenders
+  const memoizePreviousSnapshot = useCallback(getState => {
+    let prevState;
+    return () => {
+      const nextState = getState();
+      if (
+        prevState?.loadable.is(nextState.loadable) &&
+        prevState?.key === nextState.key
+      ) {
+        return prevState;
+      }
+      prevState = nextState;
+      return nextState;
+    };
+  }, []);
+  const getMemoizedSnapshot = useMemo(
+    () => memoizePreviousSnapshot(getSnapshot),
+    [getSnapshot, memoizePreviousSnapshot],
+  );
+
+  const subscribe = useCallback(
+    notify => {
+      const store = storeRef.current;
+      const subscription = subscribeToRecoilValue(
+        store,
+        recoilValue,
+        notify,
+        componentName,
+      );
+      return subscription.release;
+    },
+    [storeRef, recoilValue, componentName],
+  );
+
+  return useSyncExternalStore(subscribe, getMemoizedSnapshot).loadable;
+}
+
+function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
@@ -289,7 +345,7 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   const getLoadable = useCallback(() => {
     const store = storeRef.current;
     const storeState = store.getState();
-    const treeState = gkx_early_rendering()
+    const treeState = reactMode().early
       ? storeState.nextTree ?? storeState.currentTree
       : storeState.currentTree;
     return getRecoilValueAsLoadable(store, recoilValue, treeState);
@@ -304,21 +360,21 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   const componentName = useComponentName();
 
   const subscribe = useCallback(
-    (_storeState, callback) => {
+    (_storeState, notify) => {
       const store = storeRef.current;
       const subscription = subscribeToRecoilValue(
         store,
         recoilValue,
         () => {
           if (!gkx('recoil_suppress_rerender_in_callback')) {
-            return callback();
+            return notify();
           }
           // Only re-render if the value has changed.
           // This will evaluate the atom/selector now as well as when the
           // component renders, but that may help with prefetching.
           const newLoadable = getLoadable();
           if (!prevLoadableRef.current.is(newLoadable)) {
-            callback();
+            notify();
           }
           // If the component is suspended then the effect setting prevLoadableRef
           // will not run.  So, set the previous value here when its subscription
@@ -343,13 +399,84 @@ function useRecoilValueLoadable_MUTABLESOURCE<T>(
   return loadable;
 }
 
+// NOTE: This mode currently fails due to Suspense not executing effects when a
+// component is suspended.  If we suspend we won't subscribe to the new atom
+// even if the atom we use changes and the component is rerendered.  It will
+// still have the previous pending value causing it to just suspend again and
+// get stuck.  The LEGACY mode solves this by always getting the current value
+// from the Recoil store, but that causes tearing and doesn't work with
+// useTransition()
+function useRecoilValueLoadable_CONCURRENT_LEGACY<T>(
+  recoilValue: RecoilValue<T>,
+): Loadable<T> {
+  const storeRef = useStoreRef();
+  const componentName = useComponentName();
+
+  const getLoadable = useCallback(() => {
+    if (__DEV__) {
+      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
+    }
+    const store = storeRef.current;
+    const storeState = store.getState();
+    const treeState = reactMode().early
+      ? storeState.nextTree ?? storeState.currentTree
+      : storeState.currentTree;
+    return getRecoilValueAsLoadable(store, recoilValue, treeState);
+  }, [storeRef, recoilValue]);
+  const getState = useCallback(
+    () => ({loadable: getLoadable(), key: recoilValue.key}),
+    [getLoadable, recoilValue.key],
+  );
+
+  const updateState = useCallback(
+    prevState => {
+      const nextState = getState();
+      return prevState.loadable.is(nextState.loadable) &&
+        prevState.key === nextState.key
+        ? prevState
+        : nextState;
+    },
+    [getState],
+  );
+
+  useEffect(() => {
+    const subscription = subscribeToRecoilValue(
+      storeRef.current,
+      recoilValue,
+      _state => {
+        setState(updateState);
+      },
+      componentName,
+    );
+
+    setState(updateState);
+
+    return subscription.release;
+  }, [componentName, recoilValue, storeRef, updateState]);
+
+  const [{loadable}, setState] = useState(getState);
+  return loadable;
+}
+
 function useRecoilValueLoadable_LEGACY<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
-  const [_, forceUpdate] = useState([]);
+  const [, forceUpdate] = useState([]);
 
   const componentName = useComponentName();
+
+  const getLoadable = useCallback(() => {
+    if (__DEV__) {
+      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
+    }
+    const store = storeRef.current;
+    const storeState = store.getState();
+    const treeState = reactMode().early
+      ? storeState.nextTree ?? storeState.currentTree
+      : storeState.currentTree;
+    return getRecoilValueAsLoadable(store, recoilValue, treeState);
+  }, [storeRef, recoilValue]);
 
   useEffect(() => {
     const store = storeRef.current;
@@ -361,11 +488,7 @@ function useRecoilValueLoadable_LEGACY<T>(
         if (!gkx('recoil_suppress_rerender_in_callback')) {
           return forceUpdate([]);
         }
-        const newLoadable = getRecoilValueAsLoadable(
-          store,
-          recoilValue,
-          store.getState().currentTree,
-        );
+        const newLoadable = getLoadable();
         if (!prevLoadableRef.current?.is(newLoadable)) {
           forceUpdate(newLoadable);
         }
@@ -399,11 +522,7 @@ function useRecoilValueLoadable_LEGACY<T>(
       if (!gkx('recoil_suppress_rerender_in_callback')) {
         return forceUpdate([]);
       }
-      const newLoadable = getRecoilValueAsLoadable(
-        store,
-        recoilValue,
-        store.getState().currentTree,
-      );
+      const newLoadable = getLoadable();
       if (!prevLoadableRef.current?.is(newLoadable)) {
         forceUpdate(newLoadable);
       }
@@ -411,9 +530,9 @@ function useRecoilValueLoadable_LEGACY<T>(
     }
 
     return subscription.release;
-  }, [componentName, recoilValue, storeRef]);
+  }, [componentName, getLoadable, recoilValue, storeRef]);
 
-  const loadable = getRecoilValueAsLoadable(storeRef.current, recoilValue);
+  const loadable = getLoadable();
   const prevLoadableRef = useRef(loadable);
   useEffect(() => {
     prevLoadableRef.current = loadable;
@@ -433,13 +552,12 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
     // eslint-disable-next-line fb-www/react-hooks
     useRetain(recoilValue);
   }
-  if (mutableSourceExists()) {
-    // eslint-disable-next-line fb-www/react-hooks
-    return useRecoilValueLoadable_MUTABLESOURCE(recoilValue);
-  } else {
-    // eslint-disable-next-line fb-www/react-hooks
-    return useRecoilValueLoadable_LEGACY(recoilValue);
-  }
+  return {
+    CONCURRENT_LEGACY: useRecoilValueLoadable_CONCURRENT_LEGACY,
+    SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
+    MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
+    LEGACY: useRecoilValueLoadable_LEGACY,
+  }[reactMode().mode](recoilValue);
 }
 
 /**

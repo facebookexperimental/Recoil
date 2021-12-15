@@ -33,7 +33,7 @@ let store: Store,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
-  mutableSourceExists,
+  reactMode,
   stableStringify,
   atom,
   atomFamily,
@@ -66,7 +66,7 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers,
     renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
-  ({mutableSourceExists} = require('recoil-shared/util/Recoil_mutableSource'));
+  ({reactMode} = require('../../core/Recoil_ReactMode'));
   stableStringify = require('recoil-shared/util/Recoil_stableStringify');
   atom = require('../Recoil_atom');
   atomFamily = require('../Recoil_atomFamily');
@@ -444,10 +444,10 @@ testRecoil(
 
 testRecoil('Independent atom subscriptions', ({gks}) => {
   const BASE_CALLS =
-    mutableSourceExists() ||
-    gks.includes('recoil_suppress_rerender_in_callback')
-      ? 0
-      : 1;
+    reactMode().mode === 'LEGACY' &&
+    !gks.includes('recoil_suppress_rerender_in_callback')
+      ? 1
+      : 0;
 
   const myAtom = atomFamily({
     key: 'atomFamily/independent subscriptions',

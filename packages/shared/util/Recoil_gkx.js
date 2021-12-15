@@ -12,10 +12,10 @@
 
 const gks = new Map()
   .set('recoil_hamt_2020', true)
-  .set('recoil_memory_managament_2020', true)
-  .set('recoil_suppress_rerender_in_callback', true);
+  .set('recoil_sync_external_store', true)
+  .set('recoil_suppress_rerender_in_callback', true)
+  .set('recoil_memory_managament_2020', true);
 
-// NOTE: use gkx_early_rendering() instead for that GK!
 function Recoil_gkx_OSS(gk: string): boolean {
   return gks.get(gk) ?? false;
 }
