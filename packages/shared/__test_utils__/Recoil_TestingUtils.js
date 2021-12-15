@@ -111,7 +111,7 @@ function createLegacyReactRoot(container, contents) {
 
 function createConcurrentReactRoot(container, contents) {
   // @fb-only: ReactDOMComet.createRoot(container).render(contents);
-  // @oss-only ReactDOMComet.unstable_createRoot(container).render(contents);
+  ReactDOM.unstable_createRoot(container).render(contents); // @oss-only
 }
 
 function renderElementsInternal(
@@ -333,14 +333,15 @@ const testGKs =
 
 // TODO Remove the recoil_suppress_rerender_in_callback GK checks
 const WWW_GKS_TO_TEST = [
+  ['recoil_hamt_2020'],
   [
     'recoil_suppress_rerender_in_callback',
-    'recoil_early_rendering_2021',
+    'recoil_early_rendering_2021', // coupled with recoil_suppress_rerender_in_callback in Recoil_gkx_early_rendering.js
     'recoil_hamt_2020',
   ],
   [
     'recoil_suppress_rerender_in_callback',
-    'recoil_early_rendering_2021',
+    'recoil_early_rendering_2021', // coupled with recoil_suppress_rerender_in_callback in Recoil_gkx_early_rendering.js
     'recoil_hamt_2020',
     'recoil_memory_managament_2020',
     'recoil_release_on_cascading_update_killswitch_2021',
@@ -351,13 +352,15 @@ const WWW_GKS_TO_TEST = [
  * GK combinations to exclude in OSS, presumably because these combinations pass
  * in FB internally but not in OSS. Ideally this array would be empty.
  */
-const OSS_GK_COMBINATION_EXCLUSIONS = [];
+const OSS_GK_COMBINATION_EXCLUSIONS = [['recoil_hamt_2020']];
 
 // eslint-disable-next-line no-unused-vars
 const OSS_GKS_TO_TEST = WWW_GKS_TO_TEST.filter(
   gkCombination =>
-    !OSS_GK_COMBINATION_EXCLUSIONS.some(exclusion =>
-      exclusion.every(gk => gkCombination.includes(gk)),
+    !OSS_GK_COMBINATION_EXCLUSIONS.some(
+      exclusion =>
+        exclusion.every(gk => gkCombination.includes(gk)) &&
+        gkCombination.every(gk => exclusion.includes(gk)),
     ),
 );
 

@@ -34,7 +34,7 @@ const {
   RecoilValueReadOnly,
   isRecoilValue,
 } = require('./Recoil_RecoilValue');
-const gkx = require('recoil-shared/util/Recoil_gkx');
+const gkx_early_rendering = require('recoil-shared/util/Recoil_gkx_early_rendering');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
@@ -313,7 +313,7 @@ function subscribeToRecoilValue<T>(
 
   // Handle the case that, during the same tick that we are subscribing, an atom
   // has been updated by some effect handler. Otherwise we will miss the update.
-  if (gkx('recoil_early_rendering_2021')) {
+  if (gkx_early_rendering()) {
     const nextTree = store.getState().nextTree;
     if (nextTree && nextTree.dirtyAtoms.has(key)) {
       callback(nextTree);
