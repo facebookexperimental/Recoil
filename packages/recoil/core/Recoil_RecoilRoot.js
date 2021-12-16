@@ -177,7 +177,7 @@ function sendEndOfBatchNotifications(store: Store) {
       subscription(store);
     }
 
-    if (!reactMode().early || storeState.suspendedComponentResolvers.size) {
+    if (!reactMode().early || storeState.suspendedComponentResolvers.size > 0) {
       // Notifying components is needed to wake from suspense, even when using
       // early rendering.
       notifyComponents(store, storeState, treeState);

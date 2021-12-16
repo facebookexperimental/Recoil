@@ -382,14 +382,14 @@ const testGKs =
 
 const WWW_GKS_TO_TEST = [
   // OSS for React <18:
-  ['recoil_hamt_2020', 'recoil_suppress_rerender_in_callback'],
+  ['recoil_hamt_2020', 'recoil_suppress_rerender_in_callback'], // Also enables early rendering
   // Current internal default:
   ['recoil_hamt_2020', 'recoil_mutable_source'],
   // Internal with suppress, early rendering, and useTransition() support:
   [
     'recoil_hamt_2020',
     'recoil_mutable_source',
-    'recoil_suppress_rerender_in_callback',
+    'recoil_suppress_rerender_in_callback', // Also enables early rendering
   ],
   // OSS for React 18, test internally:
   [
