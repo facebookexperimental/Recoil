@@ -47,7 +47,10 @@ type ReactMode =
 
 /**
  * mode: The React API and approach to use for syncing state with React
- * early: Should we render the ongoing mutations as part of the current rendering
+ * early: Re-renders from Recoil updates occur:
+ *    1) earlier
+ *    2) in sync with React updates in the same batch
+ *    3) before transaction observers instead of after.
  * concurrent: Is the current mode compatible with Concurrent Mode (i.e. useTransition())
  */
 function reactMode(): {mode: ReactMode, early: boolean, concurrent: boolean} {

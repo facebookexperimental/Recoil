@@ -1640,6 +1640,40 @@ testRecoil('Wakeup from Suspense to previous value', async ({gks}) => {
   );
 });
 
+testRecoil('Sync React and Recoil state changes', ({gks}) => {
+  if (
+    reactMode().mode === 'MUTABLE_SOURCE' &&
+    !gks.includes('recoil_suppress_rerender_in_callback')
+  ) {
+    return;
+  }
+
+  const myAtom = atom({key: 'sync react recoil', default: 0});
+
+  let setReact, setRecoil;
+  function Component() {
+    const [reactState, setReactState] = useState(0);
+    const [recoilState, setRecoilState] = useRecoilState(myAtom);
+    setReact = setReactState;
+    setRecoil = setRecoilState;
+
+    expect(reactState).toBe(recoilState);
+
+    return `${reactState} - ${recoilState}`;
+  }
+
+  const c = renderElements(<Component />);
+  expect(c.textContent).toBe('0 - 0');
+
+  // Set both React and Recoil state in the same batch and ensure the component
+  // render always seems consistent picture of both state changes.
+  act(() => {
+    setReact(1);
+    setRecoil(1);
+  });
+  expect(c.textContent).toBe('1 - 1');
+});
+
 testRecoil(
   'useTransactionObservation_DEPRECATED: Transaction dirty atoms are set',
   async () => {
