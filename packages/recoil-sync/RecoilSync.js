@@ -24,6 +24,7 @@ const {
 const React = require('react');
 const {useCallback, useEffect, useRef} = require('react');
 const err = require('recoil-shared/util/Recoil_err');
+const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
 
 type NodeKey = string;
 export type ItemKey = string;
@@ -260,17 +261,10 @@ function getWriteInterface(
   diff: ItemDiff,
   getInfo,
 ): WriteInterface {
-  // Use a Proxy so we only generate `allItems` if it's actually used
-  return new Proxy(
-    ({diff, allItems: (null: any)}: WriteInterface), // flowlint-line unclear-type:off
-    {
-      get: (target, prop) => {
-        if (prop === 'allItems' && target.allItems == null) {
-          target.allItems = itemsFromSnapshot(recoilStoreID, storeKey, getInfo);
-        }
-        return target[prop];
-      },
-    },
+  // Use a Proxy so we only generate `allItems` if it's actually used.
+  return lazyProxy(
+    {diff},
+    {allItems: () => itemsFromSnapshot(recoilStoreID, storeKey, getInfo)},
   );
 }
 
