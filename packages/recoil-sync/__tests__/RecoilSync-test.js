@@ -34,7 +34,7 @@ const {
   flushPromisesAndTimers,
   renderElements,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
-const {asType, dict, match, number, string} = require('refine');
+const {asType, dict, literal, match, number, string} = require('refine');
 
 ////////////////////////////
 // Mock Storage
@@ -56,7 +56,7 @@ function TestRecoilSync({
       if (itemKey === 'error') {
         throw new Error('READ ERROR');
       }
-      return storage.has(itemKey) ? storage.get(itemKey) : undefined;
+      return storage.has(itemKey) ? storage.get(itemKey) : new DefaultValue();
     },
     write: ({diff, allItems}) => {
       for (const [key, value] of diff.entries()) {
@@ -310,6 +310,64 @@ test('Read from storage error', async () => {
   );
 });
 
+test('Read nullable', async () => {
+  const atomUndefinedA = atom({
+    key: 'recoil-sync read undefined A',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: literal(undefined)})],
+  });
+  const atomUndefinedB = atom({
+    key: 'recoil-sync read undefined B',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: literal(undefined)})],
+  });
+  const atomUndefinedC = atom({
+    key: 'recoil-sync read undefined C',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: literal(undefined)})],
+  });
+  const atomNullA = atom({
+    key: 'recoil-sync read null A',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: literal(null)})],
+  });
+  const atomNullB = atom({
+    key: 'recoil-sync read null B',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: literal(null)})],
+  });
+  const atomNullC = atom({
+    key: 'recoil-sync read null C',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [syncEffect({refine: literal(null)})],
+  });
+
+  const storage = new Map([
+    ['recoil-sync read undefined A', undefined],
+    ['recoil-sync read undefined B', Promise.resolve(undefined)],
+    ['recoil-sync read undefined C', RecoilLoadable.of(undefined)],
+    ['recoil-sync read null A', null],
+    ['recoil-sync read null B', Promise.resolve(null)],
+    ['recoil-sync read null C', RecoilLoadable.of(null)],
+  ]);
+
+  const container = renderElements(
+    <>
+      <TestRecoilSync storage={storage} />
+      <ReadsAtom atom={atomUndefinedA} />
+      <ReadsAtom atom={atomUndefinedB} />
+      <ReadsAtom atom={atomUndefinedC} />
+      <ReadsAtom atom={atomNullA} />
+      <ReadsAtom atom={atomNullB} />
+      <ReadsAtom atom={atomNullC} />
+    </>,
+  );
+
+  expect(container.textContent).toBe('loading');
+  await flushPromisesAndTimers();
+  expect(container.textContent).toBe('nullnullnull');
+});
+
 test('Abort read', async () => {
   const atomA = atom({
     key: 'recoil-sync abort read A',
@@ -326,17 +384,70 @@ test('Abort read', async () => {
     default: 'DEFAULT',
     effects_UNSTABLE: [syncEffect({refine: string()})],
   });
-  const atomD = atom({
-    key: 'recoil-sync abort read D',
+
+  const storage = new Map([
+    ['recoil-sync abort read A', new DefaultValue()],
+    ['recoil-sync abort read B', Promise.resolve(new DefaultValue())],
+    ['recoil-sync abort read C', RecoilLoadable.of(new DefaultValue())],
+  ]);
+
+  const container = renderElements(
+    <>
+      <TestRecoilSync storage={storage} />
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+      <ReadsAtom atom={atomC} />
+    </>,
+  );
+
+  expect(container.textContent).toBe('loading');
+  await flushPromisesAndTimers();
+  expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');
+});
+
+// TODO These semantics are debatable...
+test('Abort vs reset', async () => {
+  const atomA = atom({
+    key: 'recoil-sync abort vs reset A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects_UNSTABLE: [
+      ({setSelf}) => setSelf('INIT'),
+      syncEffect({refine: string()}),
+    ],
+  });
+  const atomB = atom({
+    key: 'recoil-sync abort vs reset B',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => setSelf('INIT'),
+      syncEffect({refine: string()}),
+    ],
+  });
+  const atomC = atom({
+    key: 'recoil-sync abort vs reset C',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => setSelf('INIT'),
+      syncEffect({refine: string()}),
+    ],
+  });
+  const atomD = atom({
+    key: 'recoil-sync abort vs reset D',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => setSelf('INIT'),
+      syncEffect({refine: string()}),
+    ],
   });
 
   const storage = new Map([
-    ['recoil-sync abort read A', undefined],
-    ['recoil-sync abort read B', new DefaultValue()],
-    ['recoil-sync abort read C', Promise.resolve(new DefaultValue())],
-    ['recoil-sync abort read D', RecoilLoadable.of(new DefaultValue())],
+    ['recoil-sync abort vs reset A', new DefaultValue()],
+    ['recoil-sync abort vs reset B', RecoilLoadable.of(new DefaultValue())],
+    ['recoil-sync abort vs reset C', Promise.resolve(new DefaultValue())],
+    [
+      'recoil-sync abort vs reset D',
+      RecoilLoadable.of(Promise.resolve(new DefaultValue())),
+    ],
   ]);
 
   const container = renderElements(
@@ -351,7 +462,7 @@ test('Abort read', async () => {
 
   expect(container.textContent).toBe('loading');
   await flushPromisesAndTimers();
-  expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT""DEFAULT"');
+  expect(container.textContent).toBe('"INIT""INIT""DEFAULT""DEFAULT"');
 });
 
 test('Read from storage upgrade - multiple effects', async () => {
@@ -881,7 +992,7 @@ test('Persist on read - async', async () => {
 test('Sync based on component props', async () => {
   function SyncWithProps(props) {
     useRecoilSync({
-      read: itemKey => (itemKey in props ? props[itemKey] : undefined),
+      read: itemKey => (itemKey in props ? props[itemKey] : new DefaultValue()),
     });
     return null;
   }

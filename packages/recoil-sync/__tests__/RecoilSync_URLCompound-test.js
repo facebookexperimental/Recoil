@@ -69,7 +69,14 @@ test('Many items to one atom', async () => {
   const manyToOneSyncEffct = () =>
     syncEffect({
       refine: dict(nullable(number())),
-      read: ({read}) => ({foo: read('foo'), bar: read('bar')}),
+      read: ({read}) => {
+        const foo = read('foo');
+        const bar = read('bar');
+        return {
+          foo: foo instanceof DefaultValue ? undefined : foo,
+          bar: bar instanceof DefaultValue ? undefined : bar,
+        };
+      },
       write: ({write, reset}, newValue) => {
         if (newValue instanceof DefaultValue) {
           reset('foo');
@@ -121,7 +128,10 @@ test('One item to multiple atoms', async () => {
   const oneToManySyncEffect = (prop: string) =>
     syncEffect({
       refine: nullable(number()),
-      read: ({read}) => input(read('compound'))[prop],
+      read: ({read}) => {
+        const compound = input(read('compound'));
+        return prop in compound ? compound[prop] : new DefaultValue();
+      },
       write: ({write, read}, newValue) => {
         const compound = {...input(read('compound'))};
         if (newValue instanceof DefaultValue) {
@@ -187,7 +197,10 @@ test('One item to atom family', async () => {
   const oneToFamilyEffect = (prop: string) =>
     syncEffect({
       refine: nullable(number()),
-      read: ({read}) => input(read('compound'))[prop],
+      read: ({read}) => {
+        const compound = input(read('compound'));
+        return prop in compound ? compound[prop] : new DefaultValue();
+      },
       write: ({write, read}, newValue) => {
         const compound = {...input(read('compound'))};
         if (newValue instanceof DefaultValue) {
