@@ -377,7 +377,8 @@ testRecoil('Consistent callback function', () => {
 
 testRecoil(
   'Atom effects are initialized twice if first seen on snapshot and then on root store',
-  () => {
+  ({strictMode}) => {
+    const sm = strictMode ? 1 : 0;
     let numTimesEffectInit = 0;
 
     const atomWithEffect = atom({
@@ -390,6 +391,9 @@ testRecoil(
       ],
     });
 
+    // StrictMode will render the component twice
+    let renderCount = 0;
+
     const Component = () => {
       const readAtomFromSnapshot = useRecoilCallback(({snapshot}) => () => {
         snapshot.getLoadable(atomWithEffect);
@@ -397,16 +401,18 @@ testRecoil(
 
       readAtomFromSnapshot(); // first initialization
 
-      expect(numTimesEffectInit).toBe(1);
+      expect(numTimesEffectInit).toBe(1 + sm * renderCount);
 
       useRecoilValue(atomWithEffect); // second initialization
 
       expect(numTimesEffectInit).toBe(2);
 
+      renderCount++;
       return null;
     };
 
-    renderElements(<Component />);
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe(''); // Confirm no failures from rendering
 
     expect(numTimesEffectInit).toBe(2);
   },
@@ -447,7 +453,8 @@ testRecoil(
       return null;
     };
 
-    renderElements(<Component />);
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe(''); // Confirm no failures from rendering
 
     expect(numTimesEffectInit).toBe(1);
   },
