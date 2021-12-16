@@ -221,7 +221,7 @@ describe('URL Transit Encode', () => {
       [atomWithFallback],
       '"FALLBACK"',
       '/path/page.html?foo=bar#anchor',
-      '/path/page.html?foo=bar&param=%5B%22%5E+%22%2C%22withFallback%22%2C%5B%22%7E%23__DV%22%2C0%5D%5D#anchor',
+      '/path/page.html?foo=bar&param=%5B%22%5E+%22%5D#anchor',
     ));
   test('Query Params - fallback', async () =>
     testTransit(
@@ -229,7 +229,7 @@ describe('URL Transit Encode', () => {
       [atomWithFallback],
       '"FALLBACK"',
       '/path/page.html#anchor',
-      '/path/page.html?withFallback=%5B%22%7E%23__DV%22%2C0%5D#anchor',
+      '/path/page.html#anchor',
     ));
 });
 

@@ -10,16 +10,17 @@
  */
 'use strict';
 
-import type {AtomEffect, Loadable} from 'Recoil';
+import type {AtomEffect} from 'Recoil';
 import type {
   ItemKey,
   ItemSnapshot,
+  ReadItem,
   StoreKey,
   SyncEffectOptions,
 } from './RecoilSync';
 import type {Get} from 'refine';
 
-const {RecoilLoadable} = require('Recoil');
+const {DefaultValue, RecoilLoadable} = require('Recoil');
 
 const {syncEffect, useRecoilSync} = require('./RecoilSync');
 const React = require('react');
@@ -39,20 +40,13 @@ const registries: Map<StoreKey, Map<NodeKey, AtomRegistration>> = new Map();
 const itemStateChecker = writableDict(mixed());
 const refineState = assertion(itemStateChecker);
 const wrapState = (x: mixed): ItemSnapshot => {
-  const refinedState = refineState(x);
-  return new Map(
-    Array.from(Object.entries(refinedState)).map(([key, value]) => [
-      key,
-      RecoilLoadable.of(value),
-    ]),
-  );
+  return new Map(Array.from(Object.entries(refineState(x))));
 };
 const unwrapState = (state: ItemSnapshot): ItemState =>
   Object.fromEntries(
     Array.from(state.entries())
       // Only serialize atoms in a non-default value state.
-      .filter(([, loadable]) => loadable?.state === 'hasValue')
-      .map(([key, loadable]) => [key, loadable?.contents]),
+      .filter(([, value]) => !(value instanceof DefaultValue)),
   );
 
 function parseURL(
@@ -82,7 +76,7 @@ function parseURL(
       return new Map(
         Array.from(searchParams.entries()).map(([key, value]) => {
           try {
-            return [key, RecoilLoadable.of(deserialize(value))];
+            return [key, deserialize(value)];
           } catch (error) {
             return [key, RecoilLoadable.error(error)];
           }
@@ -115,10 +109,10 @@ function encodeURL(
       if (param != null) {
         searchParams.set(param, serialize(unwrapState(items)));
       } else {
-        for (const [itemKey, loadable] of items.entries()) {
-          loadable != null
-            ? searchParams.set(itemKey, serialize(loadable.contents))
-            : searchParams.delete(itemKey);
+        for (const [itemKey, value] of items.entries()) {
+          value instanceof DefaultValue
+            ? searchParams.delete(itemKey)
+            : searchParams.set(itemKey, serialize(value));
         }
       }
       url.search = searchParams.toString();
@@ -220,9 +214,9 @@ function useRecoilURLSync({
       if (itemsToPush?.size && cachedState.current != null) {
         const replaceItems: ItemSnapshot = cachedState.current;
         // First, repalce the URL with any atoms that replace the URL history
-        for (const [key, loadable] of allItems) {
+        for (const [key, value] of allItems) {
           if (!itemsToPush.has(key)) {
-            replaceItems.set(key, loadable);
+            replaceItems.set(key, value);
           }
         }
         replaceURL(encodeURL(getURL(), loc, replaceItems, serialize));
@@ -238,7 +232,7 @@ function useRecoilURLSync({
     [getURL, loc, pushURL, replaceURL, serialize, storeKey, updateCachedState],
   );
 
-  const read: ItemKey => ?Loadable<mixed> = useCallback(itemKey => {
+  const read: ReadItem = useCallback(itemKey => {
     return cachedState.current?.get(itemKey);
   }, []);
 
