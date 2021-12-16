@@ -1,0 +1,47 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict
+ * @format
+ */
+'use strict';
+
+const React = require('react');
+
+const gkx = require('recoil-shared/util/Recoil_gkx');
+
+export opaque type MutableSource = {};
+const createMutableSource: <StoreState, Version>({
+  current: StoreState
+}, () => Version) => MutableSource = // flowlint-next-line unclear-type:off
+(React: any).createMutableSource ?? (React: any).unstable_createMutableSource;
+const useMutableSource: <StoreState, T>(MutableSource, () => T, (StoreState, () => void) => () => void) => T = // flowlint-next-line unclear-type:off
+(React: any).useMutableSource ?? (React: any).unstable_useMutableSource;
+const useSyncExternalStore: <T>(subscribe: (() => void) => () => void, getSnapshot: () => T) => T = // flowlint-next-line unclear-type:off
+(React: any).useSyncExternalStore ?? // flowlint-next-line unclear-type:off
+(React: any).unstable_useSyncExternalStore;
+type ReactMode = 'CONCURRENT_LEGACY' | 'SYNC_EXTERNAL_STORE' | 'MUTABLE_SOURCE' | 'LEGACY';
+/**
+ * mode: The React API and approach to use for syncing state with React
+ * early: Re-renders from Recoil updates occur:
+ *    1) earlier
+ *    2) in sync with React updates in the same batch
+ *    3) before transaction observers instead of after.
+ * concurrent: Is the current mode compatible with Concurrent Mode (i.e. useTransition())
+ */
+
+declare function reactMode(): {
+  mode: ReactMode,
+  early: boolean,
+  concurrent: boolean,
+};
+module.exports = {
+  createMutableSource,
+  useMutableSource,
+  useSyncExternalStore,
+  reactMode
+};

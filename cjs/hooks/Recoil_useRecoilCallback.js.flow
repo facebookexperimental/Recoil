@@ -12,6 +12,7 @@
 
 import type { TransactionInterface } from '../core/Recoil_AtomicUpdates';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
+import type { Store } from '../core/Recoil_State';
 
 const {
   atomicUpdater
@@ -40,7 +41,7 @@ const {
 } = require('../core/Recoil_Snapshot');
 
 const {
-  useGotoRecoilSnapshot
+  gotoSnapshot
 } = require('./Recoil_SnapshotHooks');
 
 const {
@@ -61,5 +62,11 @@ export type RecoilCallbackInterface = $ReadOnly<{
 }>;
 declare class Sentinel {}
 const SENTINEL = new Sentinel();
+declare function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface: {...}>(store: Store, fn: ({ ...ExtraInterface,
+  ...RecoilCallbackInterface,
+}) => (...Args) => Return, args: Args, extraInterface?: ExtraInterface): Return;
 declare function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(fn: (RecoilCallbackInterface) => (...Args) => Return, deps?: $ReadOnlyArray<mixed>): (...Args) => Return;
-module.exports = useRecoilCallback;
+module.exports = {
+  recoilCallback,
+  useRecoilCallback
+};

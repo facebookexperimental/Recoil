@@ -67,7 +67,9 @@ const useGetRecoilValueInfo = require('./hooks/Recoil_useGetRecoilValueInfo');
 
 const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
 
-const useRecoilCallback = require('./hooks/Recoil_useRecoilCallback');
+const {
+  useRecoilCallback
+} = require('./hooks/Recoil_useRecoilCallback');
 
 const useRecoilRefresher = require('./hooks/Recoil_useRecoilRefresher');
 

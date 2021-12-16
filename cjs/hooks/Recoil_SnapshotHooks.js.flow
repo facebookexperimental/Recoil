@@ -117,9 +117,11 @@ declare function useRecoilTransactionObserver(callback: ({
 }) => void): any; // Return a snapshot of the current state and subscribe to all state changes
 
 declare function useRecoilSnapshot(): Snapshot;
+declare function gotoSnapshot(store: Store, snapshot: Snapshot): void;
 declare function useGotoRecoilSnapshot(): (Snapshot) => void;
 module.exports = {
   useRecoilSnapshot,
+  gotoSnapshot,
   useGotoRecoilSnapshot,
   useRecoilTransactionObserver,
   useTransactionObservation_DEPRECATED,

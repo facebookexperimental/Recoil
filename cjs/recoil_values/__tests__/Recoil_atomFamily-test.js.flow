@@ -16,7 +16,7 @@ const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let store: Store, React, Profiler, useState, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, useRecoilStoreID, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, mutableSourceExists, stableStringify, atom, atomFamily, selectorFamily, pAtom;
+let store: Store, React, Profiler, useState, act, RecoilRoot, getRecoilValueAsLoadable, setRecoilValue, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, useRecoilStoreID, ReadsAtom, componentThatReadsAndWritesAtom, flushPromisesAndTimers, renderElements, reactMode, stableStringify, atom, atomFamily, selectorFamily, pAtom;
 const testRecoil = getRecoilTestFn(() => {
   const {
     makeStore
@@ -51,8 +51,8 @@ const testRecoil = getRecoilTestFn(() => {
     renderElements
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({
-    mutableSourceExists
-  } = require('recoil-shared/util/Recoil_mutableSource'));
+    reactMode
+  } = require('../../core/Recoil_ReactMode'));
   stableStringify = require('recoil-shared/util/Recoil_stableStringify');
   atom = require('../Recoil_atom');
   atomFamily = require('../Recoil_atomFamily');
@@ -576,7 +576,7 @@ testRecoil('Returns the fallback for parameterized atoms with a selector as the 
 testRecoil('Independent atom subscriptions', ({
   gks
 }) => {
-  const BASE_CALLS = mutableSourceExists() || gks.includes('recoil_suppress_rerender_in_callback') ? 0 : 1;
+  const BASE_CALLS = reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') ? 1 : 0;
   const myAtom = atomFamily({
     key: 'atomFamily/independent subscriptions',
     default: 'DEFAULT'

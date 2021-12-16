@@ -11,6 +11,7 @@
 'use strict';
 
 import type { StoreID } from './Recoil_Keys';
+import type { MutableSource } from './Recoil_ReactMode';
 import type { RecoilValue } from './Recoil_RecoilValue';
 import type { MutableSnapshot } from './Recoil_Snapshot';
 import type { Store, StoreRef, StoreState, TreeState } from './Recoil_State'; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
@@ -43,6 +44,11 @@ const {
 const {
   getNextStoreID
 } = require('./Recoil_Keys');
+
+const {
+  createMutableSource,
+  reactMode
+} = require('./Recoil_ReactMode');
 
 const {
   applyAtomValueWrites
@@ -104,10 +110,10 @@ declare function startNextTreeIfNeeded(store: Store): void;
 const AppContext = React.createContext<StoreRef>({
   current: defaultStore
 });
-declare var useStoreRef: () => StoreRef;
-const MutableSourceContext = React.createContext<mixed>(null); // TODO T2710559282599660
+declare var useStoreRef: () => StoreRef; // $FlowExpectedError[incompatible-call]
 
-declare function useRecoilMutableSource(): mixed;
+const MutableSourceContext = React.createContext<MutableSource>(null);
+declare function useRecoilMutableSource(): MutableSource;
 declare function notifyComponents(store: Store, storeState: StoreState, treeState: TreeState): void;
 declare function sendEndOfBatchNotifications(store: Store): any;
 declare function endBatch(storeRef: any): any;

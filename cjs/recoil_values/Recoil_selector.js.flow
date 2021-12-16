@@ -60,8 +60,8 @@ import type { StateID } from '../core/Recoil_Keys';
 import type { DefaultValue } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
-import type { Snapshot } from '../core/Recoil_Snapshot';
 import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State';
+import type { RecoilCallbackInterface } from '../hooks/Recoil_useRecoilCallback';
 import type { GetRecoilValue, ResetRecoilState, SetRecoilState } from './Recoil_callbackTypes';
 
 const {
@@ -108,8 +108,8 @@ const {
 } = require('../core/Recoil_Retention');
 
 const {
-  cloneSnapshot
-} = require('../core/Recoil_Snapshot');
+  recoilCallback
+} = require('../hooks/Recoil_useRecoilCallback');
 
 const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
 
@@ -129,26 +129,34 @@ const {
 
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
-export type GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(fn: ($ReadOnly<{
-  snapshot: Snapshot
-}>) => (...Args) => Return) => (...Args) => Return;
-type ReadOnlySelectorOptions<T> = $ReadOnly<{
+type SelectorCallbackInterface<T> = $ReadOnly<{
+  // TODO Technically this could be RecoilValueReadOnly, but trying to parameterize
+  // it based on the selector type ran into problems which would lead to
+  // dangerous error suppressions.
+  node: RecoilState<T>,
+  ...RecoilCallbackInterface,
+}>;
+export type GetCallback<T> = <Args: $ReadOnlyArray<mixed>, Return>(fn: (SelectorCallbackInterface<T>) => (...Args) => Return) => (...Args) => Return;
+type BaseSelectorOptions = $ReadOnly<{
   key: string,
-  get: ({
-    get: GetRecoilValue,
-    getCallback: GetCallback,
-  }) => Promise<T> | RecoilValue<T> | T,
   dangerouslyAllowMutability?: boolean,
   retainedBy_UNSTABLE?: RetainedBy,
   cachePolicy_UNSTABLE?: CachePolicy,
 }>;
-type ReadWriteSelectorOptions<T> = $ReadOnly<{ ...ReadOnlySelectorOptions<T>,
+export type ReadOnlySelectorOptions<T> = $ReadOnly<{ ...BaseSelectorOptions,
+  get: ({
+    get: GetRecoilValue,
+    getCallback: GetCallback<T>,
+  }) => Promise<T> | RecoilValue<T> | T,
+}>;
+export type ReadWriteSelectorOptions<T> = $ReadOnly<{ ...ReadOnlySelectorOptions<T>,
   set: ({
     set: SetRecoilState,
     get: GetRecoilValue,
     reset: ResetRecoilState,
   }, newValue: T | DefaultValue) => void,
 }>;
+export type SelectorOptions<T, P> = ReadOnlySelectorOptions<T, P> | ReadWriteSelectorOptions<T, P>;
 export type DepValues = Map<NodeKey, Loadable<mixed>>;
 declare class Canceled {}
 const CANCELED: Canceled = new Canceled();
