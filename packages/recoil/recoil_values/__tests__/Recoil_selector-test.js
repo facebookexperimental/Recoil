@@ -62,7 +62,7 @@ const testRecoil = getRecoilTestFn(() => {
     useSetRecoilState,
     useResetRecoilState,
   } = require('../../hooks/Recoil_Hooks'));
-  useRecoilCallback = require('../../hooks/Recoil_useRecoilCallback');
+  ({useRecoilCallback} = require('../../hooks/Recoil_useRecoilCallback'));
   constSelector = require('../Recoil_constSelector');
   errorSelector = require('../Recoil_errorSelector');
   nullthrows = require('recoil-shared/util/Recoil_nullthrows');
@@ -653,41 +653,6 @@ testRecoil(
     expect(container.textContent).toEqual('7');
   },
 );
-
-testRecoil('Selector getCallback', async () => {
-  const myAtom = atom({
-    key: 'selector - getCallback atom',
-    default: 'DEFAULT',
-  });
-  const mySelector = selector({
-    key: 'selector - getCallback',
-    get: ({getCallback}) => {
-      return {
-        onClick: getCallback(
-          ({snapshot}) =>
-            async () =>
-              await snapshot.getPromise(myAtom),
-        ),
-      };
-    },
-  });
-
-  const menuItem = getValue(mySelector);
-  await expect(menuItem.onClick()).resolves.toEqual('DEFAULT');
-  act(() => setValue(myAtom, 'SET'));
-  await expect(menuItem.onClick()).resolves.toEqual('SET');
-});
-
-testRecoil("Selector can't call getCallback during evaluation", () => {
-  const mySelector = selector({
-    key: 'selector - getCallback throws',
-    get: ({getCallback}) => {
-      const callback = getCallback(() => () => {});
-      callback();
-    },
-  });
-  getError(mySelector);
-});
 
 testRecoil("Updating with same value doesn't rerender", ({gks}) => {
   if (!gks.includes('recoil_suppress_rerender_in_callback')) {
@@ -1618,6 +1583,201 @@ testRecoil(
     expect(valLoadable.valueMaybe()).toBe(10);
   },
 );
+
+describe('getCallback', () => {
+  testRecoil('Selector getCallback', async () => {
+    const myAtom = atom({
+      key: 'selector - getCallback atom',
+      default: 'DEFAULT',
+    });
+    const mySelector = selector({
+      key: 'selector - getCallback',
+      get: ({getCallback}) => {
+        return {
+          onClick: getCallback(
+            ({snapshot}) =>
+              async () =>
+                await snapshot.getPromise(myAtom),
+          ),
+        };
+      },
+    });
+
+    const menuItem = getValue(mySelector);
+    await expect(menuItem.onClick()).resolves.toEqual('DEFAULT');
+    act(() => setValue(myAtom, 'SET'));
+    await expect(menuItem.onClick()).resolves.toEqual('SET');
+  });
+
+  testRecoil('snapshot', async () => {
+    const otherSelector = constSelector('VALUE');
+    const mySelector = selector({
+      key: 'selector getCallback snapshot',
+      get: ({getCallback}) =>
+        getCallback(({snapshot}) => param => ({
+          param,
+          loadable: snapshot.getLoadable(otherSelector),
+          promise: snapshot.getPromise(otherSelector),
+        })),
+    });
+
+    expect(getValue(mySelector)(123).param).toBe(123);
+    expect(getValue(mySelector)(123).loadable.getValue()).toBe('VALUE');
+    await expect(getValue(mySelector)(123).promise).resolves.toBe('VALUE');
+  });
+
+  testRecoil('set', () => {
+    const myAtom = atom({
+      key: 'selector getCallback set atom',
+      default: 'DEFAULT',
+    });
+    const setSelector = selector({
+      key: 'selector getCallback set',
+      get: ({getCallback}) =>
+        getCallback(({set}) => param => {
+          set(myAtom, param);
+        }),
+    });
+    const resetSelector = selector({
+      key: 'selector getCallback reset',
+      get: ({getCallback}) =>
+        getCallback(({reset}) => () => {
+          reset(myAtom);
+        }),
+    });
+
+    expect(getValue(myAtom)).toBe('DEFAULT');
+    getValue(setSelector)('SET');
+    expect(getValue(myAtom)).toBe('SET');
+
+    getValue(resetSelector)();
+    expect(getValue(myAtom)).toBe('DEFAULT');
+  });
+
+  testRecoil('transaction', () => {
+    const myAtom = atom({
+      key: 'selector getCallback transact atom',
+      default: 'DEFAULT',
+    });
+    const setSelector = selector({
+      key: 'selector getCallback transact set',
+      get: ({getCallback}) =>
+        getCallback(({transact_UNSTABLE}) => param => {
+          transact_UNSTABLE(({set, get}) => {
+            expect(get(myAtom)).toBe('DEFAULT');
+            set(myAtom, 'TMP');
+            expect(get(myAtom)).toBe('TMP');
+            set(myAtom, param);
+          });
+        }),
+    });
+    const resetSelector = selector({
+      key: 'selector getCallback transact',
+      get: ({getCallback}) =>
+        getCallback(({transact_UNSTABLE}) => () => {
+          transact_UNSTABLE(({reset}) => reset(myAtom));
+        }),
+    });
+
+    expect(getValue(myAtom)).toBe('DEFAULT');
+    getValue(setSelector)('SET');
+    expect(getValue(myAtom)).toBe('SET');
+
+    getValue(resetSelector)();
+    expect(getValue(myAtom)).toBe('DEFAULT');
+  });
+
+  testRecoil('node', () => {
+    const mySelector = selector({
+      key: 'selector getCallback node',
+      get: ({getCallback}) =>
+        getCallback(({node, snapshot}) => param => ({
+          param,
+          loadable: snapshot.getLoadable(node),
+          promise: snapshot.getPromise(node),
+        })),
+    });
+
+    expect(getValue(mySelector)(123).param).toBe(123);
+    expect(getValue(mySelector)(123).loadable.getValue()(456).param).toBe(456);
+  });
+
+  testRecoil('refresh', async () => {
+    let externalValue = 0;
+    const mySelector = selector({
+      key: 'selector getCallback node refresh',
+      get: ({getCallback}) => {
+        const cachedExternalValue = externalValue;
+        return getCallback(({node, refresh}) => () => ({
+          cached: cachedExternalValue,
+          current: externalValue,
+          refresh: () => refresh(node),
+        }));
+      },
+    });
+
+    expect(getValue(mySelector)().current).toBe(0);
+    expect(getValue(mySelector)().cached).toBe(0);
+
+    externalValue = 1;
+    expect(getValue(mySelector)().current).toBe(1);
+    expect(getValue(mySelector)().cached).toBe(0);
+
+    getValue(mySelector)().refresh();
+    expect(getValue(mySelector)().current).toBe(1);
+    expect(getValue(mySelector)().cached).toBe(1);
+  });
+
+  testRecoil('Guard against calling during selector evaluation', async () => {
+    const mySelector = selector({
+      key: 'selector getCallback guard',
+      get: ({getCallback}) => {
+        const callback = getCallback(() => () => {});
+        expect(() => callback()).toThrow();
+        return 'THROW';
+      },
+    });
+
+    expect(getValue(mySelector)).toBe('THROW');
+
+    const myAsyncSelector = selector({
+      key: 'selector getCallback guard async',
+      get: async ({getCallback}) => {
+        const callback = getCallback(() => () => {});
+        await Promise.resolve();
+        expect(() => callback()).toThrow();
+        return 'THROW';
+      },
+    });
+
+    await expect(getPromise(myAsyncSelector)).resolves.toBe('THROW');
+  });
+
+  testRecoil('Callback can be used from thrown error', async () => {
+    const mySelector = selector({
+      key: 'selector getCallback from error',
+      get: ({getCallback}) => {
+        // eslint-disable-next-line no-throw-literal
+        throw {callback: getCallback(() => x => x)};
+      },
+    });
+
+    // $FlowExpectedError[incompatible-use]]
+    expect(getLoadable(mySelector).errorOrThrow().callback(123)).toEqual(123);
+
+    const myAsyncSelector = selector({
+      key: 'selector getCallback from error async',
+      get: ({getCallback}) => {
+        return Promise.reject({callback: getCallback(() => x => x)});
+      },
+    });
+
+    // $FlowExpectedError[incompatible-use]]
+    await expect(
+      getPromise(myAsyncSelector).catch(({callback}) => callback(123)),
+    ).resolves.toEqual(123);
+  });
+});
 
 testRecoil('Selector values are frozen', async () => {
   const devStatus = window.__DEV__;

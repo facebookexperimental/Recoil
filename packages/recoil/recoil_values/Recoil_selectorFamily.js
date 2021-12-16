@@ -46,16 +46,20 @@ export type Parameter =
   | $ReadOnly<{...}>;
 // | $ReadOnly<{[string]: Parameter}>; // TODO Better enforce object is serializable
 
-type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
+type BaseSelectorFamilyOptions<P: Parameter> = $ReadOnly<{
   key: string,
-  get: P => ({get: GetRecoilValue, getCallback: GetCallback}) =>
-    | Promise<T>
-    | RecoilValue<T>
-    | T,
   cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction,
   cachePolicy_UNSTABLE?: CachePolicy,
   dangerouslyAllowMutability?: boolean,
   retainedBy_UNSTABLE?: RetainedBy | (P => RetainedBy),
+}>;
+
+export type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
+  ...BaseSelectorFamilyOptions<P>,
+  get: P => ({
+    get: GetRecoilValue,
+    getCallback: GetCallback<T>,
+  }) => Promise<T> | RecoilValue<T> | T,
 }>;
 
 export type ReadWriteSelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{

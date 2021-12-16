@@ -67,8 +67,8 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
-import type {Snapshot} from '../core/Recoil_Snapshot';
 import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
+import type {RecoilCallbackInterface} from '../hooks/Recoil_useRecoilCallback';
 import type {
   GetRecoilValue,
   ResetRecoilState,
@@ -101,7 +101,7 @@ const {
   setRecoilValueLoadable,
 } = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
-const {cloneSnapshot} = require('../core/Recoil_Snapshot');
+const {recoilCallback} = require('../hooks/Recoil_useRecoilCallback');
 const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
 const err = require('recoil-shared/util/Recoil_err');
 const gkx = require('recoil-shared/util/Recoil_gkx');
@@ -113,30 +113,44 @@ const {
 } = require('recoil-shared/util/Recoil_PerformanceTimings');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
-export type GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(
-  fn: ($ReadOnly<{snapshot: Snapshot}>) => (...Args) => Return,
+type SelectorCallbackInterface<T> = $ReadOnly<{
+  // TODO Technically this could be RecoilValueReadOnly, but trying to parameterize
+  // it based on the selector type ran into problems which would lead to
+  // dangerous error suppressions.
+  node: RecoilState<T>,
+  ...RecoilCallbackInterface,
+}>;
+export type GetCallback<T> = <Args: $ReadOnlyArray<mixed>, Return>(
+  fn: (SelectorCallbackInterface<T>) => (...Args) => Return,
 ) => (...Args) => Return;
 
-type ReadOnlySelectorOptions<T> = $ReadOnly<{
+type BaseSelectorOptions = $ReadOnly<{
   key: string,
-  get: ({get: GetRecoilValue, getCallback: GetCallback}) =>
-    | Promise<T>
-    | RecoilValue<T>
-    | T,
 
   dangerouslyAllowMutability?: boolean,
-
   retainedBy_UNSTABLE?: RetainedBy,
   cachePolicy_UNSTABLE?: CachePolicy,
 }>;
 
-type ReadWriteSelectorOptions<T> = $ReadOnly<{
+export type ReadOnlySelectorOptions<T> = $ReadOnly<{
+  ...BaseSelectorOptions,
+  get: ({
+    get: GetRecoilValue,
+    getCallback: GetCallback<T>,
+  }) => Promise<T> | RecoilValue<T> | T,
+}>;
+
+export type ReadWriteSelectorOptions<T> = $ReadOnly<{
   ...ReadOnlySelectorOptions<T>,
   set: (
     {set: SetRecoilState, get: GetRecoilValue, reset: ResetRecoilState},
     newValue: T | DefaultValue,
   ) => void,
 }>;
+
+export type SelectorOptions<T, P> =
+  | ReadOnlySelectorOptions<T, P>
+  | ReadWriteSelectorOptions<T, P>;
 
 export type DepValues = Map<NodeKey, Loadable<mixed>>;
 
@@ -695,6 +709,12 @@ function selector<T>(
     executionId: ExecutionId,
   ): [Loadable<T>, DepValues] {
     const endPerfBlock = startPerfBlock(key); // TODO T63965866: use execution ID here
+    let gateCallback = true;
+    const finishEvaluation = () => {
+      endPerfBlock();
+      gateCallback = false;
+    };
+
     let result;
     let resultIsError = false;
     let loadable: Loadable<T>;
@@ -741,31 +761,24 @@ function selector<T>(
       throw err('Invalid Loadable state');
     }
 
-    let gateCallback = false;
-    const getCallback: GetCallback = <Args: $ReadOnlyArray<mixed>, Return>(
-      fn: ($ReadOnly<{snapshot: Snapshot}>) => (...Args) => Return,
+    const getCallback = <Args: $ReadOnlyArray<mixed>, Return>(
+      fn: (SelectorCallbackInterface<T>) => (...Args) => Return,
     ): ((...Args) => Return) => {
       return (...args) => {
-        if (!gateCallback) {
+        if (gateCallback) {
           throw err(
-            'getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can obtain the current Recoil state without a subscription.',
+            'Callbacks from getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can work with Recoil state without a subscription.',
           );
         }
-        const snapshot = cloneSnapshot(store);
-        const cb = fn({snapshot});
-        if (typeof cb !== 'function') {
-          throw err(
-            'getCallback() expects a function that returns a function.',
-          );
-        }
-        return cb(...args);
+        invariant(recoilValue != null, 'Recoil Value can never be null');
+        // $FlowIssue[unclear-type]
+        return recoilCallback(store, fn, args, {node: (recoilValue: any)});
       };
     };
 
     try {
       result = get({get: getRecoilValue, getCallback});
       result = isRecoilValue(result) ? getRecoilValue(result) : result;
-      gateCallback = true;
 
       if (isPromise(result)) {
         result = wrapPendingPromise(
@@ -775,9 +788,9 @@ function selector<T>(
           depValues,
           executionId,
           loadingDepsState,
-        ).finally(endPerfBlock);
+        ).finally(finishEvaluation);
       } else {
-        endPerfBlock();
+        finishEvaluation();
       }
     } catch (errorOrDepPromise) {
       result = errorOrDepPromise;
@@ -790,10 +803,10 @@ function selector<T>(
           depValues,
           executionId,
           loadingDepsState,
-        ).finally(endPerfBlock);
+        ).finally(finishEvaluation);
       } else {
         resultIsError = true;
-        endPerfBlock();
+        finishEvaluation();
       }
     }
 

@@ -204,49 +204,52 @@ function useRecoilSnapshot(): Snapshot {
   return snapshot;
 }
 
+function gotoSnapshot(store: Store, snapshot: Snapshot): void {
+  const storeState = store.getState();
+  const prev = storeState.nextTree ?? storeState.currentTree;
+  const next = snapshot.getStore_INTERNAL().getState().currentTree;
+  batchUpdates(() => {
+    const keysToUpdate = new Set();
+    for (const keys of [prev.atomValues.keys(), next.atomValues.keys()]) {
+      for (const key of keys) {
+        if (
+          prev.atomValues.get(key)?.contents !==
+            next.atomValues.get(key)?.contents &&
+          getNode(key).shouldRestoreFromSnapshots
+        ) {
+          keysToUpdate.add(key);
+        }
+      }
+    }
+    keysToUpdate.forEach(key => {
+      setRecoilValueLoadable(
+        store,
+        new AbstractRecoilValue(key),
+        next.atomValues.has(key)
+          ? nullthrows(next.atomValues.get(key))
+          : DEFAULT_VALUE,
+      );
+    });
+    store.replaceState(state => {
+      return {
+        ...state,
+        stateID: snapshot.getID(),
+      };
+    });
+  });
+}
+
 function useGotoRecoilSnapshot(): Snapshot => void {
   const storeRef = useStoreRef();
   return useCallback(
-    (snapshot: Snapshot) => {
-      const storeState = storeRef.current.getState();
-      const prev = storeState.nextTree ?? storeState.currentTree;
-      const next = snapshot.getStore_INTERNAL().getState().currentTree;
-      batchUpdates(() => {
-        const keysToUpdate = new Set();
-        for (const keys of [prev.atomValues.keys(), next.atomValues.keys()]) {
-          for (const key of keys) {
-            if (
-              prev.atomValues.get(key)?.contents !==
-                next.atomValues.get(key)?.contents &&
-              getNode(key).shouldRestoreFromSnapshots
-            ) {
-              keysToUpdate.add(key);
-            }
-          }
-        }
-        keysToUpdate.forEach(key => {
-          setRecoilValueLoadable(
-            storeRef.current,
-            new AbstractRecoilValue(key),
-            next.atomValues.has(key)
-              ? nullthrows(next.atomValues.get(key))
-              : DEFAULT_VALUE,
-          );
-        });
-        storeRef.current.replaceState(state => {
-          return {
-            ...state,
-            stateID: snapshot.getID(),
-          };
-        });
-      });
-    },
+    (snapshot: Snapshot) => gotoSnapshot(storeRef.current, snapshot),
     [storeRef],
   );
 }
 
 module.exports = {
   useRecoilSnapshot,
+  gotoSnapshot,
   useGotoRecoilSnapshot,
   useRecoilTransactionObserver,
   useTransactionObservation_DEPRECATED,
