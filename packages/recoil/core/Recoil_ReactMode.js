@@ -14,6 +14,7 @@ const React = require('react');
 const gkx = require('recoil-shared/util/Recoil_gkx');
 
 export opaque type MutableSource = {};
+
 const createMutableSource: <StoreState, Version>(
   {current: StoreState},
   () => Version,

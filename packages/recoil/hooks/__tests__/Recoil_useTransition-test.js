@@ -20,7 +20,7 @@ let React,
   useTransition,
   useRecoilState,
   atom,
-  renderElementsInConcurrentRoot,
+  renderElements,
   reactMode,
   flushPromisesAndTimers;
 
@@ -30,7 +30,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({act} = require('ReactTestUtils'));
   ({useRecoilState, atom} = require('../../Recoil_index'));
   ({
-    renderElementsInConcurrentRoot,
+    renderElements,
     flushPromisesAndTimers,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({reactMode} = require('../../core/Recoil_ReactMode'));
@@ -38,8 +38,8 @@ const testRecoil = getRecoilTestFn(() => {
 
 let nextID = 0;
 
-testRecoil('Works with useTransition', async () => {
-  if (!reactMode().concurrent) {
+testRecoil('Works with useTransition', async ({concurrentMode}) => {
+  if (!reactMode().concurrent || !concurrentMode) {
     return;
   }
 
@@ -112,7 +112,7 @@ testRecoil('Works with useTransition', async () => {
     );
   }
 
-  const c = renderElementsInConcurrentRoot(<Main />);
+  const c = renderElements(<Main />);
 
   // Initial load:
   expect(c.textContent).toEqual('Index: 0 - Suspended');
