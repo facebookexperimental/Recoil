@@ -32,6 +32,7 @@ let React,
   atom,
   errorSelector,
   selector,
+  selectorFamily,
   ReadsAtom,
   asyncSelector,
   errorThrowingAsyncSelector,
@@ -59,6 +60,7 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../../recoil_values/Recoil_atom');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');
   selector = require('../../recoil_values/Recoil_selector');
+  selectorFamily = require('../../recoil_values/Recoil_selectorFamily');
   ({
     ReadsAtom,
     asyncSelector,
@@ -706,6 +708,57 @@ testRecoil(
   },
 );
 
+testRecoil(
+  'Components re-render only one time if selectorFamily changed',
+  ({gks, strictMode}) => {
+    const BASE_CALLS = baseRenderCount(gks);
+    const sm = strictMode ? 2 : 1;
+
+    const atomA = counterAtom();
+
+    const selectAFakeId = selectorFamily({
+      key: 'selectItem',
+      get:
+        _id =>
+        ({get}) =>
+          get(atomA),
+    });
+
+    const Component = (jest.fn(function ReadFromSelector({id}) {
+      return useRecoilValue(selectAFakeId(id));
+      // $FlowFixMe[unclear-type]
+    }): Function);
+
+    let increment;
+
+    const App = () => {
+      const [state, setState] = useRecoilState(atomA);
+      increment = () => setState(s => s + 1);
+      return <Component id={state} />;
+    };
+
+    const container = renderElements(<App />);
+
+    let baseCalls = BASE_CALLS;
+
+    expect(container.textContent).toEqual('0');
+    expect(Component).toHaveBeenCalledTimes((baseCalls + 1) * sm);
+
+    act(() => increment());
+
+    if (
+      (reactMode().mode === 'LEGACY' &&
+        !gks.includes('recoil_suppress_rerender_in_callback')) ||
+      reactMode().mode === 'CONCURRENT_LEGACY'
+    ) {
+      baseCalls += 1;
+    }
+
+    expect(container.textContent).toEqual('1');
+    expect(Component).toHaveBeenCalledTimes((baseCalls + 2) * sm);
+  },
+);
+
 testRecoil('Can subscribe to and also change an atom in the same batch', () => {
   const anAtom = counterAtom();
 
@@ -806,7 +859,8 @@ testRecoil(
     expect(Component).toHaveBeenCalledTimes((baseCalls + 2) * sm);
 
     if (
-      reactMode().mode === 'LEGACY' ||
+      (reactMode().mode === 'LEGACY' &&
+        !gks.includes('recoil_suppress_rerender_in_callback')) ||
       reactMode().mode === 'CONCURRENT_LEGACY'
     ) {
       baseCalls += 1;
