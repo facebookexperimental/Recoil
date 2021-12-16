@@ -14,7 +14,7 @@ import type {RecoilState, RecoilValue, RecoilValueReadOnly} from 'Recoil';
 import type {Store} from '../../recoil/core/Recoil_State';
 
 // @fb-only: const ReactDOMComet = require('ReactDOMComet');
-const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
+// @fb-only: const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
 const {act} = require('ReactTestUtils');
 const {
   RecoilRoot,
@@ -38,11 +38,15 @@ const {makeEmptyStoreState} = require('../../recoil/core/Recoil_State');
 const invariant = require('../util/Recoil_invariant');
 const nullthrows = require('../util/Recoil_nullthrows');
 const stableStringify = require('../util/Recoil_stableStringify');
-const {isStrictModeEnabled} = require('./Recoil_StrictMode');
+const {
+  isConcurrentModeEnabled,
+  isStrictModeEnabled,
+} = require('./Recoil_ReactRenderModes');
 const React = require('react');
 const {useEffect} = require('react');
+const err = require('recoil-shared/util/Recoil_err');
 
-const ReactDOMComet = require('ReactDOMLegacy_DEPRECATED'); // @oss-only
+const ReactDOM = require('react-dom'); // @oss-only
 const StrictMode = React.StrictMode; // @oss-only
 
 // @fb-only: const IS_INTERNAL = true;
@@ -105,19 +109,38 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-function createLegacyReactRoot(container, contents) {
+type ReactAbstractElement<Props> = React.Element<
+  React.AbstractComponent<Props>,
+>;
+
+function renderLegacyReactRoot<Props>(
+  container: HTMLElement,
+  contents: ReactAbstractElement<Props>,
+) {
   ReactDOM.render(contents, container);
 }
 
-function createConcurrentReactRoot(container, contents) {
-  // @fb-only: ReactDOMComet.createRoot(container).render(contents);
-  ReactDOM.unstable_createRoot(container).render(contents); // @oss-only
+// @fb-only: const createRoot = ReactDOMComet.createRoot;
+// $FlowExpectedError[prop-missing]
+const createRoot = ReactDOM.createRoot ?? ReactDOM.unstable_createRoot; // @oss-only
+
+function isConcurrentModeAvailable(): boolean {
+  return createRoot != null;
 }
 
-function renderElementsInternal(
-  elements: ?React.Node,
-  createReactRoot,
-): HTMLDivElement {
+function renderConcurrentReactRoot<Props>(
+  container: HTMLElement,
+  contents: ReactAbstractElement<Props>,
+) {
+  if (!isConcurrentModeAvailable()) {
+    throw err(
+      'Concurrent rendering is not available with the current version of React.',
+    );
+  }
+  createRoot(container).render(contents);
+}
+
+function renderElements(elements: ?React.Node): HTMLDivElement {
   const container = document.createElement('div');
   const Content = () => (
     <RecoilRoot>
@@ -127,8 +150,11 @@ function renderElementsInternal(
       </ErrorBoundary>
     </RecoilRoot>
   );
+  const renderReactRoot = isConcurrentModeEnabled()
+    ? renderConcurrentReactRoot
+    : renderLegacyReactRoot;
   act(() => {
-    createReactRoot(
+    renderReactRoot(
       container,
       isStrictModeEnabled() ? (
         <StrictMode>
@@ -140,14 +166,6 @@ function renderElementsInternal(
     );
   });
   return container;
-}
-
-function renderElements(elements: ?React.Node): HTMLDivElement {
-  return renderElementsInternal(elements, createLegacyReactRoot);
-}
-
-function renderElementsInConcurrentRoot(elements: ?React.Node): HTMLDivElement {
-  return renderElementsInternal(elements, createConcurrentReactRoot);
 }
 
 function renderElementsWithSuspenseCount(
@@ -167,8 +185,11 @@ function renderElementsWithSuspenseCount(
       </ErrorBoundary>
     </RecoilRoot>
   );
+  const renderReactRoot = isConcurrentModeEnabled()
+    ? renderConcurrentReactRoot
+    : renderLegacyReactRoot;
   act(() => {
-    createLegacyReactRoot(
+    renderReactRoot(
       container,
       isStrictModeEnabled() ? (
         <StrictMode>
@@ -285,6 +306,7 @@ type ReloadImports = () => void | (() => void);
 type AssertionsFn = ({
   gks: Array<string>,
   strictMode: boolean,
+  concurrentMode: boolean,
 }) => ?Promise<mixed>;
 type TestOptions = {
   gks?: Array<Array<string>>,
@@ -298,37 +320,64 @@ const testGKs =
     assertionsFn: AssertionsFn,
     {gks: additionalGKs = []}: TestOptions = {},
   ) => {
-    function runTests(strictMode: boolean) {
+    function runTests({
+      strictMode,
+      concurrentMode,
+    }: {
+      strictMode: boolean,
+      concurrentMode: boolean,
+    }) {
       test.each([
         ...[...gks, ...additionalGKs].map(gksToTest => [
           (!gksToTest.length
             ? testDescription
             : `${testDescription} [${gksToTest.join(', ')}]`) +
-            (strictMode ? ' [StrictMode]' : ''),
+            (strictMode || concurrentMode
+              ? ` [${[
+                  strictMode ? 'StrictMode' : null,
+                  concurrentMode ? 'ConcurrentMode' : null,
+                ]
+                  .filter(x => x != null)
+                  .join(', ')}]`
+              : ''),
           gksToTest,
         ]),
       ])('%s', async (_title, gksToTest) => {
         jest.resetModules();
 
         const gkx = require('recoil-shared/util/Recoil_gkx');
-        const {setStrictMode} = require('./Recoil_StrictMode');
+        const {
+          setStrictMode,
+          setConcurrentMode,
+        } = require('./Recoil_ReactRenderModes');
         setStrictMode(strictMode);
+        setConcurrentMode(concurrentMode);
 
         gksToTest.forEach(gkx.setPass);
 
         const after = reloadImports();
-        await assertionsFn({gks: gksToTest, strictMode});
+        await assertionsFn({gks: gksToTest, strictMode, concurrentMode});
 
         gksToTest.forEach(gkx.setFail);
 
         after?.();
         setStrictMode(false);
+        setConcurrentMode(false);
       });
     }
 
-    // Run tests with Strict mode enabled and disabled
-    runTests(true);
-    runTests(false);
+    runTests({strictMode: false, concurrentMode: false});
+    runTests({strictMode: true, concurrentMode: false});
+    if (isConcurrentModeAvailable()) {
+      runTests({strictMode: false, concurrentMode: true});
+      // TODO React 18.0.0-rc.0 currently has errors when testing both
+      // Strict and Concurrent mode.  Reported error is:
+      //   Warning: The current testing environment is not configured to support act(...)
+      // Also see: https://github.com/Shopify/hydrogen/pull/312
+      if (IS_INTERNAL) {
+        runTests({strictMode: true, concurrentMode: true});
+      }
+    }
   };
 
 const WWW_GKS_TO_TEST = [
@@ -394,7 +443,6 @@ module.exports = {
   makeStore,
   renderElements,
   renderElementsWithSuspenseCount,
-  renderElementsInConcurrentRoot,
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   errorThrowingAsyncSelector,

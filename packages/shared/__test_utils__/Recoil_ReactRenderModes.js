@@ -18,7 +18,17 @@ const setStrictMode = (enableStrictMode: boolean): void => {
   strictMode = enableStrictMode;
 };
 
+let concurrentMode: boolean = false;
+
+const isConcurrentModeEnabled = (): boolean => concurrentMode;
+
+const setConcurrentMode = (enableConcurrentMode: boolean): void => {
+  concurrentMode = enableConcurrentMode;
+};
+
 module.exports = {
   isStrictModeEnabled,
   setStrictMode,
+  isConcurrentModeEnabled,
+  setConcurrentMode,
 };
