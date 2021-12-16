@@ -13,6 +13,7 @@
 - `RecoilLoadable.all()` and `RecoilLoadable.of()` accept either literal values, async Promises, or Loadables.
 - Selector `getCallback()` callbacks can now mutate, refresh, and transact Recoil state in addition to reading it.
 - Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
+- Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
 
 ### Pending
 - Memory management
