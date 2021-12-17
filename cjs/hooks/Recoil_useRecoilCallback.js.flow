@@ -52,6 +52,8 @@ const err = require('recoil-shared/util/Recoil_err');
 
 const invariant = require('recoil-shared/util/Recoil_invariant');
 
+const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
+
 export type RecoilCallbackInterface = $ReadOnly<{
   set: <T>(RecoilState<T>, ((T) => T) | T) => void,
   reset: <T>(RecoilState<T>) => void,
@@ -62,7 +64,7 @@ export type RecoilCallbackInterface = $ReadOnly<{
 }>;
 declare class Sentinel {}
 const SENTINEL = new Sentinel();
-declare function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface: {...}>(store: Store, fn: ({ ...ExtraInterface,
+declare function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(store: Store, fn: ({ ...ExtraInterface,
   ...RecoilCallbackInterface,
 }) => (...Args) => Return, args: Args, extraInterface?: ExtraInterface): Return;
 declare function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(fn: (RecoilCallbackInterface) => (...Args) => Return, deps?: $ReadOnlyArray<mixed>): (...Args) => Return;

@@ -3512,8 +3512,9 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         addTransactionMetadata: () => {
           throw Recoil_err('Cannot subscribe to Snapshots');
         }
-      }; // Initialize any nodes that are live in the parent store (primarily so that this
-      // snapshot gets counted towards the node's live stores count).
+      }; // Initialize any nodes that are live in the parent store (primarily so that
+      // this snapshot gets counted towards the node's live stores count).
+      // TODO Optimize this when cloning snapshots for callbacks
 
       for (const nodeKey of this._store.getState().knownAtoms) {
         initializeNode$1(this._store, nodeKey);
@@ -5022,6 +5023,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       const treeState = reactMode$3().early ? (_storeState$nextTree5 = storeState.nextTree) !== null && _storeState$nextTree5 !== void 0 ? _storeState$nextTree5 : storeState.currentTree : storeState.currentTree;
       return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
     }, [storeRef, recoilValue]);
+    const loadable = getLoadable();
+    const prevLoadableRef = useRef$5(loadable);
+    useEffect$3(() => {
+      prevLoadableRef.current = loadable;
+    });
     useEffect$3(() => {
       const store = storeRef.current;
       const storeState = store.getState();
@@ -5080,11 +5086,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
       return subscription.release;
     }, [componentName, getLoadable, recoilValue, storeRef]);
-    const loadable = getLoadable();
-    const prevLoadableRef = useRef$5(loadable);
-    useEffect$3(() => {
-      prevLoadableRef.current = loadable;
-    });
     return loadable;
   }
   /**
@@ -5713,6 +5714,44 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   var Recoil_invariant = invariant_1;
 
+  /**
+   * Copyright (c) Facebook, Inc. and its affiliates.
+   *
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
+   *
+   * @emails oncall+recoil
+   * 
+   * @format
+   */
+  /**
+   * Return a proxy object based on the provided base and factories objects.
+   * The proxy will include all properties of the base object as-is.
+   * The factories object contains callbacks to obtain the values of the properies
+   * for its keys.
+   *
+   * This is useful for providing users an object where some properties may be
+   * lazily computed only on first access.
+   */
+  // $FlowIssue[unclear-type]
+
+  function lazyProxy(base, factories) {
+    // $FlowIssue[incompatible-return]
+    return new Proxy(base, {
+      get: (target, prop) => {
+        if (prop in factories) {
+          // $FlowIssue[incompatible-use]
+          target[prop] = factories[prop]();
+        } // $FlowIssue[incompatible-use]
+
+
+        return target[prop];
+      }
+    });
+  }
+
+  var Recoil_lazyProxy = lazyProxy;
+
   const {
     atomicUpdater: atomicUpdater$1
   } = Recoil_AtomicUpdates$1;
@@ -5751,6 +5790,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
 
 
+
+
   class Sentinel {}
 
   const SENTINEL = new Sentinel();
@@ -5758,28 +5799,32 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   function recoilCallback(store, fn, args, extraInterface) {
     let ret = SENTINEL;
     batchUpdates$4(() => {
-      const errMsg = 'useRecoilCallback expects a function that returns a function: ' + 'it accepts a function of the type (RecoilInterface) => T = R ' + 'and returns a callback function T => R, where RecoilInterface is an ' + 'object {snapshot, set, ...} and T and R are the argument and return ' + 'types of the callback you want to create.  Please see the docs ' + 'at recoiljs.org for details.';
+      const errMsg = 'useRecoilCallback() expects a function that returns a function: ' + 'it accepts a function of the type (RecoilInterface) => (Args) => ReturnType ' + 'and returns a callback function (Args) => ReturnType, where RecoilInterface is ' + 'an object {snapshot, set, ...} and Args and ReturnType are the argument and return ' + 'types of the callback you want to create.  Please see the docs ' + 'at recoiljs.org for details.';
 
       if (typeof fn !== 'function') {
         throw Recoil_err(errMsg);
-      } // flowlint-next-line unclear-type:off
+      } // Clone the snapshot lazily to avoid overhead if the callback does not use it.
+      // Note that this means the snapshot may represent later state from when
+      // the callback was called if it first accesses the snapshot asynchronously.
 
 
-      const cb = fn({ ...(extraInterface !== null && extraInterface !== void 0 ? extraInterface : {}),
+      const callbackInterface = Recoil_lazyProxy({ ...(extraInterface !== null && extraInterface !== void 0 ? extraInterface : {}),
+        // flowlint-line unclear-type:off
         set: (node, newValue) => setRecoilValue$3(store, node, newValue),
         reset: node => setRecoilValue$3(store, node, DEFAULT_VALUE$5),
         refresh: node => refreshRecoilValue$1(store, node),
-        // TODO Good potential optimization to compute this lazily
-        snapshot: cloneSnapshot$2(store),
         gotoSnapshot: snapshot => gotoSnapshot$1(store, snapshot),
         transact_UNSTABLE: transaction => atomicUpdater$1(store)(transaction)
+      }, {
+        snapshot: () => cloneSnapshot$2(store)
       });
+      const callback = fn(callbackInterface);
 
-      if (typeof cb !== 'function') {
+      if (typeof callback !== 'function') {
         throw Recoil_err(errMsg);
       }
 
-      ret = cb(...args);
+      ret = callback(...args);
     });
     !!(ret instanceof Sentinel) ?  Recoil_invariant(false, 'batchUpdates should return immediately')  : void 0;
     return ret;
@@ -7093,11 +7138,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
             throw Recoil_err('Callbacks from getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can work with Recoil state without a subscription.');
           }
 
-          !(recoilValue != null) ?  Recoil_invariant(false, 'Recoil Value can never be null')  : void 0; // $FlowIssue[unclear-type]
-
+          !(recoilValue != null) ?  Recoil_invariant(false, 'Recoil Value can never be null')  : void 0;
           return recoilCallback$1(store, fn, args, {
             node: recoilValue
-          });
+          } // flowlint-line unclear-type:off
+          );
         };
       };
 

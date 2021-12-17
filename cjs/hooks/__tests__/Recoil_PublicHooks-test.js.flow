@@ -19,7 +19,7 @@ const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, useEffect, useState, Profiler, act, Queue, batchUpdates, atom, errorSelector, selector, ReadsAtom, asyncSelector, errorThrowingAsyncSelector, flushPromisesAndTimers, renderElements, renderElementsWithSuspenseCount, recoilComponentGetRecoilValueCount_FOR_TESTING, useRecoilState, useRecoilStateLoadable, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useSetUnvalidatedAtomValues, useTransactionObservation_DEPRECATED, reactMode, invariant;
+let React, useEffect, useState, Profiler, act, Queue, batchUpdates, atom, errorSelector, selector, selectorFamily, ReadsAtom, asyncSelector, errorThrowingAsyncSelector, flushPromisesAndTimers, renderElements, renderElementsWithSuspenseCount, recoilComponentGetRecoilValueCount_FOR_TESTING, useRecoilState, useRecoilStateLoadable, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useSetUnvalidatedAtomValues, useTransactionObservation_DEPRECATED, reactMode, invariant;
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({
@@ -37,6 +37,7 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../../recoil_values/Recoil_atom');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');
   selector = require('../../recoil_values/Recoil_selector');
+  selectorFamily = require('../../recoil_values/Recoil_selectorFamily');
   ({
     ReadsAtom,
     asyncSelector,
@@ -422,6 +423,39 @@ testRecoil('Component does not re-read atom when rendered due to another atom ch
   });
   expect(recoilComponentGetRecoilValueCount_FOR_TESTING.current).toBe(initialCalls + 1);
 });
+testRecoil('Components re-render only one time if selectorFamily changed', ({
+  gks,
+  strictMode
+}) => {
+  const BASE_CALLS = baseRenderCount(gks);
+  const sm = strictMode ? 2 : 1;
+  const atomA = counterAtom();
+  const selectAFakeId = selectorFamily({
+    key: 'selectItem',
+    get: _id => ({
+      get
+    }) => get(atomA)
+  });
+  const Component = (jest.fn(function ReadFromSelector({
+    id
+  }) {
+    return useRecoilValue(selectAFakeId(id)); // $FlowFixMe[unclear-type]
+  }): Function);
+  let increment;
+  declare var App: () => any;
+  const container = renderElements(<App />);
+  let baseCalls = BASE_CALLS;
+  expect(container.textContent).toEqual('0');
+  expect(Component).toHaveBeenCalledTimes((baseCalls + 1) * sm);
+  act(() => increment());
+
+  if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'CONCURRENT_LEGACY') {
+    baseCalls += 1;
+  }
+
+  expect(container.textContent).toEqual('1');
+  expect(Component).toHaveBeenCalledTimes((baseCalls + 2) * sm);
+});
 testRecoil('Can subscribe to and also change an atom in the same batch', () => {
   const anAtom = counterAtom();
   let setVisible;
@@ -491,7 +525,7 @@ testRecoil('Components unsubscribe from atoms when rendered without using them',
   expect(container.textContent).toEqual('1');
   expect(Component).toHaveBeenCalledTimes((baseCalls + 2) * sm);
 
-  if (reactMode().mode === 'LEGACY' || reactMode().mode === 'CONCURRENT_LEGACY') {
+  if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'CONCURRENT_LEGACY') {
     baseCalls += 1;
   }
 
