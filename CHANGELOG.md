@@ -3,21 +3,33 @@
 ## UPCOMING
 ***Add new changes here as they land***
 
-- Fix Recoil with React strict mode that re-executes effects multiple times.
-- Add `refresh` to Recoil callback interface (#1413)
-- Fix transitive selector refresh for some cases (#1409)
-- Run atom effects when set from `useRecoilTransaction_UNSTABLE()` (#1466)
-- `useRecoilStoreID()` hook to get an ID for the current <RecoilRoot> store. (#1417)
-- `storeID` added to atom effects interface (#1414)
-- `<RecoilRoot>` will only call `initializeState()` during initial render. (#1372)
-- `RecoilLoadable.all()` and `RecoilLoadable.of()` accept either literal values, async Promises, or Loadables.
-- Selector `getCallback()` callbacks can now mutate, refresh, and transact Recoil state in addition to reading it.
-- Re-renders from Recoil updates now occur 1) earlier, 2) in sync with React updates in the same batch, and 3) before transaction observers instead of after.
-- Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
 
 ### Pending
 - Memory management
-- useTransition() compatibility
+- useTransition() compatibility for OSS
+
+## 0.6 ()
+
+- React 18
+  - Leverage new React 18 APIs for improved safety and optimizations.
+  - Fixes for `<StrictMode>` (#1473, #1444).  There is a known issue with Strict Mode when using React 18's new createRoot().
+  - `useTransition()` is not yet supported for open source React.
+- Recoil updates now re-render earlier:
+  - Recoil and React state changes from the same batch now stay in sync.
+  - Renders now occur before transaction observers instead of after.
+
+### New Features
+- Add `refresh()` to the `useRecoilCallback()` interface for refreshing selector caches. (#1413)
+- Callbacks from selector's `getCallback()` can now mutate, refresh, and transact Recoil state, in addition to reading it, for parity with `useRecoilCallback()`. (#1498)
+- Recoil StoreID's for `<RecoilRoot>` and `Snapshot` stores accessible via `useRecoilStoreID()` hook (#1417) or `storeID` parameter for atom effects (#1414).
+- `RecoilLoadable.all()` and `RecoilLoadable.of()` now accept either literal values, async Promises, or Loadables. (#1455, #1442)
+
+### Other Fixes and Optimizations
+- Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
+- Fix transitive selector refresh for some cases (#1409)
+- Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466)
+- Avoid extra re-renders in some cases when a component uses a different atom/selector. (#825)
+- `<RecoilRoot>` will only call `initializeState()` once during the initial render. (#1372)
 
 ## 0.5.2 (2021-11-07)
 

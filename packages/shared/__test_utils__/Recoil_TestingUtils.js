@@ -370,13 +370,7 @@ const testGKs =
     runTests({strictMode: true, concurrentMode: false});
     if (isConcurrentModeAvailable()) {
       runTests({strictMode: false, concurrentMode: true});
-      // TODO React 18.0.0-rc.0 currently has errors when testing both
-      // Strict and Concurrent mode.  Reported error is:
-      //   Warning: The current testing environment is not configured to support act(...)
-      // Also see: https://github.com/Shopify/hydrogen/pull/312
-      if (IS_INTERNAL) {
-        runTests({strictMode: true, concurrentMode: true});
-      }
+      runTests({strictMode: true, concurrentMode: true});
     }
   };
 
