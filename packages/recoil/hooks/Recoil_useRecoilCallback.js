@@ -27,6 +27,7 @@ const {gotoSnapshot} = require('./Recoil_SnapshotHooks');
 const {useCallback} = require('react');
 const err = require('recoil-shared/util/Recoil_err');
 const invariant = require('recoil-shared/util/Recoil_invariant');
+const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
 
 export type RecoilCallbackInterface = $ReadOnly<{
   set: <T>(RecoilState<T>, (T => T) | T) => void,
@@ -40,11 +41,7 @@ export type RecoilCallbackInterface = $ReadOnly<{
 class Sentinel {}
 const SENTINEL = new Sentinel();
 
-function recoilCallback<
-  Args: $ReadOnlyArray<mixed>,
-  Return,
-  ExtraInterface: {...},
->(
+function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
   store: Store,
   fn: ({...ExtraInterface, ...RecoilCallbackInterface}) => (...Args) => Return,
   args: Args,
@@ -53,30 +50,43 @@ function recoilCallback<
   let ret = SENTINEL;
   batchUpdates(() => {
     const errMsg =
-      'useRecoilCallback expects a function that returns a function: ' +
-      'it accepts a function of the type (RecoilInterface) => T = R ' +
-      'and returns a callback function T => R, where RecoilInterface is an ' +
-      'object {snapshot, set, ...} and T and R are the argument and return ' +
+      'useRecoilCallback() expects a function that returns a function: ' +
+      'it accepts a function of the type (RecoilInterface) => (Args) => ReturnType ' +
+      'and returns a callback function (Args) => ReturnType, where RecoilInterface is ' +
+      'an object {snapshot, set, ...} and Args and ReturnType are the argument and return ' +
       'types of the callback you want to create.  Please see the docs ' +
       'at recoiljs.org for details.';
     if (typeof fn !== 'function') {
       throw err(errMsg);
     }
-    // flowlint-next-line unclear-type:off
-    const cb = (fn: any)({
-      ...(extraInterface ?? {}),
-      set: (node, newValue) => setRecoilValue(store, node, newValue),
-      reset: node => setRecoilValue(store, node, DEFAULT_VALUE),
-      refresh: node => refreshRecoilValue(store, node),
-      // TODO Good potential optimization to compute this lazily
-      snapshot: cloneSnapshot(store),
-      gotoSnapshot: snapshot => gotoSnapshot(store, snapshot),
-      transact_UNSTABLE: transaction => atomicUpdater(store)(transaction),
-    });
-    if (typeof cb !== 'function') {
+
+    // Clone the snapshot lazily to avoid overhead if the callback does not use it.
+    // Note that this means the snapshot may represent later state from when
+    // the callback was called if it first accesses the snapshot asynchronously.
+    const callbackInterface: {
+      ...ExtraInterface,
+      ...RecoilCallbackInterface,
+    } = lazyProxy(
+      {
+        ...(extraInterface ?? ({}: any)), // flowlint-line unclear-type:off
+        set: <T>(node: RecoilState<T>, newValue: T | (T => T)) =>
+          setRecoilValue(store, node, newValue),
+        reset: <T>(node: RecoilState<T>) =>
+          setRecoilValue(store, node, DEFAULT_VALUE),
+        refresh: <T>(node: RecoilValue<T>) => refreshRecoilValue(store, node),
+        gotoSnapshot: snapshot => gotoSnapshot(store, snapshot),
+        transact_UNSTABLE: transaction => atomicUpdater(store)(transaction),
+      },
+      {
+        snapshot: () => cloneSnapshot(store),
+      },
+    );
+
+    const callback = fn(callbackInterface);
+    if (typeof callback !== 'function') {
       throw err(errMsg);
     }
-    ret = cb(...args);
+    ret = callback(...args);
   });
   invariant(
     !(ret instanceof Sentinel),

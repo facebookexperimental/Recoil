@@ -93,8 +93,9 @@ class Snapshot {
         throw err('Cannot subscribe to Snapshots');
       },
     };
-    // Initialize any nodes that are live in the parent store (primarily so that this
-    // snapshot gets counted towards the node's live stores count).
+    // Initialize any nodes that are live in the parent store (primarily so that
+    // this snapshot gets counted towards the node's live stores count).
+    // TODO Optimize this when cloning snapshots for callbacks
     for (const nodeKey of this._store.getState().knownAtoms) {
       initializeNode(this._store, nodeKey);
       updateRetainCount(this._store, nodeKey, 1);

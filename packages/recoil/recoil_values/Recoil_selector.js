@@ -771,8 +771,12 @@ function selector<T>(
           );
         }
         invariant(recoilValue != null, 'Recoil Value can never be null');
-        // $FlowIssue[unclear-type]
-        return recoilCallback(store, fn, args, {node: (recoilValue: any)});
+        return recoilCallback<Args, Return, {node: RecoilState<T>}>(
+          store,
+          fn,
+          args,
+          {node: (recoilValue: any)}, // flowlint-line unclear-type:off
+        );
       };
     };
 
