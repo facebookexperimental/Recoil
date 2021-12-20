@@ -108,9 +108,11 @@ describe('Atom Effects', () => {
       });
 
       let getAtomWithTransaction;
+      let ranTransaction = false;
       const Component = () => {
         getAtomWithTransaction = useRecoilTransaction(({get}) => () => {
           expect(get(atomWithEffect)).toEqual('DEFAULT');
+          ranTransaction = true;
         });
         return null;
       };
@@ -118,7 +120,7 @@ describe('Atom Effects', () => {
       renderElements(<Component />);
 
       act(() => getAtomWithTransaction());
-
+      expect(ranTransaction).toBe(true);
       expect(numTimesEffectInit).toBe(1);
     },
   );
@@ -152,7 +154,6 @@ describe('Atom Effects', () => {
   //     renderElements(<Component />);
 
   //     act(() => setAtomWithTransaction());
-
   //     expect(numTimesEffectInit).toBe(1);
   //   },
   // );
@@ -171,9 +172,11 @@ describe('Atom Effects', () => {
     });
 
     let initAtomWithTransaction;
+    let ranTransaction = false;
     const Component = () => {
       initAtomWithTransaction = useRecoilTransaction(({get}) => () => {
         expect(get(atomWithEffect)).toEqual('INIT');
+        ranTransaction = true;
       });
       return null;
     };
@@ -181,13 +184,14 @@ describe('Atom Effects', () => {
     renderElements(<Component />);
 
     act(() => initAtomWithTransaction());
-
+    expect(ranTransaction).toBe(true);
     expect(numTimesEffectInit).toBe(1);
   });
 
   testRecoil(
     'Atom effects are initialized once if first seen on transaction and then on root store',
-    () => {
+    ({strictMode, concurrentMode}) => {
+      const sm = strictMode && concurrentMode ? 2 : 1;
       let numTimesEffectInit = 0;
 
       const atomWithEffect = atom({
@@ -206,29 +210,29 @@ describe('Atom Effects', () => {
         });
 
         readAtomFromSnapshot(); // first initialization
-
-        expect(numTimesEffectInit).toBe(1);
+        expect(numTimesEffectInit).toBeGreaterThanOrEqual(1);
+        const effectsRan = numTimesEffectInit;
 
         /**
          * Transactions do not use a snapshot under the hood, so any initialized
          * effects from a transaction will be reflected in root store
          */
         useRecoilValue(atomWithEffect);
+        expect(numTimesEffectInit).toBe(effectsRan);
 
-        expect(numTimesEffectInit).toBe(1);
-
-        return null;
+        return 'RENDERED';
       };
 
-      renderElements(<Component />);
-
-      expect(numTimesEffectInit).toBe(1);
+      const c = renderElements(<Component />);
+      expect(c.textContent).toBe('RENDERED');
+      expect(numTimesEffectInit).toBe(1 * sm);
     },
   );
 
   testRecoil(
     'Atom effects are initialized once if first seen on root store and then on snapshot',
-    () => {
+    ({strictMode, concurrentMode}) => {
+      const sm = strictMode && concurrentMode ? 2 : 1;
       let numTimesEffectInit = 0;
 
       const atomWithEffect = atom({
@@ -247,23 +251,22 @@ describe('Atom Effects', () => {
         });
 
         useRecoilValue(atomWithEffect); // first initialization
-
-        expect(numTimesEffectInit).toBe(1);
+        expect(numTimesEffectInit).toBeGreaterThanOrEqual(1);
+        const effectsRan = numTimesEffectInit;
 
         /**
          * Transactions do not use a snapshot under the hood, so any initialized
          * effects from a transaction will be reflected in root store
          */
         readAtomFromSnapshot();
+        expect(numTimesEffectInit).toBe(effectsRan);
 
-        expect(numTimesEffectInit).toBe(1);
-
-        return null;
+        return 'RENDERED';
       };
 
-      renderElements(<Component />);
-
-      expect(numTimesEffectInit).toBe(1);
+      const c = renderElements(<Component />);
+      expect(c.textContent).toBe('RENDERED');
+      expect(numTimesEffectInit).toBe(1 * sm);
     },
   );
 });

@@ -235,7 +235,15 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       cleanupEffectsByStore.delete(store);
     };
 
-    if (store.getState().knownAtoms.has(key)) {
+    // console.debug(
+    //   'INIT ATOM',
+    //   key,
+    //   store.getState().knownAtoms.has(key),
+    //   store.getState().nodeCleanupFunctions.has(key),
+    // );
+    // console.trace();
+    if (store.getState().nodeCleanupFunctions.has(key)) {
+      // if (store.getState().knownAtoms.has(key)) {
       return cleanupAtom;
     }
     store.getState().knownAtoms.add(key);
@@ -249,9 +257,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           markRecoilValueModified(store, node);
         }
       };
-      defaultLoadable.contents
-        .then(notifyDefaultSubscribers)
-        .catch(notifyDefaultSubscribers);
+      defaultLoadable.contents.finally(notifyDefaultSubscribers);
     }
 
     ///////////////////
@@ -274,13 +280,13 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         // initialized value or get the fallback default value.
         if (
           duringInit &&
-          recoilValue.key === key &&
-          !(initValue instanceof DefaultValue)
+          recoilValue.key === key
+          // !(initValue instanceof DefaultValue)
         ) {
           // Cast T to S
           const retValue: NewValue<S> = (initValue: any); // flowlint-line unclear-type:off
           return retValue instanceof DefaultValue
-            ? (defaultLoadable: any) // flowlint-line unclear-type:off
+            ? (peekAtom(store, initState) ?? defaultLoadable: any) // flowlint-line unclear-type:off
             : isPromise(retValue)
             ? loadableWithPromise(
                 retValue.then((v: S | DefaultValue): S | Promise<S> =>
@@ -363,7 +369,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
       const onSet =
         effect => (handler: (T, T | DefaultValue, boolean) => void) => {
-          store.subscribeToTransactions(currentStore => {
+          const {release} = store.subscribeToTransactions(currentStore => {
             // eslint-disable-next-line prefer-const
             let {currentTree, previousTree} = currentStore.getState();
             if (!previousTree) {
@@ -401,6 +407,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               }
             }
           }, key);
+          cleanupEffectsByStore.set(store, [
+            ...(cleanupEffectsByStore.get(store) ?? []),
+            release,
+          ]);
         };
 
       for (const effect of options.effects_UNSTABLE ?? []) {

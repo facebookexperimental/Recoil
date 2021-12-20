@@ -228,49 +228,54 @@ testRecoil('Goto snapshot with async selector', async () => {
 
 // Test that going to a snapshot where an atom was not yet initialized will
 // not cause the atom to be re-initialized when used again.
-testRecoil('Effects going to previous snapshot', () => {
-  let init = 0;
-  const myAtom = atom({
-    key: 'gotoSnapshot effect',
-    default: 'DEFAULT',
-    effects_UNSTABLE: [
-      () => {
-        init++;
-      },
-    ],
-  });
+testRecoil(
+  'Effects going to previous snapshot',
+  ({strictMode, concurrentMode}) => {
+    const sm = strictMode && concurrentMode ? 2 : 1;
 
-  let forceUpdate;
-  function ReadAtom() {
-    const [_, setValue] = useState({});
-    forceUpdate = () => setValue({});
-    return useRecoilValue(myAtom);
-  }
+    let init = 0;
+    const myAtom = atom({
+      key: 'gotoSnapshot effect',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        () => {
+          init++;
+        },
+      ],
+    });
 
-  let gotoRecoilSnapshot;
-  function GotoRecoilSnapshot() {
-    gotoRecoilSnapshot = useGotoRecoilSnapshot();
-    return null;
-  }
+    let forceUpdate;
+    function ReadAtom() {
+      const [_, setValue] = useState({});
+      forceUpdate = () => setValue({});
+      return useRecoilValue(myAtom);
+    }
 
-  expect(init).toEqual(0);
+    let gotoRecoilSnapshot;
+    function GotoRecoilSnapshot() {
+      gotoRecoilSnapshot = useGotoRecoilSnapshot();
+      return null;
+    }
 
-  renderElements(
-    <>
-      <ReadAtom />
-      <GotoRecoilSnapshot />
-    </>,
-  );
+    expect(init).toEqual(0);
 
-  expect(init).toEqual(1);
-  act(forceUpdate);
-  expect(init).toEqual(1);
+    renderElements(
+      <>
+        <ReadAtom />
+        <GotoRecoilSnapshot />
+      </>,
+    );
 
-  act(() => gotoRecoilSnapshot?.(freshSnapshot()));
-  expect(init).toEqual(1);
-  act(forceUpdate);
-  expect(init).toEqual(1);
+    expect(init).toEqual(1 * sm);
+    act(forceUpdate);
+    expect(init).toEqual(1 * sm);
 
-  act(forceUpdate);
-  expect(init).toEqual(1);
-});
+    act(() => gotoRecoilSnapshot?.(freshSnapshot()));
+    expect(init).toEqual(1 * sm);
+    act(forceUpdate);
+    expect(init).toEqual(1 * sm);
+
+    act(forceUpdate);
+    expect(init).toEqual(1 * sm);
+  },
+);

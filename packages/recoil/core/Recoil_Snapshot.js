@@ -46,6 +46,7 @@ const {isSSR} = require('recoil-shared/util/Recoil_Environment');
 const err = require('recoil-shared/util/Recoil_err');
 const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
 const gkx = require('recoil-shared/util/Recoil_gkx');
+const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
@@ -281,7 +282,15 @@ function cloneStoreState(
       nodesRetainedByZone: new Map(),
       retainablesToCheckForRelease: new Set(),
     },
-    nodeCleanupFunctions: new Map(),
+    // FIXME here's a copy
+    // Create blank cleanup handlers for atoms so snapshots don't re-run
+    // atom effects.
+    nodeCleanupFunctions: new Map(
+      mapIterable(storeState.nodeCleanupFunctions.entries(), ([key]) => [
+        key,
+        () => {},
+      ]),
+    ),
   };
 }
 
@@ -344,7 +353,6 @@ class MutableSnapshot extends Snapshot {
     // See note at `set` about batched updates.
     this._batch(() => {
       updateRetainCount(store, recoilState.key, 1);
-
       setRecoilValue(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE);
     });
   };
