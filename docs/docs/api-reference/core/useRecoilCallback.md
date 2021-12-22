@@ -20,6 +20,7 @@ type CallbackInterface = {
   gotoSnapshot: Snapshot => void,
   set: <T>(RecoilState<T>, (T => T) | T) => void,
   reset: <T>(RecoilState<T>) => void,
+  refresh: <T>(RecoilValue<T>) => void,
   transact_UNSTABLE: ((TransactionInterface) => void) => void,
 };
 
@@ -32,11 +33,12 @@ function useRecoilCallback<Args, ReturnValue>(
 * **`callback`** - The user callback function with a wrapper function that provides a callback interface.  Callbacks to change the state will be queued to asynchronously update the current Recoil state.  The type signature of the wrapped function matches the type signature of the returned callback.
 * **`deps`** - An optional set of dependencies for memoizing the callback.  Like `useCallback()`, the produced callback will not be memoized by default and will produce a new function with each render.  You can pass an empty array to always return the same function instance.  If you pass values in the `deps` array a new function will be used if the reference equality of any dep changes.  Those values can then be used from within the body of your callback without getting stale.  (See [`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback))  You can [update eslint](/docs/introduction/installation#eslint) to help ensure this is used correctly.
 
-Callback Interface:
+### Callback Interface
 * **`snapshot`** - The [`Snapshot`](/docs/api-reference/core/Snapshot) provides a read-only look at Recoil atom state committed with a React batch when the current transaction the callback is called from began.  While the atom values are static, asynchronous selectors may still be pending or resolve.
 * **`gotoSnapshot`** - Enqueue updating the global state to match the provided [`Snapshot`](/docs/api-reference/core/Snapshot).
 * **`set`** - Enqueue setting the value of an atom or selector.  Like elsewhere, you may either provide the new value directly or an updater function that returns the new value and takes the current value as a parameter.  The current value represents all other enqueued state changes to date in the current transaction.
 * **`reset`** - Reset the value of an atom or selector to its default.
+* **`refresh`** - Refresh selector caches.
 * **`transact_UNSTABLE`** - Execute a transaction.  See the [`useRecoilTransaction_UNSTABLE()` documentation](/docs/api-reference/core/useRecoilTransaction).
 
 ### Lazy Read Example

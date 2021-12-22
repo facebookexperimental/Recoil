@@ -5,6 +5,8 @@ sidebar_label: useRecoilRefresher()
 
 The `useRecoilRefresher_UNSTABLE()` hook returns a callback which can be called with a selector to clear any caches associated with it.  If a selector makes any async requests this would cause it to re-evaluate and issue a new request.  This is useful, for example, if you wish to refresh with newer data or re-try after an error.  (See [Asynchronous Data Queries Guide](/docs/guides/asynchronous-data-queries#query-refresh))
 
+You can also refresh caches from [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback) or a selector's [`getCallback()`](/docs/api-reference/core/selector#returning-objects-with-callbacks).
+
 ---
 
 ```jsx

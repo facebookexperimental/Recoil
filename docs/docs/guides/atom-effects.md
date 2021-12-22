@@ -10,6 +10,7 @@ An *atom effect* is a *function* with the following definition.
 ```jsx
 type AtomEffect<T> = ({
   node: RecoilState<T>, // A reference to the atom itself
+  storeID: StoreID, // ID for the <RecoilRoot> or Snapshot store associated with this effect.
   trigger: 'get' | 'set', // The action which triggered initialization of the atom
 
   // Callbacks to set or reset the value of the atom.
