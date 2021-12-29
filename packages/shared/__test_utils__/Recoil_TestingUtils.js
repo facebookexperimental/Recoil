@@ -22,7 +22,7 @@ const {
   useRecoilValue,
   useResetRecoilState,
   useSetRecoilState,
-} = require('recoil');
+} = require('Recoil');
 // @fb-only: const StrictMode = require('StrictMode');
 
 const {graph} = require('../../recoil/core/Recoil_Graph');

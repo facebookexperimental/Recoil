@@ -16,7 +16,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '^recoil-shared(.*)$': '<rootDir>/packages/shared$1',
-    '^recoil$': '<rootDir>/packages/recoil',
+    '^Recoil$': '<rootDir>/packages/recoil',
     '^recoil-sync$': '<rootDir>/packages/recoil-sync',
     '^refine$': '<rootDir>/packages/refine',
   },
