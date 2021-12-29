@@ -342,6 +342,7 @@ function RecoilRoot_INTERNAL({
   store_INTERNAL: storeProp, // For use with React "context bridging"
   children,
 }: InternalProps): React.Node {
+  // prettier-ignore
   // @fb-only: useEffect(() => {
   // @fb-only:   if (gkx('recoil_usage_logging')) {
   // @fb-only:     try {

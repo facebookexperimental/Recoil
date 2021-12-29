@@ -58,6 +58,7 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
 }>;
 
 // Process scopeRules to handle any entries which are functions taking parameters
+// prettier-ignore
 // @fb-only: function mapScopeRules<P>(
 // @fb-only:   scopeRules?: ParameterizedScopeRules<P>,
 // @fb-only:   param: P,
