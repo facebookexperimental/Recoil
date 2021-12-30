@@ -5,7 +5,7 @@ sidebar_label: Checkers
 
 The core of [Refine](/docs/api-reference/refine/Refine) is the `Checker<T>` type. Checkers are essentially just functions which take in a `mixed` (for Flow) or `unknown` (for TypeScript) value and return  a `CheckResult<T>`...
 
-```javascript
+```jsx
 /**
  * a function which checks if a given mixed value matches a type V,
  * returning the value if it does, otherwise a failure message.
@@ -45,7 +45,7 @@ type CheckSuccess<+V> = $ReadOnly<{
 
 The built-in checkers, detailed below, allow for easy composition. This enables building more complex checkers from basic primitives:
 
-```javascript
+```jsx
 // type PersonType = $ReadOnly<{name: string, friends: ?Array<PersonType>}>
 // const Person: Checker<PersonType>
 const Person = object({

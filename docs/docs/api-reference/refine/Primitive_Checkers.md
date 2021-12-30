@@ -11,10 +11,7 @@ These are the initial building blocks which can be composed into higher order co
 
 Validates a value as a `boolean`
 
-```javascript
-// @flow strict
-import {boolean} from 'refine';
-
+```jsx
 // define checker
 const check = boolean();
 
@@ -34,10 +31,7 @@ assert(failedResult.type === 'failure');
 
 Validates a value as a `number`
 
-```javascript
-// @flow strict
-import {number} from 'refine';
-
+```jsx
 // define checker
 const check = number();
 
@@ -57,10 +51,7 @@ assert(failedResult.type === 'failure');
 
 Validates a value as a `string`
 
-```javascript
-// @flow strict
-import {string} from 'refine';
-
+```jsx
 // define checker
 const check = string();
 
@@ -78,10 +69,7 @@ assert(failedResult.type === 'failure');
 
 `string` can also take in a regex argument for validation.
 
-```javascript
-// @flow strict
-import {string} from 'refine';
-
+```jsx
 // define checker
 const check = string(/^users?$/);
 
@@ -102,13 +90,13 @@ assert(failedResult.type === 'failure');
 
 Validates a value as a given literal type
 
-```javascript
-// @flow strict
-import {literal} from 'refine';
-
+```jsx
 // define checker
-// note: to get flow to use the literal, we must annotate
+// note: to get Flow to use the literal, we must annotate
 const check = literal<'add_todo'>('add_todo');
+
+// can also use for null/undefined/true/false literals
+const checkExactlyNull = literal<null>(null);
 
 // test a value
 const result = check('add_todo');
@@ -122,14 +110,28 @@ const failedResult = check('remove_todo');
 assert(failedResult.type === 'failure');
 ```
 
+## `stringLiterals()`
+
+Checker to assert if a mixed value matches a union of string literals.
+Legal values are provided as key/values in an object and may be translated by
+providing different values in the object.
+
+```jsx
+const suitChecker = stringLiterals({
+  heart: 'heart',
+  spade: 'spade',
+  club: 'club',
+  diamond: 'diamond',
+});
+
+const suit: 'heart' | 'spade' | 'club' | 'diamond' = assertion(suitChecker())(x);
+```
+
 ## `date()`
 
 Validates a value as a javascript `Date` object
 
-```javascript
-// @flow strict
-import {date} from 'refine';
-
+```jsx
 // define checker
 const check = date();
 
@@ -145,14 +147,31 @@ const failedResult = check(1);
 assert(failedResult.type === 'failure');
 ```
 
+## `jsonDate()`
+
+Similar to date, though also will implicitly coerce ISO date strings to Date objects.
+
+```jsx
+// define checker
+const check = jsonDate();
+
+// test a value
+const result = check((new Date()).toString());
+assert(result.type === 'success');
+
+// result should typecheck
+const value: Date = result.value;
+
+// test an invalid value
+const failedResult = check(1);
+assert(failedResult.type === 'failure');
+```
+
 ## `mixed()`
 
 Placeholder / default checker to allow skipping checking of certain values. Always succeeds.
 
-```javascript
-// @flow strict
-import {mixed} from 'refine';
-
+```jsx
 // define checker
 const check = mixed();
 
@@ -164,10 +183,7 @@ assert(check('test').type === 'success');
 
 This may be useful if you want to skip checking some unknown values...
 
-```javascript
-// @flow strict
-import {object, mixed, string, number} from 'refine';
-
+```jsx
 // if we don't want to check below a certain level of an object...
 const Request = object({
   code: number(),
@@ -180,12 +196,12 @@ const Request = object({
 
 creates a nullable version of a given checker
 
-```javascript
-// @flow strict
-import {nullable, string} from 'refine';
-
+```jsx
 // define checker
 const check = nullable(string());
+
+// result type of checking a value is a nullable string
+const result: ?string = check(null);
 
 // test a value
 assert(check('test').type === 'success');
@@ -199,10 +215,7 @@ Passing the `nullWithWarningWhenInvalid` option enables gracefully handling inva
 
 For example:
 
-```javascript
-// @flow strict
-import {nullable, object, string} from 'refine';
-
+```jsx
 const Options = object({
   // this must be a non-null string,
   // or Options is not valid
@@ -227,10 +240,7 @@ assert(result.warnings.length === 1);
 
 Similar to `nullable`, creates a version of a given checker which returns `T | void`.
 
-```javascript
-// @flow strict
-import {voidable, string} from 'refine';
-
+```jsx
 // define checker
 const check = voidable(string());
 
@@ -247,10 +257,7 @@ Passing the `undefinedWithWarningWhenInvalid` option enables gracefully handling
 
 For example:
 
-```javascript
-// @flow strict
-import {voidable, object, string} from 'refine';
-
+```jsx
 const Options = object({
   // this must be a non-null string,
   // or Options is not valid

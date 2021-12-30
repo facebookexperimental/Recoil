@@ -16,8 +16,6 @@ To get started learning about Refine, check out the documentation on the core co
 ## Quick Example
 
 ```jsx
-import {array, object, number, jsonParser} from 'refine';
-
 const myParser = jsonParser(
     array(object({a: number()}))
 );

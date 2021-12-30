@@ -5,14 +5,43 @@ sidebar_label: Advanced Checkers
 
 In addition to [collections](/docs/api-reference/refine/Collection_Checkers) and [primitives](/docs/api-reference/refine/Primitive_Checkers), more complex types can be modeled using the following combinator checkers.
 
+## `or()`
+
+Validates a value as a one of two given checkers.
+
+```jsx
+// define checker
+const check = or(number(), array(string()));
+
+// result type is correct
+const value: number | $ReadOnlyArray<string> = check(1);
+
+// test a value
+assert(check(1).type === 'success');
+assert(check(['one']).type === 'success');
+assert(check(true).type === 'failure');
+```
+
+## `union()`
+
+Generalized version of `or()` to multiple values. (Note: there is currently a limitation within flow which requires an explicit type parameter for `union`, thus the motivation for a seperate `or()`).
+
+```jsx
+// define checker
+const check = union(number(), array(string()), boolean());
+
+// test a value
+assert(check(1).type === 'success');
+assert(check(['one']).type === 'success');
+assert(check(true).type === 'success');
+assert(check([1]).type === 'failure');
+```
+
 ## `lazy()`: Recursive Collections
 
 The `lazy()` utility allows for defining recursive checkers.
 
-```javascript
-// @flow strict
-import {object, array, string, lazy, nullable} from 'refine';
-
+```jsx
 const Person = object({
   name: string(),
   friends: nullable(array(lazy(() => Person))),
@@ -25,10 +54,7 @@ assert(result.type === 'success');
 
 WARNING: recursive references in the values will not work, as the checker will stack overflow.
 
-```javascript
-// @flow strict
-import {object, array, string, lazy, nullable} from 'refine';
-
+```jsx
 const Person = object({
   name: string(),
   friends: nullable(array(lazy(() => Person))),
@@ -43,65 +69,27 @@ alice.friends.push(alice);
 Person(alice);
 ```
 
-## `or()`
-
-Validates a value as a one of two given checkers.
-
-```javascript
-// @flow strict
-import {or, number, string, array} from 'refine';
-
-// define checker
-const check = or(number(), array(string()));
-
-// test a value
-assert(check(1).type === 'success');
-assert(check(['one']).type === 'success');
-assert(check(true).type === 'failure');
-```
-
-## `union()`
-
-Generalized version of `or()` to multiple values.
-
-```javascript
-// @flow strict
-import {union, number, string, array, boolean} from 'refine';
-
-// define checker
-const check = union(number(), array(string()), boolean());
-
-// test a value
-assert(check(1).type === 'success');
-assert(check(['one']).type === 'success');
-assert(check(true).type === 'success');
-assert(check([1]).type === 'failure');
-```
-
 # Custom Types
 
 ## `custom()`
 
-The `custom` utility makes it simple to define a quick custom type, such as an enum.
+The `custom` utility makes it simple to define a quick custom type, such as a Class.
 
-```javascript
-// @flow strict
-import {custom, array} from 'refine';
+WARNING: Don't use this with classes requiring type parameters (such as `MyClass<T>`,
+as there is no way to validate that the type parameter is correct via instanceof).
 
-enum SourceType {
-  A = 1,
-  B = 2
-}
+```jsx
+class MyClass {}
 
-function myEnum(): Checker<SourceType> {
+function myClass(): Checker<MyClass> {
   return custom(
-    value => SourceType.cast(Number(value)),
-    'value is not a valid member of SourceType'
+    value => value instanceof MyClass ? value : null,
+    'value is not a valid instance of MyClass'
   );
 }
 
-const check = array(myEnum());
-assert(check([SourceType.A]).type === 'success');
+const check = array(myClass());
+assert(check([new MyClass()]).type === 'success');
 assert(check([3]).type === 'failure');
 ```
 
@@ -109,21 +97,29 @@ assert(check([3]).type === 'failure');
 
 If you want to coerce a value to an opaque type, you can use `asType()`.
 
-```javascript
-import {string, asType} from 'refine';
-
+```jsx
 opaque type ID = string;
 
 const IDChecker: Checker<ID> = asType(string(), s => (s: ID));
+```
+
+## `match()`
+
+This checker is simply an alias for `union` that restricts all input checkers to match. This can be combined with `asType` to map various input types into a single resulting output.
+
+```jsx
+const backwardCompatibilityChecker: Checker<string> = match(
+  string(),
+  asType(number(), num => `${num}`),
+  asType(object({num: number()}), obj => `${obj.num}`),
+);
 ```
 
 ## `constraint()`
 
 If you would like to require that a value passes a logical predicate, you can use `constraint()`.
 
-```javascript
-import {number, constraint} from 'refine';
-
+```jsx
 const evenNumber = constraint(
   number(),
   n => n % 2 === 0
@@ -134,4 +130,17 @@ const passes = evenNumber(2);
 
 const fails = evenNumber(1);
 // fails.type === 'failure';
+```
+
+## `withDefault()`
+
+A checker that provides a `withDefault()` value if the provided value is nullable.
+
+```jsx
+const objPropertyWithDefault = object({
+  foo: withDefault(number(), 123),
+});
+
+// result will be `{foo: 123}`.
+const result = check({});
 ```
