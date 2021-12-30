@@ -22,15 +22,13 @@ export const RecoilObserver = ({node, onChange}) => {
 #### Component
 
 ```jsx
-import {atom, useRecoilState} from 'recoil';
-
-export const nameAtom = atom({
+const nameState = atom({
   key: 'nameAtom',
   default: '',
 });
 
 function Form() {
-  const [name, setName] = useRecoilState(nameAtom);
+  const [name, setName] = useRecoilState(nameState);
   return (
     <form>
       <input
@@ -42,19 +40,11 @@ function Form() {
     </form>
   );
 }
-
-export default Form;
 ```
 
 #### Test
 
 ```jsx
-import {RecoilRoot} from 'recoil';
-import {fireEvent, render, screen} from '@testing-library/react';
-
-import Form, {nameAtom} from './form';
-import {RecoilObserver} from './RecoilObserver';
-
 describe('The form state should', () => {
   test('change when the user enters a name.', () => {
     const onChange = jest.fn();
@@ -73,6 +63,75 @@ describe('The form state should', () => {
     expect(onChange).toHaveBeenCalledTimes(2);
     expect(onChange).toHaveBeenCalledWith(''); // Initial state on render.
     expect(onChange).toHaveBeenCalledWith('Recoil'); // New value on change.
+  });
+});
+```
+
+## Testing Recoil state with asyncronous queries inside of a React component
+
+A common pattern for atoms is using asynchronous queries fetch the state of the atom, in a selector, or as part of an effect. This causes the component to be suspended. However, while testing, the component is suspended will not update in the DOM without acting. To test this scenario, we need a helper function:
+
+```jsx
+// act and advance jest timers
+function flushPromisesAndTimers(): Promise<void> {
+  return act(
+    () =>
+      new Promise(resolve => {
+        setTimeout(resolve, 100);
+        jest.runAllTimers();
+      }),
+  );
+}
+```
+
+### Example: Title with data returned from asnychronous data query
+
+#### Component
+
+```jsx
+const getDefaultTitleAtomState = async () => {
+  const response = await fetch('https://example.com/returns/a/json');
+  return await response.json(); // { title: 'real title' };
+}
+
+const titleState = atom({
+  key: 'titleState',
+  default: getDefaultTitleAtomState(),
+});
+
+function Title() {
+  const data = useRecoilValue(titleState);
+  return (
+    <div>
+      <h1>{data.title}</h1>
+    </div>
+  );
+}
+```
+
+#### Test
+
+```jsx
+describe('Title Component', () => {
+  test('display the title correctly', async () => {
+    const mockState = { title: 'test title' };
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(mockState),
+      })
+    );
+    
+    render(
+      <RecoilRoot>
+        <Suspense fallback={<div>loading...</div>}>
+          <Title />
+        </Suspense>
+      </RecoilRoot>
+    );
+    await flushPromisesAndTimers();
+    
+    expect(screen.getByText(mockState.title)).toBeInTheDocument()
+    expect(screen.getByText('loading...')).not.toBeInTheDocument()
   });
 });
 ```
