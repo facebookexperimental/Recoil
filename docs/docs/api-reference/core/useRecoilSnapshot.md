@@ -35,6 +35,10 @@ function MyApp() {
 }
 ```
 
+### Error Boundary Example
+
+A [fun little example](/docs/guides/asynchronous-data-queries#retry-query-from-error-message) using snapshots in an error boundary to find, display, and retry selectors that threw an error.
+
 ### Link Example
 Define a `<LinkToNewView>` component that renders an `<a>` anchor with an `href` based on the current state with a mutation applied.  In this example `uriFromSnapshot()` is some user-defined function which encodes the current state in the URI which can be restored when loading the page.
 
