@@ -149,7 +149,7 @@ assert(failedResult.type === 'failure');
 
 ## `jsonDate()`
 
-Similar to date, though also will implicitly coerce ISO date strings to Date objects.
+Similar to date, though also will implicitly coerce ISO date strings to Date objects. This can be particularly helpful when serializing to/from JSON.
 
 ```jsx
 // define checker

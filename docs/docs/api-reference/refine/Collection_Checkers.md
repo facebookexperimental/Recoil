@@ -93,7 +93,7 @@ assert(check({a: 1, c: 'test'}).type === 'failure');
 
 ## `set()`
 
-Checker to assert if a mixed value is a Set type with valid values.
+Checker to assert if a mixed value is a `Set` type with valid values.
 
 ```jsx
 // define checker
@@ -113,7 +113,7 @@ assert(check({a: 'test', b: 'other', c: 3}).type === 'failure');
 
 ## `map()`
 
-Checker to assert if a mixed value is a Map type with valid keys and values.
+Checker to assert if a mixed value is a `Map` type with valid keys and values.
 
 ```jsx
 // define checker
