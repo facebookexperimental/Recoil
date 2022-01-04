@@ -109,7 +109,7 @@ const proxySelector = selector({
 });
 ```
 
-This selector transforms the data, so needs to check if the incoming value is a `DefaultValue`.
+This selector transforms the data, so it needs to check if the incoming value is a `DefaultValue`.
 ```jsx
 const transformSelector = selector({
   key: 'TransformSelector',
