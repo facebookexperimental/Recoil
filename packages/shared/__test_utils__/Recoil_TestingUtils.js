@@ -375,7 +375,11 @@ const testGKs =
     runTests({strictMode: true, concurrentMode: false});
     if (isConcurrentModeAvailable()) {
       runTests({strictMode: false, concurrentMode: true});
-      runTests({strictMode: true, concurrentMode: true});
+      // 2020-12-20: The internal <StrictMode> isn't yet enabled to run effects
+      // multiple times.  So, rely on GitHub CI actions to test this for now.
+      if (!IS_INTERNAL) {
+        runTests({strictMode: true, concurrentMode: true});
+      }
     }
   };
 

@@ -235,7 +235,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       cleanupEffectsByStore.delete(store);
     };
 
-    if (store.getState().knownAtoms.has(key)) {
+    if (store.getState().nodeCleanupFunctions.has(key)) {
       return cleanupAtom;
     }
     store.getState().knownAtoms.add(key);
@@ -249,9 +249,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           markRecoilValueModified(store, node);
         }
       };
-      defaultLoadable.contents
-        .then(notifyDefaultSubscribers)
-        .catch(notifyDefaultSubscribers);
+      defaultLoadable.contents.finally(notifyDefaultSubscribers);
     }
 
     ///////////////////
@@ -272,15 +270,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         // Normally we can just get the current value of another atom.
         // But for our own value we need to check if there is a pending
         // initialized value or get the fallback default value.
-        if (
-          duringInit &&
-          recoilValue.key === key &&
-          !(initValue instanceof DefaultValue)
-        ) {
+        if (duringInit && recoilValue.key === key) {
           // Cast T to S
           const retValue: NewValue<S> = (initValue: any); // flowlint-line unclear-type:off
           return retValue instanceof DefaultValue
-            ? (defaultLoadable: any) // flowlint-line unclear-type:off
+            ? (peekAtom(store, initState): any) // flowlint-line unclear-type:off
             : isPromise(retValue)
             ? loadableWithPromise(
                 retValue.then((v: S | DefaultValue): S | Promise<S> =>
@@ -363,7 +357,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
       const onSet =
         effect => (handler: (T, T | DefaultValue, boolean) => void) => {
-          store.subscribeToTransactions(currentStore => {
+          const {release} = store.subscribeToTransactions(currentStore => {
             // eslint-disable-next-line prefer-const
             let {currentTree, previousTree} = currentStore.getState();
             if (!previousTree) {
@@ -401,6 +395,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               }
             }
           }, key);
+          cleanupEffectsByStore.set(store, [
+            ...(cleanupEffectsByStore.get(store) ?? []),
+            release,
+          ]);
         };
 
       for (const effect of options.effects_UNSTABLE ?? []) {
@@ -451,7 +449,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     return cleanupAtom;
   }
 
-  function peekAtom(_store, state: TreeState): ?Loadable<T> {
+  function peekAtom(_store, state: TreeState): Loadable<T> {
     return (
       state.atomValues.get(key) ??
       cachedAnswerForUnvalidatedValue ??

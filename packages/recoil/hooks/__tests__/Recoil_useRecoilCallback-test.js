@@ -377,7 +377,7 @@ testRecoil('Consistent callback function', () => {
 
 testRecoil(
   'Atom effects are initialized twice if first seen on snapshot and then on root store',
-  ({strictMode}) => {
+  ({strictMode, concurrentMode}) => {
     const sm = strictMode ? 1 : 0;
     let numTimesEffectInit = 0;
 
@@ -400,11 +400,9 @@ testRecoil(
       });
 
       readAtomFromSnapshot(); // first initialization
-
       expect(numTimesEffectInit).toBe(1 + sm * renderCount);
 
       useRecoilValue(atomWithEffect); // second initialization
-
       expect(numTimesEffectInit).toBe(2);
 
       renderCount++;
@@ -413,14 +411,13 @@ testRecoil(
 
     const c = renderElements(<Component />);
     expect(c.textContent).toBe(''); // Confirm no failures from rendering
-
-    expect(numTimesEffectInit).toBe(2);
+    expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
   },
 );
 
 testRecoil(
   'Atom effects are initialized once if first seen on root store and then on snapshot',
-  () => {
+  ({strictMode, concurrentMode}) => {
     let numTimesEffectInit = 0;
 
     const atomWithEffect = atom({
@@ -439,7 +436,6 @@ testRecoil(
       });
 
       useRecoilValue(atomWithEffect); // first initialization
-
       expect(numTimesEffectInit).toBe(1);
 
       /**
@@ -447,7 +443,6 @@ testRecoil(
        * wherein atom was already initialized
        */
       readAtomFromSnapshot();
-
       expect(numTimesEffectInit).toBe(1);
 
       return null;
@@ -455,8 +450,7 @@ testRecoil(
 
     const c = renderElements(<Component />);
     expect(c.textContent).toBe(''); // Confirm no failures from rendering
-
-    expect(numTimesEffectInit).toBe(1);
+    expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 2 : 1);
   },
 );
 
