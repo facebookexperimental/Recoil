@@ -28,7 +28,7 @@ const {
 const {
   cleanUpNode,
   getDownstreamNodes,
-  reinitializeNode,
+  initializeNode,
   setNodeValue,
   setUnvalidatedAtomValue_DEPRECATED,
 } = require('./Recoil_FunctionalCore');
@@ -321,9 +321,18 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
   return initial;
 }
 
+// Initialize state snapshot for <RecoilRoot> for the initializeState prop.
+// Atom effect initialization takes precedence over this prop.
+// Any atom effects will be run before initialization, but then cleaned up,
+// they are then re-run when used as part of rendering.  These semantics are
+// compatible with React StrictMode where effects may be re-run multiple times
+// but state initialization only happens once the first time.
 function initialStoreState(initializeState): StoreState {
   const snapshot = freshSnapshot().map(initializeState);
-  return snapshot.getStore_INTERNAL().getState();
+  const storeState = snapshot.getStore_INTERNAL().getState();
+  storeState.nodeCleanupFunctions.forEach(cleanup => cleanup());
+  storeState.nodeCleanupFunctions.clear();
+  return storeState;
 }
 
 let nextID = 0;
@@ -483,7 +492,7 @@ function RecoilRoot_INTERNAL({
     // to re-initialize all known atoms after they were cleaned up.
     const store = storeRef.current;
     for (const atomKey of new Set(store.getState().knownAtoms)) {
-      reinitializeNode(store, atomKey);
+      initializeNode(store, atomKey);
     }
 
     return () => {
