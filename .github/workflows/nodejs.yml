@@ -18,6 +18,7 @@ jobs:
       matrix:
         node-version: [12.x, 14.x, 16.x]
         os: [ubuntu-latest, windows-latest, macOS-latest]
+        react: ['17.0.2', '18.0.0-rc.0']
 
     steps:
     - uses: actions/checkout@v2
@@ -28,6 +29,15 @@ jobs:
     - run: npm i -g yarn
     - run: cd packages-ext/recoil-devtools && yarn install --frozen-lockfile
     - run: yarn install --frozen-lockfile
+    - name: Install React (Unix/Mac)
+      run: >
+       sed -i'' -e 's/\("react\(-dom\)\{0,1\}\(-test-renderer\)\{0,1\}": "\).*"/\1${{ matrix.react }}"/g' package.json
+      if: matrix.os != 'windows-latest'
+    - name: Install React (Windows)
+      run: >
+       sed -i 's/\(""react\(-dom\)\\{0,1\\}\(-test-renderer\)\\{0,1\\}"": ""\).*""/\1${{ matrix.react }}""/g' package.json
+      if: matrix.os == 'windows-latest'
+    - run: yarn install
     - run: yarn flow
     - run: yarn test
     - run: yarn test:typescript

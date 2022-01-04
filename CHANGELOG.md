@@ -11,8 +11,8 @@
 ## 0.6 ()
 
 - React 18
-  - Leverage new React 18 APIs for improved safety and optimizations.
-  - Fixes for `<StrictMode>` (#1473, #1444).
+  - Leverage new React 18 APIs for improved safety and optimizations. (#1488)
+  - Fixes for `<StrictMode>` (#1473, #1444, #1509).
   - `useTransition()` is not yet supported for open source React.
 - Recoil updates now re-render earlier:
   - Recoil and React state changes from the same batch now stay in sync.
@@ -28,12 +28,12 @@
 - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
 - Fix transitive selector refresh for some cases (#1409)
 - Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466)
-- Unsubscribe `onSet()` handlers in atom effects when atoms are cleaned up.
+- Unsubscribe `onSet()` handlers in atom effects when atoms are cleaned up. (#1509)
 - Avoid extra re-renders in some cases when a component uses a different atom/selector. (#825)
 - `<RecoilRoot>` will only call `initializeState()` once during the initial render. (#1372)
 
 ### Breaking Changes
-- Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`.
+- Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`. (#1509)
 
 ## 0.5.2 (2021-11-07)
 
