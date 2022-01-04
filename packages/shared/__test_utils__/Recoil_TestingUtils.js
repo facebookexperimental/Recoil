@@ -344,8 +344,8 @@ const testGKs =
         ]),
       ])('%s', async (_title, gksToTest) => {
         jest.resetModules();
-
         const gkx = require('recoil-shared/util/Recoil_gkx');
+        gkx.clear(); // @oss-only
         const {
           setStrictMode,
           setConcurrentMode,

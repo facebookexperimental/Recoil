@@ -28,6 +28,10 @@ Recoil_gkx_OSS.setFail = (gk: string): void => {
   gks.set(gk, false);
 };
 
+Recoil_gkx_OSS.clear = (): void => {
+  gks.clear();
+};
+
 module.exports = Recoil_gkx_OSS; // @oss-only
 
 // @fb-only: module.exports = require('gkx');
