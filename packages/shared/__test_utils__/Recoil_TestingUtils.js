@@ -350,19 +350,24 @@ const testGKs =
           setStrictMode,
           setConcurrentMode,
         } = require('./Recoil_ReactRenderModes');
+        // Setup test environment
         setStrictMode(strictMode);
         setConcurrentMode(concurrentMode);
-
+        // See: https://github.com/reactwg/react-18/discussions/102
+        const prevReactActEnvironment = global.IS_REACT_ACT_ENVIRONMENT;
+        global.IS_REACT_ACT_ENVIRONMENT = true;
         gksToTest.forEach(gkx.setPass);
-
         const after = reloadImports();
-        await assertionsFn({gks: gksToTest, strictMode, concurrentMode});
 
-        gksToTest.forEach(gkx.setFail);
-
-        after?.();
-        setStrictMode(false);
-        setConcurrentMode(false);
+        try {
+          await assertionsFn({gks: gksToTest, strictMode, concurrentMode});
+        } finally {
+          global.IS_REACT_ACT_ENVIRONMENT = prevReactActEnvironment;
+          gksToTest.forEach(gkx.setFail);
+          after?.();
+          setStrictMode(false);
+          setConcurrentMode(false);
+        }
       });
     }
 
