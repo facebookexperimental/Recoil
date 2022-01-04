@@ -51,10 +51,10 @@ export type Checker<+V> = (value: mixed, path?: Path) => CheckResult<V>;
  * const check = array(record({a: number()}));
  *
  * // equal to: type MyArray = $ReadOnlyArray<{a: number}>;
- * type MyArray = GetType<typeof check>;
+ * type MyArray = CheckerReturnType<typeof check>;
  * ```
  */
-export type Get<CheckerFunction> = $Call<
+export type CheckerReturnType<CheckerFunction> = $Call<
   <T>(checker: Checker<T>) => T,
   CheckerFunction,
 >;

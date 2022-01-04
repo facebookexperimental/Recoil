@@ -10,7 +10,7 @@
  */
 'use strict';
 
-import type {Get} from '../Refine_Checkers';
+import type {CheckerReturnType} from '../Refine_Checkers';
 
 const {assertion, coercion} = require('../Refine_API');
 const {
@@ -75,7 +75,7 @@ describe('boolean', () => {
     invariant(result.type === 'success', 'should succeed');
 
     // test type extraction
-    type Result = Get<typeof coerce>;
+    type Result = CheckerReturnType<typeof coerce>;
     const test: Result = true;
     invariant(result.value === test, 'value should be true');
   });

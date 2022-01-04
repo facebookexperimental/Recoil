@@ -10,7 +10,7 @@
  */
 
 import {
-  Get,
+  CheckerReturnType,
   boolean,
   stringLiterals,
   string,
@@ -46,7 +46,7 @@ import {
  */
 {
   const checker = object({a: number()});
-  type MyType = Get<typeof checker>;
+  type MyType = CheckerReturnType<typeof checker>;
   const x: MyType = {
     a: 1,
   };
@@ -139,7 +139,7 @@ import {
 {
   const check = object({a: optional(string()), b: string()});
 
-  type ObjectWithOptional = Get<typeof check>;
+  type ObjectWithOptional = CheckerReturnType<typeof check>;
 
   const r1: ObjectWithOptional = {
     b: 'test',

@@ -18,7 +18,7 @@ import type {
   StoreKey,
   SyncEffectOptions,
 } from './RecoilSync';
-import type {Get} from 'refine';
+import type {CheckerReturnType} from 'refine';
 
 const {DefaultValue, RecoilLoadable} = require('Recoil');
 
@@ -29,7 +29,7 @@ const err = require('recoil-shared/util/Recoil_err');
 const {assertion, mixed, writableDict} = require('refine');
 
 type NodeKey = string;
-type ItemState = Get<typeof itemStateChecker>;
+type ItemState = CheckerReturnType<typeof itemStateChecker>;
 type AtomRegistration = {
   history: HistoryOption,
   itemKeys: Set<ItemKey>,

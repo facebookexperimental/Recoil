@@ -17,7 +17,7 @@ export type {
   CheckFailure,
   CheckResult,
   CheckSuccess,
-  Get,
+  CheckerReturnType,
   Path,
 } from './Refine_Checkers';
 export type {OptionalPropertyChecker} from './Refine_ContainerCheckers';

@@ -15,7 +15,7 @@ type CheckerResult<V> = V extends Checker<infer Result>
   ? OptionalResult
   : never;
 
-export type Get<V> = V extends Checker<infer Result> ? Result : never;
+export type CheckerReturnType<V> = V extends Checker<infer Result> ? Result : never;
 
 /**
  * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
