@@ -98,6 +98,7 @@ export type RecoilInterface = {
  * mode, React strict mode, and memory management. They will not be fixed.
  * */
 function useRecoilInterface_DEPRECATED(): RecoilInterface {
+  const componentName = useComponentName();
   const storeRef = useStoreRef();
   const [, forceUpdate] = useState([]);
 
@@ -117,17 +118,15 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     [subscriptions],
   );
 
-  const componentName = useComponentName();
-
-  useEffect(() => {
-    const store = storeRef.current;
-
-    function updateState(_state, key) {
-      if (!subscriptions.current.has(key)) {
-        return;
-      }
+  const updateState = useCallback((_state, key) => {
+    if (subscriptions.current.has(key)) {
       forceUpdate([]);
     }
+  }, []);
+
+  // Effect to add/remove subscriptions as nodes are used
+  useEffect(() => {
+    const store = storeRef.current;
 
     differenceSets(
       recoilValuesUsed.current,
@@ -140,9 +139,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
       const sub = subscribeToRecoilValue(
         store,
         new AbstractRecoilValue(key),
-        state => {
-          updateState(state, key);
-        },
+        state => updateState(state, key),
         componentName,
       );
       subscriptions.current.set(key, sub);
@@ -184,10 +181,26 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     previousSubscriptions.current = recoilValuesUsed.current;
   });
 
+  // Effect to unsubscribe from all when unmounting
   useEffect(() => {
-    const subs = subscriptions.current;
-    return () => subs.forEach((_, key) => unsubscribeFrom(key));
-  }, [unsubscribeFrom]);
+    const currentSubscriptions = subscriptions.current;
+
+    // Restore subscriptions that were cleared due to StrictMode running this effect twice
+    differenceSets(
+      recoilValuesUsed.current,
+      new Set(currentSubscriptions.keys()),
+    ).forEach(key => {
+      const sub = subscribeToRecoilValue(
+        storeRef.current,
+        new AbstractRecoilValue(key),
+        state => updateState(state, key),
+        componentName,
+      );
+      currentSubscriptions.set(key, sub);
+    });
+
+    return () => currentSubscriptions.forEach((_, key) => unsubscribeFrom(key));
+  }, [componentName, storeRef, unsubscribeFrom, updateState]);
 
   return useMemo(() => {
     // eslint-disable-next-line no-shadow

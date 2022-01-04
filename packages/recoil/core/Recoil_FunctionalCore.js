@@ -105,16 +105,6 @@ function initializeNode(store: Store, key: NodeKey): void {
   initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
 }
 
-function reinitializeNode(store: Store, key: NodeKey): void {
-  const storeState = store.getState();
-  // If this atom was previously initialized (set in knownAtoms), but was
-  // cleaned up (not set in nodeCleanupFunctions), then re-initialize it.
-  if (!storeState.nodeCleanupFunctions.has(key)) {
-    storeState.knownAtoms.delete(key); // Force atom to re-initialize
-  }
-  initializeNodeIfNewToStore(store, storeState.currentTree, key, 'get');
-}
-
 function cleanUpNode(store: Store, key: NodeKey) {
   const state = store.getState();
   state.nodeCleanupFunctions.get(key)?.();
@@ -223,7 +213,7 @@ function peekNodeInfo<T>(
     // Report current dependencies.  If the node hasn't been evaluated, then
     // dependencies may be missing based on the current state.
     deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
-    // Reportsall "current" subscribers.  Evaluating other nodes or
+    // Reports all "current" subscribers.  Evaluating other nodes or
     // previous in-progress async evaluations may introduce new subscribers.
     subscribers: {
       nodes: recoilValuesForKeys(downstreamNodes),
@@ -262,7 +252,6 @@ module.exports = {
   peekNodeLoadable,
   setNodeValue,
   initializeNode,
-  reinitializeNode,
   cleanUpNode,
   setUnvalidatedAtomValue_DEPRECATED,
   peekNodeInfo,

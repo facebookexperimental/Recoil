@@ -1170,57 +1170,65 @@ testRecoil('Can set an atom during rendering', () => {
   expect(container.textContent).toEqual('1');
 });
 
-testRecoil('Does not re-create "setter" function after setting a value', () => {
-  const anAtom = counterAtom();
-  const anotherAtom = counterAtom();
-  let useRecoilStateCounter = 0;
-  let useRecoilStateErrorStatesCounter = 0;
-  let useTwoAtomsCounter = 0;
+testRecoil(
+  'Does not re-create "setter" function after setting a value',
+  ({strictMode, concurrentMode}) => {
+    const sm = strictMode && concurrentMode ? 2 : 1;
 
-  function Component1() {
-    const [_, setValue] = useRecoilState(anAtom);
-    useEffect(() => {
-      setValue(1);
-      useRecoilStateCounter += 1;
-    }, [setValue]);
-    return null;
-  }
+    const anAtom = counterAtom();
+    const anotherAtom = counterAtom();
+    let useRecoilStateCounter = 0;
+    let useRecoilStateErrorStatesCounter = 0;
+    let useTwoAtomsCounter = 0;
 
-  function Component2() {
-    const [_, setValue] = useRecoilStateLoadable(anAtom);
-    useEffect(() => {
-      setValue(2);
-      useRecoilStateErrorStatesCounter += 1;
-    }, [setValue]);
-    return null;
-  }
+    function Component1() {
+      const [_, setValue] = useRecoilState(anAtom);
+      useEffect(() => {
+        setValue(1);
+        useRecoilStateCounter += 1;
+      }, [setValue]);
+      return null;
+    }
 
-  // It is important to test here that the component will re-render with the
-  // new setValue() function for a new atom, even if the value of the new
-  // atom is the same as the previous value of the previous atom.
-  function Component3() {
-    const a = useTwoAtomsCounter > 0 ? anotherAtom : anAtom;
-    // setValue fn should change when we use a different atom.
-    const [, setValue] = useRecoilState(a);
-    useEffect(() => {
-      setValue(1);
-      useTwoAtomsCounter += 1;
-    }, [setValue]);
-    return null;
-  }
+    function Component2() {
+      const [_, setValue] = useRecoilStateLoadable(anAtom);
+      useEffect(() => {
+        setValue(2);
+        useRecoilStateErrorStatesCounter += 1;
+      }, [setValue]);
+      return null;
+    }
 
-  renderElements(
-    <>
-      <Component1 />
-      <Component2 />
-      <Component3 />
-    </>,
-  );
+    // It is important to test here that the component will re-render with the
+    // new setValue() function for a new atom, even if the value of the new
+    // atom is the same as the previous value of the previous atom.
+    function Component3() {
+      const a = useTwoAtomsCounter > 0 ? anotherAtom : anAtom;
+      // setValue fn should change when we use a different atom.
+      const [, setValue] = useRecoilState(a);
+      useEffect(() => {
+        setValue(1);
+        useTwoAtomsCounter += 1;
+      }, [setValue]);
+      return null;
+    }
 
-  expect(useRecoilStateCounter).toBe(1);
-  expect(useRecoilStateErrorStatesCounter).toBe(1);
-  expect(useTwoAtomsCounter).toBe(2);
-});
+    renderElements(
+      <>
+        <Component1 />
+        <Component2 />
+        <Component3 />
+      </>,
+    );
+
+    expect(useRecoilStateCounter).toBe(1 * sm);
+    expect(useRecoilStateErrorStatesCounter).toBe(1 * sm);
+
+    // Component3's effect is ran twice because the atom changes and we get a new setter.
+    // StrictMode renders twice, but we only change atoms once.  So, only one extra count.
+    expect(useTwoAtomsCounter).toBe(strictMode && concurrentMode ? 3 : 2);
+  },
+);
 
 testRecoil(
   'Can set atom during post-atom-setting effect (NOT during initial render)',
@@ -1590,109 +1598,117 @@ testRecoil('Can use an already-resolved promise', async () => {
   expect(container.textContent).toEqual('2');
 });
 
-testRecoil('Resolution of suspense causes render just once', async ({gks}) => {
-  const BASE_CALLS = baseRenderCount(gks);
+testRecoil(
+  'Resolution of suspense causes render just once',
+  async ({gks, strictMode, concurrentMode}) => {
+    const BASE_CALLS = baseRenderCount(gks);
+    const sm = strictMode && concurrentMode ? 2 : 1;
 
-  jest.useFakeTimers();
-  const anAtom = counterAtom();
-  const [aSelector, _] = plusOneAsyncSelector(anAtom);
-  const [Component, updateValue] = componentThatWritesAtom(anAtom);
-  const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(aSelector);
-  const [__, suspense] = renderElementsWithSuspenseCount(
-    <>
-      <Component />
-      <ReadComp />
-    </>,
-  );
+    jest.useFakeTimers();
+    const anAtom = counterAtom();
+    const [aSelector, _] = plusOneAsyncSelector(anAtom);
+    const [Component, updateValue] = componentThatWritesAtom(anAtom);
+    const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(aSelector);
+    const [__, suspense] = renderElementsWithSuspenseCount(
+      <>
+        <Component />
+        <ReadComp />
+      </>,
+    );
 
-  // Begins in loading state, then shows initial value:
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(1);
-  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
-  // Changing dependency makes it go back to loading, then to show new value:
-  act(() => updateValue(1));
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(2);
-  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
-  // Returning to a seen value does not cause the loading state:
-  act(() => updateValue(0));
-  await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(2);
-  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
-});
+    // Begins in loading state, then shows initial value:
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(1 * sm);
+    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
+    // Changing dependency makes it go back to loading, then to show new value:
+    act(() => updateValue(1));
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(2 * sm);
+    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
+    // Returning to a seen value does not cause the loading state:
+    act(() => updateValue(0));
+    await flushPromisesAndTimers();
+    expect(suspense).toHaveBeenCalledTimes(2 * sm);
+    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
+  },
+);
 
-testRecoil('Wakeup from Suspense to previous value', async ({gks}) => {
-  const BASE_CALLS = baseRenderCount(gks);
+testRecoil(
+  'Wakeup from Suspense to previous value',
+  async ({gks, strictMode, concurrentMode}) => {
+    const BASE_CALLS = baseRenderCount(gks);
+    const sm = strictMode && concurrentMode ? 2 : 1;
 
-  const myAtom = atom({
-    key: `atom${nextID++}`,
-    default: {value: 0},
-  });
-  const mySelector = selector({
-    key: `selector${nextID++}`,
-    get: ({get}) => get(myAtom).value,
-  });
+    const myAtom = atom({
+      key: `atom${nextID++}`,
+      default: {value: 0},
+    });
+    const mySelector = selector({
+      key: `selector${nextID++}`,
+      get: ({get}) => get(myAtom).value,
+    });
 
-  jest.useFakeTimers();
-  const [Component, updateValue] = componentThatWritesAtom(myAtom);
-  const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(mySelector);
-  const [container, suspense] = renderElementsWithSuspenseCount(
-    <>
-      <Component />
-      <ReadComp />
-    </>,
-  );
+    const [Component, updateValue] = componentThatWritesAtom(myAtom);
+    const [ReadComp, commit] =
+      componentThatReadsAtomWithCommitCount(mySelector);
+    const [container, suspense] = renderElementsWithSuspenseCount(
+      <>
+        <Component />
+        <ReadComp />
+      </>,
+    );
 
-  // Render initial state "0"
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('0');
-  expect(suspense).toHaveBeenCalledTimes(0);
-  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
+    // Render initial state "0"
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('0');
+    expect(suspense).toHaveBeenCalledTimes(0 * sm);
+    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
 
-  // Set selector to a pending state should cause component to suspend
-  act(() => updateValue({value: new Promise(() => {})}));
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('loading');
-  expect(suspense).toHaveBeenCalledTimes(1);
-  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
+    // Set selector to a pending state should cause component to suspend
+    act(() => updateValue({value: new Promise(() => {})}));
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('loading');
+    expect(suspense).toHaveBeenCalledTimes(1 * sm);
+    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
 
-  // Setting selector back to the previous state before it was pending should
-  // wake it up and render in previous state
-  act(() => updateValue({value: 0}));
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('0');
-  expect(suspense).toHaveBeenCalledTimes(1);
-  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
+    // Setting selector back to the previous state before it was pending should
+    // wake it up and render in previous state
+    act(() => updateValue({value: 0}));
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('0');
+    expect(suspense).toHaveBeenCalledTimes(1 * sm);
+    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2);
 
-  // Setting selector to a new state "1" should update and re-render
-  act(() => updateValue({value: 1}));
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('1');
-  expect(suspense).toHaveBeenCalledTimes(1);
-  expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
+    // Setting selector to a new state "1" should update and re-render
+    act(() => updateValue({value: 1}));
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('1');
+    expect(suspense).toHaveBeenCalledTimes(1 * sm);
+    expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
 
-  // Setting selector to the same value "1" should avoid a re-render
-  act(() => updateValue({value: 1}));
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(container.textContent).toEqual('1');
-  expect(suspense).toHaveBeenCalledTimes(1);
-  expect(commit).toHaveBeenCalledTimes(
-    BASE_CALLS +
-      3 +
-      ((reactMode().mode === 'LEGACY' ||
-        reactMode().mode === 'MUTABLE_SOURCE') &&
-      !gks.includes('recoil_suppress_rerender_in_callback')
-        ? 1
-        : 0),
-  );
-});
+    // Setting selector to the same value "1" should avoid a re-render
+    act(() => updateValue({value: 1}));
+    act(() => jest.runAllTimers());
+    await flushPromisesAndTimers();
+    expect(container.textContent).toEqual('1');
+    expect(suspense).toHaveBeenCalledTimes(1 * sm);
+    expect(commit).toHaveBeenCalledTimes(
+      BASE_CALLS +
+        3 +
+        ((reactMode().mode === 'LEGACY' ||
+          reactMode().mode === 'MUTABLE_SOURCE') &&
+        !gks.includes('recoil_suppress_rerender_in_callback')
+          ? 1
+          : 0),
+    );
+  },
+);
 
 testRecoil('Sync React and Recoil state changes', ({gks}) => {
   if (

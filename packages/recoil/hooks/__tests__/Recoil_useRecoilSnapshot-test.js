@@ -155,38 +155,42 @@ testRecoil('useRecoilSnapshot - goto snapshots', ({strictMode}) => {
   expect(c.textContent).toEqual('13');
 });
 
-testRecoil('useRecoilSnapshot - async selectors', async () => {
-  const [mySelector, resolve] = asyncSelector();
+testRecoil(
+  'useRecoilSnapshot - async selectors',
+  async ({strictMode, concurrentMode}) => {
+    const [mySelector, resolve] = asyncSelector();
 
-  const snapshots = [];
-  function RecoilSnapshotAndSubscribe() {
-    const snapshot = useRecoilSnapshot();
-    snapshot.retain();
-    useEffect(() => {
-      snapshots.push(snapshot);
-    });
-    return null;
-  }
+    const snapshots = [];
+    function RecoilSnapshotAndSubscribe() {
+      const snapshot = useRecoilSnapshot();
+      snapshot.retain();
+      useEffect(() => {
+        snapshots.push(snapshot);
+      });
+      return null;
+    }
 
-  const c = renderElements(
-    <>
-      <React.Suspense fallback="loading">
-        <ReadsAtom atom={mySelector} />
-      </React.Suspense>
-      <RecoilSnapshotAndSubscribe />
-    </>,
-  );
+    const c = renderElements(
+      <>
+        <React.Suspense fallback="loading">
+          <ReadsAtom atom={mySelector} />
+        </React.Suspense>
+        <RecoilSnapshotAndSubscribe />
+      </>,
+    );
 
-  expect(c.textContent).toEqual('loading');
+    expect(c.textContent).toEqual('loading');
+    expect(snapshots.length).toEqual(strictMode && concurrentMode ? 2 : 1);
 
-  act(() => resolve('RESOLVE'));
-  await flushPromisesAndTimers();
-  await flushPromisesAndTimers();
-  expect(c.textContent).toEqual('"RESOLVE"');
+    act(() => resolve('RESOLVE'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toEqual('"RESOLVE"');
 
-  expect(snapshots.length).toEqual(2);
-  expect(snapshots[0].getLoadable(mySelector).contents).toEqual('RESOLVE');
-});
+    expect(snapshots.length).toEqual(strictMode && concurrentMode ? 3 : 2);
+    expect(snapshots[0].getLoadable(mySelector).contents).toEqual('RESOLVE');
+  },
+);
 
 testRecoil('Subscriptions', async () => {
   const myAtom = atom<string>({

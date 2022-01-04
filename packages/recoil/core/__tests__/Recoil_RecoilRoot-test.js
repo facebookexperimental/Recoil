@@ -99,52 +99,54 @@ describe('initializeState', () => {
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
   });
 
-  testRecoil('Atom Effects run with global initialization', ({strictMode}) => {
-    const sm = strictMode ? 2 : 1;
-
-    let effectRan = 0;
-    const myAtom = atom<string>({
-      key: 'RecoilRoot - initializeState - atom effects',
-      default: 'DEFAULT',
-      effects_UNSTABLE: [
-        ({setSelf}) => {
-          effectRan++;
-          setSelf(current => {
-            // Effects are run first.
-            expect(current).toEqual('DEFAULT');
-            return 'EFFECT';
-          });
-        },
-      ],
-    });
-
-    function initializeState({set}) {
-      set(myAtom, current => {
-        // Effects are run first, initializeState() takes precedence
-        expect(current).toEqual('EFFECT');
-        return 'INITIALIZE';
+  testRecoil(
+    'Atom Effects run with global initialization',
+    ({strictMode, concurrentMode}) => {
+      let effectRan = 0;
+      const myAtom = atom<string>({
+        key: 'RecoilRoot - initializeState - atom effects',
+        default: 'DEFAULT',
+        effects_UNSTABLE: [
+          ({setSelf}) => {
+            effectRan++;
+            setSelf(current => {
+              // Effects are run first.
+              expect(current).toEqual('DEFAULT');
+              return 'EFFECT';
+            });
+          },
+        ],
       });
-    }
 
-    expect(effectRan).toEqual(0);
+      function initializeState({set}) {
+        set(myAtom, current => {
+          // Effects are run first, initializeState() takes precedence
+          expect(current).toEqual('EFFECT');
+          return 'INITIALIZE';
+        });
+      }
 
-    const container1 = renderElements(
-      <RecoilRoot initializeState={initializeState}>NO READ</RecoilRoot>,
-    );
-    // Effects are run when initialized with initializeState, even if not read.
-    expect(container1.textContent).toEqual('NO READ');
-    expect(effectRan).toEqual(1 * sm);
+      expect(effectRan).toEqual(0);
 
-    const container2 = renderElements(
-      <RecoilRoot initializeState={initializeState}>
-        <ReadsAtom atom={myAtom} />
-      </RecoilRoot>,
-    );
+      const container1 = renderElements(
+        <RecoilRoot initializeState={initializeState}>NO READ</RecoilRoot>,
+      );
+      // Effects are run when initialized with initializeState, even if not read.
+      // Effects are run twice, once before initializeState, then again when rendering.
+      expect(container1.textContent).toEqual('NO READ');
+      expect(effectRan).toEqual(strictMode ? (concurrentMode ? 4 : 3) : 2);
 
-    // Effects are run first, initializeState() takes precedence
-    expect(container2.textContent).toEqual('"INITIALIZE"');
-    expect(effectRan).toEqual(2 * sm);
-  });
+      const container2 = renderElements(
+        <RecoilRoot initializeState={initializeState}>
+          <ReadsAtom atom={myAtom} />
+        </RecoilRoot>,
+      );
+
+      // Effects are run first, initializeState() takes precedence
+      expect(container2.textContent).toEqual('"EFFECT"');
+      expect(effectRan).toEqual(strictMode ? (concurrentMode ? 8 : 6) : 4);
+    },
+  );
 
   testRecoil('initialize with nested store', () => {
     const GetStore = ({children}: {children: Store => React.Node}) => {
