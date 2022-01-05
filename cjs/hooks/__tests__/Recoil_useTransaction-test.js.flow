@@ -93,9 +93,11 @@ describe('Atom Effects', () => {
       }]
     });
     let getAtomWithTransaction;
+    let ranTransaction = false;
     declare var Component: () => any;
     renderElements(<Component />);
     act(() => getAtomWithTransaction());
+    expect(ranTransaction).toBe(true);
     expect(numTimesEffectInit).toBe(1);
   }); // TODO Unable to test setting from a transaction as Jest complains about
   // updates not wrapped in act(...)...
@@ -139,12 +141,18 @@ describe('Atom Effects', () => {
       }]
     });
     let initAtomWithTransaction;
+    let ranTransaction = false;
     declare var Component: () => any;
     renderElements(<Component />);
     act(() => initAtomWithTransaction());
+    expect(ranTransaction).toBe(true);
     expect(numTimesEffectInit).toBe(1);
   });
-  testRecoil('Atom effects are initialized once if first seen on transaction and then on root store', () => {
+  testRecoil('Atom effects are initialized once if first seen on transaction and then on root store', ({
+    strictMode,
+    concurrentMode
+  }) => {
+    const sm = strictMode && concurrentMode ? 2 : 1;
     let numTimesEffectInit = 0;
     const atomWithEffect = atom({
       key: 'useTransaction effect first get transaction',
@@ -154,10 +162,15 @@ describe('Atom Effects', () => {
       }]
     });
     declare var Component: () => any;
-    renderElements(<Component />);
-    expect(numTimesEffectInit).toBe(1);
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe('RENDERED');
+    expect(numTimesEffectInit).toBe(1 * sm);
   });
-  testRecoil('Atom effects are initialized once if first seen on root store and then on snapshot', () => {
+  testRecoil('Atom effects are initialized once if first seen on root store and then on snapshot', ({
+    strictMode,
+    concurrentMode
+  }) => {
+    const sm = strictMode && concurrentMode ? 2 : 1;
     let numTimesEffectInit = 0;
     const atomWithEffect = atom({
       key: 'atom effect first get root',
@@ -167,7 +180,8 @@ describe('Atom Effects', () => {
       }]
     });
     declare var Component: () => any;
-    renderElements(<Component />);
-    expect(numTimesEffectInit).toBe(1);
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe('RENDERED');
+    expect(numTimesEffectInit).toBe(1 * sm);
   });
 });

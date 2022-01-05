@@ -548,7 +548,10 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"DEFAULT"');
     expect(validated).toEqual(true);
   });
-  testRecoil('once per root', () => {
+  testRecoil('once per root', ({
+    strictMode,
+    concurrentMode
+  }) => {
     let inited = 0;
     const myAtom = atom({
       key: 'atom effect once per root',
@@ -569,7 +572,7 @@ describe('Effects', () => {
     act(() => setAtom('SET'));
     expect(c1.textContent).toEqual('"SET"');
     expect(c2.textContent).toEqual('"INIT"');
-    expect(inited).toEqual(2);
+    expect(inited).toEqual(strictMode && concurrentMode ? 4 : 2);
   });
   testRecoil('onSet', () => {
     const oldSets = {
@@ -759,11 +762,50 @@ describe('Effects', () => {
     expect(c.textContent).toBe('');
     expect(refCountsA).toEqual([0, 0]);
     expect(refCountsB).toEqual([0, 0]);
+  });
+  testRecoil('onSet unsubscribes', () => {
+    let onSetRan = 0;
+    const myAtom = atom({
+      key: 'atom effects onSet unsubscribe',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [({
+        onSet
+      }) => {
+        onSet(() => {
+          onSetRan++;
+        });
+      }]
+    });
+    declare var setMount: (_: any) => any;
+    const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+    declare function Component(): any;
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(onSetRan).toBe(0);
+    act(() => setMount(true));
+    expect(c.textContent).toBe('"DEFAULT"');
+    expect(onSetRan).toBe(0);
+    act(() => setAtom('SET'));
+    expect(c.textContent).toBe('"SET"');
+    expect(onSetRan).toBe(1);
+    act(() => setMount(false));
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(onSetRan).toBe(1); // onSet() handler not called after store is unmounted and effects cleanedup
+
+    act(() => setAtom('SET INVALID'));
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(onSetRan).toBe(1);
+    act(() => setMount(true));
+    expect(c.textContent).toBe('"DEFAULT"');
+    expect(onSetRan).toBe(1);
+    act(() => setAtom('SET2'));
+    expect(c.textContent).toBe('"SET2"');
+    expect(onSetRan).toBe(2);
   }); // Test that effects can initialize state when an atom is first used after an
   // action that also updated another atom's state.
   // This corner case was reported by multiple customers.
 
-  testRecoil('initialze concurrent with state update', () => {
+  testRecoil('initialize concurrent with state update', () => {
     const myAtom = atom({
       key: 'atom effect - concurrent update',
       default: 'DEFAULT',
@@ -794,7 +836,10 @@ describe('Effects', () => {
    * See github issue #1107 item #1
    */
 
-  testRecoil('atom effect runs twice when selector that depends on that atom is read from a snapshot and the atom is read for first time in that snapshot', () => {
+  testRecoil('atom effect runs twice when selector that depends on that atom is read from a snapshot and the atom is read for first time in that snapshot', ({
+    strictMode,
+    concurrentMode
+  }) => {
     let numTimesEffectInit = 0;
     declare var latestSetSelf: (a: any) => any;
     const atomWithEffect = atom({
@@ -818,9 +863,13 @@ describe('Effects', () => {
     declare var Component: () => any;
     const c = renderElements(<Component />);
     expect(c.textContent).toBe('1');
+    expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
     act(() => latestSetSelf(100));
     expect(c.textContent).toBe('100');
-    expect(numTimesEffectInit).toBe(2);
+    expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
+    act(() => latestSetSelf(200));
+    expect(c.textContent).toBe('200');
+    expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
   });
   describe('Other Atoms', () => {
     testRecoil('init from other atom', () => {
@@ -866,13 +915,15 @@ describe('Effects', () => {
       await expect(getRecoilStateLoadable(myAtom).promiseOrThrow()).resolves.toEqual('OTHER');
     });
     testRecoil('async get other atoms', async () => {
-      let initTest1 = Promise.reject('test error');
-      let initTest2 = Promise.reject('test error');
-      let initTest3 = Promise.reject('test error');
-      let initTest4 = Promise.reject('test error');
-      let initTest5 = Promise.reject('test error');
-      let initTest6 = Promise.reject('test error');
-      let setTest = Promise.reject('test error');
+      let initTest1 = null;
+      let initTest2 = null;
+      let initTest3 = null;
+      let initTest4 = null;
+      let initTest5 = null;
+      let initTest6 = null;
+      let setTest = null; // StrictMode will render twice
+
+      let firstRender = true;
       const myAtom = atom({
         key: 'atom effect - async get',
         default: 'DEFAULT',
@@ -883,9 +934,9 @@ describe('Effects', () => {
           getPromise,
           getInfo_UNSTABLE
         }) => {
-          expect(getLoadable(node).contents).toEqual('DEFAULT');
-          expect(getInfo_UNSTABLE(node).isSet).toBe(false);
-          expect(getInfo_UNSTABLE(node).loadable?.contents).toBe('DEFAULT'); // eslint-disable-next-line jest/valid-expect
+          expect(getLoadable(node).contents).toEqual(firstRender ? 'DEFAULT' : 'INIT');
+          expect(getInfo_UNSTABLE(node).isSet).toBe(!firstRender);
+          expect(getInfo_UNSTABLE(node).loadable?.contents).toBe(firstRender ? 'DEFAULT' : 'INIT'); // eslint-disable-next-line jest/valid-expect
 
           initTest1 = expect(getPromise(asyncAtom)).resolves.toEqual('ASYNC');
         }, ({
@@ -917,6 +968,8 @@ describe('Effects', () => {
 
             setTest = expect(getPromise(asyncAtom)).resolves.toEqual('SET_OTHER');
           });
+        }, () => {
+          firstRender = false;
         }]
       });
       const asyncAtom = atom({
@@ -966,14 +1019,21 @@ describe('Effects', () => {
         </>);
       await flushPromisesAndTimers();
       expect(c.textContent).toBe('"INIT""ASYNC"');
+      expect(initTest1).not.toBe(null);
       await initTest1;
+      expect(initTest2).not.toBe(null);
       await initTest2;
+      expect(initTest3).not.toBe(null);
       await initTest3;
+      expect(initTest4).not.toBe(null);
       await initTest4;
+      expect(initTest5).not.toBe(null);
       await initTest5;
+      expect(initTest6).not.toBe(null);
       await initTest6;
       act(() => setAsyncAtom('SET_OTHER'));
       act(() => setMyAtom('SET_ATOM'));
+      expect(setTest).not.toBe(null);
       await setTest;
     });
   });

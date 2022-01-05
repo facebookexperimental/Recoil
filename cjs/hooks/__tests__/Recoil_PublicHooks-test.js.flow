@@ -19,7 +19,7 @@ const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, useEffect, useState, Profiler, act, Queue, batchUpdates, atom, errorSelector, selector, selectorFamily, ReadsAtom, asyncSelector, errorThrowingAsyncSelector, flushPromisesAndTimers, renderElements, renderElementsWithSuspenseCount, recoilComponentGetRecoilValueCount_FOR_TESTING, useRecoilState, useRecoilStateLoadable, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useSetUnvalidatedAtomValues, useTransactionObservation_DEPRECATED, reactMode, invariant;
+let React, useEffect, useState, Profiler, act, Queue, batchUpdates, atom, errorSelector, selector, selectorFamily, ReadsAtom, asyncSelector, errorThrowingAsyncSelector, flushPromisesAndTimers, renderElements, renderUnwrappedElements, renderElementsWithSuspenseCount, recoilComponentGetRecoilValueCount_FOR_TESTING, useRecoilState, useRecoilStateLoadable, useRecoilValue, useRecoilValueLoadable, useSetRecoilState, useSetUnvalidatedAtomValues, useTransactionObservation_DEPRECATED, reactMode, invariant;
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({
@@ -44,6 +44,7 @@ const testRecoil = getRecoilTestFn(() => {
     errorThrowingAsyncSelector,
     flushPromisesAndTimers,
     renderElements,
+    renderUnwrappedElements,
     renderElementsWithSuspenseCount
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({
@@ -765,7 +766,11 @@ testRecoil('Can set an atom during rendering', () => {
     </>);
   expect(container.textContent).toEqual('1');
 });
-testRecoil('Does not re-create "setter" function after setting a value', () => {
+testRecoil('Does not re-create "setter" function after setting a value', ({
+  strictMode,
+  concurrentMode
+}) => {
+  const sm = strictMode && concurrentMode ? 2 : 1;
   const anAtom = counterAtom();
   const anotherAtom = counterAtom();
   let useRecoilStateCounter = 0;
@@ -778,13 +783,15 @@ testRecoil('Does not re-create "setter" function after setting a value', () => {
 
   declare function Component3(): any;
   renderElements(<>
-      <Component1 />
-      <Component2 />
-      <Component3 />
-    </>);
-  expect(useRecoilStateCounter).toBe(1);
-  expect(useRecoilStateErrorStatesCounter).toBe(1);
-  expect(useTwoAtomsCounter).toBe(2);
+        <Component1 />
+        <Component2 />
+        <Component3 />
+      </>);
+  expect(useRecoilStateCounter).toBe(1 * sm);
+  expect(useRecoilStateErrorStatesCounter).toBe(1 * sm); // Component3's effect is ran twice because the atom changes and we get a new setter.
+  // StrictMode renders twice, but we only change atoms once.  So, only one extra count.
+
+  expect(useTwoAtomsCounter).toBe(strictMode && concurrentMode ? 3 : 2);
 });
 testRecoil('Can set atom during post-atom-setting effect (NOT during initial render)', async () => {
   const anAtom = counterAtom();
@@ -1018,39 +1025,45 @@ testRecoil('Can use an already-resolved promise', async () => {
   expect(container.textContent).toEqual('2');
 });
 testRecoil('Resolution of suspense causes render just once', async ({
-  gks
+  gks,
+  strictMode,
+  concurrentMode
 }) => {
   const BASE_CALLS = baseRenderCount(gks);
+  const sm = strictMode && concurrentMode ? 2 : 1;
   jest.useFakeTimers();
   const anAtom = counterAtom();
   const [aSelector, _] = plusOneAsyncSelector(anAtom);
   const [Component, updateValue] = componentThatWritesAtom(anAtom);
   const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(aSelector);
   const [__, suspense] = renderElementsWithSuspenseCount(<>
-      <Component />
-      <ReadComp />
-    </>); // Begins in loading state, then shows initial value:
+        <Component />
+        <ReadComp />
+      </>); // Begins in loading state, then shows initial value:
 
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(suspense).toHaveBeenCalledTimes(1 * sm);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1); // Changing dependency makes it go back to loading, then to show new value:
 
   act(() => updateValue(1));
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(2);
+  expect(suspense).toHaveBeenCalledTimes(2 * sm);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2); // Returning to a seen value does not cause the loading state:
 
   act(() => updateValue(0));
   await flushPromisesAndTimers();
-  expect(suspense).toHaveBeenCalledTimes(2);
+  expect(suspense).toHaveBeenCalledTimes(2 * sm);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3);
 });
 testRecoil('Wakeup from Suspense to previous value', async ({
-  gks
+  gks,
+  strictMode,
+  concurrentMode
 }) => {
   const BASE_CALLS = baseRenderCount(gks);
+  const sm = strictMode && concurrentMode ? 2 : 1;
   const myAtom = atom({
     key: `atom${nextID++}`,
     default: {
@@ -1063,18 +1076,17 @@ testRecoil('Wakeup from Suspense to previous value', async ({
       get
     }) => get(myAtom).value
   });
-  jest.useFakeTimers();
   const [Component, updateValue] = componentThatWritesAtom(myAtom);
   const [ReadComp, commit] = componentThatReadsAtomWithCommitCount(mySelector);
   const [container, suspense] = renderElementsWithSuspenseCount(<>
-      <Component />
-      <ReadComp />
-    </>); // Render initial state "0"
+        <Component />
+        <ReadComp />
+      </>); // Render initial state "0"
 
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('0');
-  expect(suspense).toHaveBeenCalledTimes(0);
+  expect(suspense).toHaveBeenCalledTimes(0 * sm);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1); // Set selector to a pending state should cause component to suspend
 
   act(() => updateValue({
@@ -1083,7 +1095,7 @@ testRecoil('Wakeup from Suspense to previous value', async ({
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('loading');
-  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(suspense).toHaveBeenCalledTimes(1 * sm);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1); // Setting selector back to the previous state before it was pending should
   // wake it up and render in previous state
 
@@ -1093,7 +1105,7 @@ testRecoil('Wakeup from Suspense to previous value', async ({
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('0');
-  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(suspense).toHaveBeenCalledTimes(1 * sm);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 2); // Setting selector to a new state "1" should update and re-render
 
   act(() => updateValue({
@@ -1102,7 +1114,7 @@ testRecoil('Wakeup from Suspense to previous value', async ({
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('1');
-  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(suspense).toHaveBeenCalledTimes(1 * sm);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3); // Setting selector to the same value "1" should avoid a re-render
 
   act(() => updateValue({
@@ -1111,7 +1123,7 @@ testRecoil('Wakeup from Suspense to previous value', async ({
   act(() => jest.runAllTimers());
   await flushPromisesAndTimers();
   expect(container.textContent).toEqual('1');
-  expect(suspense).toHaveBeenCalledTimes(1);
+  expect(suspense).toHaveBeenCalledTimes(1 * sm);
   expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 3 + ((reactMode().mode === 'LEGACY' || reactMode().mode === 'MUTABLE_SOURCE') && !gks.includes('recoil_suppress_rerender_in_callback') ? 1 : 0));
 });
 testRecoil('Sync React and Recoil state changes', ({
@@ -1229,4 +1241,13 @@ testRecoil('useTransactionObservation_DEPRECATED: Nonvalidated atoms are include
   act(() => updateValue(1));
   expect(values.size).toBe(2);
   expect(values.get('someNonvalidatedAtom')).toBe(123);
+});
+testRecoil('Hooks cannot be used outside of RecoilRoot', () => {
+  const myAtom = atom({
+    key: 'hook outside RecoilRoot',
+    default: 'INVALID'
+  });
+  declare function Test(): any; // Make sure there is a friendly error message mentioning <RecoilRoot>
+
+  expect(() => renderUnwrappedElements(<Test />)).toThrow('<RecoilRoot>');
 });

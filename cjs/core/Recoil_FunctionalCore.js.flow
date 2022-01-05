@@ -42,7 +42,6 @@ declare class ReadOnlyRecoilValueError extends Error {}
 declare function initializeRetentionForNode(store: Store, nodeKey: NodeKey, retainedBy: RetainedBy): () => void;
 declare function initializeNodeIfNewToStore(store: Store, treeState: TreeState, key: NodeKey, trigger: Trigger): void;
 declare function initializeNode(store: Store, key: NodeKey): void;
-declare function reinitializeNode(store: Store, key: NodeKey): void;
 declare function cleanUpNode(store: Store, key: NodeKey): any; // Get the current value loadable of a node and update the state.
 // Update dependencies and subscriptions for selectors.
 // Update saved value validation for atoms.
@@ -82,7 +81,6 @@ module.exports = {
   peekNodeLoadable,
   setNodeValue,
   initializeNode,
-  reinitializeNode,
   cleanUpNode,
   setUnvalidatedAtomValue_DEPRECATED,
   peekNodeInfo,

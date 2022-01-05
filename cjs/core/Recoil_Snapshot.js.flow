@@ -68,6 +68,8 @@ const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
 
 const gkx = require('recoil-shared/util/Recoil_gkx');
 
+const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
+
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation'); // Opaque at this surface because it's part of the public API from here.

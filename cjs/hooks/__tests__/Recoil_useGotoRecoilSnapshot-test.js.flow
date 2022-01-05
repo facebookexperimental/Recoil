@@ -164,7 +164,11 @@ testRecoil('Goto snapshot with async selector', async () => {
 }); // Test that going to a snapshot where an atom was not yet initialized will
 // not cause the atom to be re-initialized when used again.
 
-testRecoil('Effects going to previous snapshot', () => {
+testRecoil('Effects going to previous snapshot', ({
+  strictMode,
+  concurrentMode
+}) => {
+  const sm = strictMode && concurrentMode ? 2 : 1;
   let init = 0;
   const myAtom = atom({
     key: 'gotoSnapshot effect',
@@ -179,16 +183,16 @@ testRecoil('Effects going to previous snapshot', () => {
   declare function GotoRecoilSnapshot(): any;
   expect(init).toEqual(0);
   renderElements(<>
-      <ReadAtom />
-      <GotoRecoilSnapshot />
-    </>);
-  expect(init).toEqual(1);
+        <ReadAtom />
+        <GotoRecoilSnapshot />
+      </>);
+  expect(init).toEqual(1 * sm);
   act(forceUpdate);
-  expect(init).toEqual(1);
+  expect(init).toEqual(1 * sm);
   act(() => gotoRecoilSnapshot?.(freshSnapshot()));
-  expect(init).toEqual(1);
+  expect(init).toEqual(1 * sm);
   act(forceUpdate);
-  expect(init).toEqual(1);
+  expect(init).toEqual(1 * sm);
   act(forceUpdate);
-  expect(init).toEqual(1);
+  expect(init).toEqual(1 * sm);
 });

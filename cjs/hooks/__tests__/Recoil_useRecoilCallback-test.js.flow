@@ -233,7 +233,8 @@ testRecoil('Consistent callback function', () => {
   expect(out.textContent).toBe('1');
 });
 testRecoil('Atom effects are initialized twice if first seen on snapshot and then on root store', ({
-  strictMode
+  strictMode,
+  concurrentMode
 }) => {
   const sm = strictMode ? 1 : 0;
   let numTimesEffectInit = 0;
@@ -250,9 +251,12 @@ testRecoil('Atom effects are initialized twice if first seen on snapshot and the
   const c = renderElements(<Component />);
   expect(c.textContent).toBe(''); // Confirm no failures from rendering
 
-  expect(numTimesEffectInit).toBe(2);
+  expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
 });
-testRecoil('Atom effects are initialized once if first seen on root store and then on snapshot', () => {
+testRecoil('Atom effects are initialized once if first seen on root store and then on snapshot', ({
+  strictMode,
+  concurrentMode
+}) => {
   let numTimesEffectInit = 0;
   const atomWithEffect = atom({
     key: 'atomWithEffect2',
@@ -265,7 +269,7 @@ testRecoil('Atom effects are initialized once if first seen on root store and th
   const c = renderElements(<Component />);
   expect(c.textContent).toBe(''); // Confirm no failures from rendering
 
-  expect(numTimesEffectInit).toBe(1);
+  expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 2 : 1);
 });
 testRecoil('Refresh selector cache - transitive', () => {
   const getA = jest.fn(() => 'A');

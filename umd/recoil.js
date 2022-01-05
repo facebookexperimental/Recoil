@@ -473,6 +473,10 @@
     gks.set(gk, false);
   };
 
+  Recoil_gkx_OSS.clear = () => {
+    gks.clear();
+  };
+
   var Recoil_gkx = Recoil_gkx_OSS; // @oss-only
 
   /**
@@ -2353,17 +2357,6 @@
     initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
   }
 
-  function reinitializeNode(store, key) {
-    const storeState = store.getState(); // If this atom was previously initialized (set in knownAtoms), but was
-    // cleaned up (not set in nodeCleanupFunctions), then re-initialize it.
-
-    if (!storeState.nodeCleanupFunctions.has(key)) {
-      storeState.knownAtoms.delete(key); // Force atom to re-initialize
-    }
-
-    initializeNodeIfNewToStore(store, storeState.currentTree, key, 'get');
-  }
-
   function cleanUpNode(store, key) {
     var _state$nodeCleanupFun;
 
@@ -2431,7 +2424,7 @@
       // Report current dependencies.  If the node hasn't been evaluated, then
       // dependencies may be missing based on the current state.
       deps: recoilValuesForKeys$1((_graph$nodeDeps$get = graph.nodeDeps.get(key)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : []),
-      // Reportsall "current" subscribers.  Evaluating other nodes or
+      // Reports all "current" subscribers.  Evaluating other nodes or
       // previous in-progress async evaluations may introduce new subscribers.
       subscribers: {
         nodes: recoilValuesForKeys$1(downstreamNodes),
@@ -2469,7 +2462,6 @@
     peekNodeLoadable,
     setNodeValue,
     initializeNode,
-    reinitializeNode,
     cleanUpNode,
     setUnvalidatedAtomValue_DEPRECATED,
     peekNodeInfo,
@@ -3410,6 +3402,8 @@
 
 
 
+
+
    // Opaque at this surface because it's part of the public API from here.
 
 
@@ -3618,7 +3612,10 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         nodesRetainedByZone: new Map(),
         retainablesToCheckForRelease: new Set()
       },
-      nodeCleanupFunctions: new Map()
+      // FIXME here's a copy
+      // Create blank cleanup handlers for atoms so snapshots don't re-run
+      // atom effects.
+      nodeCleanupFunctions: new Map(Recoil_mapIterable(storeState.nodeCleanupFunctions.entries(), ([key]) => [key, () => {}]))
     };
   } // Factory to build a fresh snapshot
 
@@ -3768,7 +3765,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     cleanUpNode: cleanUpNode$2,
     getDownstreamNodes: getDownstreamNodes$2,
-    reinitializeNode: reinitializeNode$1,
+    initializeNode: initializeNode$2,
     setNodeValue: setNodeValue$2,
     setUnvalidatedAtomValue_DEPRECATED: setUnvalidatedAtomValue_DEPRECATED$1
   } = Recoil_FunctionalCore;
@@ -4053,11 +4050,20 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       }
     });
     return initial;
-  }
+  } // Initialize state snapshot for <RecoilRoot> for the initializeState prop.
+  // Atom effect initialization takes precedence over this prop.
+  // Any atom effects will be run before initialization, but then cleaned up,
+  // they are then re-run when used as part of rendering.  These semantics are
+  // compatible with React StrictMode where effects may be re-run multiple times
+  // but state initialization only happens once the first time.
+
 
   function initialStoreState(initializeState) {
     const snapshot = freshSnapshot$1().map(initializeState);
-    return snapshot.getStore_INTERNAL().getState();
+    const storeState = snapshot.getStore_INTERNAL().getState();
+    storeState.nodeCleanupFunctions.forEach(cleanup => cleanup());
+    storeState.nodeCleanupFunctions.clear();
+    return storeState;
   }
 
   let nextID = 0;
@@ -4209,7 +4215,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       const store = storeRef.current;
 
       for (const atomKey of new Set(store.getState().knownAtoms)) {
-        reinitializeNode$1(store, atomKey);
+        initializeNode$2(store, atomKey);
       }
 
       return () => {
@@ -4713,6 +4719,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
    * mode, React strict mode, and memory management. They will not be fixed.
    * */
   function useRecoilInterface_DEPRECATED() {
+    const componentName = Recoil_useComponentName();
     const storeRef = useStoreRef$2();
     const [, forceUpdate] = useState$1([]);
     const recoilValuesUsed = useRef$5(new Set());
@@ -4728,27 +4735,21 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         subscriptions.current.delete(key);
       }
     }, [subscriptions]);
-    const componentName = Recoil_useComponentName();
-    useEffect$3(() => {
-      const store = storeRef.current;
-
-      function updateState(_state, key) {
-        if (!subscriptions.current.has(key)) {
-          return;
-        }
-
+    const updateState = useCallback$1((_state, key) => {
+      if (subscriptions.current.has(key)) {
         forceUpdate([]);
       }
+    }, []); // Effect to add/remove subscriptions as nodes are used
 
+    useEffect$3(() => {
+      const store = storeRef.current;
       Recoil_differenceSets(recoilValuesUsed.current, previousSubscriptions.current).forEach(key => {
         if (subscriptions.current.has(key)) {
           Recoil_expectationViolation(`Double subscription to RecoilValue "${key}"`);
           return;
         }
 
-        const sub = subscribeToRecoilValue$1(store, new AbstractRecoilValue$3(key), state => {
-          updateState(state, key);
-        }, componentName);
+        const sub = subscribeToRecoilValue$1(store, new AbstractRecoilValue$3(key), state => updateState(state, key), componentName);
         subscriptions.current.set(key, sub);
         /**
          * Since we're subscribing in an effect we need to update to the latest
@@ -4782,11 +4783,17 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         unsubscribeFrom(key);
       });
       previousSubscriptions.current = recoilValuesUsed.current;
-    });
+    }); // Effect to unsubscribe from all when unmounting
+
     useEffect$3(() => {
-      const subs = subscriptions.current;
-      return () => subs.forEach((_, key) => unsubscribeFrom(key));
-    }, [unsubscribeFrom]);
+      const currentSubscriptions = subscriptions.current; // Restore subscriptions that were cleared due to StrictMode running this effect twice
+
+      Recoil_differenceSets(recoilValuesUsed.current, new Set(currentSubscriptions.keys())).forEach(key => {
+        const sub = subscribeToRecoilValue$1(storeRef.current, new AbstractRecoilValue$3(key), state => updateState(state, key), componentName);
+        currentSubscriptions.set(key, sub);
+      });
+      return () => currentSubscriptions.forEach((_, key) => unsubscribeFrom(key));
+    }, [componentName, storeRef, unsubscribeFrom, updateState]);
     return useMemo$1(() => {
       // eslint-disable-next-line no-shadow
       function useSetRecoilState(recoilState) {
@@ -4956,6 +4963,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       return subscription.release;
     }, [storeRef, recoilValue, componentName, getLoadable]);
     const source = useRecoilMutableSource$1();
+
+    if (source == null) {
+      throw Recoil_err('Recoil hooks must be used in components contained within a <RecoilRoot> component.');
+    }
+
     const loadable = useMutableSource$1(source, getLoadableWithTesting, subscribe);
     const prevLoadableRef = useRef$5(loadable);
     useEffect$3(() => {
@@ -5573,7 +5585,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   } = Recoil_Loadable$1;
 
   const {
-    initializeNode: initializeNode$2
+    initializeNode: initializeNode$3
   } = Recoil_FunctionalCore;
 
   const {
@@ -5635,7 +5647,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
         } else {
           // Initialize atom and run effects if not initialized yet
-          initializeNode$2(this._store, recoilState.key);
+          initializeNode$3(this._store, recoilState.key);
 
           this._changes.set(recoilState.key, valueOrUpdater);
         }
@@ -7664,7 +7676,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         cleanupEffectsByStore.delete(store);
       };
 
-      if (store.getState().knownAtoms.has(key)) {
+      if (store.getState().nodeCleanupFunctions.has(key)) {
         return cleanupAtom;
       }
 
@@ -7682,7 +7694,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           }
         };
 
-        defaultLoadable.contents.then(notifyDefaultSubscribers).catch(notifyDefaultSubscribers);
+        defaultLoadable.contents.finally(notifyDefaultSubscribers);
       } ///////////////////
       // Run Atom Effects
       ///////////////////
@@ -7699,11 +7711,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           // Normally we can just get the current value of another atom.
           // But for our own value we need to check if there is a pending
           // initialized value or get the fallback default value.
-          if (duringInit && recoilValue.key === key && !(initValue instanceof DefaultValue$2)) {
+          if (duringInit && recoilValue.key === key) {
             // Cast T to S
             const retValue = initValue; // flowlint-line unclear-type:off
 
-            return retValue instanceof DefaultValue$2 ? defaultLoadable // flowlint-line unclear-type:off
+            return retValue instanceof DefaultValue$2 ? peekAtom(store, initState) // flowlint-line unclear-type:off
             : Recoil_isPromise(retValue) ? loadableWithPromise$2(retValue.then(v => v instanceof DefaultValue$2 ? // Cast T to S
             defaultLoadable.toPromise() // flowlint-line unclear-type:off
             : v)) : loadableWithValue$3(retValue);
@@ -7771,7 +7783,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE$7);
 
         const onSet = effect => handler => {
-          store.subscribeToTransactions(currentStore => {
+          var _cleanupEffectsByStor2;
+
+          const {
+            release
+          } = store.subscribeToTransactions(currentStore => {
             var _currentTree$atomValu;
 
             // eslint-disable-next-line prefer-const
@@ -7808,6 +7824,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
               }
             }
           }, key);
+          cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor2 = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor2 !== void 0 ? _cleanupEffectsByStor2 : []), release]);
         };
 
         for (const effect of (_options$effects_UNST = options.effects_UNSTABLE) !== null && _options$effects_UNST !== void 0 ? _options$effects_UNST : []) {
@@ -7827,9 +7844,9 @@ This is currently a DEV-only warning but will become a thrown exception in the n
             });
 
             if (cleanup != null) {
-              var _cleanupEffectsByStor2;
+              var _cleanupEffectsByStor3;
 
-              cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor2 = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor2 !== void 0 ? _cleanupEffectsByStor2 : []), cleanup]);
+              cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor3 = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor3 !== void 0 ? _cleanupEffectsByStor3 : []), cleanup]);
             }
           } catch (error) {
             initValue = error;
