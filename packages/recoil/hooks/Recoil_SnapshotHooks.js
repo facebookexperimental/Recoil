@@ -177,26 +177,35 @@ function useRecoilSnapshot(): Snapshot {
   );
   const previousSnapshot = usePrevious(snapshot);
   const timeoutID = useRef();
-
-  useEffect(() => {
-    if (timeoutID.current && !isSSR) {
-      window.clearTimeout(timeoutID.current);
-    }
-    return snapshot.retain();
-  }, [snapshot]);
+  const releaseRef = useRef();
 
   useTransactionSubscription(
     useCallback(store => setSnapshot(cloneSnapshot(store)), []),
   );
 
-  if (previousSnapshot !== snapshot && !isSSR) {
-    if (timeoutID.current) {
-      previousSnapshot?.release_INTERNAL();
+  // Retain snapshot for duration component is mounted
+  useEffect(() => {
+    // Release the retain from the rendering call
+    if (timeoutID.current && !isSSR) {
       window.clearTimeout(timeoutID.current);
+      releaseRef.current?.();
+      releaseRef.current = null;
     }
-    snapshot.retain();
+    return snapshot.retain();
+  }, [snapshot]);
+
+  // Retain snapshot until above effect is run.
+  // Release after a threshold in case component is suspended.
+  if (previousSnapshot !== snapshot && !isSSR) {
+    // Release the previous snapshot
+    if (timeoutID.current) {
+      window.clearTimeout(timeoutID.current);
+      releaseRef.current?.();
+      releaseRef.current = null;
+    }
+    releaseRef.current = snapshot.retain();
     timeoutID.current = window.setTimeout(() => {
-      snapshot.release_INTERNAL();
+      releaseRef.current?.();
       timeoutID.current = null;
     }, SUSPENSE_TIMEOUT_MS);
   }
