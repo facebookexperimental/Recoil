@@ -404,6 +404,11 @@ function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
   );
 
   const source = useRecoilMutableSource();
+  if (source == null) {
+    throw err(
+      'Recoil hooks must be used in components contained within a <RecoilRoot> component.',
+    );
+  }
   const loadable = useMutableSource(source, getLoadableWithTesting, subscribe);
   const prevLoadableRef = useRef(loadable);
   useEffect(() => {

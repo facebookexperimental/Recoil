@@ -10,8 +10,8 @@
  */
 'use strict';
 
-import type {RecoilState, RecoilValue, RecoilValueReadOnly} from 'Recoil';
 import type {Store} from '../../recoil/core/Recoil_State';
+import type {RecoilState, RecoilValue, RecoilValueReadOnly} from 'Recoil';
 
 // @fb-only: const ReactDOMComet = require('ReactDOMComet');
 // @fb-only: const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
@@ -140,16 +140,8 @@ function renderConcurrentReactRoot<Props>(
   createRoot(container).render(contents);
 }
 
-function renderElements(elements: ?React.Node): HTMLDivElement {
+function renderUnwrappedElements(elements: ?React.Node): HTMLDivElement {
   const container = document.createElement('div');
-  const Content = () => (
-    <RecoilRoot>
-      {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
-      <ErrorBoundary>
-        <React.Suspense fallback="loading">{elements}</React.Suspense>
-      </ErrorBoundary>
-    </RecoilRoot>
-  );
   const renderReactRoot = isConcurrentModeEnabled()
     ? renderConcurrentReactRoot
     : renderLegacyReactRoot;
@@ -157,49 +149,42 @@ function renderElements(elements: ?React.Node): HTMLDivElement {
     renderReactRoot(
       container,
       isStrictModeEnabled() ? (
-        <StrictMode>
-          <Content />
-        </StrictMode>
+        <StrictMode>{elements}</StrictMode>
       ) : (
-        <Content />
+        <>{elements}</>
       ),
     );
   });
   return container;
 }
 
+function renderElements(elements: ?React.Node): HTMLDivElement {
+  return renderUnwrappedElements(
+    <RecoilRoot>
+      {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
+      <ErrorBoundary>
+        <React.Suspense fallback="loading">{elements}</React.Suspense>
+      </ErrorBoundary>
+    </RecoilRoot>,
+  );
+}
+
 function renderElementsWithSuspenseCount(
   elements: ?React.Node,
 ): [HTMLDivElement, JestMockFn<[], void>] {
-  const container = document.createElement('div');
   const suspenseCommit = jest.fn(() => {});
   function Fallback() {
     useEffect(suspenseCommit);
     return 'loading';
   }
-  const Content = () => (
+  const container = renderUnwrappedElements(
     <RecoilRoot>
       {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
       <ErrorBoundary>
         <React.Suspense fallback={<Fallback />}>{elements}</React.Suspense>
       </ErrorBoundary>
-    </RecoilRoot>
+    </RecoilRoot>,
   );
-  const renderReactRoot = isConcurrentModeEnabled()
-    ? renderConcurrentReactRoot
-    : renderLegacyReactRoot;
-  act(() => {
-    renderReactRoot(
-      container,
-      isStrictModeEnabled() ? (
-        <StrictMode>
-          <Content />
-        </StrictMode>
-      ) : (
-        <Content />
-      ),
-    );
-  });
   return [container, suspenseCommit];
 }
 
@@ -444,6 +429,7 @@ const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
 
 module.exports = {
   makeStore,
+  renderUnwrappedElements,
   renderElements,
   renderElementsWithSuspenseCount,
   ReadsAtom,

@@ -38,6 +38,7 @@ let React,
   errorThrowingAsyncSelector,
   flushPromisesAndTimers,
   renderElements,
+  renderUnwrappedElements,
   renderElementsWithSuspenseCount,
   recoilComponentGetRecoilValueCount_FOR_TESTING,
   useRecoilState,
@@ -67,6 +68,7 @@ const testRecoil = getRecoilTestFn(() => {
     errorThrowingAsyncSelector,
     flushPromisesAndTimers,
     renderElements,
+    renderUnwrappedElements,
     renderElementsWithSuspenseCount,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({reactMode} = require('../../core/Recoil_ReactMode'));
@@ -1868,3 +1870,14 @@ testRecoil(
     expect(values.get('someNonvalidatedAtom')).toBe(123);
   },
 );
+
+testRecoil('Hooks cannot be used outside of RecoilRoot', () => {
+  const myAtom = atom({key: 'hook outside RecoilRoot', default: 'INVALID'});
+  function Test() {
+    useRecoilValue(myAtom);
+    return 'TEST';
+  }
+
+  // Make sure there is a friendly error message mentioning <RecoilRoot>
+  expect(() => renderUnwrappedElements(<Test />)).toThrow('<RecoilRoot>');
+});
