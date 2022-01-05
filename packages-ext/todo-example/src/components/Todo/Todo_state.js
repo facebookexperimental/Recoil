@@ -9,46 +9,36 @@
  * @format
  */
 
-import type {RecoilState, RecoilValueReadOnly} from 'recoil';
-import type {TItem} from './Todo_types';
-
 import {atom, selector} from 'recoil';
 
-export const todoListState: RecoilState<Array<TItem>> = atom({
+export const todoListState = atom({
   key: 'todoListState',
   default: [],
 });
 
-export const todoListFilterState: RecoilState<string> = atom({
+export const todoListFilterState = atom({
   key: 'todoListFilterState',
   default: 'Show All',
 });
 
-export const filteredTodoListState: RecoilValueReadOnly<Array<TItem>> =
-  selector({
-    key: 'filteredTodoListState',
-    get: ({get}) => {
-      const filter = get(todoListFilterState);
-      const list = get(todoListState);
+export const filteredTodoListState = selector({
+  key: 'filteredTodoListState',
+  get: ({get}) => {
+    const filter = get(todoListFilterState);
+    const list = get(todoListState);
 
-      switch (filter) {
-        case 'Show Completed':
-          return list.filter(item => item.isComplete);
-        case 'Show Uncompleted':
-          return list.filter(item => !item.isComplete);
-        default:
-          return list;
-      }
-    },
-  });
+    switch (filter) {
+      case 'Show Completed':
+        return list.filter(item => item.isComplete);
+      case 'Show Uncompleted':
+        return list.filter(item => !item.isComplete);
+      default:
+        return list;
+    }
+  },
+});
 
-export const todoListStatsState: RecoilValueReadOnly<{
-  percentCompleted: number,
-  totalCompletedNum: number,
-  totalNum: number,
-  totalUncompletedNum: number,
-  ...
-}> = selector({
+export const todoListStatsState = selector({
   key: 'todoListStatsState',
   get: ({get}) => {
     const todoList = get(todoListState);

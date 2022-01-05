@@ -13,7 +13,7 @@ import {todoListStatsState} from './Todo_state';
 import React from 'react';
 import {useRecoilValue} from 'recoil';
 
-export const TodoListStats = (): React$Element<"ul"> => {
+export const TodoListStats = () => {
   const {totalNum, totalCompletedNum, totalUncompletedNum, percentCompleted} =
     useRecoilValue(todoListStatsState);
 

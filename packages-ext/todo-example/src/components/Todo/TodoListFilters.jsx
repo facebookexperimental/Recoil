@@ -13,7 +13,7 @@ import {todoListFilterState} from './Todo_state';
 import React from 'react';
 import {useRecoilState} from 'recoil';
 
-export const TodoListFilters = (): React$Element<React$FragmentType> => {
+export const TodoListFilters = () => {
   const [filter, setFilter] = useRecoilState(todoListFilterState);
 
   const updateFilter = ({target: {value}}) => {
