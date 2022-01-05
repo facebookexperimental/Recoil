@@ -396,6 +396,7 @@ describe('Effects', () => {
 
   testRecoil('async set', () => {
     let setAtom, resetAtom;
+    let effectRan = false;
 
     const myAtom = atom({
       key: 'atom effect init set',
@@ -405,7 +406,8 @@ describe('Effects', () => {
           setAtom = setSelf;
           resetAtom = resetSelf;
           setSelf(x => {
-            expect(x).toEqual('DEFAULT');
+            expect(x).toEqual(effectRan ? 'INIT' : 'DEFAULT');
+            effectRan = true;
             return 'INIT';
           });
         },
