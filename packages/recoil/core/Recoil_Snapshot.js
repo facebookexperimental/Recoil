@@ -102,38 +102,39 @@ class Snapshot {
       updateRetainCount(this._store, nodeKey, 1);
     }
     this.retain();
-    this.autorelease_INTERNAL();
+    this._autoRelease();
   }
 
   retain(): () => void {
-    if (!gkx('recoil_memory_managament_2020')) {
-      return () => undefined;
-    }
     this._refCount++;
     let released = false;
     return () => {
       if (!released) {
         released = true;
-        this.release_INTERNAL();
+        this._release();
       }
     };
   }
 
-  autorelease_INTERNAL(): void {
-    if (!gkx('recoil_memory_managament_2020')) {
-      return;
-    }
+  /**
+   * Release the snapshot on the next tick.  This means the snapshot is retained
+   * during the execution of the current function using it.
+   */
+  _autoRelease(): void {
     if (!isSSR) {
-      window.setTimeout(() => this.release_INTERNAL(), 0);
+      window.setTimeout(() => this._release(), 0);
     }
   }
 
-  release_INTERNAL(): void {
-    if (!gkx('recoil_memory_managament_2020')) {
-      return;
-    }
+  _release(): void {
     this._refCount--;
     if (this._refCount === 0) {
+      this._store.getState().nodeCleanupFunctions.forEach(cleanup => cleanup());
+      this._store.getState().nodeCleanupFunctions.clear();
+
+      if (!gkx('recoil_memory_managament_2020')) {
+        return;
+      }
       // Temporarily nerfing this to allow us to find broken call sites without
       // actually breaking anybody yet.
       // for (const k of this._store.getState().knownAtoms) {
