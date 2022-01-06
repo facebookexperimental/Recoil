@@ -16,7 +16,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
 const WriteFilePlugin = require('write-file-webpack-plugin');
-const babelOpts = require('./babel.config.json');
 
 // load the secrets
 var alias = {
@@ -97,14 +96,11 @@ var options = {
       {
         test: /\.(js|jsx)$/,
         loader: 'babel-loader',
-        options: babelOpts,
         exclude: /node_modules/,
       },
     ],
   },
   resolve: {
-    // This ensures we grab modules from the recoil-devtools/node_modules first
-    modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
     alias,
     extensions: fileExtensions
       .map(extension => '.' + extension)

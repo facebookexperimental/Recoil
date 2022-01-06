@@ -4,7 +4,6 @@
 
 **_Add new changes here as they land_**
 
-
 ### Pending
 
 - Memory management
@@ -21,12 +20,14 @@
   - Renders now occur before transaction observers instead of after.
 
 ### New Features
+
 - Add `refresh()` to the `useRecoilCallback()` interface for refreshing selector caches. (#1413)
 - Callbacks from selector's `getCallback()` can now mutate, refresh, and transact Recoil state, in addition to reading it, for parity with `useRecoilCallback()`. (#1498)
 - Recoil StoreID's for `<RecoilRoot>` and `Snapshot` stores accessible via `useRecoilStoreID()` hook (#1417) or `storeID` parameter for atom effects (#1414).
 - `RecoilLoadable.all()` and `RecoilLoadable.of()` now accept either literal values, async Promises, or Loadables. (#1455, #1442)
 
 ### Other Fixes and Optimizations
+
 - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
 - Fix transitive selector refresh for some cases (#1409)
 - Atom Effects

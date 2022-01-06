@@ -83,9 +83,10 @@ type Props<N, L> = $ReadOnly<{
 
 // Helper to convert something that is either a value or a function to get the
 // value to always be a function so we can simply call it to get the value.
-// $FlowFixMe
+// $FlowFixMe[unclear-type]
 const functor: <T>(any) => T = <T>(x: T) =>
-  // $FlowFixMe
+  // $FlowFixMe[escaped-generic]
+  // $FlowFixMe[incompatible-type]
   typeof x === 'function' ? x : <T>() => x;
 
 /**

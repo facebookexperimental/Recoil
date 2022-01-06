@@ -8,7 +8,7 @@
  * @format
  */
 'use strict';
-import type {SetterOrUpdater} from 'recoil/hooks/Recoil_Hooks';
+import type {SetterOrUpdater} from 'recoil';
 import type {RecoilState} from 'recoil';
 
 import {atom, useRecoilState} from 'recoil';

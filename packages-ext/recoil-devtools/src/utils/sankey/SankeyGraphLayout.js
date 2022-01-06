@@ -102,7 +102,7 @@ function limitNodes<N, L>(
   let nextLinks = rootNodes.flatMap(node =>
     node.targetLinks.concat(node.sourceLinks),
   );
-  // $FlowFixMe Uncovered while typing recoil-devtools
+  // $FlowFixMe[incompatible-type-arg] Uncovered while typing recoil-devtools
   const consideredLinks: Set<Link<mixed, mixed>> = new Set(nextLinks);
 
   function addNode(node) {
