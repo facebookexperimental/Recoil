@@ -88,13 +88,13 @@ function initializeNodeIfNewToStore(
   if (storeState.nodeCleanupFunctions.has(key)) {
     return;
   }
-  const config = getNode(key);
+  const node = getNode(key);
   const retentionCleanup = initializeRetentionForNode(
     store,
     key,
-    config.retainedBy,
+    node.retainedBy,
   );
-  const nodeCleanup = config.init(store, treeState, trigger);
+  const nodeCleanup = node.init(store, treeState, trigger);
   storeState.nodeCleanupFunctions.set(key, () => {
     nodeCleanup();
     retentionCleanup();
