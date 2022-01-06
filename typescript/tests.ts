@@ -574,13 +574,13 @@ isRecoilValue(mySelector1);
 }
 
 /**
- * effects_UNSTABLE on atom()
+ * effects on atom()
  */
 {
   atom({
     key: 'thisismyrandomkey',
     default: 0,
-    effects_UNSTABLE: [
+    effects: [
       ({node, storeID, trigger, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
         node; // $ExpectType RecoilState<number>
         storeID; // $ExpectType StoreID
@@ -614,13 +614,13 @@ isRecoilValue(mySelector1);
 }
 
 /**
- * effects_UNSTABLE on atomFamily()
+ * effects on atomFamily()
  */
 {
   atomFamily({
     key: 'myrandomatomfamilykey',
     default: (param: number) => param,
-    effects_UNSTABLE: (param) => [
+    effects: (param) => [
       ({node, storeID, trigger, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
         param; // $ExpectType number
 

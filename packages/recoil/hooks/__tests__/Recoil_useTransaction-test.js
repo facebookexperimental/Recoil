@@ -99,7 +99,7 @@ describe('Atom Effects', () => {
       const atomWithEffect = atom({
         key: 'atom effect first get transaction',
         default: 'DEFAULT',
-        effects_UNSTABLE: [
+        effects: [
           ({trigger}) => {
             expect(trigger).toEqual('get');
             numTimesEffectInit++;
@@ -135,7 +135,7 @@ describe('Atom Effects', () => {
   //     const atomWithEffect = atom({
   //       key: 'atom effect first set transaction',
   //       default: 'DEFAULT',
-  //       effects_UNSTABLE: [
+  //       effects: [
   //         ({trigger}) => {
   //           expect(trigger).toEqual('set');
   //           numTimesEffectInit++;
@@ -163,7 +163,7 @@ describe('Atom Effects', () => {
     const atomWithEffect = atom({
       key: 'atom effect init transaction',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf}) => {
           setSelf('INIT');
           numTimesEffectInit++;
@@ -197,7 +197,7 @@ describe('Atom Effects', () => {
       const atomWithEffect = atom({
         key: 'useTransaction effect first get transaction',
         default: 0,
-        effects_UNSTABLE: [
+        effects: [
           () => {
             numTimesEffectInit++;
           },
@@ -238,7 +238,7 @@ describe('Atom Effects', () => {
       const atomWithEffect = atom({
         key: 'atom effect first get root',
         default: 0,
-        effects_UNSTABLE: [
+        effects: [
           () => {
             numTimesEffectInit++;
           },

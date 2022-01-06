@@ -387,7 +387,7 @@ describe('Atom Effects', () => {
       const atomWithEffect = atom({
         key: 'atomWithEffect',
         default: 0,
-        effects_UNSTABLE: [
+        effects: [
           () => {
             numTimesEffectInit++;
           },
@@ -426,7 +426,7 @@ describe('Atom Effects', () => {
       const atomWithEffect = atom({
         key: 'atomWithEffect2',
         default: 0,
-        effects_UNSTABLE: [
+        effects: [
           () => {
             numTimesEffectInit++;
           },
@@ -462,7 +462,7 @@ describe('Atom Effects', () => {
     const myAtom = atom({
       key: 'useRecoilCallback - atom effect - onSet',
       default: 0,
-      effects_UNSTABLE: [
+      effects: [
         ({onSet, setSelf}) => {
           onSet(value => {
             setValues.push(value);

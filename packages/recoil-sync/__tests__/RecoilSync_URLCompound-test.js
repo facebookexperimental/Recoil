@@ -30,7 +30,7 @@ test('Upgrade item ID', async () => {
   const myAtom = atom({
     key: 'recoil-url-sync upgrade itemID',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         refine: string(),
         itemKey: 'new_key',
@@ -92,7 +92,7 @@ test('Many items to one atom', async () => {
   const myAtom = atom({
     key: 'recoil-url-sync many-to-one',
     default: {},
-    effects_UNSTABLE: [manyToOneSyncEffct()],
+    effects: [manyToOneSyncEffct()],
   });
 
   history.replaceState(null, '', encodeURL([[loc, {foo: 1}]]));
@@ -145,13 +145,13 @@ test('One item to multiple atoms', async () => {
   const fooAtom = atom({
     key: 'recoil-url-sync one-to-many foo',
     default: 0,
-    effects_UNSTABLE: [oneToManySyncEffect('foo')],
+    effects: [oneToManySyncEffect('foo')],
   });
 
   const barAtom = atom({
     key: 'recoil-url-sync one-to-many bar',
     default: null,
-    effects_UNSTABLE: [oneToManySyncEffect('bar')],
+    effects: [oneToManySyncEffect('bar')],
   });
 
   history.replaceState(null, '', encodeURL([[loc, {compound: {foo: 1}}]]));
@@ -214,7 +214,7 @@ test('One item to atom family', async () => {
   const myAtoms = atomFamily({
     key: 'recoil-rul-sync one-to-family',
     default: null,
-    effects_UNSTABLE: prop => [oneToFamilyEffect(prop)],
+    effects: prop => [oneToFamilyEffect(prop)],
   });
 
   history.replaceState(null, '', encodeURL([[loc, {compound: {foo: 1}}]]));

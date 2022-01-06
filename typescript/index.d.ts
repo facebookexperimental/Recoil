@@ -107,6 +107,7 @@
  export interface AtomOptions<T> {
   key: NodeKey;
   default: RecoilValue<T> | Promise<T> | T;
+  effects?: ReadonlyArray<AtomEffect<T>>;
   effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
   dangerouslyAllowMutability?: boolean;
  }
@@ -378,6 +379,7 @@
   key: NodeKey;
   dangerouslyAllowMutability?: boolean;
   default: RecoilValue<T> | Promise<T> | T | ((param: P) => T | RecoilValue<T> | Promise<T>);
+  effects?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
   effects_UNSTABLE?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
   // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
  }

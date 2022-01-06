@@ -45,9 +45,12 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
     | Promise<T>
     | T
     | (P => T | RecoilValue<T> | Promise<T>),
-  effects_UNSTABLE?:
+  effects?:
     | $ReadOnlyArray<AtomEffect<T>>
     | (P => $ReadOnlyArray<AtomEffect<T>>),
+  //   effects_UNSTABLE?:
+  // | $ReadOnlyArray<AtomEffect<T>>
+  // | (P => $ReadOnlyArray<AtomEffect<T>>),
   retainedBy_UNSTABLE?: RetainedBy | (P => RetainedBy),
   cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction,
 
@@ -116,10 +119,12 @@ function atomFamily<T, P: Parameter>(
           ? options.retainedBy_UNSTABLE(params)
           : options.retainedBy_UNSTABLE,
 
-      effects_UNSTABLE:
-        typeof options.effects_UNSTABLE === 'function'
+      effects:
+        typeof options.effects === 'function'
+          ? options.effects(params)
+          : typeof options.effects_UNSTABLE === 'function'
           ? options.effects_UNSTABLE(params)
-          : options.effects_UNSTABLE,
+          : options.effects ?? options.effects_UNSTABLE,
 
       // prettier-ignore
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(

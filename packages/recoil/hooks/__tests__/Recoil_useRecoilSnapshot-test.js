@@ -261,7 +261,7 @@ testRecoil('Snapshot auto-release', async ({gks}) => {
   const rootFirstAtom = atom({
     key: 'useRecoilSnapshot auto-release root-first',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       ({setSelf}) => {
         rootFirstCnt++;
         setSelf('ROOT');
@@ -276,7 +276,7 @@ testRecoil('Snapshot auto-release', async ({gks}) => {
   const snapshotFirstAtom = atom({
     key: 'useRecoilSnapshot auto-release snapshot-first',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       ({setSelf}) => {
         snapshotFirstCnt++;
         setSelf('SNAPSHOT FIRST');
@@ -291,7 +291,7 @@ testRecoil('Snapshot auto-release', async ({gks}) => {
   const snapshotOnlyAtom = atom({
     key: 'useRecoilSnapshot auto-release snapshot-only',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       ({setSelf}) => {
         snapshotOnlyCnt++;
         setSelf('SNAPSHOT ONLY');
@@ -306,7 +306,7 @@ testRecoil('Snapshot auto-release', async ({gks}) => {
   const rootOnlyAtom = atom({
     key: 'useRecoilSnapshot auto-release root-only',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       ({setSelf}) => {
         rootOnlyCnt++;
         setSelf('RETAIN');

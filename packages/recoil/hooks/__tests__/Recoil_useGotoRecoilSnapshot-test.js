@@ -237,7 +237,7 @@ testRecoil(
     const myAtom = atom({
       key: 'gotoSnapshot effect',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         () => {
           init++;
         },

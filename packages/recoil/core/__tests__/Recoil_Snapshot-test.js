@@ -501,7 +501,7 @@ describe('Atom effects', () => {
     const myAtom = atom({
       key: 'snapshot effects',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf}) => {
           effectsRefCount++;
           setSelf('INIT');
@@ -532,7 +532,7 @@ describe('Atom effects', () => {
     const myAtom = atom({
       key: 'snapshot effects',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf}) => {
           effectsRefCount++;
           setSelf('INIT');
