@@ -85,12 +85,12 @@ test('Write to storage', async () => {
   const atomA = atom({
     key: 'recoil-sync write A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync write B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
   const ignoreAtom = atom({
     key: 'recoil-sync write ignore',
@@ -134,12 +134,12 @@ test('Write to multiple storages', async () => {
   const atomA = atom({
     key: 'recoil-sync multiple storage A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({storeKey: 'A', refine: string()})],
+    effects: [syncEffect({storeKey: 'A', refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync multiple storage B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({storeKey: 'B', refine: string()})],
+    effects: [syncEffect({storeKey: 'B', refine: string()})],
   });
 
   const storageA = new Map();
@@ -171,17 +171,17 @@ test('Read from storage', async () => {
   const atomA = atom({
     key: 'recoil-sync read A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync read B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
   const atomC = atom({
     key: 'recoil-sync read C',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
 
   const storage = new Map([
@@ -205,7 +205,7 @@ test('Read from storage async', async () => {
   const atomA = atom({
     key: 'recoil-sync read async',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
 
   const storage = new Map([['recoil-sync read async', Promise.resolve('A')]]);
@@ -226,12 +226,12 @@ test('Read from storage error', async () => {
   const atomA = atom({
     key: 'recoil-sync read error A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync read error B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({refine: string(), actionOnFailure_UNSTABLE: 'defaultValue'}),
     ],
   });
@@ -239,13 +239,13 @@ test('Read from storage error', async () => {
     key: 'recoil-sync read error C',
     default: 'DEFAULT',
     // <TestRecoilSync> will throw error if the key is "error"
-    effects_UNSTABLE: [syncEffect({itemKey: 'error', refine: string()})],
+    effects: [syncEffect({itemKey: 'error', refine: string()})],
   });
   const atomD = atom({
     key: 'recoil-sync read error D',
     default: 'DEFAULT',
     // <TestRecoilSync> will throw error if the key is "error"
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         itemKey: 'error',
         refine: string(),
@@ -256,7 +256,7 @@ test('Read from storage error', async () => {
   const atomE = atom({
     key: 'recoil-sync read error E',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         refine: string(),
       }),
@@ -265,7 +265,7 @@ test('Read from storage error', async () => {
   const atomF = atom({
     key: 'recoil-sync read error F',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         refine: string(),
         actionOnFailure_UNSTABLE: 'defaultValue',
@@ -314,32 +314,32 @@ test('Read nullable', async () => {
   const atomUndefinedA = atom({
     key: 'recoil-sync read undefined A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: literal(undefined)})],
+    effects: [syncEffect({refine: literal(undefined)})],
   });
   const atomUndefinedB = atom({
     key: 'recoil-sync read undefined B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: literal(undefined)})],
+    effects: [syncEffect({refine: literal(undefined)})],
   });
   const atomUndefinedC = atom({
     key: 'recoil-sync read undefined C',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: literal(undefined)})],
+    effects: [syncEffect({refine: literal(undefined)})],
   });
   const atomNullA = atom({
     key: 'recoil-sync read null A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: literal(null)})],
+    effects: [syncEffect({refine: literal(null)})],
   });
   const atomNullB = atom({
     key: 'recoil-sync read null B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: literal(null)})],
+    effects: [syncEffect({refine: literal(null)})],
   });
   const atomNullC = atom({
     key: 'recoil-sync read null C',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: literal(null)})],
+    effects: [syncEffect({refine: literal(null)})],
   });
 
   const storage = new Map([
@@ -372,17 +372,17 @@ test('Abort read', async () => {
   const atomA = atom({
     key: 'recoil-sync abort read A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync abort read B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
   const atomC = atom({
     key: 'recoil-sync abort read C',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string()})],
+    effects: [syncEffect({refine: string()})],
   });
 
   const storage = new Map([
@@ -410,34 +410,22 @@ test('Abort vs reset', async () => {
   const atomA = atom({
     key: 'recoil-sync abort vs reset A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
-      ({setSelf}) => setSelf('INIT'),
-      syncEffect({refine: string()}),
-    ],
+    effects: [({setSelf}) => setSelf('INIT'), syncEffect({refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync abort vs reset B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
-      ({setSelf}) => setSelf('INIT'),
-      syncEffect({refine: string()}),
-    ],
+    effects: [({setSelf}) => setSelf('INIT'), syncEffect({refine: string()})],
   });
   const atomC = atom({
     key: 'recoil-sync abort vs reset C',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
-      ({setSelf}) => setSelf('INIT'),
-      syncEffect({refine: string()}),
-    ],
+    effects: [({setSelf}) => setSelf('INIT'), syncEffect({refine: string()})],
   });
   const atomD = atom({
     key: 'recoil-sync abort vs reset D',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
-      ({setSelf}) => setSelf('INIT'),
-      syncEffect({refine: string()}),
-    ],
+    effects: [({setSelf}) => setSelf('INIT'), syncEffect({refine: string()})],
   });
 
   const storage = new Map([
@@ -470,7 +458,7 @@ test('Read from storage upgrade - multiple effects', async () => {
   const atomA = atom<string>({
     key: 'recoil-sync fail validation - multi',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       // No matching sync effect
       syncEffect({refine: string(), actionOnFailure_UNSTABLE: 'defaultValue'}),
     ],
@@ -480,7 +468,7 @@ test('Read from storage upgrade - multiple effects', async () => {
   const atomB = atom<string>({
     key: 'recoil-sync upgrade number - multi',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       // This sync effect is ignored
       syncEffect({
         refine: asType(string(), () => 'IGNORE'),
@@ -502,7 +490,7 @@ test('Read from storage upgrade - multiple effects', async () => {
   const atomC = atom<number>({
     key: 'recoil-sync upgrade string - multi',
     default: 0,
-    effects_UNSTABLE: [
+    effects: [
       // This sync effect is ignored
       syncEffect({
         refine: asType(number(), () => 999),
@@ -524,7 +512,7 @@ test('Read from storage upgrade - multiple effects', async () => {
   const atomD = atom<string>({
     key: 'recoil-sync upgrade async - multi',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         refine: asType(number(), num => `${num}`),
         actionOnFailure_UNSTABLE: 'defaultValue',
@@ -559,7 +547,7 @@ test('Read from storage upgrade', async () => {
   const atomA = atom<string>({
     key: 'recoil-sync fail validation',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       // No matching sync effect
       syncEffect({refine: string(), actionOnFailure_UNSTABLE: 'defaultValue'}),
     ],
@@ -569,7 +557,7 @@ test('Read from storage upgrade', async () => {
   const atomB = atom<string>({
     key: 'recoil-sync upgrade number',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         refine: match(
           asType(string(), () => 'IGNORE'), // This rule is ignored
@@ -584,7 +572,7 @@ test('Read from storage upgrade', async () => {
   const atomC = atom<number>({
     key: 'recoil-sync upgrade string',
     default: 0,
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         refine: match(
           asType(number(), () => 999), // This rule is ignored
@@ -599,7 +587,7 @@ test('Read from storage upgrade', async () => {
   const atomD = atom<string>({
     key: 'recoil-sync upgrade async',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         refine: match(
           string(),
@@ -635,7 +623,7 @@ test('Read/Write from storage upgrade', async () => {
   const atomA = atom<string>({
     key: 'recoil-sync read/write upgrade type',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({
         refine: match(
           string(),
@@ -647,7 +635,7 @@ test('Read/Write from storage upgrade', async () => {
   const atomB = atom({
     key: 'recoil-sync read/write upgrade key',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({itemKey: 'OLD KEY', refine: string()}),
       syncEffect({itemKey: 'NEW KEY', refine: string()}),
     ],
@@ -655,7 +643,7 @@ test('Read/Write from storage upgrade', async () => {
   const atomC = atom({
     key: 'recoil-sync read/write upgrade storage',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({refine: string()}),
       syncEffect({storeKey: 'OTHER_SYNC', refine: string()}),
     ],
@@ -710,12 +698,12 @@ test('Listen to storage', async () => {
   const atomA = atom({
     key: 'recoil-sync listen',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({storeKey: 'SYNC_1', refine: string()})],
+    effects: [syncEffect({storeKey: 'SYNC_1', refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync listen to multiple keys',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({storeKey: 'SYNC_1', itemKey: 'KEY A', refine: string()}),
       syncEffect({storeKey: 'SYNC_1', itemKey: 'KEY B', refine: string()}),
     ],
@@ -723,7 +711,7 @@ test('Listen to storage', async () => {
   const atomC = atom({
     key: 'recoil-sync listen to multiple storage',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({storeKey: 'SYNC_1', refine: string()}),
       syncEffect({storeKey: 'SYNC_2', refine: string()}),
     ],
@@ -887,12 +875,12 @@ test('Persist on read', async () => {
   const atomA = atom({
     key: 'recoil-sync persist on read default',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({refine: string(), syncDefault: true})],
+    effects: [syncEffect({refine: string(), syncDefault: true})],
   });
   const atomB = atom({
     key: 'recoil-sync persist on read init',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       ({setSelf}) => setSelf('INIT_BEFORE'),
       syncEffect({refine: string(), syncDefault: true}),
       ({setSelf}) => setSelf('INIT_AFTER'),
@@ -927,12 +915,12 @@ test('Persist on read - async', async () => {
     default: new Promise(resolve => {
       resolveA = resolve;
     }),
-    effects_UNSTABLE: [syncEffect({refine: string(), syncDefault: true})],
+    effects: [syncEffect({refine: string(), syncDefault: true})],
   });
   const atomB = atom({
     key: 'recoil-sync persist on read init async',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       ({setSelf}) =>
         setSelf(
           new Promise(resolve => {
@@ -1000,17 +988,17 @@ test('Sync based on component props', async () => {
   const atomA = atom({
     key: 'recoil-sync from props spam',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({itemKey: 'spam', refine: string()})],
+    effects: [syncEffect({itemKey: 'spam', refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-sync from props eggs',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({itemKey: 'eggs', refine: string()})],
+    effects: [syncEffect({itemKey: 'eggs', refine: string()})],
   });
   const atomC = atom({
     key: 'recoil-sync from props default',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({itemKey: 'default', refine: string()})],
+    effects: [syncEffect({itemKey: 'default', refine: string()})],
   });
 
   const container = renderElements(
@@ -1029,7 +1017,7 @@ test('Sync Atom Family', async () => {
   const atoms = atomFamily({
     key: 'recoil-sync atom family',
     default: 'DEFAULT',
-    effects_UNSTABLE: param => [syncEffect({itemKey: param, refine: string()})],
+    effects: param => [syncEffect({itemKey: param, refine: string()})],
   });
 
   const storage = new Map([
@@ -1054,7 +1042,7 @@ describe('Complex Mappings', () => {
     const atomA = atom({
       key: 'recoil-sync write multiple A',
       default: 'A',
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({
           itemKey: 'a', // UNUSED
           refine: string(),
@@ -1076,7 +1064,7 @@ describe('Complex Mappings', () => {
     const atomB = atom({
       key: 'recoil-sync write multiple B',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({
           itemKey: 'b', // UNUSED
           refine: string(),
@@ -1147,7 +1135,7 @@ describe('Complex Mappings', () => {
     const myAtom = atom({
       key: 'recoil-sync read while writing',
       default: 'SELF',
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({
           refine: string(),
           write: ({write, read}, newValue) => {
@@ -1184,7 +1172,7 @@ describe('Complex Mappings', () => {
     const myAtom = atom({
       key: 'recoil-sync read from multiple',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({
           refine: dict(number()),
           read: ({read}) => ({a: read('a'), b: read('b')}),
@@ -1231,7 +1219,7 @@ test('Reading before sync hook', async () => {
   const atoms = atomFamily({
     key: 'recoil-sync order',
     default: 'DEFAULT',
-    effects_UNSTABLE: param => [syncEffect({itemKey: param, refine: string()})],
+    effects: param => [syncEffect({itemKey: param, refine: string()})],
   });
 
   function SyncOrder() {
@@ -1268,23 +1256,19 @@ test('Sibling <RecoilRoot>', async () => {
   const atomA = atom({
     key: 'recoil-sync sibling root A',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
-      syncEffect({itemKey: 'a', refine: string(), syncDefault: true}),
-    ],
+    effects: [syncEffect({itemKey: 'a', refine: string(), syncDefault: true})],
   });
 
   const atomB = atom({
     key: 'recoil-sync sibling root B',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
-      syncEffect({itemKey: 'b', refine: string(), syncDefault: true}),
-    ],
+    effects: [syncEffect({itemKey: 'b', refine: string(), syncDefault: true})],
   });
 
   const atomShared = atom({
     key: 'recoil-sync sibling root shared',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({itemKey: 'shared', refine: string(), syncDefault: true}),
     ],
   });
@@ -1361,7 +1345,7 @@ test('Unregister store and atoms', () => {
   const myAtom = atom({
     key,
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       ({storeID}) => {
         expect(registries_FOR_TESTING.getAtomRegistry(storeID).has(key)).toBe(
           false,

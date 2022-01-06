@@ -23,28 +23,28 @@ const {array, boolean, number, object, string, tuple} = require('refine');
 const atomBoolean = atom({
   key: 'boolean',
   default: true,
-  effects_UNSTABLE: [
+  effects: [
     syncEffect({storeKey: 'json', refine: boolean(), syncDefault: true}),
   ],
 });
 const atomNumber = atom({
   key: 'number',
   default: 123,
-  effects_UNSTABLE: [
+  effects: [
     syncEffect({storeKey: 'json', refine: number(), syncDefault: true}),
   ],
 });
 const atomString = atom({
   key: 'string',
   default: 'STRING',
-  effects_UNSTABLE: [
+  effects: [
     syncEffect({storeKey: 'json', refine: string(), syncDefault: true}),
   ],
 });
 const atomArray = atom({
   key: 'array',
   default: [1, 'a'],
-  effects_UNSTABLE: [
+  effects: [
     syncEffect({
       storeKey: 'transit',
       refine: tuple(number(), string()),
@@ -55,7 +55,7 @@ const atomArray = atom({
 const atomObject = atom({
   key: 'object',
   default: {foo: [1, 2]},
-  effects_UNSTABLE: [
+  effects: [
     syncEffect({
       storeKey: 'transit',
       refine: object({foo: array(number())}),

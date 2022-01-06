@@ -38,12 +38,12 @@ describe('Test URL Persistence', () => {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [urlSyncEffect({itemKey: 'a', refine: string()})],
+      effects: [urlSyncEffect({itemKey: 'a', refine: string()})],
     });
     const atomB = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [urlSyncEffect({itemKey: 'b', refine: string()})],
+      effects: [urlSyncEffect({itemKey: 'b', refine: string()})],
     });
     const ignoreAtom = atom({
       key: nextKey(),
@@ -110,16 +110,12 @@ describe('Test URL Persistence', () => {
     const atomA = atom({
       key: 'recoil-url-sync multiple param A',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
-        syncEffect({storeKey: 'A', itemKey: 'x', refine: string()}),
-      ],
+      effects: [syncEffect({storeKey: 'A', itemKey: 'x', refine: string()})],
     });
     const atomB = atom({
       key: 'recoil-url-sync multiple param B',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
-        syncEffect({storeKey: 'B', itemKey: 'x', refine: string()}),
-      ],
+      effects: [syncEffect({storeKey: 'B', itemKey: 'x', refine: string()})],
     });
 
     const [AtomA, setA] = componentThatReadsAndWritesAtom(atomA);
@@ -145,17 +141,17 @@ describe('Test URL Persistence', () => {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({itemKey: 'a', refine: string()})],
+      effects: [syncEffect({itemKey: 'a', refine: string()})],
     });
     const atomB = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({itemKey: 'b', refine: string()})],
+      effects: [syncEffect({itemKey: 'b', refine: string()})],
     });
     const atomC = atom({
       key: nextKey(),
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({itemKey: 'c', refine: string()})],
+      effects: [syncEffect({itemKey: 'c', refine: string()})],
     });
 
     history.replaceState(
@@ -201,7 +197,7 @@ describe('Test URL Persistence', () => {
     const atomA = atom<string>({
       key: 'recoil-url-sync fail validation',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         // No matching sync effect
         syncEffect({
           refine: string(),
@@ -214,7 +210,7 @@ describe('Test URL Persistence', () => {
     const atomB = atom<string>({
       key: 'recoil-url-sync upgrade number',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({
           refine: match(
             string(),
@@ -229,7 +225,7 @@ describe('Test URL Persistence', () => {
     const atomC = atom<number>({
       key: 'recoil-url-sync upgrade string',
       default: 0,
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({
           refine: match(
             number(),
@@ -274,7 +270,7 @@ describe('Test URL Persistence', () => {
     const atomA = atom<string>({
       key: 'recoil-url-sync read/write upgrade type',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({
           refine: match(
             string(),
@@ -286,7 +282,7 @@ describe('Test URL Persistence', () => {
     const atomB = atom({
       key: 'recoil-url-sync read/write upgrade key',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({itemKey: 'OLD KEY', refine: string()}),
         syncEffect({itemKey: 'NEW KEY', refine: string()}),
       ],
@@ -294,7 +290,7 @@ describe('Test URL Persistence', () => {
     const atomC = atom({
       key: 'recoil-url-sync read/write upgrade storage',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         syncEffect({refine: string()}),
         syncEffect({storeKey: 'SYNC_2', refine: string()}),
       ],
@@ -374,12 +370,12 @@ describe('Test URL Persistence', () => {
     const atomA = atom({
       key: 'recoil-url-sync persist on read default',
       default: 'DEFAULT',
-      effects_UNSTABLE: [syncEffect({refine: string(), syncDefault: true})],
+      effects: [syncEffect({refine: string(), syncDefault: true})],
     });
     const atomB = atom({
       key: 'recoil-url-sync persist on read init',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf}) => setSelf('INIT_BEFORE'),
         syncEffect({refine: string(), syncDefault: true}),
         ({setSelf}) => setSelf('INIT_AFTER'),

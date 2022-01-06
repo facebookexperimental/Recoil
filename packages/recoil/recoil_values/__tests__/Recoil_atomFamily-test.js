@@ -507,7 +507,7 @@ describe('Effects', () => {
     const myFamily = atomFamily<string, number>({
       key: 'atomFamily effect init',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf}) => {
           inited++;
           setSelf('INIT');
@@ -536,7 +536,7 @@ describe('Effects', () => {
     const myFamily = atomFamily({
       key: 'atomFamily effect parameterized init',
       default: 'DEFAULT',
-      effects_UNSTABLE: param => [({setSelf}) => setSelf(param)],
+      effects: param => [({setSelf}) => setSelf(param)],
     });
 
     expect(get(myFamily(1))).toEqual(1);
@@ -549,7 +549,7 @@ describe('Effects', () => {
     const atoms = atomFamily({
       key: 'atomFamily effect cleanup',
       default: p => p,
-      effects_UNSTABLE: p => [
+      effects: p => [
         () => {
           refCounts[p]++;
           return () => {
@@ -603,7 +603,7 @@ describe('Effects', () => {
     const atoms = atomFamily({
       key: 'atomFamily effect - storeID',
       default: 'DEFAULT',
-      effects_UNSTABLE: rootKey => [
+      effects: rootKey => [
         ({storeID, setSelf}) => {
           expect(storeID).toEqual(storeIDs[rootKey]);
           setSelf(rootKey);

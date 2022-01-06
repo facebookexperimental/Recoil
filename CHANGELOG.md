@@ -28,6 +28,7 @@
 - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
 - Fix transitive selector refresh for some cases (#1409)
 - Atom Effects
+  - Rename option from `effects_UNSTABLE` to just `effects` as the interface is mostly stabilizing (#1520)
   - Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466)
   - Atom effects are cleaned up when initialized by a Snapshot which is released. (#1511)
   - Unsubscribe `onSet()` handlers in atom effects when atoms are cleaned up. (#1509)

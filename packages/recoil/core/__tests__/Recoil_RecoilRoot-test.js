@@ -106,7 +106,7 @@ describe('initializeState', () => {
       const myAtom = atom<string>({
         key: 'RecoilRoot - initializeState - atom effects',
         default: 'DEFAULT',
-        effects_UNSTABLE: [
+        effects: [
           ({setSelf}) => {
             effectRan++;
             setSelf('EFFECT');
@@ -152,7 +152,7 @@ describe('initializeState', () => {
       const myAtom = atom({
         key: 'RecoilRoot - initializeState - onSet',
         default: 0,
-        effects_UNSTABLE: [
+        effects: [
           ({onSet, setSelf}) => {
             onSet(value => {
               setValues.push(value);

@@ -227,7 +227,7 @@ testRecoil('Effects', () => {
   const myAtom = atom<string>({
     key: 'atom with fallback effects init',
     default: myFallbackAtom,
-    effects_UNSTABLE: [
+    effects: [
       ({setSelf}) => {
         inited = true;
         setSelf('INIT');

@@ -254,7 +254,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect error',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         () => {
           throw ERROR;
         },
@@ -279,7 +279,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({node, trigger, setSelf}) => {
           inited = true;
           expect(trigger).toEqual('get');
@@ -297,7 +297,7 @@ describe('Effects', () => {
     const myAtom = atom<string>({
       key: 'atom effect async default',
       default: Promise.resolve('RESOLVE'),
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf, onSet}) => {
           inited = true;
           setSelf('INIT');
@@ -326,7 +326,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect order',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf}) => {
           setSelf(x => {
             expect(x).toEqual('DEFAULT');
@@ -353,10 +353,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect reset',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
-        ({setSelf}) => setSelf('INIT'),
-        ({resetSelf}) => resetSelf(),
-      ],
+      effects: [({setSelf}) => setSelf('INIT'), ({resetSelf}) => resetSelf()],
     });
     expect(getValue(myAtom)).toEqual('DEFAULT');
   });
@@ -365,10 +362,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect init undefined',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
-        ({setSelf}) => setSelf('INIT'),
-        ({setSelf}) => setSelf(),
-      ],
+      effects: [({setSelf}) => setSelf('INIT'), ({setSelf}) => setSelf()],
     });
     expect(getValue(myAtom)).toEqual(undefined);
   });
@@ -378,7 +372,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect - init on set',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf, trigger}) => {
           inited++;
           setSelf('INIT');
@@ -401,7 +395,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect init set',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf, resetSelf}) => {
           setAtom = setSelf;
           resetAtom = resetSelf;
@@ -457,7 +451,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect init set promise',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf, onSet}) => {
           setSelf(
             new Promise(resolve => {
@@ -500,7 +494,7 @@ describe('Effects', () => {
       default: new Promise(resolve => {
         resolveDefault = resolve;
       }),
-      effects_UNSTABLE: [
+      effects: [
         ({onSet}) => {
           onSet(onSetHandler);
         },
@@ -538,7 +532,7 @@ describe('Effects', () => {
       const myAtom = atom({
         key: 'atom setSelf with set-updater',
         default: 'DEFAULT',
-        effects_UNSTABLE: [
+        effects: [
           ({setSelf, onSet}) => {
             onSet(newValue => {
               expect(set1).toBe(false);
@@ -568,7 +562,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect init reject promise',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf, onSet}) => {
           setSelf(
             new Promise((_resolve, reject) => {
@@ -598,7 +592,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect init overwrite promise',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf, onSet}) => {
           setSelf(
             new Promise(resolve => {
@@ -634,7 +628,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect abort promise init',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf, onSet}) => {
           setSelf(
             new Promise(resolve => {
@@ -664,7 +658,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect once per root',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf}) => {
           inited++;
           setSelf('INIT');
@@ -702,13 +696,13 @@ describe('Effects', () => {
     const atomA = atom({
       key: 'atom effect onSet A',
       default: 0,
-      effects_UNSTABLE: [({onSet}) => onSet(observer('a'))],
+      effects: [({onSet}) => onSet(observer('a'))],
     });
 
     const atomB = atom({
       key: 'atom effect onSet B',
       default: 0,
-      effects_UNSTABLE: [({onSet}) => onSet(observer('b'))],
+      effects: [({onSet}) => onSet(observer('b'))],
     });
 
     const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
@@ -747,7 +741,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect onSet ordering',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({onSet}) => {
           onSet(() => {
             expect(set2).toBe(false);
@@ -803,12 +797,12 @@ describe('Effects', () => {
     const atomA = atom({
       key: 'atom effect onSte history A',
       default: 'DEFAULT_A',
-      effects_UNSTABLE: [historyEffect],
+      effects: [historyEffect],
     });
     const atomB = atom({
       key: 'atom effect onSte history B',
       default: 'DEFAULT_B',
-      effects_UNSTABLE: [historyEffect],
+      effects: [historyEffect],
     });
 
     const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
@@ -849,7 +843,7 @@ describe('Effects', () => {
     const atomA = atom({
       key: 'atom effect cleanup - A',
       default: 'A',
-      effects_UNSTABLE: [
+      effects: [
         () => {
           refCountsA[0]++;
           return () => {
@@ -868,7 +862,7 @@ describe('Effects', () => {
     const atomB = atom({
       key: 'atom effect cleanup - B',
       default: 'B',
-      effects_UNSTABLE: [
+      effects: [
         () => {
           refCountsB[0]++;
           return () => {
@@ -944,7 +938,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effects onSet unsubscribe',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({onSet}) => {
           onSet(() => {
             onSetRan++;
@@ -1006,7 +1000,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect - concurrent update',
       default: 'DEFAULT',
-      effects_UNSTABLE: [({setSelf}) => setSelf('INIT')],
+      effects: [({setSelf}) => setSelf('INIT')],
     });
     const otherAtom = atom({
       key: 'atom effect - concurrent update / other atom',
@@ -1058,7 +1052,7 @@ describe('Effects', () => {
       const atomWithEffect = atom({
         key: 'atomWithEffect',
         default: 0,
-        effects_UNSTABLE: [
+        effects: [
           ({setSelf}) => {
             latestSetSelf = setSelf;
 
@@ -1103,7 +1097,7 @@ describe('Effects', () => {
       const myAtom = atom({
         key: 'atom effect - init from other atom',
         default: 'DEFAULT',
-        effects_UNSTABLE: [
+        effects: [
           ({node, setSelf, getLoadable, getInfo_UNSTABLE}) => {
             const otherValue = getLoadable(otherAtom).contents;
             expect(otherValue).toEqual('OTHER');
@@ -1129,7 +1123,7 @@ describe('Effects', () => {
       const myAtom = atom({
         key: 'atom effect - init from other atom async',
         default: 'DEFAULT',
-        effects_UNSTABLE: [
+        effects: [
           ({setSelf, getPromise}) => {
             const otherValue = getPromise(otherAtom);
             setSelf(otherValue);
@@ -1162,7 +1156,7 @@ describe('Effects', () => {
       const myAtom = atom({
         key: 'atom effect - async get',
         default: 'DEFAULT',
-        effects_UNSTABLE: [
+        effects: [
           // Test we can get default values
           ({node, getLoadable, getPromise, getInfo_UNSTABLE}) => {
             expect(getLoadable(node).contents).toEqual(
@@ -1209,7 +1203,7 @@ describe('Effects', () => {
       const asyncAtom = atom({
         key: 'atom effect - other atom async get',
         default: Promise.resolve('ASYNC_DEFAULT'),
-        effects_UNSTABLE: [
+        effects: [
           ({setSelf}) => void setSelf(Promise.resolve('ASYNC')),
           ({getPromise, getInfo_UNSTABLE}) => {
             expect(getInfo_UNSTABLE(asyncAtom).isSet).toBe(true);
@@ -1286,7 +1280,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect - storeID',
       default: 'DEFAULT',
-      effects_UNSTABLE: [
+      effects: [
         ({storeID, setSelf}) => {
           effectStoreID = storeID;
           setSelf('INIT');
@@ -1372,7 +1366,7 @@ testRecoil('object is frozen when stored in atom', async () => {
   const initializedValueInAtom = atom({
     key: 'atom frozen initialized',
     default: {nested: 'DEFAULT'},
-    effects_UNSTABLE: [
+    effects: [
       ({setSelf}) => setSelf({state: 'frozen', nested: {state: 'frozen'}}),
     ],
   });
@@ -1384,7 +1378,7 @@ testRecoil('object is frozen when stored in atom', async () => {
     {
       key: 'atom frozen initialized async',
       default: {state: 'DEFAULT', nested: {state: 'DEFAULT'}},
-      effects_UNSTABLE: [
+      effects: [
         ({setSelf}) =>
           setSelf(
             Promise.resolve({state: 'frozen', nested: {state: 'frozen'}}),

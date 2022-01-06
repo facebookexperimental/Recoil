@@ -29,17 +29,17 @@ test('Push URLs in browser history', async () => {
   const atomA = atom({
     key: 'recoil-url-sync replace',
     default: 'DEFAULT',
-    effects_UNSTABLE: [urlSyncEffect({refine: string(), history: 'replace'})],
+    effects: [urlSyncEffect({refine: string(), history: 'replace'})],
   });
   const atomB = atom({
     key: 'recoil-url-sync push',
     default: 'DEFAULT',
-    effects_UNSTABLE: [urlSyncEffect({refine: string(), history: 'push'})],
+    effects: [urlSyncEffect({refine: string(), history: 'push'})],
   });
   const atomC = atom({
     key: 'recoil-url-sync push 2',
     default: 'DEFAULT',
-    effects_UNSTABLE: [urlSyncEffect({refine: string(), history: 'push'})],
+    effects: [urlSyncEffect({refine: string(), history: 'push'})],
   });
 
   const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);

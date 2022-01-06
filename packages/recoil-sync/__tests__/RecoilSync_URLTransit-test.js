@@ -41,58 +41,54 @@ class MyClass {
 const atomNull = atom({
   key: 'null',
   default: null,
-  effects_UNSTABLE: [syncEffect({refine: literal(null), syncDefault: true})],
+  effects: [syncEffect({refine: literal(null), syncDefault: true})],
 });
 const atomBoolean = atom({
   key: 'boolean',
   default: true,
-  effects_UNSTABLE: [syncEffect({refine: boolean(), syncDefault: true})],
+  effects: [syncEffect({refine: boolean(), syncDefault: true})],
 });
 const atomNumber = atom({
   key: 'number',
   default: 123,
-  effects_UNSTABLE: [syncEffect({refine: number(), syncDefault: true})],
+  effects: [syncEffect({refine: number(), syncDefault: true})],
 });
 const atomString = atom({
   key: 'string',
   default: 'STRING',
-  effects_UNSTABLE: [syncEffect({refine: string(), syncDefault: true})],
+  effects: [syncEffect({refine: string(), syncDefault: true})],
 });
 const atomArray = atom({
   key: 'array',
   default: [1, 'a'],
-  effects_UNSTABLE: [
-    syncEffect({refine: tuple(number(), string()), syncDefault: true}),
-  ],
+  effects: [syncEffect({refine: tuple(number(), string()), syncDefault: true})],
 });
 const atomObject = atom({
   key: 'object',
   default: {foo: [1, 2]},
-  effects_UNSTABLE: [
+  effects: [
     syncEffect({refine: object({foo: array(number())}), syncDefault: true}),
   ],
 });
 const atomSet = atom({
   key: 'set',
   default: new Set([1, 2]),
-  effects_UNSTABLE: [syncEffect({refine: set(number()), syncDefault: true})],
+  effects: [syncEffect({refine: set(number()), syncDefault: true})],
 });
 const atomMap = atom({
   key: 'map',
   default: new Map([[1, 'a']]),
-  effects_UNSTABLE: [
-    syncEffect({refine: map(number(), string()), syncDefault: true}),
-  ],
+  effects: [syncEffect({refine: map(number(), string()), syncDefault: true})],
 });
 const atomDate = atom({
   key: 'date',
   default: new Date('October 26, 1985'),
-  effects_UNSTABLE: [syncEffect({refine: date(), syncDefault: true})],
+  effects: [syncEffect({refine: date(), syncDefault: true})],
 });
 const atomUser = atom({
   key: 'user',
   default: new MyClass('CUSTOM'),
-  effects_UNSTABLE: [
+  effects: [
     syncEffect({
       refine: custom(x => (x instanceof MyClass ? x : null)),
       syncDefault: true,
@@ -102,7 +98,7 @@ const atomUser = atom({
 const atomWithFallback = atom({
   key: 'withFallback',
   default: selector({key: 'fallback selector', get: () => 'FALLBACK'}),
-  effects_UNSTABLE: [syncEffect({refine: string(), syncDefault: true})],
+  effects: [syncEffect({refine: string(), syncDefault: true})],
 });
 
 const HANDLERS = [

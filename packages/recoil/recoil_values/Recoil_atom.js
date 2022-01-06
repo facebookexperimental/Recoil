@@ -57,7 +57,6 @@
  */
 'use strict';
 
-// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {RecoilValueInfo} from '../core/Recoil_FunctionalCore';
 import type {StoreID} from '../core/Recoil_Keys';
@@ -69,6 +68,7 @@ import type {
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
+// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
@@ -143,6 +143,7 @@ export type AtomEffect<T> = ({
 export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
   default: RecoilValue<T> | Promise<T> | T,
+  effects?: $ReadOnlyArray<AtomEffect<T>>,
   effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>>,
   persistence_UNSTABLE?: PersistenceSettings<T>,
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,
@@ -253,7 +254,8 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     // Run Atom Effects
     ///////////////////
 
-    if (options.effects_UNSTABLE != null) {
+    const effects = options.effects ?? options.effects_UNSTABLE;
+    if (effects != null) {
       // This state is scoped by Store, since this is in the initAtom() closure
       let duringInit = true;
       let initValue: NewValue<T> = DEFAULT_VALUE;
@@ -397,7 +399,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           ]);
         };
 
-      for (const effect of options.effects_UNSTABLE ?? []) {
+      for (const effect of effects) {
         try {
           const cleanup = effect({
             node,
@@ -611,8 +613,8 @@ function atomWithFallback<T>(
                   ),
           },
     // TODO Hack for now.
-    // flowlint-next-line unclear-type: off
-    effects_UNSTABLE: (options.effects_UNSTABLE: any),
+    effects: (options.effects: any), // flowlint-line unclear-type: off
+    effects_UNSTABLE: (options.effects_UNSTABLE: any), // flowlint-line unclear-type: off
   });
 
   const sel = selector<T>({

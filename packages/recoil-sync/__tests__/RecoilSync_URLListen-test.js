@@ -31,12 +31,12 @@ test('Listen to URL changes', async () => {
   const atomA = atom({
     key: 'recoil-url-sync listen',
     default: 'DEFAULT',
-    effects_UNSTABLE: [syncEffect({storeKey: 'foo', refine: string()})],
+    effects: [syncEffect({storeKey: 'foo', refine: string()})],
   });
   const atomB = atom({
     key: 'recoil-url-sync listen to multiple keys',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({storeKey: 'foo', itemKey: 'KEY A', refine: string()}),
       syncEffect({storeKey: 'foo', itemKey: 'KEY B', refine: string()}),
     ],
@@ -44,7 +44,7 @@ test('Listen to URL changes', async () => {
   const atomC = atom({
     key: 'recoil-url-sync listen to multiple storage',
     default: 'DEFAULT',
-    effects_UNSTABLE: [
+    effects: [
       syncEffect({storeKey: 'foo', refine: string()}),
       syncEffect({storeKey: 'bar', refine: string()}),
     ],
