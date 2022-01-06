@@ -30,9 +30,11 @@ const useMutableSource: <StoreState, T>(
   // flowlint-next-line unclear-type:off
   (React: any).useMutableSource ?? (React: any).unstable_useMutableSource;
 
+// https://github.com/reactwg/react-18/discussions/86
 const useSyncExternalStore: <T>(
   subscribe: (() => void) => () => void,
   getSnapshot: () => T,
+  getServerSnapshot?: () => T,
 ) => T =
   // flowlint-next-line unclear-type:off
   (React: any).useSyncExternalStore ??
