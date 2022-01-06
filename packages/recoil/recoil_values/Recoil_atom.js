@@ -308,12 +308,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       const setSelf =
         (effect: AtomEffect<T>) => (valueOrUpdater: NewValueOrUpdater<T>) => {
           if (duringInit) {
+            const currentLoadable = getLoadable(node);
             const currentValue: T | DefaultValue =
-              initValue instanceof DefaultValue || isPromise(initValue)
-                ? defaultLoadable.state === 'hasValue'
-                  ? defaultLoadable.contents
-                  : DEFAULT_VALUE
-                : initValue;
+              currentLoadable.state === 'hasValue'
+                ? currentLoadable.contents
+                : DEFAULT_VALUE;
             initValue =
               typeof valueOrUpdater === 'function'
                 ? // cast to any because we can't restrict T from being a function without losing support for opaque types

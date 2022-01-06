@@ -49,6 +49,8 @@ const err = require('recoil-shared/util/Recoil_err');
 const ReactDOM = require('react-dom'); // @oss-only
 const StrictMode = React.StrictMode; // @oss-only
 
+const QUICK_TEST = false;
+
 // @fb-only: const IS_INTERNAL = true;
 const IS_INTERNAL = false; // @oss-only
 
@@ -363,46 +365,52 @@ const testGKs =
       });
     }
 
-    runTests({strictMode: false, concurrentMode: false});
-    runTests({strictMode: true, concurrentMode: false});
-    if (isConcurrentModeAvailable()) {
+    if (QUICK_TEST) {
       runTests({strictMode: false, concurrentMode: true});
-      // 2020-12-20: The internal <StrictMode> isn't yet enabled to run effects
-      // multiple times.  So, rely on GitHub CI actions to test this for now.
-      if (!IS_INTERNAL) {
-        runTests({strictMode: true, concurrentMode: true});
+    } else {
+      runTests({strictMode: false, concurrentMode: false});
+      runTests({strictMode: true, concurrentMode: false});
+      if (isConcurrentModeAvailable()) {
+        runTests({strictMode: false, concurrentMode: true});
+        // 2020-12-20: The internal <StrictMode> isn't yet enabled to run effects
+        // multiple times.  So, rely on GitHub CI actions to test this for now.
+        if (!IS_INTERNAL) {
+          runTests({strictMode: true, concurrentMode: true});
+        }
       }
     }
   };
 
-const WWW_GKS_TO_TEST = [
-  // OSS for React <18:
-  ['recoil_hamt_2020', 'recoil_suppress_rerender_in_callback'], // Also enables early rendering
-  // Current internal default:
-  ['recoil_hamt_2020', 'recoil_mutable_source'],
-  // Internal with suppress, early rendering, and useTransition() support:
-  [
-    'recoil_hamt_2020',
-    'recoil_mutable_source',
-    'recoil_suppress_rerender_in_callback', // Also enables early rendering
-  ],
-  // OSS for React 18, test internally:
-  [
-    'recoil_hamt_2020',
-    'recoil_sync_external_store',
-    'recoil_suppress_rerender_in_callback', // Only used for fallback if no useSyncExternalStore()
-  ],
-  // Latest with GC:
-  [
-    'recoil_hamt_2020',
-    'recoil_sync_external_store',
-    'recoil_suppress_rerender_in_callback',
-    'recoil_memory_managament_2020',
-    'recoil_release_on_cascading_update_killswitch_2021',
-  ],
-  // Experimental mode for useTransition() support:
-  // ['recoil_hamt_2020', 'recoil_concurrent_legacy'],
-];
+const WWW_GKS_TO_TEST = QUICK_TEST
+  ? [['recoil_hamt_2020', 'recoil_sync_external_store']]
+  : [
+      // OSS for React <18:
+      ['recoil_hamt_2020', 'recoil_suppress_rerender_in_callback'], // Also enables early rendering
+      // Current internal default:
+      ['recoil_hamt_2020', 'recoil_mutable_source'],
+      // Internal with suppress, early rendering, and useTransition() support:
+      [
+        'recoil_hamt_2020',
+        'recoil_mutable_source',
+        'recoil_suppress_rerender_in_callback', // Also enables early rendering
+      ],
+      // OSS for React 18, test internally:
+      [
+        'recoil_hamt_2020',
+        'recoil_sync_external_store',
+        'recoil_suppress_rerender_in_callback', // Only used for fallback if no useSyncExternalStore()
+      ],
+      // Latest with GC:
+      [
+        'recoil_hamt_2020',
+        'recoil_sync_external_store',
+        'recoil_suppress_rerender_in_callback',
+        'recoil_memory_managament_2020',
+        'recoil_release_on_cascading_update_killswitch_2021',
+      ],
+      // Experimental mode for useTransition() support:
+      // ['recoil_hamt_2020', 'recoil_concurrent_legacy'],
+    ];
 
 /**
  * GK combinations to exclude in OSS, presumably because these combinations pass
