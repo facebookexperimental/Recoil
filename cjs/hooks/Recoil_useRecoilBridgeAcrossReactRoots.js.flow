@@ -11,6 +11,10 @@
 'use strict';
 
 const {
+  reactMode
+} = require('../core/Recoil_ReactMode');
+
+const {
   RecoilRoot,
   useStoreRef
 } = require('../core/Recoil_RecoilRoot');

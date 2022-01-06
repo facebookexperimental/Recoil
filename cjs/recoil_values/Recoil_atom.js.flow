@@ -55,7 +55,7 @@
  * @flow strict-local
  * @format
  */
-'use strict'; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
+'use strict';
 
 import type { Loadable } from '../adt/Recoil_Loadable';
 import type { RecoilValueInfo } from '../core/Recoil_FunctionalCore';
@@ -63,7 +63,8 @@ import type { StoreID } from '../core/Recoil_Keys';
 import type { PersistenceInfo, ReadWriteNodeOptions, Trigger } from '../core/Recoil_Node';
 import type { RecoilState, RecoilValue } from '../core/Recoil_RecoilValue';
 import type { RetainedBy } from '../core/Recoil_RetainedBy';
-import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State'; // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
+import type { AtomWrites, NodeKey, Store, TreeState } from '../core/Recoil_State'; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
+// @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
 const {
   loadableWithError,
@@ -136,6 +137,7 @@ export type AtomEffect<T> = ({
 export type AtomOptions<T> = $ReadOnly<{
   key: NodeKey,
   default: RecoilValue<T> | Promise<T> | T,
+  effects?: $ReadOnlyArray<AtomEffect<T>>,
   effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>>,
   persistence_UNSTABLE?: PersistenceSettings<T>,
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ScopeRules,

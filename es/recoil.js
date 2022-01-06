@@ -2338,9 +2338,9 @@ function initializeNodeIfNewToStore(store, treeState, key, trigger) {
     return;
   }
 
-  const config = getNode$1(key);
-  const retentionCleanup = initializeRetentionForNode(store, key, config.retainedBy);
-  const nodeCleanup = config.init(store, treeState, trigger);
+  const node = getNode$1(key);
+  const retentionCleanup = initializeRetentionForNode(store, key, node.retainedBy);
+  const nodeCleanup = node.init(store, treeState, trigger);
   storeState.nodeCleanupFunctions.set(key, () => {
     nodeCleanup();
     retentionCleanup();
@@ -3510,42 +3510,50 @@ class Snapshot {
     }
 
     this.retain();
-    this.autorelease_INTERNAL();
+
+    this._autoRelease();
   }
 
   retain() {
-    if (!Recoil_gkx('recoil_memory_managament_2020')) {
-      return () => undefined;
-    }
-
     this._refCount++;
     let released = false;
     return () => {
       if (!released) {
         released = true;
-        this.release_INTERNAL();
+
+        this._release();
       }
     };
   }
+  /**
+   * Release the snapshot on the next tick.  This means the snapshot is retained
+   * during the execution of the current function using it.
+   */
 
-  autorelease_INTERNAL() {
-    if (!Recoil_gkx('recoil_memory_managament_2020')) {
-      return;
-    }
 
+  _autoRelease() {
     if (!isSSR$1) {
-      window.setTimeout(() => this.release_INTERNAL(), 0);
+      window.setTimeout(() => this._release(), 0);
     }
   }
 
-  release_INTERNAL() {
-    if (!Recoil_gkx('recoil_memory_managament_2020')) {
-      return;
-    }
-
+  _release() {
     this._refCount--;
 
-    if (this._refCount === 0) ;
+    if (this._refCount === 0) {
+      this._store.getState().nodeCleanupFunctions.forEach(cleanup => cleanup());
+
+      this._store.getState().nodeCleanupFunctions.clear();
+
+      if (!Recoil_gkx('recoil_memory_managament_2020')) {
+        return;
+      } // Temporarily nerfing this to allow us to find broken call sites without
+      // actually breaking anybody yet.
+      // for (const k of this._store.getState().knownAtoms) {
+      //   updateRetainCountToZero(this._store, k);
+      // }
+
+    }
   }
 
   checkRefCount_INTERNAL() {
@@ -5459,24 +5467,38 @@ function useRecoilSnapshot() {
   const [snapshot, setSnapshot] = useState$2(() => cloneSnapshot$1(storeRef.current));
   const previousSnapshot = Recoil_usePrevious(snapshot);
   const timeoutID = useRef$6();
+  const releaseRef = useRef$6();
+  useTransactionSubscription(useCallback$2(store => setSnapshot(cloneSnapshot$1(store)), [])); // Retain snapshot for duration component is mounted
+
   useEffect$4(() => {
+    // Release the retain from the rendering call
     if (timeoutID.current && !isSSR$3) {
+      var _releaseRef$current;
+
       window.clearTimeout(timeoutID.current);
+      (_releaseRef$current = releaseRef.current) === null || _releaseRef$current === void 0 ? void 0 : _releaseRef$current.call(releaseRef);
+      releaseRef.current = null;
     }
 
     return snapshot.retain();
-  }, [snapshot]);
-  useTransactionSubscription(useCallback$2(store => setSnapshot(cloneSnapshot$1(store)), []));
+  }, [snapshot]); // Retain snapshot until above effect is run.
+  // Release after a threshold in case component is suspended.
 
   if (previousSnapshot !== snapshot && !isSSR$3) {
+    // Release the previous snapshot
     if (timeoutID.current) {
-      previousSnapshot === null || previousSnapshot === void 0 ? void 0 : previousSnapshot.release_INTERNAL();
+      var _releaseRef$current2;
+
       window.clearTimeout(timeoutID.current);
+      (_releaseRef$current2 = releaseRef.current) === null || _releaseRef$current2 === void 0 ? void 0 : _releaseRef$current2.call(releaseRef);
+      releaseRef.current = null;
     }
 
-    snapshot.retain();
+    releaseRef.current = snapshot.retain();
     timeoutID.current = window.setTimeout(() => {
-      snapshot.release_INTERNAL();
+      var _releaseRef$current3;
+
+      (_releaseRef$current3 = releaseRef.current) === null || _releaseRef$current3 === void 0 ? void 0 : _releaseRef$current3.call(releaseRef);
       timeoutID.current = null;
     }, SUSPENSE_TIMEOUT_MS$2);
   }
@@ -5546,6 +5568,10 @@ function useGetRecoilValueInfo() {
 var Recoil_useGetRecoilValueInfo = useGetRecoilValueInfo;
 
 const {
+  reactMode: reactMode$4
+} = Recoil_ReactMode;
+
+const {
   RecoilRoot: RecoilRoot$1,
   useStoreRef: useStoreRef$5
 } = Recoil_RecoilRoot;
@@ -5557,6 +5583,13 @@ const {
 } = react;
 
 function useRecoilBridgeAcrossReactRoots() {
+  // The test fails when using useMutableSource(), but only if act() is used
+  // for the nested root.  So, this may only be a testing environment issue.
+  if (reactMode$4().mode === 'MUTABLE_SOURCE') {
+    // eslint-disable-next-line fb-www/no-console
+    console.warn('Warning: There are known issues using useRecoilBridgeAcrossReactRoots() in recoil_mutable_source rendering mode.  Please consider upgrading to recoil_sync_external_store mode.');
+  }
+
   const store = useStoreRef$5().current;
   return useMemo$2(() => {
     // eslint-disable-next-line no-shadow
@@ -6743,12 +6776,9 @@ function selector(options) {
 
   function selectorInit(store) {
     liveStoresCount++;
-    store.getState().knownSelectors.add(key); // FIXME remove knownSelectors?
-
+    store.getState().knownSelectors.add(key);
     return () => {
       liveStoresCount--;
-      store.getState().knownSelectors.delete(key);
-      executionInfoMap.delete(store);
     };
   }
 
@@ -7424,12 +7454,11 @@ function selector(options) {
   }
 
   function selectorPeek(store, state) {
-    const cacheVal = cache.get(nodeKey => {
+    return cache.get(nodeKey => {
       !(typeof nodeKey === 'string') ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Cache nodeKey is type string') : Recoil_invariant(false) : void 0;
       const peek = peekNodeLoadable$1(store, state, nodeKey);
       return peek === null || peek === void 0 ? void 0 : peek.contents;
     });
-    return cacheVal;
   }
 
   function selectorGet(store, state) {
@@ -7550,6 +7579,7 @@ function selector(options) {
 
 var Recoil_selector = selector;
 
+// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 const {
   loadableWithError: loadableWithError$2,
@@ -7662,6 +7692,10 @@ function baseAtom(options) {
   }
 
   function initAtom(store, initState, trigger) {
+    var _options$effects;
+
+    liveStoresCount++;
+
     const cleanupAtom = () => {
       var _cleanupEffectsByStor;
 
@@ -7670,12 +7704,7 @@ function baseAtom(options) {
       cleanupEffectsByStore.delete(store);
     };
 
-    if (store.getState().nodeCleanupFunctions.has(key)) {
-      return cleanupAtom;
-    }
-
-    store.getState().knownAtoms.add(key);
-    liveStoresCount++; // Setup async defaults to notify subscribers when they resolve
+    store.getState().knownAtoms.add(key); // Setup async defaults to notify subscribers when they resolve
 
     if (defaultLoadable.state === 'loading') {
       const notifyDefaultSubscribers = () => {
@@ -7694,7 +7723,9 @@ function baseAtom(options) {
     ///////////////////
 
 
-    if (options.effects_UNSTABLE != null) {
+    const effects = (_options$effects = options.effects) !== null && _options$effects !== void 0 ? _options$effects : options.effects_UNSTABLE;
+
+    if (effects != null) {
       // This state is scoped by Store, since this is in the initAtom() closure
       let duringInit = true;
       let initValue = DEFAULT_VALUE$7;
@@ -7734,7 +7765,8 @@ function baseAtom(options) {
 
       const setSelf = effect => valueOrUpdater => {
         if (duringInit) {
-          const currentValue = initValue instanceof DefaultValue$2 || Recoil_isPromise(initValue) ? defaultLoadable.state === 'hasValue' ? defaultLoadable.contents : DEFAULT_VALUE$7 : initValue;
+          const currentLoadable = getLoadable(node);
+          const currentValue = currentLoadable.state === 'hasValue' ? currentLoadable.contents : DEFAULT_VALUE$7;
           initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict T from being a function without losing support for opaque types
           valueOrUpdater(currentValue) // flowlint-line unclear-type:off
           : valueOrUpdater;
@@ -7821,9 +7853,7 @@ function baseAtom(options) {
         cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor2 = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor2 !== void 0 ? _cleanupEffectsByStor2 : []), release]);
       };
 
-      for (const effect of (_options$effects_UNST = options.effects_UNSTABLE) !== null && _options$effects_UNST !== void 0 ? _options$effects_UNST : []) {
-        var _options$effects_UNST;
-
+      for (const effect of effects) {
         try {
           const cleanup = effect({
             node,
@@ -7991,8 +8021,10 @@ function atomWithFallback(options) {
       validator: storedValue => storedValue instanceof DefaultValue$2 ? storedValue : Recoil_nullthrows(options.persistence_UNSTABLE).validator(storedValue, DEFAULT_VALUE$7)
     },
     // TODO Hack for now.
-    // flowlint-next-line unclear-type: off
-    effects_UNSTABLE: options.effects_UNSTABLE
+    effects: options.effects,
+    // flowlint-line unclear-type: off
+    effects_UNSTABLE: options.effects_UNSTABLE // flowlint-line unclear-type: off
+
   });
   const sel = Recoil_selector({
     key: `${options.key}__withFallback`,
@@ -8189,7 +8221,7 @@ function atomFamily(options) {
   // on the parameter value equality.
 
   return params => {
-    var _stableStringify;
+    var _stableStringify, _options$effects;
 
     const cachedAtom = atomCache.get(params);
 
@@ -8209,7 +8241,7 @@ function atomFamily(options) {
       : // Default may be a static value, promise, or RecoilValue
       options.default,
       retainedBy_UNSTABLE: typeof options.retainedBy_UNSTABLE === 'function' ? options.retainedBy_UNSTABLE(params) : options.retainedBy_UNSTABLE,
-      effects_UNSTABLE: typeof options.effects_UNSTABLE === 'function' ? options.effects_UNSTABLE(params) : options.effects_UNSTABLE // prettier-ignore
+      effects: typeof options.effects === 'function' ? options.effects(params) : typeof options.effects_UNSTABLE === 'function' ? options.effects_UNSTABLE(params) : (_options$effects = options.effects) !== null && _options$effects !== void 0 ? _options$effects : options.effects_UNSTABLE // prettier-ignore
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
       // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
       // @fb-only: params,

@@ -14,9 +14,12 @@ const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, act, useGotoRecoilSnapshot, useRecoilTransactionObserver, atom, constSelector, selector, ReadsAtom, asyncSelector, componentThatReadsAndWritesAtom, renderElements, Snapshot, freshSnapshot;
+let React, act, useState, useGotoRecoilSnapshot, useRecoilTransactionObserver, atom, constSelector, selector, ReadsAtom, flushPromisesAndTimers, asyncSelector, componentThatReadsAndWritesAtom, renderElements, Snapshot, freshSnapshot, RecoilRoot;
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
+  ({
+    useState
+  } = React);
   ({
     act
   } = require('ReactTestUtils'));
@@ -29,6 +32,7 @@ const testRecoil = getRecoilTestFn(() => {
   selector = require('../../recoil_values/Recoil_selector');
   ({
     ReadsAtom,
+    flushPromisesAndTimers,
     asyncSelector,
     componentThatReadsAndWritesAtom,
     renderElements
@@ -37,6 +41,9 @@ const testRecoil = getRecoilTestFn(() => {
     Snapshot,
     freshSnapshot
   } = require('../Recoil_Snapshot'));
+  ({
+    RecoilRoot
+  } = require('../Recoil_RecoilRoot'));
 }); // Test first since we are testing all registered nodes
 
 testRecoil('getNodes', () => {
@@ -433,4 +440,62 @@ testRecoil('getInfo', () => {
   });
   expect(Array.from(resetSnapshot.getInfo_UNSTABLE(selectorB).deps)).toEqual(expect.arrayContaining([myAtom, selectorA]));
   expect(Array.from(resetSnapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes)).toEqual([]);
+});
+describe('Atom effects', () => {
+  testRecoil('Standalone snapshot', async ({
+    gks
+  }) => {
+    let effectsRefCount = 0;
+    const myAtom = atom({
+      key: 'snapshot effects',
+      default: 'DEFAULT',
+      effects: [({
+        setSelf
+      }) => {
+        effectsRefCount++;
+        setSelf('INIT');
+        return () => {
+          effectsRefCount--;
+        };
+      }]
+    });
+    expect(effectsRefCount).toBe(0);
+    const fresh = freshSnapshot();
+    expect(fresh.getLoadable(myAtom).getValue()).toBe('INIT');
+    expect(effectsRefCount).toBe(1); // Auto-release snapshot
+
+    await flushPromisesAndTimers();
+    expect(effectsRefCount).toBe(0);
+
+    if (gks.includes('recoil_memory_management_2020')) {// TODO Enable when this is an error
+      // expect(() => fresh.getLoadable(myAtom)).toThrow();
+    }
+  });
+  testRecoil('RecoilRoot Snapshot', () => {
+    let effectsRefCount = 0;
+    const myAtom = atom({
+      key: 'snapshot effects',
+      default: 'DEFAULT',
+      effects: [({
+        setSelf
+      }) => {
+        effectsRefCount++;
+        setSelf('INIT');
+        return () => {
+          effectsRefCount--;
+        };
+      }]
+    });
+    declare var setMount: (_: any) => any;
+    declare function Component(): any;
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(effectsRefCount).toBe(0);
+    act(() => setMount(true));
+    expect(c.textContent).toBe('"INIT"');
+    expect(effectsRefCount).toBe(1);
+    act(() => setMount(false));
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(effectsRefCount).toBe(0);
+  });
 });

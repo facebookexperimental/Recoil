@@ -14,7 +14,7 @@ const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, useRef, useState, act, useStoreRef, atom, atomFamily, selector, useRecoilCallback, useRecoilValue, useSetRecoilState, ReadsAtom, flushPromisesAndTimers, renderElements, invariant;
+let React, useRef, useState, act, useStoreRef, atom, atomFamily, selector, useRecoilCallback, useRecoilValue, useRecoilState, useSetRecoilState, ReadsAtom, flushPromisesAndTimers, renderElements, invariant;
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({
@@ -33,7 +33,8 @@ const testRecoil = getRecoilTestFn(() => {
     selector,
     useRecoilCallback,
     useSetRecoilState,
-    useRecoilValue
+    useRecoilValue,
+    useRecoilState
   } = require('../../Recoil_index'));
   ({
     ReadsAtom,
@@ -232,99 +233,128 @@ testRecoil('Consistent callback function', () => {
 
   expect(out.textContent).toBe('1');
 });
-testRecoil('Atom effects are initialized twice if first seen on snapshot and then on root store', ({
-  strictMode,
-  concurrentMode
-}) => {
-  const sm = strictMode ? 1 : 0;
-  let numTimesEffectInit = 0;
-  const atomWithEffect = atom({
-    key: 'atomWithEffect',
-    default: 0,
-    effects_UNSTABLE: [() => {
-      numTimesEffectInit++;
-    }]
-  }); // StrictMode will render the component twice
+describe('Atom Effects', () => {
+  testRecoil('Atom effects are initialized twice if first seen on snapshot and then on root store', ({
+    strictMode,
+    concurrentMode
+  }) => {
+    const sm = strictMode ? 1 : 0;
+    let numTimesEffectInit = 0;
+    const atomWithEffect = atom({
+      key: 'atomWithEffect',
+      default: 0,
+      effects: [() => {
+        numTimesEffectInit++;
+      }]
+    }); // StrictMode will render the component twice
 
-  let renderCount = 0;
-  declare var Component: () => any;
-  const c = renderElements(<Component />);
-  expect(c.textContent).toBe(''); // Confirm no failures from rendering
+    let renderCount = 0;
+    declare var Component: () => any;
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe(''); // Confirm no failures from rendering
 
-  expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
-});
-testRecoil('Atom effects are initialized once if first seen on root store and then on snapshot', ({
-  strictMode,
-  concurrentMode
-}) => {
-  let numTimesEffectInit = 0;
-  const atomWithEffect = atom({
-    key: 'atomWithEffect2',
-    default: 0,
-    effects_UNSTABLE: [() => {
-      numTimesEffectInit++;
-    }]
+    expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
   });
-  declare var Component: () => any;
-  const c = renderElements(<Component />);
-  expect(c.textContent).toBe(''); // Confirm no failures from rendering
+  testRecoil('Atom effects are initialized once if first seen on root store and then on snapshot', ({
+    strictMode,
+    concurrentMode
+  }) => {
+    let numTimesEffectInit = 0;
+    const atomWithEffect = atom({
+      key: 'atomWithEffect2',
+      default: 0,
+      effects: [() => {
+        numTimesEffectInit++;
+      }]
+    });
+    declare var Component: () => any;
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe(''); // Confirm no failures from rendering
 
-  expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 2 : 1);
+    expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 2 : 1);
+  });
+  testRecoil('onSet() called when atom initialized with snapshot', () => {
+    const setValues = [];
+    const myAtom = atom({
+      key: 'useRecoilCallback - atom effect - onSet',
+      default: 0,
+      effects: [({
+        onSet,
+        setSelf
+      }) => {
+        onSet(value => {
+          setValues.push(value); // Confirm setSelf() still valid when initialized from snapshot
+
+          setSelf(value + 1);
+        });
+      }]
+    });
+    let setAtom;
+    declare var Component: () => any;
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe('0');
+    expect(setValues).toEqual([]);
+    act(() => setAtom(1));
+    expect(setValues).toEqual([1]);
+    expect(c.textContent).toBe('2');
+  });
 });
-testRecoil('Refresh selector cache - transitive', () => {
-  const getA = jest.fn(() => 'A');
-  const selectorA = selector({
-    key: 'useRecoilCallback refresh ancestors A',
-    get: getA
-  });
-  const getB = jest.fn(({
-    get
-  }) => get(selectorA) + 'B');
-  const selectorB = selector({
-    key: 'useRecoilCallback refresh ancestors B',
-    get: getB
-  });
-  const getC = jest.fn(({
-    get
-  }) => get(selectorB) + 'C');
-  const selectorC = selector({
-    key: 'useRecoilCallback refresh ancestors C',
-    get: getC
-  });
-  let refreshSelector;
-  declare function Component(): any;
-  const container = renderElements(<Component />);
-  expect(container.textContent).toBe('ABC');
-  expect(getC).toHaveBeenCalledTimes(1);
-  expect(getB).toHaveBeenCalledTimes(1);
-  expect(getA).toHaveBeenCalledTimes(1);
-  act(() => refreshSelector());
-  expect(container.textContent).toBe('ABC');
-  expect(getC).toHaveBeenCalledTimes(2);
-  expect(getB).toHaveBeenCalledTimes(2);
-  expect(getA).toHaveBeenCalledTimes(2);
-});
-testRecoil('Refresh selector cache - clears entire cache', async () => {
-  const myatom = atom({
-    key: 'useRecoilCallback refresh entire cache atom',
-    default: 'a'
-  });
-  let i = 0;
-  const myselector = selector({
-    key: 'useRecoilCallback refresh entire cache selector',
-    get: ({
+describe('Selector Cache', () => {
+  testRecoil('Refresh selector cache - transitive', () => {
+    const getA = jest.fn(() => 'A');
+    const selectorA = selector({
+      key: 'useRecoilCallback refresh ancestors A',
+      get: getA
+    });
+    const getB = jest.fn(({
       get
-    }) => [get(myatom), i++]
+    }) => get(selectorA) + 'B');
+    const selectorB = selector({
+      key: 'useRecoilCallback refresh ancestors B',
+      get: getB
+    });
+    const getC = jest.fn(({
+      get
+    }) => get(selectorB) + 'C');
+    const selectorC = selector({
+      key: 'useRecoilCallback refresh ancestors C',
+      get: getC
+    });
+    let refreshSelector;
+    declare function Component(): any;
+    const container = renderElements(<Component />);
+    expect(container.textContent).toBe('ABC');
+    expect(getC).toHaveBeenCalledTimes(1);
+    expect(getB).toHaveBeenCalledTimes(1);
+    expect(getA).toHaveBeenCalledTimes(1);
+    act(() => refreshSelector());
+    expect(container.textContent).toBe('ABC');
+    expect(getC).toHaveBeenCalledTimes(2);
+    expect(getB).toHaveBeenCalledTimes(2);
+    expect(getA).toHaveBeenCalledTimes(2);
   });
-  let setMyAtom;
-  let refreshSelector;
-  declare function Component(): any;
-  const container = renderElements(<Component />);
-  expect(container.textContent).toBe('a-0');
-  act(() => setMyAtom('b'));
-  expect(container.textContent).toBe('b-1');
-  act(() => refreshSelector());
-  expect(container.textContent).toBe('b-2');
-  act(() => setMyAtom('a'));
-  expect(container.textContent).toBe('a-3');
+  testRecoil('Refresh selector cache - clears entire cache', async () => {
+    const myatom = atom({
+      key: 'useRecoilCallback refresh entire cache atom',
+      default: 'a'
+    });
+    let i = 0;
+    const myselector = selector({
+      key: 'useRecoilCallback refresh entire cache selector',
+      get: ({
+        get
+      }) => [get(myatom), i++]
+    });
+    let setMyAtom;
+    let refreshSelector;
+    declare function Component(): any;
+    const container = renderElements(<Component />);
+    expect(container.textContent).toBe('a-0');
+    act(() => setMyAtom('b'));
+    expect(container.textContent).toBe('b-1');
+    act(() => refreshSelector());
+    expect(container.textContent).toBe('b-2');
+    act(() => setMyAtom('a'));
+    expect(container.textContent).toBe('a-3');
+  });
 });

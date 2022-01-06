@@ -37,7 +37,10 @@ export type ParameterizedScopeRules<P> = $ReadOnlyArray<RecoilValue<$ReadOnlyArr
 
 export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{ ...AtomOptions<T>,
   default: RecoilValue<T> | Promise<T> | T | ((P) => T | RecoilValue<T> | Promise<T>),
-  effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>> | ((P) => $ReadOnlyArray<AtomEffect<T>>),
+  effects?: $ReadOnlyArray<AtomEffect<T>> | ((P) => $ReadOnlyArray<AtomEffect<T>>),
+  //   effects_UNSTABLE?:
+  // | $ReadOnlyArray<AtomEffect<T>>
+  // | (P => $ReadOnlyArray<AtomEffect<T>>),
   retainedBy_UNSTABLE?: RetainedBy | ((P) => RetainedBy),
   cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction,
 }>; // Process scopeRules to handle any entries which are functions taking parameters

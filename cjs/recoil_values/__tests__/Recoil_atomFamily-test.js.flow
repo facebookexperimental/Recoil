@@ -609,7 +609,7 @@ describe('Effects', () => {
     const myFamily = atomFamily<string, number>({
       key: 'atomFamily effect init',
       default: 'DEFAULT',
-      effects_UNSTABLE: [({
+      effects: [({
         setSelf
       }) => {
         inited++;
@@ -631,7 +631,7 @@ describe('Effects', () => {
     const myFamily = atomFamily({
       key: 'atomFamily effect parameterized init',
       default: 'DEFAULT',
-      effects_UNSTABLE: param => [({
+      effects: param => [({
         setSelf
       }) => setSelf(param)]
     });
@@ -648,7 +648,7 @@ describe('Effects', () => {
     const atoms = atomFamily({
       key: 'atomFamily effect cleanup',
       default: p => p,
-      effects_UNSTABLE: p => [() => {
+      effects: p => [() => {
         refCounts[p]++;
         return () => {
           refCounts[p]--;
@@ -692,7 +692,7 @@ describe('Effects', () => {
     const atoms = atomFamily({
       key: 'atomFamily effect - storeID',
       default: 'DEFAULT',
-      effects_UNSTABLE: rootKey => [({
+      effects: rootKey => [({
         storeID,
         setSelf
       }) => {
