@@ -16,6 +16,7 @@ const {
 
 let React,
   useEffect,
+  useState,
   act,
   freshSnapshot,
   atom,
@@ -31,9 +32,8 @@ let React,
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
-  ({useEffect} = require('react'));
+  ({useEffect, useState} = React);
   ({act} = require('ReactTestUtils'));
-
   ({freshSnapshot} = require('../../core/Recoil_Snapshot'));
   atom = require('../../recoil_values/Recoil_atom');
   constSelector = require('../../recoil_values/Recoil_constSelector');
@@ -254,4 +254,126 @@ testRecoil('Subscriptions', async () => {
   expect(
     Array.from(snapshot.getInfo_UNSTABLE(selectorC).subscribers.nodes),
   ).toEqual(expect.arrayContaining([]));
+});
+
+testRecoil('Snapshot auto-release', async ({gks}) => {
+  let rootFirstCnt = 0;
+  const rootFirstAtom = atom({
+    key: 'useRecoilSnapshot auto-release root-first',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => {
+        rootFirstCnt++;
+        setSelf('ROOT');
+        return () => {
+          rootFirstCnt--;
+        };
+      },
+    ],
+  });
+
+  let snapshotFirstCnt = 0;
+  const snapshotFirstAtom = atom({
+    key: 'useRecoilSnapshot auto-release snapshot-first',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => {
+        snapshotFirstCnt++;
+        setSelf('SNAPSHOT FIRST');
+        return () => {
+          snapshotFirstCnt--;
+        };
+      },
+    ],
+  });
+
+  let snapshotOnlyCnt = 0;
+  const snapshotOnlyAtom = atom({
+    key: 'useRecoilSnapshot auto-release snapshot-only',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => {
+        snapshotOnlyCnt++;
+        setSelf('SNAPSHOT ONLY');
+        return () => {
+          snapshotOnlyCnt--;
+        };
+      },
+    ],
+  });
+
+  let rootOnlyCnt = 0;
+  const rootOnlyAtom = atom({
+    key: 'useRecoilSnapshot auto-release root-only',
+    default: 'DEFAULT',
+    effects_UNSTABLE: [
+      ({setSelf}) => {
+        rootOnlyCnt++;
+        setSelf('RETAIN');
+        return () => {
+          rootOnlyCnt--;
+        };
+      },
+    ],
+  });
+
+  let setMount = _ => {
+    throw new Error('Test Error');
+  };
+  function UseRecoilSnapshot() {
+    const snapshot = useRecoilSnapshot();
+    return (
+      snapshot.getLoadable(snapshotFirstAtom).getValue() +
+      snapshot.getLoadable(snapshotOnlyAtom).getValue()
+    );
+  }
+  function Component() {
+    const [mount, setState] = useState(false);
+    setMount = setState;
+    return mount ? (
+      <>
+        <ReadsAtom atom={rootOnlyAtom} />
+        <ReadsAtom atom={rootFirstAtom} />
+        <UseRecoilSnapshot />
+        <ReadsAtom atom={snapshotFirstAtom} />
+      </>
+    ) : (
+      <ReadsAtom atom={rootOnlyAtom} />
+    );
+  }
+
+  const c = renderElements(<Component />);
+  expect(c.textContent).toBe('"RETAIN"');
+  expect(rootOnlyCnt).toBe(1);
+  expect(snapshotOnlyCnt).toBe(0);
+  expect(rootFirstCnt).toBe(0);
+  expect(snapshotFirstCnt).toBe(0);
+
+  act(() => setMount(true));
+  expect(c.textContent).toBe(
+    '"RETAIN""ROOT"SNAPSHOT FIRSTSNAPSHOT ONLY"SNAPSHOT FIRST"',
+  );
+  await flushPromisesAndTimers();
+  expect(rootOnlyCnt).toBe(1);
+  expect(snapshotOnlyCnt).toBe(1);
+  expect(rootFirstCnt).toBe(1);
+  expect(snapshotFirstCnt).toBe(2);
+
+  // Confirm snapshot isn't released until component is unmounted
+  await flushPromisesAndTimers();
+  expect(rootOnlyCnt).toBe(1);
+  expect(snapshotOnlyCnt).toBe(1);
+  expect(rootFirstCnt).toBe(1);
+  expect(snapshotFirstCnt).toBe(2);
+
+  // Auto-release snapshot
+  act(() => setMount(false));
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('"RETAIN"');
+  expect(rootOnlyCnt).toBe(1);
+  expect(snapshotOnlyCnt).toBe(0);
+  if (gks.includes('recoil_memory_management_2020')) {
+    expect(rootFirstCnt).toBe(0);
+    expect(snapshotFirstCnt).toBe(0);
+  }
 });

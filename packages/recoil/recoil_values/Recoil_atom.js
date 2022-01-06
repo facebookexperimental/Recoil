@@ -229,17 +229,14 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     initState: TreeState,
     trigger: Trigger,
   ): () => void {
+    liveStoresCount++;
     const cleanupAtom = () => {
       liveStoresCount--;
       cleanupEffectsByStore.get(store)?.forEach(cleanup => cleanup());
       cleanupEffectsByStore.delete(store);
     };
 
-    if (store.getState().nodeCleanupFunctions.has(key)) {
-      return cleanupAtom;
-    }
     store.getState().knownAtoms.add(key);
-    liveStoresCount++;
 
     // Setup async defaults to notify subscribers when they resolve
     if (defaultLoadable.state === 'loading') {

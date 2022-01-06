@@ -1779,6 +1779,35 @@ describe('getCallback', () => {
   });
 });
 
+testRecoil(
+  "Releasing snapshot doesn't invalidate pending selector",
+  async () => {
+    const [mySelector, resolveSelector] = asyncSelector();
+
+    // Initialize selector with snapshot first so it is initialized for both
+    // snapshot and root and has separate cleanup handlers for both.
+    function Component() {
+      const callback = useRecoilCallback(({snapshot}) => () => {
+        snapshot.getLoadable(mySelector);
+      });
+      callback(); // First initialize with snapshot
+      return useRecoilValue(mySelector); // Second initialize with RecoilRoot
+    }
+
+    const c = renderElements(<Component />);
+
+    // Wait to allow the snapshot in the callback to release and call the
+    // selector node cleanup functions.
+    await flushPromisesAndTimers();
+
+    expect(c.textContent).toBe('loading');
+
+    act(() => resolveSelector('RESOLVE'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('RESOLVE');
+  },
+);
+
 testRecoil('Selector values are frozen', async () => {
   const devStatus = window.__DEV__;
   window.__DEV__ = true;

@@ -279,11 +279,9 @@ function selector<T>(
 
   function selectorInit(store: Store): () => void {
     liveStoresCount++;
-    store.getState().knownSelectors.add(key); // FIXME remove knownSelectors?
+    store.getState().knownSelectors.add(key);
     return () => {
       liveStoresCount--;
-      store.getState().knownSelectors.delete(key);
-      executionInfoMap.delete(store);
     };
   }
 
@@ -1142,15 +1140,13 @@ function selector<T>(
   }
 
   function selectorPeek(store: Store, state: TreeState): ?Loadable<T> {
-    const cacheVal = cache.get(nodeKey => {
+    return cache.get(nodeKey => {
       invariant(typeof nodeKey === 'string', 'Cache nodeKey is type string');
 
       const peek = peekNodeLoadable(store, state, nodeKey);
 
       return peek?.contents;
     });
-
-    return cacheVal;
   }
 
   function selectorGet(store: Store, state: TreeState): Loadable<T> {
