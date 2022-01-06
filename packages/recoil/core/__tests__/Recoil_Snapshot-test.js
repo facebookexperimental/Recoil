@@ -16,20 +16,24 @@ const {
 
 let React,
   act,
+  useState,
   useGotoRecoilSnapshot,
   useRecoilTransactionObserver,
   atom,
   constSelector,
   selector,
   ReadsAtom,
+  flushPromisesAndTimers,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
   Snapshot,
-  freshSnapshot;
+  freshSnapshot,
+  RecoilRoot;
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
+  ({useState} = React);
   ({act} = require('ReactTestUtils'));
 
   ({
@@ -41,11 +45,13 @@ const testRecoil = getRecoilTestFn(() => {
   selector = require('../../recoil_values/Recoil_selector');
   ({
     ReadsAtom,
+    flushPromisesAndTimers,
     asyncSelector,
     componentThatReadsAndWritesAtom,
     renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({Snapshot, freshSnapshot} = require('../Recoil_Snapshot'));
+  ({RecoilRoot} = require('../Recoil_RecoilRoot'));
 });
 
 // Test first since we are testing all registered nodes
@@ -487,4 +493,81 @@ testRecoil('getInfo', () => {
   expect(
     Array.from(resetSnapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes),
   ).toEqual([]);
+});
+
+describe('Atom effects', () => {
+  testRecoil('Standalone snapshot', async ({gks}) => {
+    let effectsRefCount = 0;
+    const myAtom = atom({
+      key: 'snapshot effects',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({setSelf}) => {
+          effectsRefCount++;
+          setSelf('INIT');
+          return () => {
+            effectsRefCount--;
+          };
+        },
+      ],
+    });
+
+    expect(effectsRefCount).toBe(0);
+
+    const fresh = freshSnapshot();
+    expect(fresh.getLoadable(myAtom).getValue()).toBe('INIT');
+    expect(effectsRefCount).toBe(1);
+
+    // Auto-release snapshot
+    await flushPromisesAndTimers();
+    expect(effectsRefCount).toBe(0);
+    if (gks.includes('recoil_memory_management_2020')) {
+      // TODO Enable when this is an error
+      // expect(() => fresh.getLoadable(myAtom)).toThrow();
+    }
+  });
+
+  testRecoil('RecoilRoot Snapshot', () => {
+    let effectsRefCount = 0;
+    const myAtom = atom({
+      key: 'snapshot effects',
+      default: 'DEFAULT',
+      effects_UNSTABLE: [
+        ({setSelf}) => {
+          effectsRefCount++;
+          setSelf('INIT');
+          return () => {
+            effectsRefCount--;
+          };
+        },
+      ],
+    });
+
+    let setMount = _ => {
+      throw new Error('Test Error');
+    };
+    function Component() {
+      const [mount, setState] = useState(false);
+      setMount = setState;
+      return mount ? (
+        <RecoilRoot>
+          <ReadsAtom atom={myAtom} />
+        </RecoilRoot>
+      ) : (
+        'UNMOUNTED'
+      );
+    }
+
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(effectsRefCount).toBe(0);
+
+    act(() => setMount(true));
+    expect(c.textContent).toBe('"INIT"');
+    expect(effectsRefCount).toBe(1);
+
+    act(() => setMount(false));
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(effectsRefCount).toBe(0);
+  });
 });
