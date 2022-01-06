@@ -140,14 +140,17 @@ function renderConcurrentReactRoot<Props>(
   createRoot(container).render(contents);
 }
 
-function renderUnwrappedElements(elements: ?React.Node): HTMLDivElement {
-  const container = document.createElement('div');
+function renderUnwrappedElements(
+  elements: ?React.Node,
+  container?: ?HTMLDivElement,
+): HTMLDivElement {
+  const div = container ?? document.createElement('div');
   const renderReactRoot = isConcurrentModeEnabled()
     ? renderConcurrentReactRoot
     : renderLegacyReactRoot;
   act(() => {
     renderReactRoot(
-      container,
+      div,
       isStrictModeEnabled() ? (
         <StrictMode>{elements}</StrictMode>
       ) : (
@@ -155,10 +158,13 @@ function renderUnwrappedElements(elements: ?React.Node): HTMLDivElement {
       ),
     );
   });
-  return container;
+  return div;
 }
 
-function renderElements(elements: ?React.Node): HTMLDivElement {
+function renderElements(
+  elements: ?React.Node,
+  container?: ?HTMLDivElement,
+): HTMLDivElement {
   return renderUnwrappedElements(
     <RecoilRoot>
       {/* eslint-disable-next-line fb-www/no-null-fallback-for-error-boundary */}
@@ -166,11 +172,12 @@ function renderElements(elements: ?React.Node): HTMLDivElement {
         <React.Suspense fallback="loading">{elements}</React.Suspense>
       </ErrorBoundary>
     </RecoilRoot>,
+    container,
   );
 }
 
 function renderElementsWithSuspenseCount(
-  elements: ?React.Node,
+  elements: React.Node,
 ): [HTMLDivElement, JestMockFn<[], void>] {
   const suspenseCommit = jest.fn(() => {});
   function Fallback() {
