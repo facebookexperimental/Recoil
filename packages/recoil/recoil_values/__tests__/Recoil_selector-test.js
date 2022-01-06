@@ -1772,7 +1772,6 @@ describe('getCallback', () => {
       },
     });
 
-    // $FlowExpectedError[incompatible-use]]
     await expect(
       getPromise(myAsyncSelector).catch(({callback}) => callback(123)),
     ).resolves.toEqual(123);

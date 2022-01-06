@@ -123,7 +123,6 @@ function renderLegacyReactRoot<Props>(
 }
 
 // @fb-only: const createRoot = ReactDOMComet.createRoot;
-// $FlowExpectedError[prop-missing]
 const createRoot = ReactDOM.createRoot ?? ReactDOM.unstable_createRoot; // @oss-only
 
 function isConcurrentModeAvailable(): boolean {
