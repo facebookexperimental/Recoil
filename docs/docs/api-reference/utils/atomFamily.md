@@ -17,7 +17,7 @@ function atomFamily<T, Parameter>({
     | T
     | (Parameter => T | RecoilValue<T> | Promise<T>),
 
-  effects_UNSTABLE?:
+  effects?:
     | $ReadOnlyArray<AtomEffect<T>>
     | (P => $ReadOnlyArray<AtomEffect<T>>),
 
@@ -27,7 +27,7 @@ function atomFamily<T, Parameter>({
 
 - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
 - `default` - The initial value of the atom. It may either be a value directly, a `RecoilValue` or `Promise` that represents the default value, or a function to get the default value. The callback function is passed a copy of the parameter used when the `atomFamily` function is called.
-- `effects_UNSTABLE` - An optional array, or callback to get the array based on the family parameter, of [Atom Effects](/docs/guides/atom-effects).
+- `effects` - An optional array, or callback to get the array based on the family parameter, of [Atom Effects](/docs/guides/atom-effects).
 - `dangerouslyAllowMutability` - Recoil depends on atom state changes to know when to notify components that use the atoms to re-render.  If an atom's value were mutated, it may bypass this and cause state to change without properly notifying subscribing components.  To help protect against this all stored values are frozen.  In some cases it may be desireable to override this using this option.
 
 ---
