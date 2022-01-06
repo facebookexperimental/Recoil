@@ -109,18 +109,14 @@ describe('initializeState', () => {
         effects_UNSTABLE: [
           ({setSelf}) => {
             effectRan++;
-            setSelf(current => {
-              // Effects are run first.
-              expect(current).toEqual('DEFAULT');
-              return 'EFFECT';
-            });
+            setSelf('EFFECT');
           },
         ],
       });
 
       function initializeState({set}) {
         set(myAtom, current => {
-          // Effects are run first, initializeState() takes precedence
+          // Effects are run first
           expect(current).toEqual('EFFECT');
           return 'INITIALIZE';
         });
@@ -136,15 +132,51 @@ describe('initializeState', () => {
       expect(container1.textContent).toEqual('NO READ');
       expect(effectRan).toEqual(strictMode ? (concurrentMode ? 4 : 3) : 2);
 
+      effectRan = 0;
       const container2 = renderElements(
         <RecoilRoot initializeState={initializeState}>
           <ReadsAtom atom={myAtom} />
         </RecoilRoot>,
       );
 
-      // Effects are run first, initializeState() takes precedence
+      // Effects takes precedence
       expect(container2.textContent).toEqual('"EFFECT"');
-      expect(effectRan).toEqual(strictMode ? (concurrentMode ? 8 : 6) : 4);
+      expect(effectRan).toEqual(strictMode ? (concurrentMode ? 4 : 3) : 2);
+    },
+  );
+
+  testRecoil(
+    'onSet() called when atom initialized with initializeState',
+    () => {
+      const setValues = [];
+      const myAtom = atom({
+        key: 'RecoilRoot - initializeState - onSet',
+        default: 0,
+        effects_UNSTABLE: [
+          ({onSet, setSelf}) => {
+            onSet(value => {
+              setValues.push(value);
+              // Confirm setSelf() works when initialized with initializeState
+              setSelf(value + 1);
+            });
+          },
+        ],
+      });
+
+      const [MyAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+
+      const c = renderElements(
+        <RecoilRoot initializeState={({set}) => set(myAtom, 1)}>
+          <MyAtom />
+        </RecoilRoot>,
+      );
+
+      expect(c.textContent).toBe('1');
+      expect(setValues).toEqual([]);
+
+      act(() => setAtom(2));
+      expect(setValues).toEqual([2]);
+      expect(c.textContent).toBe('3');
     },
   );
 
