@@ -111,7 +111,6 @@ const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const {
   startPerfBlock,
 } = require('recoil-shared/util/Recoil_PerformanceTimings');
-const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 type SelectorCallbackInterface<T> = $ReadOnly<{
   // TODO Technically this could be RecoilValueReadOnly, but trying to parameterize
@@ -627,16 +626,11 @@ function selector<T>(
         return loadable.contents;
       })
       .catch(error => {
+        // The selector was released since the request began; ignore the response.
         if (error instanceof Canceled) {
-          recoverableViolation(
-            'Selector was released while it had dependencies',
-            'recoil',
-          );
           throw CANCELED;
         }
-
         if (!selectorIsLive()) {
-          // The selector was released since the request began; ignore the response.
           clearExecutionInfo(store, executionId);
           throw CANCELED;
         }
