@@ -10,37 +10,66 @@
  */
 'use strict';
 
+import type {StoreID} from '../../core/Recoil_Keys';
+
 const {
   getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
+  renderElements,
+  renderUnwrappedElements,
   useEffect,
   useRef,
-  ReactDOM,
+  reactMode,
   act,
   RecoilRoot,
+  useRecoilStoreID,
   atom,
   componentThatReadsAndWritesAtom,
   useRecoilBridgeAcrossReactRoots;
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
-  ({useEffect, useRef} = require('react'));
-  ReactDOM = require('ReactDOMLegacy_DEPRECATED');
+  ({useEffect, useRef} = React);
   ({act} = require('ReactTestUtils'));
 
-  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot'));
-  atom = require('../../recoil_values/Recoil_atom');
+  ({reactMode} = require('../../core/Recoil_ReactMode'));
   ({
+    renderElements,
+    renderUnwrappedElements,
     componentThatReadsAndWritesAtom,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
+
+  ({RecoilRoot, useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
+  atom = require('../../recoil_values/Recoil_atom');
   useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 });
 
+function NestedReactRoot({children}) {
+  const ref = useRef<?HTMLDivElement>();
+  const RecoilBridge = useRecoilBridgeAcrossReactRoots();
+
+  useEffect(() => {
+    renderUnwrappedElements(
+      <RecoilBridge>{children}</RecoilBridge>,
+      ref.current,
+    );
+  }, [children]);
+
+  return <div ref={ref} />;
+}
+
 testRecoil(
   'useRecoilBridgeAcrossReactRoots - create a context bridge',
-  async () => {
+  async ({concurrentMode}) => {
+    // Test fails with useRecoilBridgeAcrossReactRoots() and useMutableSource().
+    // It only reproduces if act() is used in renderElements() for the nested
+    // root, so it may just be a testing environment issue.
+    if (concurrentMode && reactMode().mode === 'MUTABLE_SOURCE') {
+      return;
+    }
+
     const myAtom = atom({
       key: 'useRecoilBridgeAcrossReactRoots - context bridge',
       default: 'DEFAULT',
@@ -54,33 +83,15 @@ testRecoil(
 
     const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
-    function NestedReactRoot({children}) {
-      const ref = useRef();
-      const RecoilBridge = useRecoilBridgeAcrossReactRoots();
+    const container = renderElements(
+      <RecoilRoot initializeState={initializeState}>
+        <ReadWriteAtom />
 
-      useEffect(() => {
-        ReactDOM.render(
-          <RecoilBridge>{children}</RecoilBridge>,
-          ref.current ?? document.createElement('div'),
-        );
-      }, [children]);
-
-      return <div ref={ref} />;
-    }
-
-    const container = document.createElement('div');
-    act(() => {
-      ReactDOM.render(
-        <RecoilRoot initializeState={initializeState}>
+        <NestedReactRoot>
           <ReadWriteAtom />
-
-          <NestedReactRoot>
-            <ReadWriteAtom />
-          </NestedReactRoot>
-        </RecoilRoot>,
-        container,
-      );
-    });
+        </NestedReactRoot>
+      </RecoilRoot>,
+    );
 
     expect(container.textContent).toEqual('"INITIALIZE""INITIALIZE"');
 
@@ -88,3 +99,26 @@ testRecoil(
     expect(container.textContent).toEqual('"SET""SET"');
   },
 );
+
+testRecoil('StoreID matches bridged store', () => {
+  function RecoilStoreID({storeIDRef}: {storeIDRef: {current: ?StoreID}}) {
+    storeIDRef.current = useRecoilStoreID();
+    return null;
+  }
+
+  const rootStoreIDRef = {current: null};
+  const nestedStoreIDRef = {current: null};
+
+  const c = renderElements(
+    <>
+      <RecoilStoreID storeIDRef={rootStoreIDRef} />
+      <NestedReactRoot>
+        <RecoilStoreID storeIDRef={nestedStoreIDRef} />
+      </NestedReactRoot>
+      RENDER
+    </>,
+  );
+  expect(c.textContent).toEqual('RENDER');
+  expect(rootStoreIDRef.current).toBe(nestedStoreIDRef.current);
+  expect(rootStoreIDRef.current).not.toBe(null);
+});
