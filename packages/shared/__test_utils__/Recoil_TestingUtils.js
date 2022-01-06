@@ -123,6 +123,7 @@ function renderLegacyReactRoot<Props>(
 }
 
 // @fb-only: const createRoot = ReactDOMComet.createRoot;
+// $FlowFixMe[prop-missing] unstable_createRoot is not part of react-dom typing // @oss-only
 const createRoot = ReactDOM.createRoot ?? ReactDOM.unstable_createRoot; // @oss-only
 
 function isConcurrentModeAvailable(): boolean {
