@@ -265,7 +265,9 @@ function selector<T>(
   let liveStoresCount = 0;
 
   function selectorIsLive() {
-    return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
+    return true;
+    // TODO Workaround for now to avoid hanging selectors
+    // return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
   }
 
   function getExecutionInfo(store: Store): ExecutionInfo<T> {
@@ -277,8 +279,8 @@ function selector<T>(
   }
 
   function selectorInit(store: Store): () => void {
-    liveStoresCount++;
     store.getState().knownSelectors.add(key);
+    liveStoresCount++;
     return () => {
       liveStoresCount--;
     };
