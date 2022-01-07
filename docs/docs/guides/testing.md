@@ -35,7 +35,7 @@ function Form() {
         data-testid="name_input"
         type="text"
         value={name}
-        onChange={(event) => setName(event.target.value)}
+        onChange={event => setName(event.target.value)}
       />
     </form>
   );
@@ -76,7 +76,7 @@ A common pattern for atoms is using asynchronous queries fetch the state of the 
 function flushPromisesAndTimers(): Promise<void> {
   return act(
     () =>
-      new Promise((resolve) => {
+      new Promise(resolve => {
         setTimeout(resolve, 100);
         jest.runAllTimers();
       }),
@@ -138,7 +138,7 @@ describe('Title Component', () => {
 
 ## Testing Recoil state inside a Custom Hook
 
-Sometimes it becomes convenient to write a custom React hook that relies on Recoil states. Since you test the hook in a React context, it also needs to be wrapped in `RecoilRoot`. Luckily, you can use [React Hooks Testing Library](https://react-hooks-testing-library.com/) to achieve this.
+Sometimes it is convenient to write custom React hooks that rely on Recoil state. These need to be wrapped in a `<RecoilRoot>`. The [React Hooks Testing Library](https://react-hooks-testing-library.com/) can help with this pattern.
 
 ### Example: React Hooks Testing Library
 
@@ -157,11 +157,8 @@ const countState = atom({
 const useMyCustomHook = () => {
   const [count, setCount] = useRecoilState(countState);
   // Insert other Recoil state here...
-  // Insert other effects here...
-  return {
-    count,
-    setCount,
-  };
+  // Insert other hook logic here...
+  return count;
 };
 ```
 
@@ -172,7 +169,7 @@ test('Test useMyCustomHook', () => {
   const {result} = renderHook(() => useMyCustomHook(), {
     wrapper: RecoilRoot,
   });
-  expect(result.current.count).toEqual(0);
+  expect(result.current).toEqual(0);
 });
 ```
 
