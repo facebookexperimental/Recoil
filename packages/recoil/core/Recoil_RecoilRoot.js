@@ -201,8 +201,8 @@ function sendEndOfBatchNotifications(store: Store) {
   );
 }
 
-function endBatch(storeRef) {
-  const storeState = storeRef.current.getState();
+function endBatch(store: Store) {
+  const storeState = store.getState();
   storeState.commitDepth++;
   try {
     const {nextTree} = storeState;
@@ -219,7 +219,7 @@ function endBatch(storeRef) {
     storeState.currentTree = nextTree;
     storeState.nextTree = null;
 
-    sendEndOfBatchNotifications(storeRef.current);
+    sendEndOfBatchNotifications(store);
 
     if (storeState.previousTree != null) {
       storeState.graphsByVersion.delete(storeState.previousTree.version);
@@ -232,7 +232,7 @@ function endBatch(storeRef) {
     storeState.previousTree = null;
 
     if (gkx('recoil_memory_managament_2020')) {
-      releaseScheduledRetainablesNow(storeRef.current);
+      releaseScheduledRetainablesNow(store);
     }
   } finally {
     storeState.commitDepth--;
@@ -271,7 +271,7 @@ function Batcher({
     // manipulate the order of useEffects during tests, since React seems to
     // call useEffect in an unpredictable order sometimes.
     Queue.enqueueExecution('Batcher', () => {
-      endBatch(storeRef);
+      endBatch(storeRef.current);
     });
   });
 

@@ -495,6 +495,31 @@ testRecoil('getInfo', () => {
   ).toEqual([]);
 });
 
+describe('Retention', () => {
+  testRecoil('auto-release', async () => {
+    const snapshot = freshSnapshot();
+    expect(snapshot.isRetained()).toBe(true);
+
+    await flushPromisesAndTimers();
+    expect(snapshot.isRetained()).toBe(false);
+    expect(() => snapshot.retain()).toThrow('released');
+    // TODO enable when recoil_memory_managament_2020 is enforced
+    // expect(() => snapshot.getID()).toThrow('release');
+  });
+
+  testRecoil('retain()', async () => {
+    const snapshot = freshSnapshot();
+    expect(snapshot.isRetained()).toBe(true);
+    const release2 = snapshot.retain();
+
+    await flushPromisesAndTimers();
+    expect(snapshot.isRetained()).toBe(true);
+
+    release2();
+    expect(snapshot.isRetained()).toBe(false);
+  });
+});
+
 describe('Atom effects', () => {
   testRecoil('Standalone snapshot', async ({gks}) => {
     let effectsRefCount = 0;
