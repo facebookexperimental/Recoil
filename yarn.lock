@@ -2180,10 +2180,10 @@ escodegen@^1.14.1:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-fb-www@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-fb-www/-/eslint-plugin-fb-www-1.0.7.tgz#a78ad301a229107d1f194fbc71b3440168bdca52"
-  integrity sha512-BBQVht+TkWLGli59nn2CNRbJZ5+AnqG2B02VipgfzSeB68mqBNiEXbPZ5ZbuMMwSgDN+95WCsS6y1ZZntst3Qg==
+eslint-plugin-fb-www@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-fb-www/-/eslint-plugin-fb-www-1.8.0.tgz#0d1b410e7c8da604f380245c58160fd5c42ddaea"
+  integrity sha512-3lUKYRFp8XUzf/qVLG56f5PC2zWkkyWwc/kuLcm0JDow48VjVaJU06f9cCAtkRtbum4T9G6VXsjO+dWi9Eqn2w==
 
 eslint-plugin-flowtype@^8.0.3:
   version "8.0.3"
