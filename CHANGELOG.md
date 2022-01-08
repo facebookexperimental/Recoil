@@ -25,7 +25,9 @@
 - `RecoilLoadable.all()` and `RecoilLoadable.of()` now accept either literal values, async Promises, or Loadables. (#1455, #1442)
 
 ### Other Fixes and Optimizations
-- Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
+- Reduce overhead of snapshot cloning
+  - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
+  - Cache the cloned snapshots from callbacks unless there was a state change. (#1533)
 - Fix transitive selector refresh for some cases (#1409)
 - Atom Effects
   - Rename option from `effects_UNSTABLE` to just `effects` as the interface is mostly stabilizing (#1520)

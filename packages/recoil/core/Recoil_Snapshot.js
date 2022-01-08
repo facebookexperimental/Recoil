@@ -47,6 +47,9 @@ const err = require('recoil-shared/util/Recoil_err');
 const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
 const gkx = require('recoil-shared/util/Recoil_gkx');
 const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
+const {
+  memoizeOneWithArgsHashAndInvalidation,
+} = require('recoil-shared/util/Recoil_Memoize');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
@@ -71,7 +74,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 // evaluation functions are executed and async selectors resolve.
 class Snapshot {
   _store: Store;
-  _refCount: number = 0;
+  _refCount: number = 1;
 
   constructor(storeState: StoreState) {
     this._store = {
@@ -101,11 +104,14 @@ class Snapshot {
       initializeNode(this._store, nodeKey);
       updateRetainCount(this._store, nodeKey, 1);
     }
-    this.retain();
+
     this._autoRelease();
   }
 
   retain(): () => void {
+    if (this._refCount <= 0) {
+      throw err('Snapshot has already been released');
+    }
     this._refCount++;
     let released = false;
     return () => {
@@ -141,6 +147,10 @@ class Snapshot {
       //   updateRetainCountToZero(this._store, k);
       // }
     }
+  }
+
+  isRetained(): boolean {
+    return !!this._refCount;
   }
 
   checkRefCount_INTERNAL(): void {
@@ -302,16 +312,33 @@ function freshSnapshot(initializeState?: MutableSnapshot => void): Snapshot {
 }
 
 // Factory to clone a snapahot state
+const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] =
+  memoizeOneWithArgsHashAndInvalidation(
+    (store, version) => {
+      const storeState = store.getState();
+      const treeState =
+        version === 'current'
+          ? storeState.currentTree
+          : nullthrows(storeState.previousTree);
+      return new Snapshot(cloneStoreState(store, treeState));
+    },
+    (store, version) =>
+      String(version) +
+      String(store.storeID) +
+      String(store.getState().currentTree.version) +
+      String(store.getState().previousTree?.version),
+  );
+
 function cloneSnapshot(
   store: Store,
-  version: 'current' | 'previous' = 'current',
+  version?: 'current' | 'previous' = 'current',
 ): Snapshot {
-  const storeState = store.getState();
-  const treeState =
-    version === 'current'
-      ? storeState.currentTree
-      : nullthrows(storeState.previousTree);
-  return new Snapshot(cloneStoreState(store, treeState));
+  const snapshot = memoizedCloneSnapshot(store, version);
+  if (!snapshot.isRetained()) {
+    invalidateMemoizedSnapshot();
+    return memoizedCloneSnapshot(store, version);
+  }
+  return snapshot;
 }
 
 class MutableSnapshot extends Snapshot {
