@@ -76,12 +76,6 @@ export type StoreState = {
   knownAtoms: Set<NodeKey>,
   knownSelectors: Set<NodeKey>,
 
-  // Which state versions are being read by a given component. (COMMIT/SUSPEND)
-  // Added to when components commit or suspend after reading a version.
-  // Removed from when components (1) unmount (2) commit another version
-  // or (3) wake from suspense.
-  +versionsUsedByComponent: Map<ComponentID, StateID>,
-
   +retention: {
     referenceCounts: Map<NodeKey | RetentionZone, number>,
     nodesRetainedByZone: Map<RetentionZone, Set<NodeKey>>,
@@ -169,7 +163,6 @@ function makeEmptyStoreState(): StoreState {
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
     graphsByVersion: new Map().set(currentTree.version, graph()),
-    versionsUsedByComponent: new Map(),
     retention: {
       referenceCounts: new Map(),
       nodesRetainedByZone: new Map(),
