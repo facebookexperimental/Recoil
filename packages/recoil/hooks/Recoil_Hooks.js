@@ -347,7 +347,11 @@ function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
     [storeRef, recoilValue, componentName],
   );
 
-  return useSyncExternalStore(subscribe, getMemoizedSnapshot).loadable;
+  return useSyncExternalStore(
+    subscribe,
+    getMemoizedSnapshot, // getSnapshot()
+    getMemoizedSnapshot, // getServerSnapshot() for SSR support
+  ).loadable;
 }
 
 function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
