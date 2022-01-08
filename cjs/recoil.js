@@ -2477,7 +2477,8 @@ var _createMutableSource, _useMutableSource, _useSyncExternalStore;
 const createMutableSource = // flowlint-next-line unclear-type:off
 (_createMutableSource = react.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : react.unstable_createMutableSource;
 const useMutableSource = // flowlint-next-line unclear-type:off
-(_useMutableSource = react.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react.unstable_useMutableSource;
+(_useMutableSource = react.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react.unstable_useMutableSource; // https://github.com/reactwg/react-18/discussions/86
+
 const useSyncExternalStore = // flowlint-next-line unclear-type:off
 (_useSyncExternalStore = react.useSyncExternalStore) !== null && _useSyncExternalStore !== void 0 ? _useSyncExternalStore : // flowlint-next-line unclear-type:off
 react.unstable_useSyncExternalStore;
@@ -4924,7 +4925,9 @@ function useRecoilValueLoadable_SYNC_EXTERNAL_STORE(recoilValue) {
     const subscription = subscribeToRecoilValue$1(store, recoilValue, notify, componentName);
     return subscription.release;
   }, [storeRef, recoilValue, componentName]);
-  return useSyncExternalStore$1(subscribe, getMemoizedSnapshot).loadable;
+  return useSyncExternalStore$1(subscribe, getMemoizedSnapshot, // getSnapshot()
+  getMemoizedSnapshot // getServerSnapshot() for SSR support
+  ).loadable;
 }
 
 function useRecoilValueLoadable_MUTABLE_SOURCE(recoilValue) {
@@ -6706,8 +6709,6 @@ const {
   startPerfBlock: startPerfBlock$1
 } = Recoil_PerformanceTimings;
 
-
-
 class Canceled {}
 
 const CANCELED = new Canceled();
@@ -6766,10 +6767,10 @@ function selector(options) {
   });
   const retainedBy = retainedByOptionWithDefault$1(options.retainedBy_UNSTABLE);
   const executionInfoMap = new Map();
-  let liveStoresCount = 0;
 
   function selectorIsLive() {
-    return !Recoil_gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
+    return true; // TODO Workaround for now to avoid hanging selectors
+    // return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
   }
 
   function getExecutionInfo(store) {
@@ -6781,10 +6782,8 @@ function selector(options) {
   }
 
   function selectorInit(store) {
-    liveStoresCount++;
     store.getState().knownSelectors.add(key);
     return () => {
-      liveStoresCount--;
     };
   }
 
@@ -6868,11 +6867,6 @@ function selector(options) {
 
   function wrapPendingPromise(store, promise, state, depValues, executionId, loadingDepsState) {
     return promise.then(value => {
-      if (!selectorIsLive()) {
-        // The selector was released since the request began; ignore the response.
-        clearExecutionInfo(store, executionId);
-        throw CANCELED;
-      }
 
       const loadable = loadableWithValue$2(value);
       maybeFreezeValue(value);
@@ -6881,11 +6875,6 @@ function selector(options) {
       setLoadableInStoreToNotifyDeps(store, loadable, executionId);
       return value;
     }).catch(errorOrPromise => {
-      if (!selectorIsLive()) {
-        // The selector was released since the request began; ignore the response.
-        clearExecutionInfo(store, executionId);
-        throw CANCELED;
-      }
 
       if (isLatestExecution(store, executionId)) {
         updateExecutionInfoDepValues(depValues, store, executionId);
@@ -6937,11 +6926,6 @@ function selector(options) {
 
   function wrapPendingDependencyPromise(store, promise, state, existingDeps, executionId, loadingDepsState) {
     return promise.then(resolvedDep => {
-      if (!selectorIsLive()) {
-        // The selector was released since the request began; ignore the response.
-        clearExecutionInfo(store, executionId);
-        throw CANCELED;
-      } // Check if we are handling a pending Recoil dependency or if the user
       // threw their own Promise to "suspend" a selector evaluation.  We need
       // to check that the loadingDepPromise actually matches the promise that
       // we caught in case the selector happened to catch the promise we threw
@@ -7075,14 +7059,8 @@ function selector(options) {
 
       return loadable.contents;
     }).catch(error => {
+      // The selector was released since the request began; ignore the response.
       if (error instanceof Canceled) {
-        Recoil_recoverableViolation('Selector was released while it had dependencies');
-        throw CANCELED;
-      }
-
-      if (!selectorIsLive()) {
-        // The selector was released since the request began; ignore the response.
-        clearExecutionInfo(store, executionId);
         throw CANCELED;
       }
 
@@ -7412,12 +7390,6 @@ function selector(options) {
 
     if (isLatestExecution(store, executionId)) {
       executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
-    }
-  }
-
-  function clearExecutionInfo(store, executionId) {
-    if (isLatestExecution(store, executionId)) {
-      executionInfoMap.delete(store);
     }
   }
 

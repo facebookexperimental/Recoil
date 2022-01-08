@@ -127,8 +127,6 @@ const {
   startPerfBlock
 } = require('recoil-shared/util/Recoil_PerformanceTimings');
 
-const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
-
 type SelectorCallbackInterface<T> = $ReadOnly<{
   // TODO Technically this could be RecoilValueReadOnly, but trying to parameterize
   // it based on the selector type ran into problems which would lead to

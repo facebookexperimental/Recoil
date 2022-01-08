@@ -20,8 +20,9 @@ const createMutableSource: <StoreState, Version>({
 }, () => Version) => MutableSource = // flowlint-next-line unclear-type:off
 (React: any).createMutableSource ?? (React: any).unstable_createMutableSource;
 const useMutableSource: <StoreState, T>(MutableSource, () => T, (StoreState, () => void) => () => void) => T = // flowlint-next-line unclear-type:off
-(React: any).useMutableSource ?? (React: any).unstable_useMutableSource;
-const useSyncExternalStore: <T>(subscribe: (() => void) => () => void, getSnapshot: () => T) => T = // flowlint-next-line unclear-type:off
+(React: any).useMutableSource ?? (React: any).unstable_useMutableSource; // https://github.com/reactwg/react-18/discussions/86
+
+const useSyncExternalStore: <T>(subscribe: (() => void) => () => void, getSnapshot: () => T, getServerSnapshot?: () => T) => T = // flowlint-next-line unclear-type:off
 (React: any).useSyncExternalStore ?? // flowlint-next-line unclear-type:off
 (React: any).unstable_useSyncExternalStore;
 type ReactMode = 'CONCURRENT_LEGACY' | 'SYNC_EXTERNAL_STORE' | 'MUTABLE_SOURCE' | 'LEGACY';
