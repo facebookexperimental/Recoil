@@ -233,7 +233,7 @@ class Snapshot {
     this.checkRefCount_INTERNAL();
     const mutableSnapshot = new MutableSnapshot(this, batchUpdates);
     mapper(mutableSnapshot); // if removing batchUpdates from `set` add it here
-    return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
+    return mutableSnapshot;
   };
 
   // eslint-disable-next-line fb-www/extra-arrow-initializer
@@ -242,7 +242,7 @@ class Snapshot {
       this.checkRefCount_INTERNAL();
       const mutableSnapshot = new MutableSnapshot(this, batchUpdates);
       await mapper(mutableSnapshot);
-      return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
+      return mutableSnapshot;
     };
 }
 
