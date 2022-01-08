@@ -17,7 +17,7 @@ import type {
   ValueOrUpdater,
 } from '../recoil_values/Recoil_callbackTypes';
 import type {RecoilValueInfo} from './Recoil_FunctionalCore';
-import type {NodeKey} from './Recoil_Keys';
+import type {NodeKey, StoreID} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
@@ -302,6 +302,8 @@ function freshSnapshot(initializeState?: MutableSnapshot => void): Snapshot {
 }
 
 // Factory to clone a snapahot state
+let memoizedClonedSnapshot: ?Snapshot = null;
+let memoizedForStoreID: ?StoreID = null;
 function cloneSnapshot(
   store: Store,
   version: 'current' | 'previous' = 'current',
@@ -311,7 +313,17 @@ function cloneSnapshot(
     version === 'current'
       ? storeState.currentTree
       : nullthrows(storeState.previousTree);
-  return new Snapshot(cloneStoreState(store, treeState));
+  if (
+    memoizedForStoreID === store.storeID &&
+    memoizedClonedSnapshot != null &&
+    memoizedClonedSnapshot.getStore_INTERNAL().getState().currentTree
+      .version === treeState.version
+  ) {
+    return memoizedClonedSnapshot;
+  }
+  memoizedForStoreID = store.storeID;
+  memoizedClonedSnapshot = new Snapshot(cloneStoreState(store, treeState));
+  return memoizedClonedSnapshot;
 }
 
 class MutableSnapshot extends Snapshot {

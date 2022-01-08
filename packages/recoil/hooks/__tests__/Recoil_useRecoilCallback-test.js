@@ -26,6 +26,7 @@ let React,
   useRecoilValue,
   useRecoilState,
   useSetRecoilState,
+  useResetRecoilState,
   ReadsAtom,
   flushPromisesAndTimers,
   renderElements,
@@ -43,6 +44,7 @@ const testRecoil = getRecoilTestFn(() => {
     selector,
     useRecoilCallback,
     useSetRecoilState,
+    useResetRecoilState,
     useRecoilValue,
     useRecoilState,
   } = require('../../Recoil_index'));
@@ -575,4 +577,65 @@ describe('Selector Cache', () => {
     act(() => setMyAtom('a'));
     expect(container.textContent).toBe('a-3');
   });
+});
+
+testRecoil('Snapshot is cached', () => {
+  const myAtom = atom({
+    key: 'useRecoilCallback snapshot cached',
+    default: 'DEFAULT',
+  });
+
+  let getSnapshot;
+  let setMyAtom, resetMyAtom;
+  function Component() {
+    getSnapshot = useRecoilCallback(
+      ({snapshot}) =>
+        () =>
+          snapshot,
+    );
+    setMyAtom = useSetRecoilState(myAtom);
+    resetMyAtom = useResetRecoilState(myAtom);
+    return null;
+  }
+  renderElements(<Component />);
+
+  const getAtom = snapshot => snapshot?.getLoadable(myAtom).getValue();
+
+  const initialSnapshot = getSnapshot?.();
+  expect(getAtom(initialSnapshot)).toEqual('DEFAULT');
+
+  // If there are no state changes, the snapshot should be cached
+  const nextSnapshot = getSnapshot?.();
+  expect(getAtom(nextSnapshot)).toEqual('DEFAULT');
+  expect(nextSnapshot).toBe(initialSnapshot);
+
+  // With a state change, there is a new snapshot
+  act(() => setMyAtom('SET'));
+  const setSnapshot = getSnapshot?.();
+  expect(getAtom(setSnapshot)).toEqual('SET');
+  expect(setSnapshot).not.toBe(initialSnapshot);
+
+  const nextSetSnapshot = getSnapshot?.();
+  expect(getAtom(nextSetSnapshot)).toEqual('SET');
+  expect(nextSetSnapshot).toBe(setSnapshot);
+
+  act(() => setMyAtom('SET2'));
+  const set2Snapshot = getSnapshot?.();
+  expect(getAtom(set2Snapshot)).toEqual('SET2');
+  expect(set2Snapshot).not.toBe(initialSnapshot);
+  expect(set2Snapshot).not.toBe(setSnapshot);
+
+  const nextSet2Snapshot = getSnapshot?.();
+  expect(getAtom(nextSet2Snapshot)).toEqual('SET2');
+  expect(nextSet2Snapshot).toBe(set2Snapshot);
+
+  act(() => resetMyAtom());
+  const resetSnapshot = getSnapshot?.();
+  expect(getAtom(resetSnapshot)).toEqual('DEFAULT');
+  expect(resetSnapshot).not.toBe(initialSnapshot);
+  expect(resetSnapshot).not.toBe(setSnapshot);
+
+  const nextResetSnapshot = getSnapshot?.();
+  expect(getAtom(nextResetSnapshot)).toEqual('DEFAULT');
+  expect(nextResetSnapshot).toBe(resetSnapshot);
 });
