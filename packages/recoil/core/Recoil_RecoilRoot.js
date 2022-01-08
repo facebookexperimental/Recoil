@@ -328,10 +328,20 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
 // compatible with React StrictMode where effects may be re-run multiple times
 // but state initialization only happens once the first time.
 function initialStoreState(initializeState): StoreState {
+  // Initialize a snapshot and get its store
   const snapshot = freshSnapshot().map(initializeState);
   const storeState = snapshot.getStore_INTERNAL().getState();
+
+  // Counteract the snapshot auto-release
+  snapshot.retain();
+
+  // Cleanup any effects run during initialization and clear the handlers so
+  // they will re-initialize if used during rendering.  This allows atom effect
+  // initialization to take precedence over initializeState and be compatible
+  // with StrictMode semantics.
   storeState.nodeCleanupFunctions.forEach(cleanup => cleanup());
   storeState.nodeCleanupFunctions.clear();
+
   return storeState;
 }
 

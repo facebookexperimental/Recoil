@@ -20,9 +20,12 @@ let React,
   atom,
   constSelector,
   selector,
+  asyncSelector,
   ReadsAtom,
   componentThatReadsAndWritesAtom,
+  flushPromisesAndTimers,
   renderElements,
+  renderUnwrappedElements,
   RecoilRoot,
   useStoreRef;
 
@@ -36,9 +39,12 @@ const testRecoil = getRecoilTestFn(() => {
   constSelector = require('../../recoil_values/Recoil_constSelector');
   selector = require('../../recoil_values/Recoil_selector');
   ({
+    asyncSelector,
     ReadsAtom,
     componentThatReadsAndWritesAtom,
+    flushPromisesAndTimers,
     renderElements,
+    renderUnwrappedElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({RecoilRoot, useStoreRef} = require('../Recoil_RecoilRoot'));
 });
@@ -101,8 +107,9 @@ describe('initializeState', () => {
 
   testRecoil(
     'Atom Effects run with global initialization',
-    ({strictMode, concurrentMode}) => {
+    async ({strictMode, concurrentMode}) => {
       let effectRan = 0;
+      let effectCleanup = 0;
       const myAtom = atom<string>({
         key: 'RecoilRoot - initializeState - atom effects',
         default: 'DEFAULT',
@@ -110,6 +117,9 @@ describe('initializeState', () => {
           ({setSelf}) => {
             effectRan++;
             setSelf('EFFECT');
+            return () => {
+              effectCleanup++;
+            };
           },
         ],
       });
@@ -132,7 +142,13 @@ describe('initializeState', () => {
       expect(container1.textContent).toEqual('NO READ');
       expect(effectRan).toEqual(strictMode ? (concurrentMode ? 4 : 3) : 2);
 
+      // Auto-release of the initializing snapshot
+      await flushPromisesAndTimers();
+      expect(effectCleanup).toEqual(strictMode ? (concurrentMode ? 3 : 2) : 1);
+
+      // Test again when atom is actually used by the root
       effectRan = 0;
+      effectCleanup = 0;
       const container2 = renderElements(
         <RecoilRoot initializeState={initializeState}>
           <ReadsAtom atom={myAtom} />
@@ -142,6 +158,8 @@ describe('initializeState', () => {
       // Effects takes precedence
       expect(container2.textContent).toEqual('"EFFECT"');
       expect(effectRan).toEqual(strictMode ? (concurrentMode ? 4 : 3) : 2);
+      await flushPromisesAndTimers();
+      expect(effectCleanup).toEqual(strictMode ? (concurrentMode ? 3 : 2) : 1);
     },
   );
 
@@ -177,6 +195,40 @@ describe('initializeState', () => {
       act(() => setAtom(2));
       expect(setValues).toEqual([2]);
       expect(c.textContent).toBe('3');
+    },
+  );
+
+  testRecoil(
+    'Selectors from global initialization are not canceled',
+    async () => {
+      const [asyncSel, resolve] = asyncSelector();
+      const depSel = selector({
+        key: 'RecoilRoot - initializeSTate - async selector',
+        get: ({get}) => get(asyncSel),
+      });
+
+      const container = renderUnwrappedElements(
+        <RecoilRoot
+          // Call initializeState to force a snapshot to be mapped
+          initializeState={({getLoadable}) => {
+            getLoadable(asyncSel);
+            getLoadable(depSel);
+          }}>
+          <React.Suspense fallback="loading">
+            <ReadsAtom atom={asyncSel} />
+            <ReadsAtom atom={depSel} />
+          </React.Suspense>
+        </RecoilRoot>,
+      );
+      expect(container.textContent).toEqual('loading');
+
+      // Wait for any potential auto-release of initializing snapshot
+      await flushPromisesAndTimers();
+
+      // Ensure that async selectors resolve and are not canceled
+      act(() => resolve('RESOLVE'));
+      await flushPromisesAndTimers();
+      expect(container.textContent).toEqual('"RESOLVE""RESOLVE"');
     },
   );
 
