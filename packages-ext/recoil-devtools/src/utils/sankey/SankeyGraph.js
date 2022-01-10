@@ -49,7 +49,7 @@ export type Graph<N, L> = $ReadOnly<{
 }>;
 
 // Utility functions
-const sortDesc = <T>(array: Array<T>, accessor: T => number) =>
+const sortDesc = <T>(array: Array<T>, accessor: T => number): Array<T> =>
   array.sort((a, b) => accessor(b) - accessor(a));
 
 // Generate the Node and Link objects for layout.  These may be mutated.

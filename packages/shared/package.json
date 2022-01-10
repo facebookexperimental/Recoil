@@ -1,14 +1,14 @@
 {
-    "name": "recoil-shared",
-    "description": "This is the internal package.json enabling CommonJS module",
-    "main": "Recoil_Shared.js",
-    "haste_commonjs": true,
-    "files": [
-      "Recoil_Shared.js"
-    ],
-    "directories": {
-      "": "./"
-    },
-    "repository": "https://github.com/facebookexperimental/Recoil.git",
-    "license": "MIT"
-  }
+  "name": "recoil-shared",
+  "description": "This is the internal package.json enabling CommonJS module",
+  "main": "Recoil_Shared.js",
+  "haste_commonjs": true,
+  "files": [
+    "Recoil_Shared.js"
+  ],
+  "directories": {
+    "": "./"
+  },
+  "repository": "https://github.com/facebookexperimental/Recoil.git",
+  "license": "MIT"
+}

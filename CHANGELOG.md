@@ -1,10 +1,11 @@
 # Change Log
 
 ## UPCOMING
-***Add new changes here as they land***
 
+**_Add new changes here as they land_**
 
 ### Pending
+
 - Memory management
 - useTransition() compatibility for OSS
 
@@ -19,12 +20,14 @@
   - Renders now occur before transaction observers instead of after.
 
 ### New Features
+
 - Add `refresh()` to the `useRecoilCallback()` interface for refreshing selector caches. (#1413)
 - Callbacks from selector's `getCallback()` can now mutate, refresh, and transact Recoil state, in addition to reading it, for parity with `useRecoilCallback()`. (#1498)
 - Recoil StoreID's for `<RecoilRoot>` and `Snapshot` stores accessible via `useRecoilStoreID()` hook (#1417) or `storeID` parameter for atom effects (#1414).
 - `RecoilLoadable.all()` and `RecoilLoadable.of()` now accept either literal values, async Promises, or Loadables. (#1455, #1442)
 
 ### Other Fixes and Optimizations
+
 - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
 - Fix transitive selector refresh for some cases (#1409)
 - Atom Effects
@@ -58,7 +61,7 @@
   - Ability to map Loadables with other Loadables. (#1180)
   - Re-implement Loadable as classes. (#1315)
 - Improved dev-mode checks:
-  - Atoms freeze default, initialized, and async values.  Selectors should not freeze upstream dependencies. (#1261, #1259)
+  - Atoms freeze default, initialized, and async values. Selectors should not freeze upstream dependencies. (#1261, #1259)
   - Perform runtime check that required options are provided when creating atoms and selectors. (#1324)
 - Fix user-thrown promises in selectors for some cases.
 - Allow class instances in family parameters for Flow
@@ -66,21 +69,22 @@
 ## 0.4.1 (2021-08-26)
 
 - Performance optimizations to suppress re-rendering components:
-    - When subscribed selectors evaluate to the same value. (#749, #952)
-    - On initial render when not using React Concurrent Mode (#820)
-    - When selector async deps resolve, but React re-renders before chained promises have executed.
+  - When subscribed selectors evaluate to the same value. (#749, #952)
+  - On initial render when not using React Concurrent Mode (#820)
+  - When selector async deps resolve, but React re-renders before chained promises have executed.
 - Fixed #1072 where in some cases selectors with async deps would not update in response to state updates
 
 ## 0.4 (2021-07-30)
 
 ### New Features
+
 - Selector cache configuration: introduced `cachePolicy_UNSTABLE` option for selectors and selector families. This option allows you to control the behavior of how the selector evicts entries from its internal cache.
 - Improved `useRecoilTransaction_UNSTABLE()` hook for transactions with multiple atoms (#1085)
 
 ### Fixes and Optimizations
 
 - Fix TypeScript typing for `selectorFamily()`, `getCallback()`, `useGetRecoilValueInfo()`, and `Snapshot#getNodes()` (#1060, #1116, #1123)
-- Allow mutable values in selectors to be used with waitFor*() helpers (#1074, #1096)
+- Allow mutable values in selectors to be used with waitFor\*() helpers (#1074, #1096)
 - Atom Effects fixes:
   - Fix onSet() handler to get the proper new value when an atom is reset or has an async default Promise that resolves (#1059, #1050, #738) (Slightly breaking change)
   - Fix support for multiple Atom effects cleanup handlers (#1125)
@@ -94,19 +98,22 @@
 
 ## 0.3.0 (2021-5-14)
 
-For supporting garbage collection in the future there is a slight breaking change that `Snapshot`'s will only be valid for the duration of the callback or render.   A new `retain()` API can be used to persist them longer.  This is not enforced yet, but Recoil will now provide a warning in dev-mode if a `Snapshot` is used past its lifetime. (#1006)
+For supporting garbage collection in the future there is a slight breaking change that `Snapshot`'s will only be valid for the duration of the callback or render. A new `retain()` API can be used to persist them longer. This is not enforced yet, but Recoil will now provide a warning in dev-mode if a `Snapshot` is used past its lifetime. (#1006)
 
 ### New Features / Improvements
+
 - Add `override` prop to `<RecoilRoot>` (#973)
 - Add `getCallback()` to selector evaluation interface (#989)
 - Improved TypeScript and Flow typing for `Loadable`s (#966, #1022)
 
 ### Performance Optimizations
+
 - Improve scalability (time and memory) of Atom families by cleaning up a legacy feature.
 
 ### Bug Fixes
+
 - Throwing an error in an async selector should be properly caught by `<ErrorBoundary>`'s (#998, #1017)
-- Fix for Atom Effects `onSet()` should not be called when triggered from `setSelf()` initializing with a Promise or from the same `onSet()` handler.  (#974, #979, #953, #986)
+- Fix for Atom Effects `onSet()` should not be called when triggered from `setSelf()` initializing with a Promise or from the same `onSet()` handler. (#974, #979, #953, #986)
 - Improved support for Safari (#967, #609)
 - Objects stored in selectors are properly frozen in dev mode (#911)
 

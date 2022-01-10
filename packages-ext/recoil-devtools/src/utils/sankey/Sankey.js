@@ -67,7 +67,7 @@ type Props<N, L> = $ReadOnly<{
   nodeLabelAlignment?: 'inward' | 'right',
   // Curvature for curved link paths (range 0-1, defaults to 0.5)
   getLinkTooltip?: (Link<L, N>) => string,
-  linkColor: string | ((Link<L>) => string),
+  linkColor: string | ((Link<L, N>) => string),
   linkStyles?: Styles<Link<L, N>>,
   linkClass?: string | ((Link<L, N>) => string),
   linkEvents?: Events<Link<L, N>>,
@@ -83,9 +83,11 @@ type Props<N, L> = $ReadOnly<{
 
 // Helper to convert something that is either a value or a function to get the
 // value to always be a function so we can simply call it to get the value.
-// flowlint-next-line unclear-type:off
+// $FlowFixMe[unclear-type]
 const functor: <T>(any) => T = <T>(x: T) =>
-  typeof x === 'function' ? x : () => x;
+  // $FlowFixMe[escaped-generic]
+  // $FlowFixMe[incompatible-type]
+  typeof x === 'function' ? x : <T>() => x;
 
 /**
  * @explorer-desc

@@ -30,7 +30,11 @@ type KeyProps = {
   isRoot?: boolean,
 };
 
-function ItemLabel({name, node, isRoot = false}: KeyProps) {
+function ItemLabel({
+  name,
+  node,
+  isRoot = false,
+}: KeyProps): React$Element<'span'> {
   return (
     <span style={getStyle(styles, {label: true, isRoot: isRoot})}>
       <NodeName name={name} node={node} />:

@@ -21,6 +21,7 @@ const TIME_WARNING_THRESHOLD_MS = 15;
 function cacheKeyFromObject(object: mixed): mixed {
   if (typeof object === 'object' && object !== null && !isImmutable(object)) {
     const t0 = window.performance ? performance.now() : 0;
+    // $FlowFixMe
     let answer: Immutable.Map<string, mixed> = Immutable.Map();
     // $FlowIssue[sketchy-null-mixed] #9606986 Symbols are not supported
     // $FlowIssue[incompatible-type] #9606986 Symbols are not supported

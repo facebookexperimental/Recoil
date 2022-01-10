@@ -45,17 +45,25 @@ const OPTION_DEFAULTS: Options = {
 };
 
 class Selection<T> {
+  // $FlowFixMe[value-as-type]
   all: D3Selection;
+  // $FlowFixMe[value-as-type]
   new: D3Selection;
+  // $FlowFixMe[value-as-type]
   old: D3Selection;
+  // $FlowFixMe[value-as-type]
   update: D3Selection;
   options: Options;
 
   constructor(
     props: {
+      // $FlowFixMe[value-as-type]
       all: D3Selection,
+      // $FlowFixMe[value-as-type]
       new: D3Selection,
+      // $FlowFixMe[value-as-type]
       old: D3Selection,
+      // $FlowFixMe[value-as-type]
       update: D3Selection,
     },
     options: Options,

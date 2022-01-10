@@ -35,7 +35,7 @@ type KeyProps = {
   node: ?Node,
 };
 
-function NodeName({name, node}: KeyProps) {
+function NodeName({name, node}: KeyProps): React$Element<'span'> {
   return (
     <span style={styles.label}>
       {node?.type === 'selector' && <span style={styles.selector}>S</span>}

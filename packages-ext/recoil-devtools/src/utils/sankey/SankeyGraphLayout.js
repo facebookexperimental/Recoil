@@ -77,9 +77,9 @@ const BUTTERFLY_LAYOUT_DEFAULT: ButterflyLayoutOptions = {
 };
 
 // Utility functions
-const sortAsc = <T>(array: Array<T>, accessor: T => number) =>
+const sortAsc = <T>(array: Array<T>, accessor: T => number): Array<T> =>
   array.sort((a, b) => accessor(a) - accessor(b));
-const sortDesc = <T>(array: Array<T>, accessor: T => number) =>
+const sortDesc = <T>(array: Array<T>, accessor: T => number): Array<T> =>
   array.sort((a, b) => accessor(b) - accessor(a));
 
 // Limit the graph to just the top n nodes.
@@ -92,7 +92,7 @@ function limitNodes<N, L>(
   rootNodes: Array<Node<N, L>> = graph.nodes.filter(
     node => node.sourceLinks.length === 0,
   ),
-) {
+): ?Graph<N, L> {
   if (nodeLimit == null || nodeLimit >= graph.nodes.length) {
     return graph;
   }
@@ -102,6 +102,7 @@ function limitNodes<N, L>(
   let nextLinks = rootNodes.flatMap(node =>
     node.targetLinks.concat(node.sourceLinks),
   );
+  // $FlowFixMe[incompatible-type-arg] Uncovered while typing recoil-devtools
   const consideredLinks: Set<Link<mixed, mixed>> = new Set(nextLinks);
 
   function addNode(node) {

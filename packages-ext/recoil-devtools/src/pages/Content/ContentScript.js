@@ -42,8 +42,6 @@ function initContentScriptListeners() {
     // Connect to the background script
     connected = true;
 
-    // TODO: set devToolsExtensionID?
-    // $FlowFixMe: chrome types
     bg = chrome.runtime.connect(window.devToolsExtensionID, {
       name: props?.name ?? '',
     });
@@ -53,12 +51,12 @@ function initContentScriptListeners() {
       props: props ? {...props} : undefined,
     });
 
-    bg.onDisconnect.addListener(() => {
+    bg?.onDisconnect.addListener(() => {
       connected = false;
       bg = null;
     });
 
-    bg.onMessage.addListener(msg => {
+    bg?.onMessage.addListener(msg => {
       window.postMessage({
         source: ExtensionSourceContentScript,
         ...msg,
@@ -90,7 +88,7 @@ function initContentScriptListeners() {
     for (let i = 0; i < len; i = i + MessageChunkSize) {
       const chunk = encoded.slice(i, i + MessageChunkSize);
       try {
-        bg.postMessage({
+        bg?.postMessage({
           action: RecoilDevToolsActions.UPLOAD_CHUNK,
           txID: data.txID ?? -1,
           chunk,

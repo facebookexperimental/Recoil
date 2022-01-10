@@ -58,9 +58,9 @@ describe('Background Proccess', () => {
       },
     });
     expect(store.connections.get(0).transactions.getSize()).toBe(2);
-    expect(
-      store.connections.get(0).transactions.get(1).modifiedValues,
-    ).toEqual([{isSubscriber: false, name: 'b'}]);
+    expect(store.connections.get(0).transactions.get(1).modifiedValues).toEqual(
+      [{isSubscriber: false, name: 'b'}],
+    );
   });
 
   it('transaction in chunks is stored', () => {
@@ -86,9 +86,9 @@ describe('Background Proccess', () => {
     });
 
     expect(store.connections.get(0).transactions.getSize()).toBe(3);
-    expect(
-      store.connections.get(0).transactions.get(2).modifiedValues,
-    ).toEqual([{isSubscriber: false, name: 'c'}]);
+    expect(store.connections.get(0).transactions.get(2).modifiedValues).toEqual(
+      [{isSubscriber: false, name: 'c'}],
+    );
   });
 
   it('mixed chunks are dealt with properly', () => {
@@ -137,11 +137,11 @@ describe('Background Proccess', () => {
     });
 
     expect(store.connections.get(0).transactions.getSize()).toBe(5);
-    expect(
-      store.connections.get(0).transactions.get(3).modifiedValues,
-    ).toEqual([{isSubscriber: false, name: 'd'}]);
-    expect(
-      store.connections.get(0).transactions.get(4).modifiedValues,
-    ).toEqual([{isSubscriber: false, name: 'e'}]);
+    expect(store.connections.get(0).transactions.get(3).modifiedValues).toEqual(
+      [{isSubscriber: false, name: 'd'}],
+    );
+    expect(store.connections.get(0).transactions.get(4).modifiedValues).toEqual(
+      [{isSubscriber: false, name: 'e'}],
+    );
   });
 });
