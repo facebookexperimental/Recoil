@@ -313,6 +313,16 @@ const userInfoState = atomFamily({
 });
 ```
 
+```jsx
+const userInfoState = atomFamily({
+  key: 'UserInfo',
+  default: selectorFamily({
+    key: 'UserInfo/Default',
+    get: id => ({get}) => myFetchUserInfo(id, get(paramsState)),
+  }),
+});
+```
+
 If you would like bi-directional syncing of data, then consider [atom effects](/docs/guides/atom-effects)
 
 ## Async Queries Without React Suspense
