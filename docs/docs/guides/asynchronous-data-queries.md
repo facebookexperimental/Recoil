@@ -283,15 +283,33 @@ Note that this pre-fetching works by triggering the `selectorFamily()` to initia
 
 ## Query Default Atom Values
 
-A common pattern is to use an atom to represent local editable state, but use a selector to query default values:
+A common pattern is to use an atom to represent local editable state, but use a promise to query default values:
 
 ```jsx
 const currentUserIDState = atom({
   key: 'CurrentUserID',
+  default: myFetchCurrentUserID(),
+});
+```
+
+Or use a selector to defer the query or depend on other state.  Note that when using a selector the default atom value will remain dynamic, and update along with selector updates, until the atom is explicitly set by the user.
+
+```jsx
+const UserInfoState = atom({
+  key: 'UserInfo',
   default: selector({
-    key: 'CurrentUserID/Default',
-    get: () => myFetchCurrentUserID(),
+    key: 'UserInfo/Default',
+    get: ({get}) => myFetchUserInfo(get(currentUserIDState)),
   }),
+});
+```
+
+This can also be used with atom families:
+
+```jsx
+const userInfoState = atomFamily({
+  key: 'UserInfo',
+  default: id  => myFetchUserInfo(id),
 });
 ```
 
