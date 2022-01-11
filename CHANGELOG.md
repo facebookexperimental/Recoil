@@ -16,7 +16,7 @@
   - Fixes for `<StrictMode>` (#1473, #1444, #1509).
   - `useTransition()` is not yet supported for open source React.
 - Recoil updates now re-render earlier:
-  - Recoil and React state changes from the same batch now stay in sync.
+  - Recoil and React state changes from the same batch now stay in sync. (#1076)
   - Renders now occur before transaction observers instead of after.
 
 ### New Features
@@ -33,7 +33,7 @@
 - Atom Effects
   - Rename option from `effects_UNSTABLE` to just `effects` as the interface is mostly stabilizing (#1520)
   - Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466)
-  - Atom effects are cleaned up when initialized by a Snapshot which is released. (#1511)
+  - Atom effects are cleaned up when initialized by a Snapshot which is released. (#1511, #1532)
   - Unsubscribe `onSet()` handlers in atom effects when atoms are cleaned up. (#1509)
   - Call `onSet()` when atoms are initialized with `<RecoilRoot initializeState={...} >` (#1519, #1511)
 - Avoid extra re-renders in some cases when a component uses a different atom/selector. (#825)

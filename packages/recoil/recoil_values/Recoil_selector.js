@@ -265,9 +265,7 @@ function selector<T>(
   let liveStoresCount = 0;
 
   function selectorIsLive() {
-    return true;
-    // TODO Workaround for now to avoid hanging selectors
-    // return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
+    return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
   }
 
   function getExecutionInfo(store: Store): ExecutionInfo<T> {
