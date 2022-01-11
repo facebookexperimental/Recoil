@@ -3474,14 +3474,14 @@ class Snapshot {
       const mutableSnapshot = new MutableSnapshot(this, batchUpdates$1);
       mapper(mutableSnapshot); // if removing batchUpdates from `set` add it here
 
-      return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
+      return mutableSnapshot;
     });
 
     _defineProperty(this, "asyncMap", async mapper => {
       this.checkRefCount_INTERNAL();
       const mutableSnapshot = new MutableSnapshot(this, batchUpdates$1);
       await mapper(mutableSnapshot);
-      return cloneSnapshot(mutableSnapshot.getStore_INTERNAL());
+      return mutableSnapshot;
     });
 
     this._store = {
@@ -4068,8 +4068,15 @@ function initialStoreState_DEPRECATED(store, initializeState) {
 
 
 function initialStoreState(initializeState) {
+  // Initialize a snapshot and get its store
   const snapshot = freshSnapshot$1().map(initializeState);
-  const storeState = snapshot.getStore_INTERNAL().getState();
+  const storeState = snapshot.getStore_INTERNAL().getState(); // Counteract the snapshot auto-release
+
+  snapshot.retain(); // Cleanup any effects run during initialization and clear the handlers so
+  // they will re-initialize if used during rendering.  This allows atom effect
+  // initialization to take precedence over initializeState and be compatible
+  // with StrictMode semantics.
+
   storeState.nodeCleanupFunctions.forEach(cleanup => cleanup());
   storeState.nodeCleanupFunctions.clear();
   return storeState;
@@ -6767,10 +6774,10 @@ function selector(options) {
   });
   const retainedBy = retainedByOptionWithDefault$1(options.retainedBy_UNSTABLE);
   const executionInfoMap = new Map();
+  let liveStoresCount = 0;
 
   function selectorIsLive() {
-    return true; // TODO Workaround for now to avoid hanging selectors
-    // return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
+    return !Recoil_gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
   }
 
   function getExecutionInfo(store) {
@@ -6783,7 +6790,9 @@ function selector(options) {
 
   function selectorInit(store) {
     store.getState().knownSelectors.add(key);
+    liveStoresCount++;
     return () => {
+      liveStoresCount--;
     };
   }
 
@@ -6867,6 +6876,11 @@ function selector(options) {
 
   function wrapPendingPromise(store, promise, state, depValues, executionId, loadingDepsState) {
     return promise.then(value => {
+      if (!selectorIsLive()) {
+        // The selector was released since the request began; ignore the response.
+        clearExecutionInfo(store, executionId);
+        throw CANCELED;
+      }
 
       const loadable = loadableWithValue$2(value);
       maybeFreezeValue(value);
@@ -6875,6 +6889,11 @@ function selector(options) {
       setLoadableInStoreToNotifyDeps(store, loadable, executionId);
       return value;
     }).catch(errorOrPromise => {
+      if (!selectorIsLive()) {
+        // The selector was released since the request began; ignore the response.
+        clearExecutionInfo(store, executionId);
+        throw CANCELED;
+      }
 
       if (isLatestExecution(store, executionId)) {
         updateExecutionInfoDepValues(depValues, store, executionId);
@@ -6926,6 +6945,11 @@ function selector(options) {
 
   function wrapPendingDependencyPromise(store, promise, state, existingDeps, executionId, loadingDepsState) {
     return promise.then(resolvedDep => {
+      if (!selectorIsLive()) {
+        // The selector was released since the request began; ignore the response.
+        clearExecutionInfo(store, executionId);
+        throw CANCELED;
+      } // Check if we are handling a pending Recoil dependency or if the user
       // threw their own Promise to "suspend" a selector evaluation.  We need
       // to check that the loadingDepPromise actually matches the promise that
       // we caught in case the selector happened to catch the promise we threw
@@ -7061,6 +7085,11 @@ function selector(options) {
     }).catch(error => {
       // The selector was released since the request began; ignore the response.
       if (error instanceof Canceled) {
+        throw CANCELED;
+      }
+
+      if (!selectorIsLive()) {
+        clearExecutionInfo(store, executionId);
         throw CANCELED;
       }
 
@@ -7390,6 +7419,12 @@ function selector(options) {
 
     if (isLatestExecution(store, executionId)) {
       executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
+    }
+  }
+
+  function clearExecutionInfo(store, executionId) {
+    if (isLatestExecution(store, executionId)) {
+      executionInfoMap.delete(store);
     }
   }
 
