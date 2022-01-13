@@ -1518,6 +1518,7 @@ testRecoil(
      * Run selector chain so that selectorB recalculates as a result of atomA
      * being changed to "3"
      */
+    mappedSnapshot.retain();
     await flushPromisesAndTimers();
 
     const loadableB = mappedSnapshot.getLoadable(selectorC);
