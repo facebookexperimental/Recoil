@@ -21,6 +21,7 @@ const {RetentionZone} = require('./Recoil_RetentionZone');
 const {setByAddingToSet} = require('recoil-shared/util/Recoil_CopyOnWrite');
 const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
 const gkx = require('recoil-shared/util/Recoil_gkx');
+const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
 const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
 
 // flowlint-next-line unclear-type:off
@@ -195,30 +196,35 @@ function peekNodeInfo<T>(
   const storeState = store.getState();
   const graph = store.getGraph(state.version);
   const type = getNode(key).nodeType;
-  const downstreamNodes = filterIterable(
-    getDownstreamNodes(store, state, new Set([key])),
-    nodeKey => nodeKey !== key,
-  );
-  return {
-    loadable: peekNodeLoadable(store, state, key),
-    isActive:
-      storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
-    isSet: type === 'selector' ? false : state.atomValues.has(key),
-    isModified: state.dirtyAtoms.has(key),
-    type,
-    // Report current dependencies.  If the node hasn't been evaluated, then
-    // dependencies may be missing based on the current state.
-    deps: recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
-    // Reports all "current" subscribers.  Evaluating other nodes or
-    // previous in-progress async evaluations may introduce new subscribers.
-    subscribers: {
-      nodes: recoilValuesForKeys(downstreamNodes),
-      components: mapIterable(
-        storeState.nodeToComponentSubscriptions.get(key)?.values() ?? [],
-        ([name]) => ({name}),
-      ),
+  return lazyProxy(
+    {
+      type,
     },
-  };
+    {
+      loadable: () => peekNodeLoadable(store, state, key),
+      isActive: () =>
+        storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
+      isSet: () => (type === 'selector' ? false : state.atomValues.has(key)),
+      isModified: () => state.dirtyAtoms.has(key),
+      // Report current dependencies.  If the node hasn't been evaluated, then
+      // dependencies may be missing based on the current state.
+      deps: () => recoilValuesForKeys(graph.nodeDeps.get(key) ?? []),
+      // Reports all "current" subscribers.  Evaluating other nodes or
+      // previous in-progress async evaluations may introduce new subscribers.
+      subscribers: () => ({
+        nodes: recoilValuesForKeys(
+          filterIterable(
+            getDownstreamNodes(store, state, new Set([key])),
+            nodeKey => nodeKey !== key,
+          ),
+        ),
+        components: mapIterable(
+          storeState.nodeToComponentSubscriptions.get(key)?.values() ?? [],
+          ([name]) => ({name}),
+        ),
+      }),
+    },
+  );
 }
 
 // Find all of the recursively dependent nodes
