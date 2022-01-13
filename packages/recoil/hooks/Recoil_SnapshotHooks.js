@@ -11,26 +11,27 @@
 'use strict';
 
 import type {PersistenceType} from '../core/Recoil_Node';
+import type {Snapshot} from '../core/Recoil_Snapshot';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
-const {batchUpdates} = require('../core/Recoil_Batching');
-const {DEFAULT_VALUE, getNode, nodes} = require('../core/Recoil_Node');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot');
-const {
+import {batchUpdates} from '../core/Recoil_Batching';
+import {DEFAULT_VALUE, getNode, nodes} from '../core/Recoil_Node';
+import {useStoreRef} from '../core/Recoil_RecoilRoot';
+import {
   AbstractRecoilValue,
   setRecoilValueLoadable,
-} = require('../core/Recoil_RecoilValueInterface');
-const {SUSPENSE_TIMEOUT_MS} = require('../core/Recoil_Retention');
-const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
-const {useCallback, useEffect, useRef, useState} = require('react');
-const {isSSR} = require('recoil-shared/util/Recoil_Environment');
-const filterMap = require('recoil-shared/util/Recoil_filterMap');
-const filterSet = require('recoil-shared/util/Recoil_filterSet');
-const mapMap = require('recoil-shared/util/Recoil_mapMap');
-const mergeMaps = require('recoil-shared/util/Recoil_mergeMaps');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
-const usePrevious = require('recoil-shared/util/Recoil_usePrevious');
+} from '../core/Recoil_RecoilValueInterface';
+import {SUSPENSE_TIMEOUT_MS} from '../core/Recoil_Retention';
+import {cloneSnapshot} from '../core/Recoil_Snapshot';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {isSSR} from 'recoil-shared/util/Recoil_Environment';
+import filterMap from 'recoil-shared/util/Recoil_filterMap';
+import filterSet from 'recoil-shared/util/Recoil_filterSet';
+import mapMap from 'recoil-shared/util/Recoil_mapMap';
+import mergeMaps from 'recoil-shared/util/Recoil_mergeMaps';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import recoverableViolation from 'recoil-shared/util/Recoil_recoverableViolation';
+import usePrevious from 'recoil-shared/util/Recoil_usePrevious';
 
 function useTransactionSubscription(callback: Store => void) {
   const storeRef = useStoreRef();
@@ -39,6 +40,7 @@ function useTransactionSubscription(callback: Store => void) {
     return sub.release;
   }, [callback, storeRef]);
 }
+export const useTransactionSubscription_DEPRECATED = useTransactionSubscription;
 
 function externallyVisibleAtomValuesInState(
   state: TreeState,
@@ -97,7 +99,7 @@ type ExternallyVisibleAtomInfo = {
           useSetUnvalidatedAtomValues hook. Useful for ignoring the useSetUnvalidatedAtomValues
           transaction, to avoid loops.
 */
-function useTransactionObservation_DEPRECATED(
+export function useTransactionObservation_DEPRECATED(
   callback: ({
     atomValues: Map<NodeKey, mixed>,
     previousAtomValues: Map<NodeKey, mixed>,
@@ -148,7 +150,7 @@ function useTransactionObservation_DEPRECATED(
   );
 }
 
-function useRecoilTransactionObserver(
+export function useRecoilTransactionObserver(
   callback: ({
     snapshot: Snapshot,
     previousSnapshot: Snapshot,
@@ -170,7 +172,7 @@ function useRecoilTransactionObserver(
 }
 
 // Return a snapshot of the current state and subscribe to all state changes
-function useRecoilSnapshot(): Snapshot {
+export function useRecoilSnapshot(): Snapshot {
   const storeRef = useStoreRef();
   const [snapshot, setSnapshot] = useState(() =>
     cloneSnapshot(storeRef.current),
@@ -213,7 +215,7 @@ function useRecoilSnapshot(): Snapshot {
   return snapshot;
 }
 
-function gotoSnapshot(store: Store, snapshot: Snapshot): void {
+export function gotoSnapshot(store: Store, snapshot: Snapshot): void {
   const storeState = store.getState();
   const prev = storeState.nextTree ?? storeState.currentTree;
   const next = snapshot.getStore_INTERNAL().getState().currentTree;
@@ -248,19 +250,10 @@ function gotoSnapshot(store: Store, snapshot: Snapshot): void {
   });
 }
 
-function useGotoRecoilSnapshot(): Snapshot => void {
+export function useGotoRecoilSnapshot(): Snapshot => void {
   const storeRef = useStoreRef();
   return useCallback(
     (snapshot: Snapshot) => gotoSnapshot(storeRef.current, snapshot),
     [storeRef],
   );
 }
-
-module.exports = {
-  useRecoilSnapshot,
-  gotoSnapshot,
-  useGotoRecoilSnapshot,
-  useRecoilTransactionObserver,
-  useTransactionObservation_DEPRECATED,
-  useTransactionSubscription_DEPRECATED: useTransactionSubscription,
-};

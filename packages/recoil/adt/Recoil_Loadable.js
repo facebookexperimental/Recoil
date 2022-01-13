@@ -15,9 +15,9 @@
  */
 'use strict';
 
-const err = require('recoil-shared/util/Recoil_err');
-const isPromise = require('recoil-shared/util/Recoil_isPromise');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+import err from 'recoil-shared/util/Recoil_err';
+import isPromise from 'recoil-shared/util/Recoil_isPromise';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
 
 class BaseLoadable<T> {
   getValue(): T {
@@ -198,21 +198,23 @@ export type Loadable<+T> =
   | $ReadOnly<ErrorLoadable<T>>
   | $ReadOnly<LoadingLoadable<T>>;
 
-function loadableWithValue<+T>(value: T): $ReadOnly<ValueLoadable<T>> {
+export function loadableWithValue<+T>(value: T): $ReadOnly<ValueLoadable<T>> {
   return Object.freeze(new ValueLoadable(value));
 }
 
-function loadableWithError<+T>(error: mixed): $ReadOnly<ErrorLoadable<T>> {
+export function loadableWithError<+T>(
+  error: mixed,
+): $ReadOnly<ErrorLoadable<T>> {
   return Object.freeze(new ErrorLoadable(error));
 }
 
-function loadableWithPromise<+T>(
+export function loadableWithPromise<+T>(
   promise: Promise<T>,
 ): $ReadOnly<LoadingLoadable<T>> {
   return Object.freeze(new LoadingLoadable(promise));
 }
 
-function loadableLoading<+T>(): $ReadOnly<LoadingLoadable<T>> {
+export function loadableLoading<+T>(): $ReadOnly<LoadingLoadable<T>> {
   return Object.freeze(new LoadingLoadable(new Promise(() => {})));
 }
 
@@ -244,7 +246,7 @@ function loadableAllArray<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
     : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
 }
 
-function loadableAll<
+export function loadableAll<
   Inputs:
     | $ReadOnlyArray<Loadable<mixed> | Promise<mixed> | mixed>
     | $ReadOnly<{[string]: Loadable<mixed> | Promise<mixed> | mixed, ...}>,
@@ -275,11 +277,11 @@ function loadableAll<
       );
 }
 
-function isLoadable(x: mixed): boolean %checks {
+export function isLoadable(x: mixed): boolean %checks {
   return x instanceof BaseLoadable;
 }
 
-const LoadableStaticInterface = {
+export const RecoilLoadable = {
   of: <T>(value: Promise<T> | Loadable<T> | T): Loadable<T> =>
     isPromise(value)
       ? loadableWithPromise(value)
@@ -291,14 +293,4 @@ const LoadableStaticInterface = {
   // $FlowIssue[unclear-type]
   all: ((loadableAll: any): LoadableAll),
   isLoadable,
-};
-
-module.exports = {
-  loadableWithValue,
-  loadableWithError,
-  loadableWithPromise,
-  loadableLoading,
-  loadableAll,
-  isLoadable,
-  RecoilLoadable: LoadableStaticInterface,
 };

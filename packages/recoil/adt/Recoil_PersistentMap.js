@@ -13,8 +13,8 @@
 
 import type {HAMTPlusMap} from 'hamt_plus';
 
-const hamt = require('hamt_plus');
-const gkx = require('recoil-shared/util/Recoil_gkx');
+import * as hamt from 'hamt_plus';
+import gkx from 'recoil-shared/util/Recoil_gkx';
 
 export interface PersistentMap<K: string, V> {
   keys(): Iterable<K>;
@@ -127,7 +127,7 @@ class HashArrayMappedTrieMap<K: string, V> implements PersistentMap<K, V> {
   }
 }
 
-function persistentMap<K: string, V>(
+export function persistentMap<K: string, V>(
   existing?: PersistentMap<K, V>,
 ): PersistentMap<K, V> {
   if (gkx('recoil_hamt_2020')) {
@@ -136,7 +136,3 @@ function persistentMap<K: string, V>(
     return new BuiltInMap(existing);
   }
 }
-
-module.exports = {
-  persistentMap,
-};

@@ -10,10 +10,12 @@
 import type {RecoilValueInfo} from '../core/Recoil_FunctionalCore';
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
-const {peekNodeInfo} = require('../core/Recoil_FunctionalCore');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot');
+import {peekNodeInfo} from '../core/Recoil_FunctionalCore';
+import {useStoreRef} from '../core/Recoil_RecoilRoot';
 
-function useGetRecoilValueInfo(): <T>(RecoilValue<T>) => RecoilValueInfo<T> {
+export default function useGetRecoilValueInfo(): <T>(
+  RecoilValue<T>,
+) => RecoilValueInfo<T> {
   const storeRef = useStoreRef();
 
   return <T>({key}): RecoilValueInfo<T> =>
@@ -23,5 +25,3 @@ function useGetRecoilValueInfo(): <T>(RecoilValue<T>) => RecoilValueInfo<T> {
       key,
     );
 }
-
-module.exports = useGetRecoilValueInfo;

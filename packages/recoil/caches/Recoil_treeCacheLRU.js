@@ -12,10 +12,10 @@
 
 import type {TreeCacheImplementation} from './Recoil_TreeCacheImplementationType';
 
-const {LRUCache} = require('./Recoil_LRUCache');
-const {TreeCache} = require('./Recoil_TreeCache');
+import {LRUCache} from './Recoil_LRUCache';
+import {TreeCache} from './Recoil_TreeCache';
 
-function treeCacheLRU<T>(
+export default function treeCacheLRU<T>(
   maxSize: number,
   mapNodeValue?: mixed => mixed = v => v,
 ): TreeCacheImplementation<T> {
@@ -40,5 +40,3 @@ function treeCacheLRU<T>(
   // $FlowFixMe[method-unbinding]
   return cache;
 }
-
-module.exports = treeCacheLRU;

@@ -12,15 +12,14 @@
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
-const {useStoreRef} = require('../core/Recoil_RecoilRoot');
-const {SUSPENSE_TIMEOUT_MS} = require('../core/Recoil_Retention');
-const {updateRetainCount} = require('../core/Recoil_Retention');
-const {RetentionZone} = require('../core/Recoil_RetentionZone');
-const {useEffect, useRef} = require('react');
-const {isSSR} = require('recoil-shared/util/Recoil_Environment');
-const gkx = require('recoil-shared/util/Recoil_gkx');
-const shallowArrayEqual = require('recoil-shared/util/Recoil_shallowArrayEqual');
-const usePrevious = require('recoil-shared/util/Recoil_usePrevious');
+import {useStoreRef} from '../core/Recoil_RecoilRoot';
+import {SUSPENSE_TIMEOUT_MS, updateRetainCount} from '../core/Recoil_Retention';
+import {RetentionZone} from '../core/Recoil_RetentionZone';
+import {useEffect, useRef} from 'react';
+import {isSSR} from 'recoil-shared/util/Recoil_Environment';
+import gkx from 'recoil-shared/util/Recoil_gkx';
+import shallowArrayEqual from 'recoil-shared/util/Recoil_shallowArrayEqual';
+import usePrevious from 'recoil-shared/util/Recoil_usePrevious';
 
 // I don't see a way to avoid the any type here because we want to accept readable
 // and writable values with any type parameter, but normally with writable ones
@@ -30,7 +29,7 @@ type ToRetain =
   | RetentionZone
   | $ReadOnlyArray<RecoilValue<any> | RetentionZone>; // flowlint-line unclear-type:off
 
-function useRetain(toRetain: ToRetain): void {
+export default function useRetain(toRetain: ToRetain): void {
   if (!gkx('recoil_memory_managament_2020')) {
     return;
   }
@@ -96,5 +95,3 @@ function useRetain_ACTUAL(toRetain: ToRetain): void {
     }, SUSPENSE_TIMEOUT_MS);
   }
 }
-
-module.exports = useRetain;

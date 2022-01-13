@@ -12,16 +12,16 @@
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
 
-const {useStoreRef} = require('../core/Recoil_RecoilRoot');
-const {refreshRecoilValue} = require('../core/Recoil_RecoilValueInterface');
-const {useCallback} = require('react');
+import {useStoreRef} from '../core/Recoil_RecoilRoot';
+import {refreshRecoilValue} from '../core/Recoil_RecoilValueInterface';
+import {useCallback} from 'react';
 
-function useRecoilRefresher<T>(recoilValue: RecoilValue<T>): () => void {
+export default function useRecoilRefresher<T>(
+  recoilValue: RecoilValue<T>,
+): () => void {
   const storeRef = useStoreRef();
   return useCallback(() => {
     const store = storeRef.current;
     refreshRecoilValue(store, recoilValue);
   }, [recoilValue, storeRef]);
 }
-
-module.exports = useRecoilRefresher;

@@ -16,9 +16,9 @@ import type {Graph} from './Recoil_GraphTypes';
 import type {ComponentID, NodeKey, StateID, StoreID} from './Recoil_Keys';
 import type {RetentionZone} from './Recoil_RetentionZone';
 
-const {persistentMap} = require('../adt/Recoil_PersistentMap');
-const {graph} = require('./Recoil_Graph');
-const {getNextTreeStateVersion} = require('./Recoil_Keys');
+import {persistentMap} from '../adt/Recoil_PersistentMap';
+import {makeGraph} from './Recoil_Graph';
+import {getNextTreeStateVersion} from './Recoil_Keys';
 
 export type {ComponentID, NodeKey, StateID, StoreID} from './Recoil_Keys';
 
@@ -162,7 +162,7 @@ function makeEmptyStoreState(): StoreState {
     nodeToComponentSubscriptions: new Map(),
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
-    graphsByVersion: new Map().set(currentTree.version, graph()),
+    graphsByVersion: new Map().set(currentTree.version, makeGraph()),
     retention: {
       referenceCounts: new Map(),
       nodesRetainedByZone: new Map(),

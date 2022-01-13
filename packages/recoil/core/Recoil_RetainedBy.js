@@ -20,5 +20,3 @@ export type RetainedBy =
   | 'recoilRoot' // lives for the lifetime of the root
   | RetentionZone // retained whenever this zone or these zones are retained
   | Array<RetentionZone>;
-
-module.exports = undefined;

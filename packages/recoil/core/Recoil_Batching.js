@@ -8,11 +8,10 @@
  * @flow strict-local
  * @format
  */
+'use strict';
 
-const {batchStart} = require('../core/Recoil_RecoilValueInterface');
-const {
-  unstable_batchedUpdates,
-} = require('recoil-shared/util/Recoil_ReactBatchedUpdates');
+import {batchStart} from '../core/Recoil_RecoilValueInterface';
+import {unstable_batchedUpdates} from 'recoil-shared/util/Recoil_ReactBatchedUpdates';
 
 let batcher = unstable_batchedUpdates;
 
@@ -26,20 +25,20 @@ type Batcher = (callback: Callback) => void;
  * Set the batcher to a custom batcher for your renderer,
  * if you use a renderer other than React DOM or React Native.
  */
-const setBatcher: Batcher => void = (newBatcher: Batcher) => {
+export const setBatcher: Batcher => void = (newBatcher: Batcher) => {
   batcher = newBatcher;
 };
 
 /**
  * Returns the current batcher function.
  */
-const getBatcher: () => Batcher = () => batcher;
+export const getBatcher: () => Batcher = () => batcher;
 
 /**
  * Calls the current batcher function and passes the
  * provided callback function.
  */
-const batchUpdates: Callback => void = (callback: Callback) => {
+export const batchUpdates: Callback => void = (callback: Callback) => {
   batcher(() => {
     let batchEnd = () => undefined;
     try {
@@ -49,10 +48,4 @@ const batchUpdates: Callback => void = (callback: Callback) => {
       batchEnd();
     }
   });
-};
-
-module.exports = {
-  getBatcher,
-  setBatcher,
-  batchUpdates,
 };

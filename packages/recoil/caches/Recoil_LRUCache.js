@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
 
 type CacheNode<K, V> = {
   key: K,
@@ -24,7 +24,7 @@ type Options<K> = {
   mapKey?: K => mixed,
 };
 
-class LRUCache<K = mixed, V = mixed> {
+export class LRUCache<K = mixed, V = mixed> {
   _maxSize: number;
   _size: number;
   _head: ?CacheNode<K, V>;
@@ -155,5 +155,3 @@ class LRUCache<K = mixed, V = mixed> {
     this._map = new Map<mixed, CacheNode<K, V>>();
   }
 }
-
-module.exports = {LRUCache};

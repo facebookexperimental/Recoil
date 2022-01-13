@@ -12,13 +12,13 @@
 
 import type {Loadable, RecoilState, RecoilValue} from '../../Recoil_index';
 
-const {atom, selector} = require('../../Recoil_index');
-const {
+import {atom, selector} from '../../Recoil_index';
+import {
   getRecoilValueAsLoadable,
   setRecoilValue,
-} = require('../Recoil_RecoilValueInterface');
-const {performance} = require('perf_hooks');
-const {makeStore} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+} from '../Recoil_RecoilValueInterface';
+import {performance} from 'perf_hooks';
+import {makeStore} from 'recoil-shared/__test_utils__/Recoil_TestingUtils';
 
 const ITERATIONS = [1]; // Avoid iterating for automated testing
 // const ITERATIONS = [2, 2];

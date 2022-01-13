@@ -16,45 +16,44 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
 
-// @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
-// @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
-// @fb-only: const URI = require('URI');
+// @fb-only: import RecoilusagelogEvent from 'RecoilusagelogEvent';
+// @fb-only: import RecoilUsageLogFalcoEvent from 'RecoilUsageLogFalcoEvent';
+// @fb-only: import URI from 'URI';
 
-const Queue = require('../adt/Recoil_Queue');
-const {
+import * as Queue from '../adt/Recoil_Queue';
+import {
   getNextTreeStateVersion,
   makeEmptyStoreState,
-} = require('../core/Recoil_State');
-const {
+} from '../core/Recoil_State';
+import {
   cleanUpNode,
   getDownstreamNodes,
   initializeNode,
   setNodeValue,
   setUnvalidatedAtomValue_DEPRECATED,
-} = require('./Recoil_FunctionalCore');
-const {graph} = require('./Recoil_Graph');
-const {cloneGraph} = require('./Recoil_Graph');
-const {getNextStoreID} = require('./Recoil_Keys');
-const {createMutableSource, reactMode} = require('./Recoil_ReactMode');
-const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
-const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
-const {freshSnapshot} = require('./Recoil_Snapshot');
-const React = require('react');
-const {
+} from './Recoil_FunctionalCore';
+import {cloneGraph, makeGraph} from './Recoil_Graph';
+import {getNextStoreID} from './Recoil_Keys';
+import {createMutableSource, reactMode} from './Recoil_ReactMode';
+import {applyAtomValueWrites} from './Recoil_RecoilValueInterface';
+import {releaseScheduledRetainablesNow} from './Recoil_Retention';
+import {freshSnapshot} from './Recoil_Snapshot';
+import * as React from 'react';
+import {
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
-} = require('react');
-const err = require('recoil-shared/util/Recoil_err');
-const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
-const gkx = require('recoil-shared/util/Recoil_gkx');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
-const unionSets = require('recoil-shared/util/Recoil_unionSets');
-const useRefInitOnce = require('recoil-shared/util/Recoil_useRefInitOnce');
+} from 'react';
+import err from 'recoil-shared/util/Recoil_err';
+import expectationViolation from 'recoil-shared/util/Recoil_expectationViolation';
+import gkx from 'recoil-shared/util/Recoil_gkx';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import recoverableViolation from 'recoil-shared/util/Recoil_recoverableViolation';
+import unionSets from 'recoil-shared/util/Recoil_unionSets';
+import useRefInitOnce from 'recoil-shared/util/Recoil_useRefInitOnce';
 
 type InternalProps = {
   initializeState_DEPRECATED?: ({
@@ -118,11 +117,11 @@ function startNextTreeIfNeeded(store: Store): void {
 }
 
 const AppContext = React.createContext<StoreRef>({current: defaultStore});
-const useStoreRef = (): StoreRef => useContext(AppContext);
+export const useStoreRef = (): StoreRef => useContext(AppContext);
 
 // $FlowExpectedError[incompatible-call]
 const MutableSourceContext = React.createContext<MutableSource>(null);
-function useRecoilMutableSource(): MutableSource {
+export function useRecoilMutableSource(): MutableSource {
   const mutableSource = useContext(MutableSourceContext);
   if (mutableSource == null) {
     expectationViolation(
@@ -153,6 +152,8 @@ function notifyComponents(
     }
   }
 }
+
+export const notifyComponents_FOR_TESTING = notifyComponents;
 
 function sendEndOfBatchNotifications(store: Store) {
   const storeState = store.getState();
@@ -200,6 +201,9 @@ function sendEndOfBatchNotifications(store: Store) {
     storeState.queuedComponentCallbacks_DEPRECATED.length,
   );
 }
+
+export const sendEndOfBatchNotifications_FOR_TESTING =
+  sendEndOfBatchNotifications;
 
 function endBatch(store: Store) {
   const storeState = store.getState();
@@ -376,7 +380,7 @@ function RecoilRoot_INTERNAL({
     if (graphs.has(version)) {
       return nullthrows(graphs.get(version));
     }
-    const newGraph = graph();
+    const newGraph = makeGraph();
     graphs.set(version, newGraph);
     return newGraph;
   };
@@ -546,7 +550,7 @@ type Props =
       children: React.Node,
     };
 
-function RecoilRoot(props: Props): React.Node {
+export function RecoilRoot(props: Props): React.Node {
   const {override, ...propsExceptOverride} = props;
 
   const ancestorStoreRef = useStoreRef();
@@ -559,15 +563,6 @@ function RecoilRoot(props: Props): React.Node {
   return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
 }
 
-function useRecoilStoreID(): StoreID {
+export function useRecoilStoreID(): StoreID {
   return useStoreRef().current.storeID;
 }
-
-module.exports = {
-  RecoilRoot,
-  useStoreRef,
-  useRecoilMutableSource,
-  useRecoilStoreID,
-  notifyComponents_FOR_TESTING: notifyComponents,
-  sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,
-};

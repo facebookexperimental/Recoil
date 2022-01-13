@@ -21,37 +21,28 @@ import type {NodeKey} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
-const {batchUpdates} = require('./Recoil_Batching');
-const {initializeNode, peekNodeInfo} = require('./Recoil_FunctionalCore');
-const {graph} = require('./Recoil_Graph');
-const {getNextStoreID} = require('./Recoil_Keys');
-const {
-  DEFAULT_VALUE,
-  recoilValues,
-  recoilValuesForKeys,
-} = require('./Recoil_Node');
-const {
+import {batchUpdates} from './Recoil_Batching';
+import {initializeNode, peekNodeInfo} from './Recoil_FunctionalCore';
+import {makeGraph} from './Recoil_Graph';
+import {getNextStoreID} from './Recoil_Keys';
+import {DEFAULT_VALUE, recoilValues, recoilValuesForKeys} from './Recoil_Node';
+import {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
   setRecoilValue,
   setUnvalidatedRecoilValue,
-} = require('./Recoil_RecoilValueInterface');
-const {updateRetainCount} = require('./Recoil_Retention');
-const {
-  getNextTreeStateVersion,
-  makeEmptyStoreState,
-} = require('./Recoil_State');
-const concatIterables = require('recoil-shared/util/Recoil_concatIterables');
-const {isSSR} = require('recoil-shared/util/Recoil_Environment');
-const err = require('recoil-shared/util/Recoil_err');
-const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
-const gkx = require('recoil-shared/util/Recoil_gkx');
-const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
-const {
-  memoizeOneWithArgsHashAndInvalidation,
-} = require('recoil-shared/util/Recoil_Memoize');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+} from './Recoil_RecoilValueInterface';
+import {updateRetainCount} from './Recoil_Retention';
+import {getNextTreeStateVersion, makeEmptyStoreState} from './Recoil_State';
+import concatIterables from 'recoil-shared/util/Recoil_concatIterables';
+import {isSSR} from 'recoil-shared/util/Recoil_Environment';
+import err from 'recoil-shared/util/Recoil_err';
+import filterIterable from 'recoil-shared/util/Recoil_filterIterable';
+import gkx from 'recoil-shared/util/Recoil_gkx';
+import mapIterable from 'recoil-shared/util/Recoil_mapIterable';
+import {memoizeOneWithArgsHashAndInvalidation} from 'recoil-shared/util/Recoil_Memoize';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import recoverableViolation from 'recoil-shared/util/Recoil_recoverableViolation';
 
 // Opaque at this surface because it's part of the public API from here.
 export type SnapshotID = StateID;
@@ -89,7 +80,7 @@ class Snapshot {
         if (graphs.has(version)) {
           return nullthrows(graphs.get(version));
         }
-        const newGraph = graph();
+        const newGraph = makeGraph();
         graphs.set(version, newGraph);
         return newGraph;
       },

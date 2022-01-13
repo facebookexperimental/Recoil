@@ -10,36 +10,34 @@
  */
 'use strict';
 
-const React = require('react');
-const gkx = require('recoil-shared/util/Recoil_gkx');
+import * as React from 'react';
+import gkx from 'recoil-shared/util/Recoil_gkx';
 
 export opaque type MutableSource = {};
 
-const createMutableSource: <StoreState, Version>(
+export const createMutableSource: <StoreState, Version>(
   {current: StoreState},
   () => Version,
 ) => MutableSource =
-  // flowlint-next-line unclear-type:off
-  (React: any).createMutableSource ?? (React: any).unstable_createMutableSource;
+  // $FlowExpectedError[prop-missing]
+  React.createMutableSource ?? React.unstable_createMutableSource;
 
-const useMutableSource: <StoreState, T>(
+export const useMutableSource: <StoreState, T>(
   MutableSource,
   () => T,
   (StoreState, () => void) => () => void,
 ) => T =
-  // flowlint-next-line unclear-type:off
-  (React: any).useMutableSource ?? (React: any).unstable_useMutableSource;
+  // $FlowExpectedError[prop-missing]
+  React.useMutableSource ?? React.unstable_useMutableSource; // eslint-disable-line fb-www/react-destructure-hooks
 
 // https://github.com/reactwg/react-18/discussions/86
-const useSyncExternalStore: <T>(
+export const useSyncExternalStore: <T>(
   subscribe: (() => void) => () => void,
   getSnapshot: () => T,
   getServerSnapshot?: () => T,
 ) => T =
-  // flowlint-next-line unclear-type:off
-  (React: any).useSyncExternalStore ??
-  // flowlint-next-line unclear-type:off
-  (React: any).unstable_useSyncExternalStore;
+  // $FlowExpectedError[prop-missing]
+  React.useSyncExternalStore ?? React.unstable_useSyncExternalStore; // eslint-disable-line fb-www/react-destructure-hooks
 
 type ReactMode =
   | 'CONCURRENT_LEGACY'
@@ -55,7 +53,11 @@ type ReactMode =
  *    3) before transaction observers instead of after.
  * concurrent: Is the current mode compatible with Concurrent Mode (i.e. useTransition())
  */
-function reactMode(): {mode: ReactMode, early: boolean, concurrent: boolean} {
+export function reactMode(): {
+  mode: ReactMode,
+  early: boolean,
+  concurrent: boolean,
+} {
   // NOTE: This mode is currently broken with some Suspense cases
   // see Recoil_selector-test.js
   if (gkx('recoil_concurrent_legacy')) {
@@ -81,10 +83,3 @@ function reactMode(): {mode: ReactMode, early: boolean, concurrent: boolean} {
     ? {mode: 'LEGACY', early: true, concurrent: false}
     : {mode: 'LEGACY', early: false, concurrent: false};
 }
-
-module.exports = {
-  createMutableSource,
-  useMutableSource,
-  useSyncExternalStore,
-  reactMode,
-};

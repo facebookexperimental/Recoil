@@ -10,7 +10,7 @@
  */
 'use strict';
 
-const {act} = require('ReactTestUtils');
+import {act} from 'ReactTestUtils';
 
 const {
   getRecoilTestFn,

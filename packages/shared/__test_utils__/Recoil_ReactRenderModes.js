@@ -12,23 +12,16 @@
 
 let strictMode: boolean = false;
 
-const isStrictModeEnabled = (): boolean => strictMode;
+export const isStrictModeEnabled = (): boolean => strictMode;
 
-const setStrictMode = (enableStrictMode: boolean): void => {
+export const setStrictMode = (enableStrictMode: boolean): void => {
   strictMode = enableStrictMode;
 };
 
 let concurrentMode: boolean = false;
 
-const isConcurrentModeEnabled = (): boolean => concurrentMode;
+export const isConcurrentModeEnabled = (): boolean => concurrentMode;
 
-const setConcurrentMode = (enableConcurrentMode: boolean): void => {
+export const setConcurrentMode = (enableConcurrentMode: boolean): void => {
   concurrentMode = enableConcurrentMode;
-};
-
-module.exports = {
-  isStrictModeEnabled,
-  setStrictMode,
-  isConcurrentModeEnabled,
-  setConcurrentMode,
 };

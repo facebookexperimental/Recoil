@@ -19,7 +19,7 @@ const LEAF = {};
 
 const emptyMap = new Map();
 
-class ArrayKeyedMap<V> {
+export class ArrayKeyedMap<V> {
   _base: Map<any, any> = new Map();
 
   constructor(
@@ -104,5 +104,3 @@ class ArrayKeyedMap<V> {
     return new Map(this.entries());
   }
 }
-
-module.exports = {ArrayKeyedMap};

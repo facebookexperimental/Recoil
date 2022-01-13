@@ -20,8 +20,8 @@ import type {
   TreeCacheNode,
 } from './Recoil_TreeCacheImplementationType';
 
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import recoverableViolation from 'recoil-shared/util/Recoil_recoverableViolation';
 
 export type Options<T> = {
   mapNodeValue?: (value: mixed) => mixed,
@@ -29,7 +29,7 @@ export type Options<T> = {
   onSet?: (node: TreeCacheLeaf<T>) => void,
 };
 
-class TreeCache<T = mixed> {
+export class TreeCache<T = mixed> {
   _numLeafs: number;
   _root: TreeCacheNode<T> | null;
 
@@ -271,5 +271,3 @@ const countDownstreamLeaves = <T>(node: TreeCacheNode<T>): number =>
         (sum, currNode) => sum + countDownstreamLeaves(currNode),
         0,
       );
-
-module.exports = {TreeCache};

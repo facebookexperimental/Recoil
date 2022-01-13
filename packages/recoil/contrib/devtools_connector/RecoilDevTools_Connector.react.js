@@ -10,13 +10,14 @@
  */
 'use strict';
 
-const {Snapshot} = require('../../core/Recoil_Snapshot');
-const {
+import type {Snapshot} from '../../core/Recoil_Snapshot';
+
+import {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-} = require('../../hooks/Recoil_SnapshotHooks');
-const React = require('react');
-const {useEffect, useRef} = require('react');
+} from '../../hooks/Recoil_SnapshotHooks';
+import * as React from 'react';
+import {useEffect, useRef} from 'react';
 
 type Props = $ReadOnly<{
   name?: string,
@@ -50,7 +51,7 @@ let CONNECTION_INDEX = 0;
  * @explorer-desc
  * Recoil Dev Tools Connector
  */
-function Connector({
+export default function Connector({
   name = `Recoil Connection ${CONNECTION_INDEX++}`,
   persistenceLimit = 50,
   maxDepth,
@@ -99,5 +100,3 @@ function Connector({
 
   return null;
 }
-
-module.exports = Connector;

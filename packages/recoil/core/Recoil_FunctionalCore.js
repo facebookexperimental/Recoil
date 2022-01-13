@@ -16,13 +16,13 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
-const {getNode, getNodeMaybe, recoilValuesForKeys} = require('./Recoil_Node');
-const {RetentionZone} = require('./Recoil_RetentionZone');
-const {setByAddingToSet} = require('recoil-shared/util/Recoil_CopyOnWrite');
-const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
-const gkx = require('recoil-shared/util/Recoil_gkx');
-const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
-const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
+import {getNode, getNodeMaybe, recoilValuesForKeys} from './Recoil_Node';
+import {RetentionZone} from './Recoil_RetentionZone';
+import {setByAddingToSet} from 'recoil-shared/util/Recoil_CopyOnWrite';
+import filterIterable from 'recoil-shared/util/Recoil_filterIterable';
+import gkx from 'recoil-shared/util/Recoil_gkx';
+import lazyProxy from 'recoil-shared/util/Recoil_lazyProxy';
+import mapIterable from 'recoil-shared/util/Recoil_mapIterable';
 
 // flowlint-next-line unclear-type:off
 const emptySet: $ReadOnlySet<any> = Object.freeze(new Set());
@@ -102,11 +102,11 @@ function initializeNodeIfNewToStore(
   });
 }
 
-function initializeNode(store: Store, key: NodeKey): void {
+export function initializeNode(store: Store, key: NodeKey): void {
   initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
 }
 
-function cleanUpNode(store: Store, key: NodeKey) {
+export function cleanUpNode(store: Store, key: NodeKey) {
   const state = store.getState();
   state.nodeCleanupFunctions.get(key)?.();
   state.nodeCleanupFunctions.delete(key);
@@ -115,7 +115,7 @@ function cleanUpNode(store: Store, key: NodeKey) {
 // Get the current value loadable of a node and update the state.
 // Update dependencies and subscriptions for selectors.
 // Update saved value validation for atoms.
-function getNodeLoadable<T>(
+export function getNodeLoadable<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
@@ -125,7 +125,7 @@ function getNodeLoadable<T>(
 }
 
 // Peek at the current value loadable for a node without any evaluation or state change
-function peekNodeLoadable<T>(
+export function peekNodeLoadable<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
@@ -135,7 +135,7 @@ function peekNodeLoadable<T>(
 
 // Write value directly to state bypassing the Node interface as the node
 // definitions may not have been loaded yet when processing the initial snapshot.
-function setUnvalidatedAtomValue_DEPRECATED<T>(
+export function setUnvalidatedAtomValue_DEPRECATED<T>(
   state: TreeState,
   key: NodeKey,
   newValue: T,
@@ -154,7 +154,7 @@ function setUnvalidatedAtomValue_DEPRECATED<T>(
 // Return the discovered dependencies and values to be written by setting
 // a node value. (Multiple values may be written due to selectors getting to
 // set upstreams; deps may be discovered because of reads in updater functions.)
-function setNodeValue<T>(
+export function setNodeValue<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
@@ -188,7 +188,7 @@ export type RecoilValueInfo<T> = {
   },
 };
 
-function peekNodeInfo<T>(
+export function peekNodeInfo<T>(
   store: Store,
   state: TreeState,
   key: NodeKey,
@@ -228,7 +228,7 @@ function peekNodeInfo<T>(
 }
 
 // Find all of the recursively dependent nodes
-function getDownstreamNodes(
+export function getDownstreamNodes(
   store: Store,
   state: TreeState,
   keys: $ReadOnlySet<NodeKey> | $ReadOnlyArray<NodeKey>,
@@ -248,14 +248,3 @@ function getDownstreamNodes(
   }
   return visitedNodes;
 }
-
-module.exports = {
-  getNodeLoadable,
-  peekNodeLoadable,
-  setNodeValue,
-  initializeNode,
-  cleanUpNode,
-  setUnvalidatedAtomValue_DEPRECATED,
-  peekNodeInfo,
-  getDownstreamNodes,
-};

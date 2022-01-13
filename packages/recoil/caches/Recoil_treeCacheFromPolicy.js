@@ -17,28 +17,17 @@ import type {
 } from './Recoil_CachePolicy';
 import type {TreeCacheImplementation} from './Recoil_TreeCacheImplementationType';
 
-const {TreeCache} = require('./Recoil_TreeCache');
-const treeCacheLRU = require('./Recoil_treeCacheLRU');
-const err = require('recoil-shared/util/Recoil_err');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
+import {TreeCache} from './Recoil_TreeCache';
+import treeCacheLRU from './Recoil_treeCacheLRU';
+import err from 'recoil-shared/util/Recoil_err';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import stableStringify from 'recoil-shared/util/Recoil_stableStringify';
 
 const defaultPolicy = {
   equality: 'reference',
   eviction: 'keep-all',
   maxSize: Infinity,
 };
-
-function treeCacheFromPolicy<T>({
-  equality = defaultPolicy.equality,
-  eviction = defaultPolicy.eviction,
-  maxSize = defaultPolicy.maxSize,
-}: CachePolicy = defaultPolicy): TreeCacheImplementation<T> {
-  const valueMapper = getValueMapper(equality);
-  const treeCache = getTreeCache(eviction, maxSize, valueMapper);
-
-  return treeCache;
-}
 
 function getValueMapper(equality: EqualityPolicy): mixed => mixed {
   switch (equality) {
@@ -69,4 +58,13 @@ function getTreeCache<T>(
   throw err(`Unrecognized eviction policy ${eviction}`);
 }
 
-module.exports = treeCacheFromPolicy;
+export default function treeCacheFromPolicy<T>({
+  equality = defaultPolicy.equality,
+  eviction = defaultPolicy.eviction,
+  maxSize = defaultPolicy.maxSize,
+}: CachePolicy = defaultPolicy): TreeCacheImplementation<T> {
+  const valueMapper = getValueMapper(equality);
+  const treeCache = getTreeCache(eviction, maxSize, valueMapper);
+
+  return treeCache;
+}
