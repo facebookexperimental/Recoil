@@ -20,21 +20,34 @@
  * lazily computed only on first access.
  */
 // $FlowIssue[unclear-type]
-function lazyProxy<Base, Factories: {[string]: () => any}>(
+function lazyProxy<Base: {[string]: any}, Factories: {[string]: () => any}>(
   base: Base,
   factories: Factories,
-): {...Base, ...$ObjMap<Factories, <F>(() => F) => F>} {
-  // $FlowIssue[incompatible-return]
-  return new Proxy(base, {
+): {
+  ...Base,
+  ...$ObjMap<Factories, <F>(() => F) => F>,
+} {
+  const proxy = new Proxy(base, {
     get: (target, prop) => {
-      if (prop in factories) {
+      if (!(prop in target) && prop in factories) {
         // $FlowIssue[incompatible-use]
         target[prop] = factories[prop]();
       }
+
       // $FlowIssue[incompatible-use]
       return target[prop];
     },
+    ownKeys: target => {
+      for (const lazyProp in factories) {
+        // $FlowExpectedError[prop-missing]
+        proxy[lazyProp];
+      }
+      return Object.keys(target);
+    },
   });
+
+  // $FlowIssue[incompatible-return]
+  return proxy;
 }
 
 module.exports = lazyProxy;
