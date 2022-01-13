@@ -10,6 +10,8 @@
  */
 'use strict';
 
+import type {Snapshot} from '../Recoil_Snapshot';
+
 const {
   getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
@@ -27,7 +29,6 @@ let React,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
-  Snapshot,
   freshSnapshot,
   RecoilRoot;
 
@@ -50,7 +51,7 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
-  ({Snapshot, freshSnapshot} = require('../Recoil_Snapshot'));
+  ({freshSnapshot} = require('../Recoil_Snapshot'));
   ({RecoilRoot} = require('../Recoil_RecoilRoot'));
 });
 
@@ -493,6 +494,38 @@ testRecoil('getInfo', () => {
   expect(
     Array.from(resetSnapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes),
   ).toEqual([]);
+});
+
+describe('Retention', () => {
+  testRecoil('auto-release', async () => {
+    const snapshot = freshSnapshot();
+    expect(snapshot.isRetained()).toBe(true);
+
+    await flushPromisesAndTimers();
+    expect(snapshot.isRetained()).toBe(false);
+
+    const prevDev = __DEV__; // eslint-disable-line fb-www/check-dev-condition
+    __DEV__ = true;
+    expect(() => snapshot.retain()).toThrow('released');
+    __DEV__ = false;
+    expect(() => snapshot.retain()).not.toThrow('released');
+    __DEV__ = prevDev;
+
+    // TODO enable when recoil_memory_managament_2020 is enforced
+    // expect(() => snapshot.getID()).toThrow('release');
+  });
+
+  testRecoil('retain()', async () => {
+    const snapshot = freshSnapshot();
+    expect(snapshot.isRetained()).toBe(true);
+    const release2 = snapshot.retain();
+
+    await flushPromisesAndTimers();
+    expect(snapshot.isRetained()).toBe(true);
+
+    release2();
+    expect(snapshot.isRetained()).toBe(false);
+  });
 });
 
 describe('Atom effects', () => {
