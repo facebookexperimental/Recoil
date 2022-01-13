@@ -73,6 +73,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 // However, the data-flow-graph and selector values may evolve as selector
 // evaluation functions are executed and async selectors resolve.
 class Snapshot {
+  // eslint-disable-next-line fb-www/no-uninitialized-properties
   _store: Store;
   _refCount: number = 1;
 
