@@ -47,6 +47,9 @@ const err = require('recoil-shared/util/Recoil_err');
 const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
 const gkx = require('recoil-shared/util/Recoil_gkx');
 const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
+const {
+  memoizeOneWithArgsHashAndInvalidation,
+} = require('recoil-shared/util/Recoil_Memoize');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
@@ -316,16 +319,33 @@ function freshSnapshot(initializeState?: MutableSnapshot => void): Snapshot {
 }
 
 // Factory to clone a snapahot state
+const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] =
+  memoizeOneWithArgsHashAndInvalidation(
+    (store, version) => {
+      const storeState = store.getState();
+      const treeState =
+        version === 'current'
+          ? storeState.currentTree
+          : nullthrows(storeState.previousTree);
+      return new Snapshot(cloneStoreState(store, treeState));
+    },
+    (store, version) =>
+      String(version) +
+      String(store.storeID) +
+      String(store.getState().currentTree.version) +
+      String(store.getState().previousTree?.version),
+  );
+
 function cloneSnapshot(
   store: Store,
   version: 'current' | 'previous' = 'current',
 ): Snapshot {
-  const storeState = store.getState();
-  const treeState =
-    version === 'current'
-      ? storeState.currentTree
-      : nullthrows(storeState.previousTree);
-  return new Snapshot(cloneStoreState(store, treeState));
+  const snapshot = memoizedCloneSnapshot(store, version);
+  if (!snapshot.isRetained()) {
+    invalidateMemoizedSnapshot();
+    return memoizedCloneSnapshot(store, version);
+  }
+  return snapshot;
 }
 
 class MutableSnapshot extends Snapshot {
