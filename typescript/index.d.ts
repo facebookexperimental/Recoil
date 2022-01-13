@@ -52,7 +52,7 @@
   isActive: boolean;
   isSet: boolean;
   isModified: boolean; // TODO report modified selectors
-  type: 'atom' | 'selector' | undefined; // undefined until initialized for now
+  type: 'atom' | 'selector';
   deps: Iterable<RecoilValue<T>>;
   subscribers: {
     nodes: Iterable<RecoilValue<T>>,

@@ -73,7 +73,7 @@ testRecoil(
       isActive: false,
       isSet: false,
       isModified: false,
-      type: undefined,
+      type: 'atom',
     });
     expect(Array.from(getRecoilValueInfo(myAtom).deps)).toEqual([]);
     expect(Array.from(getRecoilValueInfo(myAtom).subscribers.nodes)).toEqual(
@@ -89,7 +89,7 @@ testRecoil(
       isActive: false,
       isSet: false,
       isModified: false,
-      type: undefined,
+      type: 'selector',
     });
     expect(Array.from(getRecoilValueInfo(selectorA).deps)).toEqual([]);
     expect(Array.from(getRecoilValueInfo(selectorA).subscribers.nodes)).toEqual(
@@ -105,7 +105,7 @@ testRecoil(
       isActive: false,
       isSet: false,
       isModified: false,
-      type: undefined,
+      type: 'selector',
     });
     expect(Array.from(getRecoilValueInfo(selectorB).deps)).toEqual([]);
     expect(Array.from(getRecoilValueInfo(selectorB).subscribers.nodes)).toEqual(

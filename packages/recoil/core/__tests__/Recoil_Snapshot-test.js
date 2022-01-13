@@ -338,7 +338,7 @@ testRecoil('getInfo', () => {
     isActive: false,
     isSet: false,
     isModified: false,
-    type: undefined,
+    type: 'atom',
   });
   expect(Array.from(snapshot.getInfo_UNSTABLE(myAtom).deps)).toEqual([]);
   expect(
@@ -349,7 +349,7 @@ testRecoil('getInfo', () => {
     isActive: false,
     isSet: false,
     isModified: false,
-    type: undefined,
+    type: 'selector',
   });
   expect(Array.from(snapshot.getInfo_UNSTABLE(selectorA).deps)).toEqual([]);
   expect(
@@ -360,7 +360,7 @@ testRecoil('getInfo', () => {
     isActive: false,
     isSet: false,
     isModified: false,
-    type: undefined,
+    type: 'selector',
   });
   expect(Array.from(snapshot.getInfo_UNSTABLE(selectorB).deps)).toEqual([]);
   expect(

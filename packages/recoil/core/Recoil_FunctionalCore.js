@@ -179,7 +179,7 @@ export type RecoilValueInfo<T> = {
   isActive: boolean,
   isSet: boolean,
   isModified: boolean, // TODO report modified selectors
-  type: 'atom' | 'selector' | void, // void until initialized for now
+  type: 'atom' | 'selector',
   deps: Iterable<RecoilValue<mixed>>,
   subscribers: {
     nodes: Iterable<RecoilValue<mixed>>,
@@ -194,11 +194,7 @@ function peekNodeInfo<T>(
 ): RecoilValueInfo<T> {
   const storeState = store.getState();
   const graph = store.getGraph(state.version);
-  const type = storeState.knownAtoms.has(key)
-    ? 'atom'
-    : storeState.knownSelectors.has(key)
-    ? 'selector'
-    : undefined;
+  const type = getNode(key).nodeType;
   const downstreamNodes = filterIterable(
     getDownstreamNodes(store, state, new Set([key])),
     nodeKey => nodeKey !== key,
