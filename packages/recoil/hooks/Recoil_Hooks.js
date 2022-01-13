@@ -16,33 +16,30 @@ import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey} from '../core/Recoil_State';
 
-const {batchUpdates} = require('../core/Recoil_Batching');
-const {DEFAULT_VALUE} = require('../core/Recoil_Node');
-const {
+import {batchUpdates} from '../core/Recoil_Batching';
+import {DEFAULT_VALUE} from '../core/Recoil_Node';
+import {
   reactMode,
   useMutableSource,
   useSyncExternalStore,
-} = require('../core/Recoil_ReactMode');
-const {
-  useRecoilMutableSource,
-  useStoreRef,
-} = require('../core/Recoil_RecoilRoot');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {
+} from '../core/Recoil_ReactMode';
+import {useRecoilMutableSource, useStoreRef} from '../core/Recoil_RecoilRoot';
+import {isRecoilValue} from '../core/Recoil_RecoilValue';
+import {
   AbstractRecoilValue,
   getRecoilValueAsLoadable,
   setRecoilValue,
   setUnvalidatedRecoilValue,
   subscribeToRecoilValue,
-} = require('../core/Recoil_RecoilValueInterface');
-const useRetain = require('./Recoil_useRetain');
-const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
-const {setByAddingToSet} = require('recoil-shared/util/Recoil_CopyOnWrite');
-const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
-const err = require('recoil-shared/util/Recoil_err');
-const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
-const gkx = require('recoil-shared/util/Recoil_gkx');
-const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
+} from '../core/Recoil_RecoilValueInterface';
+import useRetain from './Recoil_useRetain';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {setByAddingToSet} from 'recoil-shared/util/Recoil_CopyOnWrite';
+import differenceSets from 'recoil-shared/util/Recoil_differenceSets';
+import err from 'recoil-shared/util/Recoil_err';
+import expectationViolation from 'recoil-shared/util/Recoil_expectationViolation';
+import gkx from 'recoil-shared/util/Recoil_gkx';
+import useComponentName from 'recoil-shared/util/Recoil_useComponentName';
 
 function handleLoadable<T>(
   loadable: Loadable<T>,
@@ -97,7 +94,7 @@ export type RecoilInterface = {
  * Various things are broken with useRecoilInterface, particularly concurrent
  * mode, React strict mode, and memory management. They will not be fixed.
  * */
-function useRecoilInterface_DEPRECATED(): RecoilInterface {
+export function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const componentName = useComponentName();
   const storeRef = useStoreRef();
   const [, forceUpdate] = useState([]);
@@ -292,7 +289,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
   }, [recoilValuesUsed, storeRef]);
 }
 
-const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
+export const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
 
 function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
   recoilValue: RecoilValue<T>,
@@ -566,7 +563,9 @@ function useRecoilValueLoadable_LEGACY<T>(
   Like useRecoilValue(), but either returns the value if available or
   just undefined if not available for any reason, such as pending or error.
 */
-function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
+export function useRecoilValueLoadable<T>(
+  recoilValue: RecoilValue<T>,
+): Loadable<T> {
   if (__DEV__) {
     validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
   }
@@ -588,7 +587,7 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   if the value is an error it will throw it for the nearest React error boundary.
   This will also subscribe the component for any updates in the value.
   */
-function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
+export function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
   if (__DEV__) {
     validateRecoilValue(recoilValue, 'useRecoilValue');
   }
@@ -601,7 +600,9 @@ function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
   Returns a function that allows the value of a RecoilState to be updated, but does
   not subscribe the component to changes to that RecoilState.
 */
-function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
+export function useSetRecoilState<T>(
+  recoilState: RecoilState<T>,
+): SetterOrUpdater<T> {
   if (__DEV__) {
     validateRecoilValue(recoilState, 'useSetRecoilState');
   }
@@ -617,7 +618,7 @@ function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
 /**
   Returns a function that will reset the value of a RecoilState to its default
 */
-function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
+export function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
   if (__DEV__) {
     validateRecoilValue(recoilState, 'useResetRecoilState');
   }
@@ -634,7 +635,7 @@ function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
   retrieval of the value. If evaluating the RecoilState resulted in an error, this will
   throw the error so that the nearest React error boundary can catch it.
 */
-function useRecoilState<T>(
+export function useRecoilState<T>(
   recoilState: RecoilState<T>,
 ): [T, SetterOrUpdater<T>] {
   if (__DEV__) {
@@ -648,7 +649,7 @@ function useRecoilState<T>(
   an object that indicates whether the RecoilState is available, pending, or
   unavailable due to an error.
 */
-function useRecoilStateLoadable<T>(
+export function useRecoilStateLoadable<T>(
   recoilState: RecoilState<T>,
 ): [Loadable<T>, SetterOrUpdater<T>] {
   if (__DEV__) {
@@ -657,7 +658,7 @@ function useRecoilStateLoadable<T>(
   return [useRecoilValueLoadable(recoilState), useSetRecoilState(recoilState)];
 }
 
-function useSetUnvalidatedAtomValues(): (
+export function useSetUnvalidatedAtomValues(): (
   values: Map<NodeKey, mixed>,
   transactionMetadata?: {...},
 ) => void {
@@ -675,15 +676,3 @@ function useSetUnvalidatedAtomValues(): (
     });
   };
 }
-
-module.exports = {
-  recoilComponentGetRecoilValueCount_FOR_TESTING,
-  useRecoilInterface: useRecoilInterface_DEPRECATED,
-  useRecoilState,
-  useRecoilStateLoadable,
-  useRecoilValue,
-  useRecoilValueLoadable,
-  useResetRecoilState,
-  useSetRecoilState,
-  useSetUnvalidatedAtomValues,
-};

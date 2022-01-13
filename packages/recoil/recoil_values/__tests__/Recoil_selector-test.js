@@ -108,10 +108,16 @@ function getError(recoilValue): Error {
 
 function setValue(recoilState, value) {
   setRecoilValue(store, recoilState, value);
+  // $FlowFixMe[unsafe-addition]
+  // $FlowFixMe[cannot-write]
+  store.getState().currentTree.version++;
 }
 
 function resetValue(recoilState) {
   setRecoilValue(store, recoilState, new DefaultValue());
+  // $FlowFixMe[unsafe-addition]
+  // $FlowFixMe[cannot-write]
+  store.getState().currentTree.version++;
 }
 
 testRecoil('useRecoilState - static selector', () => {
@@ -1512,6 +1518,7 @@ testRecoil(
      * Run selector chain so that selectorB recalculates as a result of atomA
      * being changed to "3"
      */
+    mappedSnapshot.retain();
     await flushPromisesAndTimers();
 
     const loadableB = mappedSnapshot.getLoadable(selectorC);
@@ -1604,9 +1611,16 @@ describe('getCallback', () => {
     });
 
     const menuItem = getValue(mySelector);
+    expect(getValue(myAtom)).toEqual('DEFAULT');
     await expect(menuItem.onClick()).resolves.toEqual('DEFAULT');
+
     act(() => setValue(myAtom, 'SET'));
+    expect(getValue(myAtom)).toEqual('SET');
     await expect(menuItem.onClick()).resolves.toEqual('SET');
+
+    act(() => setValue(myAtom, 'SET2'));
+    expect(getValue(myAtom)).toEqual('SET2');
+    await expect(menuItem.onClick()).resolves.toEqual('SET2');
   });
 
   testRecoil('snapshot', async () => {

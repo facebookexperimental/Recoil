@@ -13,49 +13,47 @@
 import type {Store} from '../../recoil/core/Recoil_State';
 import type {RecoilState, RecoilValue, RecoilValueReadOnly} from 'Recoil';
 
-// @fb-only: const ReactDOMComet = require('ReactDOMComet');
-// @fb-only: const ReactDOM = require('ReactDOMLegacy_DEPRECATED');
-const {act} = require('ReactTestUtils');
-const {
+// @fb-only: import * as ReactDOMComet from 'ReactDOMComet';
+// @fb-only: import * as ReactDOM from 'ReactDOMLegacy_DEPRECATED';
+import {act} from 'ReactTestUtils';
+import {
   RecoilRoot,
   selector,
   useRecoilValue,
   useResetRecoilState,
   useSetRecoilState,
-} = require('Recoil');
-// @fb-only: const StrictMode = require('StrictMode');
+} from 'Recoil';
+// @fb-only: import StrictMode from 'StrictMode';
 
-const {graph} = require('../../recoil/core/Recoil_Graph');
-const {getNextStoreID} = require('../../recoil/core/Recoil_Keys');
-const {
+import {makeGraph} from '../../recoil/core/Recoil_Graph';
+import {getNextStoreID} from '../../recoil/core/Recoil_Keys';
+import {
   notifyComponents_FOR_TESTING,
   sendEndOfBatchNotifications_FOR_TESTING,
-} = require('../../recoil/core/Recoil_RecoilRoot');
-const {
-  invalidateDownstreams_FOR_TESTING,
-} = require('../../recoil/core/Recoil_RecoilValueInterface');
-const {makeEmptyStoreState} = require('../../recoil/core/Recoil_State');
-const invariant = require('../util/Recoil_invariant');
-const nullthrows = require('../util/Recoil_nullthrows');
-const stableStringify = require('../util/Recoil_stableStringify');
-const {
+} from '../../recoil/core/Recoil_RecoilRoot';
+import {invalidateDownstreams} from '../../recoil/core/Recoil_RecoilValueInterface';
+import {makeEmptyStoreState} from '../../recoil/core/Recoil_State';
+import invariant from '../util/Recoil_invariant';
+import nullthrows from '../util/Recoil_nullthrows';
+import stableStringify from '../util/Recoil_stableStringify';
+import {
   isConcurrentModeEnabled,
   isStrictModeEnabled,
-} = require('./Recoil_ReactRenderModes');
-const React = require('react');
-const {useEffect} = require('react');
-const err = require('recoil-shared/util/Recoil_err');
+} from './Recoil_ReactRenderModes';
+import * as React from 'react';
+import {useEffect} from 'react';
+import err from 'recoil-shared/util/Recoil_err';
 
-const ReactDOM = require('react-dom'); // @oss-only
+import * as ReactDOM from 'react-dom'; // @oss-only
 const StrictMode = React.StrictMode; // @oss-only
 
 const QUICK_TEST = false;
 
-// @fb-only: const IS_INTERNAL = true;
-const IS_INTERNAL = false; // @oss-only
+// @fb-only: export const IS_INTERNAL = true;
+export const IS_INTERNAL = false; // @oss-only
 
-// TODO Use Snapshot for testing instead of this thunk?
-function makeStore(): Store {
+// TODO Use Snapshots for testing instead of this thunk?
+export function makeStore(): Store {
   const storeState = makeEmptyStoreState();
   const store: Store = {
     storeID: getNextStoreID(),
@@ -64,7 +62,7 @@ function makeStore(): Store {
       const currentStoreState = store.getState();
       // FIXME: does not increment state version number
       currentStoreState.currentTree = replacer(currentStoreState.currentTree); // no batching so nextTree is never active
-      invalidateDownstreams_FOR_TESTING(store, currentStoreState.currentTree);
+      invalidateDownstreams(store, currentStoreState.currentTree);
       const {reactMode} = require('../../recoil/core/Recoil_ReactMode');
       if (reactMode().early) {
         notifyComponents_FOR_TESTING(
@@ -80,7 +78,7 @@ function makeStore(): Store {
       if (graphs.has(version)) {
         return nullthrows(graphs.get(version));
       }
-      const newGraph = graph();
+      const newGraph = makeGraph();
       graphs.set(version, newGraph);
       return newGraph;
     },
@@ -142,7 +140,7 @@ function renderConcurrentReactRoot<Props>(
   createRoot(container).render(contents);
 }
 
-function renderUnwrappedElements(
+export function renderUnwrappedElements(
   elements: ?React.Node,
   container?: ?HTMLDivElement,
 ): HTMLDivElement {
@@ -163,7 +161,7 @@ function renderUnwrappedElements(
   return div;
 }
 
-function renderElements(
+export function renderElements(
   elements: ?React.Node,
   container?: ?HTMLDivElement,
 ): HTMLDivElement {
@@ -178,7 +176,7 @@ function renderElements(
   );
 }
 
-function renderElementsWithSuspenseCount(
+export function renderElementsWithSuspenseCount(
   elements: React.Node,
 ): [HTMLDivElement, JestMockFn<[], void>] {
   const suspenseCommit = jest.fn(() => {});
@@ -202,7 +200,7 @@ function renderElementsWithSuspenseCount(
 ////////////////////////////////////////
 let id = 0;
 
-const errorThrowingAsyncSelector: <T, S>(
+export const errorThrowingAsyncSelector: <T, S>(
   string,
   ?RecoilValue<S>,
 ) => RecoilValue<T> = <T, S>(
@@ -219,7 +217,7 @@ const errorThrowingAsyncSelector: <T, S>(
     },
   });
 
-const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
+export const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
   value: T,
   // $FlowFixMe[incompatible-type]
 ): RecoilValueReadOnly<T> | RecoilValueReadOnly<mixed> =>
@@ -228,13 +226,13 @@ const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
     get: () => Promise.resolve(value),
   });
 
-const loadingAsyncSelector: () => RecoilValueReadOnly<void> = () =>
+export const loadingAsyncSelector: () => RecoilValueReadOnly<void> = () =>
   selector({
     key: `LoadingSelector${id++}`,
     get: () => new Promise(() => {}),
   });
 
-function asyncSelector<T, S>(
+export function asyncSelector<T, S>(
   dep?: RecoilValue<S>,
 ): [RecoilValue<T>, (T) => void, (Error) => void] {
   let resolve = () => invariant(false, 'bug in test code'); // make flow happy with initialization
@@ -259,7 +257,7 @@ function asyncSelector<T, S>(
 // Useful Components for testing
 //////////////////////////////////
 
-function ReadsAtom<T>({atom}: {atom: RecoilValue<T>}): React.Node {
+export function ReadsAtom<T>({atom}: {atom: RecoilValue<T>}): React.Node {
   return stableStringify(useRecoilValue(atom));
 }
 
@@ -268,7 +266,7 @@ function ReadsAtom<T>({atom}: {atom: RecoilValue<T>}): React.Node {
 //   setValue(T),
 //   resetValue()
 // ]
-function componentThatReadsAndWritesAtom<T>(
+export function componentThatReadsAndWritesAtom<T>(
   atom: RecoilState<T>,
 ): [() => React.Node, (T) => void, () => void] {
   let setValue;
@@ -285,7 +283,7 @@ function componentThatReadsAndWritesAtom<T>(
   ];
 }
 
-function flushPromisesAndTimers(): Promise<void> {
+export function flushPromisesAndTimers(): Promise<void> {
   // Wrap flush with act() to avoid warning that only shows up in OSS environment
   return act(
     () =>
@@ -435,25 +433,9 @@ const OSS_GKS_TO_TEST = WWW_GKS_TO_TEST.filter(
     ),
 );
 
-const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
+export const getRecoilTestFn = (reloadImports: ReloadImports): TestFn =>
   testGKs(
     reloadImports,
     // @fb-only: WWW_GKS_TO_TEST,
     OSS_GKS_TO_TEST, // @oss-only
   );
-
-module.exports = {
-  makeStore,
-  renderUnwrappedElements,
-  renderElements,
-  renderElementsWithSuspenseCount,
-  ReadsAtom,
-  componentThatReadsAndWritesAtom,
-  errorThrowingAsyncSelector,
-  resolvingAsyncSelector,
-  loadingAsyncSelector,
-  asyncSelector,
-  flushPromisesAndTimers,
-  getRecoilTestFn,
-  IS_INTERNAL,
-};

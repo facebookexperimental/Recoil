@@ -75,42 +75,39 @@ import type {
   SetRecoilState,
 } from './Recoil_callbackTypes';
 
-const {
+import {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const treeCacheFromPolicy = require('../caches/Recoil_treeCacheFromPolicy');
-const {
+} from '../adt/Recoil_Loadable';
+import treeCacheFromPolicy from '../caches/Recoil_treeCacheFromPolicy';
+import {
   getNodeLoadable,
   peekNodeLoadable,
   setNodeValue,
-} = require('../core/Recoil_FunctionalCore');
-const {saveDependencyMapToStore} = require('../core/Recoil_Graph');
-const {
+} from '../core/Recoil_FunctionalCore';
+import {saveDependencyMapToStore} from '../core/Recoil_Graph';
+import {
   DEFAULT_VALUE,
   RecoilValueNotReady,
   getConfigDeletionHandler,
   getNode,
   registerNode,
-} = require('../core/Recoil_Node');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
-const {
+} from '../core/Recoil_Node';
+import {AbstractRecoilValue, isRecoilValue} from '../core/Recoil_RecoilValue';
+import {
   markRecoilValueModified,
   setRecoilValueLoadable,
-} = require('../core/Recoil_RecoilValueInterface');
-const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
-const {recoilCallback} = require('../hooks/Recoil_useRecoilCallback');
-const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
-const err = require('recoil-shared/util/Recoil_err');
-const gkx = require('recoil-shared/util/Recoil_gkx');
-const invariant = require('recoil-shared/util/Recoil_invariant');
-const isPromise = require('recoil-shared/util/Recoil_isPromise');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const {
-  startPerfBlock,
-} = require('recoil-shared/util/Recoil_PerformanceTimings');
+} from '../core/Recoil_RecoilValueInterface';
+import {retainedByOptionWithDefault} from '../core/Recoil_Retention';
+import {recoilCallback} from '../hooks/Recoil_useRecoilCallback';
+import deepFreezeValue from 'recoil-shared/util/Recoil_deepFreezeValue';
+import err from 'recoil-shared/util/Recoil_err';
+import gkx from 'recoil-shared/util/Recoil_gkx';
+import invariant from 'recoil-shared/util/Recoil_invariant';
+import isPromise from 'recoil-shared/util/Recoil_isPromise';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import {startPerfBlock} from 'recoil-shared/util/Recoil_PerformanceTimings';
 
 type SelectorCallbackInterface<T> = $ReadOnly<{
   // TODO Technically this could be RecoilValueReadOnly, but trying to parameterize
@@ -208,10 +205,10 @@ const dependencyStack = []; // for detecting circular dependencies.
 const waitingStores: Map<ExecutionId, Set<Store>> = new Map();
 
 /* eslint-disable no-redeclare */
-declare function selector<T>(
+declare export function selector<T>(
   options: ReadOnlySelectorOptions<T>,
 ): RecoilValueReadOnly<T>;
-declare function selector<T>(
+declare export function selector<T>(
   options: ReadWriteSelectorOptions<T>,
 ): RecoilState<T>;
 
@@ -229,7 +226,7 @@ function getInitialExecutionInfo<T>(): ExecutionInfo<T> {
   };
 }
 
-function selector<T>(
+export default function selector<T>(
   options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>,
 ): RecoilValue<T> {
   let recoilValue: ?RecoilValue<T> = null;
@@ -1269,5 +1266,3 @@ function selector<T>(
 }
 
 /* eslint-enable no-redeclare */
-
-module.exports = selector;

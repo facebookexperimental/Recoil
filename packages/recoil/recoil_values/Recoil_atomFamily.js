@@ -10,16 +10,16 @@
  */
 'use strict';
 
-// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {CachePolicyWithoutEviction} from '../caches/Recoil_CachePolicy';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomEffect, AtomOptions} from './Recoil_atom';
+// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 
-const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
-const {setConfigDeletionHandler} = require('../core/Recoil_Node');
-const atom = require('./Recoil_atom');
-const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
+import cacheFromPolicy from '../caches/Recoil_cacheFromPolicy';
+import {setConfigDeletionHandler} from '../core/Recoil_Node';
+import atom from './Recoil_atom';
+import stableStringify from 'recoil-shared/util/Recoil_stableStringify';
 
 type Primitive = void | null | boolean | number | string;
 interface HasToJSON {
@@ -85,7 +85,7 @@ parameter for a family of atoms; in this way, each component will have
 its own atom not shared by other instances.  These state keys may be composed
 into children's state keys as well.
 */
-function atomFamily<T, P: Parameter>(
+export default function atomFamily<T, P: Parameter>(
   options: AtomFamilyOptions<T, P>,
 ): P => RecoilState<T> {
   const atomCache = cacheFromPolicy<P, RecoilState<T>>({
@@ -142,5 +142,3 @@ function atomFamily<T, P: Parameter>(
     return newAtom;
   };
 }
-
-module.exports = atomFamily;

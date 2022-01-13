@@ -10,15 +10,16 @@
  */
 'use strict';
 
-const {Simulate, act} = require('ReactTestUtils');
+import {Simulate, act} from 'ReactTestUtils';
 
-const {freshSnapshot} = require('../../../core/Recoil_Snapshot');
-const atom = require('../../../recoil_values/Recoil_atom');
+import {freshSnapshot} from '../../../core/Recoil_Snapshot';
+import atom from '../../../recoil_values/Recoil_atom';
+import * as React from 'react';
+
 const {
   LinkToRecoilSnapshot,
   LinkToRecoilStateChange,
 } = require('../Recoil_Link');
-const React = require('react');
 const {
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,

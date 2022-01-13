@@ -10,13 +10,14 @@
  */
 'use strict';
 
-const {Snapshot} = require('../../core/Recoil_Snapshot');
-const {
+import type {Snapshot} from '../../core/Recoil_Snapshot';
+
+import {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-} = require('../../hooks/Recoil_SnapshotHooks');
-const React = require('react');
-const {useEffect, useRef} = require('react');
+} from '../../hooks/Recoil_SnapshotHooks';
+import * as React from 'react';
+import {useEffect, useRef} from 'react';
 
 type Props = $ReadOnly<{
   name?: string,
@@ -50,7 +51,7 @@ let CONNECTION_INDEX = 0;
  * @explorer-desc
  * Recoil Dev Tools Connector
  */
-function Connector({
+export default function Connector({
   name = `Recoil Connection ${CONNECTION_INDEX++}`,
   persistenceLimit = 50,
   maxDepth,
@@ -62,28 +63,40 @@ function Connector({
   const connectionRef = useRef(null);
   const goToSnapshot = useGotoRecoilSnapshot();
   const snapshot = useRecoilSnapshot();
+  const release = snapshot.retain();
 
   useEffect(() => {
-    connectionRef.current = connect({
-      name,
-      persistenceLimit,
-      devMode,
-      goToSnapshot,
-      maxDepth,
-      maxItems,
-      serializeFn,
-      initialSnapshot: snapshot,
-    });
+    if (connectionRef.current == null) {
+      connectionRef.current = connect({
+        name,
+        persistenceLimit,
+        devMode,
+        goToSnapshot,
+        maxDepth,
+        maxItems,
+        serializeFn,
+      });
+    }
 
-    return connectionRef.current?.disconnect;
-  }, []);
+    return () => {
+      connectionRef.current?.disconnect();
+      connectionRef.current = null;
+    };
+  }, [
+    devMode,
+    goToSnapshot,
+    maxDepth,
+    maxItems,
+    name,
+    persistenceLimit,
+    serializeFn,
+  ]);
 
   useEffect(() => {
     const transactionID = transactionIdRef.current++;
     connectionRef.current?.track?.(transactionID, snapshot);
-  }, [snapshot]);
+    release();
+  }, [snapshot, release]);
 
   return null;
 }
-
-module.exports = Connector;

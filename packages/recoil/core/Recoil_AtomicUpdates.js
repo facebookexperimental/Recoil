@@ -14,16 +14,16 @@ import type {ValueOrUpdater} from '../recoil_values/Recoil_callbackTypes';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {NodeKey, Store, TreeState} from './Recoil_State';
 
-const {loadableWithValue} = require('../adt/Recoil_Loadable');
-const {initializeNode} = require('./Recoil_FunctionalCore');
-const {DEFAULT_VALUE, getNode} = require('./Recoil_Node');
-const {
+import {loadableWithValue} from '../adt/Recoil_Loadable';
+import {initializeNode} from './Recoil_FunctionalCore';
+import {DEFAULT_VALUE, getNode} from './Recoil_Node';
+import {
   copyTreeState,
   getRecoilValueAsLoadable,
   invalidateDownstreams,
   writeLoadableToTreeState,
-} = require('./Recoil_RecoilValueInterface');
-const err = require('recoil-shared/util/Recoil_err');
+} from './Recoil_RecoilValueInterface';
+import err from 'recoil-shared/util/Recoil_err';
 
 export interface TransactionInterface {
   get: <T>(RecoilValue<T>) => T;
@@ -112,7 +112,9 @@ class TransactionInterfaceImpl {
   }
 }
 
-function atomicUpdater(store: Store): ((TransactionInterface) => void) => void {
+export function atomicUpdater(
+  store: Store,
+): ((TransactionInterface) => void) => void {
   return fn => {
     store.replaceState(treeState => {
       const changeset = new TransactionInterfaceImpl(store, treeState);
@@ -121,5 +123,3 @@ function atomicUpdater(store: Store): ((TransactionInterface) => void) => void {
     });
   };
 }
-
-module.exports = {atomicUpdater};

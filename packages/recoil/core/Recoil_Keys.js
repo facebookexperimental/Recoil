@@ -16,16 +16,11 @@ export opaque type StoreID = number;
 export opaque type ComponentID = number;
 
 let nextTreeStateVersion = 0;
-const getNextTreeStateVersion: () => StateID = () => nextTreeStateVersion++;
+export const getNextTreeStateVersion: () => StateID = () =>
+  nextTreeStateVersion++;
 
 let nextStoreID = 0;
-const getNextStoreID: () => StoreID = () => nextStoreID++;
+export const getNextStoreID: () => StoreID = () => nextStoreID++;
 
 let nextComponentID = 0;
-const getNextComponentID: () => ComponentID = () => nextComponentID++;
-
-module.exports = {
-  getNextTreeStateVersion,
-  getNextStoreID,
-  getNextComponentID,
-};
+export const getNextComponentID: () => ComponentID = () => nextComponentID++;

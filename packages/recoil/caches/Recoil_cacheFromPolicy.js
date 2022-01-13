@@ -17,28 +17,17 @@ import type {
   EvictionPolicy,
 } from './Recoil_CachePolicy';
 
-const {LRUCache} = require('./Recoil_LRUCache');
-const {MapCache} = require('./Recoil_MapCache');
-const err = require('recoil-shared/util/Recoil_err');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
+import {LRUCache} from './Recoil_LRUCache';
+import {MapCache} from './Recoil_MapCache';
+import err from 'recoil-shared/util/Recoil_err';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import stableStringify from 'recoil-shared/util/Recoil_stableStringify';
 
 const defaultPolicy = {
   equality: 'reference',
   eviction: 'none',
   maxSize: Infinity,
 };
-
-function cacheFromPolicy<K, V>({
-  equality = defaultPolicy.equality,
-  eviction = defaultPolicy.eviction,
-  maxSize = defaultPolicy.maxSize,
-}: CachePolicy = defaultPolicy): CacheImplementation<K, V> {
-  const valueMapper = getValueMapper(equality);
-  const cache = getCache<K, V>(eviction, maxSize, valueMapper);
-
-  return cache;
-}
 
 function getValueMapper(equality: EqualityPolicy): mixed => mixed {
   switch (equality) {
@@ -71,4 +60,13 @@ function getCache<K, V>(
   throw err(`Unrecognized eviction policy ${eviction}`);
 }
 
-module.exports = cacheFromPolicy;
+export default function cacheFromPolicy<K, V>({
+  equality = defaultPolicy.equality,
+  eviction = defaultPolicy.eviction,
+  maxSize = defaultPolicy.maxSize,
+}: CachePolicy = defaultPolicy): CacheImplementation<K, V> {
+  const valueMapper = getValueMapper(equality);
+  const cache = getCache<K, V>(eviction, maxSize, valueMapper);
+
+  return cache;
+}

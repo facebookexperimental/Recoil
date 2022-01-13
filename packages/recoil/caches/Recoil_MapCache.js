@@ -14,7 +14,7 @@ type Options<K> = {
   mapKey: K => mixed,
 };
 
-class MapCache<K, V> {
+export class MapCache<K, V> {
   _map: Map<mixed, V>;
   _keyMapper: K => mixed;
 
@@ -47,5 +47,3 @@ class MapCache<K, V> {
     this._map.clear();
   }
 }
-
-module.exports = {MapCache};

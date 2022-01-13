@@ -15,17 +15,17 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
-const RecoilValueClasses = require('./Recoil_RecoilValue');
-const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
-const gkx = require('recoil-shared/util/Recoil_gkx');
-const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+import * as RecoilValueClasses from './Recoil_RecoilValue';
+import expectationViolation from 'recoil-shared/util/Recoil_expectationViolation';
+import gkx from 'recoil-shared/util/Recoil_gkx';
+import mapIterable from 'recoil-shared/util/Recoil_mapIterable';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import recoverableViolation from 'recoil-shared/util/Recoil_recoverableViolation';
 
-class DefaultValue {}
-const DEFAULT_VALUE: DefaultValue = new DefaultValue();
+export class DefaultValue {}
+export const DEFAULT_VALUE: DefaultValue = new DefaultValue();
 
-class RecoilValueNotReady extends Error {
+export class RecoilValueNotReady extends Error {
   constructor(key: NodeKey) {
     super(
       `Tried to set the value of Recoil selector ${key} using an updater function, but it is an async selector in a pending or error state; this is not supported.`,
@@ -96,9 +96,9 @@ export type ReadWriteNodeOptions<T> = $ReadOnly<{
 type Node<T> = ReadOnlyNodeOptions<T> | ReadWriteNodeOptions<T>;
 
 // flowlint-next-line unclear-type:off
-const nodes: Map<string, Node<any>> = new Map();
+export const nodes: Map<string, Node<any>> = new Map();
 // flowlint-next-line unclear-type:off
-const recoilValues: Map<string, RecoilValue<any>> = new Map();
+export const recoilValues: Map<string, RecoilValue<any>> = new Map();
 
 /* eslint-disable no-redeclare */
 declare function registerNode<T>(
@@ -109,13 +109,13 @@ declare function registerNode<T>(
   node: ReadOnlyNodeOptions<T>,
 ): RecoilValueClasses.RecoilValueReadOnly<T>;
 
-function recoilValuesForKeys(
+export function recoilValuesForKeys(
   keys: Iterable<NodeKey>,
 ): Iterable<RecoilValue<mixed>> {
   return mapIterable(keys, key => nullthrows(recoilValues.get(key)));
 }
 
-function registerNode<T>(node: Node<T>): RecoilValue<T> {
+export function registerNode<T>(node: Node<T>): RecoilValue<T> {
   if (nodes.has(node.key)) {
     const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
       production. But it is safe to ignore this warning if it occurred because of
@@ -146,10 +146,10 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
 }
 /* eslint-enable no-redeclare */
 
-class NodeMissingError extends Error {}
+export class NodeMissingError extends Error {}
 
 // flowlint-next-line unclear-type:off
-function getNode(key: NodeKey): Node<any> {
+export function getNode(key: NodeKey): Node<any> {
   const node = nodes.get(key);
   if (node == null) {
     throw new NodeMissingError(`Missing definition for RecoilValue: "${key}""`);
@@ -158,13 +158,13 @@ function getNode(key: NodeKey): Node<any> {
 }
 
 // flowlint-next-line unclear-type:off
-function getNodeMaybe(key: NodeKey): void | Node<any> {
+export function getNodeMaybe(key: NodeKey): void | Node<any> {
   return nodes.get(key);
 }
 
 const configDeletionHandlers = new Map();
 
-function deleteNodeConfigIfPossible(key: NodeKey): void {
+export function deleteNodeConfigIfPossible(key: NodeKey): void {
   if (!gkx('recoil_memory_managament_2020')) {
     return;
   }
@@ -176,7 +176,10 @@ function deleteNodeConfigIfPossible(key: NodeKey): void {
   }
 }
 
-function setConfigDeletionHandler(key: NodeKey, fn: void | (() => void)): void {
+export function setConfigDeletionHandler(
+  key: NodeKey,
+  fn: void | (() => void),
+): void {
   if (!gkx('recoil_memory_managament_2020')) {
     return;
   }
@@ -187,22 +190,6 @@ function setConfigDeletionHandler(key: NodeKey, fn: void | (() => void)): void {
   }
 }
 
-function getConfigDeletionHandler(key: NodeKey): void | (() => void) {
+export function getConfigDeletionHandler(key: NodeKey): void | (() => void) {
   return configDeletionHandlers.get(key);
 }
-
-module.exports = {
-  nodes,
-  recoilValues,
-  registerNode,
-  getNode,
-  getNodeMaybe,
-  deleteNodeConfigIfPossible,
-  setConfigDeletionHandler,
-  getConfigDeletionHandler,
-  recoilValuesForKeys,
-  NodeMissingError,
-  DefaultValue,
-  DEFAULT_VALUE,
-  RecoilValueNotReady,
-};

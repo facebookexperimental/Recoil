@@ -16,9 +16,9 @@ import type {Graph} from './Recoil_GraphTypes';
 import type {ComponentID, NodeKey, StateID, StoreID} from './Recoil_Keys';
 import type {RetentionZone} from './Recoil_RetentionZone';
 
-const {persistentMap} = require('../adt/Recoil_PersistentMap');
-const {graph} = require('./Recoil_Graph');
-const {getNextTreeStateVersion} = require('./Recoil_Keys');
+import {persistentMap} from '../adt/Recoil_PersistentMap';
+import {makeGraph} from './Recoil_Graph';
+import {getNextTreeStateVersion} from './Recoil_Keys';
 
 export type {ComponentID, NodeKey, StateID, StoreID} from './Recoil_Keys';
 
@@ -75,12 +75,6 @@ export type StoreState = {
   // Node lifetimes
   knownAtoms: Set<NodeKey>,
   knownSelectors: Set<NodeKey>,
-
-  // Which state versions are being read by a given component. (COMMIT/SUSPEND)
-  // Added to when components commit or suspend after reading a version.
-  // Removed from when components (1) unmount (2) commit another version
-  // or (3) wake from suspense.
-  +versionsUsedByComponent: Map<ComponentID, StateID>,
 
   +retention: {
     referenceCounts: Map<NodeKey | RetentionZone, number>,
@@ -168,8 +162,7 @@ function makeEmptyStoreState(): StoreState {
     nodeToComponentSubscriptions: new Map(),
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
-    graphsByVersion: new Map().set(currentTree.version, graph()),
-    versionsUsedByComponent: new Map(),
+    graphsByVersion: new Map().set(currentTree.version, makeGraph()),
     retention: {
       referenceCounts: new Map(),
       nodesRetainedByZone: new Map(),

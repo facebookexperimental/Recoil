@@ -12,11 +12,11 @@
 
 import type {TransactionInterface} from '../core/Recoil_AtomicUpdates';
 
-const {atomicUpdater} = require('../core/Recoil_AtomicUpdates');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot');
-const {useMemo} = require('react');
+import {atomicUpdater} from '../core/Recoil_AtomicUpdates';
+import {useStoreRef} from '../core/Recoil_RecoilRoot';
+import {useMemo} from 'react';
 
-function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(
+export default function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(
   fn: TransactionInterface => (...Arguments) => void,
   deps?: $ReadOnlyArray<mixed>,
 ): (...Arguments) => void {
@@ -32,5 +32,3 @@ function useRecoilTransaction<Arguments: $ReadOnlyArray<mixed>>(
     deps != null ? [...deps, storeRef] : undefined, // eslint-disable-line fb-www/react-hooks-deps
   );
 }
-
-module.exports = useRecoilTransaction;

@@ -10,14 +10,14 @@
  */
 'use strict';
 
-const {reactMode} = require('../core/Recoil_ReactMode');
-const {RecoilRoot, useStoreRef} = require('../core/Recoil_RecoilRoot');
-const React = require('react');
-const {useMemo} = require('react');
+import {reactMode} from '../core/Recoil_ReactMode';
+import {RecoilRoot, useStoreRef} from '../core/Recoil_RecoilRoot';
+import * as React from 'react';
+import {useMemo} from 'react';
 
 export type RecoilBridge = React.AbstractComponent<{children: React.Node}>;
 
-function useRecoilBridgeAcrossReactRoots(): RecoilBridge {
+export default function useRecoilBridgeAcrossReactRoots(): RecoilBridge {
   // The test fails when using useMutableSource(), but only if act() is used
   // for the nested root.  So, this may only be a testing environment issue.
   if (reactMode().mode === 'MUTABLE_SOURCE') {
@@ -35,5 +35,3 @@ function useRecoilBridgeAcrossReactRoots(): RecoilBridge {
     return RecoilBridge;
   }, [store]);
 }
-
-module.exports = useRecoilBridgeAcrossReactRoots;

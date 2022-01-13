@@ -70,36 +70,36 @@ import type {RetainedBy} from '../core/Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 
-// @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
+// @fb-only: import {scopedAtom} from 'Recoil_ScopedAtom';
 
-const {
+import {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const {peekNodeInfo} = require('../core/Recoil_FunctionalCore');
-const {
+} from '../adt/Recoil_Loadable';
+import {peekNodeInfo} from '../core/Recoil_FunctionalCore';
+import {
   DEFAULT_VALUE,
   DefaultValue,
   getConfigDeletionHandler,
   registerNode,
   setConfigDeletionHandler,
-} = require('../core/Recoil_Node');
-const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {
+} from '../core/Recoil_Node';
+import {isRecoilValue} from '../core/Recoil_RecoilValue';
+import {
   getRecoilValueAsLoadable,
   markRecoilValueModified,
   setRecoilValue,
   setRecoilValueLoadable,
-} = require('../core/Recoil_RecoilValueInterface');
-const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
-const selector = require('./Recoil_selector');
-const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
-const err = require('recoil-shared/util/Recoil_err');
-const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
-const isPromise = require('recoil-shared/util/Recoil_isPromise');
-const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
-const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+} from '../core/Recoil_RecoilValueInterface';
+import {retainedByOptionWithDefault} from '../core/Recoil_Retention';
+import selector from './Recoil_selector';
+import deepFreezeValue from 'recoil-shared/util/Recoil_deepFreezeValue';
+import err from 'recoil-shared/util/Recoil_err';
+import expectationViolation from 'recoil-shared/util/Recoil_expectationViolation';
+import isPromise from 'recoil-shared/util/Recoil_isPromise';
+import nullthrows from 'recoil-shared/util/Recoil_nullthrows';
+import recoverableViolation from 'recoil-shared/util/Recoil_recoverableViolation';
 
 export type PersistenceSettings<Stored> = $ReadOnly<{
   ...PersistenceInfo,
@@ -550,7 +550,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 }
 
 // prettier-ignore
-function atom<T>(options: AtomOptions<T>): RecoilState<T> {
+export default function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   if (__DEV__) {
     if (typeof options.key !== 'string') {
       throw err(
@@ -629,5 +629,3 @@ function atomWithFallback<T>(
   setConfigDeletionHandler(sel.key, getConfigDeletionHandler(options.key));
   return sel;
 }
-
-module.exports = atom;

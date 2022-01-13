@@ -4,11 +4,13 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+obviz
+ * @emails oncall+recoil
  * @flow strict-local
  * @format
  */
 'use strict';
+
+import type {Snapshot} from '../Recoil_Snapshot';
 
 const {
   getRecoilTestFn,
@@ -27,7 +29,6 @@ let React,
   asyncSelector,
   componentThatReadsAndWritesAtom,
   renderElements,
-  Snapshot,
   freshSnapshot,
   RecoilRoot;
 
@@ -50,9 +51,14 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
     renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
-  ({Snapshot, freshSnapshot} = require('../Recoil_Snapshot'));
+  ({freshSnapshot} = require('../Recoil_Snapshot'));
   ({RecoilRoot} = require('../Recoil_RecoilRoot'));
 });
+
+// Use this to spread proxy results into an object for Jest's toMatchObject()
+function getInfo(snapshot, node) {
+  return {...snapshot.getInfo_UNSTABLE(node)};
+}
 
 // Test first since we are testing all registered nodes
 testRecoil('getNodes', () => {
@@ -332,67 +338,65 @@ testRecoil('getInfo', () => {
   });
 
   // Initial status
-  expect(snapshot.getInfo_UNSTABLE(myAtom)).toMatchObject({
+  expect(getInfo(snapshot, myAtom)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'DEFAULT'}),
     isActive: false,
     isSet: false,
     isModified: false,
-    type: undefined,
+    type: 'atom',
   });
-  expect(Array.from(snapshot.getInfo_UNSTABLE(myAtom).deps)).toEqual([]);
-  expect(
-    Array.from(snapshot.getInfo_UNSTABLE(myAtom).subscribers.nodes),
-  ).toEqual([]);
-  expect(snapshot.getInfo_UNSTABLE(selectorA)).toMatchObject({
+  expect(Array.from(getInfo(snapshot, myAtom).deps)).toEqual([]);
+  expect(Array.from(getInfo(snapshot, myAtom).subscribers.nodes)).toEqual([]);
+  expect(getInfo(snapshot, selectorA)).toMatchObject({
     loadable: undefined,
     isActive: false,
     isSet: false,
     isModified: false,
-    type: undefined,
+    type: 'selector',
   });
-  expect(Array.from(snapshot.getInfo_UNSTABLE(selectorA).deps)).toEqual([]);
-  expect(
-    Array.from(snapshot.getInfo_UNSTABLE(selectorA).subscribers.nodes),
-  ).toEqual([]);
-  expect(snapshot.getInfo_UNSTABLE(selectorB)).toMatchObject({
+  expect(Array.from(getInfo(snapshot, selectorA).deps)).toEqual([]);
+  expect(Array.from(getInfo(snapshot, selectorA).subscribers.nodes)).toEqual(
+    [],
+  );
+  expect(getInfo(snapshot, selectorB)).toMatchObject({
     loadable: undefined,
     isActive: false,
     isSet: false,
     isModified: false,
-    type: undefined,
+    type: 'selector',
   });
-  expect(Array.from(snapshot.getInfo_UNSTABLE(selectorB).deps)).toEqual([]);
-  expect(
-    Array.from(snapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes),
-  ).toEqual([]);
+  expect(Array.from(getInfo(snapshot, selectorB).deps)).toEqual([]);
+  expect(Array.from(getInfo(snapshot, selectorB).subscribers.nodes)).toEqual(
+    [],
+  );
 
   // After reading values
   snapshot.getLoadable(selectorB);
-  expect(snapshot.getInfo_UNSTABLE(myAtom)).toMatchObject({
+  expect(getInfo(snapshot, myAtom)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'DEFAULT'}),
     isActive: true,
     isSet: false,
     isModified: false,
     type: 'atom',
   });
-  expect(Array.from(snapshot.getInfo_UNSTABLE(myAtom).deps)).toEqual([]);
-  expect(
-    Array.from(snapshot.getInfo_UNSTABLE(myAtom).subscribers.nodes),
-  ).toEqual(expect.arrayContaining([selectorA, selectorB]));
-  expect(snapshot.getInfo_UNSTABLE(selectorA)).toMatchObject({
+  expect(Array.from(getInfo(snapshot, myAtom).deps)).toEqual([]);
+  expect(Array.from(getInfo(snapshot, myAtom).subscribers.nodes)).toEqual(
+    expect.arrayContaining([selectorA, selectorB]),
+  );
+  expect(getInfo(snapshot, selectorA)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'DEFAULT'}),
     isActive: true,
     isSet: false,
     isModified: false,
     type: 'selector',
   });
-  expect(Array.from(snapshot.getInfo_UNSTABLE(selectorA).deps)).toEqual(
+  expect(Array.from(getInfo(snapshot, selectorA).deps)).toEqual(
     expect.arrayContaining([myAtom]),
   );
-  expect(
-    Array.from(snapshot.getInfo_UNSTABLE(selectorA).subscribers.nodes),
-  ).toEqual(expect.arrayContaining([selectorB]));
-  expect(snapshot.getInfo_UNSTABLE(selectorB)).toMatchObject({
+  expect(Array.from(getInfo(snapshot, selectorA).subscribers.nodes)).toEqual(
+    expect.arrayContaining([selectorB]),
+  );
+  expect(getInfo(snapshot, selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
       contents: 'DEFAULTDEFAULT',
@@ -402,82 +406,82 @@ testRecoil('getInfo', () => {
     isModified: false,
     type: 'selector',
   });
-  expect(Array.from(snapshot.getInfo_UNSTABLE(selectorB).deps)).toEqual(
+  expect(Array.from(getInfo(snapshot, selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
-  expect(
-    Array.from(snapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes),
-  ).toEqual([]);
+  expect(Array.from(getInfo(snapshot, selectorB).subscribers.nodes)).toEqual(
+    [],
+  );
 
   // After setting a value
   const setSnapshot = snapshot.map(({set}) => set(myAtom, 'SET'));
   setSnapshot.getLoadable(selectorB); // Read value to prime
-  expect(setSnapshot.getInfo_UNSTABLE(myAtom)).toMatchObject({
+  expect(getInfo(setSnapshot, myAtom)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'SET'}),
     isActive: true,
     isSet: true,
     isModified: true,
     type: 'atom',
   });
-  expect(Array.from(setSnapshot.getInfo_UNSTABLE(myAtom).deps)).toEqual([]);
-  expect(
-    Array.from(setSnapshot.getInfo_UNSTABLE(myAtom).subscribers.nodes),
-  ).toEqual(expect.arrayContaining([selectorA, selectorB]));
-  expect(setSnapshot.getInfo_UNSTABLE(selectorA)).toMatchObject({
+  expect(Array.from(getInfo(setSnapshot, myAtom).deps)).toEqual([]);
+  expect(Array.from(getInfo(setSnapshot, myAtom).subscribers.nodes)).toEqual(
+    expect.arrayContaining([selectorA, selectorB]),
+  );
+  expect(getInfo(setSnapshot, selectorA)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'SET'}),
     isActive: true,
     isSet: false,
     isModified: false,
     type: 'selector',
   });
-  expect(Array.from(setSnapshot.getInfo_UNSTABLE(selectorA).deps)).toEqual(
+  expect(Array.from(getInfo(setSnapshot, selectorA).deps)).toEqual(
     expect.arrayContaining([myAtom]),
   );
-  expect(
-    Array.from(setSnapshot.getInfo_UNSTABLE(selectorA).subscribers.nodes),
-  ).toEqual(expect.arrayContaining([selectorB]));
-  expect(setSnapshot.getInfo_UNSTABLE(selectorB)).toMatchObject({
+  expect(Array.from(getInfo(setSnapshot, selectorA).subscribers.nodes)).toEqual(
+    expect.arrayContaining([selectorB]),
+  );
+  expect(getInfo(setSnapshot, selectorB)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'SETSET'}),
     isActive: true,
     isSet: false,
     isModified: false,
     type: 'selector',
   });
-  expect(Array.from(setSnapshot.getInfo_UNSTABLE(selectorB).deps)).toEqual(
+  expect(Array.from(getInfo(setSnapshot, selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
-  expect(
-    Array.from(setSnapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes),
-  ).toEqual([]);
+  expect(Array.from(getInfo(setSnapshot, selectorB).subscribers.nodes)).toEqual(
+    [],
+  );
 
   // After reseting a value
   const resetSnapshot = setSnapshot.map(({reset}) => reset(myAtom));
   resetSnapshot.getLoadable(selectorB); // prime snapshot
-  expect(resetSnapshot.getInfo_UNSTABLE(myAtom)).toMatchObject({
+  expect(getInfo(resetSnapshot, myAtom)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'DEFAULT'}),
     isActive: true,
     isSet: false,
     isModified: true,
     type: 'atom',
   });
-  expect(Array.from(resetSnapshot.getInfo_UNSTABLE(myAtom).deps)).toEqual([]);
-  expect(
-    Array.from(resetSnapshot.getInfo_UNSTABLE(myAtom).subscribers.nodes),
-  ).toEqual(expect.arrayContaining([selectorA, selectorB]));
-  expect(resetSnapshot.getInfo_UNSTABLE(selectorA)).toMatchObject({
+  expect(Array.from(getInfo(resetSnapshot, myAtom).deps)).toEqual([]);
+  expect(Array.from(getInfo(resetSnapshot, myAtom).subscribers.nodes)).toEqual(
+    expect.arrayContaining([selectorA, selectorB]),
+  );
+  expect(getInfo(resetSnapshot, selectorA)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'DEFAULT'}),
     isActive: true,
     isSet: false,
     isModified: false,
     type: 'selector',
   });
-  expect(Array.from(resetSnapshot.getInfo_UNSTABLE(selectorA).deps)).toEqual(
+  expect(Array.from(getInfo(resetSnapshot, selectorA).deps)).toEqual(
     expect.arrayContaining([myAtom]),
   );
   expect(
-    Array.from(resetSnapshot.getInfo_UNSTABLE(selectorA).subscribers.nodes),
+    Array.from(getInfo(resetSnapshot, selectorA).subscribers.nodes),
   ).toEqual(expect.arrayContaining([selectorB]));
-  expect(resetSnapshot.getInfo_UNSTABLE(selectorB)).toMatchObject({
+  expect(getInfo(resetSnapshot, selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
       contents: 'DEFAULTDEFAULT',
@@ -487,12 +491,44 @@ testRecoil('getInfo', () => {
     isModified: false,
     type: 'selector',
   });
-  expect(Array.from(resetSnapshot.getInfo_UNSTABLE(selectorB).deps)).toEqual(
+  expect(Array.from(getInfo(resetSnapshot, selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
   expect(
-    Array.from(resetSnapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes),
+    Array.from(getInfo(resetSnapshot, selectorB).subscribers.nodes),
   ).toEqual([]);
+});
+
+describe('Retention', () => {
+  testRecoil('auto-release', async () => {
+    const snapshot = freshSnapshot();
+    expect(snapshot.isRetained()).toBe(true);
+
+    await flushPromisesAndTimers();
+    expect(snapshot.isRetained()).toBe(false);
+
+    const prevDev = __DEV__; // eslint-disable-line fb-www/check-dev-condition
+    __DEV__ = true;
+    expect(() => snapshot.retain()).toThrow('released');
+    __DEV__ = false;
+    expect(() => snapshot.retain()).not.toThrow('released');
+    __DEV__ = prevDev;
+
+    // TODO enable when recoil_memory_managament_2020 is enforced
+    // expect(() => snapshot.getID()).toThrow('release');
+  });
+
+  testRecoil('retain()', async () => {
+    const snapshot = freshSnapshot();
+    expect(snapshot.isRetained()).toBe(true);
+    const release2 = snapshot.retain();
+
+    await flushPromisesAndTimers();
+    expect(snapshot.isRetained()).toBe(true);
+
+    release2();
+    expect(snapshot.isRetained()).toBe(false);
+  });
 });
 
 describe('Atom effects', () => {

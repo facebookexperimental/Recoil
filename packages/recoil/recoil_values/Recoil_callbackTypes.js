@@ -20,5 +20,3 @@ export type ValueOrUpdater<T> =
 export type GetRecoilValue = <T>(RecoilValue<T>) => T;
 export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 export type ResetRecoilState = <T>(RecoilState<T>) => void;
-
-module.exports = ({}: {...});

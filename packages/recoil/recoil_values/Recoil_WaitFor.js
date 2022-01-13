@@ -16,13 +16,13 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 
-const {
+import {
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
-} = require('../adt/Recoil_Loadable');
-const selectorFamily = require('./Recoil_selectorFamily');
-const isPromise = require('recoil-shared/util/Recoil_isPromise');
+} from '../adt/Recoil_Loadable';
+import selectorFamily from './Recoil_selectorFamily';
+import isPromise from 'recoil-shared/util/Recoil_isPromise';
 
 /////////////////
 //  TRUTH TABLE
@@ -116,7 +116,7 @@ function combineAsyncResultsWithSyncResults<T>(
 
 // Selector that requests all dependencies in parallel and immediately returns
 // current results without waiting.
-const waitForNone: <
+export const waitForNone: <
   RecoilValues:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>, ...}>,
@@ -147,7 +147,7 @@ const waitForNone: <
 // Selector that requests all dependencies in parallel and waits for at least
 // one to be available before returning results.  It will only error if all
 // dependencies have errors.
-const waitForAny: <
+export const waitForAny: <
   RecoilValues:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>, ...}>,
@@ -200,7 +200,7 @@ const waitForAny: <
 
 // Selector that requests all dependencies in parallel and waits for all to be
 // available before returning a value.  It will error if any dependencies error.
-const waitForAll: <
+export const waitForAll: <
   RecoilValues:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>, ...}>,
@@ -245,7 +245,7 @@ const waitForAll: <
   dangerouslyAllowMutability: true,
 });
 
-const waitForAllSettled: <
+export const waitForAllSettled: <
   RecoilValues:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | $ReadOnly<{[string]: RecoilValueReadOnly<mixed>, ...}>,
@@ -297,7 +297,7 @@ const waitForAllSettled: <
   dangerouslyAllowMutability: true,
 });
 
-const noWait: (
+export const noWait: (
   RecoilValue<mixed>,
   // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 ) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
@@ -315,11 +315,3 @@ const noWait: (
     },
   dangerouslyAllowMutability: true,
 });
-
-module.exports = {
-  waitForNone,
-  waitForAny,
-  waitForAll,
-  waitForAllSettled,
-  noWait,
-};

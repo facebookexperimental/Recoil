@@ -25,10 +25,12 @@
 - Callbacks from selector's `getCallback()` can now mutate, refresh, and transact Recoil state, in addition to reading it, for parity with `useRecoilCallback()`. (#1498)
 - Recoil StoreID's for `<RecoilRoot>` and `Snapshot` stores accessible via `useRecoilStoreID()` hook (#1417) or `storeID` parameter for atom effects (#1414).
 - `RecoilLoadable.all()` and `RecoilLoadable.of()` now accept either literal values, async Promises, or Loadables. (#1455, #1442)
+- Add `.isRetained()` method for Snapshots and check if snapshot is already released when using `.retain()` (#1546)
 
 ### Other Fixes and Optimizations
-
-- Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
+- Reduce overhead of snapshot cloning
+  - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
+  - Cache the cloned snapshots from callbacks unless there was a state change. (#1533)
 - Fix transitive selector refresh for some cases (#1409)
 - Atom Effects
   - Rename option from `effects_UNSTABLE` to just `effects` as the interface is mostly stabilizing (#1520)
@@ -38,9 +40,12 @@
   - Call `onSet()` when atoms are initialized with `<RecoilRoot initializeState={...} >` (#1519, #1511)
 - Avoid extra re-renders in some cases when a component uses a different atom/selector. (#825)
 - `<RecoilRoot>` will only call `initializeState()` once during the initial render. (#1372)
+- Lazily compute the properties of `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` results (#1549)
+- Memoize the results of lazy proxies. (#1548)
 
 ### Breaking Changes
 - Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`. (#1509)
+- `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` always report the node `type`. (#1547)
 
 ## 0.5.2 (2021-11-07)
 

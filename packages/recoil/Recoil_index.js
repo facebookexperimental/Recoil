@@ -41,75 +41,70 @@ export type {
   SelectorFamilyOptions,
 } from './recoil_values/Recoil_selectorFamily';
 
-const {RecoilLoadable} = require('./adt/Recoil_Loadable');
-const {DefaultValue} = require('./core/Recoil_Node');
-const {RecoilRoot, useRecoilStoreID} = require('./core/Recoil_RecoilRoot');
-const {isRecoilValue} = require('./core/Recoil_RecoilValue');
-const {retentionZone} = require('./core/Recoil_RetentionZone');
-const {freshSnapshot} = require('./core/Recoil_Snapshot');
-const {
+import {RecoilLoadable} from './adt/Recoil_Loadable';
+import {DefaultValue} from './core/Recoil_Node';
+import {RecoilRoot, useRecoilStoreID} from './core/Recoil_RecoilRoot';
+import {isRecoilValue} from './core/Recoil_RecoilValue';
+import {retentionZone} from './core/Recoil_RetentionZone';
+import {freshSnapshot as snapshot_UNSTABLE} from './core/Recoil_Snapshot';
+import {
   useRecoilState,
   useRecoilStateLoadable,
   useRecoilValue,
   useRecoilValueLoadable,
   useResetRecoilState,
   useSetRecoilState,
-} = require('./hooks/Recoil_Hooks');
-const {
+} from './hooks/Recoil_Hooks';
+import {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-  useRecoilTransactionObserver,
-} = require('./hooks/Recoil_SnapshotHooks');
-const useGetRecoilValueInfo = require('./hooks/Recoil_useGetRecoilValueInfo');
-const useRecoilBridgeAcrossReactRoots = require('./hooks/Recoil_useRecoilBridgeAcrossReactRoots');
-const {useRecoilCallback} = require('./hooks/Recoil_useRecoilCallback');
-const useRecoilRefresher = require('./hooks/Recoil_useRecoilRefresher');
-const useRecoilTransaction = require('./hooks/Recoil_useRecoilTransaction');
-const useRetain = require('./hooks/Recoil_useRetain');
-const atom = require('./recoil_values/Recoil_atom');
-const atomFamily = require('./recoil_values/Recoil_atomFamily');
-const constSelector = require('./recoil_values/Recoil_constSelector');
-const errorSelector = require('./recoil_values/Recoil_errorSelector');
-const readOnlySelector = require('./recoil_values/Recoil_readOnlySelector');
-const selector = require('./recoil_values/Recoil_selector');
-const selectorFamily = require('./recoil_values/Recoil_selectorFamily');
-const {
+  useRecoilTransactionObserver as useRecoilTransactionObserver_UNSTABLE,
+} from './hooks/Recoil_SnapshotHooks';
+import useGetRecoilValueInfo_UNSTABLE from './hooks/Recoil_useGetRecoilValueInfo';
+import useRecoilBridgeAcrossReactRoots_UNSTABLE from './hooks/Recoil_useRecoilBridgeAcrossReactRoots';
+import {useRecoilCallback} from './hooks/Recoil_useRecoilCallback';
+import useRecoilRefresher_UNSTABLE from './hooks/Recoil_useRecoilRefresher';
+import useRecoilTransaction_UNSTABLE from './hooks/Recoil_useRecoilTransaction';
+import useRetain from './hooks/Recoil_useRetain';
+import atom from './recoil_values/Recoil_atom';
+import atomFamily from './recoil_values/Recoil_atomFamily';
+import constSelector from './recoil_values/Recoil_constSelector';
+import errorSelector from './recoil_values/Recoil_errorSelector';
+import readOnlySelector from './recoil_values/Recoil_readOnlySelector';
+import selector from './recoil_values/Recoil_selector';
+import selectorFamily from './recoil_values/Recoil_selectorFamily';
+import {
   noWait,
   waitForAll,
   waitForAllSettled,
   waitForAny,
   waitForNone,
-} = require('./recoil_values/Recoil_WaitFor');
+} from './recoil_values/Recoil_WaitFor';
 
-module.exports = {
+export {
   // Types
   DefaultValue,
   isRecoilValue,
   RecoilLoadable,
-
   // Recoil Root
   RecoilRoot,
   useRecoilStoreID,
-  useRecoilBridgeAcrossReactRoots_UNSTABLE: useRecoilBridgeAcrossReactRoots,
-
+  useRecoilBridgeAcrossReactRoots_UNSTABLE,
   // Atoms/Selectors
   atom,
   selector,
-
   // Convenience Atoms/Selectors
   atomFamily,
   selectorFamily,
   constSelector,
   errorSelector,
   readOnlySelector,
-
   // Concurrency Helpers for Atoms/Selectors
   noWait,
   waitForNone,
   waitForAny,
   waitForAll,
   waitForAllSettled,
-
   // Hooks for Atoms/Selectors
   useRecoilValue,
   useRecoilValueLoadable,
@@ -117,19 +112,16 @@ module.exports = {
   useRecoilStateLoadable,
   useSetRecoilState,
   useResetRecoilState,
-  useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
-  useRecoilRefresher_UNSTABLE: useRecoilRefresher,
-
+  useGetRecoilValueInfo_UNSTABLE,
+  useRecoilRefresher_UNSTABLE,
   // Hooks for complex operations
   useRecoilCallback,
-  useRecoilTransaction_UNSTABLE: useRecoilTransaction,
-
+  useRecoilTransaction_UNSTABLE,
   // Snapshots
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
-  useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver,
-  snapshot_UNSTABLE: freshSnapshot,
-
+  useRecoilTransactionObserver_UNSTABLE,
+  snapshot_UNSTABLE,
   // Memory Management
   useRetain,
   retentionZone,

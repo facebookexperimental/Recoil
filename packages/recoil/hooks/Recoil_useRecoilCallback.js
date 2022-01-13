@@ -14,20 +14,20 @@ import type {TransactionInterface} from '../core/Recoil_AtomicUpdates';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {Store} from '../core/Recoil_State';
 
-const {atomicUpdater} = require('../core/Recoil_AtomicUpdates');
-const {batchUpdates} = require('../core/Recoil_Batching');
-const {DEFAULT_VALUE} = require('../core/Recoil_Node');
-const {useStoreRef} = require('../core/Recoil_RecoilRoot');
-const {
+import {atomicUpdater} from '../core/Recoil_AtomicUpdates';
+import {batchUpdates} from '../core/Recoil_Batching';
+import {DEFAULT_VALUE} from '../core/Recoil_Node';
+import {useStoreRef} from '../core/Recoil_RecoilRoot';
+import {
   refreshRecoilValue,
   setRecoilValue,
-} = require('../core/Recoil_RecoilValueInterface');
-const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
-const {gotoSnapshot} = require('./Recoil_SnapshotHooks');
-const {useCallback} = require('react');
-const err = require('recoil-shared/util/Recoil_err');
-const invariant = require('recoil-shared/util/Recoil_invariant');
-const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
+} from '../core/Recoil_RecoilValueInterface';
+import {Snapshot, cloneSnapshot} from '../core/Recoil_Snapshot';
+import {gotoSnapshot} from './Recoil_SnapshotHooks';
+import {useCallback} from 'react';
+import err from 'recoil-shared/util/Recoil_err';
+import invariant from 'recoil-shared/util/Recoil_invariant';
+import lazyProxy from 'recoil-shared/util/Recoil_lazyProxy';
 
 export type RecoilCallbackInterface = $ReadOnly<{
   set: <T>(RecoilState<T>, (T => T) | T) => void,
@@ -41,7 +41,11 @@ export type RecoilCallbackInterface = $ReadOnly<{
 class Sentinel {}
 const SENTINEL = new Sentinel();
 
-function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
+export function recoilCallback<
+  Args: $ReadOnlyArray<mixed>,
+  Return,
+  ExtraInterface,
+>(
   store: Store,
   fn: ({...ExtraInterface, ...RecoilCallbackInterface}) => (...Args) => Return,
   args: Args,
@@ -95,7 +99,7 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
   return (ret: Return);
 }
 
-function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
+export function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
   fn: RecoilCallbackInterface => (...Args) => Return,
   deps?: $ReadOnlyArray<mixed>,
 ): (...Args) => Return {
@@ -109,5 +113,3 @@ function useRecoilCallback<Args: $ReadOnlyArray<mixed>, Return>(
     deps != null ? [...deps, storeRef] : undefined, // eslint-disable-line fb-www/react-hooks-deps
   );
 }
-
-module.exports = {recoilCallback, useRecoilCallback};

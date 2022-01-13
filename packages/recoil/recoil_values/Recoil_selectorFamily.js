@@ -28,10 +28,10 @@ import type {
   SetRecoilState,
 } from './Recoil_callbackTypes';
 
-const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
-const {setConfigDeletionHandler} = require('../core/Recoil_Node');
-const selector = require('./Recoil_selector');
-const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
+import cacheFromPolicy from '../caches/Recoil_cacheFromPolicy';
+import {setConfigDeletionHandler} from '../core/Recoil_Node';
+import selector from './Recoil_selector';
+import stableStringify from 'recoil-shared/util/Recoil_stableStringify';
 
 // Keep in mind the parameter needs to be serializable as a cahche key
 // using Recoil_stableStringify
@@ -98,7 +98,7 @@ declare function selectorFamily<T, Params: Parameter>(
 // object literals or other equivalent objects at callsites to not create
 // duplicate cache entries.  This behavior may be overridden with the
 // cacheImplementationForParams option.
-function selectorFamily<T, Params: Parameter>(
+export default function selectorFamily<T, Params: Parameter>(
   options:
     | ReadOnlySelectorFamilyOptions<T, Params>
     | ReadWriteSelectorFamilyOptions<T, Params>,
@@ -166,5 +166,3 @@ function selectorFamily<T, Params: Parameter>(
   };
 }
 /* eslint-enable no-redeclare */
-
-module.exports = selectorFamily;

@@ -12,8 +12,8 @@
 
 import type {RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
 
-const selectorFamily = require('./Recoil_selectorFamily');
-const err = require('recoil-shared/util/Recoil_err');
+import selectorFamily from './Recoil_selectorFamily';
+import err from 'recoil-shared/util/Recoil_err';
 
 // flowlint-next-line unclear-type:off
 const throwingSelector = selectorFamily<any, any>({
@@ -29,8 +29,8 @@ const throwingSelector = selectorFamily<any, any>({
 
 // Function that returns a selector which always throws an error
 // with the provided message.
-function errorSelector<T>(message: string): RecoilValueReadOnly<T> {
+export default function errorSelector<T>(
+  message: string,
+): RecoilValueReadOnly<T> {
   return throwingSelector(message);
 }
-
-module.exports = errorSelector;

@@ -13,26 +13,19 @@
 import type {NodeKey} from './Recoil_State';
 
 // eslint-disable-next-line no-unused-vars
-class AbstractRecoilValue<+T> {
+export class AbstractRecoilValue<+T> {
   key: NodeKey;
   constructor(newKey: NodeKey) {
     this.key = newKey;
   }
 }
 
-class RecoilState<T> extends AbstractRecoilValue<T> {}
+export class RecoilState<T> extends AbstractRecoilValue<T> {}
 
-class RecoilValueReadOnly<+T> extends AbstractRecoilValue<T> {}
+export class RecoilValueReadOnly<+T> extends AbstractRecoilValue<T> {}
 
 export type RecoilValue<T> = RecoilValueReadOnly<T> | RecoilState<T>;
 
-function isRecoilValue(x: mixed): boolean %checks {
+export function isRecoilValue(x: mixed): boolean %checks {
   return x instanceof RecoilState || x instanceof RecoilValueReadOnly;
 }
-
-module.exports = {
-  AbstractRecoilValue,
-  RecoilState,
-  RecoilValueReadOnly,
-  isRecoilValue,
-};
