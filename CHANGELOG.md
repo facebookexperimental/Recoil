@@ -25,6 +25,7 @@
 - Callbacks from selector's `getCallback()` can now mutate, refresh, and transact Recoil state, in addition to reading it, for parity with `useRecoilCallback()`. (#1498)
 - Recoil StoreID's for `<RecoilRoot>` and `Snapshot` stores accessible via `useRecoilStoreID()` hook (#1417) or `storeID` parameter for atom effects (#1414).
 - `RecoilLoadable.all()` and `RecoilLoadable.of()` now accept either literal values, async Promises, or Loadables. (#1455, #1442)
+- Add `.isRetained()` method for Snapshots and check if snapshot is already released when using `.retain()` (#1546)
 
 ### Other Fixes and Optimizations
 
