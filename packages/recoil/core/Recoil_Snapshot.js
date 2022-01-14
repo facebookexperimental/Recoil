@@ -71,7 +71,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 // evaluation functions are executed and async selectors resolve.
 class Snapshot {
   _store: Store;
-  _refCount: number = 0;
+  _refCount: number = 1;
 
   constructor(storeState: StoreState) {
     this._store = {
@@ -101,11 +101,23 @@ class Snapshot {
       initializeNode(this._store, nodeKey);
       updateRetainCount(this._store, nodeKey, 1);
     }
-    this.retain();
+
     this._autoRelease();
   }
 
   retain(): () => void {
+    if (__DEV__) {
+      if (this._refCount <= 0) {
+        throw err('Snapshot has already been released.');
+      }
+    } else {
+      if (this._refCount <= 0) {
+        recoverableViolation(
+          'Attempt to retain() Snapshot that was already released.',
+          'recoil',
+        );
+      }
+    }
     this._refCount++;
     let released = false;
     return () => {
@@ -141,6 +153,10 @@ class Snapshot {
       //   updateRetainCountToZero(this._store, k);
       // }
     }
+  }
+
+  isRetained(): boolean {
+    return this._refCount > 0;
   }
 
   checkRefCount_INTERNAL(): void {
