@@ -62,26 +62,40 @@ function Connector({
   const connectionRef = useRef(null);
   const goToSnapshot = useGotoRecoilSnapshot();
   const snapshot = useRecoilSnapshot();
+  const release = snapshot.retain();
 
   useEffect(() => {
-    connectionRef.current = connect({
-      name,
-      persistenceLimit,
-      devMode,
-      goToSnapshot,
-      maxDepth,
-      maxItems,
-      serializeFn,
-      initialSnapshot: snapshot,
-    });
+    if (connectionRef.current == null) {
+      connectionRef.current = connect({
+        name,
+        persistenceLimit,
+        devMode,
+        goToSnapshot,
+        maxDepth,
+        maxItems,
+        serializeFn,
+      });
+    }
 
-    return connectionRef.current?.disconnect;
-  }, []);
+    return () => {
+      connectionRef.current?.disconnect();
+      connectionRef.current = null;
+    };
+  }, [
+    devMode,
+    goToSnapshot,
+    maxDepth,
+    maxItems,
+    name,
+    persistenceLimit,
+    serializeFn,
+  ]);
 
   useEffect(() => {
     const transactionID = transactionIdRef.current++;
     connectionRef.current?.track?.(transactionID, snapshot);
-  }, [snapshot]);
+    release();
+  }, [snapshot, release]);
 
   return null;
 }
