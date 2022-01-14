@@ -54,7 +54,7 @@ const QUICK_TEST = false;
 // @fb-only: const IS_INTERNAL = true;
 const IS_INTERNAL = false; // @oss-only
 
-// TODO Use Snapshot for testing instead of this thunk?
+// TODO Use Snapshots for testing instead of this thunk?
 function makeStore(): Store {
   const storeState = makeEmptyStoreState();
   const store: Store = {

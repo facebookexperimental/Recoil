@@ -28,8 +28,9 @@
 - Add `.isRetained()` method for Snapshots and check if snapshot is already released when using `.retain()` (#1546)
 
 ### Other Fixes and Optimizations
-
-- Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
+- Reduce overhead of snapshot cloning
+  - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
+  - Cache the cloned snapshots from callbacks unless there was a state change. (#1533)
 - Fix transitive selector refresh for some cases (#1409)
 - Atom Effects
   - Rename option from `effects_UNSTABLE` to just `effects` as the interface is mostly stabilizing (#1520)
