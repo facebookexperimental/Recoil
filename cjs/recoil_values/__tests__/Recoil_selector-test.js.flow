@@ -1317,9 +1317,14 @@ describe('getCallback', () => {
       }
     });
     const menuItem = getValue(mySelector);
+    expect(getValue(myAtom)).toEqual('DEFAULT');
     await expect(menuItem.onClick()).resolves.toEqual('DEFAULT');
     act(() => setValue(myAtom, 'SET'));
+    expect(getValue(myAtom)).toEqual('SET');
     await expect(menuItem.onClick()).resolves.toEqual('SET');
+    act(() => setValue(myAtom, 'SET2'));
+    expect(getValue(myAtom)).toEqual('SET2');
+    await expect(menuItem.onClick()).resolves.toEqual('SET2');
   });
   testRecoil('snapshot', async () => {
     const otherSelector = constSelector('VALUE');

@@ -116,7 +116,7 @@ const MutableSourceContext = React.createContext<MutableSource>(null);
 declare function useRecoilMutableSource(): MutableSource;
 declare function notifyComponents(store: Store, storeState: StoreState, treeState: TreeState): void;
 declare function sendEndOfBatchNotifications(store: Store): any;
-declare function endBatch(storeRef: any): any;
+declare function endBatch(store: Store): any;
 /*
  * The purpose of the Batcher is to observe when React batches end so that
  * Recoil state changes can be batched. Whenever Recoil state changes, we call

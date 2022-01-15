@@ -70,6 +70,10 @@ const gkx = require('recoil-shared/util/Recoil_gkx');
 
 const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
 
+const {
+  memoizeOneWithArgsHashAndInvalidation
+} = require('recoil-shared/util/Recoil_Memoize');
+
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation'); // Opaque at this surface because it's part of the public API from here.
@@ -98,6 +102,7 @@ declare class Snapshot {
   retain(): () => void,
   _autoRelease(): void,
   _release(): void,
+  isRetained(): boolean,
   checkRefCount_INTERNAL(): void,
   getStore_INTERNAL(): Store,
   getID(): SnapshotID,
@@ -115,6 +120,11 @@ declare function cloneStoreState(store: Store, treeState: TreeState, bumpVersion
 
 declare function freshSnapshot(initializeState?: (MutableSnapshot) => void): Snapshot; // Factory to clone a snapahot state
 
+const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] = memoizeOneWithArgsHashAndInvalidation((store, version) => {
+  const storeState = store.getState();
+  const treeState = version === 'current' ? storeState.currentTree : nullthrows(storeState.previousTree);
+  return new Snapshot(cloneStoreState(store, treeState));
+}, (store, version) => String(version) + String(store.storeID) + String(store.getState().currentTree.version) + String(store.getState().previousTree?.version));
 declare function cloneSnapshot(store: Store, version: 'current' | 'previous'): Snapshot;
 declare class MutableSnapshot extends Snapshot {
   _batch: (() => void) => void,

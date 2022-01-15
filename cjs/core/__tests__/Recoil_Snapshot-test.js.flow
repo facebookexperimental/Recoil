@@ -10,11 +10,13 @@
  */
 'use strict';
 
+import type { Snapshot } from '../Recoil_Snapshot';
+
 const {
   getRecoilTestFn
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, act, useState, useGotoRecoilSnapshot, useRecoilTransactionObserver, atom, constSelector, selector, ReadsAtom, flushPromisesAndTimers, asyncSelector, componentThatReadsAndWritesAtom, renderElements, Snapshot, freshSnapshot, RecoilRoot;
+let React, act, useState, useGotoRecoilSnapshot, useRecoilTransactionObserver, atom, constSelector, selector, ReadsAtom, flushPromisesAndTimers, asyncSelector, componentThatReadsAndWritesAtom, renderElements, freshSnapshot, RecoilRoot;
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({
@@ -38,7 +40,6 @@ const testRecoil = getRecoilTestFn(() => {
     renderElements
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({
-    Snapshot,
     freshSnapshot
   } = require('../Recoil_Snapshot'));
   ({
@@ -440,6 +441,30 @@ testRecoil('getInfo', () => {
   });
   expect(Array.from(resetSnapshot.getInfo_UNSTABLE(selectorB).deps)).toEqual(expect.arrayContaining([myAtom, selectorA]));
   expect(Array.from(resetSnapshot.getInfo_UNSTABLE(selectorB).subscribers.nodes)).toEqual([]);
+});
+describe('Retention', () => {
+  testRecoil('auto-release', async () => {
+    const snapshot = freshSnapshot();
+    expect(snapshot.isRetained()).toBe(true);
+    await flushPromisesAndTimers();
+    expect(snapshot.isRetained()).toBe(false);
+    const devStatus = window.__DEV__;
+    window.__DEV__ = true;
+    expect(() => snapshot.retain()).toThrow('released');
+    window.__DEV__ = false;
+    expect(() => snapshot.retain()).not.toThrow('released');
+    window.__DEV__ = devStatus; // TODO enable when recoil_memory_managament_2020 is enforced
+    // expect(() => snapshot.getID()).toThrow('release');
+  });
+  testRecoil('retain()', async () => {
+    const snapshot = freshSnapshot();
+    expect(snapshot.isRetained()).toBe(true);
+    const release2 = snapshot.retain();
+    await flushPromisesAndTimers();
+    expect(snapshot.isRetained()).toBe(true);
+    release2();
+    expect(snapshot.isRetained()).toBe(false);
+  });
 });
 describe('Atom effects', () => {
   testRecoil('Standalone snapshot', async ({

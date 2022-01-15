@@ -3350,6 +3350,102 @@ var Recoil_Environment = {
   isReactNative
 };
 
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+/**
+ * Caches a function's results based on the key returned by the passed
+ * hashFunction.
+ */
+
+function memoizeWithArgsHash(fn, hashFunction) {
+  let cache;
+
+  const memoizedFn = (...args) => {
+    if (!cache) {
+      cache = {};
+    } // $FlowFixMe[incompatible-type]
+
+
+    const key = hashFunction(...args);
+
+    if (!Object.hasOwnProperty.call(cache, key)) {
+      cache[key] = fn.apply(this, args);
+    }
+
+    return cache[key];
+  };
+
+  return memoizedFn;
+}
+/**
+ * Caches a function's results based on a comparison of the arguments.
+ * Only caches the last return of the function.
+ * Defaults to reference equality
+ */
+
+
+function memoizeOneWithArgsHash(fn, hashFunction) {
+  let lastKey;
+  let lastResult; // breaking cache when arguments change
+
+  const memoizedFn = (...args) => {
+    const key = hashFunction(...args);
+
+    if (lastKey === key) {
+      return lastResult;
+    }
+
+    lastKey = key;
+    lastResult = fn.apply(this, args);
+    return lastResult;
+  };
+
+  return memoizedFn;
+}
+/**
+ * Caches a function's results based on a comparison of the arguments.
+ * Only caches the last return of the function.
+ * Defaults to reference equality
+ */
+
+
+function memoizeOneWithArgsHashAndInvalidation(fn, hashFunction) {
+  let lastKey;
+  let lastResult; // breaking cache when arguments change
+
+  const memoizedFn = (...args) => {
+    const key = hashFunction(...args);
+
+    if (lastKey === key) {
+      return lastResult;
+    }
+
+    lastKey = key;
+    lastResult = fn.apply(this, args);
+    return lastResult;
+  };
+
+  const invalidate = () => {
+    lastKey = null;
+  };
+
+  return [memoizedFn, invalidate];
+}
+
+var Recoil_Memoize = {
+  memoizeWithArgsHash,
+  memoizeOneWithArgsHash,
+  memoizeOneWithArgsHashAndInvalidation
+};
+
 const {
   batchUpdates: batchUpdates$1
 } = Recoil_Batching;
@@ -3403,6 +3499,10 @@ const {
 
 
 
+const {
+  memoizeOneWithArgsHashAndInvalidation: memoizeOneWithArgsHashAndInvalidation$1
+} = Recoil_Memoize;
+
 
 
  // Opaque at this surface because it's part of the public API from here.
@@ -3427,7 +3527,7 @@ class Snapshot {
   constructor(storeState) {
     _defineProperty(this, "_store", void 0);
 
-    _defineProperty(this, "_refCount", 0);
+    _defineProperty(this, "_refCount", 1);
 
     _defineProperty(this, "getLoadable", recoilValue => {
       this.checkRefCount_INTERNAL();
@@ -3516,12 +3616,20 @@ class Snapshot {
       updateRetainCount$1(this._store, nodeKey, 1);
     }
 
-    this.retain();
-
     this._autoRelease();
   }
 
   retain() {
+    if (process.env.NODE_ENV !== "production") {
+      if (this._refCount <= 0) {
+        throw Recoil_err('Snapshot has already been released.');
+      }
+    } else {
+      if (this._refCount <= 0) {
+        Recoil_recoverableViolation('Attempt to retain() Snapshot that was already released.');
+      }
+    }
+
     this._refCount++;
     let released = false;
     return () => {
@@ -3561,6 +3669,10 @@ class Snapshot {
       // }
 
     }
+  }
+
+  isRetained() {
+    return this._refCount > 0;
   }
 
   checkRefCount_INTERNAL() {
@@ -3635,10 +3747,25 @@ function freshSnapshot(initializeState) {
 } // Factory to clone a snapahot state
 
 
-function cloneSnapshot(store, version = 'current') {
+const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] = memoizeOneWithArgsHashAndInvalidation$1((store, version) => {
   const storeState = store.getState();
   const treeState = version === 'current' ? storeState.currentTree : Recoil_nullthrows(storeState.previousTree);
   return new Snapshot(cloneStoreState(store, treeState));
+}, (store, version) => {
+  var _store$getState$previ;
+
+  return String(version) + String(store.storeID) + String(store.getState().currentTree.version) + String((_store$getState$previ = store.getState().previousTree) === null || _store$getState$previ === void 0 ? void 0 : _store$getState$previ.version);
+});
+
+function cloneSnapshot(store, version = 'current') {
+  const snapshot = memoizedCloneSnapshot(store, version);
+
+  if (!snapshot.isRetained()) {
+    invalidateMemoizedSnapshot();
+    return memoizedCloneSnapshot(store, version);
+  }
+
+  return snapshot;
 }
 
 class MutableSnapshot extends Snapshot {
@@ -3951,8 +4078,8 @@ function sendEndOfBatchNotifications(store) {
   storeState.queuedComponentCallbacks_DEPRECATED.splice(0, storeState.queuedComponentCallbacks_DEPRECATED.length);
 }
 
-function endBatch(storeRef) {
-  const storeState = storeRef.current.getState();
+function endBatch(store) {
+  const storeState = store.getState();
   storeState.commitDepth++;
 
   try {
@@ -3970,7 +4097,7 @@ function endBatch(storeRef) {
     storeState.previousTree = storeState.currentTree;
     storeState.currentTree = nextTree;
     storeState.nextTree = null;
-    sendEndOfBatchNotifications(storeRef.current);
+    sendEndOfBatchNotifications(store);
 
     if (storeState.previousTree != null) {
       storeState.graphsByVersion.delete(storeState.previousTree.version);
@@ -3981,7 +4108,7 @@ function endBatch(storeRef) {
     storeState.previousTree = null;
 
     if (Recoil_gkx('recoil_memory_managament_2020')) {
-      releaseScheduledRetainablesNow$1(storeRef.current);
+      releaseScheduledRetainablesNow$1(store);
     }
   } finally {
     storeState.commitDepth--;
@@ -4016,7 +4143,7 @@ function Batcher({
     // manipulate the order of useEffects during tests, since React seems to
     // call useEffect in an unpredictable order sometimes.
     Recoil_Queue.enqueueExecution('Batcher', () => {
-      endBatch(storeRef);
+      endBatch(storeRef.current);
     });
   });
   return null;
