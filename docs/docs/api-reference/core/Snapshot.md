@@ -7,6 +7,9 @@ A `Snapshot` object represents an immutable snapshot of the state of Recoil [ato
 
 ```jsx
 class Snapshot {
+  retain(): () => void;
+  isRetained(): boolean;
+
   // Accessors to inspect snapshot state
   getLoadable: <T>(RecoilValue<T>) => Loadable<T>;
   getPromise: <T>(RecoilValue<T>) => Promise<T>;
@@ -76,6 +79,35 @@ Notice that `set()` and `reset()` have the same signature as callbacks provided 
 The following hook can be used for updating the current Recoil state to match the provided `Snapshot`:
 - [`useGotoRecoilSnapshot()`](/docs/api-reference/core/useGotoRecoilSnapshot) - Update current state to match a Snapshot
 
+## Asynchronous use of Snapshots
+
+Snapshots are only retained for the duration of the callback or render function that obtained them.  To use them after that they should be explicitly retained.
+
+From a callback:
+```jsx
+useRecoilCallback(({snapshot}) => async () => {
+  const release = snapshot.retain();
+  try {
+    await onSomething();
+    doSomethingWithSnapshot(snapshot);
+  } finally {
+    release();
+  }
+});
+```
+
+From a component:
+```jsx
+function MyComponent() {
+  const snapshot = useRecoilSnapshot();
+  const release = snapshot.retain();
+
+  useEffect(() => {
+    doSomethingWithSnapshot(snapshot);
+    release();
+  }, [snapshot, release]);
+}
+```
 
 ## Developer Tools
 
