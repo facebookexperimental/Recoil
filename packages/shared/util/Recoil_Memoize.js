@@ -24,7 +24,6 @@ function memoizeWithArgsHash<TArgs: $ReadOnlyArray<mixed>, TReturn>(
       cache = ({}: {[string]: TReturn});
     }
 
-    // $FlowFixMe[incompatible-type]
     const key = hashFunction(...args);
     if (!Object.hasOwnProperty.call(cache, key)) {
       cache[key] = fn.apply(this, args);
