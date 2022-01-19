@@ -105,16 +105,14 @@ class Snapshot {
       updateRetainCount(this._store, nodeKey, 1);
     }
 
-    this._autoRelease();
+    this.autoRelease_INTERNAL();
   }
 
   retain(): () => void {
-    if (__DEV__) {
-      if (this._refCount <= 0) {
+    if (this._refCount <= 0) {
+      if (__DEV__) {
         throw err('Snapshot has already been released.');
-      }
-    } else {
-      if (this._refCount <= 0) {
+      } else {
         recoverableViolation(
           'Attempt to retain() Snapshot that was already released.',
           'recoil',
@@ -135,7 +133,7 @@ class Snapshot {
    * Release the snapshot on the next tick.  This means the snapshot is retained
    * during the execution of the current function using it.
    */
-  _autoRelease(): void {
+  autoRelease_INTERNAL(): void {
     if (!isSSR) {
       window.setTimeout(() => this._release(), 0);
     }
@@ -155,6 +153,10 @@ class Snapshot {
       // for (const k of this._store.getState().knownAtoms) {
       //   updateRetainCountToZero(this._store, k);
       // }
+    } else if (this._refCount < 0) {
+      if (__DEV__) {
+        recoverableViolation('Snapshot released an extra time.', 'recoil');
+      }
     }
   }
 
@@ -260,7 +262,11 @@ class Snapshot {
     async mapper => {
       this.checkRefCount_INTERNAL();
       const mutableSnapshot = new MutableSnapshot(this, batchUpdates);
+      mutableSnapshot.retain(); // Retain new snapshot during async mapper
       await mapper(mutableSnapshot);
+      // Continue to retain the new snapshot for the user, but auto-release it
+      // after the next tick, the same as a new synchronous snapshot.
+      mutableSnapshot.autoRelease_INTERNAL();
       return mutableSnapshot;
     };
 }
