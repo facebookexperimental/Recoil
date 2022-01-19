@@ -301,19 +301,40 @@ testRecoil('Async map of snapshot', async () => {
     key: 'Snapshot Map Async',
     default: 'DEFAULT',
   });
-  const [asyncSel, resolve] = asyncSelector();
-
-  const newSnapshotPromise = snapshot.asyncMap(async ({getPromise, set}) => {
-    const value = await getPromise(asyncSel);
-    expect(value).toEqual('VALUE');
-    set(myAtom, value);
+  const [beforeAsyncSel, resolveBeforeMap] = asyncSelector();
+  const [duringAsyncSel, resolveDuringMap] = asyncSelector();
+  const [afterAsyncSel, resolveAfterMap] = asyncSelector();
+  const depAsyncSel = selector({
+    key: 'snapshot asyncMap dep selector',
+    get: () => afterAsyncSel,
   });
 
-  act(() => resolve('VALUE'));
+  resolveBeforeMap('BEFORE');
 
+  const newSnapshotPromise = snapshot.asyncMap(async ({getPromise, set}) => {
+    await expect(getPromise(beforeAsyncSel)).resolves.toBe('BEFORE');
+    await expect(getPromise(duringAsyncSel)).resolves.toBe('DURING');
+
+    // Test that depAsyncSel is first used while mapping the snapshot.
+    // If the snapshot is auto-released too early the async selector will be
+    // canceled.
+    getPromise(depAsyncSel);
+    // Test that mapped snapshot is not auto-released too early
+    await flushPromisesAndTimers();
+
+    set(myAtom, 'VALUE');
+  });
+
+  resolveDuringMap('DURING');
   const newSnapshot = await newSnapshotPromise;
-  const value = await newSnapshot.getPromise(myAtom);
-  expect(value).toEqual('VALUE');
+  expect(newSnapshot.isRetained()).toBe(true);
+  resolveAfterMap('AFTER');
+
+  await expect(newSnapshot.getPromise(myAtom)).resolves.toBe('VALUE');
+  await expect(newSnapshot.getPromise(beforeAsyncSel)).resolves.toBe('BEFORE');
+  await expect(newSnapshot.getPromise(duringAsyncSel)).resolves.toBe('DURING');
+  await expect(newSnapshot.getPromise(afterAsyncSel)).resolves.toBe('AFTER');
+  await expect(newSnapshot.getPromise(depAsyncSel)).resolves.toBe('AFTER');
 });
 
 testRecoil('getInfo', () => {

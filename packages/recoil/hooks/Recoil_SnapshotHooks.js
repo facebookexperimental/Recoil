@@ -11,6 +11,7 @@
 'use strict';
 
 import type {PersistenceType} from '../core/Recoil_Node';
+import type {Snapshot} from '../core/Recoil_Snapshot';
 import type {NodeKey, Store, TreeState} from '../core/Recoil_State';
 
 const {batchUpdates} = require('../core/Recoil_Batching');
@@ -21,7 +22,7 @@ const {
   setRecoilValueLoadable,
 } = require('../core/Recoil_RecoilValueInterface');
 const {SUSPENSE_TIMEOUT_MS} = require('../core/Recoil_Retention');
-const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
+const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {useCallback, useEffect, useRef, useState} = require('react');
 const {isSSR} = require('recoil-shared/util/Recoil_Environment');
 const filterMap = require('recoil-shared/util/Recoil_filterMap');
@@ -239,12 +240,7 @@ function gotoSnapshot(store: Store, snapshot: Snapshot): void {
           : DEFAULT_VALUE,
       );
     });
-    store.replaceState(state => {
-      return {
-        ...state,
-        stateID: snapshot.getID(),
-      };
-    });
+    store.replaceState(state => ({...state, stateID: snapshot.getID()}));
   });
 }
 
