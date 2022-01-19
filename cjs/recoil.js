@@ -3371,8 +3371,7 @@ function memoizeWithArgsHash(fn, hashFunction) {
   const memoizedFn = (...args) => {
     if (!cache) {
       cache = {};
-    } // $FlowFixMe[incompatible-type]
-
+    }
 
     const key = hashFunction(...args);
 
