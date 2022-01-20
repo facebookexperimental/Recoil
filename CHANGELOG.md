@@ -43,6 +43,7 @@
 
 ### Breaking Changes
 - Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`. (#1509)
+- `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` always report the node `type`. (#1547)
 
 ## 0.5.2 (2021-11-07)
 
