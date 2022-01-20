@@ -303,7 +303,6 @@ function cloneStoreState(
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
     graphsByVersion: new Map().set(version, store.getGraph(treeState.version)),
-    versionsUsedByComponent: new Map(),
     retention: {
       referenceCounts: new Map(),
       nodesRetainedByZone: new Map(),
