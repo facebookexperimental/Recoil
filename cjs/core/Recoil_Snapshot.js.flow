@@ -100,7 +100,7 @@ declare class Snapshot {
   _refCount: number,
   constructor(storeState: StoreState): any,
   retain(): () => void,
-  _autoRelease(): void,
+  autoRelease_INTERNAL(): void,
   _release(): void,
   isRetained(): boolean,
   checkRefCount_INTERNAL(): void,

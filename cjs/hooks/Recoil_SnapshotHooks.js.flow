@@ -11,6 +11,7 @@
 'use strict';
 
 import type { PersistenceType } from '../core/Recoil_Node';
+import type { Snapshot } from '../core/Recoil_Snapshot';
 import type { NodeKey, Store, TreeState } from '../core/Recoil_State';
 
 const {
@@ -37,7 +38,6 @@ const {
 } = require('../core/Recoil_Retention');
 
 const {
-  Snapshot,
   cloneSnapshot
 } = require('../core/Recoil_Snapshot');
 

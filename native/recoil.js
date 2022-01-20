@@ -3574,7 +3574,12 @@ class Snapshot {
     _defineProperty(this, "asyncMap", async mapper => {
       this.checkRefCount_INTERNAL();
       const mutableSnapshot = new MutableSnapshot(this, batchUpdates$1);
-      await mapper(mutableSnapshot);
+      mutableSnapshot.retain(); // Retain new snapshot during async mapper
+
+      await mapper(mutableSnapshot); // Continue to retain the new snapshot for the user, but auto-release it
+      // after the next tick, the same as a new synchronous snapshot.
+
+      mutableSnapshot.autoRelease_INTERNAL();
       return mutableSnapshot;
     });
 
@@ -3610,16 +3615,14 @@ class Snapshot {
       updateRetainCount$1(this._store, nodeKey, 1);
     }
 
-    this._autoRelease();
+    this.autoRelease_INTERNAL();
   }
 
   retain() {
-    if (process.env.NODE_ENV !== "production") {
-      if (this._refCount <= 0) {
+    if (this._refCount <= 0) {
+      if (process.env.NODE_ENV !== "production") {
         throw Recoil_err('Snapshot has already been released.');
-      }
-    } else {
-      if (this._refCount <= 0) {
+      } else {
         Recoil_recoverableViolation('Attempt to retain() Snapshot that was already released.');
       }
     }
@@ -3640,7 +3643,7 @@ class Snapshot {
    */
 
 
-  _autoRelease() {
+  autoRelease_INTERNAL() {
     if (!isSSR$1) {
       window.setTimeout(() => this._release(), 0);
     }
@@ -3662,6 +3665,10 @@ class Snapshot {
       //   updateRetainCountToZero(this._store, k);
       // }
 
+    } else if (this._refCount < 0) {
+      if (process.env.NODE_ENV !== "production") {
+        Recoil_recoverableViolation('Snapshot released an extra time.');
+      }
     }
   }
 
@@ -5478,7 +5485,6 @@ const {
 } = Recoil_Retention;
 
 const {
-  Snapshot: Snapshot$1,
   cloneSnapshot: cloneSnapshot$1
 } = Recoil_Snapshot$1;
 
@@ -5665,11 +5671,9 @@ function gotoSnapshot(store, snapshot) {
     keysToUpdate.forEach(key => {
       setRecoilValueLoadable$1(store, new AbstractRecoilValue$4(key), next.atomValues.has(key) ? Recoil_nullthrows(next.atomValues.get(key)) : DEFAULT_VALUE$3);
     });
-    store.replaceState(state => {
-      return { ...state,
-        stateID: snapshot.getID()
-      };
-    });
+    store.replaceState(state => ({ ...state,
+      stateID: snapshot.getID()
+    }));
   });
 }
 
@@ -5950,7 +5954,7 @@ const {
 } = Recoil_RecoilValueInterface;
 
 const {
-  Snapshot: Snapshot$2,
+  Snapshot: Snapshot$1,
   cloneSnapshot: cloneSnapshot$2
 } = Recoil_Snapshot$1;
 
