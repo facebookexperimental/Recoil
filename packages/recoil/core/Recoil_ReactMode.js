@@ -42,7 +42,7 @@ const useSyncExternalStore: <T>(
   (React: any).unstable_useSyncExternalStore;
 
 type ReactMode =
-  | 'CONCURRENT_LEGACY'
+  | 'CONCURRENT_SUPPORT'
   | 'SYNC_EXTERNAL_STORE'
   | 'MUTABLE_SOURCE'
   | 'LEGACY';
@@ -58,8 +58,8 @@ type ReactMode =
 function reactMode(): {mode: ReactMode, early: boolean, concurrent: boolean} {
   // NOTE: This mode is currently broken with some Suspense cases
   // see Recoil_selector-test.js
-  if (gkx('recoil_concurrent_legacy')) {
-    return {mode: 'CONCURRENT_LEGACY', early: true, concurrent: true};
+  if (gkx('recoil_concurrent_support')) {
+    return {mode: 'CONCURRENT_SUPPORT', early: true, concurrent: true};
   }
 
   if (gkx('recoil_sync_external_store') && useSyncExternalStore != null) {

@@ -409,7 +409,7 @@ const WWW_GKS_TO_TEST = QUICK_TEST
         'recoil_release_on_cascading_update_killswitch_2021',
       ],
       // Experimental mode for useTransition() support:
-      // ['recoil_hamt_2020', 'recoil_concurrent_legacy'],
+      ['recoil_hamt_2020', 'recoil_concurrent_support'],
     ];
 
 /**
