@@ -1238,6 +1238,7 @@ testRecoil('selector does not re-run to completion when one of its async deps re
    * being changed to "3"
    */
 
+  mappedSnapshot.retain();
   await flushPromisesAndTimers();
   const loadableB = mappedSnapshot.getLoadable(selectorC);
   expect(loadableB.contents).toBe(3);

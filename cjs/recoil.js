@@ -2133,7 +2133,6 @@ function makeEmptyStoreState() {
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
     graphsByVersion: new Map().set(currentTree.version, graph()),
-    versionsUsedByComponent: new Map(),
     retention: {
       referenceCounts: new Map(),
       nodesRetainedByZone: new Map(),
@@ -2413,7 +2412,7 @@ function peekNodeInfo(store, state, key) {
 
   const storeState = store.getState();
   const graph = store.getGraph(state.version);
-  const type = storeState.knownAtoms.has(key) ? 'atom' : storeState.knownSelectors.has(key) ? 'selector' : undefined;
+  const type = getNode$1(key).nodeType;
   const downstreamNodes = Recoil_filterIterable(getDownstreamNodes(store, state, new Set([key])), nodeKey => nodeKey !== key);
   return {
     loadable: peekNodeLoadable(store, state, key),
@@ -3523,6 +3522,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 // evaluation functions are executed and async selectors resolve.
 
 class Snapshot {
+  // eslint-disable-next-line fb-www/no-uninitialized-properties
   constructor(storeState) {
     _defineProperty(this, "_store", void 0);
 
@@ -3733,7 +3733,6 @@ function cloneStoreState(store, treeState, bumpVersion = false) {
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
     graphsByVersion: new Map().set(version, store.getGraph(treeState.version)),
-    versionsUsedByComponent: new Map(),
     retention: {
       referenceCounts: new Map(),
       nodesRetainedByZone: new Map(),

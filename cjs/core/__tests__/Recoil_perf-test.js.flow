@@ -1,0 +1,78 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+obviz
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { Loadable, RecoilState, RecoilValue } from '../../Recoil_index';
+
+const {
+  atom,
+  selector
+} = require('../../Recoil_index');
+
+const {
+  getRecoilValueAsLoadable,
+  setRecoilValue
+} = require('../Recoil_RecoilValueInterface');
+
+const {
+  performance
+} = require('perf_hooks');
+
+const {
+  makeStore
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+
+const ITERATIONS = [1]; // Avoid iterating for automated testing
+// const ITERATIONS = [2, 2];
+// const ITERATIONS = [10, 100, 1000];
+// const ITERATIONS = [10, 100, 1000, 10000];
+// const ITERATIONS = [10, 100, 1000, 10000, 100000];
+
+declare function testPerf(name: string, fn: (number) => void): any;
+let store = makeStore();
+declare function getNodeLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+declare function getNodeValue<T>(recoilValue: RecoilValue<T>): T;
+declare function setNode(recoilValue: any, value: mixed): any;
+let nextAtomKey = 0;
+declare function createAtoms(num: any): Array<RecoilState<string>>;
+declare var helpersSelector: () => any;
+declare var getHelpers: () => any;
+testPerf('creating n atoms', iterations => {
+  createAtoms(iterations);
+});
+testPerf('getting n atoms', iterations => {
+  const atoms = createAtoms(iterations);
+
+  for (const node of atoms) {
+    getNodeValue(node);
+  }
+});
+testPerf('setting n atoms', iterations => {
+  const atoms = createAtoms(iterations);
+
+  for (const node of atoms) {
+    setNode(node, 'SET');
+  }
+});
+testPerf('cloning n snapshots', iterations => {
+  const atoms = createAtoms(iterations);
+  const {
+    getSnapshot
+  } = getHelpers();
+
+  for (const node of atoms) {
+    // Set node to avoid hitting cached snapshots
+    setNode(node, 'SET');
+    const snapshot = getSnapshot();
+    expect(getNodeValue(node)).toBe('SET');
+    expect(snapshot.getLoadable(node).contents).toBe('SET');
+  }
+});
