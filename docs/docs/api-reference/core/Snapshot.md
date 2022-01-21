@@ -81,7 +81,7 @@ The following hook can be used for updating the current Recoil state to match th
 
 ## Asynchronous use of Snapshots
 
-Snapshots are only retained for the duration of the callback or render function that obtained them.  To use them after that they should be explicitly retained using `retain()`.
+Snapshots are only retained for the duration of the callback that obtained them.  To use them after that they should be explicitly retained using `retain()`.
 
 From a callback:
 ```jsx
@@ -94,19 +94,6 @@ useRecoilCallback(({snapshot}) => async () => {
     release();
   }
 });
-```
-
-From a component:
-```jsx
-function MyComponent() {
-  const snapshot = useRecoilSnapshot();
-  const release = snapshot.retain();
-
-  useEffect(() => {
-    doSomethingWithSnapshot(snapshot);
-    release();
-  }, [snapshot, release]);
-}
 ```
 
 Note that an asynchronous selector must be actively used by some `<RecoilRoot>` or `Snapshot` in order to ensure it is not canceled.  So, if you are only accessing an asynchronous selector via snapshots, they must be retained in order to guarantee you can observe the resolved value.
