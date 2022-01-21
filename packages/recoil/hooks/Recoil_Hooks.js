@@ -421,19 +421,13 @@ function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
   return loadable;
 }
 
-// NOTE: This mode currently fails due to Suspense not executing effects when a
-// component is suspended.  If we suspend we won't subscribe to the new atom
-// even if the atom we use changes and the component is rerendered.  It will
-// still have the previous pending value causing it to just suspend again and
-// get stuck.  The LEGACY mode solves this by always getting the current value
-// from the Recoil store, but that causes tearing and doesn't work with
-// useTransition()
-function useRecoilValueLoadable_CONCURRENT_LEGACY<T>(
+function useRecoilValueLoadable_CONCURRENT_SUPPORT<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
   const componentName = useComponentName();
 
+  // Accessors to get the current state
   const getLoadable = useCallback(() => {
     if (__DEV__) {
       recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
@@ -450,6 +444,7 @@ function useRecoilValueLoadable_CONCURRENT_LEGACY<T>(
     [getLoadable, recoilValue.key],
   );
 
+  // Memoize state snapshots
   const updateState = useCallback(
     prevState => {
       const nextState = getState();
@@ -461,6 +456,7 @@ function useRecoilValueLoadable_CONCURRENT_LEGACY<T>(
     [getState],
   );
 
+  // Subscribe to Recoil state changes
   useEffect(() => {
     const subscription = subscribeToRecoilValue(
       storeRef.current,
@@ -471,13 +467,20 @@ function useRecoilValueLoadable_CONCURRENT_LEGACY<T>(
       componentName,
     );
 
+    // Update state in case we are using a different key
     setState(updateState);
 
     return subscription.release;
   }, [componentName, recoilValue, storeRef, updateState]);
 
-  const [{loadable}, setState] = useState(getState);
-  return loadable;
+  // Get the current state
+  const [state, setState] = useState(getState);
+
+  // If we changed keys, then return the state for the new key.
+  // This is important in case the old key would cause the component to suspend.
+  // We don't have to set the new state here since the subscribing effect above
+  // will do that.
+  return state.key !== recoilValue.key ? getState().loadable : state.loadable;
 }
 
 function useRecoilValueLoadable_LEGACY<T>(
@@ -575,7 +578,7 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
     useRetain(recoilValue);
   }
   return {
-    CONCURRENT_LEGACY: useRecoilValueLoadable_CONCURRENT_LEGACY,
+    CONCURRENT_SUPPORT: useRecoilValueLoadable_CONCURRENT_SUPPORT,
     SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
     MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
     LEGACY: useRecoilValueLoadable_LEGACY,

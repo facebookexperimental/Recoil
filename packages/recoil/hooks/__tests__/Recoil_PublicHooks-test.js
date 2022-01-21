@@ -751,7 +751,7 @@ testRecoil(
     if (
       (reactMode().mode === 'LEGACY' &&
         !gks.includes('recoil_suppress_rerender_in_callback')) ||
-      reactMode().mode === 'CONCURRENT_LEGACY'
+      reactMode().mode === 'CONCURRENT_SUPPORT'
     ) {
       baseCalls += 1;
     }
@@ -863,7 +863,7 @@ testRecoil(
     if (
       (reactMode().mode === 'LEGACY' &&
         !gks.includes('recoil_suppress_rerender_in_callback')) ||
-      reactMode().mode === 'CONCURRENT_LEGACY'
+      reactMode().mode === 'CONCURRENT_SUPPORT'
     ) {
       baseCalls += 1;
     }
@@ -877,7 +877,10 @@ testRecoil(
     expect(container.textContent).toEqual('0');
 
     // TODO: find out why OSS has additional render
-    if (!gks.includes('recoil_suppress_rerender_in_callback')) {
+    if (
+      reactMode().mode === 'LEGACY' &&
+      !gks.includes('recoil_suppress_rerender_in_callback')
+    ) {
       baseCalls += 1; // @oss-only
     }
 

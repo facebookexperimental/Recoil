@@ -313,7 +313,11 @@ function subscribeToRecoilValue<T>(
 
   // Handle the case that, during the same tick that we are subscribing, an atom
   // has been updated by some effect handler. Otherwise we will miss the update.
-  if (reactMode().early) {
+  const mode = reactMode();
+  if (
+    mode.early &&
+    (mode.mode === 'LEGACY' || mode.mode === 'MUTABLE_SOURCE')
+  ) {
     const nextTree = store.getState().nextTree;
     if (nextTree && nextTree.dirtyAtoms.has(key)) {
       callback(nextTree);
