@@ -186,13 +186,17 @@ function useRecoilSnapshot(): Snapshot {
 
   // Retain snapshot for duration component is mounted
   useEffect(() => {
+    const release = snapshot.retain();
+
     // Release the retain from the rendering call
     if (timeoutID.current && !isSSR) {
       window.clearTimeout(timeoutID.current);
+      timeoutID.current = null;
       releaseRef.current?.();
       releaseRef.current = null;
     }
-    return snapshot.retain();
+
+    return release;
   }, [snapshot]);
 
   // Retain snapshot until above effect is run.
@@ -201,13 +205,15 @@ function useRecoilSnapshot(): Snapshot {
     // Release the previous snapshot
     if (timeoutID.current) {
       window.clearTimeout(timeoutID.current);
+      timeoutID.current = null;
       releaseRef.current?.();
       releaseRef.current = null;
     }
     releaseRef.current = snapshot.retain();
     timeoutID.current = window.setTimeout(() => {
-      releaseRef.current?.();
       timeoutID.current = null;
+      releaseRef.current?.();
+      releaseRef.current = null;
     }, SUSPENSE_TIMEOUT_MS);
   }
 
