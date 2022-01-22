@@ -2487,9 +2487,9 @@ react.unstable_useSyncExternalStore;
 function reactMode() {
   // NOTE: This mode is currently broken with some Suspense cases
   // see Recoil_selector-test.js
-  if (Recoil_gkx('recoil_concurrent_legacy')) {
+  if (Recoil_gkx('recoil_concurrent_support')) {
     return {
-      mode: 'CONCURRENT_LEGACY',
+      mode: 'CONCURRENT_SUPPORT',
       early: true,
       concurrent: true
     };
@@ -2803,7 +2803,9 @@ function subscribeToRecoilValue(store, {
   Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]); // Handle the case that, during the same tick that we are subscribing, an atom
   // has been updated by some effect handler. Otherwise we will miss the update.
 
-  if (reactMode$1().early) {
+  const mode = reactMode$1();
+
+  if (mode.early && (mode.mode === 'LEGACY' || mode.mode === 'MUTABLE_SOURCE')) {
     const nextTree = store.getState().nextTree;
 
     if (nextTree && nextTree.dirtyAtoms.has(key)) {
@@ -5119,18 +5121,12 @@ function useRecoilValueLoadable_MUTABLE_SOURCE(recoilValue) {
     prevLoadableRef.current = loadable;
   });
   return loadable;
-} // NOTE: This mode currently fails due to Suspense not executing effects when a
-// component is suspended.  If we suspend we won't subscribe to the new atom
-// even if the atom we use changes and the component is rerendered.  It will
-// still have the previous pending value causing it to just suspend again and
-// get stuck.  The LEGACY mode solves this by always getting the current value
-// from the Recoil store, but that causes tearing and doesn't work with
-// useTransition()
+}
 
-
-function useRecoilValueLoadable_CONCURRENT_LEGACY(recoilValue) {
+function useRecoilValueLoadable_CONCURRENT_SUPPORT(recoilValue) {
   const storeRef = useStoreRef$2();
-  const componentName = Recoil_useComponentName();
+  const componentName = Recoil_useComponentName(); // Accessors to get the current state
+
   const getLoadable = useCallback$1(() => {
     var _storeState$nextTree4;
 
@@ -5146,22 +5142,28 @@ function useRecoilValueLoadable_CONCURRENT_LEGACY(recoilValue) {
   const getState = useCallback$1(() => ({
     loadable: getLoadable(),
     key: recoilValue.key
-  }), [getLoadable, recoilValue.key]);
+  }), [getLoadable, recoilValue.key]); // Memoize state snapshots
+
   const updateState = useCallback$1(prevState => {
     const nextState = getState();
     return prevState.loadable.is(nextState.loadable) && prevState.key === nextState.key ? prevState : nextState;
-  }, [getState]);
+  }, [getState]); // Subscribe to Recoil state changes
+
   useEffect$3(() => {
     const subscription = subscribeToRecoilValue$1(storeRef.current, recoilValue, _state => {
       setState(updateState);
-    }, componentName);
+    }, componentName); // Update state in case we are using a different key
+
     setState(updateState);
     return subscription.release;
-  }, [componentName, recoilValue, storeRef, updateState]);
-  const [{
-    loadable
-  }, setState] = useState$1(getState);
-  return loadable;
+  }, [componentName, recoilValue, storeRef, updateState]); // Get the current state
+
+  const [state, setState] = useState$1(getState); // If we changed keys, then return the state for the new key.
+  // This is important in case the old key would cause the component to suspend.
+  // We don't have to set the new state here since the subscribing effect above
+  // will do that.
+
+  return state.key !== recoilValue.key ? getState().loadable : state.loadable;
 }
 
 function useRecoilValueLoadable_LEGACY(recoilValue) {
@@ -5262,7 +5264,7 @@ function useRecoilValueLoadable(recoilValue) {
   }
 
   return {
-    CONCURRENT_LEGACY: useRecoilValueLoadable_CONCURRENT_LEGACY,
+    CONCURRENT_SUPPORT: useRecoilValueLoadable_CONCURRENT_SUPPORT,
     SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
     MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
     LEGACY: useRecoilValueLoadable_LEGACY
@@ -5613,16 +5615,18 @@ function useRecoilSnapshot() {
   useTransactionSubscription(useCallback$2(store => setSnapshot(cloneSnapshot$1(store)), [])); // Retain snapshot for duration component is mounted
 
   useEffect$4(() => {
-    // Release the retain from the rendering call
+    const release = snapshot.retain(); // Release the retain from the rendering call
+
     if (timeoutID.current && !isSSR$3) {
       var _releaseRef$current;
 
       window.clearTimeout(timeoutID.current);
+      timeoutID.current = null;
       (_releaseRef$current = releaseRef.current) === null || _releaseRef$current === void 0 ? void 0 : _releaseRef$current.call(releaseRef);
       releaseRef.current = null;
     }
 
-    return snapshot.retain();
+    return release;
   }, [snapshot]); // Retain snapshot until above effect is run.
   // Release after a threshold in case component is suspended.
 
@@ -5632,6 +5636,7 @@ function useRecoilSnapshot() {
       var _releaseRef$current2;
 
       window.clearTimeout(timeoutID.current);
+      timeoutID.current = null;
       (_releaseRef$current2 = releaseRef.current) === null || _releaseRef$current2 === void 0 ? void 0 : _releaseRef$current2.call(releaseRef);
       releaseRef.current = null;
     }
@@ -5640,8 +5645,9 @@ function useRecoilSnapshot() {
     timeoutID.current = window.setTimeout(() => {
       var _releaseRef$current3;
 
-      (_releaseRef$current3 = releaseRef.current) === null || _releaseRef$current3 === void 0 ? void 0 : _releaseRef$current3.call(releaseRef);
       timeoutID.current = null;
+      (_releaseRef$current3 = releaseRef.current) === null || _releaseRef$current3 === void 0 ? void 0 : _releaseRef$current3.call(releaseRef);
+      releaseRef.current = null;
     }, SUSPENSE_TIMEOUT_MS$2);
   }
 

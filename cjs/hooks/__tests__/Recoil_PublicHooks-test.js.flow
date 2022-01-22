@@ -450,7 +450,7 @@ testRecoil('Components re-render only one time if selectorFamily changed', ({
   expect(Component).toHaveBeenCalledTimes((baseCalls + 1) * sm);
   act(() => increment());
 
-  if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'CONCURRENT_LEGACY') {
+  if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'CONCURRENT_SUPPORT') {
     baseCalls += 1;
   }
 
@@ -526,7 +526,7 @@ testRecoil('Components unsubscribe from atoms when rendered without using them',
   expect(container.textContent).toEqual('1');
   expect(Component).toHaveBeenCalledTimes((baseCalls + 2) * sm);
 
-  if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'CONCURRENT_LEGACY') {
+  if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'CONCURRENT_SUPPORT') {
     baseCalls += 1;
   }
 
@@ -537,7 +537,7 @@ testRecoil('Components unsubscribe from atoms when rendered without using them',
   act(() => updateValueA(2));
   expect(container.textContent).toEqual('0'); // TODO: find out why OSS has additional render
 
-  if (!gks.includes('recoil_suppress_rerender_in_callback')) {
+  if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback')) {
     baseCalls += 1; // @oss-only
   }
 

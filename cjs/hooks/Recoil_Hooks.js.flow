@@ -93,15 +93,8 @@ const recoilComponentGetRecoilValueCount_FOR_TESTING = {
   current: 0
 };
 declare function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(recoilValue: RecoilValue<T>): Loadable<T>;
-declare function useRecoilValueLoadable_MUTABLE_SOURCE<T>(recoilValue: RecoilValue<T>): Loadable<T>; // NOTE: This mode currently fails due to Suspense not executing effects when a
-// component is suspended.  If we suspend we won't subscribe to the new atom
-// even if the atom we use changes and the component is rerendered.  It will
-// still have the previous pending value causing it to just suspend again and
-// get stuck.  The LEGACY mode solves this by always getting the current value
-// from the Recoil store, but that causes tearing and doesn't work with
-// useTransition()
-
-declare function useRecoilValueLoadable_CONCURRENT_LEGACY<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+declare function useRecoilValueLoadable_MUTABLE_SOURCE<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+declare function useRecoilValueLoadable_CONCURRENT_SUPPORT<T>(recoilValue: RecoilValue<T>): Loadable<T>;
 declare function useRecoilValueLoadable_LEGACY<T>(recoilValue: RecoilValue<T>): Loadable<T>;
 /**
   Like useRecoilValue(), but either returns the value if available or
