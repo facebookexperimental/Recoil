@@ -23,7 +23,7 @@ This component is not subscribed to Recoil state (`useSetRecoilState()` does not
 
 ### `<TodoListFilters />`
 
-This component is subcribed to `todoListFilterState`, so it will re-render when either that state changes or when its parent component, `TodoList`, re-renders.
+This component is subscribed to `todoListFilterState`, so it will re-render when either that state changes or when its parent component, `TodoList`, re-renders.
 
 ### `<TodoListStats />`
 
