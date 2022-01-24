@@ -67,7 +67,7 @@ describe('The form state should', () => {
 });
 ```
 
-## Testing Recoil state with asyncronous queries inside of a React component
+## Testing Recoil state with asynchronous queries inside of a React component
 
 A common pattern for atoms is using asynchronous queries fetch the state of the atom, in a selector, or as part of an effect. This causes the component to be suspended. However, while testing, the component is suspended will not update in the DOM without acting. To test this scenario, we need a helper function:
 
@@ -84,7 +84,7 @@ function flushPromisesAndTimers(): Promise<void> {
 }
 ```
 
-### Example: Title with data returned from asnychronous data query
+### Example: Title with data returned from asynchronous data query
 
 #### Component
 
