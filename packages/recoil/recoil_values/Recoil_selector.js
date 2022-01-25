@@ -95,10 +95,8 @@ const {
   registerNode,
 } = require('../core/Recoil_Node');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
-const {AbstractRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   markRecoilValueModified,
-  setRecoilValueLoadable,
 } = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const {recoilCallback} = require('../hooks/Recoil_useRecoilCallback');
@@ -290,35 +288,21 @@ function selector<T>(
 
   function notifyStoreWhenAsyncSettles(
     store: Store,
-    loadable: Loadable<T>,
     executionId: ExecutionId,
   ): void {
-    if (loadable.state === 'loading') {
-      let stores = waitingStores.get(executionId);
-
-      if (stores == null) {
-        waitingStores.set(executionId, (stores = new Set()));
-      }
-
-      stores.add(store);
+    let stores = waitingStores.get(executionId);
+    if (stores == null) {
+      waitingStores.set(executionId, (stores = new Set()));
     }
+    stores.add(store);
   }
 
-  function notifyStoresOfSettledAsync(
-    newLoadable: Loadable<T>,
-    executionId: ExecutionId,
-  ): void {
+  function notifyStoresOfSettledAsync(executionId: ExecutionId): void {
     const stores = waitingStores.get(executionId);
-
     if (stores !== undefined) {
       for (const store of stores) {
-        setRecoilValueLoadable(
-          store,
-          new AbstractRecoilValue(key),
-          newLoadable,
-        );
+        markRecoilValueModified(store, nullthrows(recoilValue));
       }
-
       waitingStores.delete(executionId);
     }
   }
@@ -399,7 +383,6 @@ function selector<T>(
         maybeFreezeValue(value);
         setCache(state, depValuesToDepRoute(depValues), loadable);
         setDepsInStore(store, state, new Set(depValues.keys()), executionId);
-
         setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
         return value;
@@ -431,7 +414,6 @@ function selector<T>(
         maybeFreezeValue(errorOrPromise);
         setCache(state, depValuesToDepRoute(depValues), loadable);
         setDepsInStore(store, state, new Set(depValues.keys()), executionId);
-
         setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
         throw errorOrPromise;
@@ -555,11 +537,38 @@ function selector<T>(
           store,
           state,
         );
+        if (cachedLoadable && cachedLoadable.state !== 'loading') {
+          /**
+           * This has to notify stores of a resolved async, even if there is no
+           * current pending execution for the following case:
+           * 1) A component renders with this pending loadable.
+           * 2) The upstream dependency resolves.
+           * 3) While processing some other selector it reads this one, such as
+           *    while traversing its dependencies.  At this point it gets the
+           *    new resolved value synchronously and clears the current
+           *    execution ID.  The component wasn't getting the value itself,
+           *    though, so it still has the pending loadable.
+           * 4) When this code executes the current execution id was cleared
+           *    and it wouldn't notify the component of the new value.
+           *
+           * I think this is only an issue with "early" rendering since the
+           * components got their value using the in-progress execution.
+           * We don't have a unit test for this case yet.  I'm not sure it is
+           * necessary with recoil_concurrent_support mode.
+           */
+          if (
+            isLatestExecution(store, executionId) ||
+            getExecutionInfo(store).latestExecutionId == null
+          ) {
+            setExecutionInfo(cachedLoadable, store);
+            notifyStoresOfSettledAsync(executionId);
+          }
 
-        if (cachedLoadable && cachedLoadable.state === 'hasValue') {
-          setExecutionInfo(cachedLoadable, store);
-
-          return cachedLoadable.contents;
+          if (cachedLoadable.state === 'hasValue') {
+            return cachedLoadable.contents;
+          } else {
+            throw cachedLoadable.contents;
+          }
         }
 
         /**
@@ -588,7 +597,6 @@ function selector<T>(
          */
         if (!isLatestExecution(store, executionId)) {
           const executionInfo = getExecutionInfoOfInProgressExecution(state);
-
           if (executionInfo?.latestLoadable?.state === 'loading') {
             /**
              * Returning promise here without wrapping as the wrapper logic was
@@ -598,6 +606,7 @@ function selector<T>(
           }
         }
 
+        // Retry the selector evaluation now that the dependency has resolved
         const [loadable, depValues] = evaluateSelectorGetter(
           store,
           state,
@@ -644,7 +653,6 @@ function selector<T>(
           loadableWithError(error),
         );
         setDepsInStore(store, state, new Set(existingDeps.keys()), executionId);
-
         setLoadableInStoreToNotifyDeps(store, loadable, executionId);
 
         throw error;
@@ -658,7 +666,7 @@ function selector<T>(
   ): void {
     if (isLatestExecution(store, executionId)) {
       setExecutionInfo(loadable, store);
-      notifyStoresOfSettledAsync(loadable, executionId);
+      notifyStoresOfSettledAsync(executionId);
     }
   }
 
@@ -905,13 +913,23 @@ function selector<T>(
       newExecutionId,
     );
 
+    /**
+     * Conditionally updates the cache with a given loadable.
+     *
+     * We only cache loadables that are not loading because our cache keys are
+     * based on dep values, which are in an unfinished state for loadables that
+     * have a 'loading' state (new deps may be discovered while the selector
+     * runs its async code). We never want to cache partial dependencies b/c it
+     * could lead to errors, such as prematurely returning the result based on a
+     * partial list of deps-- we need the full list of deps to ensure that we
+     * are returning the correct result from cache.
+     */
+    if (loadable.state !== 'loading') {
+      setCache(state, depValuesToDepRoute(newDepValues), loadable);
+    } else {
+      notifyStoreWhenAsyncSettles(store, newExecutionId);
+    }
     setExecutionInfo(loadable, store, newDepValues, newExecutionId, state);
-    maybeSetCacheWithLoadable(
-      state,
-      depValuesToDepRoute(newDepValues),
-      loadable,
-    );
-    notifyStoreWhenAsyncSettles(store, loadable, newExecutionId);
 
     return loadable;
   }
@@ -950,17 +968,16 @@ function selector<T>(
       getExecutionInfoOfInProgressExecution(state);
 
     // FIXME: this won't work with custom caching b/c it uses separate cache
-    if (inProgressExecutionInfo) {
-      const executionInfo = inProgressExecutionInfo;
-
-      notifyStoreWhenAsyncSettles(
-        store,
-        nullthrows(executionInfo.latestLoadable),
-        nullthrows(executionInfo.latestExecutionId),
-      );
+    if (inProgressExecutionInfo != null) {
+      if (inProgressExecutionInfo.latestLoadable?.state === 'loading') {
+        notifyStoreWhenAsyncSettles(
+          store,
+          nullthrows(inProgressExecutionInfo.latestExecutionId),
+        );
+      }
 
       // FIXME: check after the fact to see if we made the right choice by waiting
-      return nullthrows(executionInfo.latestLoadable);
+      return nullthrows(inProgressExecutionInfo.latestLoadable);
     }
 
     return getValFromRunningNewExecutionAndUpdatedDeps(store, state);
@@ -1050,35 +1067,13 @@ function selector<T>(
     }
   }
 
-  /**
-   * Conditionally updates the cache with a given loadable.
-   *
-   * We only cache loadables that are not loading because our cache keys are
-   * based on dep values, which are in an unfinished state for loadables that
-   * have a 'loading' state (new deps may be discovered while the selector
-   * runs its async code). We never want to cache partial dependencies b/c it
-   * could lead to errors, such as prematurely returning the result based on a
-   * partial list of deps-- we need the full list of deps to ensure that we
-   * are returning the correct result from cache.
-   */
-  function maybeSetCacheWithLoadable(
-    state: TreeState,
-    depRoute: NodeCacheRoute,
-    loadable: Loadable<T>,
-  ) {
-    if (loadable.state !== 'loading') {
-      setCache(state, depRoute, loadable);
-    }
-  }
-
   function updateExecutionInfoDepValues(
     depValues: DepValues,
     store: Store,
     executionId: ExecutionId,
   ) {
-    const executionInfo = getExecutionInfo(store);
-
     if (isLatestExecution(store, executionId)) {
+      const executionInfo = getExecutionInfo(store);
       executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
     }
   }
@@ -1091,7 +1086,6 @@ function selector<T>(
 
   function isLatestExecution(store: Store, executionId): boolean {
     const executionInfo = getExecutionInfo(store);
-
     return executionId === executionInfo.latestExecutionId;
   }
 
@@ -1136,10 +1130,7 @@ function selector<T>(
   function selectorPeek(store: Store, state: TreeState): ?Loadable<T> {
     return cache.get(nodeKey => {
       invariant(typeof nodeKey === 'string', 'Cache nodeKey is type string');
-
-      const peek = peekNodeLoadable(store, state, nodeKey);
-
-      return peek?.contents;
+      return peekNodeLoadable(store, state, nodeKey)?.contents;
     });
   }
 
