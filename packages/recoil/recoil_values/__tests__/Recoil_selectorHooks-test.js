@@ -28,6 +28,7 @@ let React,
   Profiler,
   act,
   batchUpdates,
+  RecoilRoot,
   atom,
   constSelector,
   errorSelector,
@@ -40,6 +41,7 @@ let React,
   flushPromisesAndTimers,
   renderElements,
   renderElementsWithSuspenseCount,
+  componentThatReadsAndWritesAtom,
   useRecoilState,
   useRecoilValue,
   useRecoilValueLoadable,
@@ -56,6 +58,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({act} = require('ReactTestUtils'));
 
   ({batchUpdates} = require('../../core/Recoil_Batching'));
+  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot'));
   atom = require('../../recoil_values/Recoil_atom');
   constSelector = require('../../recoil_values/Recoil_constSelector');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');
@@ -69,6 +72,7 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers,
     renderElements,
     renderElementsWithSuspenseCount,
+    componentThatReadsAndWritesAtom,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({reactMode} = require('../../core/Recoil_ReactMode'));
   ({
@@ -1659,6 +1663,197 @@ testRecoil(
     expect(c.textContent).toBe('RESOLVE');
   },
 );
+
+describe('Multiple stores', () => {
+  testRecoil('sync in multiple', () => {
+    const myAtom = atom({key: 'selector stores sync atom', default: 'DEFAULT'});
+    const mySelector = selector({
+      key: 'selector stores sync selector',
+      get: () => myAtom,
+      set: ({set}, newValue) => set(myAtom, newValue),
+    });
+
+    const [ComponentA, setAtomA] = componentThatReadsAndWritesAtom(mySelector);
+    const [ComponentB, setAtomB] = componentThatReadsAndWritesAtom(mySelector);
+    const c = renderElements(
+      <>
+        <RecoilRoot>
+          <ComponentA />
+        </RecoilRoot>
+        <RecoilRoot>
+          <ComponentB />
+        </RecoilRoot>
+      </>,
+    );
+
+    expect(c.textContent).toBe('"DEFAULT""DEFAULT"');
+
+    act(() => setAtomA('A'));
+    expect(c.textContent).toBe('"A""DEFAULT"');
+
+    act(() => setAtomB('B'));
+    expect(c.textContent).toBe('"A""B"');
+  });
+
+  testRecoil('async in multiple', async () => {
+    const resolvers = {};
+    const promises = {
+      DEFAULT: new Promise(resolve => {
+        resolvers.DEFAULT = resolve;
+      }),
+      STALE: new Promise(resolve => {
+        resolvers.STALE = resolve;
+      }),
+      UPDATE: new Promise(resolve => {
+        resolvers.UPDATE = resolve;
+      }),
+    };
+    const myAtom = atom({
+      key: 'selector stores async atom',
+      default: 'DEFAULT',
+    });
+    const mySelector = selector({
+      key: 'selector stores async selector',
+      get: async ({get}) => {
+        const side = get(myAtom);
+        const str = await promises[side];
+        return side + ':' + str;
+      },
+      set: ({set}, newValue) => set(myAtom, newValue),
+    });
+
+    const [ComponentA, setAtomA] = componentThatReadsAndWritesAtom(mySelector);
+    const [ComponentB, setAtomB] = componentThatReadsAndWritesAtom(mySelector);
+    const c = renderElements(
+      <>
+        <RecoilRoot>
+          <React.Suspense fallback={<div>LOADING_A</div>}>
+            <ComponentA />
+          </React.Suspense>
+        </RecoilRoot>
+        <RecoilRoot>
+          <React.Suspense fallback={<div>LOADING_B</div>}>
+            <ComponentB />
+          </React.Suspense>
+        </RecoilRoot>
+      </>,
+    );
+
+    expect(c.textContent).toBe('LOADING_ALOADING_B');
+
+    act(() => setAtomA('STALE'));
+    expect(c.textContent).toBe('LOADING_ALOADING_B');
+
+    act(() => setAtomA('UPDATE'));
+    expect(c.textContent).toBe('LOADING_ALOADING_B');
+
+    act(() => resolvers.STALE('STALE'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('LOADING_ALOADING_B');
+
+    act(() => resolvers.UPDATE('RESOLVE_A'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"UPDATE:RESOLVE_A"LOADING_B');
+
+    act(() => resolvers.DEFAULT('RESOLVE_B'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"UPDATE:RESOLVE_A""DEFAULT:RESOLVE_B"');
+
+    act(() => setAtomB('UPDATE'));
+    expect(c.textContent).toBe('"UPDATE:RESOLVE_A""UPDATE:RESOLVE_A"');
+  });
+
+  testRecoil('derived in multiple', async () => {
+    let resolveA;
+    const atomA = atom({
+      key: 'selector stores derived atom A',
+      default: new Promise(resolve => {
+        resolveA = resolve;
+      }),
+    });
+    let resolveB;
+    const atomB = atom({
+      key: 'selector stores derived atom B',
+      default: new Promise(resolve => {
+        resolveB = resolve;
+      }),
+    });
+    let resolveStale;
+    const atomStale = atom({
+      key: 'selector stores derived atom Stale',
+      default: new Promise(resolve => {
+        resolveStale = resolve;
+      }),
+    });
+    const switchAtom = atom({
+      key: 'selector stores derived atom Switch',
+      default: 'A',
+    });
+
+    const mySelector = selector({
+      key: 'selector stores derived selector',
+      get: async ({get}) => {
+        const side = get(switchAtom);
+        return (
+          side +
+          ':' +
+          (side === 'STALE'
+            ? get(atomStale)
+            : side === 'A'
+            ? get(atomA)
+            : get(atomB))
+        );
+      },
+      set: ({set}, newValue) => set(switchAtom, newValue),
+    });
+
+    const [ComponentA, setAtomA] = componentThatReadsAndWritesAtom(mySelector);
+    const [ComponentB, setAtomB] = componentThatReadsAndWritesAtom(mySelector);
+    const c = renderElements(
+      <>
+        <RecoilRoot>
+          <React.Suspense fallback={<div>LOADING_A</div>}>
+            <ComponentA />
+          </React.Suspense>
+        </RecoilRoot>
+        <RecoilRoot>
+          <React.Suspense fallback={<div>LOADING_B</div>}>
+            <ComponentB />
+          </React.Suspense>
+        </RecoilRoot>
+      </>,
+    );
+
+    expect(c.textContent).toBe('LOADING_ALOADING_B');
+
+    act(() => setAtomB('STALE'));
+    expect(c.textContent).toBe('LOADING_ALOADING_B');
+
+    act(() => setAtomB('B'));
+    expect(c.textContent).toBe('LOADING_ALOADING_B');
+
+    act(() => resolveStale('STALE'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('LOADING_ALOADING_B');
+
+    act(() => resolveB('RESOLVE_B'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('LOADING_A"B:RESOLVE_B"');
+
+    act(() => resolveA('RESOLVE_A'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"A:RESOLVE_A""B:RESOLVE_B"');
+
+    act(() => setAtomA('B'));
+    expect(c.textContent).toBe('"B:RESOLVE_B""B:RESOLVE_B"');
+  });
+});
 
 describe('Counts', () => {
   describe('Evaluation', () => {

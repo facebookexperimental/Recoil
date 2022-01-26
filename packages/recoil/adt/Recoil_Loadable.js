@@ -198,6 +198,10 @@ export type Loadable<+T> =
   | $ReadOnly<ErrorLoadable<T>>
   | $ReadOnly<LoadingLoadable<T>>;
 
+export type ValueLoadableType<+T> = $ReadOnly<ValueLoadable<T>>;
+export type ErrorLoadableType<+T> = $ReadOnly<ErrorLoadable<T>>;
+export type LoadingLoadableType<+T> = $ReadOnly<LoadingLoadable<T>>;
+
 function loadableWithValue<+T>(value: T): $ReadOnly<ValueLoadable<T>> {
   return Object.freeze(new ValueLoadable(value));
 }

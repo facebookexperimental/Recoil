@@ -53,7 +53,7 @@
  */
 'use strict';
 
-import type {Loadable} from '../adt/Recoil_Loadable';
+import type {Loadable, LoadingLoadableType} from '../adt/Recoil_Loadable';
 import type {CachePolicy} from '../caches/Recoil_CachePolicy';
 import type {
   NodeCacheRoute,
@@ -185,10 +185,10 @@ type ExecutionId = number;
  *    to global state when it finishes.
  */
 type ExecutionInfo<T> = {
-  depValuesDiscoveredSoFarDuringAsyncWork: ?DepValues,
-  latestLoadable: ?Loadable<T>,
-  latestExecutionId: ?ExecutionId,
-  stateVersion: ?StateID,
+  depValuesDiscoveredSoFarDuringAsyncWork: DepValues,
+  latestLoadable: LoadingLoadableType<T>,
+  latestExecutionId: ExecutionId,
+  stateVersion: StateID,
 };
 
 // An object to hold the current state for loading dependencies for a particular
@@ -205,6 +205,11 @@ type LoadingDepsState = {
 const dependencyStack = []; // for detecting circular dependencies.
 const waitingStores: Map<ExecutionId, Set<Store>> = new Map();
 
+const getNewExecutionId: () => ExecutionId = (() => {
+  let executionId = 0;
+  return () => executionId++;
+})();
+
 /* eslint-disable no-redeclare */
 declare function selector<T>(
   options: ReadOnlySelectorOptions<T>,
@@ -212,20 +217,6 @@ declare function selector<T>(
 declare function selector<T>(
   options: ReadWriteSelectorOptions<T>,
 ): RecoilState<T>;
-
-const getNewExecutionId: () => ExecutionId = (() => {
-  let executionId = 0;
-  return () => executionId++;
-})();
-
-function getInitialExecutionInfo<T>(): ExecutionInfo<T> {
-  return {
-    depValuesDiscoveredSoFarDuringAsyncWork: null,
-    latestLoadable: null,
-    latestExecutionId: null,
-    stateVersion: null,
-  };
-}
 
 function selector<T>(
   options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>,
@@ -266,14 +257,6 @@ function selector<T>(
     return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
   }
 
-  function getExecutionInfo(store: Store): ExecutionInfo<T> {
-    if (!executionInfoMap.has(store)) {
-      executionInfoMap.set(store, getInitialExecutionInfo());
-    }
-
-    return nullthrows(executionInfoMap.get(store));
-  }
-
   function selectorInit(store: Store): () => void {
     store.getState().knownSelectors.add(key);
     liveStoresCount++;
@@ -286,7 +269,35 @@ function selector<T>(
     return getConfigDeletionHandler(key) !== undefined && !selectorIsLive();
   }
 
-  function notifyStoreWhenAsyncSettles(
+  function resolveAsync(
+    store: Store,
+    state: TreeState,
+    executionId: ExecutionId,
+    loadable: Loadable<T>,
+    depValues: DepValues,
+  ): void {
+    setCache(state, loadable, depValues);
+    setDepsInStore(store, state, new Set(depValues.keys()), executionId);
+    notifyStoresOfResolvedAsync(store, executionId);
+  }
+
+  function notifyStoresOfResolvedAsync(
+    store: Store,
+    executionId: ExecutionId,
+  ): void {
+    if (isLatestExecution(store, executionId)) {
+      clearExecutionInfo(store);
+    }
+    const stores = waitingStores.get(executionId);
+    if (stores !== undefined) {
+      for (const waitingStore of stores) {
+        markRecoilValueModified(waitingStore, nullthrows(recoilValue));
+      }
+      waitingStores.delete(executionId);
+    }
+  }
+
+  function markStoreWaitingForResolvedAsync(
     store: Store,
     executionId: ExecutionId,
   ): void {
@@ -295,16 +306,6 @@ function selector<T>(
       waitingStores.set(executionId, (stores = new Set()));
     }
     stores.add(store);
-  }
-
-  function notifyStoresOfSettledAsync(executionId: ExecutionId): void {
-    const stores = waitingStores.get(executionId);
-    if (stores !== undefined) {
-      for (const store of stores) {
-        markRecoilValueModified(store, nullthrows(recoilValue));
-      }
-      waitingStores.delete(executionId);
-    }
   }
 
   function getCachedNodeLoadable<TT>(
@@ -374,29 +375,22 @@ function selector<T>(
       .then(value => {
         if (!selectorIsLive()) {
           // The selector was released since the request began; ignore the response.
-          clearExecutionInfo(store, executionId);
+          clearExecutionInfo(store);
           throw CANCELED;
         }
 
         const loadable = loadableWithValue(value);
-
-        maybeFreezeValue(value);
-        setCache(state, depValuesToDepRoute(depValues), loadable);
-        setDepsInStore(store, state, new Set(depValues.keys()), executionId);
-        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
-
+        resolveAsync(store, state, executionId, loadable, depValues);
         return value;
       })
       .catch(errorOrPromise => {
         if (!selectorIsLive()) {
           // The selector was released since the request began; ignore the response.
-          clearExecutionInfo(store, executionId);
+          clearExecutionInfo(store);
           throw CANCELED;
         }
 
-        if (isLatestExecution(store, executionId)) {
-          updateExecutionInfoDepValues(depValues, store, executionId);
-        }
+        updateExecutionInfoDepValues(store, executionId, depValues);
 
         if (isPromise(errorOrPromise)) {
           return wrapPendingDependencyPromise(
@@ -410,12 +404,7 @@ function selector<T>(
         }
 
         const loadable = loadableWithError(errorOrPromise);
-
-        maybeFreezeValue(errorOrPromise);
-        setCache(state, depValuesToDepRoute(depValues), loadable);
-        setDepsInStore(store, state, new Set(depValues.keys()), executionId);
-        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
-
+        resolveAsync(store, state, executionId, loadable, depValues);
         throw errorOrPromise;
       });
   }
@@ -462,7 +451,7 @@ function selector<T>(
       .then(resolvedDep => {
         if (!selectorIsLive()) {
           // The selector was released since the request began; ignore the response.
-          clearExecutionInfo(store, executionId);
+          clearExecutionInfo(store);
           throw CANCELED;
         }
 
@@ -507,7 +496,7 @@ function selector<T>(
            * is executing may be a discarded tree (so store.getGraph(state.version)
            * will be empty), and the full dep tree may not be in the selector
            * caches in the case where the selector's cache was cleared. To solve
-           * for this we would have to keep track  of all running selector
+           * for this we would have to keep track of all running selector
            * executions and their downstream deps. Because this only covers edge
            * cases, that complexity might not be justifyable.
            */
@@ -558,10 +547,9 @@ function selector<T>(
            */
           if (
             isLatestExecution(store, executionId) ||
-            getExecutionInfo(store).latestExecutionId == null
+            getExecutionInfo(store) == null
           ) {
-            setExecutionInfo(cachedLoadable, store);
-            notifyStoresOfSettledAsync(executionId);
+            notifyStoresOfResolvedAsync(store, executionId);
           }
 
           if (cachedLoadable.state === 'hasValue') {
@@ -597,7 +585,7 @@ function selector<T>(
          */
         if (!isLatestExecution(store, executionId)) {
           const executionInfo = getExecutionInfoOfInProgressExecution(state);
-          if (executionInfo?.latestLoadable?.state === 'loading') {
+          if (executionInfo?.latestLoadable.state === 'loading') {
             /**
              * Returning promise here without wrapping as the wrapper logic was
              * already done upstream when this promise was generated.
@@ -613,25 +601,15 @@ function selector<T>(
           executionId,
         );
 
-        if (isLatestExecution(store, executionId)) {
-          updateExecutionInfoDepValues(depValues, store, executionId);
-        }
+        updateExecutionInfoDepValues(store, executionId, depValues);
 
         if (loadable.state !== 'loading') {
-          setCache(state, depValuesToDepRoute(depValues), loadable);
-          setDepsInStore(store, state, new Set(depValues.keys()), executionId);
-          setLoadableInStoreToNotifyDeps(store, loadable, executionId);
+          resolveAsync(store, state, executionId, loadable, depValues);
         }
 
         if (loadable.state === 'hasError') {
           throw loadable.contents;
         }
-
-        /**
-         * Returning any promises here without wrapping as the wrapepr logic was
-         * already done when we called evaluateSelectorGetter() to get this
-         * loadable
-         */
         return loadable.contents;
       })
       .catch(error => {
@@ -640,34 +618,14 @@ function selector<T>(
           throw CANCELED;
         }
         if (!selectorIsLive()) {
-          clearExecutionInfo(store, executionId);
+          clearExecutionInfo(store);
           throw CANCELED;
         }
 
         const loadable = loadableWithError(error);
-
-        maybeFreezeValue(error);
-        setCache(
-          state,
-          depValuesToDepRoute(existingDeps),
-          loadableWithError(error),
-        );
-        setDepsInStore(store, state, new Set(existingDeps.keys()), executionId);
-        setLoadableInStoreToNotifyDeps(store, loadable, executionId);
-
+        resolveAsync(store, state, executionId, loadable, existingDeps);
         throw error;
       });
-  }
-
-  function setLoadableInStoreToNotifyDeps(
-    store: Store,
-    loadable: Loadable<T>,
-    executionId: ExecutionId,
-  ): void {
-    if (isLatestExecution(store, executionId)) {
-      setExecutionInfo(loadable, store);
-      notifyStoresOfSettledAsync(executionId);
-    }
   }
 
   function setDepsInStore(
@@ -822,10 +780,6 @@ function selector<T>(
       loadable = loadableWithValue<T>(result);
     }
 
-    if (loadable.state !== 'loading') {
-      maybeFreezeValue(loadable.contents);
-    }
-
     return [loadable, depValues];
   }
 
@@ -876,7 +830,7 @@ function selector<T>(
         store,
         state,
         depsAfterCacheDone,
-        executionInfo.latestExecutionId,
+        executionInfo?.latestExecutionId,
       );
     }
 
@@ -924,12 +878,13 @@ function selector<T>(
      * partial list of deps-- we need the full list of deps to ensure that we
      * are returning the correct result from cache.
      */
-    if (loadable.state !== 'loading') {
-      setCache(state, depValuesToDepRoute(newDepValues), loadable);
+    if (loadable.state === 'loading') {
+      setExecutionInfo(store, newExecutionId, loadable, newDepValues, state);
+      markStoreWaitingForResolvedAsync(store, newExecutionId);
     } else {
-      notifyStoreWhenAsyncSettles(store, newExecutionId);
+      clearExecutionInfo(store);
+      setCache(state, loadable, newDepValues);
     }
-    setExecutionInfo(loadable, store, newDepValues, newExecutionId, state);
 
     return loadable;
   }
@@ -960,7 +915,7 @@ function selector<T>(
     const cachedVal = getValFromCacheAndUpdatedDownstreamDeps(store, state);
 
     if (cachedVal != null) {
-      setExecutionInfo(cachedVal, store);
+      clearExecutionInfo(store);
       return cachedVal;
     }
 
@@ -970,7 +925,7 @@ function selector<T>(
     // FIXME: this won't work with custom caching b/c it uses separate cache
     if (inProgressExecutionInfo != null) {
       if (inProgressExecutionInfo.latestLoadable?.state === 'loading') {
-        notifyStoreWhenAsyncSettles(
+        markStoreWaitingForResolvedAsync(
           store,
           nullthrows(inProgressExecutionInfo.latestExecutionId),
         );
@@ -1008,7 +963,7 @@ function selector<T>(
     const executionInfo = getExecutionInfo(store);
 
     const oldDepValues =
-      executionInfo.depValuesDiscoveredSoFarDuringAsyncWork ?? new Map();
+      executionInfo?.depValuesDiscoveredSoFarDuringAsyncWork ?? new Map();
 
     const cachedDepValuesCheckedForThisVersion = Array(
       (mapOfCheckedVersions.get(state.version) ?? new Map()).entries(),
@@ -1023,7 +978,7 @@ function selector<T>(
 
     if (
       oldDepValues == null ||
-      state.version === executionInfo.stateVersion ||
+      state.version === executionInfo?.stateVersion ||
       isCachedVersionSame
     ) {
       return false;
@@ -1038,6 +993,10 @@ function selector<T>(
     });
   }
 
+  function getExecutionInfo(store: Store): ?ExecutionInfo<T> {
+    return executionInfoMap.get(store);
+  }
+
   /**
    * This function will update the selector's execution info when the selector
    * has either finished running an execution or has started a new execution. If
@@ -1046,65 +1005,58 @@ function selector<T>(
    * just finished.
    */
   function setExecutionInfo(
-    loadable: Loadable<T>,
     store: Store,
-    depValues?: DepValues,
-    newExecutionId?: ExecutionId,
-    state?: TreeState,
+    newExecutionId: ExecutionId,
+    loadable: LoadingLoadableType<T>,
+    depValues: DepValues,
+    state: TreeState,
   ) {
-    const executionInfo = getExecutionInfo(store);
-
-    if (loadable.state === 'loading') {
-      executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
-      executionInfo.latestExecutionId = newExecutionId;
-      executionInfo.latestLoadable = loadable;
-      executionInfo.stateVersion = state?.version;
-    } else {
-      executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = null;
-      executionInfo.latestExecutionId = null;
-      executionInfo.latestLoadable = null;
-      executionInfo.stateVersion = null;
-    }
+    executionInfoMap.set(store, {
+      depValuesDiscoveredSoFarDuringAsyncWork: depValues,
+      latestExecutionId: newExecutionId,
+      latestLoadable: loadable,
+      stateVersion: state.version,
+    });
   }
 
   function updateExecutionInfoDepValues(
-    depValues: DepValues,
     store: Store,
     executionId: ExecutionId,
+    depValues: DepValues,
   ) {
     if (isLatestExecution(store, executionId)) {
       const executionInfo = getExecutionInfo(store);
-      executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
-    }
-  }
-
-  function clearExecutionInfo(store: Store, executionId: ExecutionId) {
-    if (isLatestExecution(store, executionId)) {
-      executionInfoMap.delete(store);
-    }
-  }
-
-  function isLatestExecution(store: Store, executionId): boolean {
-    const executionInfo = getExecutionInfo(store);
-    return executionId === executionInfo.latestExecutionId;
-  }
-
-  function maybeFreezeValue(val) {
-    if (__DEV__) {
-      if (Boolean(options.dangerouslyAllowMutability) === false) {
-        deepFreezeValue(val);
+      if (executionInfo != null) {
+        executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
       }
     }
   }
 
+  function clearExecutionInfo(store: Store) {
+    executionInfoMap.delete(store);
+  }
+
+  function isLatestExecution(store: Store, executionId): boolean {
+    return executionId === getExecutionInfo(store)?.latestExecutionId;
+  }
+
   function setCache(
     state: TreeState,
-    cacheRoute: NodeCacheRoute,
     loadable: Loadable<T>,
+    depValues: DepValues,
   ) {
+    if (__DEV__) {
+      if (
+        loadable.state !== 'loading' &&
+        Boolean(options.dangerouslyAllowMutability) === false
+      ) {
+        deepFreezeValue(loadable.contents);
+      }
+    }
+
     state.atomValues.set(key, loadable);
     try {
-      cache.set(cacheRoute, loadable);
+      cache.set(depValuesToDepRoute(depValues), loadable);
     } catch (error) {
       throw err(
         `Problem with setting cache for selector "${key}": ${error.message}`,
