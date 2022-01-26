@@ -32,6 +32,7 @@
   - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
   - Cache the cloned snapshots from callbacks unless there was a state change. (#1533)
 - Fix transitive selector refresh for some cases (#1409)
+- Fix some corner cases with async selectors and multiple stores (#1568)
 - Atom Effects
   - Rename option from `effects_UNSTABLE` to just `effects` as the interface is mostly stabilizing (#1520)
   - Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466)
