@@ -683,18 +683,6 @@ function selector<T>(
     }
   }
 
-  function setNewDepInStore(
-    store: Store,
-    state: TreeState,
-    deps: Set<NodeKey>,
-    newDepKey: NodeKey,
-    executionId: ?ExecutionId,
-  ): void {
-    deps.add(newDepKey);
-
-    setDepsInStore(store, state, deps, executionId);
-  }
-
   function evaluateSelectorGetter(
     store: Store,
     state: TreeState,
@@ -729,12 +717,10 @@ function selector<T>(
      */
     const deps = new Set();
 
-    setDepsInStore(store, state, deps, executionId);
-
     function getRecoilValue<S>(dep: RecoilValue<S>): S {
       const {key: depKey} = dep;
 
-      setNewDepInStore(store, state, deps, depKey, executionId);
+      deps.add(depKey);
 
       const depLoadable = getCachedNodeLoadable(store, state, depKey);
 
@@ -818,6 +804,7 @@ function selector<T>(
       maybeFreezeValue(loadable.contents);
     }
 
+    setDepsInStore(store, state, deps, executionId);
     return [loadable, depValues];
   }
 
