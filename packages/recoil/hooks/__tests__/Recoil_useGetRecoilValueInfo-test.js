@@ -304,5 +304,5 @@ testRecoil(
       );
     }
   },
-  // @fb-only: {gks: [['recoil_infer_component_names', 'recoil_async_selector_refactor']]},
+  // @fb-only: {gks: [['recoil_infer_component_names']]},
 );
