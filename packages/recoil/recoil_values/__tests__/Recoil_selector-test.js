@@ -1025,3 +1025,36 @@ testRecoil('Required options are provided when creating selectors', () => {
 
   window.__DEV__ = devStatus;
 });
+
+testRecoil('Dynamic deps discovered after the await was recorded', async () => {
+  const testSnapshot = freshSnapshot();
+  testSnapshot.retain();
+
+  const myAtom = atom({
+    key: 'my-atom',
+    default: 0,
+  });
+  let selectorRunCount = 0;
+  let selectorRunCompleteCount = 0;
+  const mySelector = selector({
+    key: 'my-selector',
+    get: async ({get}) => {
+      await Promise.resolve();
+      get(myAtom);
+      selectorRunCount++;
+      await new Promise(() => {});
+      selectorRunCompleteCount++;
+    },
+  });
+  testSnapshot.getLoadable(mySelector);
+  await flushPromisesAndTimers();
+  expect(selectorRunCount).toBe(1);
+  expect(selectorRunCompleteCount).toBe(0);
+  const mappedSnapshot = testSnapshot.map(({set}) =>
+    set(myAtom, prev => prev + 1),
+  );
+  expect(mappedSnapshot.getLoadable(mySelector).state === 'loading');
+  await flushPromisesAndTimers();
+  expect(selectorRunCount).toBe(2);
+  expect(selectorRunCompleteCount).toBe(0);
+});
