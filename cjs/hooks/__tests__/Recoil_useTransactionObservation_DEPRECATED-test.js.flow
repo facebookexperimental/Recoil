@@ -1,0 +1,154 @@
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * @flow strict-local
+ * @format
+ */
+'use strict';
+
+import type { RecoilState, RecoilValue, RecoilValueReadOnly } from '../../core/Recoil_RecoilValue';
+import type { PersistenceSettings } from '../../recoil_values/Recoil_atom';
+
+const {
+  getRecoilTestFn
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+
+let React, useState, act, atom, selector, ReadsAtom, flushPromisesAndTimers, renderElements, renderUnwrappedElements, useRecoilState, useRecoilValue, useSetRecoilState, useSetUnvalidatedAtomValues, useTransactionObservation_DEPRECATED;
+const testRecoil = getRecoilTestFn(() => {
+  React = require('react');
+  ({
+    useState
+  } = require('react'));
+  ({
+    act
+  } = require('ReactTestUtils'));
+  atom = require('../../recoil_values/Recoil_atom');
+  selector = require('../../recoil_values/Recoil_selector');
+  ({
+    ReadsAtom,
+    flushPromisesAndTimers,
+    renderElements,
+    renderUnwrappedElements
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
+  ({
+    useRecoilState,
+    useRecoilValue,
+    useSetRecoilState,
+    useSetUnvalidatedAtomValues
+  } = require('../Recoil_Hooks'));
+  ({
+    useTransactionObservation_DEPRECATED
+  } = require('../Recoil_SnapshotHooks'));
+});
+let nextID = 0;
+declare function counterAtom(persistence?: PersistenceSettings<number>): any;
+declare function plusOneSelector(dep: RecoilValue<number>): any;
+declare function plusOneAsyncSelector(dep: RecoilValue<number>): [RecoilValueReadOnly<number>, (number) => void];
+declare function componentThatWritesAtom<T>(recoilState: RecoilState<T>): [any, (((T) => T) | T) => void];
+declare function ObservesTransactions(arg0: any): any;
+testRecoil('useTransactionObservation_DEPRECATED: Transaction dirty atoms are set', async () => {
+  const anAtom = counterAtom({
+    type: 'url',
+    validator: x => (x: any) // flowlint-line unclear-type:off
+
+  });
+  const [aSelector, _] = plusOneSelector(anAtom);
+  const [anAsyncSelector, __] = plusOneAsyncSelector(aSelector);
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  const modifiedAtomsList = [];
+  renderElements(<>
+        <Component />
+        <ReadsAtom atom={aSelector} />
+        <React.Suspense fallback="loading">
+          <ReadsAtom atom={anAsyncSelector} />
+        </React.Suspense>
+        <ObservesTransactions fn={({
+      modifiedAtoms
+    }) => {
+      modifiedAtomsList.push(modifiedAtoms);
+    }} />
+      </>);
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  act(() => updateValue(1));
+  await flushPromisesAndTimers();
+  expect(modifiedAtomsList.length).toBe(3);
+  expect(modifiedAtomsList[1].size).toBe(1);
+  expect(modifiedAtomsList[1].has(anAtom.key)).toBe(true);
+
+  for (const modifiedAtoms of modifiedAtomsList) {
+    expect(modifiedAtoms.has(aSelector.key)).toBe(false);
+    expect(modifiedAtoms.has(anAsyncSelector.key)).toBe(false);
+  }
+});
+testRecoil('Can restore persisted values before atom def code is loaded', () => {
+  let theAtom = null;
+  let setUnvalidatedAtomValues;
+  declare function SetsUnvalidatedAtomValues(): any;
+  let setVisible;
+  declare function Switch(arg0: any): any;
+  declare function MyReadsAtom(arg0: any): any;
+  const container = renderElements(<>
+        <SetsUnvalidatedAtomValues />
+        <Switch>
+          <MyReadsAtom getAtom={() => theAtom} />
+        </Switch>
+      </>);
+  act(() => {
+    setUnvalidatedAtomValues(new Map().set('notDefinedYetAtom', 123));
+  });
+  const validator = jest.fn(() => 789);
+  theAtom = atom({
+    key: 'notDefinedYetAtom',
+    default: 456,
+    persistence_UNSTABLE: {
+      type: 'url',
+      validator
+    }
+  });
+  act(() => {
+    setVisible(true);
+  });
+  expect(validator.mock.calls[0][0]).toBe(123);
+  expect(container.textContent).toBe('789');
+});
+testRecoil('useTransactionObservation_DEPRECATED: Nonvalidated atoms are included in transaction observation', () => {
+  const anAtom = counterAtom({
+    type: 'url',
+    validator: x => (x: any) // flowlint-line unclear-type:off
+
+  });
+  const [Component, updateValue] = componentThatWritesAtom(anAtom);
+  let setUnvalidatedAtomValues;
+  declare function SetsUnvalidatedAtomValues(): any;
+  let values = new Map();
+  renderElements(<>
+        <Component />
+        <SetsUnvalidatedAtomValues />
+        <ObservesTransactions fn={({
+      atomValues
+    }) => {
+      values = atomValues;
+    }} />
+      </>);
+  act(() => {
+    setUnvalidatedAtomValues(new Map().set('someNonvalidatedAtom', 123));
+  });
+  values = new Map();
+  act(() => updateValue(1));
+  expect(values.size).toBe(2);
+  expect(values.get('someNonvalidatedAtom')).toBe(123);
+});
+testRecoil('Hooks cannot be used outside of RecoilRoot', () => {
+  const myAtom = atom({
+    key: 'hook outside RecoilRoot',
+    default: 'INVALID'
+  });
+  declare function Test(): any; // Make sure there is a friendly error message mentioning <RecoilRoot>
+
+  expect(() => renderUnwrappedElements(<Test />)).toThrow('<RecoilRoot>');
+});

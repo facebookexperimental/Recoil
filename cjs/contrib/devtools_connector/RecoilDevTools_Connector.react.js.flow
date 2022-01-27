@@ -10,9 +10,7 @@
  */
 'use strict';
 
-const {
-  Snapshot
-} = require('../../core/Recoil_Snapshot');
+import type { Snapshot } from '../../core/Recoil_Snapshot';
 
 const {
   useGotoRecoilSnapshot,

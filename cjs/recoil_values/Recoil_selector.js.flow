@@ -53,7 +53,7 @@
  */
 'use strict';
 
-import type { Loadable } from '../adt/Recoil_Loadable';
+import type { Loadable, LoadingLoadableType } from '../adt/Recoil_Loadable';
 import type { CachePolicy } from '../caches/Recoil_CachePolicy';
 import type { NodeCacheRoute, TreeCacheImplementation } from '../caches/Recoil_TreeCacheImplementationType';
 import type { StateID } from '../core/Recoil_Keys';
@@ -95,12 +95,7 @@ const {
 } = require('../core/Recoil_RecoilValue');
 
 const {
-  AbstractRecoilValue
-} = require('../core/Recoil_RecoilValue');
-
-const {
-  markRecoilValueModified,
-  setRecoilValueLoadable
+  markRecoilValueModified
 } = require('../core/Recoil_RecoilValueInterface');
 
 const {
@@ -190,10 +185,10 @@ type ExecutionId = number;
  */
 
 type ExecutionInfo<T> = {
-  depValuesDiscoveredSoFarDuringAsyncWork: ?DepValues,
-  latestLoadable: ?Loadable<T>,
-  latestExecutionId: ?ExecutionId,
-  stateVersion: ?StateID,
+  depValuesDiscoveredSoFarDuringAsyncWork: DepValues,
+  latestLoadable: LoadingLoadableType<T>,
+  latestExecutionId: ExecutionId,
+  stateVersion: StateID,
 }; // An object to hold the current state for loading dependencies for a particular
 // execution of a selector.  This is used for async selector handling to know
 // which dependency was pending or if a user-promise was thrown.  An object is
@@ -208,17 +203,16 @@ type LoadingDepsState = {
 const dependencyStack = []; // for detecting circular dependencies.
 
 const waitingStores: Map<ExecutionId, Set<Store>> = new Map();
-/* eslint-disable no-redeclare */
-
-declare function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
-declare function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
 
 const getNewExecutionId: () => ExecutionId = (() => {
   let executionId = 0;
   return () => executionId++;
 })();
+/* eslint-disable no-redeclare */
 
-declare function getInitialExecutionInfo<T>(): ExecutionInfo<T>;
+
+declare function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
+declare function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
 declare function selector<T>(options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>): RecoilValue<T>;
 /* eslint-enable no-redeclare */
 

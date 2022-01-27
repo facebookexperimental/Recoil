@@ -70,6 +70,9 @@ declare class LoadingLoadable<T> extends BaseLoadable<T> {
   map<S>(map: (T) => Promise<S> | Loadable<S> | S): $ReadOnly<LoadingLoadable<S>>,
 }
 export type Loadable<+T> = $ReadOnly<ValueLoadable<T>> | $ReadOnly<ErrorLoadable<T>> | $ReadOnly<LoadingLoadable<T>>;
+export type ValueLoadableType<+T> = $ReadOnly<ValueLoadable<T>>;
+export type ErrorLoadableType<+T> = $ReadOnly<ErrorLoadable<T>>;
+export type LoadingLoadableType<+T> = $ReadOnly<LoadingLoadable<T>>;
 declare function loadableWithValue<+T>(value: T): $ReadOnly<ValueLoadable<T>>;
 declare function loadableWithError<+T>(error: mixed): $ReadOnly<ErrorLoadable<T>>;
 declare function loadableWithPromise<+T>(promise: Promise<T>): $ReadOnly<LoadingLoadable<T>>;
