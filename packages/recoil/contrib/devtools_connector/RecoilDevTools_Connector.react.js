@@ -10,7 +10,8 @@
  */
 'use strict';
 
-const {Snapshot} = require('../../core/Recoil_Snapshot');
+import type {Snapshot} from '../../core/Recoil_Snapshot';
+
 const {
   useGotoRecoilSnapshot,
   useRecoilSnapshot,
@@ -92,9 +93,12 @@ function Connector({
   ]);
 
   useEffect(() => {
-    const transactionID = transactionIdRef.current++;
-    connectionRef.current?.track?.(transactionID, snapshot);
-    release();
+    try {
+      const transactionID = transactionIdRef.current++;
+      connectionRef.current?.track?.(transactionID, snapshot);
+    } finally {
+      release();
+    }
   }, [snapshot, release]);
 
   return null;
