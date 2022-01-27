@@ -20,21 +20,41 @@
  * lazily computed only on first access.
  */
 // $FlowIssue[unclear-type]
-function lazyProxy<Base, Factories: {[string]: () => any}>(
+function lazyProxy<Base: {[string]: any}, Factories: {[string]: () => any}>(
   base: Base,
   factories: Factories,
-): {...Base, ...$ObjMap<Factories, <F>(() => F) => F>} {
-  // $FlowIssue[incompatible-return]
-  return new Proxy(base, {
+): {
+  ...Base,
+  ...$ObjMap<Factories, <F>(() => F) => F>,
+} {
+  const proxy = new Proxy(base, {
+    // Compute and cache lazy property if not already done.
     get: (target, prop) => {
-      if (prop in factories) {
+      if (!(prop in target) && prop in factories) {
         // $FlowIssue[incompatible-use]
         target[prop] = factories[prop]();
       }
+
       // $FlowIssue[incompatible-use]
       return target[prop];
     },
+
+    // This method allows user to iterate keys as normal
+    ownKeys: target => {
+      // Materialize all lazy properties.  This appears to be necessary for
+      // onKeys to work properly, the object must actually have the properties
+      // that it reports to have.
+      for (const lazyProp in factories) {
+        // Call this for side-effect to materialize lazy property
+        // $FlowExpectedError[prop-missing]
+        proxy[lazyProp];
+      }
+      return Object.keys(target);
+    },
   });
+
+  // $FlowIssue[incompatible-return]
+  return proxy;
 }
 
 module.exports = lazyProxy;
