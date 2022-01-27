@@ -181,15 +181,6 @@ testRecoil('selector reset', () => {
   expect(getValue(selectorRW)).toEqual('DEFAULT');
 });
 
-testRecoil('useRecoilState - resolved async selector', async () => {
-  const resolvingSel = resolvingAsyncSelector('HELLO');
-  const c = renderElements(<ReadsAtom atom={resolvingSel} />);
-  expect(c.textContent).toEqual('loading');
-  act(() => jest.runAllTimers());
-  await flushPromisesAndTimers();
-  expect(c.textContent).toEqual('"HELLO"');
-});
-
 testRecoil('selector - evaluate to RecoilValue', () => {
   const atomA = atom({key: 'selector/const atom A', default: 'A'});
   const atomB = atom({key: 'selector/const atom B', default: 'B'});
