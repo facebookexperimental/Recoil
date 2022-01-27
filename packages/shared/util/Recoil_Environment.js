@@ -10,11 +10,19 @@
  */
 'use strict';
 
-const isSSR: boolean = typeof window === 'undefined';
+const isSSR: boolean =
+  // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+  typeof Window === 'undefined' || typeof window === 'undefined';
+const isWindow = (value: mixed): boolean =>
+  !isSSR &&
+  // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+  (value === window || value instanceof Window);
+
 const isReactNative: boolean =
   typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
 module.exports = {
   isSSR,
   isReactNative,
+  isWindow,
 };
