@@ -660,6 +660,52 @@ testRecoil(
   },
 );
 
+testRecoil('selector dep changed on async flying', async () => {
+  const resolvingSel1 = resolvingAsyncSelector(1);
+  const resolvingSel2 = resolvingAsyncSelector(2);
+  const anAtom3 = atom({key: 'atomTrackedAsync3', default: 3});
+
+  const selectorWithAsyncDeps = selector({
+    key: 'selectorDepChangeOnResolving',
+    get: async ({get}) => {
+      const val1 = get(resolvingSel1);
+
+      await Promise.resolve();
+
+      const val3 = get(anAtom3);
+
+      const val2 = get(resolvingSel2);
+      await Promise.resolve();
+
+      return val1 + val2 + val3;
+    },
+  });
+
+  let setAtom;
+
+  function Component() {
+    [, setAtom] = useRecoilState(anAtom3);
+    const selVal = useRecoilValue(selectorWithAsyncDeps);
+
+    return selVal;
+  }
+
+  const container = renderElements(<Component />);
+
+  expect(container.textContent).toEqual('loading');
+
+  await flushPromisesAndTimers();
+
+  act(() => setAtom(4));
+  // HACK: not sure why but these are needed in OSS
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+
+  expect(container.textContent).toEqual('7');
+});
+
 testRecoil("Updating with same value doesn't rerender", ({gks}) => {
   if (!gks.includes('recoil_suppress_rerender_in_callback')) {
     return;
