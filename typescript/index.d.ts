@@ -69,6 +69,7 @@
   map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
   asyncMap(cb: (mutableSnapshot: MutableSnapshot) => Promise<void>): Promise<Snapshot>;
   retain(): () => void;
+  isRetained(): boolean;
  }
 
  export class MutableSnapshot extends Snapshot {
