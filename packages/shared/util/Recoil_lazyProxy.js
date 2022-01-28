@@ -31,11 +31,9 @@ function lazyProxy<Base: {[string]: any}, Factories: {[string]: () => any}>(
     // Compute and cache lazy property if not already done.
     get: (target, prop) => {
       if (!(prop in target) && prop in factories) {
-        // $FlowIssue[incompatible-use]
         target[prop] = factories[prop]();
       }
 
-      // $FlowIssue[incompatible-use]
       return target[prop];
     },
 
