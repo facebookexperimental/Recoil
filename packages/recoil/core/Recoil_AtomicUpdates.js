@@ -87,7 +87,7 @@ class TransactionInterfaceImpl {
       this._changes.set(recoilState.key, (valueOrUpdater: any)(current)); // flowlint-line unclear-type:off
     } else {
       // Initialize atom and run effects if not initialized yet
-      initializeNode(this._store, recoilState.key);
+      initializeNode(this._store, recoilState.key, 'set');
 
       this._changes.set(recoilState.key, valueOrUpdater);
     }

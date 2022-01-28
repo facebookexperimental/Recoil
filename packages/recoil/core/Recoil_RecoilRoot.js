@@ -502,7 +502,7 @@ function RecoilRoot_INTERNAL({
     // to re-initialize all known atoms after they were cleaned up.
     const store = storeRef.current;
     for (const atomKey of new Set(store.getState().knownAtoms)) {
-      initializeNode(store, atomKey);
+      initializeNode(store, atomKey, 'get');
     }
 
     return () => {
