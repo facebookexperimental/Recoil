@@ -102,8 +102,8 @@ function initializeNodeIfNewToStore(
   });
 }
 
-function initializeNode(store: Store, key: NodeKey): void {
-  initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
+function initializeNode(store: Store, key: NodeKey, trigger: Trigger): void {
+  initializeNodeIfNewToStore(store, store.getState().currentTree, key, trigger);
 }
 
 function cleanUpNode(store: Store, key: NodeKey) {

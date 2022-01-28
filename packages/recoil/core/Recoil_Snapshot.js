@@ -102,7 +102,7 @@ class Snapshot {
     // this snapshot gets counted towards the node's live stores count).
     // TODO Optimize this when cloning snapshots for callbacks
     for (const nodeKey of this._store.getState().knownAtoms) {
-      initializeNode(this._store, nodeKey);
+      initializeNode(this._store, nodeKey, 'get');
       updateRetainCount(this._store, nodeKey, 1);
     }
 
