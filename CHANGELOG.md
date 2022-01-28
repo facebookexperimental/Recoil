@@ -28,6 +28,7 @@
 - Add `.isRetained()` method for Snapshots and check if snapshot is already released when using `.retain()` (#1546)
 
 ### Other Fixes and Optimizations
+
 - Reduce overhead of snapshot cloning
   - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
   - Cache the cloned snapshots from callbacks unless there was a state change. (#1533)
@@ -45,6 +46,7 @@
 - Memoize the results of lazy proxies. (#1548)
 
 ### Breaking Changes
+
 - Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`. (#1509)
 - `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` always report the node `type`. (#1547)
 
