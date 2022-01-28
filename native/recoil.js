@@ -2250,6 +2250,51 @@ function* filterIterable(iterable, predicate) {
 
 var Recoil_filterIterable = filterIterable;
 
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+/**
+ * Return a proxy object based on the provided base and factories objects.
+ * The proxy will include all properties of the base object as-is.
+ * The factories object contains callbacks to obtain the values of the properies
+ * for its keys.
+ *
+ * This is useful for providing users an object where some properties may be
+ * lazily computed only on first access.
+ */
+// $FlowIssue[unclear-type]
+
+function lazyProxy(base, factories) {
+  const proxy = new Proxy(base, {
+    // Compute and cache lazy property if not already done.
+    get: (target, prop) => {
+      if (!(prop in target) && prop in factories) {
+        // $FlowIssue[incompatible-use]
+        target[prop] = factories[prop]();
+      } // $FlowIssue[incompatible-use]
+
+
+      return target[prop];
+    },
+    // This method allows user to iterate keys as normal
+    ownKeys: target => {
+
+      return Object.keys(target);
+    }
+  }); // $FlowIssue[incompatible-return]
+
+  return proxy;
+}
+
+var Recoil_lazyProxy = lazyProxy;
+
 const {
   getNode: getNode$1,
   getNodeMaybe: getNodeMaybe$1,
@@ -2263,6 +2308,8 @@ const {
 const {
   setByAddingToSet: setByAddingToSet$1
 } = Recoil_CopyOnWrite;
+
+
 
 
 
@@ -2402,30 +2449,36 @@ function setNodeValue(store, state, key, newValue) {
 }
 
 function peekNodeInfo(store, state, key) {
-  var _graph$nodeDeps$get, _storeState$nodeToCom, _storeState$nodeToCom2;
-
   const storeState = store.getState();
   const graph = store.getGraph(state.version);
   const type = getNode$1(key).nodeType;
-  const downstreamNodes = Recoil_filterIterable(getDownstreamNodes(store, state, new Set([key])), nodeKey => nodeKey !== key);
-  return {
-    loadable: peekNodeLoadable(store, state, key),
-    isActive: storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
-    isSet: type === 'selector' ? false : state.atomValues.has(key),
-    isModified: state.dirtyAtoms.has(key),
-    type,
+  return Recoil_lazyProxy({
+    type
+  }, {
+    loadable: () => peekNodeLoadable(store, state, key),
+    isActive: () => storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
+    isSet: () => type === 'selector' ? false : state.atomValues.has(key),
+    isModified: () => state.dirtyAtoms.has(key),
     // Report current dependencies.  If the node hasn't been evaluated, then
     // dependencies may be missing based on the current state.
-    deps: recoilValuesForKeys$1((_graph$nodeDeps$get = graph.nodeDeps.get(key)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : []),
+    deps: () => {
+      var _graph$nodeDeps$get;
+
+      return recoilValuesForKeys$1((_graph$nodeDeps$get = graph.nodeDeps.get(key)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : []);
+    },
     // Reports all "current" subscribers.  Evaluating other nodes or
     // previous in-progress async evaluations may introduce new subscribers.
-    subscribers: {
-      nodes: recoilValuesForKeys$1(downstreamNodes),
-      components: Recoil_mapIterable((_storeState$nodeToCom = (_storeState$nodeToCom2 = storeState.nodeToComponentSubscriptions.get(key)) === null || _storeState$nodeToCom2 === void 0 ? void 0 : _storeState$nodeToCom2.values()) !== null && _storeState$nodeToCom !== void 0 ? _storeState$nodeToCom : [], ([name]) => ({
-        name
-      }))
+    subscribers: () => {
+      var _storeState$nodeToCom, _storeState$nodeToCom2;
+
+      return {
+        nodes: recoilValuesForKeys$1(Recoil_filterIterable(getDownstreamNodes(store, state, new Set([key])), nodeKey => nodeKey !== key)),
+        components: Recoil_mapIterable((_storeState$nodeToCom = (_storeState$nodeToCom2 = storeState.nodeToComponentSubscriptions.get(key)) === null || _storeState$nodeToCom2 === void 0 ? void 0 : _storeState$nodeToCom2.values()) !== null && _storeState$nodeToCom !== void 0 ? _storeState$nodeToCom : [], ([name]) => ({
+          name
+        }))
+      };
     }
-  };
+  });
 } // Find all of the recursively dependent nodes
 
 
@@ -5898,44 +5951,6 @@ var invariant_1 = invariant;
 
 
 var Recoil_invariant = invariant_1;
-
-/**
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * @emails oncall+recoil
- * 
- * @format
- */
-/**
- * Return a proxy object based on the provided base and factories objects.
- * The proxy will include all properties of the base object as-is.
- * The factories object contains callbacks to obtain the values of the properies
- * for its keys.
- *
- * This is useful for providing users an object where some properties may be
- * lazily computed only on first access.
- */
-// $FlowIssue[unclear-type]
-
-function lazyProxy(base, factories) {
-  // $FlowIssue[incompatible-return]
-  return new Proxy(base, {
-    get: (target, prop) => {
-      if (prop in factories) {
-        // $FlowIssue[incompatible-use]
-        target[prop] = factories[prop]();
-      } // $FlowIssue[incompatible-use]
-
-
-      return target[prop];
-    }
-  });
-}
-
-var Recoil_lazyProxy = lazyProxy;
 
 const {
   atomicUpdater: atomicUpdater$1

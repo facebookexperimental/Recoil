@@ -41,6 +41,8 @@
   - Call `onSet()` when atoms are initialized with `<RecoilRoot initializeState={...} >` (#1519, #1511)
 - Avoid extra re-renders in some cases when a component uses a different atom/selector. (#825)
 - `<RecoilRoot>` will only call `initializeState()` once during the initial render. (#1372)
+- Lazily compute the properties of `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` results (#1549)
+- Memoize the results of lazy proxies. (#1548)
 
 ### Breaking Changes
 - Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`. (#1509)

@@ -34,6 +34,8 @@ const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
 
 const gkx = require('recoil-shared/util/Recoil_gkx');
 
+const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
+
 const mapIterable = require('recoil-shared/util/Recoil_mapIterable'); // flowlint-next-line unclear-type:off
 
 
