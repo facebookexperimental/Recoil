@@ -2282,10 +2282,8 @@
       // Compute and cache lazy property if not already done.
       get: (target, prop) => {
         if (!(prop in target) && prop in factories) {
-          // $FlowIssue[incompatible-use]
           target[prop] = factories[prop]();
-        } // $FlowIssue[incompatible-use]
-
+        }
 
         return target[prop];
       },
@@ -2399,8 +2397,8 @@
     });
   }
 
-  function initializeNode(store, key) {
-    initializeNodeIfNewToStore(store, store.getState().currentTree, key, 'get');
+  function initializeNode(store, key, trigger) {
+    initializeNodeIfNewToStore(store, store.getState().currentTree, key, trigger);
   }
 
   function cleanUpNode(store, key) {
@@ -2541,14 +2539,14 @@
    *    1) earlier
    *    2) in sync with React updates in the same batch
    *    3) before transaction observers instead of after.
-   * concurrent: Is the current mode compatible with Concurrent Mode (i.e. useTransition())
+   * concurrent: Is the current mode compatible with Concurrent Mode and useTransition()
    */
   function reactMode() {
     // NOTE: This mode is currently broken with some Suspense cases
     // see Recoil_selector-test.js
-    if (Recoil_gkx('recoil_concurrent_support')) {
+    if (Recoil_gkx('recoil_transition_support')) {
       return {
-        mode: 'CONCURRENT_SUPPORT',
+        mode: 'TRANSITION_SUPPORT',
         early: true,
         concurrent: true
       };
@@ -3566,7 +3564,7 @@ Recoil Snapshots only last for the duration of the callback they are provided to
 
   const release = snapshot.retain();
   try {
-    await useTheSnapshotAsynchronously(snapshot);
+    await doSomethingWithSnapshot(snapshot);
   } finally {
     release();
   }
@@ -3671,7 +3669,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       // TODO Optimize this when cloning snapshots for callbacks
 
       for (const nodeKey of this._store.getState().knownAtoms) {
-        initializeNode$1(this._store, nodeKey);
+        initializeNode$1(this._store, nodeKey, 'get');
         updateRetainCount$1(this._store, nodeKey, 1);
       }
 
@@ -4416,7 +4414,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       const store = storeRef.current;
 
       for (const atomKey of new Set(store.getState().knownAtoms)) {
-        initializeNode$2(store, atomKey);
+        initializeNode$2(store, atomKey, 'get');
       }
 
       return () => {
@@ -4889,6 +4887,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
 
 
+
+
   function handleLoadable(loadable, recoilValue, storeRef) {
     // We can't just throw the promise we are waiting on to Suspense.  If the
     // upstream dependencies change it may produce a state in which the component
@@ -5179,7 +5179,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     return loadable;
   }
 
-  function useRecoilValueLoadable_CONCURRENT_SUPPORT(recoilValue) {
+  function useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue) {
     const storeRef = useStoreRef$2();
     const componentName = Recoil_useComponentName(); // Accessors to get the current state
 
@@ -5320,7 +5320,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     }
 
     return {
-      CONCURRENT_SUPPORT: useRecoilValueLoadable_CONCURRENT_SUPPORT,
+      TRANSITION_SUPPORT: useRecoilValueLoadable_TRANSITION_SUPPORT,
       SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
       MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
       LEGACY: useRecoilValueLoadable_LEGACY
@@ -5414,6 +5414,45 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       });
     };
   }
+  /**
+   * Experimental variants of hooks with support for useTransition()
+   */
+
+
+  function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE(recoilValue) {
+    {
+      validateRecoilValue(recoilValue, 'useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE');
+
+      if (!reactMode$3().early) {
+        Recoil_recoverableViolation('Attepmt to use a hook with UNSTABLE_TRANSITION_SUPPORT in a rendering mode incompatible with concurrent rendering.  Try enabling the recoil_sync_external_store or recoil_transition_support GKs.');
+      }
+    }
+
+    if (Recoil_gkx('recoil_memory_managament_2020')) {
+      // eslint-disable-next-line fb-www/react-hooks
+      Recoil_useRetain(recoilValue);
+    }
+
+    return useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue);
+  }
+
+  function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(recoilValue) {
+    {
+      validateRecoilValue(recoilValue, 'useRecoilValue_TRANSITION_SUPPORT_UNSTABLE');
+    }
+
+    const storeRef = useStoreRef$2();
+    const loadable = useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE(recoilValue);
+    return handleLoadable(loadable, recoilValue, storeRef);
+  }
+
+  function useRecoilState_TRANSITION_SUPPORT_UNSTABLE(recoilState) {
+    {
+      validateRecoilValue(recoilState, 'useRecoilState_TRANSITION_SUPPORT_UNSTABLE');
+    }
+
+    return [useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(recoilState), useSetRecoilState(recoilState)];
+  }
 
   var Recoil_Hooks = {
     recoilComponentGetRecoilValueCount_FOR_TESTING,
@@ -5424,7 +5463,10 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     useRecoilValueLoadable,
     useResetRecoilState,
     useSetRecoilState,
-    useSetUnvalidatedAtomValues
+    useSetUnvalidatedAtomValues,
+    useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
+    useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
+    useRecoilState_TRANSITION_SUPPORT_UNSTABLE
   };
 
   /**
@@ -5876,7 +5918,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
         } else {
           // Initialize atom and run effects if not initialized yet
-          initializeNode$3(this._store, recoilState.key);
+          initializeNode$3(this._store, recoilState.key, 'set');
 
           this._changes.set(recoilState.key, valueOrUpdater);
         }
@@ -8773,9 +8815,12 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
   const {
     useRecoilState: useRecoilState$1,
+    useRecoilState_TRANSITION_SUPPORT_UNSTABLE: useRecoilState_TRANSITION_SUPPORT_UNSTABLE$1,
     useRecoilStateLoadable: useRecoilStateLoadable$1,
     useRecoilValue: useRecoilValue$1,
+    useRecoilValue_TRANSITION_SUPPORT_UNSTABLE: useRecoilValue_TRANSITION_SUPPORT_UNSTABLE$1,
     useRecoilValueLoadable: useRecoilValueLoadable$1,
+    useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE: useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE$1,
     useResetRecoilState: useResetRecoilState$1,
     useSetRecoilState: useSetRecoilState$1
   } = Recoil_Hooks;
@@ -8855,6 +8900,9 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     useResetRecoilState: useResetRecoilState$1,
     useGetRecoilValueInfo_UNSTABLE: Recoil_useGetRecoilValueInfo,
     useRecoilRefresher_UNSTABLE: Recoil_useRecoilRefresher,
+    useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE: useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE$1,
+    useRecoilValue_TRANSITION_SUPPORT_UNSTABLE: useRecoilValue_TRANSITION_SUPPORT_UNSTABLE$1,
+    useRecoilState_TRANSITION_SUPPORT_UNSTABLE: useRecoilState_TRANSITION_SUPPORT_UNSTABLE$1,
     // Hooks for complex operations
     useRecoilCallback: useRecoilCallback$1,
     useRecoilTransaction_UNSTABLE: Recoil_useRecoilTransaction,
@@ -8893,14 +8941,17 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_index_24 = Recoil_index.useResetRecoilState;
   var Recoil_index_25 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
   var Recoil_index_26 = Recoil_index.useRecoilRefresher_UNSTABLE;
-  var Recoil_index_27 = Recoil_index.useRecoilCallback;
-  var Recoil_index_28 = Recoil_index.useRecoilTransaction_UNSTABLE;
-  var Recoil_index_29 = Recoil_index.useGotoRecoilSnapshot;
-  var Recoil_index_30 = Recoil_index.useRecoilSnapshot;
-  var Recoil_index_31 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
-  var Recoil_index_32 = Recoil_index.snapshot_UNSTABLE;
-  var Recoil_index_33 = Recoil_index.useRetain;
-  var Recoil_index_34 = Recoil_index.retentionZone;
+  var Recoil_index_27 = Recoil_index.useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE;
+  var Recoil_index_28 = Recoil_index.useRecoilValue_TRANSITION_SUPPORT_UNSTABLE;
+  var Recoil_index_29 = Recoil_index.useRecoilState_TRANSITION_SUPPORT_UNSTABLE;
+  var Recoil_index_30 = Recoil_index.useRecoilCallback;
+  var Recoil_index_31 = Recoil_index.useRecoilTransaction_UNSTABLE;
+  var Recoil_index_32 = Recoil_index.useGotoRecoilSnapshot;
+  var Recoil_index_33 = Recoil_index.useRecoilSnapshot;
+  var Recoil_index_34 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
+  var Recoil_index_35 = Recoil_index.snapshot_UNSTABLE;
+  var Recoil_index_36 = Recoil_index.useRetain;
+  var Recoil_index_37 = Recoil_index.retentionZone;
 
   exports.DefaultValue = Recoil_index_1;
   exports.RecoilLoadable = Recoil_index_3;
@@ -8913,25 +8964,28 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   exports.isRecoilValue = Recoil_index_2;
   exports.noWait = Recoil_index_14;
   exports.readOnlySelector = Recoil_index_13;
-  exports.retentionZone = Recoil_index_34;
+  exports.retentionZone = Recoil_index_37;
   exports.selector = Recoil_index_8;
   exports.selectorFamily = Recoil_index_10;
-  exports.snapshot_UNSTABLE = Recoil_index_32;
+  exports.snapshot_UNSTABLE = Recoil_index_35;
   exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_25;
-  exports.useGotoRecoilSnapshot = Recoil_index_29;
+  exports.useGotoRecoilSnapshot = Recoil_index_32;
   exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = Recoil_index_6;
-  exports.useRecoilCallback = Recoil_index_27;
+  exports.useRecoilCallback = Recoil_index_30;
   exports.useRecoilRefresher_UNSTABLE = Recoil_index_26;
-  exports.useRecoilSnapshot = Recoil_index_30;
+  exports.useRecoilSnapshot = Recoil_index_33;
   exports.useRecoilState = Recoil_index_21;
   exports.useRecoilStateLoadable = Recoil_index_22;
+  exports.useRecoilState_TRANSITION_SUPPORT_UNSTABLE = Recoil_index_29;
   exports.useRecoilStoreID = Recoil_index_5;
-  exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_31;
-  exports.useRecoilTransaction_UNSTABLE = Recoil_index_28;
+  exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_34;
+  exports.useRecoilTransaction_UNSTABLE = Recoil_index_31;
   exports.useRecoilValue = Recoil_index_19;
   exports.useRecoilValueLoadable = Recoil_index_20;
+  exports.useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE = Recoil_index_27;
+  exports.useRecoilValue_TRANSITION_SUPPORT_UNSTABLE = Recoil_index_28;
   exports.useResetRecoilState = Recoil_index_24;
-  exports.useRetain = Recoil_index_33;
+  exports.useRetain = Recoil_index_36;
   exports.useSetRecoilState = Recoil_index_23;
   exports.waitForAll = Recoil_index_17;
   exports.waitForAllSettled = Recoil_index_18;

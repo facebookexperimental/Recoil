@@ -69,6 +69,8 @@ const expectationViolation = require('recoil-shared/util/Recoil_expectationViola
 
 const gkx = require('recoil-shared/util/Recoil_gkx');
 
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
+
 const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 
 declare function handleLoadable<T>(loadable: Loadable<T>, recoilValue: RecoilValue<T>, storeRef: any): T;
@@ -94,7 +96,7 @@ const recoilComponentGetRecoilValueCount_FOR_TESTING = {
 };
 declare function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(recoilValue: RecoilValue<T>): Loadable<T>;
 declare function useRecoilValueLoadable_MUTABLE_SOURCE<T>(recoilValue: RecoilValue<T>): Loadable<T>;
-declare function useRecoilValueLoadable_CONCURRENT_SUPPORT<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+declare function useRecoilValueLoadable_TRANSITION_SUPPORT<T>(recoilValue: RecoilValue<T>): Loadable<T>;
 declare function useRecoilValueLoadable_LEGACY<T>(recoilValue: RecoilValue<T>): Loadable<T>;
 /**
   Like useRecoilValue(), but either returns the value if available or
@@ -138,6 +140,13 @@ declare function useRecoilState<T>(recoilState: RecoilState<T>): [T, SetterOrUpd
 
 declare function useRecoilStateLoadable<T>(recoilState: RecoilState<T>): [Loadable<T>, SetterOrUpdater<T>];
 declare function useSetUnvalidatedAtomValues(): (values: Map<NodeKey, mixed>, transactionMetadata?: {...}) => void;
+/**
+ * Experimental variants of hooks with support for useTransition()
+ */
+
+declare function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+declare function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE<T>(recoilValue: RecoilValue<T>): T;
+declare function useRecoilState_TRANSITION_SUPPORT_UNSTABLE<T>(recoilState: RecoilState<T>): [T, SetterOrUpdater<T>];
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
   useRecoilInterface: useRecoilInterface_DEPRECATED,
@@ -147,5 +156,8 @@ module.exports = {
   useRecoilValueLoadable,
   useResetRecoilState,
   useSetRecoilState,
-  useSetUnvalidatedAtomValues
+  useSetUnvalidatedAtomValues,
+  useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE
 };

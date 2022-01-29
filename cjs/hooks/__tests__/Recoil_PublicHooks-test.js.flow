@@ -259,7 +259,7 @@ describe('Render counts', () => {
     expect(Component).toHaveBeenCalledTimes((baseCalls + 1) * sm);
     act(() => increment());
 
-    if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'CONCURRENT_SUPPORT') {
+    if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'TRANSITION_SUPPORT') {
       baseCalls += 1;
     }
 
@@ -337,7 +337,7 @@ describe('Component Subscriptions', () => {
     expect(container.textContent).toEqual('1');
     expect(Component).toHaveBeenCalledTimes((baseCalls + 2) * sm);
 
-    if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'CONCURRENT_SUPPORT') {
+    if (reactMode().mode === 'LEGACY' && !gks.includes('recoil_suppress_rerender_in_callback') || reactMode().mode === 'TRANSITION_SUPPORT') {
       baseCalls += 1;
     }
 

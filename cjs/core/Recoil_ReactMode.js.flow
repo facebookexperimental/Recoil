@@ -25,14 +25,14 @@ const useMutableSource: <StoreState, T>(MutableSource, () => T, (StoreState, () 
 const useSyncExternalStore: <T>(subscribe: (() => void) => () => void, getSnapshot: () => T, getServerSnapshot?: () => T) => T = // flowlint-next-line unclear-type:off
 (React: any).useSyncExternalStore ?? // flowlint-next-line unclear-type:off
 (React: any).unstable_useSyncExternalStore;
-type ReactMode = 'CONCURRENT_SUPPORT' | 'SYNC_EXTERNAL_STORE' | 'MUTABLE_SOURCE' | 'LEGACY';
+type ReactMode = 'TRANSITION_SUPPORT' | 'SYNC_EXTERNAL_STORE' | 'MUTABLE_SOURCE' | 'LEGACY';
 /**
  * mode: The React API and approach to use for syncing state with React
  * early: Re-renders from Recoil updates occur:
  *    1) earlier
  *    2) in sync with React updates in the same batch
  *    3) before transaction observers instead of after.
- * concurrent: Is the current mode compatible with Concurrent Mode (i.e. useTransition())
+ * concurrent: Is the current mode compatible with Concurrent Mode and useTransition()
  */
 
 declare function reactMode(): {

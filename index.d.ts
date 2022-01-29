@@ -69,6 +69,7 @@
   map(cb: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
   asyncMap(cb: (mutableSnapshot: MutableSnapshot) => Promise<void>): Promise<Snapshot>;
   retain(): () => void;
+  isRetained(): boolean;
  }
 
  export class MutableSnapshot extends Snapshot {
@@ -238,6 +239,13 @@
   * Returns current info about an atom
   */
  export function useGetRecoilValueInfo_UNSTABLE(): <T>(recoilValue: RecoilValue<T>) => RecoilStateInfo<T>;
+
+/**
+ * Experimental version of hooks for useTransition() support
+ */
+ export function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE<T>(recoilValue: RecoilValue<T>): T;
+ export function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+ export function useRecoilState_TRANSITION_SUPPORT_UNSTABLE<T>(recoilState: RecoilState<T>): [T, SetterOrUpdater<T>];
 
  /**
   * Returns a function that will run the callback that was passed when
