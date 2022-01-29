@@ -42,7 +42,7 @@ const useSyncExternalStore: <T>(
   (React: any).unstable_useSyncExternalStore;
 
 type ReactMode =
-  | 'CONCURRENT_SUPPORT'
+  | 'TRANSITION_SUPPORT'
   | 'SYNC_EXTERNAL_STORE'
   | 'MUTABLE_SOURCE'
   | 'LEGACY';
@@ -53,13 +53,13 @@ type ReactMode =
  *    1) earlier
  *    2) in sync with React updates in the same batch
  *    3) before transaction observers instead of after.
- * concurrent: Is the current mode compatible with Concurrent Mode (i.e. useTransition())
+ * concurrent: Is the current mode compatible with Concurrent Mode and useTransition()
  */
 function reactMode(): {mode: ReactMode, early: boolean, concurrent: boolean} {
   // NOTE: This mode is currently broken with some Suspense cases
   // see Recoil_selector-test.js
-  if (gkx('recoil_concurrent_support')) {
-    return {mode: 'CONCURRENT_SUPPORT', early: true, concurrent: true};
+  if (gkx('recoil_transition_support')) {
+    return {mode: 'TRANSITION_SUPPORT', early: true, concurrent: true};
   }
 
   if (gkx('recoil_sync_external_store') && useSyncExternalStore != null) {

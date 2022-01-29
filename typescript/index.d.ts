@@ -240,6 +240,13 @@
   */
  export function useGetRecoilValueInfo_UNSTABLE(): <T>(recoilValue: RecoilValue<T>) => RecoilStateInfo<T>;
 
+/**
+ * Experimental version of hooks for useTransition() support
+ */
+ export function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE<T>(recoilValue: RecoilValue<T>): T;
+ export function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE<T>(recoilValue: RecoilValue<T>): Loadable<T>;
+ export function useRecoilState_TRANSITION_SUPPORT_UNSTABLE<T>(recoilState: RecoilState<T>): [T, SetterOrUpdater<T>];
+
  /**
   * Returns a function that will run the callback that was passed when
   * calling this hook. Useful for accessing Recoil state in response to

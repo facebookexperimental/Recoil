@@ -4,23 +4,17 @@
 
 **_Add new changes here as they land_**
 
-### Pending
-
-- Memory management
-- useTransition() compatibility for OSS
-
 ## 0.6 ()
 
 - React 18
   - Leverage new React 18 APIs for improved safety and optimizations. (#1488)
   - Fixes for `<StrictMode>` (#1473, #1444, #1509).
-  - `useTransition()` is not yet supported for open source React.
+  - Experimental support for `useTransition()` using hooks with `_TRANSITION_SUPPORT_UNSTABLE` suffix. (#1572, #1560)
 - Recoil updates now re-render earlier:
   - Recoil and React state changes from the same batch now stay in sync. (#1076)
   - Renders now occur before transaction observers instead of after.
 
 ### New Features
-
 - Add `refresh()` to the `useRecoilCallback()` interface for refreshing selector caches. (#1413)
 - Callbacks from selector's `getCallback()` can now mutate, refresh, and transact Recoil state, in addition to reading it, for parity with `useRecoilCallback()`. (#1498)
 - Recoil StoreID's for `<RecoilRoot>` and `Snapshot` stores accessible via `useRecoilStoreID()` hook (#1417) or `storeID` parameter for atom effects (#1414).

@@ -30,6 +30,9 @@
   useRecoilTransaction_UNSTABLE,
   useRecoilRefresher_UNSTABLE,
   useRecoilStoreID,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
 } from 'recoil';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -238,6 +241,22 @@ useGetRecoilValueInfo_UNSTABLE(myAtom); // $ExpectError
 useGetRecoilValueInfo_UNSTABLE()(myAtom); // $ExpectType RecoilStateInfo<number>
 useGetRecoilValueInfo_UNSTABLE()(mySelector2); // $ExpectType RecoilStateInfo<string>
 useGetRecoilValueInfo_UNSTABLE()({}); // $ExpectError
+
+useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(roAtom); // $ExpectType string
+useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(waAtom); // $ExpectType string
+useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(myAtom); // $ExpectType number
+useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(mySelector1); // $ExpectType number
+useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(readOnlySelectorSel); // $ExpectType number
+useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(writeableSelector); // $ExpectType number
+useRecoilValue_TRANSITION_SUPPORT_UNSTABLE({}); // $ExpectError
+useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE(myAtom); // $ExpectType Loadable<number>
+useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE(readOnlySelectorSel); // $ExpectType Loadable<number>
+useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE(writeableSelector); // $ExpectType Loadable<number>
+useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE({}); // $ExpectError
+useRecoilState_TRANSITION_SUPPORT_UNSTABLE(myAtom); // $ExpectType [number, SetterOrUpdater<number>]
+useRecoilState_TRANSITION_SUPPORT_UNSTABLE(writeableSelector); // $ExpectType [number, SetterOrUpdater<number>]
+useRecoilState_TRANSITION_SUPPORT_UNSTABLE(readOnlySelectorSel); // $ExpectError
+useRecoilState_TRANSITION_SUPPORT_UNSTABLE({}); // $ExpectError
 
 useRecoilCallback(({ snapshot, set, reset, refresh, gotoSnapshot, transact_UNSTABLE }) => async () => {
   snapshot; // $ExpectType Snapshot
