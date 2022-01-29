@@ -61,7 +61,7 @@ Recoil Snapshots only last for the duration of the callback they are provided to
 
   const release = snapshot.retain();
   try {
-    await useTheSnapshotAsynchronously(snapshot);
+    await doSomethingWithSnapshot(snapshot);
   } finally {
     release();
   }

@@ -260,6 +260,7 @@ useRecoilCallback(({ snapshot, set, reset, refresh, gotoSnapshot, transact_UNSTA
 
   const release = snapshot.retain(); // $ExpectType () => void
   release(); // $ExpectType void
+  snapshot.isRetained(); // $ExpectType boolean
 
   transact_UNSTABLE(({get, set, reset}) => {
     const x: number = get(myAtom); // eslint-disable-line @typescript-eslint/no-unused-vars

@@ -34,7 +34,6 @@
 - Fix transitive selector refresh for some cases (#1409)
 - Fix some corner cases with async selectors and multiple stores (#1568)
 - Atom Effects
-  - Rename option from `effects_UNSTABLE` to just `effects` as the interface is mostly stabilizing (#1520)
   - Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466)
   - Atom effects are cleaned up when initialized by a Snapshot which is released. (#1511, #1532)
   - Unsubscribe `onSet()` handlers in atom effects when atoms are cleaned up. (#1509)
@@ -46,6 +45,7 @@
 - Memoize the results of lazy proxies. (#1548)
 
 ### Breaking Changes
+- Rename atom effects from `effects_UNSTABLE` to just `effects`, as the interface is mostly stabilizing. (#1520)
 - Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`. (#1509)
 - `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` always report the node `type`. (#1547)
 
