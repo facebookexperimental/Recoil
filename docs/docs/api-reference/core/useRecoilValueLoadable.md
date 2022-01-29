@@ -3,9 +3,11 @@ title: useRecoilValueLoadable(state)
 sidebar_label: useRecoilValueLoadable()
 ---
 
-This hook is intended to be used for reading the value of asynchronous selectors. This hook will implicitly subscribe the component to the given state.
+This hook is intended to be used for reading the value of asynchronous selectors. This hook will subscribe the component to the given state.
 
-Unlike [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue), this hook will not throw an `Error` or `Promise` when reading from an asynchronous selector (for the purpose of working alongside [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html)). Instead, this hook returns a [`Loadable`](/docs/api-reference/core/Loadable) object.
+Unlike [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue), this hook will not throw an `Error` or `Promise` when reading from an asynchronous selector (for the purpose of using  [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html)). Instead, this hook returns a [`Loadable`](/docs/api-reference/core/Loadable) object.
+
+Use `useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE()` for experimental support for [React 18 transitions](/blog/2022/01/28/0.6.0-release#concurrent-rendering-and-transitions) based on mutating Recoil state.
 
 ---
 

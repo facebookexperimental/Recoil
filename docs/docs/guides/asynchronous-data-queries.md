@@ -448,3 +448,34 @@ function RefreshUserInfo({userID}) {
 Note that atoms do not *currently* support accepting a `Promise` as the new value.  So, you cannot currently put the atom in a pending state for React Suspense while the query refresh is pending, if that is your desired behavior.  However, you could store an object which manually encodes the current loading status as well as the actual results to explicitly handle this.
 
 Also consider [atom effects](/docs/guides/atom-effects) for query synchronization of atoms.
+
+### Retry query from error message
+
+Here's a fun little example to find and retry queries based on errors thrown and caught in an `<ErrorBoundary>`
+
+```jsx
+function QueryErrorMessage({error}) {
+  const snapshot = useRecoilSnapshot();
+  const selectors = useMemo(() => {
+    const ret = [];
+    for (const node of snapshot.getNodes_UNSTABLE({isInitialized: true})) {
+      const {loadable, type} = snapshot.getInfo_UNSTABLE(node);
+      if (loadable != null && loadable.state === 'hasError' && loadable.contents === error) {
+        ret.push(node);
+      }
+    }
+  }, [snapshot, error]);
+  const retry = useRecoilCallback(({refresh}) =>
+    () => selectors.forEach(refresh),
+    [selectors],
+  );
+
+  return selectors.length > 0 && (
+    <div>
+      Error: {error.toString()}
+      Query: {selectors[0].key}
+      <button onClick={retry}>Retry</button>
+    </div>
+  );
+}
+```

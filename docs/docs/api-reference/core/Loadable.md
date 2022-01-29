@@ -38,10 +38,10 @@ The `RecoilLoadable` interface can be imported to create your own `Loadable` obj
 
 ```jsx
 interface RecoilLoadable {
-  function of<T>(T | Promise<T>): Loadable<T>;
+  function of<T>(T | Promise<T>, Loadable<T>): Loadable<T>;
   function error<T>(mixed): Loadable<T>;
-  function all(Array<Loadable<mixed>>): Loadable<Array<mixed>>;
-  function all({[string]: Loadable<mixed>}): Loadable<{[string]: mixed}>;
+  function all(Array<mixed | Loadable<mixed> | Promise<mixed>>): Loadable<Array<mixed>>;
+  function all({[string]: mixed | Loadable<mixed> | Promise<mixed>}): Loadable<{[string]: mixed}>;
   function isLoadable(mixed): boolean;
 }
 ```
@@ -51,8 +51,6 @@ interface RecoilLoadable {
 ```jsx
 RecoilLoadable.of(123);
 
-RecoilLoadable.of(Promise.resolve(123));
-
 RecoilLoadable.error(new Error('ERROR'));
 
 RecoilLoadable.all([
@@ -60,4 +58,34 @@ RecoilLoadable.all([
   RecoilLoadable.of(10),
   RecoilLoadable.of(100),
 ]).map(([a, b, c]) => a+b+c);
+```
+
+Loadables may represent asynchronous values:
+
+```jsx
+// Asynchronously resolves to 123
+RecoilLoadable.of(Promise.resolve(123));
+```
+
+Similar to `Promise.resolve()`, `RecoilLoadable.of()` can accept literal values as well as Loadables or Promises, which will be unpacked:
+
+```jsx
+// All resolve to 'x'
+RecoilLoadable.of('x');
+RecoilLoadable.of(RecoilLoadable.of('x'));
+RecoilLoadable.of(Promise.resolve('x'));
+```
+
+Likewise, similar to `Promise.all()`, `ReocilLoadable.all()` can accept arrays of Loadables, Promises, or literal values:
+
+```jsx
+// Resolves to [1, 2, 3]
+RecoilLoadable.all([1, RecoilLoadable.of(2), Promise.resolve(3)]);
+
+// Resolves to {value: 1, loadable: 2, promise: 3}
+RecoilLoadable.all({
+  value: 1,
+  loadable: RecoilLoadable.of(2),
+  promise: Promise.resolve(3),
+});
 ```

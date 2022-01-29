@@ -195,3 +195,20 @@ test('Test multipliedState', () => {
   expect(testSnapshot.getLoadable(multipliedState).valueOrThrow()).toBe(100);
 });
 ```
+
+### Clearing all selector caches
+
+```jsx
+const clearSelectorCachesState = selector({
+  key: 'ClearSelectorCaches',
+  get: ({getCallback}) => getCallback(({snapshot, refresh}) => () => {
+    for (const node of snapshot.getNodes_UNSTABLE()) {
+      refresh(node);
+    }
+  }),
+});
+
+const clearSelectorCaches = testingSnapshot.getLoadable(clearSelectorCachesState).getValue();
+
+clearSelectorCaches();
+```

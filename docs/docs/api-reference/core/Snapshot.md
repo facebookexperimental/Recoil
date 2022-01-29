@@ -7,6 +7,9 @@ A `Snapshot` object represents an immutable snapshot of the state of Recoil [ato
 
 ```jsx
 class Snapshot {
+  retain(): () => void;
+  isRetained(): boolean;
+
   // Accessors to inspect snapshot state
   getLoadable: <T>(RecoilValue<T>) => Loadable<T>;
   getPromise: <T>(RecoilValue<T>) => Promise<T>;
@@ -32,13 +35,15 @@ function snapshot_UNSTABLE(initializeState?: (MutableSnapshot => void)): Snapsho
 
 Recoil provides the following hooks for obtaining snapshots based on the current state:
 
-- [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback) - Asynchronous access to a Snapshot
-- [`useRecoilSnapshot()`](/docs/api-reference/core/useRecoilSnapshot) - Synchronous access to a Snapshot
-- [`useRecoilTransactionObserver_UNSTABLE()`](/docs/api-reference/core/useRecoilTransactionObserver) - Subscribe to Snapshots for all state changes
+- [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback) - Asynchronous access to a Snapshot.
+- [`useRecoilSnapshot()`](/docs/api-reference/core/useRecoilSnapshot) - Synchronous access to a Snapshot.
+  - Using this hook will subscribe your component to re-render for *all* Recoil state changes.
+- [`useRecoilTransactionObserver_UNSTABLE()`](/docs/api-reference/core/useRecoilTransactionObserver) - Subscribe to Snapshots for all state changes.
 
-### Building a Snapshot
 
-You can also build a fresh snapshot using the `snapshot_UNSTABLE()` factory, which accepts an optional initializer function.  This can be used for [testing](/docs/guides/testing) or evaluating selectors outside of a React context.
+### Creating a fresh Snapshot
+
+You can also build a fresh snapshot using the `snapshot_UNSTABLE()` factory.  This can be used for [testing](/docs/guides/testing) or evaluating selectors outside of a React context.  All atoms in the snapshot will start in their default state, however atom effects will still be run and can initialize atoms to dynamic values.  `snapshot_UNSTABLE()` also accepts an optional callback to initialize state, though atom effect initializations takes precedence.  Also note that selector caches are shared across Recoil roots and snapshots, though they can be cleared using [callbacks](/docs/api-reference/core/selector#returning-objects-with-callbacks).
 
 ## Reading Snapshots
 
@@ -74,6 +79,24 @@ Notice that `set()` and `reset()` have the same signature as callbacks provided 
 The following hook can be used for updating the current Recoil state to match the provided `Snapshot`:
 - [`useGotoRecoilSnapshot()`](/docs/api-reference/core/useGotoRecoilSnapshot) - Update current state to match a Snapshot
 
+## Asynchronous use of Snapshots
+
+Snapshots are only retained for the duration of the callback that obtained them.  To use them after that they should be explicitly retained using `retain()`.
+
+From a callback:
+```jsx
+useRecoilCallback(({snapshot}) => async () => {
+  const release = snapshot.retain();
+  try {
+    await onSomething();
+    doSomethingWithSnapshot(snapshot);
+  } finally {
+    release();
+  }
+});
+```
+
+Note that an asynchronous selector must be actively used by some `<RecoilRoot>` or `Snapshot` in order to ensure it is not canceled.  So, if you are only accessing an asynchronous selector via snapshots, they must be retained in order to guarantee you can observe the resolved value.
 
 ## Developer Tools
 
@@ -81,7 +104,7 @@ Snapshots provide some methods useful for [building developer tools](/docs/guide
 
 ### Snapshot IDs
 
-Each committed state or mutated Snapshot has a unique opaque version ID that can be obtained via `getID()`. This can be used to detect when we have gone back to a previous snapshot via `useGotoRecoilSnapshot()`.
+Each committed state or mutated Snapshot has a unique opaque version ID that can be obtained via `getID()`. This can be used to detect when we have gone back to a previous snapshot via [`useGotoRecoilSnapshot()`](/docs/api-reference/core/useGotoRecoilSnapshot).
 
 ### Enumerate Atoms and Selectors
 
@@ -104,7 +127,7 @@ This is similar to the [`useGetRecoilValueInfo_UNSTABLE()`](/docs/api-reference/
 
 ## State Initialization
 
-The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component and `snapshot_UNSTABLE()` factory take an optional `initializeState` prop for initializing the state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For per-atom initialization/persistence and ease of working with dynamic atoms, consider [atom effects](/docs/guides/atom-effects)
+The [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) component and `snapshot_UNSTABLE()` factory take an optional `initializeState` prop for initializing the state via a `MutableSnapshot`.  This can be helpful for loading persisted state when you know all atoms in advance and is compatible with server-side rendering where the state should be setup synchronously with the initial render.  For per-atom initialization/persistence and ease of working with dynamic atoms, consider [atom effects](/docs/guides/atom-effects).
 
 ```jsx
 function MyApp() {

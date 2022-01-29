@@ -3,13 +3,14 @@ title: Atom Effects
 sidebar_label: Atom Effects
 ---
 
-Atom Effects are a new experimental API for managing side-effects and initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are defined as part of the atom definition, so each atom can specify and compose their own policies.  This API is still evolving, and thus marked as `_UNSTABLE`.
+Atom effects are an API for managing side-effects and synchronizing or initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are similar to [React effects](https://reactjs.org/docs/hooks-effect.html), but are defined as part of the atom definition, so each atom can specify and compose their own policies.
 
 An *atom effect* is a *function* with the following definition.
 
 ```jsx
 type AtomEffect<T> = ({
   node: RecoilState<T>, // A reference to the atom itself
+  storeID: StoreID, // ID for the <RecoilRoot> or Snapshot store associated with this effect.
   trigger: 'get' | 'set', // The action which triggered initialization of the atom
 
   // Callbacks to set or reset the value of the atom.
@@ -36,13 +37,13 @@ type AtomEffect<T> = ({
 }) => void | () => void; // Optionally return a cleanup handler
 ```
 
-Atom effects are attached to [atoms](/docs/api-reference/core/atom) via the `effects_UNSTABLE` option.  Each atom can reference an array of these atom effect functions which are called in priority order when the atom is initialized.  Atoms are initialized when they are used for the first time within a `<RecoilRoot>`, but may be re-initialized again if they were unused and cleaned up.  The atom effect function may return an optional cleanup handler to manage cleanup side-effects.
+Atom effects are attached to [atoms](/docs/api-reference/core/atom) via the `effects` option.  Each atom can reference an array of these atom effect functions which are called in priority order when the atom is initialized.  Atoms are initialized when they are used for the first time within a `<RecoilRoot>`, but may be re-initialized again if they were unused and cleaned up.  The atom effect function may return an optional cleanup handler to manage cleanup side-effects.
 
 ```jsx
 const myState = atom({
   key: 'MyKey',
   default: null,
-  effects_UNSTABLE: [
+  effects: [
     () => {
       ...effect 1...
       return () => ...cleanup effect 1...;
@@ -58,7 +59,7 @@ const myState = atom({
 const myStateFamily = atomFamily({
   key: 'MyKey',
   default: null,
-  effects_UNSTABLE: param => [
+  effects: param => [
     () => {
       ...effect 1 using param...
       return () => ...cleanup effect 1...;
@@ -72,7 +73,7 @@ See [`useGetRecoilValueInfo()`](/docs/api-reference/core/useGetRecoilValueInfo) 
 
 ### Compared to React Effects
 
-Atom effects could mostly be implemented via React `useEffect()`.  However, the set of atoms are created outside of a React context, and it can be difficult to manage effects from within React components, particularly for dynamically created atoms.  They also cannot be used to initialize the initial atom value or be used with server-side rendering.  Using atom effects also co-locates the effects with the atom definitions.
+Atom effects could mostly be implemented via React [`useEffect()`](https://reactjs.org/docs/hooks-reference.html#useeffect).  However, the set of atoms are created outside of a React context, and it can be difficult to manage effects from within React components, particularly for dynamically created atoms.  They also cannot be used to initialize the initial atom value or be used with server-side rendering.  Using atom effects also co-locates the effects with the atom definitions.
 
 ```jsx
 const myState = atom({key: 'Key', default: null});
@@ -110,7 +111,7 @@ A simple example of using atom effects are for logging a specific atom's state c
 const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: null,
-  effects_UNSTABLE: [
+  effects: [
     ({onSet}) => {
       onSet(newID => {
         console.debug("Current user ID:", newID);
@@ -144,7 +145,7 @@ const historyEffect = name => ({setSelf, onSet}) => {
 const userInfoState = atomFamily({
   key: 'UserInfo',
   default: null,
-  effects_UNSTABLE: userID => [
+  effects: userID => [
     historyEffect(`${userID} user info`),
   ],
 });
@@ -175,7 +176,7 @@ const syncStorageEffect = userID => ({setSelf, trigger}) => {
 const userInfoState = atomFamily({
   key: 'UserInfo',
   default: null,
-  effects_UNSTABLE: userID => [
+  effects: userID => [
     historyEffect(`${userID} user info`),
     syncStorageEffect(userID),
   ],
@@ -233,7 +234,7 @@ const localStorageEffect = key => ({setSelf, onSet}) => {
 const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
-  effects_UNSTABLE: [
+  effects: [
     localStorageEffect('current_user'),
   ]
 });
@@ -270,7 +271,7 @@ const localForageEffect = key => ({setSelf, onSet}) => {
 const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
-  effects_UNSTABLE: [
+  effects: [
     localForageEffect('current_user'),
   ]
 });
@@ -308,7 +309,7 @@ const localForageEffect = key => ({setSelf, onSet, trigger}) => {
 const currentUserIDState = atom({
   key: 'CurrentUserID',
   default: 1,
-  effects_UNSTABLE: [
+  effects: [
     localForageEffect('current_user'),
   ]
 });
@@ -338,7 +339,7 @@ const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onS
 const currentUserIDState = atom<number>({
   key: 'CurrentUserID',
   default: 1,
-  effects_UNSTABLE: [
+  effects: [
     localStorageEffect({
       key: 'current_user',
       restorer: (value, defaultValue) =>
@@ -380,7 +381,7 @@ const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onS
 const currentUserIDState = atom<number>({
   key: 'CurrentUserID',
   default: 1,
-  effects_UNSTABLE: [
+  effects: [
     localStorageEffect({
       key: 'current_user',
       restorer: (value, defaultValue, values) => {
