@@ -18,6 +18,7 @@ import type {RecoilState, RecoilValue, RecoilValueReadOnly} from 'Recoil';
 const {act} = require('ReactTestUtils');
 const {
   RecoilRoot,
+  atom,
   selector,
   useRecoilValue,
   useResetRecoilState,
@@ -202,6 +203,10 @@ function renderElementsWithSuspenseCount(
 ////////////////////////////////////////
 let id = 0;
 
+function stringAtom(): RecoilState<string> {
+  return atom({key: `StringAtom-${id++}`, default: 'DEFAULT'});
+}
+
 const errorThrowingAsyncSelector: <T, S>(
   string,
   ?RecoilValue<S>,
@@ -259,7 +264,11 @@ function asyncSelector<T, S>(
 // Useful Components for testing
 //////////////////////////////////
 
-function ReadsAtom<T>({atom}: {atom: RecoilValue<T>}): React.Node {
+function ReadsAtom<T>({
+  atom, // eslint-disable-line no-shadow
+}: {
+  atom: RecoilValue<T>,
+}): React.Node {
   return stableStringify(useRecoilValue(atom));
 }
 
@@ -269,14 +278,14 @@ function ReadsAtom<T>({atom}: {atom: RecoilValue<T>}): React.Node {
 //   resetValue()
 // ]
 function componentThatReadsAndWritesAtom<T>(
-  atom: RecoilState<T>,
+  recoilState: RecoilState<T>,
 ): [() => React.Node, (T) => void, () => void] {
   let setValue;
   let resetValue;
   const ReadsAndWritesAtom = (): React.Node => {
-    setValue = useSetRecoilState(atom);
-    resetValue = useResetRecoilState(atom);
-    return stableStringify(useRecoilValue(atom));
+    setValue = useSetRecoilState(recoilState);
+    resetValue = useResetRecoilState(recoilState);
+    return stableStringify(useRecoilValue(recoilState));
   };
   return [
     ReadsAndWritesAtom,
@@ -409,7 +418,7 @@ const WWW_GKS_TO_TEST = QUICK_TEST
         'recoil_release_on_cascading_update_killswitch_2021',
       ],
       // Experimental mode for useTransition() support:
-      ['recoil_hamt_2020', 'recoil_concurrent_support'],
+      ['recoil_hamt_2020', 'recoil_transition_support'],
     ];
 
 /**
@@ -449,6 +458,7 @@ module.exports = {
   renderElementsWithSuspenseCount,
   ReadsAtom,
   componentThatReadsAndWritesAtom,
+  stringAtom,
   errorThrowingAsyncSelector,
   resolvingAsyncSelector,
   loadingAsyncSelector,

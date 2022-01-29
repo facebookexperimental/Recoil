@@ -42,6 +42,7 @@ const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
 const err = require('recoil-shared/util/Recoil_err');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 
 function handleLoadable<T>(
@@ -421,7 +422,7 @@ function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
   return loadable;
 }
 
-function useRecoilValueLoadable_CONCURRENT_SUPPORT<T>(
+function useRecoilValueLoadable_TRANSITION_SUPPORT<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
@@ -578,7 +579,7 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
     useRetain(recoilValue);
   }
   return {
-    CONCURRENT_SUPPORT: useRecoilValueLoadable_CONCURRENT_SUPPORT,
+    TRANSITION_SUPPORT: useRecoilValueLoadable_TRANSITION_SUPPORT,
     SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
     MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
     LEGACY: useRecoilValueLoadable_LEGACY,
@@ -679,6 +680,62 @@ function useSetUnvalidatedAtomValues(): (
   };
 }
 
+/**
+ * Experimental variants of hooks with support for useTransition()
+ */
+
+function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE<T>(
+  recoilValue: RecoilValue<T>,
+): Loadable<T> {
+  if (__DEV__) {
+    validateRecoilValue(
+      recoilValue,
+      'useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE',
+    );
+    if (!reactMode().early) {
+      recoverableViolation(
+        'Attepmt to use a hook with UNSTABLE_TRANSITION_SUPPORT in a rendering mode incompatible with concurrent rendering.  Try enabling the recoil_sync_external_store or recoil_transition_support GKs.',
+        'recoil',
+      );
+    }
+  }
+  if (gkx('recoil_memory_managament_2020')) {
+    // eslint-disable-next-line fb-www/react-hooks
+    useRetain(recoilValue);
+  }
+  return useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue);
+}
+
+function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE<T>(
+  recoilValue: RecoilValue<T>,
+): T {
+  if (__DEV__) {
+    validateRecoilValue(
+      recoilValue,
+      'useRecoilValue_TRANSITION_SUPPORT_UNSTABLE',
+    );
+  }
+  const storeRef = useStoreRef();
+  const loadable =
+    useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE(recoilValue);
+  return handleLoadable(loadable, recoilValue, storeRef);
+}
+
+function useRecoilState_TRANSITION_SUPPORT_UNSTABLE<T>(
+  recoilState: RecoilState<T>,
+): [T, SetterOrUpdater<T>] {
+  if (__DEV__) {
+    validateRecoilValue(
+      recoilState,
+      'useRecoilState_TRANSITION_SUPPORT_UNSTABLE',
+    );
+  }
+  return [
+    useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(recoilState),
+    useSetRecoilState(recoilState),
+  ];
+}
+
 module.exports = {
   recoilComponentGetRecoilValueCount_FOR_TESTING,
   useRecoilInterface: useRecoilInterface_DEPRECATED,
@@ -689,4 +746,7 @@ module.exports = {
   useResetRecoilState,
   useSetRecoilState,
   useSetUnvalidatedAtomValues,
+  useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
 };
