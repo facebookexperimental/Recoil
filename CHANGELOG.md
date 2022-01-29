@@ -39,6 +39,7 @@
   - Atom effects are cleaned up when initialized by a Snapshot which is released. (#1511, #1532)
   - Unsubscribe `onSet()` handlers in atom effects when atoms are cleaned up. (#1509)
   - Call `onSet()` when atoms are initialized with `<RecoilRoot initializeState={...} >` (#1519, #1511)
+  - Set `trigger` to `'set'` when initialized from a set in a Recoil transaction. (#1569)
 - Avoid extra re-renders in some cases when a component uses a different atom/selector. (#825)
 - `<RecoilRoot>` will only call `initializeState()` once during the initial render. (#1372)
 - Lazily compute the properties of `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` results (#1549)
