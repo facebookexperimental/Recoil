@@ -14,6 +14,7 @@
     "index.d.ts"
   ],
   "repository": "https://github.com/facebookexperimental/Recoil.git",
+  "homepage": "https://recoiljs.org",
   "license": "MIT",
   "scripts": {
     "prepare": "install-peers",
