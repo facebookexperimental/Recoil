@@ -22,7 +22,6 @@
 - Add `.isRetained()` method for Snapshots and check if snapshot is already released when using `.retain()` (#1546)
 
 ### Other Fixes and Optimizations
-
 - Reduce overhead of snapshot cloning
   - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
   - Cache the cloned snapshots from callbacks unless there was a state change. (#1533)
