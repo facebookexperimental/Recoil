@@ -387,7 +387,7 @@ function CurrentUserInfo() {
 
   return (
     <div>
-      <h1>{currentUser.name}</h1>
+      <h1>{currentUserInfo.name}</h1>
       <button onClick={refreshUserInfo}>Refresh</button>
     </div>
   );
