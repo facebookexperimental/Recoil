@@ -458,7 +458,7 @@ describe('Render counts', () => {
       if (
         (reactMode().mode === 'LEGACY' &&
           !gks.includes('recoil_suppress_rerender_in_callback')) ||
-        reactMode().mode === 'CONCURRENT_SUPPORT'
+        reactMode().mode === 'TRANSITION_SUPPORT'
       ) {
         baseCalls += 1;
       }
@@ -579,7 +579,7 @@ describe('Component Subscriptions', () => {
       if (
         (reactMode().mode === 'LEGACY' &&
           !gks.includes('recoil_suppress_rerender_in_callback')) ||
-        reactMode().mode === 'CONCURRENT_SUPPORT'
+        reactMode().mode === 'TRANSITION_SUPPORT'
       ) {
         baseCalls += 1;
       }

@@ -49,9 +49,12 @@ const {retentionZone} = require('./core/Recoil_RetentionZone');
 const {freshSnapshot} = require('./core/Recoil_Snapshot');
 const {
   useRecoilState,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilStateLoadable,
   useRecoilValue,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilValueLoadable,
+  useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
   useResetRecoilState,
   useSetRecoilState,
 } = require('./hooks/Recoil_Hooks');
@@ -119,6 +122,9 @@ module.exports = {
   useResetRecoilState,
   useGetRecoilValueInfo_UNSTABLE: useGetRecoilValueInfo,
   useRecoilRefresher_UNSTABLE: useRecoilRefresher,
+  useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
 
   // Hooks for complex operations
   useRecoilCallback,

@@ -16,23 +16,41 @@ const {
   getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, atom, useRecoilValue, useRecoilTransaction, renderElements;
+let React,
+  useState,
+  useEffect,
+  atom,
+  useRecoilValue,
+  useRecoilState,
+  useRecoilTransaction,
+  useRecoilSnapshot,
+  renderElements,
+  flushPromisesAndTimers,
+  ReadsAtom;
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
+  ({useState, useEffect} = React);
   ({
     atom,
-    useRecoilTransaction_UNSTABLE: useRecoilTransaction,
     useRecoilValue,
+    useRecoilState,
+    useRecoilTransaction_UNSTABLE: useRecoilTransaction,
+    useRecoilSnapshot,
   } = require('../../Recoil_index'));
   ({
     renderElements,
+    flushPromisesAndTimers,
+    ReadsAtom,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
 });
 
 describe('Atoms', () => {
   testRecoil('Get with transaction', () => {
-    const myAtom = atom({key: 'useTransaction atom get', default: 'DEFAULT'});
+    const myAtom = atom({
+      key: 'useRecoilTransaction atom get',
+      default: 'DEFAULT',
+    });
 
     let readAtom;
     let ranTransaction = false;
@@ -50,44 +68,120 @@ describe('Atoms', () => {
     expect(ranTransaction).toBe(true);
   });
 
-  // TODO Unable to test setting from a transaction as Jest complains about
-  // updates not wrapped in act(...)...
-  // testRecoil('Set with transaction', () => {
-  //   const myAtom = atom<string>({
-  //     key: 'useTransaction atom set',
-  //     default: 'DEFAULT',
-  //   });
+  testRecoil('Set with transaction', () => {
+    const myAtom = atom<string>({
+      key: 'useRecoilTransaction atom set',
+      default: 'DEFAULT',
+    });
 
-  //   let setAtom;
-  //   let updateAtom;
-  //   function Component() {
-  //     setAtom = useRecoilTransaction(({set}) => value => {
-  //       act(() => {
-  //         set(myAtom, value);
-  //       });
-  //     });
-  //     updateAtom = useRecoilTransaction(({set}) => value => {
-  //       set(myAtom, old => {
-  //         expect(old).toEqual('SET');
-  //         return value;
-  //       });
-  //     });
-  //     return null;
-  //   }
-  //   const c = renderElements(
-  //     <>
-  //       <ReadsAtom atom={myAtom} />
-  //       <Component />
-  //     </>,
-  //   );
-  //   expect(c.textContent).toEqual('"DEFAULT"');
+    function Component() {
+      const transact = useRecoilTransaction(({set, get}) => value => {
+        set(myAtom, 'TMP');
+        expect(get(myAtom)).toEqual('TMP');
+        set(myAtom, old => {
+          expect(old).toEqual('TMP');
+          return value;
+        });
+        expect(get(myAtom)).toEqual(value);
+      });
+      useEffect(() => {
+        act(() => transact('TRANSACT'));
+      });
+      return null;
+    }
 
-  //   act(() => setAtom('SET'));
-  //   expect(c.textContent).toEqual('"SET"');
+    const c = renderElements(
+      <>
+        <ReadsAtom atom={myAtom} />
+        <Component />
+      </>,
+    );
+    expect(c.textContent).toEqual('"TRANSACT"');
+  });
 
-  //   act(() => updateAtom('UPDATE'));
-  //   expect(c.textContent).toEqual('UPDATE');
-  // });
+  testRecoil('Dirty atoms', async () => {
+    const beforeAtom = atom({
+      key: 'useRecoilTransaction dirty before',
+      default: 'DEFAULT',
+    });
+    const duringAtomA = atom({
+      key: 'useRecoilTransaction dirty during A',
+      default: 'DEFAULT',
+    });
+    const duringAtomB = atom({
+      key: 'useRecoilTransaction dirty during B',
+      default: 'DEFAULT',
+    });
+    const afterAtom = atom({
+      key: 'useRecoilTransaction dirty after',
+      default: 'DEFAULT',
+    });
+
+    let snapshot;
+    let firstEffect = true;
+    function Component() {
+      const [beforeValue, setBefore] = useState('INITIAL');
+      const [beforeAtomValue, setBeforeAtom] = useRecoilState(beforeAtom);
+      const duringAValue = useRecoilValue(duringAtomA);
+      const duringBValue = useRecoilValue(duringAtomB);
+      const [afterAtomValue, setAfterAtom] = useRecoilState(afterAtom);
+      const [afterValue, setAfter] = useState('INITIAL');
+      const transaction = useRecoilTransaction(({set, get}) => () => {
+        expect(get(beforeAtom)).toEqual('BEFORE');
+        expect(get(duringAtomA)).toEqual('DEFAULT');
+        expect(get(duringAtomB)).toEqual('DEFAULT');
+        expect(get(afterAtom)).toEqual('DEFAULT');
+        set(duringAtomA, 'DURING_A');
+        set(duringAtomB, 'DURING_B');
+      });
+      snapshot = useRecoilSnapshot();
+
+      useEffect(() => {
+        setTimeout(() => {
+          act(() => {
+            if (firstEffect) {
+              setBefore('BEFORE');
+              setBeforeAtom('BEFORE');
+              transaction();
+              setAfterAtom('AFTER');
+              setAfter('AFTER');
+            }
+            firstEffect = false;
+          });
+        }, 0);
+      });
+
+      return [
+        beforeValue,
+        beforeAtomValue,
+        duringAValue,
+        duringBValue,
+        afterAtomValue,
+        afterValue,
+      ].join(',');
+    }
+
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe(
+      'INITIAL,DEFAULT,DEFAULT,DEFAULT,DEFAULT,INITIAL',
+    );
+    expect(
+      Array.from(snapshot?.getNodes_UNSTABLE({isModified: true}) ?? []),
+    ).toEqual([]);
+
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('BEFORE,BEFORE,DURING_A,DURING_B,AFTER,AFTER');
+    expect(
+      Array.from(snapshot?.getNodes_UNSTABLE({isModified: true}) ?? []).map(
+        ({key}) => key,
+      ),
+    ).toEqual([
+      'useRecoilTransaction dirty before',
+      'useRecoilTransaction dirty during A',
+      'useRecoilTransaction dirty during B',
+      'useRecoilTransaction dirty after',
+    ]);
+  });
 });
 
 describe('Atom Effects', () => {
@@ -125,38 +219,37 @@ describe('Atom Effects', () => {
     },
   );
 
-  // TODO Unable to test setting from a transaction as Jest complains about
-  // updates not wrapped in act(...)...
-  // testRecoil(
-  //   'Atom effects are run when first set with a transaction',
-  //   async () => {
-  //     let numTimesEffectInit = 0;
+  testRecoil(
+    'Atom effects are run when first set with a transaction',
+    async ({strictMode, concurrentMode}) => {
+      let numTimesEffectInit = 0;
 
-  //     const atomWithEffect = atom({
-  //       key: 'atom effect first set transaction',
-  //       default: 'DEFAULT',
-  //       effects: [
-  //         ({trigger}) => {
-  //           expect(trigger).toEqual('set');
-  //           numTimesEffectInit++;
-  //         },
-  //       ],
-  //     });
+      const atomWithEffect = atom({
+        key: 'atom effect first set transaction',
+        default: 'DEFAULT',
+        effects: [
+          ({trigger}) => {
+            expect(trigger).toEqual('set');
+            numTimesEffectInit++;
+          },
+        ],
+      });
 
-  //     let setAtomWithTransaction;
-  //     const Component = () => {
-  //       setAtomWithTransaction = useRecoilTransaction(({set}) => () => {
-  //         set(atomWithEffect, 'SET');
-  //       });
-  //       return null;
-  //     };
+      let setAtomWithTransaction;
+      const Component = () => {
+        setAtomWithTransaction = useRecoilTransaction(({set}) => () => {
+          set(atomWithEffect, 'SET');
+        });
+        useEffect(() => {
+          act(setAtomWithTransaction);
+        });
+        return null;
+      };
 
-  //     renderElements(<Component />);
-
-  //     act(() => setAtomWithTransaction());
-  //     expect(numTimesEffectInit).toBe(1);
-  //   },
-  // );
+      renderElements(<Component />);
+      expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 2 : 1);
+    },
+  );
 
   testRecoil('Atom effects can initialize for a transaction', async () => {
     let numTimesEffectInit = 0;
@@ -195,7 +288,7 @@ describe('Atom Effects', () => {
       let numTimesEffectInit = 0;
 
       const atomWithEffect = atom({
-        key: 'useTransaction effect first get transaction',
+        key: 'useRecoilTransaction effect first get transaction',
         default: 0,
         effects: [
           () => {

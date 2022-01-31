@@ -4,23 +4,17 @@
 
 **_Add new changes here as they land_**
 
-### Pending
-
-- Memory management
-- useTransition() compatibility for OSS
-
 ## 0.6 ()
 
 - React 18
   - Leverage new React 18 APIs for improved safety and optimizations. (#1488)
   - Fixes for `<StrictMode>` (#1473, #1444, #1509).
-  - `useTransition()` is not yet supported for open source React.
+  - Experimental support for `useTransition()` using hooks with `_TRANSITION_SUPPORT_UNSTABLE` suffix. (#1572, #1560)
 - Recoil updates now re-render earlier:
   - Recoil and React state changes from the same batch now stay in sync. (#1076)
   - Renders now occur before transaction observers instead of after.
 
 ### New Features
-
 - Add `refresh()` to the `useRecoilCallback()` interface for refreshing selector caches. (#1413)
 - Callbacks from selector's `getCallback()` can now mutate, refresh, and transact Recoil state, in addition to reading it, for parity with `useRecoilCallback()`. (#1498)
 - Recoil StoreID's for `<RecoilRoot>` and `Snapshot` stores accessible via `useRecoilStoreID()` hook (#1417) or `storeID` parameter for atom effects (#1414).
@@ -35,18 +29,18 @@
 - Fix transitive selector refresh for some cases (#1409)
 - Fix some corner cases with async selectors and multiple stores (#1568)
 - Atom Effects
-  - Rename option from `effects_UNSTABLE` to just `effects` as the interface is mostly stabilizing (#1520)
   - Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466)
   - Atom effects are cleaned up when initialized by a Snapshot which is released. (#1511, #1532)
   - Unsubscribe `onSet()` handlers in atom effects when atoms are cleaned up. (#1509)
   - Call `onSet()` when atoms are initialized with `<RecoilRoot initializeState={...} >` (#1519, #1511)
+  - Set `trigger` to `'set'` when initialized from a set in a Recoil transaction. (#1569)
 - Avoid extra re-renders in some cases when a component uses a different atom/selector. (#825)
 - `<RecoilRoot>` will only call `initializeState()` once during the initial render. (#1372)
 - Lazily compute the properties of `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` results (#1549)
 - Memoize the results of lazy proxies. (#1548)
 
 ### Breaking Changes
-
+- Rename atom effects from `effects_UNSTABLE` to just `effects`, as the interface is mostly stabilizing. (#1520)
 - Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`. (#1509)
 - `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` always report the node `type`. (#1547)
 

@@ -16,19 +16,31 @@ const {
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 let React,
-  act,
+  useState,
   useTransition,
+  act,
+  useRecoilValue,
   useRecoilState,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
   atom,
+  selectorFamily,
   renderElements,
   reactMode,
   flushPromisesAndTimers;
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
-  ({useTransition} = React);
+  ({useState, useTransition} = React);
   ({act} = require('ReactTestUtils'));
-  ({useRecoilState, atom} = require('../../Recoil_index'));
+  ({
+    useRecoilValue,
+    useRecoilState,
+    useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
+    useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
+    atom,
+    selectorFamily,
+  } = require('../../Recoil_index'));
   ({
     renderElements,
     flushPromisesAndTimers,
@@ -141,3 +153,240 @@ testRecoil('Works with useTransition', async ({concurrentMode}) => {
   await flushPromisesAndTimers();
   expect(c.textContent).toEqual('Index: 3 - Item 3 = v3');
 });
+
+testRecoil('useRecoilValue()', async ({concurrentMode}) => {
+  if (useTransition == null) {
+    return;
+  }
+  const myAtom = atom({key: 'useRecoilValue atom', default: 0});
+  let resolvers = [];
+  function resolveSelectors() {
+    resolvers.forEach(resolve => resolve('RESOLVED'));
+    resolvers = [];
+  }
+  const query = selectorFamily({
+    key: 'useRecoilValue selector',
+    get:
+      param =>
+      ({get}) => {
+        const value = get(myAtom);
+        return new Promise(resolve => {
+          resolvers.push(resolve);
+        }).then(str => `${param} ${value} ${str}`);
+      },
+  });
+
+  function Component({index}) {
+    const value = useRecoilValue(query(index));
+    return (
+      <>
+        {index} {value}
+      </>
+    );
+  }
+
+  let startReactTransition, startRecoilTransition, startBothTransition;
+  function Main() {
+    const [reactState, setReactState] = useState(0);
+    const [recoilState, setRecoilState] = useRecoilState(myAtom);
+    const [inTransition, startTransition] = useTransition();
+    startReactTransition = () => {
+      startTransition(() => {
+        setReactState(x => x + 1);
+      });
+    };
+    startRecoilTransition = () => {
+      startTransition(() => {
+        setRecoilState(x => x + 1);
+      });
+    };
+    startBothTransition = () => {
+      startTransition(() => {
+        setReactState(x => x + 1);
+        setRecoilState(x => x + 1);
+      });
+    };
+    return (
+      <>
+        React:{reactState} Recoil:{recoilState}{' '}
+        {inTransition ? '[IN TRANSITION] ' : ''}|{' '}
+        <React.Suspense fallback="LOADING">
+          <Component index={reactState} />
+        </React.Suspense>
+      </>
+    );
+  }
+
+  const c = renderElements(<Main />);
+  expect(c.textContent).toBe('React:0 Recoil:0 | LOADING');
+  act(resolveSelectors);
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('React:0 Recoil:0 | 0 0 0 RESOLVED');
+
+  // Transition changing React State
+  act(startReactTransition);
+  expect(c.textContent).toBe(
+    concurrentMode
+      ? 'React:0 Recoil:0 [IN TRANSITION] | 0 0 0 RESOLVED'
+      : 'React:1 Recoil:0 | LOADING',
+  );
+  act(resolveSelectors);
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('React:1 Recoil:0 | 1 1 0 RESOLVED');
+
+  // Transition changing Recoil State
+  act(startRecoilTransition);
+  expect(c.textContent).toBe(
+    concurrentMode && reactMode().concurrent
+      ? 'React:1 Recoil:0 [IN TRANSITION] | 1 1 0 RESOLVED'
+      : 'React:1 Recoil:1 | LOADING',
+  );
+  act(resolveSelectors);
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('React:1 Recoil:1 | 1 1 1 RESOLVED');
+
+  // Second transition changing Recoil State
+  act(startRecoilTransition);
+  expect(c.textContent).toBe(
+    concurrentMode && reactMode().concurrent
+      ? 'React:1 Recoil:1 [IN TRANSITION] | 1 1 1 RESOLVED'
+      : 'React:1 Recoil:2 | LOADING',
+  );
+  act(resolveSelectors);
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('React:1 Recoil:2 | 1 1 2 RESOLVED');
+
+  // Transition with both React and Recoil state
+  act(startBothTransition);
+  expect(c.textContent).toBe(
+    concurrentMode &&
+      (reactMode().concurrent || reactMode().mode === 'MUTABLE_SOURCE')
+      ? 'React:1 Recoil:2 [IN TRANSITION] | 1 1 2 RESOLVED'
+      : 'React:2 Recoil:3 | LOADING',
+  );
+  act(resolveSelectors);
+  await flushPromisesAndTimers();
+  act(resolveSelectors);
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('React:2 Recoil:3 | 2 2 3 RESOLVED');
+});
+
+testRecoil(
+  'useRecoilValue_TRANSITION_SUPPORT_UNSTABLE()',
+  async ({concurrentMode}) => {
+    if (useTransition == null) {
+      return;
+    }
+    const myAtom = atom({key: 'TRANSITION_SUPPORT_UNSTABLE atom', default: 0});
+    let resolvers = [];
+    function resolveSelectors() {
+      resolvers.forEach(resolve => resolve('RESOLVED'));
+      resolvers = [];
+    }
+    const query = selectorFamily({
+      key: 'TRANSITION_SUPPORT_UNSTABLE selector',
+      get:
+        param =>
+        ({get}) => {
+          const value = get(myAtom);
+          return new Promise(resolve => {
+            resolvers.push(resolve);
+          }).then(str => `${param} ${value} ${str}`);
+        },
+    });
+
+    function Component({index}) {
+      const value = useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(query(index));
+      return (
+        <>
+          {index} {value}
+        </>
+      );
+    }
+
+    let startReactTransition, startRecoilTransition, startBothTransition;
+    function Main() {
+      const [reactState, setReactState] = useState(0);
+      const [recoilState, setRecoilState] =
+        useRecoilState_TRANSITION_SUPPORT_UNSTABLE(myAtom);
+      const [inTransition, startTransition] = useTransition();
+      startReactTransition = () => {
+        startTransition(() => {
+          setReactState(x => x + 1);
+        });
+      };
+      startRecoilTransition = () => {
+        startTransition(() => {
+          setRecoilState(x => x + 1);
+        });
+      };
+      startBothTransition = () => {
+        startTransition(() => {
+          setReactState(x => x + 1);
+          setRecoilState(x => x + 1);
+        });
+      };
+      return (
+        <>
+          React:{reactState} Recoil:{recoilState}{' '}
+          {inTransition ? '[IN TRANSITION] ' : ''}|{' '}
+          <React.Suspense fallback="LOADING">
+            <Component index={reactState} />
+          </React.Suspense>
+        </>
+      );
+    }
+
+    const c = renderElements(<Main />);
+    expect(c.textContent).toBe('React:0 Recoil:0 | LOADING');
+    act(resolveSelectors);
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('React:0 Recoil:0 | 0 0 0 RESOLVED');
+
+    // Transition changing React State
+    act(startReactTransition);
+    expect(c.textContent).toBe(
+      concurrentMode
+        ? 'React:0 Recoil:0 [IN TRANSITION] | 0 0 0 RESOLVED'
+        : 'React:1 Recoil:0 | LOADING',
+    );
+    act(resolveSelectors);
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('React:1 Recoil:0 | 1 1 0 RESOLVED');
+
+    // Transition changing Recoil State
+    act(startRecoilTransition);
+    expect(c.textContent).toBe(
+      concurrentMode && reactMode().early
+        ? 'React:1 Recoil:0 [IN TRANSITION] | 1 1 0 RESOLVED'
+        : 'React:1 Recoil:1 | LOADING',
+    );
+    act(resolveSelectors);
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('React:1 Recoil:1 | 1 1 1 RESOLVED');
+
+    // Second transition changing Recoil State
+    act(startRecoilTransition);
+    expect(c.textContent).toBe(
+      concurrentMode && reactMode().early
+        ? 'React:1 Recoil:1 [IN TRANSITION] | 1 1 1 RESOLVED'
+        : 'React:1 Recoil:2 | LOADING',
+    );
+    act(resolveSelectors);
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('React:1 Recoil:2 | 1 1 2 RESOLVED');
+
+    // Transition with both React and Recoil State
+    act(startBothTransition);
+    expect(c.textContent).toBe(
+      concurrentMode
+        ? 'React:1 Recoil:2 [IN TRANSITION] | 1 1 2 RESOLVED'
+        : 'React:2 Recoil:3 | LOADING',
+    );
+    act(resolveSelectors);
+    await flushPromisesAndTimers();
+    act(resolveSelectors);
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('React:2 Recoil:3 | 2 2 3 RESOLVED');
+  },
+);
