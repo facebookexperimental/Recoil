@@ -19,6 +19,9 @@ const React = require('react');
 const {useContext, useMemo} = require('react');
 
 const styles = {
+  container: {
+    paddingLeft: 8,
+  },
   item: {
     marginBottom: 16,
   },
@@ -56,9 +59,11 @@ function SnapshotRenderer(): React.Node {
   });
 
   return (
-    <div>
-      {atoms}
-      {selectors}
+    <div style={styles.container}>
+      <h2>Atoms</h2>
+      {atoms.length > 0 ? atoms : 'No atoms to show.'}
+      <h2>Selectors</h2>
+      {selectors.length > 0 ? selectors : 'No selectors to show.'}
     </div>
   );
 }

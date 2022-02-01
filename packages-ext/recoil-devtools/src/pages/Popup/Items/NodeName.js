@@ -11,7 +11,7 @@
 
 import type {Node} from '../../../types/DevtoolsTypes';
 
-const React = require('react');
+import React from 'react';
 
 const styles = {
   label: {
@@ -35,13 +35,18 @@ type KeyProps = {
   node: ?Node,
 };
 
-function NodeName({name, node}: KeyProps): React$Element<'span'> {
+export default function NodeName({
+  name,
+  node,
+}: KeyProps): React$Element<'span'> {
   return (
     <span style={styles.label}>
-      {node?.type === 'selector' && <span style={styles.selector}>S</span>}
+      {node?.type === 'selector' && (
+        <span style={styles.selector} title="This is a Recoil selector">
+          S
+        </span>
+      )}
       {name}
     </span>
   );
 }
-
-module.exports = NodeName;

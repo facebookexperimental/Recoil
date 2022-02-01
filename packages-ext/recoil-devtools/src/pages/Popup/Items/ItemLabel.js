@@ -11,7 +11,7 @@
 import type {Node} from '../../../types/DevtoolsTypes';
 
 const {getStyle} = require('../../../utils/getStyle');
-const NodeName = require('./NodeName');
+const NodeName = require('./NodeName').default;
 const React = require('react');
 const styles = {
   label: {

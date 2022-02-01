@@ -9,14 +9,24 @@
  */
 'use strict';
 
+type CssMap = {
+  [string]: string | number,
+};
+
+function getEntries<T>(obj: {[string]: T}): Array<[string, T]> {
+  const keys: string[] = Object.keys(obj);
+  return keys.map(key => [key, obj[key]]);
+}
+
 export const getStyle = (
-  source: {[key: string]: {[key: string]: string | number}},
-  entries: {[key: string]: boolean},
+  source: {[key: string]: CssMap},
+  entries: {[string]: boolean},
 ): {...} | {[string]: number | string} => {
-  return Object.entries(entries).reduce((acc, [key, value]) => {
+  const classNameMap = getEntries<boolean>(entries);
+  return classNameMap.reduce<CssMap>((acc, [key, val]) => {
     let nextAcc = {...acc};
-    if (Boolean(value)) {
-      nextAcc = {...source[key]};
+    if (Boolean(val)) {
+      nextAcc = {...nextAcc, ...source[key]};
     }
 
     return nextAcc;
