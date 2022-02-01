@@ -4,7 +4,11 @@
 
 **_Add new changes here as they land_**
 
-## 0.6 ()
+## 0.6.1 (2022-01-29)
+
+- Fix postInstall script (#1577)
+
+## 0.6 (2022-01-28)
 
 - React 18
   - Leverage new React 18 APIs for improved safety and optimizations. (#1488)
@@ -28,11 +32,10 @@
 - Fix transitive selector refresh for some cases (#1409)
 - Fix some corner cases with async selectors and multiple stores (#1568)
 - Atom Effects
-  - Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466)
+  - Run atom effects when atoms are initialized from a set during a transaction from `useRecoilTransaction_UNSTABLE()` (#1466, #1569)
   - Atom effects are cleaned up when initialized by a Snapshot which is released. (#1511, #1532)
   - Unsubscribe `onSet()` handlers in atom effects when atoms are cleaned up. (#1509)
   - Call `onSet()` when atoms are initialized with `<RecoilRoot initializeState={...} >` (#1519, #1511)
-  - Set `trigger` to `'set'` when initialized from a set in a Recoil transaction. (#1569)
 - Avoid extra re-renders in some cases when a component uses a different atom/selector. (#825)
 - `<RecoilRoot>` will only call `initializeState()` once during the initial render. (#1372)
 - Lazily compute the properties of `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` results (#1549)

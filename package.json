@@ -1,6 +1,6 @@
 {
   "name": "recoil",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Recoil - A state management library for React",
   "main": "cjs/recoil.js",
   "module": "es/recoil.js",
@@ -17,7 +17,6 @@
   "license": "MIT",
   "scripts": {
     "prepare": "install-peers",
-    "postinstall": "cd ./node_modules/gen-flow-files && yarn install && yarn build",
     "build": "rollup -c && node scripts/postbuild.js",
     "test": "jest packages/*",
     "format": "prettier --write \"./**/*.{js,md,json}\"",
