@@ -10,10 +10,11 @@
  */
 'use strict';
 
+/* eslint-disable fb-www/typeof-undefined */
 const isSSR: boolean =
   // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
-  // eslint-disable-next-line fb-www/typeof-undefined
   typeof Window === 'undefined' || typeof window === 'undefined';
+/* eslint-enable fb-www/typeof-undefined */
 
 const isWindow = (value: mixed): boolean =>
   !isSSR &&
