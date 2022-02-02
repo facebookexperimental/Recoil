@@ -14,7 +14,7 @@
  */
 'use strict';
 
-const {isReactNative, isSSR} = require('./Recoil_Environment');
+const {isReactNative, isWindow} = require('./Recoil_Environment');
 const isNode = require('./Recoil_isNode');
 const isPromise = require('./Recoil_isPromise');
 
@@ -61,12 +61,7 @@ function shouldNotBeFrozen(value: mixed): boolean {
   }
 
   // Some environments, just as Jest, don't work with the instanceof check
-  if (
-    !isSSR &&
-    !isReactNative &&
-    // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
-    (value === window || value instanceof Window)
-  ) {
+  if (!isReactNative && isWindow(value)) {
     return true;
   }
 
