@@ -555,6 +555,81 @@ describe('Effects', () => {
     },
   );
 
+  testRecoil('Always call setSelf() in onSet() handler', () => {
+    const myAtom = atom({
+      key: 'atom setSelf in onSet',
+      default: 'DEFAULT',
+      effects: [
+        ({setSelf, onSet}) => {
+          onSet(newValue => {
+            setSelf('TRANSFORM ' + newValue);
+          });
+        },
+      ],
+    });
+
+    const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+
+    const c = renderElements(<ReadsWritesAtom />);
+    expect(c.textContent).toEqual('"DEFAULT"');
+
+    act(() => setAtom('SET'));
+    expect(c.textContent).toEqual('"TRANSFORM SET"');
+
+    act(() => setAtom('SET2'));
+    expect(c.textContent).toEqual('"TRANSFORM SET2"');
+  });
+
+  testRecoil('Patch value using setSelf() in onSet() handler', () => {
+    let patch = 'PATCH';
+    const myAtom = atom({
+      key: 'atom patch setSelf in onSet',
+      default: {value: 'DEFAULT', patch},
+      effects: [
+        ({setSelf, onSet}) => {
+          onSet(newValue => {
+            if (
+              !(newValue instanceof DefaultValue) &&
+              newValue.patch != patch
+            ) {
+              setSelf({value: 'TRANSFORM_ALT ' + newValue.value, patch});
+            }
+          });
+        },
+        ({setSelf, onSet}) => {
+          onSet(newValue => {
+            if (
+              !(newValue instanceof DefaultValue) &&
+              newValue.patch != patch
+            ) {
+              setSelf({value: 'TRANSFORM ' + newValue.value, patch});
+            }
+          });
+        },
+      ],
+    });
+
+    const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+
+    const c = renderElements(<ReadsWritesAtom />);
+    expect(c.textContent).toEqual('{"patch":"PATCH","value":"DEFAULT"}');
+
+    act(() => setAtom(x => ({...x, value: 'SET'})));
+    expect(c.textContent).toEqual('{"patch":"PATCH","value":"SET"}');
+
+    act(() => setAtom(x => ({...x, value: 'SET2'})));
+    expect(c.textContent).toEqual('{"patch":"PATCH","value":"SET2"}');
+
+    patch = 'PATCHB';
+    act(() => setAtom(x => ({...x, value: 'SET3'})));
+    expect(c.textContent).toEqual(
+      '{"patch":"PATCHB","value":"TRANSFORM SET3"}',
+    );
+
+    act(() => setAtom(x => ({...x, value: 'SET4'})));
+    expect(c.textContent).toEqual('{"patch":"PATCHB","value":"SET4"}');
+  });
+
   // NOTE: This test throws an expected error
   testRecoil('reject promise', async () => {
     let rejectAtom;
