@@ -4,6 +4,8 @@
 
 **_Add new changes here as they land_**
 
+- `shouldNotBeFrozen` now works in JS environment without `Window` interface. (#1571)
+
 ## 0.6.1 (2022-01-29)
 
 - Fix postInstall script (#1577)

@@ -3388,13 +3388,21 @@ var Recoil_concatIterables = concatIterables;
  * 
  * @format
  */
+/* eslint-disable fb-www/typeof-undefined */
 
-const isSSR = typeof window === 'undefined';
+const isSSR = // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+typeof Window === 'undefined' || typeof window === 'undefined';
+/* eslint-enable fb-www/typeof-undefined */
+
+const isWindow = value => !isSSR && ( // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+value === window || value instanceof Window);
+
 const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
 
 var Recoil_Environment = {
   isSSR,
-  isReactNative
+  isReactNative,
+  isWindow
 };
 
 /**
@@ -6741,7 +6749,7 @@ var Recoil_isNode = isNode;
 
 const {
   isReactNative: isReactNative$1,
-  isSSR: isSSR$4
+  isWindow: isWindow$1
 } = Recoil_Environment;
 
 
@@ -6786,8 +6794,7 @@ function shouldNotBeFrozen(value) {
   } // Some environments, just as Jest, don't work with the instanceof check
 
 
-  if (!isSSR$4 && !isReactNative$1 && ( // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
-  value === window || value instanceof Window)) {
+  if (!isReactNative$1 && isWindow$1(value)) {
     return true;
   }
 
