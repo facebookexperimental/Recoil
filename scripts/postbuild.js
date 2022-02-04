@@ -23,10 +23,7 @@ console.log('Copying index.d.ts for TypeScript support...');
 fs.copyFile('./typescript/index.d.ts', './index.d.ts', logErrors);
 
 console.log('Generating Flow type files...');
-exec(
-  'cd ./node_modules/gen-flow-files && yarn install && yarn build && cd ../.. && npx gen-flow-files packages/recoil --out-dir cjs',
-  err => {
-    logErrors(err);
-    fs.rename('cjs/Recoil_index.js.flow', 'cjs/recoil.js.flow', logErrors);
-  },
-);
+exec('npx flow-copy-source packages/recoil cjs', err => {
+  logErrors(err);
+  fs.rename('cjs/Recoil_index.js.flow', 'cjs/recoil.js.flow', logErrors);
+});

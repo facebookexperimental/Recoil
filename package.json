@@ -67,7 +67,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-rulesdir": "^0.2.0",
     "flow-bin": "^0.164.0",
-    "gen-flow-files": "https://github.com/drarmstr/gen-flow-files.git",
+    "flow-copy-source": "^2.0.9",
     "hermes-eslint": "^0.4.8",
     "husky": ">=4",
     "immutable": "^4.0.0-rc.12",
