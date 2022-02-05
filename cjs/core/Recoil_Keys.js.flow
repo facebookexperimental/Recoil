@@ -14,14 +14,18 @@ export type NodeKey = string;
 export opaque type StateID = number;
 export opaque type StoreID = number;
 export opaque type ComponentID = number;
+
 let nextTreeStateVersion = 0;
-declare var getNextTreeStateVersion: () => any;
+const getNextTreeStateVersion: () => StateID = () => nextTreeStateVersion++;
+
 let nextStoreID = 0;
-declare var getNextStoreID: () => any;
+const getNextStoreID: () => StoreID = () => nextStoreID++;
+
 let nextComponentID = 0;
-declare var getNextComponentID: () => any;
+const getNextComponentID: () => ComponentID = () => nextComponentID++;
+
 module.exports = {
   getNextTreeStateVersion,
   getNextStoreID,
-  getNextComponentID
+  getNextComponentID,
 };

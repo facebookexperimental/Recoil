@@ -10,25 +10,15 @@
  */
 'use strict';
 
-import type { Loadable, RecoilState, RecoilValue } from '../../Recoil_index';
+import type {Loadable, RecoilState, RecoilValue} from '../../Recoil_index';
 
-const {
-  atom,
-  selector
-} = require('../../Recoil_index');
-
+const {atom, selector} = require('../../Recoil_index');
 const {
   getRecoilValueAsLoadable,
-  setRecoilValue
+  setRecoilValue,
 } = require('../Recoil_RecoilValueInterface');
-
-const {
-  performance
-} = require('perf_hooks');
-
-const {
-  makeStore
-} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+const {performance} = require('perf_hooks');
+const {makeStore} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 const ITERATIONS = [1]; // Avoid iterating for automated testing
 // const ITERATIONS = [2, 2];
@@ -36,38 +26,81 @@ const ITERATIONS = [1]; // Avoid iterating for automated testing
 // const ITERATIONS = [10, 100, 1000, 10000];
 // const ITERATIONS = [10, 100, 1000, 10000, 100000];
 
-declare function testPerf(name: string, fn: (number) => void): any;
+function testPerf(name: string, fn: number => void) {
+  test.each(ITERATIONS)(name, iterations => {
+    store = makeStore();
+    const BEGIN = performance.now();
+    fn(iterations);
+    const END = performance.now();
+    console.log(`${name}(${iterations})`, END - BEGIN);
+  });
+}
+
 let store = makeStore();
-declare function getNodeLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T>;
-declare function getNodeValue<T>(recoilValue: RecoilValue<T>): T;
-declare function setNode(recoilValue: any, value: mixed): any;
+
+function getNodeLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
+  return getRecoilValueAsLoadable(store, recoilValue);
+}
+
+function getNodeValue<T>(recoilValue: RecoilValue<T>): T {
+  return getNodeLoadable(recoilValue).getValue();
+}
+
+function setNode(recoilValue, value: mixed) {
+  setRecoilValue(store, recoilValue, value);
+  // $FlowFixMe[unsafe-addition]
+  // $FlowFixMe[cannot-write]
+  store.getState().currentTree.version++;
+}
+
 let nextAtomKey = 0;
-declare function createAtoms(num: any): Array<RecoilState<string>>;
-declare var helpersSelector: () => any;
-declare var getHelpers: () => any;
+
+function createAtoms(num): Array<RecoilState<string>> {
+  const atoms = Array(num);
+  const atomKey = nextAtomKey++;
+  for (let i = 0; i < num; i++) {
+    atoms[i] = atom({
+      key: `PERF-${atomKey}-${i}`,
+      default: 'DEFAULT',
+    });
+  }
+  return atoms;
+}
+
+const helpersSelector = () =>
+  selector({
+    key: `PERF-helpers-${nextAtomKey++}`,
+    get: ({getCallback}) => ({
+      getSnapshot: getCallback(
+        ({snapshot}) =>
+          () =>
+            snapshot,
+      ),
+    }),
+  });
+const getHelpers = () => getNodeValue(helpersSelector());
+
 testPerf('creating n atoms', iterations => {
   createAtoms(iterations);
 });
+
 testPerf('getting n atoms', iterations => {
   const atoms = createAtoms(iterations);
-
   for (const node of atoms) {
     getNodeValue(node);
   }
 });
+
 testPerf('setting n atoms', iterations => {
   const atoms = createAtoms(iterations);
-
   for (const node of atoms) {
     setNode(node, 'SET');
   }
 });
+
 testPerf('cloning n snapshots', iterations => {
   const atoms = createAtoms(iterations);
-  const {
-    getSnapshot
-  } = getHelpers();
-
+  const {getSnapshot} = getHelpers();
   for (const node of atoms) {
     // Set node to avoid hitting cached snapshots
     setNode(node, 'SET');

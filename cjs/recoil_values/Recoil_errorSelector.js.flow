@@ -10,13 +10,12 @@
  */
 'use strict';
 
-import type { RecoilValueReadOnly } from '../core/Recoil_RecoilValue';
+import type {RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
 
 const selectorFamily = require('./Recoil_selectorFamily');
+const err = require('recoil-shared/util/Recoil_err');
 
-const err = require('recoil-shared/util/Recoil_err'); // flowlint-next-line unclear-type:off
-
-
+// flowlint-next-line unclear-type:off
 const throwingSelector = selectorFamily<any, any>({
   key: '__error',
   get: message => () => {
@@ -24,10 +23,14 @@ const throwingSelector = selectorFamily<any, any>({
   },
   // TODO Why?
   cachePolicyForParams_UNSTABLE: {
-    equality: 'reference'
-  }
-}); // Function that returns a selector which always throws an error
-// with the provided message.
+    equality: 'reference',
+  },
+});
 
-declare function errorSelector<T>(message: string): RecoilValueReadOnly<T>;
+// Function that returns a selector which always throws an error
+// with the provided message.
+function errorSelector<T>(message: string): RecoilValueReadOnly<T> {
+  return throwingSelector(message);
+}
+
 module.exports = errorSelector;

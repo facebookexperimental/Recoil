@@ -10,56 +10,73 @@
  */
 'use strict';
 
-import type { RecoilValue } from '../../core/Recoil_RecoilValue';
-import type { Store } from '../../core/Recoil_State';
+import type {RecoilValue} from '../../core/Recoil_RecoilValue';
+import type {Store} from '../../core/Recoil_State';
 
 const {
-  getRecoilTestFn
+  getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React, useState, act, getRecoilValueAsLoadable, setRecoilValue, subscribeToRecoilValue, useRecoilState, useSetUnvalidatedAtomValues, componentThatReadsAndWritesAtom, renderElements, atom, constSelector, store: Store;
+let React,
+  useState,
+  act,
+  getRecoilValueAsLoadable,
+  setRecoilValue,
+  subscribeToRecoilValue,
+  useRecoilState,
+  useSetUnvalidatedAtomValues,
+  componentThatReadsAndWritesAtom,
+  renderElements,
+  atom,
+  constSelector,
+  store: Store;
+
 let fallbackAtom: RecoilValue<number>, hasFallbackAtom: RecoilValue<number>;
+
 let id = 0;
+
 const testRecoil = getRecoilTestFn(() => {
   const {
-    makeStore
+    makeStore,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   React = require('react');
-  ({
-    useState
-  } = require('react'));
-  ({
-    act
-  } = require('ReactTestUtils'));
+  ({useState} = require('react'));
+  ({act} = require('ReactTestUtils'));
+
   ({
     getRecoilValueAsLoadable,
     setRecoilValue,
-    subscribeToRecoilValue
+    subscribeToRecoilValue,
   } = require('../../core/Recoil_RecoilValueInterface'));
   ({
     useRecoilState,
-    useSetUnvalidatedAtomValues
+    useSetUnvalidatedAtomValues,
   } = require('../../hooks/Recoil_Hooks'));
   ({
     componentThatReadsAndWritesAtom,
-    renderElements
+    renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   atom = require('../Recoil_atom');
   constSelector = require('../Recoil_constSelector');
+
   store = makeStore();
-  fallbackAtom = atom<number>({
-    key: `fallback${id}`,
-    default: 1
-  });
+  fallbackAtom = atom<number>({key: `fallback${id}`, default: 1});
   hasFallbackAtom = atom<number>({
     key: `hasFallback${id++}`,
-    default: fallbackAtom
+    default: fallbackAtom,
   });
   subscribeToRecoilValue(store, hasFallbackAtom, () => undefined);
 });
-declare function get(recoilValue: any): any;
-declare function set(recoilValue: any, value: any): any;
+
+function get(recoilValue) {
+  return getRecoilValueAsLoadable(store, recoilValue).contents;
+}
+
+function set(recoilValue, value) {
+  setRecoilValue(store, recoilValue, value);
+}
+
 testRecoil('atomWithFallback', () => {
   expect(get(hasFallbackAtom)).toBe(1);
   set(fallbackAtom, 2);
@@ -67,63 +84,95 @@ testRecoil('atomWithFallback', () => {
   set(hasFallbackAtom, 3);
   expect(get(hasFallbackAtom)).toBe(3);
 });
+
 describe('ReturnDefaultOrFallback', () => {
   testRecoil('Returns the default', () => {
     let theAtom = null;
     let setUnvalidatedAtomValues;
-    declare function SetsUnvalidatedAtomValues(): any;
+    function SetsUnvalidatedAtomValues() {
+      setUnvalidatedAtomValues = useSetUnvalidatedAtomValues();
+      return null;
+    }
     let setVisible;
-    declare function Switch(arg0: any): any;
-    declare function MyReadsAtom(arg0: any): any;
-    const container = renderElements(<>
+    function Switch({children}) {
+      const [visible, mySetVisible] = useState(false);
+      setVisible = mySetVisible;
+      return visible ? children : null;
+    }
+    function MyReadsAtom({getAtom}) {
+      // flowlint-next-line unclear-type:off
+      const [value] = useRecoilState((getAtom(): any));
+      return value;
+    }
+    const container = renderElements(
+      <>
         <SetsUnvalidatedAtomValues />
         <Switch>
           <MyReadsAtom getAtom={() => theAtom} />
         </Switch>
-      </>);
+      </>,
+    );
     act(() => {
-      setUnvalidatedAtomValues(new Map().set('notDefinedYetAtomValidator', 123));
+      setUnvalidatedAtomValues(
+        new Map().set('notDefinedYetAtomValidator', 123),
+      );
     });
     theAtom = atom({
       key: 'notDefinedYetAtomValidator',
       default: 456,
       persistence_UNSTABLE: {
         type: 'url',
-        validator: (_, returnFallback) => returnFallback
-      }
+        validator: (_, returnFallback) => returnFallback,
+      },
     });
     act(() => {
       setVisible(true);
     });
     expect(container.textContent).toBe('456');
   });
+
   testRecoil('Returns the fallback', () => {
     let theAtom = null;
     let setUnvalidatedAtomValues;
-    declare function SetsUnvalidatedAtomValues(): any;
+    function SetsUnvalidatedAtomValues() {
+      setUnvalidatedAtomValues = useSetUnvalidatedAtomValues();
+      return null;
+    }
     let setVisible;
-    declare function Switch(arg0: any): any;
-    declare function MyReadsAtom(arg0: any): any;
-    const container = renderElements(<>
+    function Switch({children}) {
+      const [visible, mySetVisible] = useState(false);
+      setVisible = mySetVisible;
+      return visible ? children : null;
+    }
+    function MyReadsAtom({getAtom}) {
+      // flowlint-next-line unclear-type:off
+      const [value] = useRecoilState((getAtom(): any));
+      return value;
+    }
+    const container = renderElements(
+      <>
         <SetsUnvalidatedAtomValues />
         <Switch>
           <MyReadsAtom getAtom={() => theAtom} />
         </Switch>
-      </>);
+      </>,
+    );
     act(() => {
-      setUnvalidatedAtomValues(new Map().set('notDefinedYetAtomWithFallback', 123));
+      setUnvalidatedAtomValues(
+        new Map().set('notDefinedYetAtomWithFallback', 123),
+      );
     });
     const fallback = atom<number>({
       key: 'notDefinedYetAtomFallback',
-      default: 222
+      default: 222,
     });
     theAtom = atom({
       key: 'notDefinedYetAtomWithFallback',
       default: fallback,
       persistence_UNSTABLE: {
         type: 'url',
-        validator: (_, returnFallback) => returnFallback
-      }
+        validator: (_, returnFallback) => returnFallback,
+      },
     });
     act(() => {
       setVisible(true);
@@ -131,14 +180,15 @@ describe('ReturnDefaultOrFallback', () => {
     expect(container.textContent).toBe('222');
   });
 });
+
 testRecoil('Atom with atom fallback can store null and undefined', () => {
   const myFallbackAtom = atom<?string>({
     key: 'fallback for null undefined',
-    default: 'FALLBACK'
+    default: 'FALLBACK',
   });
   const myAtom = atom<?string>({
     key: 'fallback atom with undefined',
-    default: myFallbackAtom
+    default: myFallbackAtom,
   });
   expect(get(myAtom)).toBe('FALLBACK');
   act(() => set(myAtom, 'VALUE'));
@@ -150,11 +200,12 @@ testRecoil('Atom with atom fallback can store null and undefined', () => {
   act(() => set(myAtom, 'VALUE'));
   expect(get(myAtom)).toBe('VALUE');
 });
+
 testRecoil('Atom with selector fallback can store null and undefined', () => {
   const fallbackSelector = constSelector('FALLBACK');
   const myAtom = atom<?string>({
     key: 'fallback selector with undefined',
-    default: fallbackSelector
+    default: fallbackSelector,
   });
   expect(get(myAtom)).toBe('FALLBACK');
   act(() => set(myAtom, 'VALUE'));
@@ -166,27 +217,31 @@ testRecoil('Atom with selector fallback can store null and undefined', () => {
   act(() => set(myAtom, 'VALUE'));
   expect(get(myAtom)).toBe('VALUE');
 });
+
 testRecoil('Effects', () => {
   let inited = false;
   const myFallbackAtom = atom({
     key: 'atom with fallback effects init fallback',
-    default: 'FALLBACK'
+    default: 'FALLBACK',
   });
   const myAtom = atom<string>({
     key: 'atom with fallback effects init',
     default: myFallbackAtom,
-    effects: [({
-      setSelf
-    }) => {
-      inited = true;
-      setSelf('INIT');
-    }]
+    effects: [
+      ({setSelf}) => {
+        inited = true;
+        setSelf('INIT');
+      },
+    ],
   });
+
   expect(get(myAtom)).toEqual('INIT');
   expect(inited).toEqual(true);
+
   const [ReadsWritesAtom, _, reset] = componentThatReadsAndWritesAtom(myAtom);
   const c = renderElements(<ReadsWritesAtom />);
   expect(c.textContent).toEqual('"INIT"');
+
   act(reset);
   expect(c.textContent).toEqual('"FALLBACK"');
 });

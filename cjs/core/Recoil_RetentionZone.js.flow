@@ -8,11 +8,16 @@
  * @flow strict
  * @format
  */
+
 'use strict';
 
-declare class RetentionZone {}
-declare function retentionZone(): RetentionZone;
+class RetentionZone {}
+
+function retentionZone(): RetentionZone {
+  return new RetentionZone();
+}
+
 module.exports = {
   RetentionZone,
-  retentionZone
+  retentionZone,
 };

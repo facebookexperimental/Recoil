@@ -10,9 +10,7 @@
  */
 'use strict';
 
-const {
-  ArrayKeyedMap
-} = require('../Recoil_ArrayKeyedMap');
+const {ArrayKeyedMap} = require('../Recoil_ArrayKeyedMap');
 
 test('basic operation', () => {
   const m = new ArrayKeyedMap();
@@ -23,6 +21,7 @@ test('basic operation', () => {
   expect(m.get(['a'])).toBe(1);
   expect(m.get(['a', 'b'])).toBe(2);
 });
+
 test('enumeration of properties', () => {
   const m = new ArrayKeyedMap();
   m.set([], 0);
@@ -36,6 +35,7 @@ test('enumeration of properties', () => {
   expect(entries[2][0]).toEqual(['a', 'b']);
   expect(entries[2][1]).toBe(2);
 });
+
 test('copying', () => {
   const m = new ArrayKeyedMap();
   m.set([], 0);

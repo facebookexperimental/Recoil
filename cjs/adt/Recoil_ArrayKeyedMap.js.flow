@@ -16,16 +16,93 @@
 'use strict';
 
 const LEAF = {};
+
 const emptyMap = new Map();
-declare class ArrayKeyedMap<V> {
-  _base: Map<any, any>,
-  constructor(existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>): ArrayKeyedMap<V>,
-  get(key: mixed): V | void,
-  set(key: mixed, value: V): any,
-  delete(key: mixed): any,
-  entries(): Iterator<[$ReadOnlyArray<mixed>, V]>,
-  toBuiltInMap(): Map<$ReadOnlyArray<mixed>, V>,
+
+class ArrayKeyedMap<V> {
+  _base: Map<any, any> = new Map();
+
+  constructor(
+    existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
+  ): ArrayKeyedMap<V> {
+    if (existing instanceof ArrayKeyedMap) {
+      for (const [k, v] of existing.entries()) {
+        this.set(k, v);
+      }
+    } else if (existing) {
+      for (const [k, v] of existing) {
+        this.set(k, v);
+      }
+    }
+    return this;
+  }
+
+  get(key: mixed): V | void {
+    const ks = Array.isArray(key) ? key : [key];
+    let map = this._base;
+    ks.forEach(k => {
+      map = map.get(k) ?? emptyMap;
+    });
+    return map === undefined ? undefined : map.get(LEAF);
+  }
+
+  set(key: mixed, value: V): any {
+    const ks = Array.isArray(key) ? key : [key];
+    let map = this._base;
+    let next = map;
+    ks.forEach(k => {
+      // $FlowFixMe[incompatible-use]
+      next = map.get(k);
+      if (!next) {
+        next = new Map();
+        // $FlowFixMe[incompatible-use]
+        map.set(k, next);
+      }
+      map = next;
+    });
+    // $FlowFixMe[incompatible-use]
+    next.set(LEAF, value);
+    return this;
+  }
+
+  delete(key: mixed): any {
+    const ks = Array.isArray(key) ? key : [key];
+    let map = this._base;
+    let next = map;
+    ks.forEach(k => {
+      // $FlowFixMe[incompatible-use]
+      next = map.get(k);
+      if (!next) {
+        next = new Map();
+        // $FlowFixMe[incompatible-use]
+        map.set(k, next);
+      }
+      map = next;
+    });
+    // $FlowFixMe[incompatible-use]
+    next.delete(LEAF);
+    // TODO We could cleanup empty maps
+    return this;
+  }
+
+  entries(): Iterator<[$ReadOnlyArray<mixed>, V]> {
+    const answer = [];
+    function recurse(level, prefix) {
+      level.forEach((v, k) => {
+        if (k === LEAF) {
+          answer.push([prefix, v]);
+        } else {
+          recurse(v, prefix.concat(k));
+        }
+      });
+    }
+    recurse(this._base, []);
+    return answer.values();
+  }
+
+  toBuiltInMap(): Map<$ReadOnlyArray<mixed>, V> {
+    return new Map(this.entries());
+  }
 }
-module.exports = {
-  ArrayKeyedMap
-};
+
+module.exports = {ArrayKeyedMap};

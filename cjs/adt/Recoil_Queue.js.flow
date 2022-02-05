@@ -8,9 +8,13 @@
  * @flow strict
  * @format
  */
+
 'use strict';
 
-declare function enqueueExecution(s: string, f: () => mixed): any;
+function enqueueExecution(s: string, f: () => mixed) {
+  f();
+}
+
 module.exports = {
-  enqueueExecution
+  enqueueExecution,
 };

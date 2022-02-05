@@ -10,15 +10,19 @@
  */
 'use strict';
 
-import type { NodeKey } from '../core/Recoil_Keys';
+import type {NodeKey} from '../core/Recoil_Keys';
+
 export type NodeCacheRoute = Array<[NodeKey, mixed]>;
+
 export type TreeCacheNode<T> = TreeCacheLeaf<T> | TreeCacheBranch<T>;
+
 export type TreeCacheLeaf<T> = {
   type: 'leaf',
   value: T,
   branchKey?: ?mixed,
   parent: ?TreeCacheBranch<T>,
 };
+
 export type TreeCacheBranch<T> = {
   type: 'branch',
   nodeKey: NodeKey,
@@ -26,14 +30,19 @@ export type TreeCacheBranch<T> = {
   branchKey?: ?mixed,
   parent: ?TreeCacheBranch<T>,
 };
+
 export type NodeValueGet = (nodeKey: NodeKey) => mixed;
+
 type NodeVisitHandler<T> = (node: TreeCacheNode<T>) => void;
+
 export type GetHandlers<T> = {
-  onNodeVisit: NodeVisitHandler<T>
+  onNodeVisit: NodeVisitHandler<T>,
 };
+
 export type SetHandlers<T> = {
-  onNodeVisit: NodeVisitHandler<T>
+  onNodeVisit: NodeVisitHandler<T>,
 };
+
 /**
  * This is an opinionated tree cache that conforms to the requirements needed
  * by Recoil selectors.
@@ -52,12 +61,11 @@ export type SetHandlers<T> = {
  * hit as these incremental nodes represent dependencies to the selector, which
  * are used internally by the selector.
  */
-
 export interface TreeCacheImplementation<T> {
-  +get: (NodeValueGet, handlers?: GetHandlers<T>) => ?T,
-  +set: (NodeCacheRoute, T, handlers?: SetHandlers<T>) => void,
-  +delete: (TreeCacheNode<T>) => boolean,
-  +clear: () => void,
-  +root: () => ?TreeCacheNode<T>,
-  +size: () => number,
+  +get: (NodeValueGet, handlers?: GetHandlers<T>) => ?T;
+  +set: (NodeCacheRoute, T, handlers?: SetHandlers<T>) => void;
+  +delete: (TreeCacheNode<T>) => boolean;
+  +clear: () => void;
+  +root: () => ?TreeCacheNode<T>;
+  +size: () => number;
 }

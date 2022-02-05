@@ -11,9 +11,9 @@
 'use strict';
 
 export interface CacheImplementation<K, V> {
-  +get: (K) => ?V,
-  +set: (K, V) => void,
-  +delete: (K) => void,
-  +clear: () => void,
-  +size: () => number,
+  +get: K => ?V;
+  +set: (K, V) => void;
+  +delete: K => void;
+  +clear: () => void;
+  +size: () => number;
 }

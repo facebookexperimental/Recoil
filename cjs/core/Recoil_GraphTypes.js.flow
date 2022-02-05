@@ -8,9 +8,11 @@
  * @flow strict
  * @format
  */
+
 'use strict';
 
-import type { NodeKey } from './Recoil_Keys';
+import type {NodeKey} from './Recoil_Keys';
+
 export type Graph = $ReadOnly<{
   // TODO rename these properties to be more descriptive and symetric.
   // Upstream Node dependencies
@@ -21,5 +23,7 @@ export type Graph = $ReadOnly<{
   // Downstream Node subscriptions
   nodeToNodeSubscriptions: Map<NodeKey, Set<NodeKey>>,
 }>;
+
 export type DependencyMap = Map<NodeKey, Set<NodeKey>>;
+
 module.exports = ({}: {...});
