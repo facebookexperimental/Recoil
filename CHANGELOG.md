@@ -2,6 +2,8 @@
 
 ## UPCOMING
 
+- Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589)
+
 **_Add new changes here as they land_**
 
 - `shouldNotBeFrozen` now works in JS environment without `Window` interface. (#1571)

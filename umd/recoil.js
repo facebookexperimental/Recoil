@@ -4152,7 +4152,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       } = storeState; // Ignore commits that are not because of Recoil transactions -- namely,
       // because something above RecoilRoot re-rendered:
 
-      if (nextTree === null) {
+      if (nextTree == null) {
         return;
       } // nextTree is now committed -- note that copying and reset occurs when
       // a transaction begins, in startNextTreeIfNeeded:
@@ -4172,7 +4172,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       storeState.previousTree = null;
 
       if (Recoil_gkx('recoil_memory_managament_2020')) {
-        releaseScheduledRetainablesNow$1(store);
+        // Only release retainables if there were no writes during the end of the
+        // batch.  This avoids releasing something we might be about to use.
+        if (nextTree == null) {
+          releaseScheduledRetainablesNow$1(store);
+        }
       }
     } finally {
       storeState.commitDepth--;
