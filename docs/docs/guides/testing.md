@@ -196,6 +196,15 @@ test('Test multipliedState', () => {
 });
 ```
 
+### Jest unit testing async selectors
+
+When testing an **async selector**, it is necessary to `retain()` the snapshot to avoid early cancelation of the selector.
+
+```jsx
+const initialSnapshot = snapshot_UNSTABLE();
+initialSnapshot.retain();
+```
+
 ### Clearing all selector caches
 
 ```jsx
