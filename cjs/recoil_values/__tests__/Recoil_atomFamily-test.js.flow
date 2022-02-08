@@ -11,6 +11,7 @@
 'use strict';
 
 import type {Store} from '../../core/Recoil_State';
+import type {StoreID as StoreIDType} from 'Recoil_Keys';
 
 const {
   getRecoilTestFn,
@@ -611,7 +612,7 @@ describe('Effects', () => {
       ],
     });
 
-    const storeIDs = {};
+    const storeIDs: {[string]: StoreIDType} = {};
     function StoreID({rootKey}) {
       const storeID = useRecoilStoreID();
       storeIDs[rootKey] = storeID;

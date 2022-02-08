@@ -7,6 +7,8 @@
  */
 'use strict';
 
+import type {StoreID as StoreIDType} from 'Recoil_Keys';
+
 const {
   getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
@@ -22,7 +24,7 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 testRecoil('useRecoilStoreID', () => {
-  const storeIDs = {};
+  const storeIDs: {[string]: StoreIDType} = {};
   function StoreID({rootKey}) {
     const storeID = useRecoilStoreID();
     storeIDs[rootKey] = storeID;
