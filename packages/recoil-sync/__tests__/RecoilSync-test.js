@@ -7,8 +7,8 @@
  */
 'use strict';
 
-import type {Loadable} from 'Recoil';
 import type {ItemKey, ItemSnapshot, ListenInterface} from '../RecoilSync';
+import type {Loadable} from 'Recoil';
 
 const {act} = require('ReactTestUtils');
 const {
