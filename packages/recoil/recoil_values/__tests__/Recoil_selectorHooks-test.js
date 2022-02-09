@@ -33,6 +33,7 @@ let React,
   constSelector,
   errorSelector,
   selector,
+  noWait,
   ReadsAtom,
   asyncSelector,
   loadingAsyncSelector,
@@ -62,6 +63,7 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../../recoil_values/Recoil_atom');
   constSelector = require('../../recoil_values/Recoil_constSelector');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');
+  ({noWait} = require('../../recoil_values/Recoil_WaitFor'));
   selector = require('../../recoil_values/Recoil_selector');
   ({
     ReadsAtom,
@@ -603,7 +605,6 @@ describe('Dynamic Dependencies', () => {
         key: 'selectorTrackDepsIncrementally',
         get: async ({get}) => {
           await Promise.resolve(); // needed to simulate discovering a dependency asynchronously
-
           return get(anAtom);
         },
       });
@@ -804,6 +805,155 @@ describe('Dynamic Dependencies', () => {
       expect(c.textContent).toEqual('1');
     },
   );
+
+  testRecoil('Dynamic deps will refresh', async () => {
+    const myAtom = atom({
+      key: 'selector dynamic deps atom',
+      default: 'DEFAULT',
+    });
+    const myAtomA = atom({
+      key: 'selector dynamic deps atom A',
+      default: new Promise(() => {}),
+    });
+    const myAtomB = atom({
+      key: 'selector dynamic deps atom B',
+      default: 'B',
+    });
+    const myAtomC = atom({
+      key: 'selector dynamic deps atom C',
+      default: new Promise(() => {}),
+    });
+
+    let selectorEvaluations = 0;
+    const mySelector = selector({
+      key: 'selector dynamic deps selector',
+      get: async ({get}) => {
+        selectorEvaluations++;
+        await Promise.resolve();
+        const sw = get(myAtom);
+        if (sw === 'A') {
+          return 'RESOLVED_' + get(myAtomA);
+        }
+        if (sw === 'B') {
+          return 'RESOLVED_' + get(myAtomB);
+        }
+        if (sw === 'C') {
+          return 'RESOLVED_' + get(myAtomC);
+        }
+        await new Promise(() => {});
+      },
+    });
+
+    // This wrapper selector is important so that the subscribing component
+    // doesn't suspend while the selector is pending async results.
+    // Otherwise the component may trigger re-evaluations when it wakes up
+    // and provide a false-positive.
+    const wrapperSelector = selector({
+      key: 'selector dynamic deps wrapper',
+      get: ({get}) => {
+        const loadable = get(noWait(mySelector));
+        return loadable.state === 'loading' ? 'loading' : loadable.contents;
+      },
+    });
+
+    let setAtom, setAtomA, setAtomB;
+    function ComponentSetter() {
+      setAtom = useSetRecoilState(myAtom);
+      setAtomA = useSetRecoilState(myAtomA);
+      setAtomB = useSetRecoilState(myAtomB);
+      return null;
+    }
+    const c = renderElements(
+      <>
+        <ComponentSetter />
+        <ReadsAtom atom={wrapperSelector} />
+      </>,
+    );
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"loading"');
+    expect(selectorEvaluations).toBe(1);
+
+    // Cause re-evaluation to pending state
+    act(() => setAtom('TMP'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"loading"');
+    expect(selectorEvaluations).toBe(2);
+
+    // Add atomA dependency, which is pending
+    act(() => setAtom('A'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"loading"');
+    expect(selectorEvaluations).toBe(3);
+
+    // change to atomB dependency
+    act(() => setAtom('B'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"RESOLVED_B"');
+    expect(selectorEvaluations).toBe(4);
+
+    // Set atomB
+    act(() => setAtomB('SETB-0'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"RESOLVED_SETB-0"');
+    expect(selectorEvaluations).toBe(5);
+
+    // Change back to atomA dependency
+    act(() => setAtom('A'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"loading"');
+    expect(selectorEvaluations).toBe(6);
+
+    // Setting B is currently ignored
+    act(() => setAtomB('SETB-IGNORE'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"loading"');
+    expect(selectorEvaluations).toBe(6);
+
+    // Set atomA
+    act(() => setAtomA('SETA'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"RESOLVED_SETA"');
+    expect(selectorEvaluations).toBe(7);
+
+    // Setting atomB is ignored
+    act(() => setAtomB('SETB-LATER'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"RESOLVED_SETA"');
+    expect(selectorEvaluations).toBe(7);
+
+    // Change to atomC, which is pending
+    act(() => setAtom('C'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"loading"');
+    expect(selectorEvaluations).toBe(8);
+
+    // Setting atomA is ignored
+    act(() => setAtomA('SETA-LATER'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"loading"');
+    expect(selectorEvaluations).toBe(8);
+
+    // change back to atomA for new value
+    act(() => setAtom('A'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"RESOLVED_SETA-LATER"');
+    expect(selectorEvaluations).toBe(9);
+
+    // Change back to atomB
+    act(() => setAtom('B'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"RESOLVED_SETB-LATER"');
+    expect(selectorEvaluations).toBe(10);
+
+    // Set atomB
+    act(() => setAtomB('SETB-1'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"RESOLVED_SETB-1"');
+    expect(selectorEvaluations).toBe(11);
+  });
 });
 
 describe('Catching Deps', () => {
