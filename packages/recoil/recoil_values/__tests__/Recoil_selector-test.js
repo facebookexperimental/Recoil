@@ -28,6 +28,7 @@ let store,
   selector,
   asyncSelector,
   resolvingAsyncSelector,
+  stringAtom,
   flushPromisesAndTimers,
   DefaultValue,
   freshSnapshot;
@@ -50,6 +51,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     asyncSelector,
     resolvingAsyncSelector,
+    stringAtom,
     flushPromisesAndTimers,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({noWait} = require('../Recoil_WaitFor'));
@@ -928,6 +930,37 @@ describe('getCallback', () => {
       getPromise(myAsyncSelector).catch(({callback}) => callback(123)),
     ).resolves.toEqual(123);
   });
+});
+
+testRecoil('Report error with inconsistent values', () => {
+  const depA = stringAtom();
+  const depB = stringAtom();
+
+  // NOTE This is an illegal selector because it can provide different values
+  // with the same input dependency values.
+  let invalidInput = null;
+  const mySelector = selector({
+    key: 'selector report invalid change',
+    get: ({get}) => {
+      get(depA);
+      if (invalidInput) {
+        return invalidInput;
+      }
+      return get(depB);
+    },
+  });
+
+  expect(getValue(mySelector)).toBe('DEFAULT');
+
+  invalidInput = 'INVALID';
+  setValue(depB, 'SET');
+
+  const DEV = window.__DEV__;
+  window.__DEV__ = true;
+  expect(() => getValue(mySelector)).toThrow('consistent values');
+  window.__DEV__ = false;
+  expect(getValue(mySelector)).toBe('INVALID');
+  window.__DEV__ = DEV;
 });
 
 testRecoil('Selector values are frozen', async () => {
