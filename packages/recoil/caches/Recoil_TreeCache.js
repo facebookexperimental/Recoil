@@ -20,6 +20,7 @@ import type {
   TreeCacheNode,
 } from './Recoil_TreeCacheImplementationType';
 
+const err = require('recoil-shared/util/Recoil_err');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
@@ -173,10 +174,11 @@ const addLeaf = <T>(
   value: T,
   branchKey: ?mixed,
   handlers?: SetHandlers<T>,
-  onAbort: () => void,
+  onMismatchedPath: () => void,
 ): TreeCacheNode<T> => {
   let node;
 
+  // New cache route, make new nodes
   if (root == null) {
     if (route.length === 0) {
       node = {type: 'leaf', value, parent, branchKey};
@@ -194,38 +196,48 @@ const addLeaf = <T>(
 
       node.branches.set(
         nodeValue,
-        addLeaf(null, rest, node, value, nodeValue, handlers, onAbort),
+        addLeaf(null, rest, node, value, nodeValue, handlers, onMismatchedPath),
       );
     }
+
+    // Follow an existing cache route
   } else {
     node = root;
 
-    if (route.length) {
-      const [path, ...rest] = route;
-      const [nodeKey, nodeValue] = path;
+    const changedPathError =
+      'Invalid cache values.  This can happen if selectors do not return ' +
+      'consistent values for the same values of their dependencies.';
 
-      if (root.type !== 'branch' || root.nodeKey !== nodeKey) {
-        recoverableViolation(
-          'Existing cache must have a branch midway through the ' +
-            'route with matching node key. Resetting cache.',
-          'recoil',
-        );
-        onAbort();
+    if (route.length) {
+      const [[nodeKey, nodeValue], ...rest] = route;
+
+      if (node.type !== 'branch' || node.nodeKey !== nodeKey) {
+        recoverableViolation(changedPathError + '  Resetting cache.', 'recoil');
+        onMismatchedPath();
         return node; // ignored
       }
 
-      root.branches.set(
+      node.branches.set(
         nodeValue,
         addLeaf(
-          root.branches.get(nodeValue),
+          node.branches.get(nodeValue),
           rest,
-          root,
+          node,
           value,
           nodeValue,
           handlers,
-          onAbort,
+          onMismatchedPath,
         ),
       );
+    } else {
+      if (node.type !== 'leaf' || node.branchKey !== branchKey) {
+        if (__DEV__) {
+          throw err(changedPathError);
+        }
+        recoverableViolation(changedPathError + '  Resetting cache.', 'recoil');
+        onMismatchedPath();
+        return node; // ignored
+      }
     }
   }
 
