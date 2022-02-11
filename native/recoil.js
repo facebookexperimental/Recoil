@@ -6269,10 +6269,10 @@ const findLeaf = (root, getNodeValue, handlers) => {
   return findLeaf(root.branches.get(nodeValue), getNodeValue, handlers);
 };
 
-const addLeaf = (root, route, parent, value, branchKey, handlers, onAbort) => {
+const addLeaf = (root, route, parent, value, branchKey, handlers, onMismatchedPath) => {
   var _handlers$onNodeVisit2;
 
-  let node;
+  let node; // New cache route, make new nodes
 
   if (root == null) {
     if (route.length === 0) {
@@ -6292,22 +6292,33 @@ const addLeaf = (root, route, parent, value, branchKey, handlers, onAbort) => {
         branches: new Map(),
         branchKey
       };
-      node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers, onAbort));
-    }
+      node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers, onMismatchedPath));
+    } // Follow an existing cache route
+
   } else {
     node = root;
+    const changedPathError = 'Invalid cache values.  This can happen if selectors do not return ' + 'consistent values for the same values of their dependencies.';
 
     if (route.length) {
-      const [path, ...rest] = route;
-      const [nodeKey, nodeValue] = path;
+      const [[nodeKey, nodeValue], ...rest] = route;
 
-      if (root.type !== 'branch' || root.nodeKey !== nodeKey) {
-        Recoil_recoverableViolation('Existing cache must have a branch midway through the ' + 'route with matching node key. Resetting cache.');
-        onAbort();
+      if (node.type !== 'branch' || node.nodeKey !== nodeKey) {
+        Recoil_recoverableViolation(changedPathError + '  Resetting cache.');
+        onMismatchedPath();
         return node; // ignored
       }
 
-      root.branches.set(nodeValue, addLeaf(root.branches.get(nodeValue), rest, root, value, nodeValue, handlers, onAbort));
+      node.branches.set(nodeValue, addLeaf(node.branches.get(nodeValue), rest, node, value, nodeValue, handlers, onMismatchedPath));
+    } else {
+      if (node.type !== 'leaf' || node.branchKey !== branchKey) {
+        if (process.env.NODE_ENV !== "production") {
+          throw Recoil_err(changedPathError);
+        }
+
+        Recoil_recoverableViolation(changedPathError + '  Resetting cache.');
+        onMismatchedPath();
+        return node; // ignored
+      }
     }
   }
 
