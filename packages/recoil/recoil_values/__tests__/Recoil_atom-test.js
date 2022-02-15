@@ -940,6 +940,8 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('10099');
     act(() => setA(100));
     expect(c.textContent).toEqual('100101');
+    act(() => setA(101));
+    expect(c.textContent).toEqual('101102');
   });
 
   testRecoil('Cleanup Handlers - when root unmounted', () => {
