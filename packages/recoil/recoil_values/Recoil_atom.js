@@ -135,6 +135,7 @@ export type AtomEffect<T> = ({
   ) => void,
 
   // Accessors to read other atoms/selectors
+  observe: <S>(RecoilValue<S>, (value: S) => void) => () => void,
   getPromise: <S>(RecoilValue<S>) => Promise<S>,
   getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
   getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
@@ -292,6 +293,23 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         return getLoadable(recoilValue).toPromise();
       }
 
+      function observe<S>(
+        recoilValue: RecoilValue<S>,
+        observer: (value: S) => void,
+      ): () => void {
+        const observed = recoilValue;
+        const {release} = store.subscribeToTransactions(store => {
+          const loadable = store
+            .getState()
+            .currentTree?.atomValues.get(recoilValue.key);
+          if (loadable) {
+            const value = loadable.getValue();
+            observer(value);
+          }
+        }, recoilValue.key);
+        return release;
+      }
+
       function getInfo_UNSTABLE<S>(
         recoilValue: RecoilValue<S>,
       ): RecoilValueInfo<S> {
@@ -408,6 +426,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
             setSelf: setSelf(effect),
             resetSelf: resetSelf(effect),
             onSet: onSet(effect),
+            observe,
             getPromise,
             getLoadable,
             getInfo_UNSTABLE,

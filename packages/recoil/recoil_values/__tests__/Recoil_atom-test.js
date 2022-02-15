@@ -911,6 +911,37 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
 
+  testRecoil('observe', () => {
+    const atomA = atom({
+      key: 'observe test a',
+      default: 100,
+    });
+    const atomB = atom({
+      key: 'observe test b',
+      default: 99,
+      effects: [
+        ({observe, setSelf}) => {
+          return observe(atomA, value => {
+            setSelf(value + 1);
+          });
+        },
+      ],
+    });
+
+    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
+    const c = renderElements(
+      <>
+        <AtomA />
+        <AtomB />
+      </>,
+    );
+
+    expect(c.textContent).toEqual('10099');
+    act(() => setA(100));
+    expect(c.textContent).toEqual('100101');
+  });
+
   testRecoil('Cleanup Handlers - when root unmounted', () => {
     const refCountsA = [0, 0];
     const refCountsB = [0, 0];
