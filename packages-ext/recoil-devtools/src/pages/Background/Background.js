@@ -9,10 +9,7 @@
  */
 'use strict';
 
-import type {
-  BackgroundPostMessage,
-  ConnectionPort,
-} from '../../types/DevtoolsTypes';
+import type {BackgroundPostMessage} from '../../types/DevtoolsTypes';
 
 const {RecoilDevToolsActions} = require('../../constants/Constants');
 const {debug, warn} = require('../../utils/Logger');
@@ -20,17 +17,17 @@ const Store = require('../../utils/Store');
 
 const store = (window.store = new Store());
 
-const getConnectionId = ({sender}: ConnectionPort): number => {
+const getConnectionId = ({sender}: chrome$Port): number => {
   // If this is a devtool connection, there's no tab.id
   // But that ID is not required so we return 0
   return sender?.tab?.id ?? 0;
 };
-const getConnectionName = ({name}: ConnectionPort): string => {
+const getConnectionName = ({name}: chrome$Port): string => {
   let id = name ?? 'Recoil Connection';
   return id;
 };
 
-function onConnect(port: ConnectionPort): void {
+function onConnect(port: chrome$Port): void {
   const connectionId = getConnectionId(port);
   const displayName = getConnectionName(port);
   let isPopupConnection = false;

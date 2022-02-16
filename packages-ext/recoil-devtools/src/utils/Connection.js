@@ -11,7 +11,6 @@
 
 import type {
   BackgroundPostMessage,
-  ConnectionPort,
   DependenciesSetType,
   Node,
   NodeState,
@@ -35,7 +34,7 @@ class Connection {
   nodes: Map<string, Node>;
   nodesState: TXHashTable<NodeState>;
   devMode: boolean;
-  port: ConnectionPort;
+  port: chrome$Port;
 
   constructor(
     id: number,
@@ -43,7 +42,7 @@ class Connection {
     initialValues?: ?ValuesMessageType,
     displayName?: ?string,
     devMode?: ?boolean,
-    port: ConnectionPort,
+    port: chrome$Port,
   ) {
     this.id = nullthrows(id);
     this.displayName = displayName ?? 'Recoil Connection';
