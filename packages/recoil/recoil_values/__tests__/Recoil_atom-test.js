@@ -911,7 +911,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
 
-  testRecoil('onSetVa;lue - can observe updates', () => {
+  testRecoil('onSetValue - can observe updates', () => {
     const atomA = atom({
       key: 'onSetValue test a',
       default: 100,
@@ -955,7 +955,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('10099');
   });
 
-  testRecoil('onSetVa;lue - cannot subscribe to self', () => {
+  testRecoil('onSetValue - cannot subscribe to self', () => {
     const atomA = atom({
       key: 'onSetValue test a',
       default: 100,
@@ -970,6 +970,42 @@ describe('Effects', () => {
     const c = renderElements(<AtomA />);
 
     expect(c.textContent).toEqual('error');
+  });
+
+  testRecoil('onSetValue - cannot subscribe outside of init', () => {
+    const atomA = atom({
+      key: 'onSetValue test a',
+      default: 100,
+    });
+    const atomB = atom({
+      key: 'onSetValue test b',
+      default: 99,
+      effects: [
+        ({onSetValue, onSet}) => {
+          onSet(() => {
+            onSetValue(atomA, value => {
+              setSelf(value * 100);
+            });
+          });
+        },
+      ],
+    });
+
+    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
+    const c = renderElements(
+      <>
+        <AtomA />
+        <AtomB />
+      </>,
+    );
+
+    expect(c.textContent).toEqual('10099');
+
+    // mutating b will subscribe using onSetValue, which should emit an error
+    expect(() => act(() => setB(100))).toThrow(
+      'onSetValue must be used at the top of the effect scope',
+    );
   });
 
   testRecoil('Cleanup Handlers - when root unmounted', () => {

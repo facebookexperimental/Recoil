@@ -302,6 +302,11 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         if (recoilValue.key === key) {
           throw new Error('use onSet to subscribe to mutations to self');
         }
+        if (!duringInit) {
+          throw new Error(
+            'onSetValue must be used at the top of the effect scope',
+          );
+        }
         const {release} = store.subscribeToTransactions(store => {
           const {currentTree} = store.getState();
           const currentValueLoadable = getRecoilValueAsLoadable(
