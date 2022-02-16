@@ -1233,6 +1233,43 @@ describe('Effects', () => {
     expect(onSetValueRan).toBe(2);
   });
 
+  testRecoil('onSet - cannot subscribe outside of init', () => {
+    const atomA = atom({
+      key: 'onSet test a',
+      default: 100,
+    });
+    const atomB = atom({
+      key: 'onSet test b',
+      default: 99,
+      effects: [
+        ({onSetValue, onSet}) => {
+          onSetValue(atomA, () => {
+            console.log('ONSETVALUE');
+            onSet(value => {
+              setSelf(value * 100);
+            });
+          });
+        },
+      ],
+    });
+
+    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
+    const c = renderElements(
+      <>
+        <AtomA />
+        <AtomB />
+      </>,
+    );
+
+    expect(c.textContent).toEqual('10099');
+
+    // mutating b will subscribe using onSetValue, which should emit an error
+    expect(() => act(() => setA(100))).toThrow(
+      'onSet must be used at the top of the effect scope',
+    );
+  });
+
   // Test that effects can initialize state when an atom is first used after an
   // action that also updated another atom's state.
   // This corner case was reported by multiple customers.

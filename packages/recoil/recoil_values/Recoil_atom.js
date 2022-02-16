@@ -300,12 +300,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         observer: (value: S) => void,
       ): void {
         if (recoilValue.key === key) {
-          throw new Error('use onSet to subscribe to mutations to self');
+          throw err('use onSet to subscribe to mutations to self');
         }
         if (!duringInit) {
-          throw new Error(
-            'onSetValue must be used at the top of the effect scope',
-          );
+          throw err('onSetValue must be used at the top of the effect scope');
         }
         const {release} = store.subscribeToTransactions(store => {
           const {currentTree} = store.getState();
@@ -389,6 +387,9 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
       const onSet =
         effect => (handler: (T, T | DefaultValue, boolean) => void) => {
+          if (!duringInit) {
+            throw err('onSet must be used at the top of the effect scope');
+          }
           const {release} = store.subscribeToTransactions(currentStore => {
             // eslint-disable-next-line prefer-const
             let {currentTree, previousTree} = currentStore.getState();
