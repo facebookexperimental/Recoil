@@ -911,7 +911,7 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
 
-  testRecoil('observe', () => {
+  testRecoil('observe - can observe updates', () => {
     const atomA = atom({
       key: 'observe test a',
       default: 100,
@@ -929,7 +929,7 @@ describe('Effects', () => {
     });
 
     const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
-    const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
+    const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
     const c = renderElements(
       <>
         <AtomA />
@@ -937,11 +937,39 @@ describe('Effects', () => {
       </>,
     );
 
+    // default state
     expect(c.textContent).toEqual('10099');
+
+    // mutate state
     act(() => setA(100));
     expect(c.textContent).toEqual('100101');
     act(() => setA(101));
     expect(c.textContent).toEqual('101102');
+
+    // Reset upstream state, downstream updatesw
+    act(() => resetA());
+    expect(c.textContent).toEqual('100101');
+
+    // Reset downstream to revert to original state
+    act(() => resetB());
+    expect(c.textContent).toEqual('10099');
+  });
+
+  testRecoil('observe - cannot subscribe to self', () => {
+    const atomA = atom({
+      key: 'observe test a',
+      default: 100,
+      effects: [
+        ({observe, setSelf}) => {
+          observe(atomA, value => {});
+        },
+      ],
+    });
+
+    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
+    const c = renderElements(<AtomA />);
+
+    expect(c.textContent).toEqual('error');
   });
 
   testRecoil('Cleanup Handlers - when root unmounted', () => {

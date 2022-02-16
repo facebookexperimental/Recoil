@@ -297,6 +297,9 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         recoilValue: RecoilValue<S>,
         observer: (value: S) => void,
       ): void {
+        if (recoilValue.key === key) {
+          throw new Error('use onSet to subscribe to mutations to self');
+        }
         const {release} = store.subscribeToTransactions(store => {
           const {currentTree} = store.getState();
           const currentValueLoadable = getRecoilValueAsLoadable(
