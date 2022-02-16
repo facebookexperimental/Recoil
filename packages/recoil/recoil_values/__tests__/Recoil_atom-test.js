@@ -1244,7 +1244,6 @@ describe('Effects', () => {
       effects: [
         ({onSetValue, onSet}) => {
           onSetValue(atomA, () => {
-            console.log('ONSETVALUE');
             onSet(value => {
               setSelf(value * 100);
             });
