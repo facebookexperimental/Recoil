@@ -37,6 +37,7 @@ const {
   setUnvalidatedRecoilValue,
 } = require('./Recoil_RecoilValueInterface');
 const {updateRetainCount} = require('./Recoil_Retention');
+const {setInvalidateMemoizedSnapshot} = require('./Recoil_SnapshotCache');
 const {
   getNextTreeStateVersion,
   makeEmptyStoreState,
@@ -332,21 +333,24 @@ const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] =
     (store, version) => {
       const storeState = store.getState();
       const treeState =
-        version === 'current'
-          ? storeState.currentTree
+        version === 'latest'
+          ? storeState.nextTree ?? storeState.currentTree
           : nullthrows(storeState.previousTree);
       return new Snapshot(cloneStoreState(store, treeState));
     },
     (store, version) =>
       String(version) +
       String(store.storeID) +
+      String(store.getState().nextTree?.version) +
       String(store.getState().currentTree.version) +
       String(store.getState().previousTree?.version),
   );
+// Avoid circular dependencies
+setInvalidateMemoizedSnapshot(invalidateMemoizedSnapshot);
 
 function cloneSnapshot(
   store: Store,
-  version: 'current' | 'previous' = 'current',
+  version: 'latest' | 'previous' = 'latest',
 ): Snapshot {
   const snapshot = memoizedCloneSnapshot(store, version);
   if (!snapshot.isRetained()) {

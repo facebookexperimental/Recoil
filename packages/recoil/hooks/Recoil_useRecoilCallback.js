@@ -12,6 +12,7 @@
 
 import type {TransactionInterface} from '../core/Recoil_AtomicUpdates';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
+import type {Snapshot} from '../core/Recoil_Snapshot';
 import type {Store} from '../core/Recoil_State';
 
 const {atomicUpdater} = require('../core/Recoil_AtomicUpdates');
@@ -22,7 +23,7 @@ const {
   refreshRecoilValue,
   setRecoilValue,
 } = require('../core/Recoil_RecoilValueInterface');
-const {Snapshot, cloneSnapshot} = require('../core/Recoil_Snapshot');
+const {cloneSnapshot} = require('../core/Recoil_Snapshot');
 const {gotoSnapshot} = require('./Recoil_SnapshotHooks');
 const {useCallback} = require('react');
 const err = require('recoil-shared/util/Recoil_err');
