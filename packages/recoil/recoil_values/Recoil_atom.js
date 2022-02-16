@@ -298,9 +298,16 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         observer: (value: S) => void,
       ): void {
         const {release} = store.subscribeToTransactions(store => {
-          const loadable = getRecoilValueAsLoadable(store, recoilValue);
-          const value = loadable.getValue();
-          observer(value);
+          const {currentTree} = store.getState();
+          const currentValueLoadable = getRecoilValueAsLoadable(
+            store,
+            recoilValue,
+            currentTree,
+          );
+          if (currentValueLoadable.state === 'hasValue') {
+            const value = currentValueLoadable.getValue();
+            observer(value);
+          }
         }, recoilValue.key);
 
         cleanupEffectsByStore.set(store, [
