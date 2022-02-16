@@ -98,6 +98,9 @@
     param: (newValue: T, oldValue: T | DefaultValue, isReset: boolean) => void,
   ) => void,
 
+  // Subscribe to changes in other recoil values
+  onSetValue: <S>(recoilValue: RecoilValue<S>, observer: (newValue: S) => void) => void,
+
   // Accessors to read other atoms/selectors
   getPromise: <S>(recoilValue: RecoilValue<S>) => Promise<S>,
   getLoadable: <S>(recoilValue: RecoilValue<S>) => Loadable<S>,
