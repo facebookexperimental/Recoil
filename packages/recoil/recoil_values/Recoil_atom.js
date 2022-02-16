@@ -305,18 +305,28 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         if (!duringInit) {
           throw err('onSetValue must be used at the top of the effect scope');
         }
-        const {release} = store.subscribeToTransactions(store => {
-          const {currentTree} = store.getState();
-          const currentValueLoadable = getRecoilValueAsLoadable(
-            store,
-            recoilValue,
-            currentTree,
-          );
-          if (currentValueLoadable.state === 'hasValue') {
-            const value = currentValueLoadable.getValue();
-            observer(value);
-          }
-        }, recoilValue.key);
+        const {release} = store.subscribeToTransactions(
+          store => {
+            const {currentTree} = store.getState();
+            const currentValueLoadable = getRecoilValueAsLoadable(
+              store,
+              recoilValue,
+              currentTree,
+            );
+            if (currentValueLoadable.state === 'hasValue') {
+              const value = currentValueLoadable.getValue();
+              observer(value);
+            }
+          },
+          // Note: we probably want this key to be used to filter events, but this is
+          // preventing us from getting events on when selectors update. I'm guessing this is a
+          // bug in the store?
+          //
+          // By not filtering on the key, this event stream will be overly chatty and reset() on
+          // an atom subscribing to an upstream will break
+          //
+          // recoilValue.key
+        );
 
         cleanupEffectsByStore.set(store, [
           ...(cleanupEffectsByStore.get(store) ?? []),
