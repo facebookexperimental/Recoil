@@ -158,7 +158,7 @@ function useRecoilTransactionObserver(
   useTransactionSubscription(
     useCallback(
       store => {
-        const snapshot = cloneSnapshot(store, 'current');
+        const snapshot = cloneSnapshot(store, 'latest');
         const previousSnapshot = cloneSnapshot(store, 'previous');
         callback({
           snapshot,

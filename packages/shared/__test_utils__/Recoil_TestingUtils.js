@@ -33,7 +33,7 @@ const {
   sendEndOfBatchNotifications_FOR_TESTING,
 } = require('../../recoil/core/Recoil_RecoilRoot');
 const {
-  invalidateDownstreams_FOR_TESTING,
+  invalidateDownstreams,
 } = require('../../recoil/core/Recoil_RecoilValueInterface');
 const {makeEmptyStoreState} = require('../../recoil/core/Recoil_State');
 const invariant = require('../util/Recoil_invariant');
@@ -65,7 +65,7 @@ function makeStore(): Store {
       const currentStoreState = store.getState();
       // FIXME: does not increment state version number
       currentStoreState.currentTree = replacer(currentStoreState.currentTree); // no batching so nextTree is never active
-      invalidateDownstreams_FOR_TESTING(store, currentStoreState.currentTree);
+      invalidateDownstreams(store, currentStoreState.currentTree);
       const {reactMode} = require('../../recoil/core/Recoil_ReactMode');
       if (reactMode().early) {
         notifyComponents_FOR_TESTING(
