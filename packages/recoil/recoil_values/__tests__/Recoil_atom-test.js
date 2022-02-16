@@ -911,10 +911,10 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
 
-  testRecoil('onSetValue - can observe updates', () => {
+  testRecoil('onSetValue - can observe atoms', () => {
     const atomA = atom({
       key: 'onSetValue test a',
-      default: 100,
+      default: 1,
     });
     const atomB = atom({
       key: 'onSetValue test b',
@@ -933,26 +933,144 @@ describe('Effects', () => {
     const c = renderElements(
       <>
         <AtomA />
+        {'-'}
         <AtomB />
       </>,
     );
 
     // default state
-    expect(c.textContent).toEqual('10099');
+    expect(c.textContent).toEqual('1-99');
 
     // mutate state
     act(() => setA(100));
-    expect(c.textContent).toEqual('100101');
+    expect(c.textContent).toEqual('100-101');
     act(() => setA(101));
-    expect(c.textContent).toEqual('101102');
+    expect(c.textContent).toEqual('101-102');
 
     // Reset upstream state, downstream updatesw
     act(() => resetA());
-    expect(c.textContent).toEqual('100101');
+    expect(c.textContent).toEqual('1-2');
+
+    // NOTE: this check succeeds if the onSetValue function uses store.subscribeToTransactions with a key.
+    // By not using a key we can observe selector state, but the reset will be overridden.
 
     // Reset downstream to revert to original state
     act(() => resetB());
-    expect(c.textContent).toEqual('10099');
+    expect(c.textContent).toEqual('1-99');
+  });
+
+  testRecoil('onSetValue - can observe selectors', () => {
+    const atomA = atom({
+      key: 'a',
+      default: 1,
+    });
+    const selected = selector({
+      key: 'selectedA',
+      get: ({get}) => get(atomA) * 2,
+    });
+    const atomB = atom({
+      key: 'b',
+      default: 99,
+      effects: [
+        ({onSetValue, setSelf}) => {
+          onSetValue(selected, value => {
+            setSelf(value + 1);
+          });
+        },
+      ],
+    });
+
+    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
+    const c = renderElements(
+      <>
+        <AtomA />
+        {'-'}
+        <AtomB />
+      </>,
+    );
+
+    // default state
+    expect(c.textContent).toEqual('1-99');
+
+    // mutate state
+    act(() => setA(100));
+    expect(c.textContent).toEqual('100-201');
+  });
+
+  testRecoil('onSetValue - observe selector in error state', () => {
+    const selected = selector({
+      key: 'selected',
+      get: ({get}) => {
+        throw new Error('selected throws');
+      },
+    });
+    let observed = false;
+    const atomA = atom({
+      key: 'b',
+      default: 99,
+      effects: [
+        ({onSetValue, setSelf}) => {
+          onSetValue(selected, value => {
+            observed = true;
+            setSelf(value + 1);
+          });
+        },
+      ],
+    });
+
+    const [AtomA] = componentThatReadsAndWritesAtom(atomA);
+    const c = renderElements(<AtomA />);
+
+    // The atom renders correctly and the observer function was never invoked
+    expect(c.textContent).toEqual('99');
+    expect(observed).toBe(false);
+  });
+
+  testRecoil('onSetValue - observe selector in loading state', () => {
+    let resolve;
+    const resolution = new Promise(r => (resolve = r));
+
+    const selected = selector({
+      key: 'selected',
+      get: async ({get}) => {
+        await resolution;
+        return 100;
+      },
+    });
+
+    let observed = false;
+    const atomB = atom({
+      key: 'b',
+      default: 99,
+      effects: [
+        ({onSetValue, setSelf}) => {
+          onSetValue(selected, value => {
+            observed = true;
+            setSelf(value + 1);
+          });
+        },
+      ],
+    });
+
+    function Selector() {
+      return useRecoilValue(selected);
+    }
+    const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
+    const c = renderElements(
+      <>
+        <AtomB />
+      </>,
+    );
+
+    // On initial render the atom has not observed any selector updates, so it renders the default value
+    expect(c.textContent).toEqual('99');
+    expect(observed).toBe(false);
+
+    // Once the async selector resolves, the observing atom is triggered and updates accordingly
+    act(() => resolve());
+    expect(observed).toBe(true);
+    expect(c.textContent).toEqual('101');
   });
 
   testRecoil('onSetValue - cannot subscribe to self', () => {
@@ -966,7 +1084,7 @@ describe('Effects', () => {
       ],
     });
 
-    const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
+    const [AtomA] = componentThatReadsAndWritesAtom(atomA);
     const c = renderElements(<AtomA />);
 
     expect(c.textContent).toEqual('error');
