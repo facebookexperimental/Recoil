@@ -134,8 +134,10 @@ export type AtomEffect<T> = ({
     (newValue: T, oldValue: T | DefaultValue, isReset: boolean) => void,
   ) => void,
 
+  // Subscribe to changes in other recoil values
+  onSetValue: <S>(RecoilValue<S>, (value: S) => void) => void,
+
   // Accessors to read other atoms/selectors
-  observe: <S>(RecoilValue<S>, (value: S) => void) => void,
   getPromise: <S>(RecoilValue<S>) => Promise<S>,
   getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
   getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
@@ -293,7 +295,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         return getLoadable(recoilValue).toPromise();
       }
 
-      function observe<S>(
+      function onSetValue<S>(
         recoilValue: RecoilValue<S>,
         observer: (value: S) => void,
       ): void {
@@ -435,7 +437,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
             setSelf: setSelf(effect),
             resetSelf: resetSelf(effect),
             onSet: onSet(effect),
-            observe,
+            onSetValue,
             getPromise,
             getLoadable,
             getInfo_UNSTABLE,

@@ -911,17 +911,17 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"DEFAULT_A""DEFAULT_B"');
   });
 
-  testRecoil('observe - can observe updates', () => {
+  testRecoil('onSetVa;lue - can observe updates', () => {
     const atomA = atom({
-      key: 'observe test a',
+      key: 'onSetValue test a',
       default: 100,
     });
     const atomB = atom({
-      key: 'observe test b',
+      key: 'onSetValue test b',
       default: 99,
       effects: [
-        ({observe, setSelf}) => {
-          observe(atomA, value => {
+        ({onSetValue, setSelf}) => {
+          onSetValue(atomA, value => {
             setSelf(value + 1);
           });
         },
@@ -955,13 +955,13 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('10099');
   });
 
-  testRecoil('observe - cannot subscribe to self', () => {
+  testRecoil('onSetVa;lue - cannot subscribe to self', () => {
     const atomA = atom({
-      key: 'observe test a',
+      key: 'onSetValue test a',
       default: 100,
       effects: [
-        ({observe, setSelf}) => {
-          observe(atomA, value => {});
+        ({onSetValue, setSelf}) => {
+          onSetValue(atomA, value => {});
         },
       ],
     });
