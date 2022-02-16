@@ -17,6 +17,7 @@ const {
 let React,
   useRef,
   useState,
+  useEffect,
   act,
   useStoreRef,
   atom,
@@ -30,11 +31,12 @@ let React,
   ReadsAtom,
   flushPromisesAndTimers,
   renderElements,
+  stringAtom,
   invariant;
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
-  ({useRef, useState} = require('react'));
+  ({useRef, useState, useEffect} = require('react'));
   ({act} = require('ReactTestUtils'));
 
   ({useStoreRef} = require('../../core/Recoil_RecoilRoot'));
@@ -52,6 +54,7 @@ const testRecoil = getRecoilTestFn(() => {
     ReadsAtom,
     flushPromisesAndTimers,
     renderElements,
+    stringAtom,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   invariant = require('recoil-shared/util/Recoil_invariant');
 });
@@ -235,7 +238,7 @@ testRecoil('Reads from a snapshot created at callback call time', async () => {
   expect(seenValue).toBe(345);
 });
 
-testRecoil('Setter updater sees current state', () => {
+testRecoil('Setter updater sees latest state', () => {
   const myAtom = atom({key: 'useRecoilCallback updater', default: 'DEFAULT'});
 
   let setAtom;
@@ -243,8 +246,8 @@ testRecoil('Setter updater sees current state', () => {
   function Component() {
     setAtom = useSetRecoilState(myAtom);
     cb = useRecoilCallback(({snapshot, set}) => prevValue => {
-      // snapshot sees the stable snapshot from batch at beginning of transaction
-      expect(snapshot.getLoadable(myAtom).contents).toEqual('DEFAULT');
+      // snapshot sees a snapshot with the latest set state
+      expect(snapshot.getLoadable(myAtom).contents).toEqual(prevValue);
 
       // Test that callback sees value updates from within the same transaction
       set(myAtom, value => {
@@ -268,13 +271,56 @@ testRecoil('Setter updater sees current state', () => {
 
   expect(c.textContent).toEqual('"DEFAULT"');
 
-  // Set then callback in the same transaction
+  // Set and callback in the same transaction
   act(() => {
     setAtom('SET');
     cb('SET');
     cb('UPDATE AGAIN');
   });
   expect(c.textContent).toEqual('"UPDATE AGAIN"');
+});
+
+testRecoil('Snapshot from effect uses rendered state', () => {
+  const myAtom = stringAtom();
+  let setState,
+    actCallback,
+    effectCallback,
+    actCallbackValue,
+    effectCallbackValue,
+    effectValue;
+  function Component() {
+    setState = useSetRecoilState(myAtom);
+    const value = useRecoilValue(myAtom);
+    effectCallback = useRecoilCallback(
+      ({snapshot}) =>
+        () => {
+          effectCallbackValue = snapshot.getLoadable(myAtom).getValue();
+        },
+      [],
+    );
+    actCallback = useRecoilCallback(
+      ({snapshot}) =>
+        () => {
+          actCallbackValue = snapshot.getLoadable(myAtom).getValue();
+        },
+      [],
+    );
+
+    useEffect(() => {
+      effectValue = value;
+      effectCallback();
+    }, [value]);
+    return null;
+  }
+
+  renderElements(<Component />);
+  act(() => {
+    setState('SET');
+    actCallback();
+  });
+  expect(actCallbackValue).toBe('SET');
+  expect(effectValue).toBe('SET');
+  expect(effectCallbackValue).toBe('SET');
 });
 
 testRecoil('goes to snapshot', async () => {

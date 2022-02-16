@@ -35,6 +35,7 @@ const {
   RecoilValueReadOnly,
   isRecoilValue,
 } = require('./Recoil_RecoilValue');
+const {invalidateMemoizedSnapshot} = require('./Recoil_SnapshotCache');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
@@ -195,6 +196,7 @@ function applyActionsToStore(store, actions) {
       applyAction(store, newState, action);
     }
     invalidateDownstreams(store, newState);
+    invalidateMemoizedSnapshot();
     return newState;
   });
 }
@@ -369,5 +371,4 @@ module.exports = {
   invalidateDownstreams,
   copyTreeState,
   refreshRecoilValue,
-  invalidateDownstreams_FOR_TESTING: invalidateDownstreams,
 };
