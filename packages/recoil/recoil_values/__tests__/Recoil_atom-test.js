@@ -921,7 +921,7 @@ describe('Effects', () => {
       default: 99,
       effects: [
         ({observe, setSelf}) => {
-          return observe(atomA, value => {
+          observe(atomA, value => {
             setSelf(value + 1);
           });
         },
