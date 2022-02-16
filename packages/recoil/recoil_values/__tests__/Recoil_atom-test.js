@@ -1165,6 +1165,74 @@ describe('Effects', () => {
     expect(onSetRan).toBe(2);
   });
 
+  testRecoil('onSetValue unsubscribes', () => {
+    let onSetValueRan = 0;
+    const upstreamAtom = atom({
+      key: 'onSetValue upstream atom',
+      default: 'upstream',
+    });
+    const myAtom = atom({
+      key: 'atom effects onSetValue unsubscribe',
+      default: 'downstream',
+      effects: [
+        ({onSetValue, setSelf}) => {
+          onSetValue(upstreamAtom, () => {
+            onSetValueRan++;
+          });
+        },
+      ],
+    });
+
+    let setMount = _ => {
+      throw new Error('Test Error');
+    };
+
+    const [UpstreamAtom, setUpstreamAtom] =
+      componentThatReadsAndWritesAtom(upstreamAtom);
+    const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+    function Component() {
+      const [mount, setState] = useState(false);
+      setMount = setState;
+      return mount ? (
+        <RecoilRoot>
+          <UpstreamAtom />
+          <ReadWriteAtom />
+        </RecoilRoot>
+      ) : (
+        'UNMOUNTED'
+      );
+    }
+
+    const c = renderElements(<Component />);
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(onSetValueRan).toBe(0);
+
+    act(() => setMount(true));
+    expect(c.textContent).toBe('"upstream""downstream"');
+    expect(onSetValueRan).toBe(0);
+
+    act(() => setUpstreamAtom('SET'));
+    expect(c.textContent).toBe('"SET""downstream"');
+    expect(onSetValueRan).toBe(1);
+
+    act(() => setMount(false));
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(onSetValueRan).toBe(1);
+
+    // onSet() handler not called after store is unmounted and effects cleanedup
+    act(() => setUpstreamAtom('SET INVALID'));
+    expect(c.textContent).toBe('UNMOUNTED');
+    expect(onSetValueRan).toBe(1);
+
+    act(() => setMount(true));
+    expect(c.textContent).toBe('"upstream""downstream"');
+    expect(onSetValueRan).toBe(1);
+
+    act(() => setUpstreamAtom('SET2'));
+    expect(c.textContent).toBe('"SET2""downstream"');
+    expect(onSetValueRan).toBe(2);
+  });
+
   // Test that effects can initialize state when an atom is first used after an
   // action that also updated another atom's state.
   // This corner case was reported by multiple customers.
