@@ -75,6 +75,7 @@
     "eslint-plugin-rulesdir": "^0.2.0",
     "flow-bin": "^0.164.0",
     "flow-copy-source": "^2.0.9",
+    "flow-interfaces-chrome": "^0.6.0",
     "flow-typed": "^3.7.0",
     "hermes-eslint": "^0.4.8",
     "husky": ">=4",

@@ -106,7 +106,6 @@ function initPageScript() {
   const pageScript = document.createElement('script');
   pageScript.type = 'text/javascript';
 
-  // $FlowFixMe
   pageScript.src = chrome.extension.getURL('pageScript.bundle.js');
   // remove the pageScript node after it has run
   pageScript.onload = function () {

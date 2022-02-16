@@ -129,7 +129,6 @@ const ItemRenderers = {
     } else if (typeof value?.toString === 'function') {
       return <ValueSpan>{value.toString()}</ValueSpan>;
     }
-    // $FlowFixMe
     return <ValueSpan>{value}</ValueSpan>;
   },
 };

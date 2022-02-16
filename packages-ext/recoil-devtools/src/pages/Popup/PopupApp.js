@@ -42,8 +42,7 @@ function PopupApp({
     if (port.current !== null) {
       port.current.disconnect();
     }
-    // $FlowFixMe: chrome types
-    port.current = chrome.extension.connect({name: 'Recoil Devtools Popup'});
+    port.current = chrome.runtime.connect();
 
     port.current.postMessage({
       action: RecoilDevToolsActions.SUBSCRIBE_POPUP,

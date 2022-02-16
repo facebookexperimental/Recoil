@@ -75,10 +75,8 @@ function onConnect(port: ConnectionPort): void {
     }
   };
 
-  // $FlowFixMe
   port.onMessage.addListener(msgHandler);
 
-  // $FlowFixMe
   port.onDisconnect.addListener(() => {
     debug('DISCONNECT', connectionId);
     if (isPopupConnection) {
@@ -89,7 +87,6 @@ function onConnect(port: ConnectionPort): void {
   });
 }
 
-// $FlowFixMe: add chrome types
 chrome.runtime.onConnect.addListener(onConnect);
 
 module.exports = {onConnect};

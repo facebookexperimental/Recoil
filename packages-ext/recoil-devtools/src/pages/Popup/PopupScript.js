@@ -16,8 +16,6 @@ const React = require('react');
 const {render} = require('react-dom');
 const {RecoilRoot} = require('recoil');
 
-/* globals chrome */
-// $FlowFixMe: chrome
 chrome.runtime.getBackgroundPage(({store}: BackgroundPage) => {
   render(
     <RecoilRoot>

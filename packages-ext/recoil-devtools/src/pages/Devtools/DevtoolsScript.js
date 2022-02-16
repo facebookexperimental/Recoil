@@ -9,8 +9,6 @@
  */
 'use strict';
 
-/* globals chrome */
-// $FlowFixMe: get chrome types
 chrome.devtools.panels.create(
   __DEV__ ? 'Recoil (DEV)' : 'Recoil',
   '',
