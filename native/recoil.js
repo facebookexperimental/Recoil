@@ -2584,6 +2584,34 @@ var Recoil_ReactMode = {
   reactMode
 };
 
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+let _invalidateMemoizedSnapshot = null;
+
+function setInvalidateMemoizedSnapshot(invalidate) {
+  _invalidateMemoizedSnapshot = invalidate;
+}
+
+function invalidateMemoizedSnapshot() {
+  var _invalidateMemoizedSn;
+
+  (_invalidateMemoizedSn = _invalidateMemoizedSnapshot) === null || _invalidateMemoizedSn === void 0 ? void 0 : _invalidateMemoizedSn();
+}
+
+var Recoil_SnapshotCache = {
+  setInvalidateMemoizedSnapshot,
+  invalidateMemoizedSnapshot
+};
+
 const {
   getDownstreamNodes: getDownstreamNodes$1,
   getNodeLoadable: getNodeLoadable$1,
@@ -2614,6 +2642,10 @@ const {
   RecoilValueReadOnly: RecoilValueReadOnly$1,
   isRecoilValue: isRecoilValue$1
 } = Recoil_RecoilValue$1;
+
+const {
+  invalidateMemoizedSnapshot: invalidateMemoizedSnapshot$1
+} = Recoil_SnapshotCache;
 
 
 
@@ -2749,6 +2781,7 @@ function applyActionsToStore(store, actions) {
     }
 
     invalidateDownstreams(store, newState);
+    invalidateMemoizedSnapshot$1();
     return newState;
   });
 }
@@ -2910,8 +2943,7 @@ var Recoil_RecoilValueInterface = {
   writeLoadableToTreeState,
   invalidateDownstreams,
   copyTreeState,
-  refreshRecoilValue,
-  invalidateDownstreams_FOR_TESTING: invalidateDownstreams
+  refreshRecoilValue
 };
 
 /**
@@ -3535,6 +3567,10 @@ const {
 } = Recoil_Retention;
 
 const {
+  setInvalidateMemoizedSnapshot: setInvalidateMemoizedSnapshot$1
+} = Recoil_SnapshotCache;
+
+const {
   getNextTreeStateVersion: getNextTreeStateVersion$2,
   makeEmptyStoreState: makeEmptyStoreState$1
 } = Recoil_State;
@@ -3808,21 +3844,25 @@ function freshSnapshot(initializeState) {
 } // Factory to clone a snapahot state
 
 
-const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] = memoizeOneWithArgsHashAndInvalidation$1((store, version) => {
+const [memoizedCloneSnapshot, invalidateMemoizedSnapshot$2] = memoizeOneWithArgsHashAndInvalidation$1((store, version) => {
+  var _storeState$nextTree;
+
   const storeState = store.getState();
-  const treeState = version === 'current' ? storeState.currentTree : Recoil_nullthrows(storeState.previousTree);
+  const treeState = version === 'latest' ? (_storeState$nextTree = storeState.nextTree) !== null && _storeState$nextTree !== void 0 ? _storeState$nextTree : storeState.currentTree : Recoil_nullthrows(storeState.previousTree);
   return new Snapshot(cloneStoreState(store, treeState));
 }, (store, version) => {
-  var _store$getState$previ;
+  var _store$getState$nextT, _store$getState$previ;
 
-  return String(version) + String(store.storeID) + String(store.getState().currentTree.version) + String((_store$getState$previ = store.getState().previousTree) === null || _store$getState$previ === void 0 ? void 0 : _store$getState$previ.version);
-});
+  return String(version) + String(store.storeID) + String((_store$getState$nextT = store.getState().nextTree) === null || _store$getState$nextT === void 0 ? void 0 : _store$getState$nextT.version) + String(store.getState().currentTree.version) + String((_store$getState$previ = store.getState().previousTree) === null || _store$getState$previ === void 0 ? void 0 : _store$getState$previ.version);
+}); // Avoid circular dependencies
 
-function cloneSnapshot(store, version = 'current') {
+setInvalidateMemoizedSnapshot$1(invalidateMemoizedSnapshot$2);
+
+function cloneSnapshot(store, version = 'latest') {
   const snapshot = memoizedCloneSnapshot(store, version);
 
   if (!snapshot.isRetained()) {
-    invalidateMemoizedSnapshot();
+    invalidateMemoizedSnapshot$2();
     return memoizedCloneSnapshot(store, version);
   }
 
@@ -5703,7 +5743,7 @@ function useTransactionObservation_DEPRECATED(callback) {
 
 function useRecoilTransactionObserver(callback) {
   useTransactionSubscription(useCallback$2(store => {
-    const snapshot = cloneSnapshot$1(store, 'current');
+    const snapshot = cloneSnapshot$1(store, 'latest');
     const previousSnapshot = cloneSnapshot$1(store, 'previous');
     callback({
       snapshot,
@@ -6028,7 +6068,6 @@ const {
 } = Recoil_RecoilValueInterface;
 
 const {
-  Snapshot: Snapshot$1,
   cloneSnapshot: cloneSnapshot$2
 } = Recoil_Snapshot$1;
 
