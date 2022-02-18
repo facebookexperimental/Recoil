@@ -3,7 +3,7 @@ title: Refine Utilities
 sidebar_label: Utilities
 ---
 
-In addition to the core [Checker](/docs/refine/api/Checkers) combinators provided by [Refine](/docs/refine/api/Refine), the library also exposes some utility functions to help with things like JSON parsing and assertion functions.
+In addition to the core [Checker](/docs/refine/api/Checkers) combinators provided by [Refine](/docs/refine/Introduction), the library also exposes some utility functions to help with things like JSON parsing and assertion functions.
 
 ## `coercion()`
 

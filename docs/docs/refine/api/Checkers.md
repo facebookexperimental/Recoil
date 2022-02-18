@@ -3,7 +3,7 @@ title: Refine Checkers
 sidebar_label: Checkers
 ---
 
-The core of [Refine](/docs/refine/api/Refine) is the `Checker<T>` type. Checkers are essentially just functions which take in a `mixed` (for Flow) or `unknown` (for TypeScript) value and return  a `CheckResult<T>`...
+The core of [Refine](/docs/refine/Introduction) is the `Checker<T>` type. Checkers are essentially just functions which take in a `mixed` (for Flow) or `unknown` (for TypeScript) value and return  a `CheckResult<T>`...
 
 ```jsx
 /**
@@ -59,4 +59,4 @@ Refine provides a number of built-in checkers, see the individual doc pages for 
 - [Collection Checkers](/docs/refine/api/collection_checkers)
 - [Advanced Checkers](/docs/refine/api/advanced_checkers)
 
-Additionally, Refine provides some [utility functions](/docs/guides/refine/utilities) for common usecases like json parsing and assertion functions.
+Additionally, Refine provides some [utility functions](/docs/refine/api/utilities) for common usecases like json parsing and assertion functions.
