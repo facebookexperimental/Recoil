@@ -228,12 +228,7 @@ class Snapshot {
     return opt?.isInitialized == null
       ? recoilValues.values()
       : opt.isInitialized === true
-      ? recoilValuesForKeys(
-          concatIterables([
-            this._store.getState().knownAtoms,
-            this._store.getState().knownSelectors,
-          ]),
-        )
+      ? recoilValuesForKeys(concatIterables([knownAtoms, knownSelectors]))
       : filterIterable(
           recoilValues.values(),
           ({key}) => !knownAtoms.has(key) && !knownSelectors.has(key),
