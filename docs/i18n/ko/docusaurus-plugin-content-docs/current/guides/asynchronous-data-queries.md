@@ -315,9 +315,39 @@ function UserInfo({userID}) {
 
 ## Query Refresh (쿼리 새로고침)
 
-selector를 사용하여 데이터 쿼리를 모델링 할 때, selector 평가가 항상 주어진 상태에 대해서 일관적인 값을 제공해야 한다는 것을 기억해야 합니다. Selector는 다른 atom과 selector 상태들에서 파생되는 상태들을 대표합니다. 그러므로 selector 평가 함수들은 주어진 인풋에 관해서 여러번 캐시되고 실행되더라도 idempotent(멱등)해야 합니다. 실제로 단일 selector는 어플리케이션의 생명주기 동안 결과과 다양하게 나올거라 예상하는 쿼리에 사용되면 안됨을 의미합니다.
+selector를 사용하여 데이터 쿼리를 모델링 할 때, selector 평가가 항상 주어진 상태에 대해서 일관적인 값을 제공해야 한다는 것을 기억해야 합니다. Selector는 다른 atom과 selector 상태들에서 파생되는 상태들을 대표합니다. 그러므로 selector 평가 함수들은 주어진 인풋에 관해서 여러번 캐시되고 실행되더라도 idempotent(멱등)해야 합니다. 하지만 selector가 데이터 쿼리로부터 얻은 값을 가지고 있는 상태라면, 새로운 데이터로 갱신이 필요할 때 다시 쿼리하거나 쿼리에 실패한 이후 다시 시도할 수 있어야 할 것입니다. 
 
-변경가능한 데이터를 다루기위해서 몇 가지 패턴을 사용할 수 있습니다.
+쿼리를 갱신하거나 재시도하기 위해서 다음과 같은 방법들을 사용할 수 있습니다:
+
+### `useRecoilRefresher()`
+
+[`useRecoilRefresher_UNSTABLE()`](https://recoiljs.org/docs/api-reference/core/useRecoilRefresher/) 훅은 selector의 모든 캐시를 제거하고 강제로 다시 selector를 재평가할 수 있게 하는 콜백 함수를 제공합니다.
+
+```jsx
+const userInfoQuery = selectorFamily({
+  key: 'UserInfoQuery',
+  get: userID => async () => {
+    const response = await myDBQuery({userID});
+    if (response.error) {
+      throw response.error;
+    }
+    return response.data;
+  }
+})
+
+function CurrentUserInfo() {
+  const currentUserID = useRecoilValue(currentUserIDState);
+  const currentUserInfo = useRecoilValue(userInfoQuery(currentUserID));
+  const refreshUserInfo = useRecoilRefresher_UNSTABLE(userInfoQuery(currentUserID));
+
+  return (
+    <div>
+      <h1>{currentUserInfo.name}</h1>
+      <button onClick={() => refreshUserInfo()}>Refresh</button>
+    </div>
+  );
+}
+```
 
 ### Use a Request ID (요청 ID 사용하기)
 
@@ -357,7 +387,7 @@ function CurrentUserInfo() {
 
   return (
     <div>
-      <h1>{currentUser.name}</h1>
+      <h1>{currentUserInfo.name}</h1>
       <button onClick={refreshUserInfo}>Refresh</button>
     </div>
   );
@@ -397,3 +427,34 @@ function RefreshUserInfo({userID}) {
 이 접근 방법에는 한가지 단점이 있습니다. Atom이 현재 원하는 동작일 경우, 쿼리 새로고침이 보류중인 동안 React Suspense를 자동적으로 활용하기 위해서 Promise를 새 값으로 받아들이는 것을 지원하지 않는다는 점입니다. 그러나 원한다면 로딩 상태와 결과를 수동으로 인코딩 하는 객체를 저장할 수 있습니다.
 
 Atom의 쿼리 동기화를 위해서 [atom effects](https://recoiljs.org/docs/guides/atom-effects)도 고려해볼 수 있습니다.
+
+### 에러 메시지를 통한 쿼리 재시도
+
+다음은 `<ErrorBoundary>`안에서 발생하고 검출한 에러를 토대로 쿼리들을 찾아 재시도하는 흥미롭고 간단한 예제입니다.
+
+```jsx
+function QueryErrorMessage({error}) {
+  const snapshot = useRecoilSnapshot();
+  const selectors = useMemo(() => {
+    const ret = [];
+    for (const node of snapshot.getNodes_UNSTABLE({isInitialized: true})) {
+      const {loadable, type} = snapshot.getInfo_UNSTABLE(node);
+      if (loadable != null && loadable.state === 'hasError' && loadable.contents === error) {
+        ret.push(node);
+      }
+    }
+  }, [snapshot, error]);
+  const retry = useRecoilCallback(({refresh}) =>
+    () => selectors.forEach(refresh),
+    [selectors],
+  );
+
+  return selectors.length > 0 && (
+    <div>
+      Error: {error.toString()}
+      Query: {selectors[0].key}
+      <button onClick={retry}>Retry</button>
+    </div>
+  );
+}
+```

@@ -283,14 +283,42 @@ Note that this pre-fetching works by triggering the `selectorFamily()` to initia
 
 ## Query Default Atom Values
 
-A common pattern is to use an atom to represent local editable state, but use a selector to query default values:
+A common pattern is to use an atom to represent local editable state, but use a promise to query default values:
 
 ```jsx
 const currentUserIDState = atom({
   key: 'CurrentUserID',
+  default: myFetchCurrentUserID(),
+});
+```
+
+Or use a selector to defer the query or depend on other state.  Note that when using a selector the default atom value will remain dynamic, and update along with selector updates, until the atom is explicitly set by the user.
+
+```jsx
+const UserInfoState = atom({
+  key: 'UserInfo',
   default: selector({
-    key: 'CurrentUserID/Default',
-    get: () => myFetchCurrentUserID(),
+    key: 'UserInfo/Default',
+    get: ({get}) => myFetchUserInfo(get(currentUserIDState)),
+  }),
+});
+```
+
+This can also be used with atom families:
+
+```jsx
+const userInfoState = atomFamily({
+  key: 'UserInfo',
+  default: id  => myFetchUserInfo(id),
+});
+```
+
+```jsx
+const userInfoState = atomFamily({
+  key: 'UserInfo',
+  default: selectorFamily({
+    key: 'UserInfo/Default',
+    get: id => ({get}) => myFetchUserInfo(id, get(paramsState)),
   }),
 });
 ```
@@ -420,3 +448,35 @@ function RefreshUserInfo({userID}) {
 Note that atoms do not *currently* support accepting a `Promise` as the new value.  So, you cannot currently put the atom in a pending state for React Suspense while the query refresh is pending, if that is your desired behavior.  However, you could store an object which manually encodes the current loading status as well as the actual results to explicitly handle this.
 
 Also consider [atom effects](/docs/guides/atom-effects) for query synchronization of atoms.
+
+### Retry query from error message
+
+Here's a fun little example to find and retry queries based on errors thrown and caught in an `<ErrorBoundary>`
+
+```jsx
+function QueryErrorMessage({error}) {
+  const snapshot = useRecoilSnapshot();
+  const selectors = useMemo(() => {
+    const ret = [];
+    for (const node of snapshot.getNodes_UNSTABLE({isInitialized: true})) {
+      const {loadable, type} = snapshot.getInfo_UNSTABLE(node);
+      if (loadable != null && loadable.state === 'hasError' && loadable.contents === error) {
+        ret.push(node);
+      }
+    }
+    return ret;
+  }, [snapshot, error]);
+  const retry = useRecoilCallback(({refresh}) =>
+    () => selectors.forEach(refresh),
+    [selectors],
+  );
+
+  return selectors.length > 0 && (
+    <div>
+      Error: {error.toString()}
+      Query: {selectors[0].key}
+      <button onClick={retry}>Retry</button>
+    </div>
+  );
+}
+```

@@ -28,7 +28,6 @@ function selector<T>({
   ) => void,
 
   dangerouslyAllowMutability?: boolean,
-
   cachePolicy_UNSTABLE?: CachePolicy,
 })
 ```
@@ -37,7 +36,7 @@ function selector<T>({
 type ValueOrUpdater<T> = T | DefaultValue | ((prevValue: T) => T | DefaultValue);
 type GetCallback =
   <Args, Return>(
-    fn: ({snapshot: Snapshot}) => (...Args) => Return,
+    callback: CallbackInterface => (...Args) => Return,
   ) => (...Args) => Return;
 
 type GetRecoilValue = <T>(RecoilValue<T>) => T;
@@ -53,12 +52,12 @@ type CachePolicy =
 - `key` - A unique string used to identify the selector internally. This string should be unique with respect to other atoms and selectors in the entire application.  It needs to be stable across executions if used for persistence.
 - `get` - A function that evaluates the value for the derived state.  It may return either a value directly or an asynchronous `Promise` or another atom or selector representing the same type.  It is passed an object as the first parameter containing the following properties:
   - `get()` - a function used to retrieve values from other atoms/selectors. All atoms/selectors passed to this function will be implicitly added to a list of **dependencies** for the selector. If any of the selector's dependencies change, the selector will re-evaluate.
-  - `getCallback()` - a function for creating Recoil-aware callbacks.  See [example](/docs/api-reference/core/selector#returning-objects-with-callbacks) below.
+  - `getCallback()` - a function for creating Recoil-aware callbacks with a [callback interface](/docs/api-reference/core/useRecoilCallback#callback-interface).  See [example](/docs/api-reference/core/selector#returning-objects-with-callbacks) below.
 - `set?` - If this property is set, the selector will return **writeable** state. A function that is passed an object of callbacks as the first parameter and the new incoming value.  The incoming value may be a value of type `T` or maybe an object of type `DefaultValue` if the user reset the selector.  The callbacks include:
   - `get()` - a function used to retrieve values from other atoms/selectors. This function will not subscribe the selector to the given atoms/selectors.
   - `set()` - a function used to set the values of upstream Recoil state. The first parameter is the Recoil state and the second parameter is the new value.  The new value may be an updater function or a `DefaultValue` object to propagate reset actions.
   - `reset()` - a function used to reset to the default values of upstream Recoil state. The only parameter is the Recoil state.
-- `dangerouslyAllowMutability` - In some cases it may be desireable allow mutating of objects stored in selectors that don't represent state changes.  Use this option to override freezing objects in development mode.
+- `dangerouslyAllowMutability` - In some cases it may be desirable allow mutating of objects stored in selectors that don't represent state changes.  Use this option to override freezing objects in development mode.
 - `cachePolicy_UNSTABLE` - Defines the behavior of the internal selector cache. Can be useful to control the memory footprint in apps that have selectors with many changing dependencies.
   - `eviction` - can be set to `lru` (which requires that a `maxSize` is set), `keep-all` (default), or `most-recent`. An `lru` cache will evict the least-recently-used value from the selector cache when the size of the cache exceeds `maxSize`. A `keep-all` policy will mean all selector dependencies and their values will be indefinitely stored in the selector cache. A `most-recent` policy will use a cache of size 1 and will retain only the most recently saved set of dependencies and their values.
   - Note the cache stores the values of the selector based on a key containing all dependencies and their values. This means the size of the internal selector cache depends on both the size of the selector values as well as the number of unique values of all dependencies.
@@ -109,7 +108,7 @@ const proxySelector = selector({
 });
 ```
 
-This selector transforms the data, so needs to check if the incoming value is a `DefaultValue`.
+This selector transforms the data, so it needs to check if the incoming value is a `DefaultValue`.
 ```jsx
 const transformSelector = selector({
   key: 'TransformSelector',
@@ -227,6 +226,24 @@ const menuItemState = selectorFamily({
     });
     return {
       title: `Show info for ${name}`,
+      onClick,
+    };
+  },
+});
+```
+
+Example that can mutate state:
+
+```jsx
+const menuItemState = selectorFamily({
+  key: 'MenuItem',
+  get: itemID => ({get, getCallback}) => {
+    const name = get(itemNameQuery(itemID));
+    const onClick = getCallback(({refresh}) => () => {
+      refresh(itemInfoQuery(itemID));
+    });
+    return {
+      title: `Refresh data for ${name}`,
       onClick,
     };
   },

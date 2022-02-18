@@ -77,6 +77,7 @@ module.exports = {
           'api-reference/core/useGotoRecoilSnapshot',
         ],
         Misc: [
+          'api-reference/core/useRecoilStoreID',
           'api-reference/core/useRecoilBridgeAcrossReactRoots',
         ],
         Refine: [
