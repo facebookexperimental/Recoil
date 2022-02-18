@@ -61,9 +61,6 @@ module.exports = {
       apiKey: '9c5a009951e793525603922b8ca66628',
       indexName: 'recoiljs',
     },
-    googleAnalytics: {
-      trackingID: 'UA-44373548-46',
-    },
     image: 'img/og-image.png',
     navbar: {
       logo: {
@@ -81,6 +78,12 @@ module.exports = {
           position: 'left',
         },
         { to: 'blog', label: 'Blog', position: 'left' },
+        {
+          to: 'docs/refine/Introduction',
+          activeBasePath: 'docs/refine',
+          label: 'Refine',
+          position: 'left',
+        },
         { to: 'resources', label: 'External Resources', position: 'left' },
         // Please keep GitHub link to the right for consistency.
         {
@@ -187,6 +190,9 @@ module.exports = {
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
+        },
+        googleAnalytics: {
+          trackingID: 'UA-44373548-46',
         },
       },
     ],

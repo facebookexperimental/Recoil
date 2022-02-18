@@ -83,4 +83,14 @@ module.exports = {
       },
     ],
   },
+  refine: {
+    Introduction: ['refine/Introduction'],
+    'API Reference': [
+      'refine/api/Utilities',
+      'refine/api/Checkers',
+      'refine/api/Primitive_Checkers',
+      'refine/api/Collection_Checkers',
+      'refine/api/Advanced_Checkers',
+    ],
+  }
 };
