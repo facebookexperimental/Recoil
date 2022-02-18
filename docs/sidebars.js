@@ -88,13 +88,9 @@ module.exports = {
     'API Reference': [
       'refine/api/Utilities',
       'refine/api/Checkers',
-      {
-        Checkers: [
-          'refine/api/Primitive_Checkers',
-          'refine/api/Collection_Checkers',
-          'refine/api/Advanced_Checkers',
-        ],
-      },
+      'refine/api/Primitive_Checkers',
+      'refine/api/Collection_Checkers',
+      'refine/api/Advanced_Checkers',
     ],
   }
 };
