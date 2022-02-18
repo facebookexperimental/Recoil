@@ -3,7 +3,7 @@ title: Refine Collection Checkers
 sidebar_label: Collection Checkers
 ---
 
-Collection [checkers](/docs/api-reference/refine/Checkers) can be combined with [primitive checkers](/docs/api-reference/refine/Primitive_Checkers) to refine more complex values.
+Collection [checkers](/docs/refine/api/Checkers) can be combined with [primitive checkers](/docs/refine/api/Primitive_Checkers) to refine more complex values.
 
 ## `array()`
 

@@ -80,19 +80,21 @@ module.exports = {
           'api-reference/core/useRecoilStoreID',
           'api-reference/core/useRecoilBridgeAcrossReactRoots',
         ],
-        Refine: [
-          'api-reference/refine/Refine',
-          'api-reference/refine/Utilities',
-          'api-reference/refine/Checkers',
-          {
-            Checkers: [
-              'api-reference/refine/Primitive_Checkers',
-              'api-reference/refine/Collection_Checkers',
-              'api-reference/refine/Advanced_Checkers',
-            ],
-          },
-        ],
       },
     ],
   },
+  refine: {
+    Introduction: ['refine/Introduction'],
+    'API Reference': [
+      'refine/api/Utilities',
+      'refine/api/Checkers',
+      {
+        Checkers: [
+          'refine/api/Primitive_Checkers',
+          'refine/api/Collection_Checkers',
+          'refine/api/Advanced_Checkers',
+        ],
+      },
+    ],
+  }
 };

@@ -3,7 +3,7 @@ title: Refine Primitive Checkers
 sidebar_label: Primitive Checkers
 ---
 
-The starting place for building a [Refine checker](/docs/api-reference/refine/Checkers) is with the primitive combinators.
+The starting place for building a [Refine checker](/docs/refine/api/Checkers) is with the primitive combinators.
 
 These are the initial building blocks which can be composed into higher order combinators using collections or other custom combinators.
 

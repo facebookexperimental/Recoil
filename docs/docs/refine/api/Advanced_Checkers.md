@@ -3,7 +3,7 @@ title: Advanced Refine Checkers
 sidebar_label: Advanced Checkers
 ---
 
-In addition to [collections](/docs/api-reference/refine/Collection_Checkers) and [primitives](/docs/api-reference/refine/Primitive_Checkers), more complex types can be modeled using the following combinator checkers.
+In addition to [collections](/docs/refine/api/Collection_Checkers) and [primitives](/docs/refine/api/Primitive_Checkers), more complex types can be modeled using the following combinator checkers.
 
 ## `or()`
 
@@ -95,7 +95,7 @@ assert(check([3]).type === 'failure');
 
 ## `asType()`
 
-If you want to coerce a value to an opaque type, you can use `asType()`.
+`asType()` will convert from one type to another.  Provide a checker for the expected type and a callback function to convert to a different output type.  For example, you could use this to coerce a value to an opaque type.
 
 ```jsx
 opaque type ID = string;
@@ -105,14 +105,20 @@ const IDChecker: Checker<ID> = asType(string(), s => (s: ID));
 
 ## `match()`
 
-This checker is simply an alias for `union` that restricts all input checkers to match. This can be combined with `asType` to map various input types into a single resulting output.
+This checker is simply an alias for `union` that restricts all input checkers to produce the same output type.
+
+Using `match()` and [`asType()`](/docs/refine/api/Advanced_Checkers#asType) you can upgrade from previous types to the latest version.
 
 ```jsx
-const backwardCompatibilityChecker: Checker<string> = match(
-  string(),
-  asType(number(), num => `${num}`),
-  asType(object({num: number()}), obj => `${obj.num}`),
+const myChecker: Checker<{str: string}> = match(
+  object({str: string()}),
+  asType(string(), str => ({str: str})),
+  asType(number(), num => ({str: String(num)})),
 );
+
+const obj1: {str: string} = coercion(myChecker({str: 'hello'}));
+const obj2: {str: string} = coercion(myChecker('hello'));
+const obj3: {str: string} = coercion(myChecker(123));
 ```
 
 ## `constraint()`

@@ -78,6 +78,12 @@ module.exports = {
           position: 'left',
         },
         { to: 'blog', label: 'Blog', position: 'left' },
+        {
+          to: 'docs/refine/Introduction',
+          activeBasePath: 'docs/refine',
+          label: 'Refine',
+          position: 'left',
+        },
         { to: 'resources', label: 'External Resources', position: 'left' },
         // Please keep GitHub link to the right for consistency.
         {
