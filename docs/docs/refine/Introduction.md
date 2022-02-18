@@ -79,4 +79,4 @@ if (result != null) {
 
 ## Usage in Recoil Sync
 
-[Recoil Sync](/docs/guides/recoil-sync) leverages **Refine** for type refinement, input validation, and upgrading types for backward compatibility.  See the library docs for more details.
+Recoil Sync leverages **Refine** for type refinement, input validation, and upgrading types for backward compatibility.  See the library docs for more details.
