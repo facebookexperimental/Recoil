@@ -31,13 +31,7 @@ module.exports = {
       //     ],
       //   },
       'guides/asynchronous-data-queries',
-      {
-        'Syncing with External State': [
-          'guides/atom-effects',
-          'guides/recoil-sync',
-          'guides/url-persistence',
-        ],
-      },
+      'guides/atom-effects',
       'guides/testing',
       'guides/dev-tools',
       //   'guides/code-splitting',
@@ -82,30 +76,6 @@ module.exports = {
           'api-reference/core/useRecoilSnapshot',
           'api-reference/core/useGotoRecoilSnapshot',
         ],
-        'Recoil Sync': [
-          'api-reference/recoil-sync/syncEffect',
-          'api-reference/recoil-sync/useRecoilSync',
-          'api-reference/recoil-sync/RecoilSync',
-          {
-            'URL Persistence': [
-              'api-reference/recoil-sync/RecoilURLSync',
-              'api-reference/recoil-sync/useRecoilURLSync',
-              'api-reference/recoil-sync/urlSyncEffect',
-              {
-                JSON: [
-                  'api-reference/recoil-sync/RecoilURLSyncJSON',
-                  'api-reference/recoil-sync/useRecoilURLSyncJSON',
-                ],
-              },
-              {
-                Transit: [
-                  'api-reference/recoil-sync/RecoilURLSyncTransit',
-                  'api-reference/recoil-sync/useRecoilURLSyncTransit',
-                ],
-              },
-            ],
-          },
-        ],
         Misc: [
           'api-reference/core/useRecoilStoreID',
           'api-reference/core/useRecoilBridgeAcrossReactRoots',
@@ -113,14 +83,48 @@ module.exports = {
       },
     ],
   },
-  refine: {
-    Introduction: ['refine/Introduction'],
-    'API Reference': [
-      'refine/api/Utilities',
-      'refine/api/Checkers',
-      'refine/api/Primitive_Checkers',
-      'refine/api/Collection_Checkers',
-      'refine/api/Advanced_Checkers',
-    ],
-  }
+  'recoil-sync': [
+    'recoil-sync/introduction',
+    'recoil-sync/sync-effect',
+    'recoil-sync/implement-store',
+    'recoil-sync/url-persistence',
+    {
+      'API Reference': [
+        'recoil-sync/api/syncEffect',
+        'recoil-sync/api/useRecoilSync',
+        'recoil-sync/api/RecoilSync',
+        {
+          'URL Persistence': [
+            'recoil-sync/api/RecoilURLSync',
+            'recoil-sync/api/useRecoilURLSync',
+            'recoil-sync/api/urlSyncEffect',
+            {
+              JSON: [
+                'recoil-sync/api/RecoilURLSyncJSON',
+                'recoil-sync/api/useRecoilURLSyncJSON',
+              ],
+            },
+            {
+              Transit: [
+                'recoil-sync/api/RecoilURLSyncTransit',
+                'recoil-sync/api/useRecoilURLSyncTransit',
+              ],
+            },
+          ],
+        },
+      ],
+    }
+  ],
+  refine: [
+    'refine/Introduction',
+    {
+      'API Reference': [
+        'refine/api/Utilities',
+        'refine/api/Checkers',
+        'refine/api/Primitive_Checkers',
+        'refine/api/Collection_Checkers',
+        'refine/api/Advanced_Checkers',
+      ],
+    },
+  ],
 };

@@ -3,9 +3,9 @@ title: <RecoilURLSyncTransit ...props />
 sidebar_label: <RecoilURLSyncTransit/>
 ---
 
-A component from the [Recoil Sync library](/docs/guides/recoil-sync) to sync atoms using the [`syncEffect()`](/docs/api-reference/recoil-sync/syncEffect) or [`urlSyncEffect()`](/docs/api-reference/recoil-sync/urlSyncEffect) atom effects with the browser URL.
+A component from the [Recoil Sync library](/docs/recoil-sync/introduction) to sync atoms using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) or [`urlSyncEffect()`](/docs/recoil-sync/api/urlSyncEffect) atom effects with the browser URL.
 
-This is identical to the [`<RecoilURLSync/>`](/docs/api-reference/recoil-sync/RecoilURLSync) component except that it provides built-in [Transit encoding](https://github.com/cognitect/transit-js).
+This is identical to the [`<RecoilURLSync/>`](/docs/recoil-sync/api/RecoilURLSync) component except that it provides built-in [Transit encoding](https://github.com/cognitect/transit-js).
 
 ```jsx
 function RecoilURLSyncTransit(props: {
@@ -16,7 +16,7 @@ function RecoilURLSyncTransit(props: {
 
 ---
 
-Transit encoding is not as terse or readable as just using [JSON](/docs/api-reference/recoil-sync/RecoilURLSyncJSON), however it can support `Map` and `Set` JavaScript containers as well as custom user classes.
+Transit encoding is not as terse or readable as just using [JSON](/docs/recoil-sync/api/RecoilURLSyncJSON), however it can support `Map` and `Set` JavaScript containers as well as custom user classes.
 
 ## Custom Classes
 
@@ -66,6 +66,6 @@ function MyApp() {
 const ViewState = atom<ViewState>({
   key: 'ViewState',
   default: new ViewState(),
-  effects_UNSTABLE: [syncEffect({ storeKey: 'transit-url', refine: viewStateChecker() })],
+  effects: [syncEffect({ storeKey: 'transit-url', refine: viewStateChecker() })],
 });
 ```

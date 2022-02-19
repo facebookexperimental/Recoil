@@ -3,7 +3,7 @@ title: useRecoilSync(...)
 sidebar_label: useRecoilSync()
 ---
 
-A hook from the [Recoil Sync library](/docs/guides/recoil-sync) to define an external store for atoms to sync with using the [`syncEffect()`](/docs/api-reference/recoil-sync/syncEffect) atom effect.
+A hook from the [Recoil Sync library](/docs/recoil-sync/introduction) to define an external store for atoms to sync with using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) atom effect.
 
 ---
 
@@ -53,7 +53,7 @@ The `write()` callback is provided some named parameters:
 - `diff` - A map of item keys and their new values that have changed for this atomic transaction.
 - `allItems` - A map of the keys and values for all items that have been used in this store.
 
-The value for an item may be a `DefaultValue` object, which means that the item should be reset or deleted.  If the [`syncEffect()`](/docs/api-reference/recoil-sync/syncEffect) specifies the `syncDefault` option, then the actual default values will be provided instead of the `DefaultValue` placeholder object.
+The value for an item may be a `DefaultValue` object, which means that the item should be reset or deleted.  If the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) specifies the `syncDefault` option, then the actual default values will be provided instead of the `DefaultValue` placeholder object.
 
 ## Listen Interface
 The `listen()` callback allows you to subscribe to async updates from the external store and mutate the atom state to keep them in sync.
@@ -77,4 +77,4 @@ You can return a callback handler function from your `listen()` implementation t
 
 ## Examples
 
-See the [Recoil Sync library guide](/docs/guides/recoil-sync#implementing-a-store) for examples.
+See the [Recoil Sync library guide](/docs/recoil-sync/introduction#implementing-a-store) for examples.

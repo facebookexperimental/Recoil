@@ -3,7 +3,7 @@ title: urlSyncEffect(...)
 sidebar_label: urlSyncEffect()
 ---
 
-An optional effect that may be used instead of [`syncEffect()`](/docs/api-reference/recoil-sync/syncEffect) for [URL Persistence](/docs/guides/url-persistence) in order to specify additional options, such as if state changes should replace the URL or push a new entry in the browser history stack.
+An optional effect that may be used instead of [`syncEffect()`](/docs/recoil-sync/api/syncEffect) for [URL Persistence](/docs/recoil-sync/url-persistence) in order to specify additional options, such as if state changes should replace the URL or push a new entry in the browser history stack.
 
 ---
 

@@ -79,6 +79,12 @@ module.exports = {
         },
         { to: 'blog', label: 'Blog', position: 'left' },
         {
+          to: 'docs/recoil-sync/introduction',
+          activeBasePath: 'docs/recoil-sync',
+          label: 'Recoil Sync',
+          position: 'left',
+        },
+        {
           to: 'docs/refine/Introduction',
           activeBasePath: 'docs/refine',
           label: 'Refine',

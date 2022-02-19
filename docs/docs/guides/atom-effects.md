@@ -3,7 +3,7 @@ title: Atom Effects
 sidebar_label: Atom Effects
 ---
 
-Atom effects are an API for managing side-effects and synchronizing or initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are similar to [React effects](https://reactjs.org/docs/hooks-effect.html), but are defined as part of the atom definition, so each atom can specify and compose their own policies.  Also check out the [`recoil-sync`](/docs/guides/recoil-sync) library for some implementations of syncing (such as [URL persistence](/docs/guides/url-persistence)) or more advanced use cases.
+Atom effects are an API for managing side-effects and synchronizing or initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are similar to [React effects](https://reactjs.org/docs/hooks-effect.html), but are defined as part of the atom definition, so each atom can specify and compose their own policies.  Also check out the [`recoil-sync`](/docs/recoil-sync/introduction) library for some implementations of syncing (such as [URL persistence](/docs/recoil-sync/url-persistence)) or more advanced use cases.
 
 An *atom effect* is a *function* with the following definition.
 
@@ -34,6 +34,7 @@ type AtomEffect<T> = ({
   getPromise: <S>(RecoilValue<S>) => Promise<S>,
   getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
   getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
+
 }) => void | () => void; // Optionally return a cleanup handler
 ```
 
