@@ -35,7 +35,7 @@ Optional options:
 
 ## Examples
 
-See the [Recoil Sync library guide](/docs/recoil-sync/introduction#input-validation) for examples.
+See the [Sync Effect guide](/docs/recoil-sync/sync-effect#input-validation) for examples.
 
 ## Advanced Mappings
 
@@ -68,4 +68,4 @@ type WriteAtomInterface = {
 type WriteAtom<T> = (WriteAtomInterface, DefaultValue | T) => void;
 ```
 
-See the [Recoil Sync library guide](/docs/recoil-sync/introduction#advanced-atom-mappings) for examples.
+See the [these examples](/docs/recoil-sync/sync-effect#advanced-atom-mappings).
