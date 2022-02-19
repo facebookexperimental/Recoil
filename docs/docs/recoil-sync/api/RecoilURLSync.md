@@ -3,7 +3,7 @@ title: <RecoilURLSync ...props />
 sidebar_label: <RecoilURLSync/>
 ---
 
-A component from the [Recoil Sync library](/docs/recoil-sync/introduction) to sync atoms using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) or [`urlSyncEffect()`](/docs/api-reference/recoil-sync/urlSyncEffect) atom effects with the browser URL.
+A component from the [Recoil Sync library](/docs/recoil-sync/introduction) to sync atoms using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) or [`urlSyncEffect()`](/docs/recoil-sync/api/urlSyncEffect) atom effects with the browser URL.
 
 ---
 

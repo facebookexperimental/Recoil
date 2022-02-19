@@ -3,7 +3,7 @@ title: syncEffect(...)
 sidebar_label: syncEffect()
 ---
 
-A function to get an [atom effect](/docs/guides/atom-effects) for the [`recoil-sync`](/docs/recoil-sync/introduction) library to synchronize an atom with external state defined with the [`useRecoilSync()`](/docs/recoil-sync/api/useRecoilSync) hook or [`<RecoilSync/>`](/docs/api-reference/recoil-sync/RecoilSync) component.
+A function to get an [atom effect](/docs/guides/atom-effects) for the [`recoil-sync`](/docs/recoil-sync/introduction) library to synchronize an atom with external state defined with the [`useRecoilSync()`](/docs/recoil-sync/api/useRecoilSync) hook or [`<RecoilSync/>`](/docs/recoil-sync/api/RecoilSync) component.
 
 ---
 

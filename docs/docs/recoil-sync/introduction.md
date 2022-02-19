@@ -26,6 +26,8 @@ The basic idea is that a [`syncEffect()`](/docs/recoil-sync/sync-effect) can be 
 
 ## Example
 
+### URL Persistence
+
 Here is a simple example [syncing an atom with the browser URL](/docs/recoil-sync/url-persistence):
 
 ```jsx

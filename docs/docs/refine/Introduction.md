@@ -15,7 +15,7 @@ sidebar_label: Refine
 
 ## Getting Started
 
-Refine is currently bundled as part of the [Recoil Sync](/docs/guides/recoil-sync) package.
+Refine is currently bundled as part of the [Recoil Sync](/docs/recoil-sync/introduction) package.
 
 To get started learning about Refine, check out the documentation on the core concepts of [Utilities](/docs/refine/api/Utilities) and [Checkers](/docs/refine/api/Checkers).
 
