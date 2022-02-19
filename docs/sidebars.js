@@ -33,6 +33,7 @@ module.exports = {
       'guides/asynchronous-data-queries',
       'guides/atom-effects',
       'guides/testing',
+      'guides/transitions',
       'guides/dev-tools',
       //   'guides/code-splitting',
     ],

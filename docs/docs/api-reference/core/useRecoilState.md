@@ -7,7 +7,7 @@ Returns a tuple where the first element is the value of state and the second ele
 
 This hook will subscribe the component to re-render for any changes in the requested state.
 
-Use `useRecoilState_TRANSITION_SUPPORT_UNSTABLE()` for experimental support for [React 18 transitions](/blog/2022/01/28/0.6.0-release#concurrent-rendering-and-transitions) based on mutating Recoil state.
+Use `useRecoilState_TRANSITION_SUPPORT_UNSTABLE()` for experimental support for [React 18 transitions](/docs/guides/transitions) based on mutating Recoil state.
 
 ---
 
