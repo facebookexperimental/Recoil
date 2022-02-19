@@ -83,14 +83,48 @@ module.exports = {
       },
     ],
   },
-  refine: {
-    Introduction: ['refine/Introduction'],
-    'API Reference': [
-      'refine/api/Utilities',
-      'refine/api/Checkers',
-      'refine/api/Primitive_Checkers',
-      'refine/api/Collection_Checkers',
-      'refine/api/Advanced_Checkers',
-    ],
-  }
+  'recoil-sync': [
+    'recoil-sync/introduction',
+    'recoil-sync/sync-effect',
+    'recoil-sync/implement-store',
+    'recoil-sync/url-persistence',
+    {
+      'API Reference': [
+        'recoil-sync/api/syncEffect',
+        'recoil-sync/api/useRecoilSync',
+        'recoil-sync/api/RecoilSync',
+        {
+          'URL Persistence': [
+            'recoil-sync/api/RecoilURLSync',
+            'recoil-sync/api/useRecoilURLSync',
+            'recoil-sync/api/urlSyncEffect',
+            {
+              JSON: [
+                'recoil-sync/api/RecoilURLSyncJSON',
+                'recoil-sync/api/useRecoilURLSyncJSON',
+              ],
+            },
+            {
+              Transit: [
+                'recoil-sync/api/RecoilURLSyncTransit',
+                'recoil-sync/api/useRecoilURLSyncTransit',
+              ],
+            },
+          ],
+        },
+      ],
+    }
+  ],
+  refine: [
+    'refine/Introduction',
+    {
+      'API Reference': [
+        'refine/api/Utilities',
+        'refine/api/Checkers',
+        'refine/api/Primitive_Checkers',
+        'refine/api/Collection_Checkers',
+        'refine/api/Advanced_Checkers',
+      ],
+    },
+  ],
 };
