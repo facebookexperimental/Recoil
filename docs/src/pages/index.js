@@ -86,6 +86,43 @@ function Feature({
   );
 }
 
+function VideosContainer() {
+  return (
+    <div className="container text--center margin-bottom--lg margin-top--lg">
+      <div className="row">
+        <div className="col">
+          <h2>Brief Introduction into Recoil</h2>
+          <div>
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube-nocookie.com/embed/U9XStcquQyY"
+              title="Explain Like I'm 5: Recoil"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+        <div className="col">
+          <h2>Deep Dive into Recoil</h2>
+          <div>
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube-nocookie.com/embed/_ISAA_Jt9kI"
+              title="Recoil: State Management for Today's React - Dave McCabe aka @mcc_abe at @ReactEurope 2020"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Home() {
   const context = useDocusaurusContext();
   const { siteConfig = {} } = context;
@@ -117,6 +154,7 @@ function Home() {
         </div>
       </header>
       <main>
+      <VideosContainer />
         {features && features.length && (
           <section className={styles.features}>
             <div className="container">
@@ -128,24 +166,6 @@ function Home() {
             </div>
           </section>
         )}
-        <section className={styles.features}>
-          <div className="container">
-            <div className="row">
-              <div className="container">
-                <div className="row" style={{ justifyContent: 'center' }}>
-                  <iframe
-                    width="560"
-                    height="315"
-                    src="https://www.youtube-nocookie.com/embed/_ISAA_Jt9kI"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />{' '}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
     </Layout>
   );
