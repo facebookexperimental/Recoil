@@ -198,20 +198,24 @@ test('Test multipliedState', () => {
 
 ### Testing async selectors
 
-When testing an **async selector**, it is necessary to `retain()` the snapshot to avoid early cancelation of the selector.
+When testing **async selectors** it is necessary to `retain()` the snapshot in order to avoid early cancelation.
 
 ```jsx
 const initialSnapshot = snapshot_UNSTABLE();
 const release = initialSnapshot.retain();
 
-// your test
+try {
 
-release();
+  // your test
+
+} finally {
+  release();
+}
 ```
 
 ### Clearing all selector caches
 
-Cache is shared between tests, so you'll need to clear the cache after each test.
+Selector caches are shared between `<RecoilRoot>`'s and tests, so you may need to clear the cache after each test.
 
 ```jsx
 const clearSelectorCachesState = selector({
