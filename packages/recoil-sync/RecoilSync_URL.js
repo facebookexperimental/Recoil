@@ -10,7 +10,6 @@
  */
 'use strict';
 
-import type {AtomEffect} from 'Recoil';
 import type {
   ItemKey,
   ItemSnapshot,
@@ -18,6 +17,7 @@ import type {
   StoreKey,
   SyncEffectOptions,
 } from './RecoilSync';
+import type {AtomEffect} from 'Recoil';
 import type {CheckerReturnType} from 'refine';
 
 const {DefaultValue, RecoilLoadable} = require('Recoil');
