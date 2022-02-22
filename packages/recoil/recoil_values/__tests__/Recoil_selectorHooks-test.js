@@ -39,6 +39,7 @@ let React,
   loadingAsyncSelector,
   resolvingAsyncSelector,
   errorThrowingAsyncSelector,
+  stringAtom,
   flushPromisesAndTimers,
   renderElements,
   renderElementsWithSuspenseCount,
@@ -71,6 +72,7 @@ const testRecoil = getRecoilTestFn(() => {
     loadingAsyncSelector,
     resolvingAsyncSelector,
     errorThrowingAsyncSelector,
+    stringAtom,
     flushPromisesAndTimers,
     renderElements,
     renderElementsWithSuspenseCount,
@@ -2002,6 +2004,85 @@ describe('Multiple stores', () => {
 
     act(() => setAtomA('B'));
     expect(c.textContent).toBe('"B:RESOLVE_B""B:RESOLVE_B"');
+  });
+
+  testRecoil('dynamic dependencies in multiple', async () => {
+    const myAtom = stringAtom();
+
+    const resolvers = {};
+    const promises = {
+      DEFAULT: new Promise(resolve => (resolvers.DEFAULT = resolve)),
+      SET: new Promise(resolve => (resolvers.SET = resolve)),
+      OTHER: new Promise(resolve => (resolvers.OTHER = resolve)),
+    };
+    const mySelector = selector({
+      key: 'selector stores dynamic deps',
+      get: async ({get}) => {
+        await Promise.resolve();
+        const x = get(myAtom);
+        const y = await promises[x];
+        return x + ':' + y;
+      },
+    });
+
+    // This wrapper selector is important so that the subscribing component
+    // doesn't suspend while the selector is pending async results.
+    // Otherwise the component may trigger re-evaluations when it wakes up
+    // and provide a false-positive.
+    const wrapperSelector = selector({
+      key: 'selector stores dynamic deps wrapper',
+      get: ({get}) => {
+        const loadable = get(noWait(mySelector));
+        return loadable.state === 'loading' ? 'loading' : loadable.contents;
+      },
+    });
+
+    const [AtomA, setAtomA] = componentThatReadsAndWritesAtom(myAtom);
+    let setAtomB;
+    function SetAtomB() {
+      setAtomB = useSetRecoilState(myAtom);
+      return null;
+    }
+    const c = renderElements(
+      <>
+        <RecoilRoot>
+          <AtomA />
+          <ReadsAtom atom={wrapperSelector} />
+        </RecoilRoot>
+        <RecoilRoot>
+          <SetAtomB />
+          <ReadsAtom atom={wrapperSelector} />
+        </RecoilRoot>
+      </>,
+    );
+
+    // Initial render has both stores with same pending execution
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"DEFAULT""loading""loading"');
+
+    // Change store A to a different execution
+    act(() => setAtomA('SET'));
+    expect(c.textContent).toBe('"SET""loading""loading"');
+
+    // Update stoore B to test if dynamic dependency worked
+    act(() => setAtomB('OTHER'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"SET""loading""loading"');
+
+    // Resolving original promise does nothing
+    act(() => resolvers.DEFAULT('IGNORE'));
+    expect(c.textContent).toBe('"SET""loading""loading"');
+
+    // Resolving store B
+    act(() => resolvers.OTHER('OTHER'));
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"SET""loading""OTHER:OTHER"');
+
+    // Resolving store A
+    act(() => resolvers.SET('RESOLVE'));
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"SET""SET:RESOLVE""OTHER:OTHER"');
   });
 });
 
