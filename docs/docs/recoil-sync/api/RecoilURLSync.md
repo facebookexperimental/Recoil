@@ -52,7 +52,7 @@ The `serialize()` and `deserialize()` callbacks can provide custom serialization
   deserialize: x => JSON.parse(x),
 ```
 
-If you provide your own callbacks, they should be memoized with something like `useCallback()` to avoid re-parsing the URL with every render.
+These callbacks should be memoized with something like `useCallback()` to avoid re-parsing the URL with every render.  Depending on the location in the URL that is synced with, the callbacks may be either called with individual values or with an object containing multiple values.  Wrappers such as [`<RecoilURLSyncJSON>`](/docs/recoil-sync/api/RecoilURLSyncJSON) and [`<RecoilURLSyncTransit>`](/docs/recoil-sync/api/RecoilURLSyncTransit) provide these for you.
 
 ## Browser Abstraction
 
