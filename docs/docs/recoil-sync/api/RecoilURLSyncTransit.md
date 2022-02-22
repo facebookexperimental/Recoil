@@ -65,7 +65,7 @@ function MyApp() {
 
 const ViewState = atom<ViewState>({
   key: 'ViewState',
-  default: new ViewState(),
+  default: new ViewState(true, [1, 2]),
   effects: [syncEffect({ storeKey: 'transit-url', refine: viewStateChecker() })],
 });
 ```
