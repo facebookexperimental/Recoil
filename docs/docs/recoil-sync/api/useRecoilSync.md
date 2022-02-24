@@ -3,7 +3,7 @@ title: useRecoilSync(...)
 sidebar_label: useRecoilSync()
 ---
 
-A hook from the [Recoil Sync library](/docs/recoil-sync/introduction) to define an external store for atoms to sync with using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) atom effect.
+A hook from the [Recoil Sync library](/docs/recoil-sync/introduction) to [define an external store](/docs/recoil-sync/implement-store) for atoms to sync with using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) atom effect.
 
 ---
 
