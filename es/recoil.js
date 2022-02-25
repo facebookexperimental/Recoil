@@ -3790,6 +3790,11 @@ class Snapshot {
   getID() {
     this.checkRefCount_INTERNAL();
     return this._store.getState().currentTree.stateID;
+  }
+
+  getStoreID() {
+    this.checkRefCount_INTERNAL();
+    return this._store.storeID;
   } // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
 

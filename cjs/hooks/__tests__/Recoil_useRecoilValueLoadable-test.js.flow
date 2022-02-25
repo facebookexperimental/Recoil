@@ -170,3 +170,41 @@ testRecoil(
     expect(c.textContent).toEqual('Has error');
   },
 );
+
+// Test that an async selector can depend on an async selector dependency
+// and include async post-processing.
+testRecoil('two level async', async () => {
+  const level2 = selector({
+    key: 'useRecoilValueLoadable async level2',
+    get: () => new Promise(resolve => setTimeout(() => resolve('level2'))),
+  });
+
+  const level1 = selector({
+    key: 'useRecoilValueLoadable async level1',
+    get: async ({get}) => {
+      const level2Value = get(level2);
+      return await new Promise(resolve =>
+        setTimeout(() => resolve(`level1 + ${level2Value}`)),
+      );
+    },
+  });
+
+  const promises = [];
+  function ReadPromise() {
+    const loadable = useRecoilValueLoadable(level1);
+    promises.push(loadable.toPromise());
+    return loadable.getValue();
+  }
+  const c = renderElements(<ReadPromise />);
+  expect(c.textContent).toEqual('loading');
+
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+  await flushPromisesAndTimers();
+
+  expect(c.textContent).toEqual('level1 + level2');
+  await Promise.all(
+    promises.map(promise => expect(promise).resolves.toBe('level1 + level2')),
+  );
+});

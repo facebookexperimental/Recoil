@@ -6,6 +6,7 @@
 - `shouldNotBeFrozen` now works in JS environment without `Window` interface. (#1571)
 - Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589)
 - Better error reporting when selectors provide inconsistent results (#1696)
+- Add `getStoreID()` method to `Snapshot` (#1612)
 
 ### Breaking Changes
 

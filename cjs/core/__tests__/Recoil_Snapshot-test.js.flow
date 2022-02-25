@@ -556,7 +556,7 @@ describe('Atom effects', () => {
   testRecoil('Standalone snapshot', async ({gks}) => {
     let effectsRefCount = 0;
     const myAtom = atom({
-      key: 'snapshot effects',
+      key: 'snapshot effects standalone',
       default: 'DEFAULT',
       effects: [
         ({setSelf}) => {
@@ -587,7 +587,7 @@ describe('Atom effects', () => {
   testRecoil('RecoilRoot Snapshot', () => {
     let effectsRefCount = 0;
     const myAtom = atom({
-      key: 'snapshot effects',
+      key: 'snapshot effects RecoilRoot',
       default: 'DEFAULT',
       effects: [
         ({setSelf}) => {
@@ -626,5 +626,22 @@ describe('Atom effects', () => {
     act(() => setMount(false));
     expect(c.textContent).toBe('UNMOUNTED');
     expect(effectsRefCount).toBe(0);
+  });
+
+  testRecoil('getStoreID()', () => {
+    const myAtom = atom({
+      key: 'snapshot effects storeID',
+      default: 'DEFAULT',
+      effects: [
+        ({setSelf, storeID}) => {
+          setSelf(storeID);
+        },
+      ],
+    });
+
+    const testSnapshot = freshSnapshot();
+    expect(testSnapshot.getLoadable(myAtom).getValue()).toBe(
+      testSnapshot.getStoreID(),
+    );
   });
 });
