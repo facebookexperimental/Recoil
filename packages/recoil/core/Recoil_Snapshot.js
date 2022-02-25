@@ -17,7 +17,7 @@ import type {
   ValueOrUpdater,
 } from '../recoil_values/Recoil_callbackTypes';
 import type {RecoilValueInfo} from './Recoil_FunctionalCore';
-import type {NodeKey} from './Recoil_Keys';
+import type {NodeKey, StoreID} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
 
@@ -184,6 +184,11 @@ class Snapshot {
   getID(): SnapshotID {
     this.checkRefCount_INTERNAL();
     return this._store.getState().currentTree.stateID;
+  }
+
+  getStoreID(): StoreID {
+    this.checkRefCount_INTERNAL();
+    return this._store.storeID;
   }
 
   // We want to allow the methods to be destructured and used as accessors
