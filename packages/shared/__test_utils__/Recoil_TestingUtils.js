@@ -98,17 +98,24 @@ function makeStore(): Store {
 }
 
 class ErrorBoundary extends React.Component<
-  {children: React.Node | null, ...},
-  {hasError: boolean, ...},
+  {children: React.Node | null, fallback?: Error => React.Node},
+  {hasError: boolean, error?: ?Error},
 > {
-  state = {hasError: false};
+  state: {hasError: boolean, error?: ?Error} = {hasError: false};
 
-  static getDerivedStateFromError(_error) {
-    return {hasError: true};
+  static getDerivedStateFromError(error: Error): {
+    hasError: boolean,
+    error?: ?Error,
+  } {
+    return {hasError: true, error};
   }
 
-  render() {
-    return this.state.hasError ? 'error' : this.props.children;
+  render(): React.Node {
+    return this.state.hasError
+      ? this.props.fallback != null && this.state.error != null
+        ? this.props.fallback(this.state.error)
+        : 'error'
+      : this.props.children;
   }
 }
 
@@ -456,6 +463,7 @@ module.exports = {
   renderUnwrappedElements,
   renderElements,
   renderElementsWithSuspenseCount,
+  ErrorBoundary,
   ReadsAtom,
   componentThatReadsAndWritesAtom,
   stringAtom,
