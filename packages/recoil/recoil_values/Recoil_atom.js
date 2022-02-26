@@ -140,9 +140,8 @@ export type AtomEffect<T> = ({
   getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
 }) => void | (() => void);
 
-export type AtomOptions<T> = $ReadOnly<{
+export type AtomOptionsWithoutDefault<T> = $ReadOnly<{
   key: NodeKey,
-  default: RecoilValue<T> | Promise<T> | T,
   effects?: $ReadOnlyArray<AtomEffect<T>>,
   effects_UNSTABLE?: $ReadOnlyArray<AtomEffect<T>>,
   persistence_UNSTABLE?: PersistenceSettings<T>,
@@ -150,6 +149,15 @@ export type AtomOptions<T> = $ReadOnly<{
   dangerouslyAllowMutability?: boolean,
   retainedBy_UNSTABLE?: RetainedBy,
 }>;
+
+type AtomOptionsWithDefault<T> = $ReadOnly<{
+  ...AtomOptionsWithoutDefault<T>,
+  default: RecoilValue<T> | Promise<T> | T,
+}>;
+
+export type AtomOptions<T> =
+  | AtomOptionsWithDefault<T>
+  | AtomOptionsWithoutDefault<T>;
 
 type BaseAtomOptions<T> = $ReadOnly<{
   ...AtomOptions<T>,
@@ -557,16 +565,17 @@ function atom<T>(options: AtomOptions<T>): RecoilState<T> {
         'A key option with a unique string value must be provided when creating an atom.',
       );
     }
-    if (!('default' in options)) {
-      throw err('A default value must be specified when creating an atom.');
-    }
   }
 
   const {
-    default: optionsDefault,
     // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     ...restOptions
   } = options;
+  const optionsDefault: RecoilValue<T> | Promise<T> | T = 'default' in options
+  ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+    options.default
+  : new Promise(() => {});
+
   if (isRecoilValue(optionsDefault)
     // Continue to use atomWithFallback for promise defaults for scoped atoms
     // for now, since scoped atoms don't support async defaults

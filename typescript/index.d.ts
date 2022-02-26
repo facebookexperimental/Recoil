@@ -105,13 +105,16 @@
  }) => void | (() => void);
 
  // atom.d.ts
- export interface AtomOptions<T> {
-  key: NodeKey;
-  default: RecoilValue<T> | Promise<T> | T;
-  effects?: ReadonlyArray<AtomEffect<T>>;
-  effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
-  dangerouslyAllowMutability?: boolean;
+ interface AtomOptionsWithoutDefault<T> {
+   key: NodeKey;
+   effects?: ReadonlyArray<AtomEffect<T>>;
+   effects_UNSTABLE?: ReadonlyArray<AtomEffect<T>>;
+   dangerouslyAllowMutability?: boolean;
  }
+ interface AtomOptionsWithDefault<T> extends AtomOptionsWithoutDefault<T> {
+   default: RecoilValue<T> | Promise<T> | T;
+ }
+ export type AtomOptions<T> = AtomOptionsWithoutDefault<T> | AtomOptionsWithDefault<T>;
 
  /**
   * Creates an atom, which represents a piece of writeable state
@@ -383,14 +386,20 @@
   | ReadonlyArray<SerializableParam>
   | Readonly<{[key: string]: SerializableParam}>;
 
- export interface AtomFamilyOptions<T, P extends SerializableParam> {
+ interface AtomFamilyOptionsWithoutDefault<T, P extends SerializableParam> {
   key: NodeKey;
   dangerouslyAllowMutability?: boolean;
-  default: RecoilValue<T> | Promise<T> | T | ((param: P) => T | RecoilValue<T> | Promise<T>);
   effects?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
   effects_UNSTABLE?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
   // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
  }
+ interface AtomFamilyOptionsWithDefault<T, P extends SerializableParam>
+   extends AtomFamilyOptionsWithoutDefault<T, P> {
+  default: RecoilValue<T> | Promise<T> | T | ((param: P) => T | RecoilValue<T> | Promise<T>);
+ }
+ export type AtomFamilyOptions<T, P extends SerializableParam> =
+   | AtomFamilyOptionsWithDefault<T, P>
+   | AtomFamilyOptionsWithoutDefault<T, P>;
 
  /**
   * Returns a function which returns a memoized atom for each unique parameter value.
