@@ -3,6 +3,7 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+- The `default` value is now optional for `atom()` and `atomFamily()`.  If not provided the atom will initialize to a pending state. (#1639)
 - `shouldNotBeFrozen` now works in JS environment without `Window` interface. (#1571)
 - Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589)
 - Better error reporting when selectors provide inconsistent results (#1696)

@@ -41,9 +41,14 @@
 new DefaultValue();
 
 // atom
-const myAtom = atom({
+const myAtom: RecoilState<number> = atom({
   key: 'MyAtom',
   default: 5,
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const myAtomWithoutDefault: RecoilState<number> = atom<number>({
+  key: 'MyAtomWithoutDefault',
 });
 
 // selector
@@ -394,6 +399,10 @@ isRecoilValue(mySelector1);
   useRecoilValue(atm); // $ExpectType number
 
   myAtomFam(''); // $ExpectError
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const myAtomFamilyWithoutDefault: (number: number) => RecoilState<number> =
+    atomFamily<number, number>({key: 'MyAtomFamilyWithoutDefault'});
 }
 
 /**

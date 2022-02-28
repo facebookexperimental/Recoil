@@ -90,6 +90,10 @@ function get(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue).contents;
 }
 
+function getLoadable(recoilValue) {
+  return getRecoilValueAsLoadable(store, recoilValue);
+}
+
 function set(recoilValue, value) {
   setRecoilValue(store, recoilValue, value);
 }
@@ -113,30 +117,40 @@ testRecoil('Works with non-overlapping sets', () => {
   expect(get(pAtom({y: 'y'}))).toBe('yValue');
 });
 
-testRecoil('Works with atom default', () => {
-  const fallbackAtom = atom({key: 'fallback', default: 0});
-  const hasFallback = atomFamily({
-    key: 'hasFallback',
-    default: fallbackAtom,
-  });
-  expect(get(hasFallback({k: 'x'}))).toBe(0);
-  set(fallbackAtom, 1);
-  expect(get(hasFallback({k: 'x'}))).toBe(1);
-  set(hasFallback({k: 'x'}), 2);
-  expect(get(hasFallback({k: 'x'}))).toBe(2);
-  expect(get(hasFallback({k: 'y'}))).toBe(1);
-});
+describe('Default', () => {
+  testRecoil('default is optional', () => {
+    const myAtom = atom({key: 'atom without default'});
+    expect(getLoadable(myAtom).state).toBe('loading');
 
-testRecoil('Works with parameterized default', () => {
-  const paramDefaultAtom = atomFamily({
-    key: 'parameterized default',
-    default: ({num}) => num,
+    act(() => set(myAtom, 'VALUE'));
+    expect(get(myAtom)).toBe('VALUE');
   });
-  expect(get(paramDefaultAtom({num: 1}))).toBe(1);
-  expect(get(paramDefaultAtom({num: 2}))).toBe(2);
-  set(paramDefaultAtom({num: 1}), 3);
-  expect(get(paramDefaultAtom({num: 1}))).toBe(3);
-  expect(get(paramDefaultAtom({num: 2}))).toBe(2);
+
+  testRecoil('Works with atom default', () => {
+    const fallbackAtom = atom({key: 'fallback', default: 0});
+    const hasFallback = atomFamily({
+      key: 'hasFallback',
+      default: fallbackAtom,
+    });
+    expect(get(hasFallback({k: 'x'}))).toBe(0);
+    set(fallbackAtom, 1);
+    expect(get(hasFallback({k: 'x'}))).toBe(1);
+    set(hasFallback({k: 'x'}), 2);
+    expect(get(hasFallback({k: 'x'}))).toBe(2);
+    expect(get(hasFallback({k: 'y'}))).toBe(1);
+  });
+
+  testRecoil('Works with parameterized default', () => {
+    const paramDefaultAtom = atomFamily({
+      key: 'parameterized default',
+      default: ({num}) => num,
+    });
+    expect(get(paramDefaultAtom({num: 1}))).toBe(1);
+    expect(get(paramDefaultAtom({num: 2}))).toBe(2);
+    set(paramDefaultAtom({num: 1}), 3);
+    expect(get(paramDefaultAtom({num: 1}))).toBe(3);
+    expect(get(paramDefaultAtom({num: 2}))).toBe(2);
+  });
 });
 
 testRecoil('Works with date as parameter', () => {
