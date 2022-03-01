@@ -8225,17 +8225,13 @@ function atom(options) {
     if (typeof options.key !== 'string') {
       throw Recoil_err('A key option with a unique string value must be provided when creating an atom.');
     }
-
-    if (!('default' in options)) {
-      throw Recoil_err('A default value must be specified when creating an atom.');
-    }
   }
 
-  const {
-    default: optionsDefault,
-    // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+  const { // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     ...restOptions
   } = options;
+  const optionsDefault = 'default' in options ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+  options.default : new Promise(() => {});
 
   if (isRecoilValue$4(optionsDefault) // Continue to use atomWithFallback for promise defaults for scoped atoms
   // for now, since scoped atoms don't support async defaults
@@ -8418,6 +8414,9 @@ function getCache(eviction, maxSize, mapKey) {
 
 var Recoil_cacheFromPolicy = cacheFromPolicy;
 
+// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
+
+
 const {
   setConfigDeletionHandler: setConfigDeletionHandler$2
 } = Recoil_Node;
@@ -8476,13 +8475,15 @@ function atomFamily(options) {
       cachePolicyForParams_UNSTABLE,
       ...atomOptions
     } = options;
+    const optionsDefault = 'default' in options ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+    options.default : new Promise(() => {});
     const newAtom = Recoil_atom({ ...atomOptions,
       key: `${options.key}__${(_stableStringify = Recoil_stableStringify(params)) !== null && _stableStringify !== void 0 ? _stableStringify : 'void'}`,
-      default: typeof options.default === 'function' ? // The default was parameterized
+      default: typeof optionsDefault === 'function' ? // The default was parameterized
       // Flow doesn't know that T isn't a function, so we need to case to any
-      options.default(params) // flowlint-line unclear-type:off
-      : // Default may be a static value, promise, or RecoilValue
-      options.default,
+      // $FlowIssue[incompatible-use]
+      optionsDefault(params) : // Default may be a static value, promise, or RecoilValue
+      optionsDefault,
       retainedBy_UNSTABLE: typeof options.retainedBy_UNSTABLE === 'function' ? options.retainedBy_UNSTABLE(params) : options.retainedBy_UNSTABLE,
       effects: typeof options.effects === 'function' ? options.effects(params) : typeof options.effects_UNSTABLE === 'function' ? options.effects_UNSTABLE(params) : (_options$effects = options.effects) !== null && _options$effects !== void 0 ? _options$effects : options.effects_UNSTABLE // prettier-ignore
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(

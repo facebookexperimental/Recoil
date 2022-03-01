@@ -10,11 +10,11 @@
  */
 'use strict';
 
-// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 import type {CachePolicyWithoutEviction} from '../caches/Recoil_CachePolicy';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
-import type {AtomEffect, AtomOptions} from './Recoil_atom';
+import type {AtomEffect, AtomOptionsWithoutDefault} from './Recoil_atom';
+// @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 
 const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
 const {setConfigDeletionHandler} = require('../core/Recoil_Node');
@@ -38,13 +38,8 @@ export type ParameterizedScopeRules<P> = $ReadOnlyArray<
 >;
 // flowlint unclear-type:error
 
-export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
-  ...AtomOptions<T>,
-  default:
-    | RecoilValue<T>
-    | Promise<T>
-    | T
-    | (P => T | RecoilValue<T> | Promise<T>),
+export type AtomFamilyOptionsWithoutDefault<T, P: Parameter> = $ReadOnly<{
+  ...AtomOptionsWithoutDefault<T>,
   effects?:
     | $ReadOnlyArray<AtomEffect<T>>
     | (P => $ReadOnlyArray<AtomEffect<T>>),
@@ -56,6 +51,17 @@ export type AtomFamilyOptions<T, P: Parameter> = $ReadOnly<{
 
   // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS?: ParameterizedScopeRules<P>,
 }>;
+
+export type AtomFamilyOptions<T, P: Parameter> =
+  | $ReadOnly<{
+      ...AtomFamilyOptionsWithoutDefault<T, P>,
+      default:
+        | RecoilValue<T>
+        | Promise<T>
+        | T
+        | (P => T | RecoilValue<T> | Promise<T>),
+    }>
+  | AtomFamilyOptionsWithoutDefault<T, P>;
 
 // Process scopeRules to handle any entries which are functions taking parameters
 // prettier-ignore
@@ -102,17 +108,27 @@ function atomFamily<T, P: Parameter>(
     }
 
     const {cachePolicyForParams_UNSTABLE, ...atomOptions} = options;
+    const optionsDefault:
+      | RecoilValue<T>
+      | Promise<T>
+      | T
+      | (P => T | RecoilValue<T> | Promise<T>) =
+      'default' in options
+        ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+          options.default
+        : new Promise(() => {});
 
     const newAtom = atom<T>({
       ...atomOptions,
       key: `${options.key}__${stableStringify(params) ?? 'void'}`,
       default:
-        typeof options.default === 'function'
+        typeof optionsDefault === 'function'
           ? // The default was parameterized
             // Flow doesn't know that T isn't a function, so we need to case to any
-            (options.default: any)(params) // flowlint-line unclear-type:off
+            // $FlowIssue[incompatible-use]
+            optionsDefault(params)
           : // Default may be a static value, promise, or RecoilValue
-            options.default,
+            optionsDefault,
 
       retainedBy_UNSTABLE:
         typeof options.retainedBy_UNSTABLE === 'function'

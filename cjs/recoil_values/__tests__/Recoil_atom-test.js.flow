@@ -94,6 +94,24 @@ function reset(recoilValue) {
   setRecoilValue(store, recoilValue, DEFAULT_VALUE);
 }
 
+testRecoil('Key is required when creating atoms', () => {
+  const devStatus = window.__DEV__;
+  window.__DEV__ = true;
+
+  // $FlowExpectedError[incompatible-call]
+  expect(() => atom({default: undefined})).toThrow();
+
+  window.__DEV__ = devStatus;
+});
+
+testRecoil('default is optional', () => {
+  const myAtom = atom({key: 'atom without default'});
+  expect(getRecoilStateLoadable(myAtom).state).toBe('loading');
+
+  act(() => set(myAtom, 'VALUE'));
+  expect(getValue(myAtom)).toBe('VALUE');
+});
+
 testRecoil('atom can read and write value', () => {
   const myAtom = atom<string>({
     key: 'atom with default',
@@ -1481,18 +1499,6 @@ testRecoil('object is frozen when stored in atom', async () => {
   });
   expect(Object.isFrozen(getValue(thawedAtom))).toBe(false);
   expect(Object.isFrozen(getValue(thawedAtom).nested)).toBe(false);
-
-  window.__DEV__ = devStatus;
-});
-
-testRecoil('Required options are provided when creating atoms', () => {
-  const devStatus = window.__DEV__;
-  window.__DEV__ = true;
-
-  // $FlowExpectedError[prop-missing]
-  expect(() => atom({default: undefined})).toThrow();
-  // $FlowExpectedError[prop-missing]
-  expect(() => atom({key: 'MISSING DEFAULT'})).toThrow();
 
   window.__DEV__ = devStatus;
 });
