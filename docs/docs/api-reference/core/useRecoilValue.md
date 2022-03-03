@@ -7,7 +7,7 @@ Returns the value of the given Recoil state.
 
 This hook will subscribe the component to re-render if there are changing in the Recoil state.
 
-Use `useRecoilValue_TRANSITION_SUPPORT_UNSTABLE()` for experimental support for [React 18 transitions](/blog/2022/01/28/0.6.0-release#concurrent-rendering-and-transitions) based on mutating Recoil state.
+Use `useRecoilValue_TRANSITION_SUPPORT_UNSTABLE()` for experimental support for [React 18 transitions](/docs/guides/transitions) based on mutating Recoil state.
 
 ---
 

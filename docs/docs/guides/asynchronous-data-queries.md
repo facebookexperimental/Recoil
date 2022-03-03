@@ -5,7 +5,7 @@ sidebar_label: Asynchronous Data Queries
 
 Recoil provides a way to map state and derived state to React components via a data-flow graph. What's really powerful is that the functions in the graph can also be asynchronous. This makes it easy to use asynchronous functions in synchronous React component render functions. Recoil allows you to seamlessly mix synchronous and asynchronous functions in your data-flow graph of selectors. Simply return a Promise to a value instead of the value itself from a selector `get` callback, the interface remains exactly the same. Because these are just selectors, other selectors can also depend on them to further transform the data.
 
-Selectors can be used as one way to incorporate asynchronous data into the Recoil data-flow graph.  Please keep in mind that selectors represent "idempotent" functions: For a given set of inputs they should always produce the same results (at least for the lifetime of the application).  This is important as selector evaluations may be cached, restarted, or executed multiple times.  Because of this, selectors are generally a good way to model read-only DB queries.  For mutable data you can use a [Query Refresh](#query-refresh) or to synchronize mutable state, persist state, or for other side-effects consider the experimental [Atom Effects](/docs/guides/atom-effects) API.
+Selectors can be used as one way to incorporate asynchronous data into the Recoil data-flow graph.  Please keep in mind that selectors represent "idempotent" functions: For a given set of inputs they should always produce the same results (at least for the lifetime of the application).  This is important as selector evaluations may be cached, restarted, or executed multiple times.  Because of this, selectors are generally a good way to model read-only DB queries.  For mutable data you can use a [Query Refresh](#query-refresh).  Or to synchronize mutable state, persist state, or for other side-effects, consider the [**Atom Effects**](/docs/guides/atom-effects) API or the [**Recoil Sync Library**](/docs/recoil-sync/introduction).
 
 ## Synchronous Example
 
@@ -113,7 +113,7 @@ function MyApp() {
 
 ## Queries with Parameters
 
-Sometimes you want to be able to query based on parameters that aren't just based on derived state. For example, you may want to query based on the component props. You can do that using the [**`selectorFamily`**](/docs/api-reference/utils/selectorFamily) helper:
+Sometimes you want to be able to query based on parameters that aren't just based on derived state. For example, you may want to query based on the component props. You can do that using the [**`selectorFamily()`**](/docs/api-reference/utils/selectorFamily) helper:
 
 ```jsx
 const userNameQuery = selectorFamily({
@@ -279,7 +279,7 @@ function CurrentUserInfo() {
 }
 ```
 
-Note that this pre-fetching works by triggering the `selectorFamily()` to initiate an async query and populate the selector's cache.  If you are using an `atomFamily()` instead, by either setting the atoms or relying on atom effects to initialize, then you should use [`useRecoilTransaction_UNSTABLE()`](/docs/api-reference/core/useRecoilTransaction) instead of [`useRecoilCallback()](/docs/api-reference/core/useRecoilCallback), as trying to set the state of the provided `Snapshot` will have no effect on the live state in the host `<RecoilRoot>`.
+Note that this pre-fetching works by triggering the [`selectorFamily()`](/docs/api-reference/utils/selectorFamily) to initiate an async query and populate the selector's cache.  If you are using an [`atomFamily()`](/docs/api-reference/utils/atomFamily) instead, by either setting the atoms or relying on atom effects to initialize, then you should use [`useRecoilTransaction_UNSTABLE()`](/docs/api-reference/core/useRecoilTransaction) instead of [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback), as trying to set the state of the provided `Snapshot` will have no effect on the live state in the host `<RecoilRoot>`.
 
 ## Query Default Atom Values
 
@@ -323,11 +323,11 @@ const userInfoState = atomFamily({
 });
 ```
 
-If you would like bi-directional syncing of data, then consider [atom effects](/docs/guides/atom-effects)
+If you would like bi-directional syncing of data, then consider [atom effects](/docs/guides/atom-effects).
 
 ## Async Queries Without React Suspense
 
-It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the status during rendering:
+It is not necessary to use React Suspense for handling pending asynchronous selectors. You can also use the [`useRecoilValueLoadable()`](/docs/api-reference/core/useRecoilValueLoadable) hook to determine the current status during rendering:
 
 ```jsx
 function UserInfo({userID}) {

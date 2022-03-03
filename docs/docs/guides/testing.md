@@ -51,7 +51,7 @@ describe('The form state should', () => {
 
     render(
       <RecoilRoot>
-        <RecoilObserver node={nameAtom} onChange={onChange} />
+        <RecoilObserver node={nameState} onChange={onChange} />
         <Form />
       </RecoilRoot>,
     );
@@ -196,16 +196,26 @@ test('Test multipliedState', () => {
 });
 ```
 
-### Jest unit testing async selectors
+### Testing async selectors
 
-When testing an **async selector**, it is necessary to `retain()` the snapshot to avoid early cancelation of the selector.
+When testing **async selectors** it is necessary to `retain()` the snapshot in order to avoid early cancelation.
 
 ```jsx
 const initialSnapshot = snapshot_UNSTABLE();
-initialSnapshot.retain();
+const release = initialSnapshot.retain();
+
+try {
+
+  // your test
+
+} finally {
+  release();
+}
 ```
 
 ### Clearing all selector caches
+
+Selector caches are shared between `<RecoilRoot>`'s and tests, so you may need to clear the cache after each test.
 
 ```jsx
 const clearSelectorCachesState = selector({
@@ -219,5 +229,6 @@ const clearSelectorCachesState = selector({
 
 const clearSelectorCaches = testingSnapshot.getLoadable(clearSelectorCachesState).getValue();
 
-clearSelectorCaches();
+// Assuming we're in a file added to Jest's setupFilesAfterEnv:
+afterEach(clearSelectorCaches);
 ```

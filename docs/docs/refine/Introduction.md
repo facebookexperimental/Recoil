@@ -3,16 +3,20 @@ title: Refine
 sidebar_label: Refine
 ---
 
-> ## ❗️ _Preview Documentation_
+---
+> ## ❗️ _Preview Documentation_ ❗️
 > ***This is preview documentation for the Refine library.***<br/>
-> ***Refine will be bundled as part of the Recoil Sync package when released.***
+> ***Refine will be bundled as part of the [Recoil Sync](/docs/recoil-sync/introduction) package when released.***<br/>
+> ***[Source is available here](https://github.com/facebookexperimental/Recoil/tree/main/packages/refine).***
 >
+
+---
 
 **Refine** is a type-refinement / validator combinator library for mixed / unknown values in Flow or TypeScript.
 
 ## Getting Started
 
-Refine is bundled as part of the Recoil Sync package.
+Refine is currently bundled as part of the [Recoil Sync](/docs/recoil-sync/introduction) package.
 
 To get started learning about Refine, check out the documentation on the core concepts of [Utilities](/docs/refine/api/Utilities) and [Checkers](/docs/refine/api/Checkers).
 
@@ -79,4 +83,4 @@ if (result != null) {
 
 ## Usage in Recoil Sync
 
-Recoil Sync leverages **Refine** for type refinement, input validation, and upgrading types for backward compatibility.  See the library docs for more details.
+The **Recoil Sync** library leverages **Refine** for type refinement, input validation, and upgrading types for backward compatibility.  See the [`recoil-sync` docs](/docs/recoil-sync/introduction) for more details.

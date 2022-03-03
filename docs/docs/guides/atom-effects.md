@@ -3,7 +3,7 @@ title: Atom Effects
 sidebar_label: Atom Effects
 ---
 
-Atom effects are an API for managing side-effects and synchronizing or initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are similar to [React effects](https://reactjs.org/docs/hooks-effect.html), but are defined as part of the atom definition, so each atom can specify and compose their own policies.
+Atom effects are an API for managing side-effects and synchronizing or initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are similar to [React effects](https://reactjs.org/docs/hooks-effect.html), but are defined as part of the atom definition, so each atom can specify and compose their own policies.  Also check out the [**`recoil-sync`**](/docs/recoil-sync/introduction) library for some implementations of syncing (such as [**URL persistence**](/docs/recoil-sync/url-persistence)) or more advanced use cases.
 
 An *atom effect* is a *function* with the following definition.
 
@@ -34,6 +34,7 @@ type AtomEffect<T> = ({
   getPromise: <S>(RecoilValue<S>) => Promise<S>,
   getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
   getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
+
 }) => void | () => void; // Optionally return a cleanup handler
 ```
 
@@ -240,7 +241,7 @@ const currentUserIDState = atom({
 });
 ```
 
-## Asynchronous Storage Persistence
+## Asynchronous Storage
 
 If your persisted data needs to be retrieved asynchronously, you can either [use a `Promise`](#initialize-with-promise) in the `setSelf()` function or call it [asynchronously](#asynchronous-setself).
 
@@ -322,13 +323,13 @@ What if you change the format for an atom?  Loading a page with the new format w
 ```jsx
 type PersistenceOptions<T>: {
   key: string,
-  restorer: (mixed, DefaultValue) => T | DefaultValue,
+  validate: mixed => T | DefaultValue,
 };
 
 const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onSet}) => {
   const savedValue = localStorage.getItem(options.key)
   if (savedValue != null) {
-    setSelf(options.restorer(JSON.parse(savedValue), new DefaultValue()));
+    setSelf(options.validate(JSON.parse(savedValue)));
   }
 
   onSet(newValue => {
@@ -342,7 +343,7 @@ const currentUserIDState = atom<number>({
   effects: [
     localStorageEffect({
       key: 'current_user',
-      restorer: (value, defaultValue) =>
+      validate: value =>
         // values are currently persisted as numbers
         typeof value === 'number'
           ? value
@@ -350,7 +351,7 @@ const currentUserIDState = atom<number>({
           : typeof value === 'string'
           ? parseInt(value, 10)
           // if type of value is not recognized, then use the atom's default value.
-          : defaultValue
+          : new DefaultValue()
     }),
   ],
 });
@@ -361,20 +362,20 @@ What if the key used to persist the value changes?  Or what used to be persisted
 ```jsx
 type PersistenceOptions<T>: {
   key: string,
-  restorer: (mixed, DefaultValue, Map<string, mixed>) => T | DefaultValue,
+  validate: (mixed, Map<string, mixed>) => T | DefaultValue,
 };
 
 const localStorageEffect = <T>(options: PersistenceOptions<T>) => ({setSelf, onSet}) => {
   const savedValues = parseValuesFromStorage(localStorage);
   const savedValue = savedValues.get(options.key);
   setSelf(
-    options.restorer(savedValue ?? new DefaultValue(), new DefaultValue(), savedValues),
+    options.validate(savedValue ?? new DefaultValue(), savedValues),
   );
 
   onSet((newValue, _, isReset) => {
     isReset
-      ? localForage.removeItem(key)
-      : localForage.setItem(key, JSON.stringify(newValue));
+      ? localStorage.removeItem(key)
+      : localStorage.setItem(key, JSON.stringify(newValue));
   });
 };
 
@@ -384,7 +385,7 @@ const currentUserIDState = atom<number>({
   effects: [
     localStorageEffect({
       key: 'current_user',
-      restorer: (value, defaultValue, values) => {
+      validate: (value, values) => {
         if (typeof value === 'number') {
           return value;
         }
@@ -394,17 +395,13 @@ const currentUserIDState = atom<number>({
           return oldValue;
         }
 
-        return defaultValue;
+        return new DefaultValue();
       },
     }),
   ],
 });
 ```
 
-## Browser URL History Persistence
-
-Atom state can also be persisted and synced with the browser URL history.  This can be useful to have state changes update the current URL so it can be saved or shared with others to restore that state.  It can also be integrated with the browser history to leverage the browser forward/back buttons.  *Examples or a library to provide this type of persistence are coming soon...*
-
 ## Error Handling
 
-If there is an error thrown during the execution of an atom effect, then the atom will be initialized in an error state with that error.  This can then be handled with the React `<ErrorBoundary>` mechanism at render time.
+If there is an error thrown during the execution of an atom effect, then the atom will be initialized in an error state with that error.  This can then be handled with the standard React `<ErrorBoundary>` mechanism at render time.
