@@ -30,6 +30,8 @@ export type Options<T> = {
   onSet?: (node: TreeCacheLeaf<T>) => void,
 };
 
+class ChangedPathError extends Error {}
+
 class TreeCache<T = mixed> {
   _numLeafs: number;
   _root: TreeCacheNode<T> | null;
@@ -81,9 +83,8 @@ class TreeCache<T = mixed> {
 
   set(route: NodeCacheRoute, value: T, handlers?: SetHandlers<T>): void {
     let leafNode: TreeCacheLeaf<T>;
-    let newRoot = null;
-    const setRetryablePart = () => {
-      newRoot = addLeaf(
+    const retryableSet = () => {
+      this._root = addLeaf(
         this.root(),
         route.map(([nodeKey, nodeValue]) => [
           nodeKey,
@@ -95,36 +96,37 @@ class TreeCache<T = mixed> {
         {
           onNodeVisit: node => {
             handlers?.onNodeVisit(node);
-
             if (node.type === 'leaf') {
               leafNode = node;
             }
           },
         },
-        () => {
-          this.clear();
-          setRetryablePart();
-        },
       );
     };
-    setRetryablePart();
-
-    if (!this.root()) {
-      this._root = newRoot;
+    try {
+      retryableSet();
+    } catch (error) {
+      if (error instanceof ChangedPathError) {
+        // If the cache was stale or observed inconsistent values, then clear
+        // it and rebuild with the new values.
+        this.clear();
+        retryableSet();
+      } else {
+        throw error;
+      }
     }
 
     this._numLeafs++;
-    this._onSet(nullthrows(leafNode));
+    this._onSet(nullthrows(leafNode, 'Error adding to selector cache'));
   }
 
   delete(node: TreeCacheNode<T>): boolean {
-    if (!this.root()) {
+    const root = this.root();
+    if (!root) {
       return false;
     }
 
-    const root = nullthrows(this.root());
-    const existsInTree = pruneNodeFromTree(root, node, node.parent);
-
+    const existsInTree = pruneNodeFromTree(root, node);
     if (!existsInTree) {
       return false;
     }
@@ -137,7 +139,6 @@ class TreeCache<T = mixed> {
     }
 
     this._numLeafs -= countDownstreamLeaves(node);
-
     return true;
   }
 
@@ -163,10 +164,10 @@ const findLeaf = <T>(
   }
 
   const nodeValue = getNodeValue(root.nodeKey);
-
   return findLeaf(root.branches.get(nodeValue), getNodeValue, handlers);
 };
 
+// Returns the current or replaced root node.
 const addLeaf = <T>(
   root: ?TreeCacheNode<T>,
   route: NodeCacheRoute,
@@ -174,7 +175,6 @@ const addLeaf = <T>(
   value: T,
   branchKey: ?mixed,
   handlers?: SetHandlers<T>,
-  onMismatchedPath: () => void,
 ): TreeCacheNode<T> => {
   let node;
 
@@ -183,9 +183,7 @@ const addLeaf = <T>(
     if (route.length === 0) {
       node = {type: 'leaf', value, parent, branchKey};
     } else {
-      const [path, ...rest] = route;
-      const [nodeKey, nodeValue] = path;
-
+      const [[nodeKey, nodeValue], ...rest] = route;
       node = {
         type: 'branch',
         nodeKey,
@@ -196,7 +194,7 @@ const addLeaf = <T>(
 
       node.branches.set(
         nodeValue,
-        addLeaf(null, rest, node, value, nodeValue, handlers, onMismatchedPath),
+        addLeaf(null, rest, node, value, nodeValue, handlers),
       );
     }
 
@@ -205,16 +203,16 @@ const addLeaf = <T>(
     node = root;
 
     const changedPathError =
-      'Invalid cache values.  This can happen if selectors do not return ' +
-      'consistent values for the same values of their dependencies.';
+      'Invalid cache values.  This happens when selectors do not return ' +
+      'consistent values for the same input dependency values.  That may be ' +
+      'caused when using Fast Refresh to change a selector implementation.';
 
     if (route.length) {
       const [[nodeKey, nodeValue], ...rest] = route;
 
       if (node.type !== 'branch' || node.nodeKey !== nodeKey) {
         recoverableViolation(changedPathError + '  Resetting cache.', 'recoil');
-        onMismatchedPath();
-        return node; // ignored
+        throw new ChangedPathError();
       }
 
       node.branches.set(
@@ -226,7 +224,6 @@ const addLeaf = <T>(
           value,
           nodeValue,
           handlers,
-          onMismatchedPath,
         ),
       );
     } else {
@@ -235,36 +232,35 @@ const addLeaf = <T>(
           throw err(changedPathError);
         }
         recoverableViolation(changedPathError + '  Resetting cache.', 'recoil');
-        onMismatchedPath();
-        return node; // ignored
+        throw new ChangedPathError();
       }
     }
   }
 
   handlers?.onNodeVisit?.(node);
-
   return node;
 };
 
+// Returns true if node was deleted from the tree
 const pruneNodeFromTree = <T>(
   root: TreeCacheNode<T>,
   node: TreeCacheNode<T>,
-  parent: ?TreeCacheBranch<T>,
 ): boolean => {
+  const {parent} = node;
   if (!parent) {
     return root === node;
   }
 
   parent.branches.delete(node.branchKey);
 
-  return pruneUpstreamBranches(root, parent, parent.parent);
+  return pruneUpstreamBranches(root, parent);
 };
 
 const pruneUpstreamBranches = <T>(
   root: TreeCacheNode<T>,
   branchNode: TreeCacheBranch<T>,
-  parent: ?TreeCacheBranch<T>,
 ): boolean => {
+  const {parent} = branchNode;
   if (!parent) {
     return root === branchNode;
   }
@@ -273,7 +269,7 @@ const pruneUpstreamBranches = <T>(
     parent.branches.delete(branchNode.branchKey);
   }
 
-  return pruneUpstreamBranches(root, parent, parent.parent);
+  return pruneUpstreamBranches(root, parent);
 };
 
 const countDownstreamLeaves = <T>(node: TreeCacheNode<T>): number =>
