@@ -6189,6 +6189,8 @@ function useRecoilTransaction(fn, deps) {
 
 var Recoil_useRecoilTransaction = useRecoilTransaction;
 
+class ChangedPathError extends Error {}
+
 class TreeCache {
   constructor(options) {
     var _options$onHit, _options$onSet, _options$mapNodeValue;
@@ -6239,10 +6241,9 @@ class TreeCache {
 
   set(route, value, handlers) {
     let leafNode;
-    let newRoot = null;
 
-    const setRetryablePart = () => {
-      newRoot = addLeaf(this.root(), route.map(([nodeKey, nodeValue]) => [nodeKey, this._mapNodeValue(nodeValue)]), null, value, null, {
+    const retryableSet = () => {
+      this._root = addLeaf(this.root(), route.map(([nodeKey, nodeValue]) => [nodeKey, this._mapNodeValue(nodeValue)]), null, value, null, {
         onNodeVisit: node => {
           handlers === null || handlers === void 0 ? void 0 : handlers.onNodeVisit(node);
 
@@ -6250,30 +6251,35 @@ class TreeCache {
             leafNode = node;
           }
         }
-      }, () => {
-        this.clear();
-        setRetryablePart();
       });
     };
 
-    setRetryablePart();
-
-    if (!this.root()) {
-      this._root = newRoot;
+    try {
+      retryableSet();
+    } catch (error) {
+      if (error instanceof ChangedPathError) {
+        // If the cache was stale or observed inconsistent values, then clear
+        // it and rebuild with the new values.
+        this.clear();
+        retryableSet();
+      } else {
+        throw error;
+      }
     }
 
     this._numLeafs++;
 
-    this._onSet(Recoil_nullthrows(leafNode));
+    this._onSet(Recoil_nullthrows(leafNode, 'Error adding to selector cache'));
   }
 
   delete(node) {
-    if (!this.root()) {
+    const root = this.root();
+
+    if (!root) {
       return false;
     }
 
-    const root = Recoil_nullthrows(this.root());
-    const existsInTree = pruneNodeFromTree(root, node, node.parent);
+    const existsInTree = pruneNodeFromTree(root, node);
 
     if (!existsInTree) {
       return false;
@@ -6311,9 +6317,10 @@ const findLeaf = (root, getNodeValue, handlers) => {
 
   const nodeValue = getNodeValue(root.nodeKey);
   return findLeaf(root.branches.get(nodeValue), getNodeValue, handlers);
-};
+}; // Returns the current or replaced root node.
 
-const addLeaf = (root, route, parent, value, branchKey, handlers, onMismatchedPath) => {
+
+const addLeaf = (root, route, parent, value, branchKey, handlers) => {
   var _handlers$onNodeVisit2;
 
   let node; // New cache route, make new nodes
@@ -6327,8 +6334,7 @@ const addLeaf = (root, route, parent, value, branchKey, handlers, onMismatchedPa
         branchKey
       };
     } else {
-      const [path, ...rest] = route;
-      const [nodeKey, nodeValue] = path;
+      const [[nodeKey, nodeValue], ...rest] = route;
       node = {
         type: 'branch',
         nodeKey,
@@ -6336,23 +6342,22 @@ const addLeaf = (root, route, parent, value, branchKey, handlers, onMismatchedPa
         branches: new Map(),
         branchKey
       };
-      node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers, onMismatchedPath));
+      node.branches.set(nodeValue, addLeaf(null, rest, node, value, nodeValue, handlers));
     } // Follow an existing cache route
 
   } else {
     node = root;
-    const changedPathError = 'Invalid cache values.  This can happen if selectors do not return ' + 'consistent values for the same values of their dependencies.';
+    const changedPathError = 'Invalid cache values.  This happens when selectors do not return ' + 'consistent values for the same input dependency values.  That may be ' + 'caused when using Fast Refresh to change a selector implementation.';
 
     if (route.length) {
       const [[nodeKey, nodeValue], ...rest] = route;
 
       if (node.type !== 'branch' || node.nodeKey !== nodeKey) {
         Recoil_recoverableViolation(changedPathError + '  Resetting cache.');
-        onMismatchedPath();
-        return node; // ignored
+        throw new ChangedPathError();
       }
 
-      node.branches.set(nodeValue, addLeaf(node.branches.get(nodeValue), rest, node, value, nodeValue, handlers, onMismatchedPath));
+      node.branches.set(nodeValue, addLeaf(node.branches.get(nodeValue), rest, node, value, nodeValue, handlers));
     } else {
       if (node.type !== 'leaf' || node.branchKey !== branchKey) {
         if (process.env.NODE_ENV !== "production") {
@@ -6360,26 +6365,34 @@ const addLeaf = (root, route, parent, value, branchKey, handlers, onMismatchedPa
         }
 
         Recoil_recoverableViolation(changedPathError + '  Resetting cache.');
-        onMismatchedPath();
-        return node; // ignored
+        throw new ChangedPathError();
       }
     }
   }
 
   handlers === null || handlers === void 0 ? void 0 : (_handlers$onNodeVisit2 = handlers.onNodeVisit) === null || _handlers$onNodeVisit2 === void 0 ? void 0 : _handlers$onNodeVisit2.call(handlers, node);
   return node;
-};
+}; // Returns true if node was deleted from the tree
 
-const pruneNodeFromTree = (root, node, parent) => {
+
+const pruneNodeFromTree = (root, node) => {
+  const {
+    parent
+  } = node;
+
   if (!parent) {
     return root === node;
   }
 
   parent.branches.delete(node.branchKey);
-  return pruneUpstreamBranches(root, parent, parent.parent);
+  return pruneUpstreamBranches(root, parent);
 };
 
-const pruneUpstreamBranches = (root, branchNode, parent) => {
+const pruneUpstreamBranches = (root, branchNode) => {
+  const {
+    parent
+  } = branchNode;
+
   if (!parent) {
     return root === branchNode;
   }
@@ -6388,7 +6401,7 @@ const pruneUpstreamBranches = (root, branchNode, parent) => {
     parent.branches.delete(branchNode.branchKey);
   }
 
-  return pruneUpstreamBranches(root, parent, parent.parent);
+  return pruneUpstreamBranches(root, parent);
 };
 
 const countDownstreamLeaves = node => node.type === 'leaf' ? 1 : Array.from(node.branches.values()).reduce((sum, currNode) => sum + countDownstreamLeaves(currNode), 0);
