@@ -327,7 +327,7 @@ function freshSnapshot(initializeState?: MutableSnapshot => void): Snapshot {
   return initializeState != null ? snapshot.map(initializeState) : snapshot;
 }
 
-// Factory to clone a snapahot state
+// Factory to clone a snapshot state
 const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] =
   memoizeOneWithArgsHashAndInvalidation(
     (store, version) => {
