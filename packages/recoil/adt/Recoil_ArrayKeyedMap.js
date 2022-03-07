@@ -23,6 +23,7 @@ class ArrayKeyedMap<V> {
   _base: Map<any, any> = new Map();
 
   constructor(
+    // $FlowFixMe[incompatible-type]
     existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
   ): ArrayKeyedMap<V> {
     if (existing instanceof ArrayKeyedMap) {
