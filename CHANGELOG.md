@@ -9,6 +9,7 @@
 - Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589)
 - Better error reporting when selectors provide inconsistent results (#1696)
 - Add `getStoreID()` method to `Snapshot` (#1612)
+- Optimize selector caches to support thousands of dependencies. (#1651)
 
 ### Breaking Changes
 
