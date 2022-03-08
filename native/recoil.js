@@ -3846,7 +3846,7 @@ function cloneStoreState(store, treeState, bumpVersion = false) {
 function freshSnapshot(initializeState) {
   const snapshot = new Snapshot(makeEmptyStoreState$1());
   return initializeState != null ? snapshot.map(initializeState) : snapshot;
-} // Factory to clone a snapahot state
+} // Factory to clone a snapshot state
 
 
 const [memoizedCloneSnapshot, invalidateMemoizedSnapshot$2] = memoizeOneWithArgsHashAndInvalidation$1((store, version) => {
