@@ -277,7 +277,7 @@ function selector<T>(
     depValues: DepValues,
   ): void {
     setCache(state, loadable, depValues);
-    setDepsInStore(store, state, new Set(depValues.keys()), executionId);
+    // setDepsInStore(store, state, new Set(depValues.keys()), executionId);
     notifyStoresOfResolvedAsync(store, executionId);
   }
 
@@ -655,10 +655,11 @@ function selector<T>(
     executionId: ExecutionId,
   ): [Loadable<T>, DepValues] {
     const endPerfBlock = startPerfBlock(key); // TODO T63965866: use execution ID here
-    let gateCallback = true;
+    let duringSynchronousExecution = true;
+    let duringAsynchronousExecution = true;
     const finishEvaluation = () => {
       endPerfBlock();
-      gateCallback = false;
+      duringAsynchronousExecution = false;
     };
 
     let result;
@@ -668,8 +669,6 @@ function selector<T>(
       loadingDepKey: null,
       loadingDepPromise: null,
     };
-
-    const depValues = new Map();
 
     /**
      * Starting a fresh set of deps that we'll be using to update state. We're
@@ -681,14 +680,16 @@ function selector<T>(
      * execution means the deps we discover below are our best guess at the
      * deps for the current/latest state in the store)
      */
+    const depValues = new Map();
     const deps = new Set();
-    setDepsInStore(store, state, deps, executionId);
 
     function getRecoilValue<S>(dep: RecoilValue<S>): S {
       const {key: depKey} = dep;
 
       deps.add(depKey);
-      setDepsInStore(store, state, deps, executionId);
+      if (!duringSynchronousExecution) {
+        setDepsInStore(store, state, deps, executionId);
+      }
 
       const depLoadable = getCachedNodeLoadable(store, state, depKey);
 
@@ -711,7 +712,7 @@ function selector<T>(
       fn: (SelectorCallbackInterface<T>) => (...Args) => Return,
     ): ((...Args) => Return) => {
       return (...args) => {
-        if (gateCallback) {
+        if (duringAsynchronousExecution) {
           throw err(
             'Callbacks from getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can work with Recoil state without a subscription.',
           );
@@ -768,6 +769,8 @@ function selector<T>(
       loadable = loadableWithValue<T>(result);
     }
 
+    duringSynchronousExecution = false;
+    setDepsInStore(store, state, deps, executionId);
     return [loadable, depValues];
   }
 

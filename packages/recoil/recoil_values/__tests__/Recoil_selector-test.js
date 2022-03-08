@@ -29,6 +29,7 @@ let store,
   asyncSelector,
   resolvingAsyncSelector,
   stringAtom,
+  loadingAsyncSelector,
   flushPromisesAndTimers,
   DefaultValue,
   freshSnapshot;
@@ -52,6 +53,7 @@ const testRecoil = getRecoilTestFn(() => {
     asyncSelector,
     resolvingAsyncSelector,
     stringAtom,
+    loadingAsyncSelector,
     flushPromisesAndTimers,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({noWait} = require('../Recoil_WaitFor'));
@@ -502,6 +504,81 @@ describe('Dependencies', () => {
       expect(valLoadable.valueMaybe()).toBe(10);
     },
   );
+
+  testRecoil('Dynamic deps discovered after await', async () => {
+    const testSnapshot = freshSnapshot();
+    testSnapshot.retain();
+
+    const myAtom = atom<number>({
+      key: 'selector dynamic dep after await atom',
+      default: 0,
+    });
+
+    let selectorRunCount = 0;
+    let selectorRunCompleteCount = 0;
+    const mySelector = selector({
+      key: 'selector dynamic dep after await selector',
+      get: async ({get}) => {
+        await Promise.resolve();
+        get(myAtom);
+        selectorRunCount++;
+        await new Promise(() => {});
+        selectorRunCompleteCount++;
+      },
+    });
+
+    testSnapshot.getLoadable(mySelector);
+    expect(testSnapshot.getLoadable(mySelector).state).toBe('loading');
+    await flushPromisesAndTimers();
+    expect(selectorRunCount).toBe(1);
+    expect(selectorRunCompleteCount).toBe(0);
+
+    const mappedSnapshot = testSnapshot.map(({set}) =>
+      set(myAtom, prev => prev + 1),
+    );
+    expect(mappedSnapshot.getLoadable(mySelector).state).toBe('loading');
+    await flushPromisesAndTimers();
+    expect(selectorRunCount).toBe(2);
+    expect(selectorRunCompleteCount).toBe(0);
+  });
+
+  testRecoil('Dynamic deps discovered after pending', async () => {
+    const pendingSelector = loadingAsyncSelector();
+    const testSnapshot = freshSnapshot();
+    testSnapshot.retain();
+
+    const myAtom = atom<number>({
+      key: 'selector dynamic dep after pending atom',
+      default: 0,
+    });
+
+    let selectorRunCount = 0;
+    let selectorRunCompleteCount = 0;
+    const mySelector = selector({
+      key: 'selector dynamic dep after pending selector',
+      get: async ({get}) => {
+        await Promise.resolve();
+        get(myAtom);
+        selectorRunCount++;
+        get(pendingSelector);
+        selectorRunCompleteCount++;
+      },
+    });
+
+    testSnapshot.getLoadable(mySelector);
+    expect(testSnapshot.getLoadable(mySelector).state).toBe('loading');
+    await flushPromisesAndTimers();
+    expect(selectorRunCount).toBe(1);
+    expect(selectorRunCompleteCount).toBe(0);
+
+    const mappedSnapshot = testSnapshot.map(({set}) =>
+      set(myAtom, prev => prev + 1),
+    );
+    expect(mappedSnapshot.getLoadable(mySelector).state).toBe('loading');
+    await flushPromisesAndTimers();
+    expect(selectorRunCount).toBe(2);
+    expect(selectorRunCompleteCount).toBe(0);
+  });
 });
 
 testRecoil('async set not supported', async () => {

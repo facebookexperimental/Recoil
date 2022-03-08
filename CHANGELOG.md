@@ -4,6 +4,7 @@
 **_Add new changes here as they land_**
 
 - The `default` value is now optional for `atom()` and `atomFamily()`.  If not provided the atom will initialize to a pending state. (#1639)
+- Significant optimization for selector evaluations.  2x improvement with 100 dependencies, 4x with 1,000, and 40x with 10,000. (#1515, #914)
 - `shouldNotBeFrozen` now works in JS environment without `Window` interface. (#1571)
 - Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589)
 - Better error reporting when selectors provide inconsistent results (#1696)
@@ -35,6 +36,7 @@
 - Add `.isRetained()` method for Snapshots and check if snapshot is already released when using `.retain()` (#1546)
 
 ### Other Fixes and Optimizations
+
 - Reduce overhead of snapshot cloning
   - Only clone the current snapshot for callbacks if the callback actually uses it. (#1501)
   - Cache the cloned snapshots from callbacks unless there was a state change. (#1533)
