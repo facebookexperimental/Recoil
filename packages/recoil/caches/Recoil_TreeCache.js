@@ -20,6 +20,7 @@ import type {
   TreeCacheNode,
 } from './Recoil_TreeCacheImplementationType';
 
+const {isFastRefreshEnabled} = require('../core/Recoil_ReactMode');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 export type Options<T> = {
@@ -30,11 +31,17 @@ export type Options<T> = {
 
 class ChangedPathError extends Error {}
 
-const CHANGED_PATH_ERROR_MESSAGE =
-  'Invalid cache values.  This happens when selectors do not return ' +
-  'consistent values for the same input dependency values.  That may be ' +
-  'caused when using Fast Refresh to change a selector implementation.  ' +
-  'Resetting cache.';
+function invalidCacheError() {
+  const CHANGED_PATH_ERROR_MESSAGE =
+    'Invalid cache values.  This happens when selectors do not return ' +
+    'consistent values for the same input dependency values.  That may be ' +
+    'caused when using Fast Refresh to change a selector implementation.  ' +
+    'Resetting cache.';
+  if (!isFastRefreshEnabled()) {
+    recoverableViolation(CHANGED_PATH_ERROR_MESSAGE, 'recoil');
+  }
+  throw new ChangedPathError();
+}
 
 class TreeCache<T = mixed> {
   _numLeafs: number;
@@ -55,8 +62,6 @@ class TreeCache<T = mixed> {
   size(): number {
     return this._numLeafs;
   }
-
-  // TODO: nodeCount(): number
 
   root(): TreeCacheNode<T> | null {
     return this._root;
@@ -100,8 +105,7 @@ class TreeCache<T = mixed> {
         // the selector has inconsistent values or implementation changed.
         const root = this._root;
         if (root?.type === 'leaf') {
-          recoverableViolation(CHANGED_PATH_ERROR_MESSAGE, 'recoil');
-          throw new ChangedPathError();
+          throw invalidCacheError();
         }
 
         // node now refers to the next node down in the tree
@@ -117,8 +121,7 @@ class TreeCache<T = mixed> {
 
         // If we found an existing node, confirm it has a consistent value
         if (node.type !== 'branch' || node.nodeKey !== nodeKey) {
-          recoverableViolation(CHANGED_PATH_ERROR_MESSAGE, 'recoil');
-          throw new ChangedPathError();
+          throw invalidCacheError();
         }
 
         // Add the branch node to the tree
@@ -140,8 +143,7 @@ class TreeCache<T = mixed> {
         oldLeaf != null &&
         (oldLeaf.type !== 'leaf' || oldLeaf.branchKey !== branchKey)
       ) {
-        recoverableViolation(CHANGED_PATH_ERROR_MESSAGE, 'recoil');
-        throw new ChangedPathError();
+        throw invalidCacheError();
       }
 
       // Create a new or replacement leaf.
