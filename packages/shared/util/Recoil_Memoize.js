@@ -26,7 +26,7 @@ function memoizeWithArgsHash<TArgs: $ReadOnlyArray<mixed>, TReturn>(
 
     const key = hashFunction(...args);
     if (!Object.hasOwnProperty.call(cache, key)) {
-      cache[key] = fn.apply(this, args);
+      cache[key] = fn(...args);
     }
     return cache[key];
   };
@@ -54,7 +54,7 @@ function memoizeOneWithArgsHash<TArgs: $ReadOnlyArray<mixed>, TReturn>(
     }
 
     lastKey = key;
-    lastResult = fn.apply(this, args);
+    lastResult = fn(...args);
     return lastResult;
   };
 
@@ -84,7 +84,7 @@ function memoizeOneWithArgsHashAndInvalidation<
     }
 
     lastKey = key;
-    lastResult = fn.apply(this, args);
+    lastResult = fn(...args);
     return lastResult;
   };
 
