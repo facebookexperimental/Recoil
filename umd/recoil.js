@@ -7047,7 +7047,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
     function resolveAsync(store, state, executionId, loadable, depValues) {
       setCache(state, loadable, depValues);
-      setDepsInStore(store, state, new Set(depValues.keys()), executionId);
       notifyStoresOfResolvedAsync(store, executionId);
     }
 
@@ -7368,19 +7367,15 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       }
     }
 
-    function setNewDepInStore(store, state, deps, newDepKey, executionId) {
-      deps.add(newDepKey);
-      setDepsInStore(store, state, deps, executionId);
-    }
-
     function evaluateSelectorGetter(store, state, executionId) {
       const endPerfBlock = startPerfBlock$1(key); // TODO T63965866: use execution ID here
 
-      let gateCallback = true;
+      let duringSynchronousExecution = true;
+      let duringAsynchronousExecution = true;
 
       const finishEvaluation = () => {
         endPerfBlock();
-        gateCallback = false;
+        duringAsynchronousExecution = false;
       };
 
       let result;
@@ -7390,7 +7385,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         loadingDepKey: null,
         loadingDepPromise: null
       };
-      const depValues = new Map();
       /**
        * Starting a fresh set of deps that we'll be using to update state. We're
        * starting a new set versus adding it in existing state deps because
@@ -7402,14 +7396,21 @@ This is currently a DEV-only warning but will become a thrown exception in the n
        * deps for the current/latest state in the store)
        */
 
+      const depValues = new Map();
       const deps = new Set();
-      setDepsInStore(store, state, deps, executionId);
 
       function getRecoilValue(dep) {
         const {
           key: depKey
         } = dep;
-        setNewDepInStore(store, state, deps, depKey, executionId);
+        deps.add(depKey); // We need to update asynchronous dependencies as we go so the selector
+        // knows if it has to restart evaluation if one of them is updated before
+        // the asynchronous selector completely resolves.
+
+        if (!duringSynchronousExecution) {
+          setDepsInStore(store, state, deps, executionId);
+        }
+
         const depLoadable = getCachedNodeLoadable(store, state, depKey);
         depValues.set(depKey, depLoadable);
 
@@ -7431,7 +7432,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
       const getCallback = fn => {
         return (...args) => {
-          if (gateCallback) {
+          if (duringAsynchronousExecution) {
             throw Recoil_err('Callbacks from getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can work with Recoil state without a subscription.');
           }
 
@@ -7474,6 +7475,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         loadable = loadableWithValue$2(result);
       }
 
+      duringSynchronousExecution = false;
+      setDepsInStore(store, state, deps, executionId);
       return [loadable, depValues];
     }
 

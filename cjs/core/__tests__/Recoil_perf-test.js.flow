@@ -13,6 +13,7 @@
 import type {Loadable, RecoilState, RecoilValue} from '../../Recoil_index';
 
 const {atom, selector} = require('../../Recoil_index');
+const {waitForAll} = require('../../recoil_values/Recoil_WaitFor');
 const {
   getRecoilValueAsLoadable,
   setRecoilValue,
@@ -26,11 +27,15 @@ const ITERATIONS = [1]; // Avoid iterating for automated testing
 // const ITERATIONS = [10, 100, 1000, 10000];
 // const ITERATIONS = [10, 100, 1000, 10000, 100000];
 
-function testPerf(name: string, fn: number => void) {
+function testPerf(
+  name: string,
+  fn: ({iterations: number, begin: () => void}) => void,
+) {
   test.each(ITERATIONS)(name, iterations => {
     store = makeStore();
-    const BEGIN = performance.now();
-    fn(iterations);
+    let BEGIN = performance.now();
+    const begin = () => void (BEGIN = performance.now());
+    fn({iterations, begin});
     const END = performance.now();
     console.log(`${name}(${iterations})`, END - BEGIN);
   });
@@ -80,27 +85,30 @@ const helpersSelector = () =>
   });
 const getHelpers = () => getNodeValue(helpersSelector());
 
-testPerf('creating n atoms', iterations => {
+testPerf('creating n atoms', ({iterations}) => {
   createAtoms(iterations);
 });
 
-testPerf('getting n atoms', iterations => {
+testPerf('getting n atoms', ({iterations, begin}) => {
+  begin();
   const atoms = createAtoms(iterations);
   for (const node of atoms) {
     getNodeValue(node);
   }
 });
 
-testPerf('setting n atoms', iterations => {
+testPerf('setting n atoms', ({iterations, begin}) => {
   const atoms = createAtoms(iterations);
+  begin();
   for (const node of atoms) {
     setNode(node, 'SET');
   }
 });
 
-testPerf('cloning n snapshots', iterations => {
+testPerf('cloning n snapshots', ({iterations, begin}) => {
   const atoms = createAtoms(iterations);
   const {getSnapshot} = getHelpers();
+  begin();
   for (const node of atoms) {
     // Set node to avoid hitting cached snapshots
     setNode(node, 'SET');
@@ -108,4 +116,10 @@ testPerf('cloning n snapshots', iterations => {
     expect(getNodeValue(node)).toBe('SET');
     expect(snapshot.getLoadable(node).contents).toBe('SET');
   }
+});
+
+testPerf('Selector dependencies', ({iterations, begin}) => {
+  const atoms = createAtoms(iterations);
+  begin();
+  getNodeValue(waitForAll(atoms));
 });
