@@ -49,7 +49,7 @@ class ArrayKeyedMap<V> {
 
   set(key: mixed, value: V): any {
     const ks = Array.isArray(key) ? key : [key];
-    let map = this._base;
+    let map: ?(any | Map<mixed, mixed> | Map<any, any>) = this._base;
     let next: ?(any | Map<mixed, mixed> | Map<any, any>) = map;
     ks.forEach(k => {
       // $FlowFixMe[incompatible-use]
@@ -68,7 +68,7 @@ class ArrayKeyedMap<V> {
 
   delete(key: mixed): any {
     const ks = Array.isArray(key) ? key : [key];
-    let map = this._base;
+    let map: ?(any | Map<mixed, mixed> | Map<any, any>) = this._base;
     let next: ?(any | Map<mixed, mixed> | Map<any, any>) = map;
     ks.forEach(k => {
       // $FlowFixMe[incompatible-use]
