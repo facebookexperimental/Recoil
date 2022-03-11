@@ -9,13 +9,13 @@
  * @format
  */
 'use strict';
-
 import type {
   RecoilState,
   RecoilValue,
   RecoilValueReadOnly,
 } from '../../core/Recoil_RecoilValue';
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
+import type {NodeKey} from 'Recoil_Keys';
 
 const {
   getRecoilTestFn,
@@ -221,7 +221,7 @@ testRecoil(
       return null;
     }
 
-    let values = new Map();
+    let values: Map<NodeKey, mixed> = new Map();
     renderElements(
       <>
         <Component />
