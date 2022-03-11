@@ -3463,7 +3463,7 @@ function memoizeWithArgsHash(fn, hashFunction) {
     const key = hashFunction(...args);
 
     if (!Object.hasOwnProperty.call(cache, key)) {
-      cache[key] = fn.apply(this, args);
+      cache[key] = fn(...args);
     }
 
     return cache[key];
@@ -3490,7 +3490,7 @@ function memoizeOneWithArgsHash(fn, hashFunction) {
     }
 
     lastKey = key;
-    lastResult = fn.apply(this, args);
+    lastResult = fn(...args);
     return lastResult;
   };
 
@@ -3515,7 +3515,7 @@ function memoizeOneWithArgsHashAndInvalidation(fn, hashFunction) {
     }
 
     lastKey = key;
-    lastResult = fn.apply(this, args);
+    lastResult = fn(...args);
     return lastResult;
   };
 
