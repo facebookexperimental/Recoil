@@ -48,7 +48,7 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
   args: Args,
   extraInterface?: ExtraInterface,
 ): Return {
-  let ret = SENTINEL;
+  let ret: Return | Sentinel = SENTINEL;
   batchUpdates(() => {
     const errMsg =
       'useRecoilCallback() expects a function that returns a function: ' +

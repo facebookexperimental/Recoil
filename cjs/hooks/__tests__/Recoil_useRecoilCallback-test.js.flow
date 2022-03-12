@@ -61,7 +61,9 @@ const testRecoil = getRecoilTestFn(() => {
 
 testRecoil('Reads Recoil values', async () => {
   const anAtom = atom({key: 'atom1', default: 'DEFAULT'});
-  let pTest = Promise.reject(new Error("Callback didn't resolve"));
+  let pTest: ?Promise<$FlowFixMeEmpty> = Promise.reject(
+    new Error("Callback didn't resolve"),
+  );
   let cb;
 
   function Component() {
@@ -108,7 +110,9 @@ testRecoil('Can read Recoil values without throwing', async () => {
 testRecoil('Sets Recoil values (by queueing them)', async () => {
   const anAtom = atom({key: 'atom3', default: 'DEFAULT'});
   let cb;
-  let pTest = Promise.reject(new Error("Callback didn't resolve"));
+  let pTest: ?Promise<$FlowFixMeEmpty> = Promise.reject(
+    new Error("Callback didn't resolve"),
+  );
 
   function Component() {
     cb = useRecoilCallback(({snapshot, set}) => value => {
@@ -224,7 +228,8 @@ testRecoil('Reads from a snapshot created at callback call time', async () => {
 
   // But does not see an update flushed while the cb is in progress:
   seenValue = null;
-  let resumeCallback = () => invariant(false, 'must be initialized');
+  let resumeCallback: (() => $FlowFixMeEmpty) | ((result: mixed) => void) =
+    () => invariant(false, 'must be initialized');
   delay = () => {
     return new Promise(resolve => {
       resumeCallback = resolve;

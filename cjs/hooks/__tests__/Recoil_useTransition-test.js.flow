@@ -159,7 +159,7 @@ testRecoil('useRecoilValue()', async ({concurrentMode}) => {
     return;
   }
   const myAtom = atom({key: 'useRecoilValue atom', default: 0});
-  let resolvers = [];
+  let resolvers: Array<(result: Promise<string> | string) => void> = [];
   function resolveSelectors() {
     resolvers.forEach(resolve => resolve('RESOLVED'));
     resolvers = [];
@@ -278,7 +278,7 @@ testRecoil(
       return;
     }
     const myAtom = atom({key: 'TRANSITION_SUPPORT_UNSTABLE atom', default: 0});
-    let resolvers = [];
+    let resolvers: Array<(result: Promise<string> | string) => void> = [];
     function resolveSelectors() {
       resolvers.forEach(resolve => resolve('RESOLVED'));
       resolvers = [];
