@@ -26,12 +26,12 @@ const {
 const err = require('recoil-shared/util/Recoil_err');
 
 export interface TransactionInterface {
-  get: <T>(RecoilValue<T>) => T;
-  set: <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
-  reset: <T>(RecoilState<T>) => void;
+  get: <T, U>(RecoilValue<T, U>) => T;
+  set: <T, U>(RecoilState<T, U>, ValueOrUpdater<T, U>) => void;
+  reset: <T, U>(RecoilState<T, U>) => void;
 }
 
-function isAtom<T>(recoilValue: RecoilValue<T>): boolean {
+function isAtom<T, U>(recoilValue: RecoilValue<T, U>): boolean {
   return getNode(recoilValue.key).nodeType === 'atom';
 }
 
@@ -48,7 +48,7 @@ class TransactionInterfaceImpl {
 
   // Allow destructing
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  get = <T>(recoilValue: RecoilValue<T>): T => {
+  get = <T, U>(recoilValue: RecoilValue<T, U>): T => {
     if (this._changes.has(recoilValue.key)) {
       // $FlowFixMe[incompatible-return]
       return this._changes.get(recoilValue.key);
@@ -74,9 +74,9 @@ class TransactionInterfaceImpl {
 
   // Allow destructing
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  set = <T>(
-    recoilState: RecoilState<T>,
-    valueOrUpdater: ValueOrUpdater<T>,
+  set = <T, U>(
+    recoilState: RecoilState<T, U>,
+    valueOrUpdater: ValueOrUpdater<T, U>,
   ): void => {
     if (!isAtom(recoilState)) {
       throw err('Setting selectors within atomicUpdate is not supported');
@@ -95,7 +95,7 @@ class TransactionInterfaceImpl {
 
   // Allow destructing
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  reset = <T>(recoilState: RecoilState<T>): void => {
+  reset = <T, U>(recoilState: RecoilState<T, U>): void => {
     this.set(recoilState, DEFAULT_VALUE);
   };
 

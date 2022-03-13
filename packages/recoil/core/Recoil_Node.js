@@ -43,7 +43,7 @@ export type Trigger = 'get' | 'set';
 
 type NodeType = 'atom' | 'selector';
 
-export type ReadOnlyNodeOptions<T> = $ReadOnly<{
+export type ReadOnlyNodeOptions<T, U> = $ReadOnly<{
   key: NodeKey,
   nodeType: NodeType,
 
@@ -80,8 +80,8 @@ export type ReadOnlyNodeOptions<T> = $ReadOnly<{
   retainedBy: RetainedBy,
 }>;
 
-export type ReadWriteNodeOptions<T> = $ReadOnly<{
-  ...ReadOnlyNodeOptions<T>,
+export type ReadWriteNodeOptions<T, U> = $ReadOnly<{
+  ...ReadOnlyNodeOptions<T, U>,
 
   // Returns the discovered deps and the set of key-value pairs to be written.
   // (Deps may be discovered since selectors get an updater function which has
@@ -89,37 +89,37 @@ export type ReadWriteNodeOptions<T> = $ReadOnly<{
   set: (
     store: Store,
     state: TreeState,
-    newValue: T | DefaultValue,
+    newValue: U | DefaultValue,
   ) => AtomWrites,
 }>;
 
-type Node<T> = ReadOnlyNodeOptions<T> | ReadWriteNodeOptions<T>;
+type Node<T, U> = ReadOnlyNodeOptions<T, U> | ReadWriteNodeOptions<T, U>;
 
 // flowlint-next-line unclear-type:off
-const nodes: Map<string, Node<any>> = new Map();
+const nodes: Map<string, Node<any, any>> = new Map();
 // flowlint-next-line unclear-type:off
-const recoilValues: Map<string, RecoilValue<any>> = new Map();
+const recoilValues: Map<string, RecoilValue<any, any>> = new Map();
 
 /* eslint-disable no-redeclare */
-declare function registerNode<T>(
-  node: ReadWriteNodeOptions<T>,
-): RecoilValueClasses.RecoilState<T>;
+declare function registerNode<T, U>(
+  node: ReadWriteNodeOptions<T, U>,
+): RecoilValueClasses.RecoilState<T, U>;
 
-declare function registerNode<T>(
-  node: ReadOnlyNodeOptions<T>,
+declare function registerNode<T, U>(
+  node: ReadOnlyNodeOptions<T, U>,
 ): RecoilValueClasses.RecoilValueReadOnly<T>;
 
 function recoilValuesForKeys(
   keys: Iterable<NodeKey>,
-): Iterable<RecoilValue<mixed>> {
+): Iterable<RecoilValue<mixed, mixed>> {
   return mapIterable(keys, key => nullthrows(recoilValues.get(key)));
 }
 
-function registerNode<T>(node: Node<T>): RecoilValue<T> {
+function registerNode<T, U>(node: Node<T, U>): RecoilValue<T, U> {
   if (nodes.has(node.key)) {
     const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
-      production. But it is safe to ignore this warning if it occurred because of
-      hot module replacement.`;
+       production. But it is safe to ignore this warning if it occurred because of
+       hot module replacement.`;
     // TODO Need to figure out if there is a standard/open-source equivalent to see if hot module replacement is happening:
     // prettier-ignore
     // @fb-only: if (__DEV__) {
@@ -136,7 +136,7 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
   }
   nodes.set(node.key, node);
 
-  const recoilValue: RecoilValue<T> =
+  const recoilValue: RecoilValue<T, U> =
     node.set == null
       ? new RecoilValueClasses.RecoilValueReadOnly(node.key)
       : new RecoilValueClasses.RecoilState(node.key);
@@ -149,7 +149,7 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
 class NodeMissingError extends Error {}
 
 // flowlint-next-line unclear-type:off
-function getNode(key: NodeKey): Node<any> {
+function getNode(key: NodeKey): Node<any, any> {
   const node = nodes.get(key);
   if (node == null) {
     throw new NodeMissingError(`Missing definition for RecoilValue: "${key}""`);
@@ -158,7 +158,7 @@ function getNode(key: NodeKey): Node<any> {
 }
 
 // flowlint-next-line unclear-type:off
-function getNodeMaybe(key: NodeKey): void | Node<any> {
+function getNodeMaybe(key: NodeKey): void | Node<any, any> {
   return nodes.get(key);
 }
 

@@ -26,9 +26,9 @@ const usePrevious = require('recoil-shared/util/Recoil_usePrevious');
 // and writable values with any type parameter, but normally with writable ones
 // RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
 type ToRetain =
-  | RecoilValue<any> // flowlint-line unclear-type:off
+  | RecoilValue<any, any> // flowlint-line unclear-type:off
   | RetentionZone
-  | $ReadOnlyArray<RecoilValue<any> | RetentionZone>; // flowlint-line unclear-type:off
+  | $ReadOnlyArray<RecoilValue<any, any> | RetentionZone>; // flowlint-line unclear-type:off
 
 function useRetain(toRetain: ToRetain): void {
   if (!gkx('recoil_memory_managament_2020')) {

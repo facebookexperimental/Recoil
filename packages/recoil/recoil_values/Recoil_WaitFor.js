@@ -60,7 +60,7 @@ function unwrapDependencies(
   dependencies:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | {+[string]: RecoilValueReadOnly<mixed>},
-): $ReadOnlyArray<RecoilValue<mixed>> {
+): $ReadOnlyArray<RecoilValue<mixed, mixed>> {
   return Array.isArray(dependencies)
     ? dependencies
     : Object.getOwnPropertyNames(dependencies).map(key => dependencies[key]);
@@ -298,7 +298,7 @@ const waitForAllSettled: <
 });
 
 const noWait: (
-  RecoilValue<mixed>,
+  RecoilValue<mixed, mixed>,
   // $FlowFixMe[incompatible-type] added when improving typing for this parameters
 ) => RecoilValueReadOnly<Loadable<mixed>> = selectorFamily({
   key: '__noWait',

@@ -13,12 +13,15 @@
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 
-export type ValueOrUpdater<T> =
-  | T
+export type ValueOrUpdater<T, U> =
+  | U
   | DefaultValue
-  | ((prevValue: T) => T | DefaultValue);
-export type GetRecoilValue = <T>(RecoilValue<T>) => T;
-export type SetRecoilState = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
-export type ResetRecoilState = <T>(RecoilState<T>) => void;
+  | ((prevValue: T) => U | DefaultValue);
+export type GetRecoilValue = <T, U>(RecoilValue<T, U>) => T;
+export type SetRecoilState = <T, U>(
+  RecoilState<T, U>,
+  ValueOrUpdater<T, U>,
+) => void;
+export type ResetRecoilState = <T, U>(RecoilState<T, U>) => void;
 
 module.exports = ({}: {...});

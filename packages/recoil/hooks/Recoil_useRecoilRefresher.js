@@ -16,7 +16,9 @@ const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 const {refreshRecoilValue} = require('../core/Recoil_RecoilValueInterface');
 const {useCallback} = require('react');
 
-function useRecoilRefresher<T>(recoilValue: RecoilValue<T>): () => void {
+function useRecoilRefresher<T, U = T>(
+  recoilValue: RecoilValue<T, U>,
+): () => void {
   const storeRef = useStoreRef();
   return useCallback(() => {
     const store = storeRef.current;

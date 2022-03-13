@@ -87,12 +87,12 @@ function applyAtomValueWrites(
   return result;
 }
 
-function valueFromValueOrUpdater<T>(
+function valueFromValueOrUpdater<T, U>(
   store: Store,
   state: TreeState,
   {key}: AbstractRecoilValue<T>,
-  valueOrUpdater: ValueOrUpdater<T>,
-): T | DefaultValue {
+  valueOrUpdater: ValueOrUpdater<T, U>,
+): U | DefaultValue {
   if (typeof valueOrUpdater === 'function') {
     // Updater form: pass in the current value. Throw if the current value
     // is unavailable (namely when updating an async selector that's

@@ -31,9 +31,9 @@ const invariant = require('recoil-shared/util/Recoil_invariant');
 const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
 
 export type RecoilCallbackInterface = $ReadOnly<{
-  set: <T>(RecoilState<T>, (T => T) | T) => void,
-  reset: <T>(RecoilState<T>) => void,
-  refresh: <T>(RecoilValue<T>) => void,
+  set: <T, U>(RecoilState<T, U>, (T => U) | U) => void,
+  reset: <T, U>(RecoilState<T, U>) => void,
+  refresh: <T, U>(RecoilValue<T, U>) => void,
   snapshot: Snapshot,
   gotoSnapshot: Snapshot => void,
   transact_UNSTABLE: ((TransactionInterface) => void) => void,
@@ -70,11 +70,12 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
     } = lazyProxy(
       {
         ...(extraInterface ?? ({}: any)), // flowlint-line unclear-type:off
-        set: <T>(node: RecoilState<T>, newValue: T | (T => T)) =>
+        set: <T, U>(node: RecoilState<T, U>, newValue: U | (T => U)) =>
           setRecoilValue(store, node, newValue),
-        reset: <T>(node: RecoilState<T>) =>
+        reset: <T, U>(node: RecoilState<T, U>) =>
           setRecoilValue(store, node, DEFAULT_VALUE),
-        refresh: <T>(node: RecoilValue<T>) => refreshRecoilValue(store, node),
+        refresh: <T, U>(node: RecoilValue<T, U>) =>
+          refreshRecoilValue(store, node),
         gotoSnapshot: snapshot => gotoSnapshot(store, snapshot),
         transact_UNSTABLE: transaction => atomicUpdater(store)(transaction),
       },

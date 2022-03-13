@@ -110,15 +110,15 @@ const {
   startPerfBlock,
 } = require('recoil-shared/util/Recoil_PerformanceTimings');
 
-type SelectorCallbackInterface<T> = $ReadOnly<{
+type SelectorCallbackInterface<T, U> = $ReadOnly<{
   // TODO Technically this could be RecoilValueReadOnly, but trying to parameterize
   // it based on the selector type ran into problems which would lead to
   // dangerous error suppressions.
-  node: RecoilState<T>,
+  node: RecoilState<T, U>,
   ...RecoilCallbackInterface,
 }>;
-export type GetCallback<T> = <Args: $ReadOnlyArray<mixed>, Return>(
-  fn: (SelectorCallbackInterface<T>) => (...Args) => Return,
+export type GetCallback<T, U> = <Args: $ReadOnlyArray<mixed>, Return>(
+  fn: (SelectorCallbackInterface<T, U>) => (...Args) => Return,
 ) => (...Args) => Return;
 
 type BaseSelectorOptions = $ReadOnly<{
@@ -129,19 +129,19 @@ type BaseSelectorOptions = $ReadOnly<{
   cachePolicy_UNSTABLE?: CachePolicy,
 }>;
 
-export type ReadOnlySelectorOptions<T> = $ReadOnly<{
+export type ReadOnlySelectorOptions<T, U> = $ReadOnly<{
   ...BaseSelectorOptions,
   get: ({
     get: GetRecoilValue,
-    getCallback: GetCallback<T>,
-  }) => Promise<T> | RecoilValue<T> | T,
+    getCallback: GetCallback<T, U>,
+  }) => Promise<T> | RecoilValue<T, U> | T,
 }>;
 
-export type ReadWriteSelectorOptions<T> = $ReadOnly<{
-  ...ReadOnlySelectorOptions<T>,
+export type ReadWriteSelectorOptions<T, U> = $ReadOnly<{
+  ...ReadOnlySelectorOptions<T, U>,
   set: (
     {set: SetRecoilState, get: GetRecoilValue, reset: ResetRecoilState},
-    newValue: T | DefaultValue,
+    newValue: U | DefaultValue,
   ) => void,
 }>;
 
@@ -211,17 +211,17 @@ const getNewExecutionId: () => ExecutionId = (() => {
 })();
 
 /* eslint-disable no-redeclare */
-declare function selector<T>(
-  options: ReadOnlySelectorOptions<T>,
+declare function selector<T, U = T>(
+  options: ReadOnlySelectorOptions<T, U>,
 ): RecoilValueReadOnly<T>;
-declare function selector<T>(
-  options: ReadWriteSelectorOptions<T>,
-): RecoilState<T>;
+declare function selector<T, U = T>(
+  options: ReadWriteSelectorOptions<T, U>,
+): RecoilState<T, U>;
 
-function selector<T>(
-  options: ReadOnlySelectorOptions<T> | ReadWriteSelectorOptions<T>,
-): RecoilValue<T> {
-  let recoilValue: ?RecoilValue<T> = null;
+function selector<T, U = T>(
+  options: ReadOnlySelectorOptions<T, U> | ReadWriteSelectorOptions<T, U>,
+): RecoilValue<T, U> {
+  let recoilValue: ?RecoilValue<T, U> = null;
 
   const {key, get, cachePolicy_UNSTABLE: cachePolicy} = options;
   const set = options.set != null ? options.set : undefined; // flow
@@ -277,6 +277,7 @@ function selector<T>(
     depValues: DepValues,
   ): void {
     setCache(state, loadable, depValues);
+    setDepsInStore(store, state, new Set(depValues.keys()), executionId);
     notifyStoresOfResolvedAsync(store, executionId);
   }
 
@@ -648,6 +649,18 @@ function selector<T>(
     }
   }
 
+  function setNewDepInStore(
+    store: Store,
+    state: TreeState,
+    deps: Set<NodeKey>,
+    newDepKey: NodeKey,
+    executionId: ?ExecutionId,
+  ): void {
+    deps.add(newDepKey);
+
+    setDepsInStore(store, state, deps, executionId);
+  }
+
   function evaluateSelectorGetter(
     store: Store,
     state: TreeState,
@@ -682,7 +695,7 @@ function selector<T>(
     const depValues = new Map();
     const deps = new Set();
 
-    function getRecoilValue<S>(dep: RecoilValue<S>): S {
+    function getRecoilValue<S, V>(dep: RecoilValue<S, V>): S {
       const {key: depKey} = dep;
 
       deps.add(depKey);
@@ -711,7 +724,7 @@ function selector<T>(
     }
 
     const getCallback = <Args: $ReadOnlyArray<mixed>, Return>(
-      fn: (SelectorCallbackInterface<T>) => (...Args) => Return,
+      fn: (SelectorCallbackInterface<T, U>) => (...Args) => Return,
     ): ((...Args) => Return) => {
       return (...args) => {
         if (duringAsynchronousExecution) {
@@ -720,7 +733,7 @@ function selector<T>(
           );
         }
         invariant(recoilValue != null, 'Recoil Value can never be null');
-        return recoilCallback<Args, Return, {node: RecoilState<T>}>(
+        return recoilCallback<Args, Return, {node: RecoilState<T, U>}>(
           store,
           fn,
           args,
@@ -1110,7 +1123,7 @@ function selector<T>(
       let syncSelectorSetFinished = false;
       const writes: AtomWrites = new Map();
 
-      function getRecoilValue<S>({key: depKey}: RecoilValue<S>): S {
+      function getRecoilValue<S, V>({key: depKey}: RecoilValue<S, V>): S {
         if (syncSelectorSetFinished) {
           throw err('Recoil: Async selector sets are not currently supported.');
         }
@@ -1126,8 +1139,8 @@ function selector<T>(
         }
       }
 
-      function setRecoilState<S>(
-        recoilState: RecoilState<S>,
+      function setRecoilState<S, V>(
+        recoilState: RecoilState<S, V>,
         valueOrUpdater: S | DefaultValue | ((S, GetRecoilValue) => S),
       ) {
         if (syncSelectorSetFinished) {
@@ -1151,7 +1164,7 @@ function selector<T>(
         upstreamWrites.forEach((v, k) => writes.set(k, v));
       }
 
-      function resetRecoilState<S>(recoilState: RecoilState<S>) {
+      function resetRecoilState<S, V>(recoilState: RecoilState<S, V>) {
         setRecoilState(recoilState, DEFAULT_VALUE);
       }
 
@@ -1173,7 +1186,7 @@ function selector<T>(
       return writes;
     };
 
-    return (recoilValue = registerNode<T>({
+    return (recoilValue = registerNode<T, U>({
       key,
       nodeType: 'selector',
       peek: selectorPeek,
@@ -1188,7 +1201,7 @@ function selector<T>(
       retainedBy,
     }));
   } else {
-    return (recoilValue = registerNode<T>({
+    return (recoilValue = registerNode<T, U>({
       key,
       nodeType: 'selector',
       peek: selectorPeek,

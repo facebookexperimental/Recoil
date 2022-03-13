@@ -58,7 +58,7 @@ const useRefInitOnce = require('recoil-shared/util/Recoil_useRefInitOnce');
 
 type InternalProps = {
   initializeState_DEPRECATED?: ({
-    set: <T>(RecoilValue<T>, T) => void,
+    set: <T, U>(RecoilValue<T, U>, T) => void,
     setUnvalidatedAtomValues: (Map<string, mixed>) => void,
   }) => void,
   initializeState?: MutableSnapshot => void,
@@ -358,19 +358,19 @@ function RecoilRoot_INTERNAL({
 }: InternalProps): React.Node {
   // prettier-ignore
   // @fb-only: useEffect(() => {
-    // @fb-only: if (gkx('recoil_usage_logging')) {
-      // @fb-only: try {
-        // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
-          // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
-          // @fb-only: path: URI.getRequestURI().getPath(),
-        // @fb-only: }));
-      // @fb-only: } catch {
-        // @fb-only: recoverableViolation(
-          // @fb-only: 'Error when logging Recoil Usage event',
-          // @fb-only: 'recoil',
-        // @fb-only: );
-      // @fb-only: }
-    // @fb-only: }
+  // @fb-only: if (gkx('recoil_usage_logging')) {
+  // @fb-only: try {
+  // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+  // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
+  // @fb-only: path: URI.getRequestURI().getPath(),
+  // @fb-only: }));
+  // @fb-only: } catch {
+  // @fb-only: recoverableViolation(
+  // @fb-only: 'Error when logging Recoil Usage event',
+  // @fb-only: 'recoil',
+  // @fb-only: );
+  // @fb-only: }
+  // @fb-only: }
   // @fb-only: }, []);
 
   let storeStateRef: {current: StoreState}; // eslint-disable-line prefer-const
@@ -529,7 +529,7 @@ function RecoilRoot_INTERNAL({
 type Props =
   | {
       initializeState_DEPRECATED?: ({
-        set: <T>(RecoilValue<T>, T) => void,
+        set: <T, U>(RecoilValue<T, U>, T) => void,
         setUnvalidatedAtomValues: (Map<string, mixed>) => void,
       }) => void,
       initializeState?: MutableSnapshot => void,

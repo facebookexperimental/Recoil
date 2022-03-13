@@ -210,18 +210,18 @@ function renderElementsWithSuspenseCount(
 ////////////////////////////////////////
 let id = 0;
 
-function stringAtom(): RecoilState<string> {
+function stringAtom(): RecoilState<string, string> {
   return atom({key: `StringAtom-${id++}`, default: 'DEFAULT'});
 }
 
-const errorThrowingAsyncSelector: <T, S>(
+const errorThrowingAsyncSelector: <T, S, U>(
   string,
-  ?RecoilValue<S>,
-) => RecoilValue<T> = <T, S>(
+  ?RecoilValue<S, U>,
+) => RecoilValue<T, U> = <T, S, U>(
   msg,
-  dep: ?RecoilValue<S>,
+  dep: ?RecoilValue<S, U>,
 ): RecoilValueReadOnly<T> =>
-  selector<T>({
+  selector<T, T>({
     key: `AsyncErrorThrowingSelector${id++}`,
     get: ({get}) => {
       if (dep != null) {
@@ -231,7 +231,7 @@ const errorThrowingAsyncSelector: <T, S>(
     },
   });
 
-const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
+const resolvingAsyncSelector: <T, U>(T) => RecoilValue<T, U> = <T>(
   value: T,
   // $FlowFixMe[incompatible-type]
 ): RecoilValueReadOnly<T> | RecoilValueReadOnly<mixed> =>
@@ -246,9 +246,9 @@ const loadingAsyncSelector: () => RecoilValueReadOnly<void> = () =>
     get: () => new Promise(() => {}),
   });
 
-function asyncSelector<T, S>(
-  dep?: RecoilValue<S>,
-): [RecoilValue<T>, (T) => void, (Error) => void] {
+function asyncSelector<T, S, U>(
+  dep?: RecoilValue<S, U>,
+): [RecoilValue<T, U>, (T) => void, (Error) => void] {
   let resolve = () => invariant(false, 'bug in test code'); // make flow happy with initialization
   let reject = () => invariant(false, 'bug in test code');
   const promise = new Promise((res, rej) => {
@@ -271,10 +271,10 @@ function asyncSelector<T, S>(
 // Useful Components for testing
 //////////////////////////////////
 
-function ReadsAtom<T>({
+function ReadsAtom<T, U>({
   atom, // eslint-disable-line no-shadow
 }: {
-  atom: RecoilValue<T>,
+  atom: RecoilValue<T, U>,
 }): React.Node {
   return stableStringify(useRecoilValue(atom));
 }
@@ -284,9 +284,9 @@ function ReadsAtom<T>({
 //   setValue(T),
 //   resetValue()
 // ]
-function componentThatReadsAndWritesAtom<T>(
-  recoilState: RecoilState<T>,
-): [() => React.Node, (T) => void, () => void] {
+function componentThatReadsAndWritesAtom<T, U>(
+  recoilState: RecoilState<T, U>,
+): [() => React.Node, (U) => void, () => void] {
   let setValue;
   let resetValue;
   const ReadsAndWritesAtom = (): React.Node => {
@@ -296,7 +296,7 @@ function componentThatReadsAndWritesAtom<T>(
   };
   return [
     ReadsAndWritesAtom,
-    (value: T) => setValue(value),
+    (value: U) => setValue(value),
     () => resetValue(),
   ];
 }

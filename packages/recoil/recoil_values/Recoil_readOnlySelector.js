@@ -18,7 +18,9 @@ import type {
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
 
-function readOnlySelector<T>(atom: RecoilValue<T>): RecoilValueReadOnly<T> {
+function readOnlySelector<T, U>(
+  atom: RecoilValue<T, U>,
+): RecoilValueReadOnly<T> {
   // flowlint-next-line unclear-type: off
   return (atom: any);
 }

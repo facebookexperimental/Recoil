@@ -181,9 +181,9 @@ export type RecoilValueInfo<T> = {
   isSet: boolean,
   isModified: boolean, // TODO report modified selectors
   type: 'atom' | 'selector',
-  deps: Iterable<RecoilValue<mixed>>,
+  deps: Iterable<RecoilValue<mixed, mixed>>,
   subscribers: {
-    nodes: Iterable<RecoilValue<mixed>>,
+    nodes: Iterable<RecoilValue<mixed, mixed>>,
     components: Iterable<ComponentInfo>,
   },
 };

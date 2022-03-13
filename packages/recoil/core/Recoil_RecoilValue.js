@@ -20,11 +20,11 @@ class AbstractRecoilValue<+T> {
   }
 }
 
-class RecoilState<T> extends AbstractRecoilValue<T> {}
+class RecoilState<T, U = T> extends AbstractRecoilValue<T> {}
 
 class RecoilValueReadOnly<+T> extends AbstractRecoilValue<T> {}
 
-export type RecoilValue<T> = RecoilValueReadOnly<T> | RecoilState<T>;
+export type RecoilValue<T, U> = RecoilValueReadOnly<T> | RecoilState<T, U>;
 
 function isRecoilValue(x: mixed): boolean %checks {
   return x instanceof RecoilState || x instanceof RecoilValueReadOnly;

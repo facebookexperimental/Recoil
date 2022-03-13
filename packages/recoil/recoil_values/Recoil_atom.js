@@ -135,9 +135,9 @@ export type AtomEffect<T> = ({
   ) => void,
 
   // Accessors to read other atoms/selectors
-  getPromise: <S>(RecoilValue<S>) => Promise<S>,
-  getLoadable: <S>(RecoilValue<S>) => Loadable<S>,
-  getInfo_UNSTABLE: <S>(RecoilValue<S>) => RecoilValueInfo<S>,
+  getPromise: <S, V>(RecoilValue<S, V>) => Promise<S>,
+  getLoadable: <S, V>(RecoilValue<S, V>) => Loadable<S>,
+  getInfo_UNSTABLE: <S, V>(RecoilValue<S, V>) => RecoilValueInfo<S>,
 }) => void | (() => void);
 
 export type AtomOptionsWithoutDefault<T> = $ReadOnly<{
@@ -152,7 +152,7 @@ export type AtomOptionsWithoutDefault<T> = $ReadOnly<{
 
 type AtomOptionsWithDefault<T> = $ReadOnly<{
   ...AtomOptionsWithoutDefault<T>,
-  default: RecoilValue<T> | Promise<T> | T,
+  default: RecoilValue<T, T> | Promise<T> | T,
 }>;
 
 export type AtomOptions<T> =
@@ -273,7 +273,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         value: T | DefaultValue,
       } = null;
 
-      function getLoadable<S>(recoilValue: RecoilValue<S>): Loadable<S> {
+      function getLoadable<S, V>(recoilValue: RecoilValue<S, V>): Loadable<S> {
         // Normally we can just get the current value of another atom.
         // But for our own value we need to check if there is a pending
         // initialized value or get the fallback default value.
@@ -296,12 +296,12 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         return getRecoilValueAsLoadable(store, recoilValue);
       }
 
-      function getPromise<S>(recoilValue: RecoilValue<S>): Promise<S> {
+      function getPromise<S, V>(recoilValue: RecoilValue<S, V>): Promise<S> {
         return getLoadable(recoilValue).toPromise();
       }
 
-      function getInfo_UNSTABLE<S>(
-        recoilValue: RecoilValue<S>,
+      function getInfo_UNSTABLE<S, V>(
+        recoilValue: RecoilValue<S, V>,
       ): RecoilValueInfo<S> {
         const info = peekNodeInfo(
           store,
@@ -552,60 +552,60 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         : undefined,
       shouldRestoreFromSnapshots: true,
       retainedBy,
-    }: ReadWriteNodeOptions<T>),
+    }: ReadWriteNodeOptions<T, T>),
   );
   return node;
 }
 
 // prettier-ignore
 function atom<T>(options: AtomOptions<T>): RecoilState<T> {
-  if (__DEV__) {
-    if (typeof options.key !== 'string') {
-      throw err(
-        'A key option with a unique string value must be provided when creating an atom.',
-      );
-    }
-  }
-
-  const {
-    // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    ...restOptions
-  } = options;
-  const optionsDefault: RecoilValue<T> | Promise<T> | T = 'default' in options
-  ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
-    options.default
-  : new Promise(() => {});
-
-  if (isRecoilValue(optionsDefault)
-    // Continue to use atomWithFallback for promise defaults for scoped atoms
-    // for now, since scoped atoms don't support async defaults
-   // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
-  ) {
-    return atomWithFallback<T>({
-      ...restOptions,
-      default: optionsDefault,
-      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    });
-  // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
-    // @fb-only: return scopedAtom<T>({
-      // @fb-only: ...restOptions,
-      // @fb-only: default: optionsDefault,
-      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
-    // @fb-only: });
-  } else {
-    return baseAtom<T>({...restOptions, default: optionsDefault});
-  }
-}
+   if (__DEV__) {
+     if (typeof options.key !== 'string') {
+       throw err(
+         'A key option with a unique string value must be provided when creating an atom.',
+       );
+     }
+   }
+ 
+   const {
+     // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+     ...restOptions
+   } = options;
+   const optionsDefault: RecoilValue<T, T> | Promise<T> | T = 'default' in options
+   ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+     options.default
+   : new Promise(() => {});
+ 
+   if (isRecoilValue(optionsDefault)
+     // Continue to use atomWithFallback for promise defaults for scoped atoms
+     // for now, since scoped atoms don't support async defaults
+    // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
+   ) {
+     return atomWithFallback<T, T>({
+       ...restOptions,
+       default: optionsDefault,
+       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+     });
+   // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
+     // @fb-only: return scopedAtom<T>({
+       // @fb-only: ...restOptions,
+       // @fb-only: default: optionsDefault,
+       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+     // @fb-only: });
+   } else {
+     return baseAtom<T>({...restOptions, default: optionsDefault});
+   }
+ }
 
 type AtomWithFallbackOptions<T> = $ReadOnly<{
   ...AtomOptions<T>,
-  default: RecoilValue<T> | Promise<T>,
+  default: RecoilValue<T, T> | Promise<T>,
 }>;
 
 function atomWithFallback<T>(
   options: AtomWithFallbackOptions<T>,
 ): RecoilState<T> {
-  const base = atom<T | DefaultValue>({
+  const base = atom<T | DefaultValue, T>({
     ...options,
     default: DEFAULT_VALUE,
     persistence_UNSTABLE:

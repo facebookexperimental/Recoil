@@ -45,9 +45,9 @@ const gkx = require('recoil-shared/util/Recoil_gkx');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 
-function handleLoadable<T>(
+function handleLoadable<T, U>(
   loadable: Loadable<T>,
-  recoilValue: RecoilValue<T>,
+  recoilValue: RecoilValue<T, U>,
   storeRef,
 ): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
@@ -71,7 +71,7 @@ function handleLoadable<T>(
   }
 }
 
-function validateRecoilValue<T>(recoilValue: RecoilValue<T>, hookName) {
+function validateRecoilValue<T, U>(recoilValue: RecoilValue<T, U>, hookName) {
   if (!isRecoilValue(recoilValue)) {
     throw err(
       `Invalid argument to ${hookName}: expected an atom or selector but got ${String(
@@ -81,17 +81,17 @@ function validateRecoilValue<T>(recoilValue: RecoilValue<T>, hookName) {
   }
 }
 
-export type SetterOrUpdater<T> = ((T => T) | T) => void;
+export type SetterOrUpdater<T, U = T> = ((T => U) | U) => void;
 export type Resetter = () => void;
 export type RecoilInterface = {
-  getRecoilValue: <T>(RecoilValue<T>) => T,
-  getRecoilValueLoadable: <T>(RecoilValue<T>) => Loadable<T>,
-  getRecoilState: <T>(RecoilState<T>) => [T, SetterOrUpdater<T>],
-  getRecoilStateLoadable: <T>(
-    RecoilState<T>,
-  ) => [Loadable<T>, SetterOrUpdater<T>],
-  getSetRecoilState: <T>(RecoilState<T>) => SetterOrUpdater<T>,
-  getResetRecoilState: <T>(RecoilState<T>) => Resetter,
+  getRecoilValue: <T, U>(RecoilValue<T, U>) => T,
+  getRecoilValueLoadable: <T, U>(RecoilValue<T, U>) => Loadable<T>,
+  getRecoilState: <T, U>(RecoilState<T, U>) => [T, SetterOrUpdater<T, U>],
+  getRecoilStateLoadable: <T, U>(
+    RecoilState<T, U>,
+  ) => [Loadable<T>, SetterOrUpdater<T, U>],
+  getSetRecoilState: <T, U>(RecoilState<T, U>) => SetterOrUpdater<T, U>,
+  getResetRecoilState: <T, U>(RecoilState<T, U>) => Resetter,
 };
 
 /**
@@ -205,21 +205,23 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
 
   return useMemo(() => {
     // eslint-disable-next-line no-shadow
-    function useSetRecoilState<T>(
-      recoilState: RecoilState<T>,
-    ): SetterOrUpdater<T> {
+    function useSetRecoilState<T, U>(
+      recoilState: RecoilState<T, U>,
+    ): SetterOrUpdater<T, U> {
       if (__DEV__) {
         validateRecoilValue(recoilState, 'useSetRecoilState');
       }
       return (
-        newValueOrUpdater: (T => T | DefaultValue) | T | DefaultValue,
+        newValueOrUpdater: (T => U | DefaultValue) | U | DefaultValue,
       ) => {
         setRecoilValue(storeRef.current, recoilState, newValueOrUpdater);
       };
     }
 
     // eslint-disable-next-line no-shadow
-    function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
+    function useResetRecoilState<T, U>(
+      recoilState: RecoilState<T, U>,
+    ): Resetter {
       if (__DEV__) {
         validateRecoilValue(recoilState, 'useResetRecoilState');
       }
@@ -227,8 +229,8 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     }
 
     // eslint-disable-next-line no-shadow
-    function useRecoilValueLoadable<T>(
-      recoilValue: RecoilValue<T>,
+    function useRecoilValueLoadable<T, U>(
+      recoilValue: RecoilValue<T, U>,
     ): Loadable<T> {
       if (__DEV__) {
         validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
@@ -251,7 +253,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     }
 
     // eslint-disable-next-line no-shadow
-    function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
+    function useRecoilValue<T, U>(recoilValue: RecoilValue<T, U>): T {
       if (__DEV__) {
         validateRecoilValue(recoilValue, 'useRecoilValue');
       }
@@ -260,9 +262,9 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     }
 
     // eslint-disable-next-line no-shadow
-    function useRecoilState<T>(
-      recoilState: RecoilState<T>,
-    ): [T, SetterOrUpdater<T>] {
+    function useRecoilState<T, U>(
+      recoilState: RecoilState<T, U>,
+    ): [T, SetterOrUpdater<T, U>] {
       if (__DEV__) {
         validateRecoilValue(recoilState, 'useRecoilState');
       }
@@ -270,9 +272,9 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     }
 
     // eslint-disable-next-line no-shadow
-    function useRecoilStateLoadable<T>(
-      recoilState: RecoilState<T>,
-    ): [Loadable<T>, SetterOrUpdater<T>] {
+    function useRecoilStateLoadable<T, U>(
+      recoilState: RecoilState<T, U>,
+    ): [Loadable<T>, SetterOrUpdater<T, U>] {
       if (__DEV__) {
         validateRecoilValue(recoilState, 'useRecoilStateLoadable');
       }
@@ -295,8 +297,8 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
 
 const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
 
-function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
-  recoilValue: RecoilValue<T>,
+function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T, U>(
+  recoilValue: RecoilValue<T, U>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
   const componentName = useComponentName();
@@ -355,8 +357,8 @@ function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
   ).loadable;
 }
 
-function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
-  recoilValue: RecoilValue<T>,
+function useRecoilValueLoadable_MUTABLE_SOURCE<T, U>(
+  recoilValue: RecoilValue<T, U>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
 
@@ -422,8 +424,8 @@ function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
   return loadable;
 }
 
-function useRecoilValueLoadable_TRANSITION_SUPPORT<T>(
-  recoilValue: RecoilValue<T>,
+function useRecoilValueLoadable_TRANSITION_SUPPORT<T, U>(
+  recoilValue: RecoilValue<T, U>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
   const componentName = useComponentName();
@@ -484,8 +486,8 @@ function useRecoilValueLoadable_TRANSITION_SUPPORT<T>(
   return state.key !== recoilValue.key ? getState().loadable : state.loadable;
 }
 
-function useRecoilValueLoadable_LEGACY<T>(
-  recoilValue: RecoilValue<T>,
+function useRecoilValueLoadable_LEGACY<T, U>(
+  recoilValue: RecoilValue<T, U>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
   const [, forceUpdate] = useState([]);
@@ -567,10 +569,12 @@ function useRecoilValueLoadable_LEGACY<T>(
 }
 
 /**
-  Like useRecoilValue(), but either returns the value if available or
-  just undefined if not available for any reason, such as pending or error.
-*/
-function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
+   Like useRecoilValue(), but either returns the value if available or
+   just undefined if not available for any reason, such as pending or error.
+ */
+function useRecoilValueLoadable<T, U = T>(
+  recoilValue: RecoilValue<T, U>,
+): Loadable<T> {
   if (__DEV__) {
     validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
   }
@@ -587,12 +591,12 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
 }
 
 /**
-  Returns the value represented by the RecoilValue.
-  If the value is pending, it will throw a Promise to suspend the component,
-  if the value is an error it will throw it for the nearest React error boundary.
-  This will also subscribe the component for any updates in the value.
-  */
-function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
+   Returns the value represented by the RecoilValue.
+   If the value is pending, it will throw a Promise to suspend the component,
+   if the value is an error it will throw it for the nearest React error boundary.
+   This will also subscribe the component for any updates in the value.
+   */
+function useRecoilValue<T, U = T>(recoilValue: RecoilValue<T, U>): T {
   if (__DEV__) {
     validateRecoilValue(recoilValue, 'useRecoilValue');
   }
@@ -602,16 +606,18 @@ function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
 }
 
 /**
-  Returns a function that allows the value of a RecoilState to be updated, but does
-  not subscribe the component to changes to that RecoilState.
-*/
-function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
+   Returns a function that allows the value of a RecoilState to be updated, but does
+   not subscribe the component to changes to that RecoilState.
+ */
+function useSetRecoilState<T, U = T>(
+  recoilState: RecoilState<T, U>,
+): SetterOrUpdater<T, U> {
   if (__DEV__) {
     validateRecoilValue(recoilState, 'useSetRecoilState');
   }
   const storeRef = useStoreRef();
   return useCallback(
-    (newValueOrUpdater: (T => T | DefaultValue) | T | DefaultValue) => {
+    (newValueOrUpdater: (T => U | DefaultValue) | U | DefaultValue) => {
       setRecoilValue(storeRef.current, recoilState, newValueOrUpdater);
     },
     [storeRef, recoilState],
@@ -619,9 +625,11 @@ function useSetRecoilState<T>(recoilState: RecoilState<T>): SetterOrUpdater<T> {
 }
 
 /**
-  Returns a function that will reset the value of a RecoilState to its default
-*/
-function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
+   Returns a function that will reset the value of a RecoilState to its default
+ */
+function useResetRecoilState<T, U = T>(
+  recoilState: RecoilState<T, U>,
+): Resetter {
   if (__DEV__) {
     validateRecoilValue(recoilState, 'useResetRecoilState');
   }
@@ -632,15 +640,15 @@ function useResetRecoilState<T>(recoilState: RecoilState<T>): Resetter {
 }
 
 /**
-  Equivalent to useState(). Allows the value of the RecoilState to be read and written.
-  Subsequent updates to the RecoilState will cause the component to re-render. If the
-  RecoilState is pending, this will suspend the component and initiate the
-  retrieval of the value. If evaluating the RecoilState resulted in an error, this will
-  throw the error so that the nearest React error boundary can catch it.
-*/
-function useRecoilState<T>(
-  recoilState: RecoilState<T>,
-): [T, SetterOrUpdater<T>] {
+   Equivalent to useState(). Allows the value of the RecoilState to be read and written.
+   Subsequent updates to the RecoilState will cause the component to re-render. If the
+   RecoilState is pending, this will suspend the component and initiate the
+   retrieval of the value. If evaluating the RecoilState resulted in an error, this will
+   throw the error so that the nearest React error boundary can catch it.
+ */
+function useRecoilState<T, U = T>(
+  recoilState: RecoilState<T, U>,
+): [T, SetterOrUpdater<T, U>] {
   if (__DEV__) {
     validateRecoilValue(recoilState, 'useRecoilState');
   }
@@ -648,13 +656,13 @@ function useRecoilState<T>(
 }
 
 /**
-  Like useRecoilState(), but does not cause Suspense or React error handling. Returns
-  an object that indicates whether the RecoilState is available, pending, or
-  unavailable due to an error.
-*/
-function useRecoilStateLoadable<T>(
-  recoilState: RecoilState<T>,
-): [Loadable<T>, SetterOrUpdater<T>] {
+   Like useRecoilState(), but does not cause Suspense or React error handling. Returns
+   an object that indicates whether the RecoilState is available, pending, or
+   unavailable due to an error.
+ */
+function useRecoilStateLoadable<T, U = T>(
+  recoilState: RecoilState<T, U>,
+): [Loadable<T>, SetterOrUpdater<T, U>] {
   if (__DEV__) {
     validateRecoilValue(recoilState, 'useRecoilStateLoadable');
   }
@@ -684,8 +692,8 @@ function useSetUnvalidatedAtomValues(): (
  * Experimental variants of hooks with support for useTransition()
  */
 
-function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE<T>(
-  recoilValue: RecoilValue<T>,
+function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE<T, U = T>(
+  recoilValue: RecoilValue<T, U>,
 ): Loadable<T> {
   if (__DEV__) {
     validateRecoilValue(
@@ -706,8 +714,8 @@ function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE<T>(
   return useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue);
 }
 
-function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE<T>(
-  recoilValue: RecoilValue<T>,
+function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE<T, U = T>(
+  recoilValue: RecoilValue<T, U>,
 ): T {
   if (__DEV__) {
     validateRecoilValue(
@@ -721,9 +729,9 @@ function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE<T>(
   return handleLoadable(loadable, recoilValue, storeRef);
 }
 
-function useRecoilState_TRANSITION_SUPPORT_UNSTABLE<T>(
-  recoilState: RecoilState<T>,
-): [T, SetterOrUpdater<T>] {
+function useRecoilState_TRANSITION_SUPPORT_UNSTABLE<T, U = T>(
+  recoilState: RecoilState<T, U>,
+): [T, SetterOrUpdater<T, U>] {
   if (__DEV__) {
     validateRecoilValue(
       recoilState,

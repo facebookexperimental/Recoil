@@ -54,19 +54,19 @@ type BaseSelectorFamilyOptions<P: Parameter> = $ReadOnly<{
   retainedBy_UNSTABLE?: RetainedBy | (P => RetainedBy),
 }>;
 
-export type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
+export type ReadOnlySelectorFamilyOptions<T, P: Parameter, U> = $ReadOnly<{
   ...BaseSelectorFamilyOptions<P>,
   get: P => ({
     get: GetRecoilValue,
-    getCallback: GetCallback<T>,
-  }) => Promise<T> | RecoilValue<T> | T,
+    getCallback: GetCallback<T, U>,
+  }) => Promise<T> | RecoilValue<T, U> | T,
 }>;
 
-export type ReadWriteSelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
-  ...ReadOnlySelectorFamilyOptions<T, P>,
+export type ReadWriteSelectorFamilyOptions<T, P: Parameter, U> = $ReadOnly<{
+  ...ReadOnlySelectorFamilyOptions<T, P, U>,
   set: P => (
     {set: SetRecoilState, get: GetRecoilValue, reset: ResetRecoilState},
-    newValue: T | DefaultValue,
+    newValue: U | DefaultValue,
   ) => void,
 }>;
 
@@ -79,12 +79,12 @@ export type SelectorFamilyOptions<T, P> =
 let nextIndex = 0;
 
 /* eslint-disable no-redeclare */
-declare function selectorFamily<T, Params: Parameter>(
-  options: ReadOnlySelectorFamilyOptions<T, Params>,
+declare function selectorFamily<T, Params: Parameter, U = T>(
+  options: ReadOnlySelectorFamilyOptions<T, Params, U>,
 ): Params => RecoilValueReadOnly<T>;
-declare function selectorFamily<T, Params: Parameter>(
-  options: ReadWriteSelectorFamilyOptions<T, Params>,
-): Params => RecoilState<T>;
+declare function selectorFamily<T, Params: Parameter, U = T>(
+  options: ReadWriteSelectorFamilyOptions<T, Params, U>,
+): Params => RecoilState<T, U>;
 
 // Return a function that returns members of a family of selectors of the same type
 // E.g.,
@@ -98,14 +98,14 @@ declare function selectorFamily<T, Params: Parameter>(
 // object literals or other equivalent objects at callsites to not create
 // duplicate cache entries.  This behavior may be overridden with the
 // cacheImplementationForParams option.
-function selectorFamily<T, Params: Parameter>(
+function selectorFamily<T, Params: Parameter, U = T>(
   options:
-    | ReadOnlySelectorFamilyOptions<T, Params>
-    | ReadWriteSelectorFamilyOptions<T, Params>,
-): Params => RecoilValue<T> {
+    | ReadOnlySelectorFamilyOptions<T, Params, U>
+    | ReadWriteSelectorFamilyOptions<T, Params, U>,
+): Params => RecoilValue<T, U> {
   const selectorCache = cacheFromPolicy<
     Params,
-    RecoilState<T> | RecoilValueReadOnly<T>,
+    RecoilState<T, U> | RecoilValueReadOnly<T>,
   >({
     equality: options.cachePolicyForParams_UNSTABLE?.equality ?? 'value',
     eviction: 'keep-all',
@@ -138,7 +138,7 @@ function selectorFamily<T, Params: Parameter>(
     if (options.set != null) {
       const set = options.set;
       const mySet = (callbacks, newValue) => set(params)(callbacks, newValue);
-      newSelector = selector<T>({
+      newSelector = selector<T, U>({
         key: myKey,
         get: myGet,
         set: mySet,
@@ -147,7 +147,7 @@ function selectorFamily<T, Params: Parameter>(
         retainedBy_UNSTABLE: retainedBy,
       });
     } else {
-      newSelector = selector<T>({
+      newSelector = selector<T, U>({
         key: myKey,
         get: myGet,
         cachePolicy_UNSTABLE: myCachePolicy,

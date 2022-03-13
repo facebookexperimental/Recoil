@@ -16,7 +16,7 @@ const selectorFamily = require('./Recoil_selectorFamily');
 const err = require('recoil-shared/util/Recoil_err');
 
 // flowlint-next-line unclear-type:off
-const throwingSelector = selectorFamily<any, any>({
+const throwingSelector = selectorFamily<any, any, any>({
   key: '__error',
   get: message => () => {
     throw err(message);

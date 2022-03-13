@@ -16,7 +16,7 @@ import type {Parameter} from './Recoil_selectorFamily';
 const selectorFamily = require('./Recoil_selectorFamily');
 
 // flowlint-next-line unclear-type:off
-const constantSelector = selectorFamily<any, any>({
+const constantSelector = selectorFamily<any, any, any>({
   key: '__constant',
   get: constant => () => constant,
   cachePolicyForParams_UNSTABLE: {

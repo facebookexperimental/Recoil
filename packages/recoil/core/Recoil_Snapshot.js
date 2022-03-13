@@ -58,17 +58,17 @@ const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViola
 export type SnapshotID = StateID;
 
 const retainWarning = `
-Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, do this:
-
-  const release = snapshot.retain();
-  try {
-    await doSomethingWithSnapshot(snapshot);
-  } finally {
-    release();
-  }
-
-This is currently a DEV-only warning but will become a thrown exception in the next release of Recoil.
-`;
+ Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, do this:
+ 
+   const release = snapshot.retain();
+   try {
+     await doSomethingWithSnapshot(snapshot);
+   } finally {
+     release();
+   }
+ 
+ This is currently a DEV-only warning but will become a thrown exception in the next release of Recoil.
+ `;
 
 // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector
@@ -193,8 +193,8 @@ class Snapshot {
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
-    recoilValue: RecoilValue<T>,
+  getLoadable: <T, U>(RecoilValue<T, U>) => Loadable<T> = <T, U>(
+    recoilValue: RecoilValue<T, U>,
   ): Loadable<T> => {
     this.checkRefCount_INTERNAL();
     return getRecoilValueAsLoadable(this._store, recoilValue);
@@ -202,8 +202,8 @@ class Snapshot {
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  getPromise: <T>(RecoilValue<T>) => Promise<T> = <T>(
-    recoilValue: RecoilValue<T>,
+  getPromise: <T, U>(RecoilValue<T, U>) => Promise<T> = <T, U>(
+    recoilValue: RecoilValue<T, U>,
   ): Promise<T> => {
     this.checkRefCount_INTERNAL();
     return this.getLoadable(recoilValue).toPromise();
@@ -216,7 +216,7 @@ class Snapshot {
       isModified?: boolean,
       isInitialized?: boolean,
     } | void,
-  ) => Iterable<RecoilValue<mixed>> = opt => {
+  ) => Iterable<RecoilValue<mixed, mixed>> = opt => {
     this.checkRefCount_INTERNAL();
 
     // TODO Deal with modified selectors
@@ -243,9 +243,9 @@ class Snapshot {
   // Report the current status of a node.
   // This peeks the current state and does not affect the snapshot state at all
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  getInfo_UNSTABLE: <T>(RecoilValue<T>) => RecoilValueInfo<T> = <T>({
+  getInfo_UNSTABLE: <T, U>(RecoilValue<T, U>) => RecoilValueInfo<T> = <T, U>({
     key,
-  }: RecoilValue<T>) => {
+  }: RecoilValue<T, U>) => {
     this.checkRefCount_INTERNAL();
     // $FlowFixMe[escaped-generic]
     return peekNodeInfo(this._store, this._store.getState().currentTree, key);
@@ -376,9 +376,9 @@ class MutableSnapshot extends Snapshot {
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  set: SetRecoilState = <T>(
-    recoilState: RecoilState<T>,
-    newValueOrUpdater: ValueOrUpdater<T>,
+  set: SetRecoilState = <T, U>(
+    recoilState: RecoilState<T, U>,
+    newValueOrUpdater: ValueOrUpdater<T, U>,
   ) => {
     this.checkRefCount_INTERNAL();
     const store = this.getStore_INTERNAL();
@@ -394,7 +394,7 @@ class MutableSnapshot extends Snapshot {
 
   // We want to allow the methods to be destructured and used as accessors
   // eslint-disable-next-line fb-www/extra-arrow-initializer
-  reset: ResetRecoilState = <T>(recoilState: RecoilState<T>) => {
+  reset: ResetRecoilState = <T, U>(recoilState: RecoilState<T, U>) => {
     this.checkRefCount_INTERNAL();
     const store = this.getStore_INTERNAL();
     // See note at `set` about batched updates.
