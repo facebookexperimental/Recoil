@@ -164,7 +164,14 @@ type BaseAtomOptions<T> = $ReadOnly<{
   default: T | Promise<T>,
 }>;
 
-function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
+type AtomActions<T> = $ReadOnly<{
+  default: Function,
+}>;
+
+function baseAtom<T>(
+  options: BaseAtomOptions<T>,
+  actions?: AtomActions,
+): RecoilState<T> {
   const {key, persistence_UNSTABLE: persistence} = options;
 
   const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
@@ -552,17 +559,18 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         : undefined,
       shouldRestoreFromSnapshots: true,
       retainedBy,
+      actions: actions,
     }: ReadWriteNodeOptions<T>),
   );
   return node;
 }
 
 // prettier-ignore
-function atom<T>(options: AtomOptions<T>): RecoilState<T> {
+function atom<T>(options: AtomOptions<T>, actions?: AtomActions): RecoilState<T> {
   if (__DEV__) {
     if (typeof options.key !== 'string') {
       throw err(
-        'A key option with a unique string value must be provided when creating an atom.',
+          'A key option with a unique string value must be provided when creating an atom.',
       );
     }
   }
@@ -577,23 +585,23 @@ function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   : new Promise(() => {});
 
   if (isRecoilValue(optionsDefault)
-    // Continue to use atomWithFallback for promise defaults for scoped atoms
-    // for now, since scoped atoms don't support async defaults
-   // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
+      // Continue to use atomWithFallback for promise defaults for scoped atoms
+      // for now, since scoped atoms don't support async defaults
+      // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
   ) {
     return atomWithFallback<T>({
       ...restOptions,
       default: optionsDefault,
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     });
-  // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
+    // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
     // @fb-only: return scopedAtom<T>({
-      // @fb-only: ...restOptions,
-      // @fb-only: default: optionsDefault,
-      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    // @fb-only: ...restOptions,
+    // @fb-only: default: optionsDefault,
+    // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     // @fb-only: });
   } else {
-    return baseAtom<T>({...restOptions, default: optionsDefault});
+    return baseAtom<T>({...restOptions, default: optionsDefault}, actions);
   }
 }
 

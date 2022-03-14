@@ -17,7 +17,7 @@ import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey} from '../core/Recoil_State';
 
 const {batchUpdates} = require('../core/Recoil_Batching');
-const {DEFAULT_VALUE} = require('../core/Recoil_Node');
+const {DEFAULT_VALUE, getNode} = require('../core/Recoil_Node');
 const {
   reactMode,
   useMutableSource,
@@ -79,6 +79,16 @@ function validateRecoilValue<T>(recoilValue: RecoilValue<T>, hookName) {
       )}`,
     );
   }
+}
+
+function validateRecoilActionArguments(
+  expected_arguments_length,
+  got_arguments_length,
+) {
+  return (
+    got_arguments_length === expected_arguments_length ||
+    got_arguments_length === expected_arguments_length - 1
+  );
 }
 
 export type SetterOrUpdater<T> = ((T => T) | T) => void;
@@ -602,6 +612,58 @@ function useRecoilValue<T>(recoilValue: RecoilValue<T>): T {
 }
 
 /**
+ Returns a function that allows the value of a RecoilState to be updated in a declarative way, but does
+ not subscribe the component to changes to that RecoilState.
+ */
+function useRecoilAction<T>(
+  recoilState: RecoilState<T>,
+  type: string,
+): SetterOrUpdater<T> {
+  if (__DEV__) {
+    validateRecoilValue(recoilState, 'useSetRecoilState');
+  }
+  const storeRef = useStoreRef();
+
+  const action = getNode(recoilState.key).actions[type];
+
+  if (action === undefined) {
+    throw err(
+      `Invalid action. Actions are "${Object.entries(
+        getNode(recoilState.key).actions,
+      ).map(action => {
+        return action[0];
+      })}"`,
+    );
+  }
+
+  return useCallback(
+    (...args) => {
+      if (!validateRecoilActionArguments(action.length, args.length)) {
+        throw err(
+          `Invalid number of arguments to ${action}: expected ${
+            action.length - 1
+          } (without passing state) but got ${args.length}`,
+        );
+      }
+      args.length + 1 === action.length
+        ? setRecoilValue(
+            storeRef.current,
+            recoilState,
+            action(
+              getNode(recoilState.key).get(
+                storeRef.current,
+                storeRef.current.getState().currentTree,
+              ).contents,
+              ...args,
+            ),
+          )
+        : setRecoilValue(storeRef.current, recoilState, action(...args));
+    },
+    [storeRef, recoilState],
+  );
+}
+
+/**
   Returns a function that allows the value of a RecoilState to be updated, but does
   not subscribe the component to changes to that RecoilState.
 */
@@ -745,6 +807,7 @@ module.exports = {
   useRecoilValueLoadable,
   useResetRecoilState,
   useSetRecoilState,
+  useRecoilAction,
   useSetUnvalidatedAtomValues,
   useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
