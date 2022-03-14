@@ -8,83 +8,82 @@
  * @format
  * @flow strict-local
  */
- 'use strict';
+'use strict';
 
- import type {Loadable} from '../adt/Recoil_Loadable';
- import type {
-   RecoilValue,
-   RecoilValueReadOnly,
- } from '../core/Recoil_RecoilValue';
- 
- type UnwrapArrayRecoilValues<RecoilValues> = $TupleMap<
-   RecoilValues,
-   <T, U>(RecoilValue<T, U>) => T,
- >;
- type UnwrapArrayRecoilValueLoadables<RecoilValues> = $TupleMap<
-   RecoilValues,
-   <T, U>(RecoilValue<T, U>) => Loadable<T>,
- >;
- 
- type UnwrapObjRecoilValues<RecoilValues> = $ObjMap<
-   RecoilValues,
-   <T, U>(RecoilValue<T, U>) => T,
- >;
- type UnwrapObjRecoilValueLoadables<RecoilValues> = $ObjMap<
-   RecoilValues,
-   <T, U>(RecoilValue<T, U>) => Loadable<T>,
- >;
- 
- /* eslint-disable no-redeclare */
- 
- declare function waitForNone<RecoilValues: $ReadOnlyArray<RecoilValue<any, any>>>( // flowlint-line unclear-type:off
-   RecoilValues,
- ): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
- declare function waitForNone<
-   RecoilValues: $ReadOnly<{[string]: RecoilValue<any, any>, ...}>, // flowlint-line unclear-type:off
- >(
-   RecoilValues,
- ): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
- 
- declare function waitForAny<RecoilValues: $ReadOnlyArray<RecoilValue<any, any>>>( // flowlint-line unclear-type:off
-   RecoilValues,
- ): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
- declare function waitForAny<
-   RecoilValues: $ReadOnly<{[string]: RecoilValue<any, any>, ...}>, // flowlint-line unclear-type:off
- >(
-   RecoilValues,
- ): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
- 
- // waitForAll() does not return placeholder Promises or Errors in the results
- // as it only returns when all values are available.
- declare function waitForAll<RecoilValues: $ReadOnlyArray<RecoilValue<any, any>>>( // flowlint-line unclear-type:off
-   RecoilValues,
- ): RecoilValueReadOnly<UnwrapArrayRecoilValues<RecoilValues>>;
- declare function waitForAll<
-   RecoilValues: $ReadOnly<{[string]: RecoilValue<any, any>, ...}>, // flowlint-line unclear-type:off
- >(
-   RecoilValues,
- ): RecoilValueReadOnly<UnwrapObjRecoilValues<RecoilValues>>;
- 
- declare function waitForAllSettled<
-   RecoilValues: $ReadOnlyArray<RecoilValue<any, any>>, // flowlint-line unclear-type:off
- >(
-   RecoilValues,
- ): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
- declare function waitForAllSettled<
-   RecoilValues: $ReadOnly<{[string]: RecoilValue<any, any>, ...}>, // flowlint-line unclear-type:off
- >(
-   RecoilValues,
- ): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
- 
- /* eslint-enable no-redeclare */
- 
- declare function noWait<T, U>(RecoilValue<T, U>): RecoilValueReadOnly<Loadable<T>>;
- 
- module.exports = {
-   waitForNone,
-   waitForAny,
-   waitForAll,
-   waitForAllSettled,
-   noWait,
- };
- 
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {
+  RecoilValue,
+  RecoilValueReadOnly,
+} from '../core/Recoil_RecoilValue';
+
+type UnwrapArrayRecoilValues<RecoilValues> = $TupleMap<
+  RecoilValues,
+  <T, U>(RecoilValue<T, U>) => T,
+>;
+type UnwrapArrayRecoilValueLoadables<RecoilValues> = $TupleMap<
+  RecoilValues,
+  <T, U>(RecoilValue<T, U>) => Loadable<T>,
+>;
+
+type UnwrapObjRecoilValues<RecoilValues> = $ObjMap<
+  RecoilValues,
+  <T, U>(RecoilValue<T, U>) => T,
+>;
+type UnwrapObjRecoilValueLoadables<RecoilValues> = $ObjMap<
+  RecoilValues,
+  <T, U>(RecoilValue<T, U>) => Loadable<T>,
+>;
+
+/* eslint-disable no-redeclare */
+
+declare function waitForNone<RecoilValues: $ReadOnlyArray<RecoilValue<any, any>>>( // flowlint-line unclear-type:off
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
+declare function waitForNone<
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any, any>, ...}>, // flowlint-line unclear-type:off
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
+
+declare function waitForAny<RecoilValues: $ReadOnlyArray<RecoilValue<any, any>>>( // flowlint-line unclear-type:off
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
+declare function waitForAny<
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any, any>, ...}>, // flowlint-line unclear-type:off
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
+
+// waitForAll() does not return placeholder Promises or Errors in the results
+// as it only returns when all values are available.
+declare function waitForAll<RecoilValues: $ReadOnlyArray<RecoilValue<any, any>>>( // flowlint-line unclear-type:off
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapArrayRecoilValues<RecoilValues>>;
+declare function waitForAll<
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any, any>, ...}>, // flowlint-line unclear-type:off
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapObjRecoilValues<RecoilValues>>;
+
+declare function waitForAllSettled<
+  RecoilValues: $ReadOnlyArray<RecoilValue<any, any>>, // flowlint-line unclear-type:off
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapArrayRecoilValueLoadables<RecoilValues>>;
+declare function waitForAllSettled<
+  RecoilValues: $ReadOnly<{[string]: RecoilValue<any, any>, ...}>, // flowlint-line unclear-type:off
+>(
+  RecoilValues,
+): RecoilValueReadOnly<UnwrapObjRecoilValueLoadables<RecoilValues>>;
+
+/* eslint-enable no-redeclare */
+
+declare function noWait<T, U>(RecoilValue<T, U>): RecoilValueReadOnly<Loadable<T>>;
+
+module.exports = {
+  waitForNone,
+  waitForAny,
+  waitForAll,
+  waitForAllSettled,
+  noWait,
+};

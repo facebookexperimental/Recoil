@@ -277,7 +277,6 @@ function selector<T, U = T>(
     depValues: DepValues,
   ): void {
     setCache(state, loadable, depValues);
-    setDepsInStore(store, state, new Set(depValues.keys()), executionId);
     notifyStoresOfResolvedAsync(store, executionId);
   }
 
@@ -647,18 +646,6 @@ function selector<T, U = T>(
       );
       deps.forEach(nodeKey => discoveredDependencyNodeKeys.add(nodeKey));
     }
-  }
-
-  function setNewDepInStore(
-    store: Store,
-    state: TreeState,
-    deps: Set<NodeKey>,
-    newDepKey: NodeKey,
-    executionId: ?ExecutionId,
-  ): void {
-    deps.add(newDepKey);
-
-    setDepsInStore(store, state, deps, executionId);
   }
 
   function evaluateSelectorGetter(

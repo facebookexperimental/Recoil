@@ -118,8 +118,8 @@ function recoilValuesForKeys(
 function registerNode<T, U>(node: Node<T, U>): RecoilValue<T, U> {
   if (nodes.has(node.key)) {
     const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
-       production. But it is safe to ignore this warning if it occurred because of
-       hot module replacement.`;
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.`;
     // TODO Need to figure out if there is a standard/open-source equivalent to see if hot module replacement is happening:
     // prettier-ignore
     // @fb-only: if (__DEV__) {

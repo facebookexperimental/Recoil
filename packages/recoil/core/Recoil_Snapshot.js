@@ -58,17 +58,17 @@ const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViola
 export type SnapshotID = StateID;
 
 const retainWarning = `
- Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, do this:
- 
-   const release = snapshot.retain();
-   try {
-     await doSomethingWithSnapshot(snapshot);
-   } finally {
-     release();
-   }
- 
- This is currently a DEV-only warning but will become a thrown exception in the next release of Recoil.
- `;
+Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, do this:
+
+  const release = snapshot.retain();
+  try {
+    await doSomethingWithSnapshot(snapshot);
+  } finally {
+    release();
+  }
+
+This is currently a DEV-only warning but will become a thrown exception in the next release of Recoil.
+`;
 
 // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
 // However, the data-flow-graph and selector values may evolve as selector

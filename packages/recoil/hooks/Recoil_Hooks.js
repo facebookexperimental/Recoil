@@ -569,9 +569,9 @@ function useRecoilValueLoadable_LEGACY<T, U>(
 }
 
 /**
-   Like useRecoilValue(), but either returns the value if available or
-   just undefined if not available for any reason, such as pending or error.
- */
+  Like useRecoilValue(), but either returns the value if available or
+  just undefined if not available for any reason, such as pending or error.
+*/
 function useRecoilValueLoadable<T, U = T>(
   recoilValue: RecoilValue<T, U>,
 ): Loadable<T> {
@@ -591,11 +591,11 @@ function useRecoilValueLoadable<T, U = T>(
 }
 
 /**
-   Returns the value represented by the RecoilValue.
-   If the value is pending, it will throw a Promise to suspend the component,
-   if the value is an error it will throw it for the nearest React error boundary.
-   This will also subscribe the component for any updates in the value.
-   */
+  Returns the value represented by the RecoilValue.
+  If the value is pending, it will throw a Promise to suspend the component,
+  if the value is an error it will throw it for the nearest React error boundary.
+  This will also subscribe the component for any updates in the value.
+  */
 function useRecoilValue<T, U = T>(recoilValue: RecoilValue<T, U>): T {
   if (__DEV__) {
     validateRecoilValue(recoilValue, 'useRecoilValue');
@@ -606,9 +606,9 @@ function useRecoilValue<T, U = T>(recoilValue: RecoilValue<T, U>): T {
 }
 
 /**
-   Returns a function that allows the value of a RecoilState to be updated, but does
-   not subscribe the component to changes to that RecoilState.
- */
+  Returns a function that allows the value of a RecoilState to be updated, but does
+  not subscribe the component to changes to that RecoilState.
+*/
 function useSetRecoilState<T, U = T>(
   recoilState: RecoilState<T, U>,
 ): SetterOrUpdater<T, U> {
@@ -625,8 +625,8 @@ function useSetRecoilState<T, U = T>(
 }
 
 /**
-   Returns a function that will reset the value of a RecoilState to its default
- */
+  Returns a function that will reset the value of a RecoilState to its default
+*/
 function useResetRecoilState<T, U = T>(
   recoilState: RecoilState<T, U>,
 ): Resetter {
@@ -640,12 +640,12 @@ function useResetRecoilState<T, U = T>(
 }
 
 /**
-   Equivalent to useState(). Allows the value of the RecoilState to be read and written.
-   Subsequent updates to the RecoilState will cause the component to re-render. If the
-   RecoilState is pending, this will suspend the component and initiate the
-   retrieval of the value. If evaluating the RecoilState resulted in an error, this will
-   throw the error so that the nearest React error boundary can catch it.
- */
+ Equivalent to useState(). Allows the value of the RecoilState to be read and written.
+  Subsequent updates to the RecoilState will cause the component to re-render. If the
+  RecoilState is pending, this will suspend the component and initiate the
+  retrieval of the value. If evaluating the RecoilState resulted in an error, this will
+  throw the error so that the nearest React error boundary can catch it.
+*/
 function useRecoilState<T, U = T>(
   recoilState: RecoilState<T, U>,
 ): [T, SetterOrUpdater<T, U>] {
@@ -656,10 +656,10 @@ function useRecoilState<T, U = T>(
 }
 
 /**
-   Like useRecoilState(), but does not cause Suspense or React error handling. Returns
-   an object that indicates whether the RecoilState is available, pending, or
-   unavailable due to an error.
- */
+ Like useRecoilState(), but does not cause Suspense or React error handling. Returns
+  an object that indicates whether the RecoilState is available, pending, or
+  unavailable due to an error.
+*/
 function useRecoilStateLoadable<T, U = T>(
   recoilState: RecoilState<T, U>,
 ): [Loadable<T>, SetterOrUpdater<T, U>] {
