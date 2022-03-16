@@ -31,6 +31,7 @@ import type {
 const cacheFromPolicy = require('../caches/Recoil_cacheFromPolicy');
 const {setConfigDeletionHandler} = require('../core/Recoil_Node');
 const selector = require('./Recoil_selector');
+const err = require('recoil-shared/util/Recoil_err');
 const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
 
 // Keep in mind the parameter needs to be serializable as a cahche key
@@ -112,8 +113,16 @@ function selectorFamily<T, Params: Parameter>(
   });
 
   return (params: Params) => {
-    const cachedSelector = selectorCache.get(params);
-
+    // Throw an error with selector key so that it is clear which
+    // selector is causing an error
+    let cachedSelector;
+    try {
+      cachedSelector = selectorCache.get(params);
+    } catch (error) {
+      throw err(
+        `Problem with cache lookup for selector ${options.key}: ${error.message}`,
+      );
+    }
     if (cachedSelector != null) {
       return cachedSelector;
     }
