@@ -19,7 +19,7 @@ export type TreeCacheNode<T> = TreeCacheLeaf<T> | TreeCacheBranch<T>;
 export type TreeCacheLeaf<T> = {
   type: 'leaf',
   value: T,
-  branchKey?: ?mixed,
+  branchKey?: mixed,
   parent: ?TreeCacheBranch<T>,
 };
 
@@ -27,7 +27,7 @@ export type TreeCacheBranch<T> = {
   type: 'branch',
   nodeKey: NodeKey,
   branches: Map<mixed, TreeCacheNode<T>>,
-  branchKey?: ?mixed,
+  branchKey?: mixed,
   parent: ?TreeCacheBranch<T>,
 };
 
@@ -64,7 +64,7 @@ export type SetHandlers<T> = {
 export interface TreeCacheImplementation<T> {
   +get: (NodeValueGet, handlers?: GetHandlers<T>) => ?T;
   +set: (NodeCacheRoute, T, handlers?: SetHandlers<T>) => void;
-  +delete: (TreeCacheNode<T>) => boolean;
+  +delete: (TreeCacheLeaf<T>) => boolean;
   +clear: () => void;
   +root: () => ?TreeCacheNode<T>;
   +size: () => number;
