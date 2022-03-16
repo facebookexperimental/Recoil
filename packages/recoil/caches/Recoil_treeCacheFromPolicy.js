@@ -29,15 +29,16 @@ const defaultPolicy = {
   maxSize: Infinity,
 };
 
-function treeCacheFromPolicy<T>({
-  equality = defaultPolicy.equality,
-  eviction = defaultPolicy.eviction,
-  maxSize = defaultPolicy.maxSize,
-}: CachePolicy = defaultPolicy): TreeCacheImplementation<T> {
+function treeCacheFromPolicy<T>(
+  {
+    equality = defaultPolicy.equality,
+    eviction = defaultPolicy.eviction,
+    maxSize = defaultPolicy.maxSize,
+  }: CachePolicy = defaultPolicy,
+  name?: string,
+): TreeCacheImplementation<T> {
   const valueMapper = getValueMapper(equality);
-  const treeCache = getTreeCache(eviction, maxSize, valueMapper);
-
-  return treeCache;
+  return getTreeCache(eviction, maxSize, valueMapper, name);
 }
 
 function getValueMapper(equality: EqualityPolicy): mixed => mixed {
@@ -47,7 +48,6 @@ function getValueMapper(equality: EqualityPolicy): mixed => mixed {
     case 'value':
       return val => stableStringify(val);
   }
-
   throw err(`Unrecognized equality policy ${equality}`);
 }
 
@@ -55,15 +55,20 @@ function getTreeCache<T>(
   eviction: EvictionPolicy,
   maxSize: ?number,
   mapNodeValue: mixed => mixed,
+  name?: string,
 ): TreeCacheImplementation<T> {
   switch (eviction) {
     case 'keep-all':
       // $FlowFixMe[method-unbinding]
-      return new TreeCache<T>({mapNodeValue});
+      return new TreeCache<T>({name, mapNodeValue});
     case 'lru':
-      return treeCacheLRU<T>(nullthrows(maxSize), mapNodeValue);
+      return treeCacheLRU<T>({
+        name,
+        maxSize: nullthrows(maxSize),
+        mapNodeValue,
+      });
     case 'most-recent':
-      return treeCacheLRU<T>(1, mapNodeValue);
+      return treeCacheLRU<T>({name, maxSize: 1, mapNodeValue});
   }
 
   throw err(`Unrecognized eviction policy ${eviction}`);

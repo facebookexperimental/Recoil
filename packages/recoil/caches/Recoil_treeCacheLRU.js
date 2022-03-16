@@ -15,13 +15,19 @@ import type {TreeCacheImplementation} from './Recoil_TreeCacheImplementationType
 const {LRUCache} = require('./Recoil_LRUCache');
 const {TreeCache} = require('./Recoil_TreeCache');
 
-function treeCacheLRU<T>(
+function treeCacheLRU<T>({
+  name,
+  maxSize,
+  mapNodeValue = v => v,
+}: {
+  name?: string,
   maxSize: number,
-  mapNodeValue?: mixed => mixed = v => v,
-): TreeCacheImplementation<T> {
+  mapNodeValue?: mixed => mixed,
+}): TreeCacheImplementation<T> {
   const lruCache = new LRUCache({maxSize});
 
   const cache = new TreeCache({
+    name,
     mapNodeValue,
     onHit: node => {
       lruCache.set(node, true);

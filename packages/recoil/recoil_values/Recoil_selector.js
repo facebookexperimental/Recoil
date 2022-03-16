@@ -246,6 +246,7 @@ function selector<T>(
       equality: 'reference',
       eviction: 'keep-all',
     },
+    key,
   );
 
   const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
