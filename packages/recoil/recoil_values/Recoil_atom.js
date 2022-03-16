@@ -573,6 +573,7 @@ function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   } = options;
   const optionsDefault: RecoilValue<T> | Promise<T> | T = 'default' in options
   ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+    // $FlowFixMe[incompatible-type]
     options.default
   : new Promise(() => {});
 
