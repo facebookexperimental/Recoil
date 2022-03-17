@@ -28,6 +28,7 @@ const {gotoSnapshot} = require('./Recoil_SnapshotHooks');
 const {useCallback} = require('react');
 const err = require('recoil-shared/util/Recoil_err');
 const invariant = require('recoil-shared/util/Recoil_invariant');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
 const lazyProxy = require('recoil-shared/util/Recoil_lazyProxy');
 
 export type RecoilCallbackInterface = $ReadOnly<{
@@ -49,6 +50,7 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
   extraInterface?: ExtraInterface,
 ): Return {
   let ret: Return | Sentinel = SENTINEL;
+  let releaseSnapshot;
   batchUpdates(() => {
     const errMsg =
       'useRecoilCallback() expects a function that returns a function: ' +
@@ -79,7 +81,11 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
         transact_UNSTABLE: transaction => atomicUpdater(store)(transaction),
       },
       {
-        snapshot: () => cloneSnapshot(store),
+        snapshot: () => {
+          const snapshot = cloneSnapshot(store);
+          releaseSnapshot = snapshot.retain();
+          return snapshot;
+        },
       },
     );
 
@@ -93,6 +99,13 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
     !(ret instanceof Sentinel),
     'batchUpdates should return immediately',
   );
+  if (isPromise(ret)) {
+    ret.finally(() => {
+      releaseSnapshot?.();
+    });
+  } else {
+    releaseSnapshot?.();
+  }
   return (ret: Return);
 }
 
