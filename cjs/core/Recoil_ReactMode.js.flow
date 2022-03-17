@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+recoil
- * @flow strict
+ * @flow strict-local
  * @format
  */
 'use strict';
@@ -82,9 +82,17 @@ function reactMode(): {mode: ReactMode, early: boolean, concurrent: boolean} {
     : {mode: 'LEGACY', early: false, concurrent: false};
 }
 
+// TODO Need to figure out if there is a standard/open-source equivalent to see if hot module replacement is happening:
+function isFastRefreshEnabled(): boolean {
+  // @fb-only: const {isAcceptingUpdate} = require('__debug');
+  // @fb-only: return typeof isAcceptingUpdate === 'function' && isAcceptingUpdate();
+  return false; // @oss-only
+}
+
 module.exports = {
   createMutableSource,
   useMutableSource,
   useSyncExternalStore,
   reactMode,
+  isFastRefreshEnabled,
 };

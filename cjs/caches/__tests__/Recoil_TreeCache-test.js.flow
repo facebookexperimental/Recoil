@@ -77,13 +77,14 @@ describe('TreeCache', () => {
 
     const [route2, loadable2] = [
       [
-        ['a', 3],
+        ['a', 2],
         ['b', 4],
+        ['c', 5],
       ],
       loadableWithValue('value2'),
     ];
 
-    const [route3, loadable3] = [[['a', 4]], loadableWithValue('value3')];
+    const [route3, loadable3] = [[['a', 6]], loadableWithValue('value3')];
 
     cache.set(route1, loadable1);
     cache.set(route2, loadable2);
@@ -112,23 +113,19 @@ describe('TreeCache', () => {
     expect(cache.size()).toBe(3);
 
     const deleted1 = cache.delete(leaf1Node);
-
     expect(deleted1).toBe(true);
     expect(cache.size()).toBe(2);
 
     const deleted2 = cache.delete(leaf2Node);
-
     expect(deleted2).toBe(true);
     expect(cache.size()).toBe(1);
 
     const deleted3 = cache.delete(leaf3Node);
-
     expect(deleted3).toBe(true);
     expect(cache.size()).toBe(0);
     expect(cache.root()).toBeNull();
 
     const deletedAgain = cache.delete(leaf1Node);
-
     expect(deletedAgain).toBe(false);
   });
 
@@ -241,5 +238,24 @@ describe('TreeCache', () => {
     ]);
 
     expect(resultWithKeyCopy).toBe(loadable1);
+  });
+
+  // Test ability to scale cache to large number of entries.
+  // Use more dependencies than the JavaScript callstack depth limit to ensure
+  // we are not using a recursive algorithm.
+  testRecoil('Scalability', () => {
+    const cache = new TreeCache();
+
+    const route = Array.from(Array(10000).keys()).map(i => [
+      String(i),
+      String(i),
+    ]);
+
+    cache.set(route, 'VALUE');
+
+    expect(cache.get(x => x)).toBe('VALUE');
+
+    const leafNode = cache.getLeafNode(x => x);
+    expect(cache.delete(nullthrows(leafNode))).toBe(true);
   });
 });

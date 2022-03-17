@@ -1043,14 +1043,25 @@ testRecoil('Report error with inconsistent values', () => {
 
   expect(getValue(mySelector)).toBe('DEFAULT');
 
+  const DEV = window.__DEV__;
+  let msg;
+  const consoleError = console.error;
+  // $FlowIssue[cannot-write]
+  console.error = (...args) => {
+    msg = args[0];
+    consoleError(...args);
+  };
+  window.__DEV__ = true;
+
   invalidInput = 'INVALID';
   setValue(depB, 'SET');
 
-  const DEV = window.__DEV__;
-  window.__DEV__ = true;
-  expect(() => getValue(mySelector)).toThrow('consistent values');
-  window.__DEV__ = false;
+  // Reset logic will still allow selector to work by resetting cache.
   expect(getValue(mySelector)).toBe('INVALID');
+  expect(msg).toEqual(expect.stringContaining('consistent values'));
+
+  // $FlowIssue[cannot-write]
+  console.error = consoleError;
   window.__DEV__ = DEV;
 });
 
