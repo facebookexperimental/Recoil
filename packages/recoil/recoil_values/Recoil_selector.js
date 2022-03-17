@@ -53,7 +53,11 @@
  */
 'use strict';
 
-import type {Loadable, LoadingLoadableType} from '../adt/Recoil_Loadable';
+import type {
+  Loadable,
+  LoadingLoadableType,
+  ValueLoadableType,
+} from '../adt/Recoil_Loadable';
 import type {CachePolicy} from '../caches/Recoil_CachePolicy';
 import type {
   NodeCacheRoute,
@@ -76,10 +80,12 @@ import type {
 } from './Recoil_callbackTypes';
 
 const {
+  isLoadable,
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
+const {WrappedValue} = require('../adt/Recoil_Wrapper');
 const treeCacheFromPolicy = require('../caches/Recoil_treeCacheFromPolicy');
 const {
   getNodeLoadable,
@@ -134,7 +140,7 @@ export type ReadOnlySelectorOptions<T> = $ReadOnly<{
   get: ({
     get: GetRecoilValue,
     getCallback: GetCallback<T>,
-  }) => Promise<T> | RecoilValue<T> | T,
+  }) => RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T> | T,
 }>;
 
 export type ReadWriteSelectorOptions<T> = $ReadOnly<{
@@ -734,6 +740,13 @@ function selector<T>(
       result = get({get: getRecoilValue, getCallback});
       result = isRecoilValue(result) ? getRecoilValue(result) : result;
 
+      if (isLoadable(result)) {
+        if (result.state === 'hasError') {
+          resultIsError = true;
+        }
+        result = (result: ValueLoadableType<T>).contents;
+      }
+
       if (isPromise(result)) {
         result = wrapPendingPromise(
           store,
@@ -746,6 +759,8 @@ function selector<T>(
       } else {
         finishEvaluation();
       }
+
+      result = result instanceof WrappedValue ? result.value : result;
     } catch (errorOrDepPromise) {
       result = errorOrDepPromise;
 
@@ -1207,4 +1222,11 @@ function selector<T>(
 
 /* eslint-enable no-redeclare */
 
-module.exports = selector;
+// $FlowIssue[incompatible-use]
+selector.value = value => new WrappedValue(value);
+
+module.exports = (selector: {
+  <T>(ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>,
+  <T>(ReadWriteSelectorOptions<T>): RecoilState<T>,
+  value: <S>(S) => WrappedValue<S>,
+});

@@ -13,7 +13,7 @@
   constSelector, DefaultValue,
   errorSelector, isRecoilValue,
   noWait, readOnlySelector, RecoilBridge, RecoilRoot,
-  RecoilState, RecoilValueReadOnly,
+  RecoilValue, RecoilState, RecoilValueReadOnly,
   selector,
   selectorFamily,
   Snapshot,
@@ -46,21 +46,44 @@ const myAtom: RecoilState<number> = atom({
   default: 5,
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const myAtomWithoutDefault: RecoilState<number> = atom<number>({
   key: 'MyAtomWithoutDefault',
 });
 
+{
+  const atom1: RecoilState<number> = atom<number>({
+    key: 'Key',
+    default: RecoilLoadable.of(123),
+  });
+
+  const atom2: RecoilState<number> = atom({
+    key: 'Key',
+    default: atom.value(123),
+  });
+}
+
 // selector
-const mySelector1 = selector({
+const mySelector1: RecoilValue<number> = selector({
   key: 'MySelector1',
   get: () => 5,
 });
 
-const mySelector2 = selector({
+const mySelector2: RecoilValue<string> = selector({
   key: 'MySelector2',
   get: () => '',
 });
+
+{
+  const mySelector3: RecoilValue<number> = selector({
+    key: 'MySelector3',
+    get: () => RecoilLoadable.of(123),
+  });
+
+  const mySelector4: RecoilValue<number> = selector({
+    key: 'MySelector3',
+    get: () => selector.value(123),
+  });
+}
 
 // $ExpectError
 selector({
