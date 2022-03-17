@@ -398,7 +398,13 @@ const testGKs =
   };
 
 const WWW_GKS_TO_TEST = QUICK_TEST
-  ? [['recoil_hamt_2020', 'recoil_sync_external_store']]
+  ? [
+      [
+        'recoil_hamt_2020',
+        'recoil_sync_external_store',
+        'recoil_memory_managament_2020',
+      ],
+    ]
   : [
       // OSS for React <18:
       ['recoil_hamt_2020', 'recoil_suppress_rerender_in_callback'], // Also enables early rendering
