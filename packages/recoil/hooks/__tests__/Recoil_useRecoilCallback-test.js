@@ -630,12 +630,66 @@ describe('Selector Cache', () => {
   });
 });
 
-describe('Snapshot cache', () => {
-  testRecoil('Snapshot is cached', () => {
-    const myAtom = atom({
-      key: 'useRecoilCallback snapshot cached',
-      default: 'DEFAULT',
+describe('Snapshot', () => {
+  testRecoil('Snapshot is retained for async callbacks', async ({gks}) => {
+    let callback,
+      callbackSnapshot,
+      resolveSelector,
+      resolveSelector2,
+      resolveCallback;
+
+    const myAtom = stringAtom();
+    const mySelector1 = selector({
+      key: 'useRecoilCallback snapshot retain 1',
+      get: async ({get}) => {
+        await new Promise(resolve => {
+          resolveSelector = resolve;
+        });
+        return get(myAtom);
+      },
     });
+    const mySelector2 = selector({
+      key: 'useRecoilCallback snapshot retain 2',
+      get: async ({get}) => {
+        await new Promise(resolve => {
+          resolveSelector2 = resolve;
+        });
+        return get(myAtom);
+      },
+    });
+
+    function Component() {
+      callback = useRecoilCallback(({snapshot}) => async () => {
+        callbackSnapshot = snapshot;
+        return new Promise(resolve => {
+          resolveCallback = resolve;
+        });
+      });
+    }
+
+    renderElements(<Component />);
+    callback?.();
+    const selector1Promise = callbackSnapshot?.getPromise(mySelector1);
+    const selector2Promise = callbackSnapshot?.getPromise(mySelector2);
+
+    // Wait to allow callback snapshot to auto-release after clock tick.
+    // It should still be retained for duration of callback, though.
+    await flushPromisesAndTimers();
+
+    // Selectors resolving before callback is resolved should not be canceled
+    act(() => resolveSelector());
+    await expect(selector1Promise).resolves.toBe('DEFAULT');
+
+    // Selectors resolving after callback is resolved should be canceled
+    if (gks.includes('recoil_memory_managament_2020')) {
+      act(() => resolveCallback());
+      act(() => resolveSelector2());
+      await expect(selector2Promise).rejects.toEqual({});
+    }
+  });
+
+  testRecoil('Snapshot is cached', () => {
+    const myAtom = stringAtom();
 
     let getSnapshot;
     let setMyAtom, resetMyAtom;
@@ -693,10 +747,7 @@ describe('Snapshot cache', () => {
   });
 
   testRecoil('cached snapshot is invalidated if not retained', async () => {
-    const myAtom = atom({
-      key: 'useRecoilCallback snapshot cache retained',
-      default: 'DEFAULT',
-    });
+    const myAtom = stringAtom();
 
     let getSnapshot;
     let setMyAtom;
