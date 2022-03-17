@@ -7,6 +7,7 @@
  */
 'use strict';
 
+import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 
 const {
@@ -20,6 +21,9 @@ let React,
   DEFAULT_VALUE,
   DefaultValue,
   RecoilRoot,
+  isRecoilValue,
+  RecoilLoadable,
+  isLoadable,
   getRecoilValueAsLoadable,
   setRecoilValue,
   useRecoilState,
@@ -30,6 +34,7 @@ let React,
   useRecoilTransactionObserver,
   useResetRecoilState,
   ReadsAtom,
+  stringAtom,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
@@ -48,6 +53,8 @@ const testRecoil = getRecoilTestFn(() => {
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
   ({RecoilRoot, useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
+  ({isRecoilValue} = require('../../core/Recoil_RecoilValue'));
+  ({RecoilLoadable, isLoadable} = require('../../adt/Recoil_Loadable'));
   ({
     getRecoilValueAsLoadable,
     setRecoilValue,
@@ -63,6 +70,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({useRecoilCallback} = require('../../hooks/Recoil_useRecoilCallback'));
   ({
     ReadsAtom,
+    stringAtom,
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements,
@@ -75,14 +83,18 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 function getValue<T>(recoilValue: RecoilValue<T>): T {
-  return (getRecoilValueAsLoadable(store, recoilValue).contents: any); // flowlint-line unclear-type:off
+  return getRecoilValueAsLoadable(store, recoilValue).valueOrThrow();
 }
 
-function getRecoilStateLoadable(recoilValue) {
+function getError<T>(recoilValue: RecoilValue<T>): mixed {
+  return getRecoilValueAsLoadable(store, recoilValue).errorOrThrow();
+}
+
+function getRecoilStateLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   return getRecoilValueAsLoadable(store, recoilValue);
 }
 
-function getRecoilStatePromise(recoilValue) {
+function getRecoilStatePromise<T>(recoilValue: RecoilValue<T>): Promise<T> {
   return getRecoilStateLoadable(recoilValue).promiseOrThrow();
 }
 
@@ -102,14 +114,6 @@ testRecoil('Key is required when creating atoms', () => {
   expect(() => atom({default: undefined})).toThrow();
 
   window.__DEV__ = devStatus;
-});
-
-testRecoil('default is optional', () => {
-  const myAtom = atom({key: 'atom without default'});
-  expect(getRecoilStateLoadable(myAtom).state).toBe('loading');
-
-  act(() => set(myAtom, 'VALUE'));
-  expect(getValue(myAtom)).toBe('VALUE');
 });
 
 testRecoil('atom can read and write value', () => {
@@ -158,7 +162,15 @@ describe('Valid values', () => {
   });
 });
 
-describe('Async Defaults', () => {
+describe('Defaults', () => {
+  testRecoil('default is optional', () => {
+    const myAtom = atom({key: 'atom without default'});
+    expect(getRecoilStateLoadable(myAtom).state).toBe('loading');
+
+    act(() => set(myAtom, 'VALUE'));
+    expect(getValue(myAtom)).toBe('VALUE');
+  });
+
   testRecoil('default promise', async () => {
     const myAtom = atom<string>({
       key: 'atom async default',
@@ -203,7 +215,7 @@ describe('Async Defaults', () => {
   testRecoil('default promise rejection', async () => {
     const myAtom = atom<string>({
       key: 'atom async default',
-      default: Promise.reject('REJECT'),
+      default: Promise.reject(new Error('REJECT')),
     });
     const container = renderElements(<ReadsAtom atom={myAtom} />);
 
@@ -211,6 +223,75 @@ describe('Async Defaults', () => {
     act(() => jest.runAllTimers());
     await flushPromisesAndTimers();
     expect(container.textContent).toEqual('error');
+  });
+
+  testRecoil('atom default ValueLoadable', () => {
+    const myAtom = atom<string>({
+      key: 'atom default ValueLoadable',
+      default: RecoilLoadable.of('VALUE'),
+    });
+    expect(getValue(myAtom)).toBe('VALUE');
+  });
+
+  testRecoil('atom default ErrorLoadable', () => {
+    const myAtom = atom<string>({
+      key: 'atom default ErrorLoadable',
+      default: RecoilLoadable.error(new Error('ERROR')),
+    });
+    expect(getError(myAtom)).toBeInstanceOf(Error);
+    // $FlowExpectedError[incompatible-use]
+    expect(getError(myAtom).message).toBe('ERROR');
+  });
+
+  testRecoil('atom default LoadingLoadable', async () => {
+    const myAtom = atom<string>({
+      key: 'atom default LoadingLoadable',
+      default: RecoilLoadable.of(Promise.resolve('VALUE')),
+    });
+    await expect(getRecoilStatePromise(myAtom)).resolves.toBe('VALUE');
+  });
+
+  testRecoil('atom default derived Loadable', () => {
+    const myAtom = atom<string>({
+      key: 'atom default Loadable derived',
+      default: RecoilLoadable.of('A').map(x => x + 'B'),
+    });
+    expect(getValue(myAtom)).toBe('AB');
+  });
+
+  testRecoil('atom default AtomValue', () => {
+    const myAtom = atom<string>({
+      key: 'atom default AtomValue',
+      default: atom.value('VALUE'),
+    });
+    expect(getValue(myAtom)).toBe('VALUE');
+  });
+
+  testRecoil('atom default AtomValue Loadable', async () => {
+    const myAtom = atom<Loadable<string>>({
+      key: 'atom default AtomValue Loadable',
+      default: atom.value(RecoilLoadable.of('VALUE')),
+    });
+    expect(isLoadable(getValue(myAtom))).toBe(true);
+    expect(getValue(myAtom).valueOrThrow()).toBe('VALUE');
+  });
+
+  testRecoil('atom default AtomValue ErrorLoadable', () => {
+    const myAtom = atom({
+      key: 'atom default AtomValue Loadable Error',
+      default: atom.value(RecoilLoadable.error('ERROR')),
+    });
+    expect(isLoadable(getValue(myAtom))).toBe(true);
+    expect(getValue(myAtom).errorOrThrow()).toBe('ERROR');
+  });
+
+  testRecoil('atom default AtomValue Atom', () => {
+    const otherAtom = stringAtom();
+    const myAtom = atom({
+      key: 'atom default AtomValue Loadable Error',
+      default: atom.value(otherAtom),
+    });
+    expect(isRecoilValue(getValue(myAtom))).toBe(true);
   });
 });
 

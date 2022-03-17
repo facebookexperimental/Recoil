@@ -57,7 +57,7 @@
  */
 'use strict';
 
-import type {Loadable} from '../adt/Recoil_Loadable';
+import type {Loadable, LoadingLoadableType} from '../adt/Recoil_Loadable';
 import type {RecoilValueInfo} from '../core/Recoil_FunctionalCore';
 import type {StoreID} from '../core/Recoil_Keys';
 import type {
@@ -73,10 +73,12 @@ import type {AtomWrites, NodeKey, Store, TreeState} from '../core/Recoil_State';
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 
 const {
+  isLoadable,
   loadableWithError,
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
+const {WrappedValue} = require('../adt/Recoil_Wrapper');
 const {peekNodeInfo} = require('../core/Recoil_FunctionalCore');
 const {
   DEFAULT_VALUE,
@@ -106,6 +108,7 @@ export type PersistenceSettings<Stored> = $ReadOnly<{
   validator: (mixed, DefaultValue) => Stored | DefaultValue,
 }>;
 
+// TODO Support Loadable<T> and WrappedValue<T>
 type NewValue<T> = T | DefaultValue | Promise<T | DefaultValue>;
 type NewValueOrUpdater<T> =
   | T
@@ -152,7 +155,7 @@ export type AtomOptionsWithoutDefault<T> = $ReadOnly<{
 
 type AtomOptionsWithDefault<T> = $ReadOnly<{
   ...AtomOptionsWithoutDefault<T>,
-  default: RecoilValue<T> | Promise<T> | T,
+  default: RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T> | T,
 }>;
 
 export type AtomOptions<T> =
@@ -161,7 +164,7 @@ export type AtomOptions<T> =
 
 type BaseAtomOptions<T> = $ReadOnly<{
   ...AtomOptions<T>,
-  default: T | Promise<T>,
+  default: Promise<T> | Loadable<T> | WrappedValue<T> | T,
 }>;
 
 function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
@@ -170,20 +173,32 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const retainedBy = retainedByOptionWithDefault(options.retainedBy_UNSTABLE);
   let liveStoresCount = 0;
 
+  function unwrapPromise(promise: Promise<T>): Loadable<T> {
+    return loadableWithPromise(
+      promise
+        .then(value => {
+          defaultLoadable = loadableWithValue(value);
+          return value;
+        })
+        .catch(error => {
+          defaultLoadable = loadableWithError(error);
+          throw error;
+        }),
+    );
+  }
+
   let defaultLoadable: Loadable<T> = isPromise(options.default)
-    ? loadableWithPromise(
-        options.default
-          .then(value => {
-            defaultLoadable = loadableWithValue(value);
-            return value;
-          })
-          .catch(error => {
-            defaultLoadable = loadableWithError(error);
-            throw error;
-          }),
-      )
-    : loadableWithValue(options.default);
-  maybeFreezeValueOrPromise(options.default);
+    ? unwrapPromise(options.default)
+    : isLoadable(options.default)
+    ? options.default.state === 'loading'
+      ? unwrapPromise((options.default: LoadingLoadableType<T>).contents)
+      : options.default
+    : loadableWithValue(
+        options.default instanceof WrappedValue
+          ? options.default.value
+          : options.default,
+      );
+  maybeFreezeValueOrPromise(defaultLoadable.contents);
 
   let cachedAnswerForUnvalidatedValue: void | Loadable<T> = undefined;
 
@@ -571,26 +586,33 @@ function atom<T>(options: AtomOptions<T>): RecoilState<T> {
     // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     ...restOptions
   } = options;
-  const optionsDefault: RecoilValue<T> | Promise<T> | T = 'default' in options
-  ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
-    // $FlowFixMe[incompatible-type]
-    options.default
-  : new Promise(() => {});
+  const optionsDefault: RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T> | T =
+    'default' in options
+      ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+        // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
+        options.default
+      : new Promise(() => {});
 
   if (isRecoilValue(optionsDefault)
     // Continue to use atomWithFallback for promise defaults for scoped atoms
     // for now, since scoped atoms don't support async defaults
    // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
+   // @fb-only: || (isLoadable(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
   ) {
     return atomWithFallback<T>({
       ...restOptions,
       default: optionsDefault,
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     });
-  // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
+  // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS
+    // @fb-only: && !isPromise(optionsDefault)
+    // @fb-only: && !isLoadable(optionsDefault)
+  // @fb-only: ) {
     // @fb-only: return scopedAtom<T>({
       // @fb-only: ...restOptions,
-      // @fb-only: default: optionsDefault,
+      // @fb-only: default: optionsDefault instanceof WrappedValue
+        // @fb-only: ? optionsDefault.value
+        // @fb-only: : optionsDefault,
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     // @fb-only: });
   } else {
@@ -600,7 +622,7 @@ function atom<T>(options: AtomOptions<T>): RecoilState<T> {
 
 type AtomWithFallbackOptions<T> = $ReadOnly<{
   ...AtomOptions<T>,
-  default: RecoilValue<T> | Promise<T>,
+  default: RecoilValue<T> | Promise<T> | Loadable<T>,
 }>;
 
 function atomWithFallback<T>(
@@ -640,4 +662,9 @@ function atomWithFallback<T>(
   return sel;
 }
 
-module.exports = atom;
+atom.value = value => new WrappedValue(value);
+
+module.exports = (atom: {
+  <T>(AtomOptions<T>): RecoilState<T>,
+  value: <S>(S) => WrappedValue<S>,
+});
