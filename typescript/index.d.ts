@@ -116,10 +116,14 @@
  }
  export type AtomOptions<T> = AtomOptionsWithoutDefault<T> | AtomOptionsWithDefault<T>;
 
+ type DeepReadonly<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>
+ };
+
  /**
   * Creates an atom, which represents a piece of writeable state
   */
- export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+ export function atom<T>(options: AtomOptions<T>): RecoilState<DeepReadonly<T>>;
 
  export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
  export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
@@ -194,8 +198,8 @@
  /**
   * Creates a selector which represents derived state.
   */
- export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
- export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
+ export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<DeepReadonly<T>>;
+ export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<DeepReadonly<T>>;
 
  // hooks.d.ts
 

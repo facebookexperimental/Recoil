@@ -114,7 +114,7 @@ const callbackSelector = selector({
     });
   }
 });
-useRecoilValue(callbackSelector); // $ExpectType () => Promise<number>
+useRecoilValue(callbackSelector); // $ExpectType DeepReadonly<() => Promise<number>>
 
 const selectorError1 = selector({ // $ExpectError
   key: 'SelectorError1',
@@ -380,6 +380,38 @@ isRecoilValue(4);
 isRecoilValue(myAtom);
 isRecoilValue(null);
 isRecoilValue(mySelector1);
+
+/**
+ * recoil values are read-only
+ */
+ {
+  const myArr = [{a: 10}];
+
+  const myArrAtom = atom({
+    key: 'myArrAtom',
+    default: myArr,
+  });
+
+  const myObjAtom = atom({
+    key: 'myObjAtom',
+    default: {
+      a: 10,
+      b: {
+        c: 10,
+      },
+    },
+  });
+
+  const arr1 = useRecoilValue(myArrAtom);
+  const obj1 = useRecoilValue(myObjAtom);
+
+  arr1[0].a = 10; // $ExpectError
+  arr1.push(1); // $ExpectError
+  arr1.reverse(); // $ExpectError
+  arr1.sort(); // $ExpectError
+  obj1.a = 2; // $ExpectError
+  obj1.b.c = 100;  // $ExpectError
+}
 
 /**
  * ================ UTILS ================
