@@ -604,11 +604,11 @@ testRecoil('async set not supported', async () => {
     get: () => myAtom,
     set: ({set, reset}, newVal) => {
       if (newVal instanceof DefaultValue) {
-        resetAttempt = new Promise.resolve().then(() => {
+        resetAttempt = Promise.resolve().then(() => {
           reset(myAtom);
         });
       } else {
-        setAttempt = new Promise.resolve().then(() => {
+        setAttempt = Promise.resolve().then(() => {
           set(myAtom, 'SET');
         });
       }
