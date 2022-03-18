@@ -21,6 +21,7 @@ const {
   loadableWithPromise,
   loadableWithValue,
 } = require('../adt/Recoil_Loadable');
+const selector = require('./Recoil_selector');
 const selectorFamily = require('./Recoil_selectorFamily');
 const isPromise = require('recoil-shared/util/Recoil_isPromise');
 
@@ -306,11 +307,13 @@ const noWait: (
     dependency =>
     ({get}) => {
       try {
-        return loadableWithValue(get(dependency));
+        return selector.value(loadableWithValue(get(dependency)));
       } catch (exception) {
-        return isPromise(exception)
-          ? loadableWithPromise(exception)
-          : loadableWithError(exception);
+        return selector.value(
+          isPromise(exception)
+            ? loadableWithPromise(exception)
+            : loadableWithError(exception),
+        );
       }
     },
   dangerouslyAllowMutability: true,

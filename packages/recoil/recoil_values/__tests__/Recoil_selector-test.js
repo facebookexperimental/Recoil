@@ -21,6 +21,7 @@ let store,
   atom,
   noWait,
   act,
+  isRecoilValue,
   constSelector,
   errorSelector,
   getRecoilValueAsLoadable,
@@ -32,6 +33,8 @@ let store,
   loadingAsyncSelector,
   flushPromisesAndTimers,
   DefaultValue,
+  RecoilLoadable,
+  isLoadable,
   freshSnapshot;
 
 const testRecoil = getRecoilTestFn(() => {
@@ -40,6 +43,7 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
   ({act} = require('ReactTestUtils'));
+  ({isRecoilValue} = require('../../core/Recoil_RecoilValue'));
   atom = require('../Recoil_atom');
   constSelector = require('../Recoil_constSelector');
   errorSelector = require('../Recoil_errorSelector');
@@ -57,6 +61,7 @@ const testRecoil = getRecoilTestFn(() => {
     flushPromisesAndTimers,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({noWait} = require('../Recoil_WaitFor'));
+  ({RecoilLoadable, isLoadable} = require('../../adt/Recoil_Loadable'));
   ({DefaultValue} = require('../../core/Recoil_Node'));
 
   store = makeStore();
@@ -165,18 +170,108 @@ testRecoil('selector reset', () => {
   expect(getValue(selectorRW)).toEqual('DEFAULT');
 });
 
-testRecoil('selector - evaluate to RecoilValue', () => {
-  const atomA = atom({key: 'selector/const atom A', default: 'A'});
-  const atomB = atom({key: 'selector/const atom B', default: 'B'});
-  const inputAtom = atom({key: 'selector/input', default: 'a'});
-  const mySelector = selector<string>({
-    key: 'selector/output recoil value',
-    get: ({get}) => (get(inputAtom) === 'a' ? atomA : atomB),
+describe('get return types', () => {
+  testRecoil('evaluate to RecoilValue', () => {
+    const atomA = atom({key: 'selector/const atom A', default: 'A'});
+    const atomB = atom({key: 'selector/const atom B', default: 'B'});
+    const inputAtom = atom({key: 'selector/input', default: 'a'});
+    const mySelector = selector<string>({
+      key: 'selector/output recoil value',
+      get: ({get}) => (get(inputAtom) === 'a' ? atomA : atomB),
+    });
+
+    expect(getValue(mySelector)).toEqual('A');
+    setValue(inputAtom, 'b');
+    expect(getValue(mySelector)).toEqual('B');
   });
 
-  expect(getValue(mySelector)).toEqual('A');
-  setValue(inputAtom, 'b');
-  expect(getValue(mySelector)).toEqual('B');
+  testRecoil('evaluate to ValueLoadable', () => {
+    const mySelector = selector<string>({
+      key: 'selector/output loadable value',
+      get: () => RecoilLoadable.of('VALUE'),
+    });
+
+    expect(getValue(mySelector)).toEqual('VALUE');
+  });
+
+  testRecoil('evaluate to ErrorLoadable', () => {
+    const mySelector = selector<string>({
+      key: 'selector/output loadable error',
+      get: () => RecoilLoadable.error(new Error('ERROR')),
+    });
+
+    expect(getError(mySelector)).toBeInstanceOf(Error);
+    expect(getError(mySelector).message).toBe('ERROR');
+  });
+
+  testRecoil('evaluate to LoadingLoadable', async () => {
+    const mySelector = selector<string>({
+      key: 'selector/output loadable loading',
+      get: () => RecoilLoadable.of(Promise.resolve('ASYNC')),
+    });
+
+    await expect(getPromise(mySelector)).resolves.toEqual('ASYNC');
+  });
+
+  testRecoil('evaluate to derived Loadable', async () => {
+    const myAtom = stringAtom();
+    const mySelector = selector<string>({
+      key: 'selector/output loadable derived',
+      get: ({get}) =>
+        get(noWait(myAtom)).map(x => Promise.resolve(`DERIVE-${x}`)),
+    });
+
+    await expect(getPromise(mySelector)).resolves.toEqual('DERIVE-DEFAULT');
+  });
+
+  testRecoil('evaluate to SelectorValue value', () => {
+    const mySelector = selector<string>({
+      key: 'selector/output SelectorValue value',
+      get: () => selector.value('VALUE'),
+    });
+
+    expect(getValue(mySelector)).toEqual('VALUE');
+  });
+
+  testRecoil('evaluate to SelectorValue Promise', async () => {
+    const mySelector = selector<Promise<string>>({
+      key: 'selector/output SelectorValue promise',
+      get: () => selector.value(Promise.resolve('ASYNC')),
+    });
+
+    expect(getValue(mySelector)).toBeInstanceOf(Promise);
+    await expect(getValue(mySelector)).resolves.toBe('ASYNC');
+  });
+
+  testRecoil('evaluate to SelectorValue Loadable', () => {
+    const mySelector = selector<Loadable<string>>({
+      key: 'selector/output SelectorValue loadable',
+      get: () => selector.value(RecoilLoadable.of('VALUE')),
+    });
+
+    expect(isLoadable(getValue(mySelector))).toBe(true);
+    expect(getValue(mySelector).getValue()).toBe('VALUE');
+  });
+
+  testRecoil('evaluate to SelectorValue ErrorLoadable', () => {
+    const mySelector = selector({
+      key: 'selector/output SelectorValue loadable error',
+      get: () => selector.value(RecoilLoadable.error('ERROR')),
+    });
+
+    expect(isLoadable(getValue(mySelector))).toBe(true);
+    expect(getValue(mySelector).errorOrThrow()).toBe('ERROR');
+  });
+
+  testRecoil('evaluate to SelectorValue Atom', () => {
+    const myAtom = stringAtom();
+    const mySelector = selector({
+      key: 'selector/output SelectorValue loadable error',
+      get: () => selector.value(myAtom),
+    });
+
+    expect(isRecoilValue(getValue(mySelector))).toBe(true);
+  });
 });
 
 describe('Catching Deps', () => {

@@ -10,6 +10,8 @@
  */
 'use strict';
 
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {WrappedValue} from '../adt/Recoil_Wrapper';
 import type {CachePolicyWithoutEviction} from '../caches/Recoil_CachePolicy';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {RetainedBy} from '../core/Recoil_RetainedBy';
@@ -58,6 +60,8 @@ export type AtomFamilyOptions<T, P: Parameter> =
       default:
         | RecoilValue<T>
         | Promise<T>
+        | Loadable<T>
+        | WrappedValue<T>
         | T
         | (P => T | RecoilValue<T> | Promise<T>),
     }>
@@ -111,11 +115,13 @@ function atomFamily<T, P: Parameter>(
     const optionsDefault:
       | RecoilValue<T>
       | Promise<T>
+      | Loadable<T>
+      | WrappedValue<T>
       | T
       | (P => T | RecoilValue<T> | Promise<T>) =
       'default' in options
         ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
-          // $FlowFixMe[incompatible-type]
+          // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
           options.default
         : new Promise(() => {});
 

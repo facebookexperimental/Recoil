@@ -14,6 +14,8 @@
 
 ### Breaking Changes
 
+- Selector's `get()` and Atom's `default` can now accept a `Loadable` to put the node in that state.
+  If you wish to store a `Loadable`, `Promise`, or `RecoilValue` directly you can wrap it with `selector.value()` or `atom.value()`. (#1640)
 - `useRecoilCallback()` now provides a snapshot for the latest state instead of the latest rendered state, which had bugs (#1610, #1604)
 
 ## 0.6.1 (2022-01-29)

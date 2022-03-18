@@ -10,6 +10,8 @@
  */
 'use strict';
 
+import type {Loadable} from '../adt/Recoil_Loadable';
+import type {WrappedValue} from '../adt/Recoil_Wrapper';
 import type {
   CachePolicy,
   CachePolicyWithoutEviction,
@@ -59,7 +61,7 @@ export type ReadOnlySelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
   get: P => ({
     get: GetRecoilValue,
     getCallback: GetCallback<T>,
-  }) => Promise<T> | RecoilValue<T> | T,
+  }) => Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T> | T,
 }>;
 
 export type ReadWriteSelectorFamilyOptions<T, P: Parameter> = $ReadOnly<{
