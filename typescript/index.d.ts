@@ -548,6 +548,10 @@ export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T
      */
     function error(x: any): ErrorLoadable<any>;
     /**
+     * Factory to make a loading Loadable which never resolves.
+     */
+    function loading(): LoadingLoadable<any>;
+    /**
      * Factory to make a Loadable which is resolved when all of the Loadables provided
      * to it are resolved or any one has an error.  The value is an array of the values
      * of all of the provided Loadables.  This is comparable to Promise.all() for Loadables.

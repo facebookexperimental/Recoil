@@ -186,6 +186,9 @@ test('Loadable Factory Interface', async () => {
   const errorLoadable2 = RecoilLoadable.of(RecoilLoadable.error('ERROR'));
   expect(errorLoadable2.state).toBe('hasError');
   expect(errorLoadable2.contents).toBe('ERROR');
+
+  const loadingLoadable = RecoilLoadable.loading();
+  expect(loadingLoadable.state).toBe('loading');
 });
 
 describe('Loadable All', () => {

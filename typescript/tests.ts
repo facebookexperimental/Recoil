@@ -801,6 +801,7 @@ isRecoilValue(mySelector1);
   RecoilLoadable.of(Promise.resolve('x')); // $ExpectType Loadable<string>
   RecoilLoadable.of(RecoilLoadable.of('x')); // $ExpectType Loadable<string>
   RecoilLoadable.error('x'); // $ExpectType ErrorLoadable<any>
+  RecoilLoadable.loading(); // $ExpectType LoadingLoadable<any>
 
   const allLoadableArray = RecoilLoadable.all([
     RecoilLoadable.of('str'),
