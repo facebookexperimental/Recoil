@@ -305,3 +305,13 @@ testRecoil('selectorFamily - evaluate to RecoilValue', () => {
   expect(getValue(mySelector('a'))).toEqual('A');
   expect(getValue(mySelector('b'))).toEqual('B');
 });
+
+testRecoil('selectorFamily - invalid parameter error message', () => {
+  const mySelector = selectorFamily({
+    key: 'function in parameter',
+    get: () => () => {},
+  });
+  expect(() => getValue(mySelector({foo: () => {}}))).toThrow(
+    'function in parameter',
+  );
+});
