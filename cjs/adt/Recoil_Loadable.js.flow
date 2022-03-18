@@ -292,6 +292,8 @@ const LoadableStaticInterface = {
       : loadableWithValue(value),
   error: <T>(error: mixed): $ReadOnly<ErrorLoadable<T>> =>
     loadableWithError(error),
+  // $FlowIssue[incompatible-return]
+  loading: <T>(): LoadingLoadable<T> => loadableLoading<T>(),
   // $FlowIssue[unclear-type]
   all: ((loadableAll: any): LoadableAll),
   isLoadable,

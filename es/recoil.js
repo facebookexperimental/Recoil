@@ -324,6 +324,8 @@ function isLoadable(x) {
 const LoadableStaticInterface = {
   of: value => Recoil_isPromise(value) ? loadableWithPromise(value) : isLoadable(value) ? value : loadableWithValue(value),
   error: error => loadableWithError(error),
+  // $FlowIssue[incompatible-return]
+  loading: () => loadableLoading(),
   // $FlowIssue[unclear-type]
   all: loadableAll,
   isLoadable
@@ -6110,12 +6112,15 @@ const {
 
 
 
+
+
 class Sentinel {}
 
 const SENTINEL = new Sentinel();
 
 function recoilCallback(store, fn, args, extraInterface) {
   let ret = SENTINEL;
+  let releaseSnapshot;
   batchUpdates$4(() => {
     const errMsg = 'useRecoilCallback() expects a function that returns a function: ' + 'it accepts a function of the type (RecoilInterface) => (Args) => ReturnType ' + 'and returns a callback function (Args) => ReturnType, where RecoilInterface is ' + 'an object {snapshot, set, ...} and Args and ReturnType are the argument and return ' + 'types of the callback you want to create.  Please see the docs ' + 'at recoiljs.org for details.';
 
@@ -6134,7 +6139,11 @@ function recoilCallback(store, fn, args, extraInterface) {
       gotoSnapshot: snapshot => gotoSnapshot$1(store, snapshot),
       transact_UNSTABLE: transaction => atomicUpdater$1(store)(transaction)
     }, {
-      snapshot: () => cloneSnapshot$2(store)
+      snapshot: () => {
+        const snapshot = cloneSnapshot$2(store);
+        releaseSnapshot = snapshot.retain();
+        return snapshot;
+      }
     });
     const callback = fn(callbackInterface);
 
@@ -6145,6 +6154,19 @@ function recoilCallback(store, fn, args, extraInterface) {
     ret = callback(...args);
   });
   !!(ret instanceof Sentinel) ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'batchUpdates should return immediately') : Recoil_invariant(false) : void 0;
+
+  if (Recoil_isPromise(ret)) {
+    ret.finally(() => {
+      var _releaseSnapshot;
+
+      (_releaseSnapshot = releaseSnapshot) === null || _releaseSnapshot === void 0 ? void 0 : _releaseSnapshot();
+    });
+  } else {
+    var _releaseSnapshot2;
+
+    (_releaseSnapshot2 = releaseSnapshot) === null || _releaseSnapshot2 === void 0 ? void 0 : _releaseSnapshot2();
+  }
+
   return ret;
 }
 
@@ -6208,6 +6230,37 @@ function useRecoilTransaction(fn, deps) {
 }
 
 var Recoil_useRecoilTransaction = useRecoilTransaction;
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+class WrappedValue {
+  constructor(value) {
+    _defineProperty(this, "value", void 0);
+
+    this.value = value;
+  }
+
+}
+
+var Recoil_Wrapper = {
+  WrappedValue
+};
+
+var Recoil_Wrapper_1 = Recoil_Wrapper.WrappedValue;
+
+var Recoil_Wrapper$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  WrappedValue: Recoil_Wrapper_1
+});
 
 const {
   isFastRefreshEnabled: isFastRefreshEnabled$2
@@ -6958,10 +7011,15 @@ var Recoil_PerformanceTimings = {
 };
 
 const {
+  isLoadable: isLoadable$1,
   loadableWithError: loadableWithError$1,
   loadableWithPromise: loadableWithPromise$1,
   loadableWithValue: loadableWithValue$2
 } = Recoil_Loadable$1;
+
+const {
+  WrappedValue: WrappedValue$1
+} = Recoil_Wrapper$1;
 
 
 
@@ -7489,11 +7547,21 @@ function selector(options) {
       });
       result = isRecoilValue$3(result) ? getRecoilValue(result) : result;
 
+      if (isLoadable$1(result)) {
+        if (result.state === 'hasError') {
+          resultIsError = true;
+        }
+
+        result = result.contents;
+      }
+
       if (Recoil_isPromise(result)) {
         result = wrapPendingPromise(store, result, state, depValues, executionId, loadingDepsState).finally(finishEvaluation);
       } else {
         finishEvaluation();
       }
+
+      result = result instanceof WrappedValue$1 ? result.value : result;
     } catch (errorOrDepPromise) {
       result = errorOrDepPromise;
 
@@ -7873,17 +7941,25 @@ function selector(options) {
   }
 }
 /* eslint-enable no-redeclare */
+// $FlowIssue[incompatible-use]
 
+
+selector.value = value => new WrappedValue$1(value);
 
 var Recoil_selector = selector;
 
 // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
 // @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
 const {
+  isLoadable: isLoadable$2,
   loadableWithError: loadableWithError$2,
   loadableWithPromise: loadableWithPromise$2,
   loadableWithValue: loadableWithValue$3
 } = Recoil_Loadable$1;
+
+const {
+  WrappedValue: WrappedValue$2
+} = Recoil_Wrapper$1;
 
 const {
   peekNodeInfo: peekNodeInfo$3
@@ -7933,14 +8009,19 @@ function baseAtom(options) {
   } = options;
   const retainedBy = retainedByOptionWithDefault$2(options.retainedBy_UNSTABLE);
   let liveStoresCount = 0;
-  let defaultLoadable = Recoil_isPromise(options.default) ? loadableWithPromise$2(options.default.then(value => {
-    defaultLoadable = loadableWithValue$3(value);
-    return value;
-  }).catch(error => {
-    defaultLoadable = loadableWithError$2(error);
-    throw error;
-  })) : loadableWithValue$3(options.default);
-  maybeFreezeValueOrPromise(options.default);
+
+  function unwrapPromise(promise) {
+    return loadableWithPromise$2(promise.then(value => {
+      defaultLoadable = loadableWithValue$3(value);
+      return value;
+    }).catch(error => {
+      defaultLoadable = loadableWithError$2(error);
+      throw error;
+    }));
+  }
+
+  let defaultLoadable = Recoil_isPromise(options.default) ? unwrapPromise(options.default) : isLoadable$2(options.default) ? options.default.state === 'loading' ? unwrapPromise(options.default.contents) : options.default : loadableWithValue$3(options.default instanceof WrappedValue$2 ? options.default.value : options.default);
+  maybeFreezeValueOrPromise(defaultLoadable.contents);
   let cachedAnswerForUnvalidatedValue = undefined; // Cleanup handlers for this atom
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
 
@@ -8286,20 +8367,26 @@ function atom(options) {
     ...restOptions
   } = options;
   const optionsDefault = 'default' in options ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
-  // $FlowFixMe[incompatible-type]
+  // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
   options.default : new Promise(() => {});
 
   if (isRecoilValue$4(optionsDefault) // Continue to use atomWithFallback for promise defaults for scoped atoms
   // for now, since scoped atoms don't support async defaults
   // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
+  // @fb-only: || (isLoadable(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
   ) {
     return atomWithFallback({ ...restOptions,
       default: optionsDefault // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
 
-    }); // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS && !isPromise(optionsDefault)) {
+    }); // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS
+    // @fb-only: && !isPromise(optionsDefault)
+    // @fb-only: && !isLoadable(optionsDefault)
+    // @fb-only: ) {
     // @fb-only: return scopedAtom<T>({
     // @fb-only: ...restOptions,
-    // @fb-only: default: optionsDefault,
+    // @fb-only: default: optionsDefault instanceof WrappedValue
+    // @fb-only: ? optionsDefault.value
+    // @fb-only: : optionsDefault,
     // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     // @fb-only: });
   } else {
@@ -8337,6 +8424,8 @@ function atomWithFallback(options) {
   setConfigDeletionHandler$1(sel.key, getConfigDeletionHandler$2(options.key));
   return sel;
 }
+
+atom.value = value => new WrappedValue$2(value);
 
 var Recoil_atom = atom;
 
@@ -8532,7 +8621,7 @@ function atomFamily(options) {
       ...atomOptions
     } = options;
     const optionsDefault = 'default' in options ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
-    // $FlowFixMe[incompatible-type]
+    // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
     options.default : new Promise(() => {});
     const newAtom = Recoil_atom({ ...atomOptions,
       key: `${options.key}__${(_stableStringify = Recoil_stableStringify(params)) !== null && _stableStringify !== void 0 ? _stableStringify : 'void'}`,
@@ -8718,6 +8807,8 @@ const {
 
 
 
+
+
  /////////////////
 //  TRUTH TABLE
 /////////////////
@@ -8893,9 +8984,9 @@ const noWait = Recoil_selectorFamily({
     get
   }) => {
     try {
-      return loadableWithValue$4(get(dependency));
+      return Recoil_selector.value(loadableWithValue$4(get(dependency)));
     } catch (exception) {
-      return Recoil_isPromise(exception) ? loadableWithPromise$3(exception) : loadableWithError$3(exception);
+      return Recoil_selector.value(Recoil_isPromise(exception) ? loadableWithPromise$3(exception) : loadableWithError$3(exception));
     }
   },
   dangerouslyAllowMutability: true

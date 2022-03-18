@@ -77,6 +77,11 @@
   reset: ResetRecoilState;
  }
 
+ declare const WrappedValue_OPAQUE: unique symbol;
+ export interface WrappedValue<T> {
+   readonly [WrappedValue_OPAQUE]: true;
+ }
+
  // Effect is called the first time a node is used with a <RecoilRoot>
  export type AtomEffect<T> = (param: {
   node: RecoilState<T>,
@@ -112,7 +117,7 @@
    dangerouslyAllowMutability?: boolean;
  }
  interface AtomOptionsWithDefault<T> extends AtomOptionsWithoutDefault<T> {
-   default: RecoilValue<T> | Promise<T> | T;
+   default: RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T> | T;
  }
  export type AtomOptions<T> = AtomOptionsWithoutDefault<T> | AtomOptionsWithDefault<T>;
 
@@ -120,6 +125,9 @@
   * Creates an atom, which represents a piece of writeable state
   */
  export function atom<T>(options: AtomOptions<T>): RecoilState<T>;
+ export namespace atom {
+  function value<T>(value: T): WrappedValue<T>;
+ }
 
  export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
  export type SetterOrUpdater<T> = (valOrUpdater: ((currVal: T) => T) | T) => void;
@@ -175,7 +183,7 @@
     get: (opts: {
       get: GetRecoilValue,
       getCallback: GetCallback,
-    }) => Promise<T> | RecoilValue<T> | T;
+    }) => Promise<T> | RecoilValue<T> | Loadable<T> | WrappedValue<T> | T;
     dangerouslyAllowMutability?: boolean;
     cachePolicy_UNSTABLE?: CachePolicyWithoutEquality; // TODO: using the more restrictive CachePolicyWithoutEquality while we discuss long term API
  }
@@ -196,6 +204,9 @@
   */
  export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<T>;
  export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>;
+ export namespace selector {
+  function value<T>(value: T): WrappedValue<T>;
+ }
 
  // hooks.d.ts
 
@@ -386,20 +397,25 @@
   | ReadonlyArray<SerializableParam>
   | Readonly<{[key: string]: SerializableParam}>;
 
- interface AtomFamilyOptionsWithoutDefault<T, P extends SerializableParam> {
+interface AtomFamilyOptionsWithoutDefault<T, P extends SerializableParam> {
   key: NodeKey;
   dangerouslyAllowMutability?: boolean;
   effects?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
   effects_UNSTABLE?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
   // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
- }
- interface AtomFamilyOptionsWithDefault<T, P extends SerializableParam>
-   extends AtomFamilyOptionsWithoutDefault<T, P> {
-  default: RecoilValue<T> | Promise<T> | T | ((param: P) => T | RecoilValue<T> | Promise<T>);
- }
- export type AtomFamilyOptions<T, P extends SerializableParam> =
-   | AtomFamilyOptionsWithDefault<T, P>
-   | AtomFamilyOptionsWithoutDefault<T, P>;
+  }
+  interface AtomFamilyOptionsWithDefault<T, P extends SerializableParam> extends AtomFamilyOptionsWithoutDefault<T, P> {
+  default:
+    | RecoilValue<T>
+    | Promise<T>
+    | Loadable<T>
+    | WrappedValue<T>
+    | T
+    | ((param: P) => T | RecoilValue<T> | Promise<T>);
+  }
+  export type AtomFamilyOptions<T, P extends SerializableParam> =
+    | AtomFamilyOptionsWithDefault<T, P>
+    | AtomFamilyOptionsWithoutDefault<T, P>;
 
  /**
   * Returns a function which returns a memoized atom for each unique parameter value.
@@ -413,7 +429,7 @@
   get: (param: P) => (opts: {
     get: GetRecoilValue,
     getCallback: GetCallback,
-  }) => Promise<T> | RecoilValue<T> | T;
+  }) => Promise<T> | RecoilValue<T> | Loadable<T> | WrappedValue<T> | T;
   // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
   cachePolicy_UNSTABLE?: CachePolicyWithoutEquality; // TODO: using the more restrictive CachePolicyWithoutEquality while we discuss long term API
   dangerouslyAllowMutability?: boolean;
@@ -531,6 +547,10 @@ export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T
      * Factory to make a Loadable object in an error state.
      */
     function error(x: any): ErrorLoadable<any>;
+    /**
+     * Factory to make a loading Loadable which never resolves.
+     */
+    function loading(): LoadingLoadable<any>;
     /**
      * Factory to make a Loadable which is resolved when all of the Loadables provided
      * to it are resolved or any one has an error.  The value is an array of the values

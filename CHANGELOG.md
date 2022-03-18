@@ -5,6 +5,8 @@
 
 - The `default` value is now optional for `atom()` and `atomFamily()`.  If not provided the atom will initialize to a pending state. (#1639)
 - Significant optimization for selector evaluations.  2x improvement with 100 dependencies, 4x with 1,000, and 40x with 10,000. (#1515, #914)
+- Automatically retain snapshots for the duration of async callbacks. (#1632)
+- Publish `RecoilLoadable.loading()` factory for making an async `Loadable` which never resolves. (#1641)
 - `shouldNotBeFrozen` now works in JS environment without `Window` interface. (#1571)
 - Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589)
 - Better error reporting when selectors provide inconsistent results (#1696)
@@ -13,6 +15,8 @@
 
 ### Breaking Changes
 
+- Selector's `get()` and Atom's `default` can now accept a `Loadable` to put the node in that state.
+  If you wish to store a `Loadable`, `Promise`, or `RecoilValue` directly you can wrap it with `selector.value()` or `atom.value()`. (#1640)
 - `useRecoilCallback()` now provides a snapshot for the latest state instead of the latest rendered state, which had bugs (#1610, #1604)
 
 ## 0.6.1 (2022-01-29)
