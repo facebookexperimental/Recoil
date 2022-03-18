@@ -116,9 +116,16 @@
  }
  export type AtomOptions<T> = AtomOptionsWithoutDefault<T> | AtomOptionsWithDefault<T>;
 
- type DeepReadonly<T> = {
-  readonly [P in keyof T]: DeepReadonly<T[P]>
- };
+ /**
+  * Will work for all types, but do not add a special case for Arrays specifically as
+  * that will be handled in the last case (in the same condition that handles objects).
+  * If we add a special case for arrays we will lose tuple types.
+  */
+ type DeepReadonly<T> =
+   T extends ((...args: any[]) => any) | boolean | number | string | null | undefined ? T :
+   T extends Map<infer K, infer V> ? ReadonlyMap<DeepReadonly<K>, DeepReadonly<V>> :
+   T extends Set<infer S> ? ReadonlySet<DeepReadonly<S>> :
+   {readonly [P in keyof T]: DeepReadonly<T[P]>};
 
  /**
   * Creates an atom, which represents a piece of writeable state
@@ -410,7 +417,7 @@
   */
  export function atomFamily<T, P extends SerializableParam>(
   options: AtomFamilyOptions<T, P>,
- ): (param: P) => RecoilState<T>;
+ ): (param: P) => RecoilState<DeepReadonly<T>>;
 
  export interface ReadOnlySelectorFamilyOptions<T, P extends SerializableParam> {
   key: string;
@@ -445,14 +452,14 @@
  */
 export function selectorFamily<T, P extends SerializableParam>(
 options: ReadWriteSelectorFamilyOptions<T, P>,
-): (param: P) => RecoilState<T>;
+): (param: P) => RecoilState<DeepReadonly<T>>;
 
 /**
  * Returns a function which returns a memoized atom for each unique parameter value.
  */
 export function selectorFamily<T, P extends SerializableParam>(
 options: ReadOnlySelectorFamilyOptions<T, P>,
-): (param: P) => RecoilValueReadOnly<T>;
+): (param: P) => RecoilValueReadOnly<DeepReadonly<T>>;
 
 /**
  * Returns a selector that always has a constant value.

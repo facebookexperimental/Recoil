@@ -34,6 +34,7 @@
   useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
 } from 'recoil';
+import { number } from 'refine';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -114,7 +115,7 @@ const callbackSelector = selector({
     });
   }
 });
-useRecoilValue(callbackSelector); // $ExpectType DeepReadonly<() => Promise<number>>
+useRecoilValue(callbackSelector); // $ExpectType () => Promise<number>
 
 const selectorError1 = selector({ // $ExpectError
   key: 'SelectorError1',
@@ -386,6 +387,15 @@ isRecoilValue(mySelector1);
  */
  {
   const myArr = [{a: 10}];
+  const myObj = {
+    a: 10,
+    b: {
+      c: 10,
+      d: (a: number) => a,
+    },
+  };
+  const myMap = new Map([['', 1]]);
+  const mySet = new Set(['']);
 
   const myArrAtom = atom({
     key: 'myArrAtom',
@@ -394,23 +404,110 @@ isRecoilValue(mySelector1);
 
   const myObjAtom = atom({
     key: 'myObjAtom',
-    default: {
-      a: 10,
-      b: {
-        c: 10,
-      },
-    },
+    default: myObj,
+  });
+
+  const myMapAtom = atom({
+    key: 'myMapAtom',
+    default: myMap,
+  });
+
+  const mySetAtom = atom({
+    key: 'mySetAtom',
+    default: mySet,
+  });
+
+  const myFnAtom = atom({
+    key: 'myFnAtom',
+    default: myObj.b.d,
+  });
+
+  const myArrSel = selector({
+    key: 'myArrSel',
+    get: () => myArr,
+  });
+
+  const myObjSel = selector({
+    key: 'myObjSel',
+    get: () => myObj,
+  });
+
+  const myMapSel = selector({
+    key: 'myMapSel',
+    get: () => myMap,
+  });
+
+  const mySetSel = selector({
+    key: 'mySetSel',
+    get: () => mySet,
+  });
+
+  const myFnSel = selector({
+    key: 'myFnSel',
+    get: () => myObj.b.d,
   });
 
   const arr1 = useRecoilValue(myArrAtom);
   const obj1 = useRecoilValue(myObjAtom);
+  const map1 = useRecoilValue(myMapAtom);
+  const set1 = useRecoilValue(mySetAtom);
+  const fn1 = useRecoilValue(myFnAtom);
 
   arr1[0].a = 10; // $ExpectError
   arr1.push(1); // $ExpectError
   arr1.reverse(); // $ExpectError
   arr1.sort(); // $ExpectError
+
+  arr1.every(() => {}); // OK because immutable
+  arr1.filter(() => {}); // OK because immutable
+
   obj1.a = 2; // $ExpectError
   obj1.b.c = 100;  // $ExpectError
+
+  obj1.b.d(10);
+  obj1.b.d = () => {}; // $ExpectError
+
+  map1.set('a', 1); // $ExpectError
+
+  map1.get(''); // OK because immutable
+  map1.size;
+
+  set1.add(''); // $ExpectError
+
+  set1.forEach(() => {});
+
+  fn1(10);
+
+  const arr2 = useRecoilValue(myArrSel);
+  const obj2 = useRecoilValue(myObjSel);
+  const map2 = useRecoilValue(myMapSel);
+  const set2 = useRecoilValue(mySetSel);
+  const fn2 = useRecoilValue(myFnSel);
+
+  arr2[0].a = 10; // $ExpectError
+  arr2.push(1); // $ExpectError
+  arr2.reverse(); // $ExpectError
+  arr2.sort(); // $ExpectError
+
+  arr2.every(() => {}); // OK because immutable
+  arr2.filter(() => {}); // OK because immutable
+
+  obj2.a = 2; // $ExpectError
+  obj2.b.c = 100;  // $ExpectError
+
+  obj2.b.d(10);
+  obj2.b.d = () => {}; // $ExpectError
+
+  map2.set('a', 1); // $ExpectError
+
+  map2.get(''); // OK because immutable
+  map2.size;
+
+  set2.add(''); // $ExpectError
+
+  set2.forEach(() => {});
+
+  fn1(10);
 }
 
 /**
