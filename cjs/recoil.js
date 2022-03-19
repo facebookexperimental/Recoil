@@ -8660,6 +8660,8 @@ const {
 
 
 
+
+
  // Keep in mind the parameter needs to be serializable as a cahche key
 // using Recoil_stableStringify
 
@@ -8691,7 +8693,15 @@ function selectorFamily(options) {
   return params => {
     var _stableStringify;
 
-    const cachedSelector = selectorCache.get(params);
+    // Throw an error with selector key so that it is clear which
+    // selector is causing an error
+    let cachedSelector;
+
+    try {
+      cachedSelector = selectorCache.get(params);
+    } catch (error) {
+      throw Recoil_err(`Problem with cache lookup for selector ${options.key}: ${error.message}`);
+    }
 
     if (cachedSelector != null) {
       return cachedSelector;
