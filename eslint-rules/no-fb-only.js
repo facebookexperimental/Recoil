@@ -48,7 +48,7 @@ module.exports = {
             if (match) {
               context.report({
                 message:
-                  `Usage of "${descriptor}". Please consider depenedncy injecting this condition ` +
+                  `Usage of "${descriptor}". Please consider dependency injecting this condition ` +
                   `instead. See "${__filename}" for more details`,
                 loc: {
                   start: {line: lineNumber + 1, column: 0},
