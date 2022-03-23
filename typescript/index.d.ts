@@ -411,7 +411,7 @@ interface AtomFamilyOptionsWithoutDefault<T, P extends SerializableParam> {
     | Loadable<T>
     | WrappedValue<T>
     | T
-    | ((param: P) => T | RecoilValue<T> | Promise<T>);
+    | ((param: P) => T | RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T>);
   }
   export type AtomFamilyOptions<T, P extends SerializableParam> =
     | AtomFamilyOptionsWithDefault<T, P>
@@ -440,7 +440,7 @@ interface AtomFamilyOptionsWithoutDefault<T, P extends SerializableParam> {
   get: (param: P) => (opts: {
     get: GetRecoilValue,
     getCallback: GetCallback,
-  }) => Promise<T> | RecoilValue<T> | T;
+  }) => Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T> | T;
   set: (
       param: P,
   ) => (

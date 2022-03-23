@@ -426,6 +426,13 @@ isRecoilValue(mySelector1);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const myAtomFamilyWithoutDefault: (number: number) => RecoilState<number> =
     atomFamily<number, number>({key: 'MyAtomFamilyWithoutDefault'});
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const myAsyncAtomFamily: (number: number) => RecoilState<number> =
+    atomFamily<number, number>({
+      key: 'MyAsyncAtomFamily',
+      default: (param: number) => Promise.resolve(param),
+    });
 }
 
 /**
