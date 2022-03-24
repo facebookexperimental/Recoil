@@ -17,7 +17,7 @@ function atomFamily<T, Parameter>({
     | Loadable<T>
     | WrappedValue<T>
     | RecoilValue<T>
-    | (Parameter => T | RecoilValue<T> | Promise<T>),
+    | (Parameter => T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>),
 
   effects?:
     | $ReadOnlyArray<AtomEffect<T>>
