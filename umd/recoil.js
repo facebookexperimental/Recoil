@@ -4695,215 +4695,54 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   /**
    * Copyright (c) Facebook, Inc. and its affiliates.
    *
-   * MIT License
-   *
-   * Copyright (c) 2014-2019 Georg Tavonius
-   *
-   * Permission is hereby granted, free of charge, to any person obtaining a copy
-   * of this software and associated documentation files (the "Software"), to deal
-   * in the Software without restriction, including without limitation the rights
-   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-   * copies of the Software, and to permit persons to whom the Software is
-   * furnished to do so, subject to the following conditions:
-   *
-   * The above copyright notice and this permission notice shall be included in all
-   * copies or substantial portions of the Software.
-   *
-   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-   * SOFTWARE.
+   * This source code is licensed under the MIT license found in the
+   * LICENSE file in the root directory of this source tree.
    *
    * @emails oncall+recoil
    * 
    * @format
    */
-
-  const UNKNOWN_FUNCTION = '<unknown>';
   /**
-   * This parses the different stack traces and puts them into one format
-   * This borrows heavily from TraceKit (https://github.com/csnover/TraceKit)
+   * THIS CODE HAS BEEN COMMENTED OUT INTENTIONALLY
+   *
+   * This technique of getting the component name is imperfect, since it both only
+   * works in a non-minified code base, and more importantly introduces performance
+   * problems since it relies in throwing errors which is an expensive operation.
+   *
+   * At some point we may want to reevaluate this technique hence why we have commented
+   * this code out, rather than delete it all together.
    */
-
-  function stackTraceParser(stackString) {
-    const lines = stackString.split('\n');
-    return lines.reduce((stack, line) => {
-      const parseResult = parseChrome(line) || parseWinjs(line) || parseGecko(line) || parseNode(line) || parseJSC(line);
-
-      if (parseResult) {
-        stack.push(parseResult);
-      }
-
-      return stack;
-    }, []);
-  }
-
-  const chromeRe = /^\s*at (.*?) ?\(((?:file|https?|blob|chrome-extension|native|eval|webpack|<anonymous>|\/|[a-z]:\\|\\\\).*?)(?::(\d+))?(?::(\d+))?\)?\s*$/i;
-  const chromeEvalRe = /\((\S*)(?::(\d+))(?::(\d+))\)/;
-
-  function parseChrome(line) {
-    const parts = chromeRe.exec(line);
-
-    if (!parts) {
-      return null;
-    }
-
-    const isNative = parts[2] && parts[2].indexOf('native') === 0; // start of line
-
-    const isEval = parts[2] && parts[2].indexOf('eval') === 0; // start of line
-
-    const submatch = chromeEvalRe.exec(parts[2]);
-
-    if (isEval && submatch != null) {
-      // throw out eval line/column and use top-most line/column number
-      parts[2] = submatch[1]; // url
-
-      parts[3] = submatch[2]; // line
-
-      parts[4] = submatch[3]; // column
-    }
-
-    return {
-      file: !isNative ? parts[2] : null,
-      methodName: parts[1] || UNKNOWN_FUNCTION,
-      arguments: isNative ? [parts[2]] : [],
-      lineNumber: parts[3] ? +parts[3] : null,
-      column: parts[4] ? +parts[4] : null
-    };
-  }
-
-  const winjsRe = /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:file|ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i;
-
-  function parseWinjs(line) {
-    const parts = winjsRe.exec(line);
-
-    if (!parts) {
-      return null;
-    }
-
-    return {
-      file: parts[2],
-      methodName: parts[1] || UNKNOWN_FUNCTION,
-      arguments: [],
-      lineNumber: +parts[3],
-      column: parts[4] ? +parts[4] : null
-    };
-  }
-
-  const geckoRe = /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i;
-  const geckoEvalRe = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
-
-  function parseGecko(line) {
-    const parts = geckoRe.exec(line);
-
-    if (!parts) {
-      return null;
-    }
-
-    const isEval = parts[3] && parts[3].indexOf(' > eval') > -1;
-    const submatch = geckoEvalRe.exec(parts[3]);
-
-    if (isEval && submatch != null) {
-      // throw out eval line/column and use top-most line number
-      parts[3] = submatch[1];
-      parts[4] = submatch[2];
-      parts[5] = null; // no column when eval
-    }
-
-    return {
-      file: parts[3],
-      methodName: parts[1] || UNKNOWN_FUNCTION,
-      arguments: parts[2] ? parts[2].split(',') : [],
-      lineNumber: parts[4] ? +parts[4] : null,
-      column: parts[5] ? +parts[5] : null
-    };
-  }
-
-  const javaScriptCoreRe = /^\s*(?:([^@]*)(?:\((.*?)\))?@)?(\S.*?):(\d+)(?::(\d+))?\s*$/i;
-
-  function parseJSC(line) {
-    const parts = javaScriptCoreRe.exec(line);
-
-    if (!parts) {
-      return null;
-    }
-
-    return {
-      file: parts[3],
-      methodName: parts[1] || UNKNOWN_FUNCTION,
-      arguments: [],
-      lineNumber: +parts[4],
-      column: parts[5] ? +parts[5] : null
-    };
-  }
-
-  const nodeRe = /^\s*at (?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
-
-  function parseNode(line) {
-    const parts = nodeRe.exec(line);
-
-    if (!parts) {
-      return null;
-    }
-
-    return {
-      file: parts[2],
-      methodName: parts[1] || UNKNOWN_FUNCTION,
-      arguments: [],
-      lineNumber: +parts[3],
-      column: parts[4] ? +parts[4] : null
-    };
-  }
-
-  var Recoil_stackTraceParser = stackTraceParser;
-
-  const {
-    useRef: useRef$4
-  } = react;
-
-
-
-
+  // const {useRef} = require('react');
+  // const gkx = require('recoil-shared/util/Recoil_gkx');
+  // const stackTraceParser = require('recoil-shared/util/Recoil_stackTraceParser');
 
   function useComponentName() {
-    const nameRef = useRef$4();
-
-    {
-      if (Recoil_gkx('recoil_infer_component_names')) {
-        var _nameRef$current;
-
-        if (nameRef.current === undefined) {
-          // There is no blessed way to determine the calling React component from
-          // within a hook. This hack uses the fact that hooks must start with 'use'
-          // and that hooks are either called by React Components or other hooks. It
-          // follows therefore, that to find the calling component, you simply need
-          // to look down the stack and find the first function which doesn't start
-          // with 'use'. We are only enabling this in dev for now, since once the
-          // codebase is minified, the naming assumptions no longer hold true.
-          // eslint-disable-next-line fb-www/no-new-error
-          const frames = Recoil_stackTraceParser(new Error().stack);
-
-          for (const {
-            methodName
-          } of frames) {
-            // I observed cases where the frame was of the form 'Object.useXXX'
-            // hence why I'm searching for hooks following a word boundary
-            if (!methodName.match(/\buse[^\b]+$/)) {
-              return nameRef.current = methodName;
-            }
-          }
-
-          nameRef.current = null;
-        }
-
-        return (_nameRef$current = nameRef.current) !== null && _nameRef$current !== void 0 ? _nameRef$current : '<unable to determine component name>';
-      }
-    } // @fb-only: return "<component name only available when both in dev mode and when passing GK 'recoil_infer_component_names'>";
-
-
+    // const nameRef = useRef();
+    // if (__DEV__) {
+    //   if (gkx('recoil_infer_component_names')) {
+    //     if (nameRef.current === undefined) {
+    //       // There is no blessed way to determine the calling React component from
+    //       // within a hook. This hack uses the fact that hooks must start with 'use'
+    //       // and that hooks are either called by React Components or other hooks. It
+    //       // follows therefore, that to find the calling component, you simply need
+    //       // to look down the stack and find the first function which doesn't start
+    //       // with 'use'. We are only enabling this in dev for now, since once the
+    //       // codebase is minified, the naming assumptions no longer hold true.
+    //       // eslint-disable-next-line fb-www/no-new-error
+    //       const frames = stackTraceParser(new Error().stack);
+    //       for (const {methodName} of frames) {
+    //         // I observed cases where the frame was of the form 'Object.useXXX'
+    //         // hence why I'm searching for hooks following a word boundary
+    //         if (!methodName.match(/\buse[^\b]+$/)) {
+    //           return (nameRef.current = methodName);
+    //         }
+    //       }
+    //       nameRef.current = null;
+    //     }
+    //     return nameRef.current ?? '<unable to determine component name>';
+    //   }
+    // }
+    // @fb-only: return "<component name only available when both in dev mode and when passing GK 'recoil_infer_component_names'>";
     return '<component name not available>'; // @oss-only
   }
 
@@ -4946,7 +4785,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     useCallback: useCallback$1,
     useEffect: useEffect$3,
     useMemo: useMemo$1,
-    useRef: useRef$5,
+    useRef: useRef$4,
     useState: useState$1
   } = react;
 
@@ -5000,11 +4839,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     const componentName = Recoil_useComponentName();
     const storeRef = useStoreRef$2();
     const [, forceUpdate] = useState$1([]);
-    const recoilValuesUsed = useRef$5(new Set());
+    const recoilValuesUsed = useRef$4(new Set());
     recoilValuesUsed.current = new Set(); // Track the RecoilValues used just during this render
 
-    const previousSubscriptions = useRef$5(new Set());
-    const subscriptions = useRef$5(new Map());
+    const previousSubscriptions = useRef$4(new Set());
+    const subscriptions = useRef$4(new Map());
     const unsubscribeFrom = useCallback$1(key => {
       const sub = subscriptions.current.get(key);
 
@@ -5249,7 +5088,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     }
 
     const loadable = useMutableSource$1(source, getLoadableWithTesting, subscribe);
-    const prevLoadableRef = useRef$5(loadable);
+    const prevLoadableRef = useRef$4(loadable);
     useEffect$3(() => {
       prevLoadableRef.current = loadable;
     });
@@ -5316,7 +5155,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
     }, [storeRef, recoilValue]);
     const loadable = getLoadable();
-    const prevLoadableRef = useRef$5(loadable);
+    const prevLoadableRef = useRef$4(loadable);
     useEffect$3(() => {
       prevLoadableRef.current = loadable;
     });
@@ -5667,7 +5506,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   const {
     useCallback: useCallback$2,
     useEffect: useEffect$4,
-    useRef: useRef$6,
+    useRef: useRef$5,
     useState: useState$2
   } = react;
 
@@ -5785,8 +5624,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     const storeRef = useStoreRef$3();
     const [snapshot, setSnapshot] = useState$2(() => cloneSnapshot$1(storeRef.current));
     const previousSnapshot = Recoil_usePrevious(snapshot);
-    const timeoutID = useRef$6();
-    const releaseRef = useRef$6();
+    const timeoutID = useRef$5();
+    const releaseRef = useRef$5();
     useTransactionSubscription(useCallback$2(store => setSnapshot(cloneSnapshot$1(store)), [])); // Retain snapshot for duration component is mounted
 
     useEffect$4(() => {
