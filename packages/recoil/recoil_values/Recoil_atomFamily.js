@@ -63,7 +63,12 @@ export type AtomFamilyOptions<T, P: Parameter> =
         | Loadable<T>
         | WrappedValue<T>
         | T
-        | (P => T | RecoilValue<T> | Promise<T>),
+        | (P =>
+            | T
+            | RecoilValue<T>
+            | Promise<T>
+            | Loadable<T>
+            | WrappedValue<T>),
     }>
   | AtomFamilyOptionsWithoutDefault<T, P>;
 
@@ -118,7 +123,7 @@ function atomFamily<T, P: Parameter>(
       | Loadable<T>
       | WrappedValue<T>
       | T
-      | (P => T | RecoilValue<T> | Promise<T>) =
+      | (P => T | RecoilValue<T> | Promise<T> | Loadable<T> | WrappedValue<T>) =
       'default' in options
         ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
           // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
