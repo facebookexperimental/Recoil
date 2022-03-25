@@ -39,6 +39,7 @@ let store: Store,
   atom,
   atomFamily,
   selectorFamily,
+  RecoilLoadable,
   pAtom;
 
 const testRecoil = getRecoilTestFn(() => {
@@ -72,6 +73,7 @@ const testRecoil = getRecoilTestFn(() => {
   atom = require('../Recoil_atom');
   atomFamily = require('../Recoil_atomFamily');
   selectorFamily = require('../Recoil_selectorFamily');
+  ({RecoilLoadable} = require('../../adt/Recoil_Loadable'));
 
   store = makeStore();
 
@@ -150,6 +152,36 @@ describe('Default', () => {
     set(paramDefaultAtom({num: 1}), 3);
     expect(get(paramDefaultAtom({num: 1}))).toBe(3);
     expect(get(paramDefaultAtom({num: 2}))).toBe(2);
+  });
+
+  testRecoil('Parameterized async default', async () => {
+    const paramDefaultAtom = atomFamily({
+      key: 'parameterized async default',
+      default: ({num}) =>
+        num === 1 ? Promise.reject(num) : Promise.resolve(num),
+    });
+    await expect(get(paramDefaultAtom({num: 1}))).rejects.toBe(1);
+    await expect(get(paramDefaultAtom({num: 2}))).resolves.toBe(2);
+    set(paramDefaultAtom({num: 1}), 3);
+    expect(get(paramDefaultAtom({num: 1}))).toBe(3);
+    expect(get(paramDefaultAtom({num: 2}))).toBe(2);
+  });
+
+  testRecoil('Parameterized loadable default', async () => {
+    const paramDefaultAtom = atomFamily({
+      key: 'parameterized loadable default',
+      default: ({num}) =>
+        num === 1 ? RecoilLoadable.error(num) : RecoilLoadable.of(num),
+    });
+    expect(getLoadable(paramDefaultAtom({num: 1})).state).toBe('hasError');
+    expect(getLoadable(paramDefaultAtom({num: 1})).contents).toBe(1);
+    expect(getLoadable(paramDefaultAtom({num: 2})).state).toBe('hasValue');
+    expect(getLoadable(paramDefaultAtom({num: 2})).contents).toBe(2);
+    set(paramDefaultAtom({num: 1}), 3);
+    expect(getLoadable(paramDefaultAtom({num: 1})).state).toBe('hasValue');
+    expect(getLoadable(paramDefaultAtom({num: 1})).contents).toBe(3);
+    expect(getLoadable(paramDefaultAtom({num: 2})).state).toBe('hasValue');
+    expect(getLoadable(paramDefaultAtom({num: 2})).contents).toBe(2);
   });
 });
 

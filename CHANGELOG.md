@@ -3,7 +3,7 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
-## 0.7 (2022-03-23)
+## 0.7 (2022-03-25)
 
 ### New Features
 - The `default` value is now optional for `atom()` and `atomFamily()`.  If not provided the atom will initialize to a pending state. (#1639)
@@ -19,9 +19,9 @@
 - Automatically retain snapshots for the duration of async callbacks. (#1632)
 - Optimization for more selector dependencies.  2x improvement with 100 dependencies, 4x with 1,000, and now able to support 10,000+. (#1651, #1515, #914)
 - Better error reporting when selectors provide inconsistent results (#1696)
-- Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589, #1582)
 
 ### Fixes
+- Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589, #1582)
 - Freezing user values in dev mode now works in JS environments without the `Window` interface. (#1571)
 
 ## 0.6.1 (2022-01-29)
