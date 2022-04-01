@@ -152,7 +152,7 @@ function TempCelsius() {
       <br />
       <button onClick={addTenFahrenheit}>Add 10 Fahrenheit</button>
       <br />
-      <button onClick={reset}>>Reset</button>
+      <button onClick={reset}>Reset</button>
     </div>
   );
 }
