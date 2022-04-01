@@ -34,9 +34,15 @@ function atomFamily<T, Parameter>({
 
 ---
 
-An `atom` represents a piece of state with _Recoil_. An atom is created and registered per `<RecoilRoot>` by your app. But, what if your state isn’t global? What if your state is associated with a particular instance of a control, or with a particular element? For example, maybe your app is a UI prototyping tool where the user can dynamically add elements and each element has state, such as its position. Ideally, each element would get its own atom of state. You could implement this yourself via a memoization pattern. But, _Recoil_ provides this pattern for you with the `atomFamily` utility. An Atom Family represents a collection of atoms. When you call `atomFamily` it will return a function which provides the `RecoilState` atom based on the parameters you pass in.
+An `atom` represents a piece of state with _Recoil_. An atom is created and registered per `<RecoilRoot>` by your app. But, what if your state isn’t global? What if your state is associated with a particular instance of a control, or with a particular element? For example, maybe your app is a UI prototyping tool where the user can dynamically add elements and each element has state, such as its position. Ideally, each element would get its own atom of state. You could implement this yourself via a memoization pattern. But, _Recoil_ provides this pattern for you with the `atomFamily()` utility. An Atom Family represents a collection of atoms. When you call `atomFamily()` it will return a function which provides the `RecoilState` atom based on the parameters you pass in.
 
-The `atomFamily` essentially provides a map from the parameter to an atom.  You only need to provide a single key for the `atomFamily` and it will generate a unique key for each underlying atom.  These atom keys can be used for persistence, and so must be stable across application executions.  The parameters may also be generated at different callsites and we want equivalent parameters to use the same underlying atom.  Therefore, value-equality is used instead of reference-equality for `atomFamily` parameters.  This imposes restrictions on the types which can be used for the parameter.  `atomFamily` accepts primitive types, or arrays or objects which can contain arrays, objects, or primitive types.
+## Parameter Type
+The `atomFamily()` essentially provides a map from the parameter to an atom.  You only need to provide a single key for the atom family and it will generate a unique key for each underlying atom.  These atom keys can be used for persistence, and so must be stable across application executions.
+
+There are restrictions on the type you can use as the family `Parameter`.  They may be generated at different callsites and we want equivalent parameters to reference the same underlying atom.  Therefore, parameters are compared using value-equality and must be serializable.  To be serializable it must be either:
+  * A primitive value
+  * An array, object, `Map`, or `Set` of serializable values
+  * Contain a `toJSON()` method which returns a serializable value, similar to `JSON.stringify()`
 
 ## Example
 
@@ -121,4 +127,4 @@ function PaneView() {
 
 ## Persistence
 
-Persistence observers will persist the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to only use parameters which are primitives or simple compound objects containing primitives. Custom classes or functions are not allowed.
+Persistence observers and [atom effects](/docs/guides/atom-effects) will sync the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to [serializable parameters](/docs/api-reference/utils/atomFamily#parameter-type). Custom classes or functions are not allowed.
