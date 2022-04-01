@@ -8,22 +8,31 @@ Returns a function that returns a read-only `RecoilValueReadOnly` or writeable `
 A `selectorFamily` is a powerful pattern that is similar to a [`selector`](/docs/api-reference/core/selector), but allows you to pass parameters to the `get` and `set` callbacks of a `selector`.  The `selectorFamily()` utility returns a function which can be called with user-defined parameters and returns a selector. Each unique parameter value will return the same memoized selector instance.
 
 ---
-
+Read-only selector family:
 ```jsx
 function selectorFamily<T, Parameter>({
   key: string,
 
-  get: Parameter => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
+  get: Parameter => ({
+    get: GetRecoilValue
+    getCallback: GetCallback<T>,
+  }) =>
+    T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>,
 
   dangerouslyAllowMutability?: boolean,
 }): Parameter => RecoilValueReadOnly<T>
 ```
 
+Writable selector family:
 ```jsx
 function selectorFamily<T, Parameter>({
   key: string,
 
-  get: Parameter => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
+  get: Parameter => ({
+    get: GetRecoilValue
+    getCallback: GetCallback<T>,
+  }) =>
+    T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>,
 
   set: Parameter => (
     {
@@ -44,9 +53,15 @@ Where
 
 ```jsx
 type ValueOrUpdater<T> =  T | DefaultValue | ((prevValue: T) => T | DefaultValue);
+
 type GetRecoilValue = <T>(RecoilValue<T>) => T;
 type SetRecoilValue = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilValue = <T>(RecoilState<T>) => void;
+
+type GetCallback<T> =
+  <Args, Return>(
+    callback: ({node: RecoilState<T>, ...CallbackInterface}) => (...Args) => Return,
+  ) => (...Args) => Return;
 
 type CachePolicy =
   | {eviction: 'lru', maxSize: number}

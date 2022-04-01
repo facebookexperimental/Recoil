@@ -42,6 +42,7 @@ interface RecoilLoadable {
   function error<T>(mixed): Loadable<T>;
   function all(Array<mixed | Loadable<mixed> | Promise<mixed>>): Loadable<Array<mixed>>;
   function all({[string]: mixed | Loadable<mixed> | Promise<mixed>}): Loadable<{[string]: mixed}>;
+  function loading(): Loadable<empty>;
   function isLoadable(mixed): boolean;
 }
 ```
@@ -88,4 +89,7 @@ RecoilLoadable.all({
   loadable: RecoilLoadable.of(2),
   promise: Promise.resolve(3),
 });
+
+// Never resolves
+RecoilLoadable.loading();
 ```
