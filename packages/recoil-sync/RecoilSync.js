@@ -572,7 +572,7 @@ function syncEffect<T>(opt: SyncEffectOptions<T>): AtomEffect<T> {
       // Persist on Initial Read
       const writeToStorage = storage?.write;
       if (options.syncDefault === true && writeToStorage != null) {
-        setImmediate(() => {
+        window.setTimeout(() => {
           const loadable = getLoadable(node);
           if (loadable.state === 'hasValue') {
             const diff = writeAtomItemsToDiff(
@@ -585,7 +585,7 @@ function syncEffect<T>(opt: SyncEffectOptions<T>): AtomEffect<T> {
               getWriteInterface(storeID, storeKey, diff, getInfo_UNSTABLE),
             );
           }
-        });
+        }, 0);
       }
     }
 
