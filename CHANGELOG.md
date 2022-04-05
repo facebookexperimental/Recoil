@@ -3,7 +3,7 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
-## 0.7 (2022-03-25)
+## 0.7 (2022-03-31)
 
 ### New Features
 - The `default` value is now optional for `atom()` and `atomFamily()`.  If not provided the atom will initialize to a pending state. (#1639)
