@@ -487,11 +487,17 @@ isRecoilValue(mySelector1);
   });
   mySelectorFamArray([1, 2, 3]);
 
+  class MySerializableClass {
+    toJSON() {
+      return 'test';
+    }
+  }
   const myJsonSerializableSelectorFam = selectorFamily({
     key: 'mySelectorFam1',
-    get: (param: {from: Date, to: Date}) => () => (+param.from) - (+param.to),
+    get: (param: {date: Date, class: MySerializableClass}) => () =>
+      (param.date.toString() + JSON.stringify(param.class.toJSON())),
   });
-  myJsonSerializableSelectorFam({ from: new Date(), to: new Date() });
+  myJsonSerializableSelectorFam({ date: new Date(), class: new MySerializableClass() });
 
   const callbackSelectorFamily = selectorFamily({
     key: 'CallbackSelector',
@@ -508,7 +514,7 @@ isRecoilValue(mySelector1);
   cb('hi'); // $ExpectError
   cb(2); // $ExpectType
 
-  const selectorFamilyError1 = selector({ // $ExpectError
+  const selectorFamilyError1 = selectorFamily({ // $ExpectError
     key: 'SelectorFamilyError1',
     // Missing get()
   });
@@ -521,7 +527,7 @@ isRecoilValue(mySelector1);
   });
   selectorFamilyError2;
 
-  const selectorFamilyError3 = selector({
+  const selectorFamilyError3 = selectorFamily({
     key: 'SelectorFamilyError3',
     get: () => ({badCallback}) => null, // $ExpectError
   });
@@ -542,8 +548,11 @@ isRecoilValue(mySelector1);
   useRecoilValue(mySel3); // $ExpectType number[]
   useRecoilValue(mySel4); // $ExpectType { a: number; b: string; }
 
-  constSelector(new Map()); // $ExpectError
-  constSelector(new Set()); // $ExpectError
+  constSelector(new Map([['k', 'v']])); // $ExpectType RecoilValueReadOnly<Map<string, string>>
+  constSelector(new Set(['str'])); // $ExpectType RecoilValueReadOnly<Set<string>>
+
+  class MyClass {}
+  constSelector(new MyClass()); // $ExpectError
 }
 
 /**
