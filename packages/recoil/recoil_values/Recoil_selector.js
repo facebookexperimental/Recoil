@@ -590,7 +590,10 @@ function selector<T>(
          * to extend the tree cache to support caching loading states.
          */
         if (!isLatestExecution(store, executionId)) {
-          const executionInfo = getExecutionInfoOfInProgressExecution(state);
+          const executionInfo = getExecutionInfoOfInProgressExecution(
+            store,
+            state,
+          );
           if (executionInfo?.latestLoadable.state === 'loading') {
             /**
              * Returning promise here without wrapping as the wrapper logic was
@@ -928,8 +931,10 @@ function selector<T>(
       return cachedVal;
     }
 
-    const inProgressExecutionInfo =
-      getExecutionInfoOfInProgressExecution(state);
+    const inProgressExecutionInfo = getExecutionInfoOfInProgressExecution(
+      store,
+      state,
+    );
 
     // FIXME: this won't work with custom caching b/c it uses separate cache
     if (inProgressExecutionInfo != null) {
@@ -952,14 +957,30 @@ function selector<T>(
    * execution whose dependency values match the values of the requesting store.
    */
   function getExecutionInfoOfInProgressExecution(
+    store: Store,
     state: TreeState,
   ): ?ExecutionInfo<T> {
+    // Sort the pending executions so that our current store is checked first.
+    // This is particularly important so we always return a consistent
+    // execution for evaluating a selector with multiple attempts in a store.
+    const pendingExecutions =
+      executionInfoMap.size > 1
+        ? [
+            ...(executionInfoMap.has(store)
+              ? [[store, nullthrows(executionInfoMap.get(store))]]
+              : []),
+            ...Array.from(executionInfoMap.entries()).filter(
+              ([s]) => s !== store,
+            ),
+          ]
+        : Array.from(executionInfoMap);
+
     const [, executionInfo] =
-      Array.from(executionInfoMap.entries()).find(([store, execInfo]) => {
+      pendingExecutions.find(([execStore, execInfo]) => {
         return (
           execInfo.latestLoadable != null &&
           execInfo.latestExecutionId != null &&
-          !haveAsyncDepsChanged(store, state)
+          !haveAsyncDepsChanged(execStore, state)
         );
       }) ?? [];
 

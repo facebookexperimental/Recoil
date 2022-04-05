@@ -3,6 +3,7 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+- Avoid dev-mode console error with React 18 when using shared selectors across multiple `<RecoilRoot>`'s. (#1810)
 - Update typing for family parameters to better support Map, Set, and classes with `toJSON()`. (#1709, #1703)
 
 ## 0.7 (2022-03-31)
