@@ -290,15 +290,27 @@ useRecoilCallback(({ snapshot, set, reset, refresh, gotoSnapshot, transact_UNSTA
   snapshot; // $ExpectType Snapshot
   snapshot.getID(); // $ExpectType SnapshotID
   await snapshot.getPromise(mySelector1); // $ExpectType number
-  const loadable = snapshot.getLoadable(mySelector1); // $ExpectType Loadable<number>
+  const loadable: Loadable<number> = snapshot.getLoadable(mySelector1);
 
   gotoSnapshot(snapshot);
 
   gotoSnapshot(3); // $ExpectError
   gotoSnapshot(myAtom); // $ExpectError
 
-  loadable.state; // $ExpectType "hasValue" | "loading" | "hasError"
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const state: 'hasValue' | 'hasError' | 'loading' = loadable.state;
   loadable.contents; // $ExpectType any
+  switch (loadable.state) {
+    case 'hasValue':
+      loadable.contents; // $ExpectType number
+      break;
+    case 'hasError':
+      loadable.contents; // $ExpectType any
+      break;
+    case 'loading':
+      loadable.contents; // $ExpectType Promise<number>
+      break;
+  }
 
   set(myAtom, 5);
   set(myAtom, 'hello'); // $ExpectError
@@ -340,8 +352,9 @@ const transact: (p: number) => void = useRecoilTransaction_UNSTABLE(({get, set, 
       previousSnapshot.getPromise(mySelector2); // $ExpectType Promise<string>
 
       for (const node of Array.from(snapshot.getNodes_UNSTABLE({isModified: true}))) {
-        const loadable = snapshot.getLoadable(node); // $ExpectType Loadable<unknown>
-        loadable.state; // $ExpectType "hasValue" | "loading" | "hasError"
+          const loadable = snapshot.getLoadable(node); // $ExpectType Loadable<unknown>
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const state: 'hasValue' | 'hasError' | 'loading' = loadable.state;
       }
     },
   );
