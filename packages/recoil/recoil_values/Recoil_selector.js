@@ -194,6 +194,7 @@ type ExecutionId = number;
  *    to global state when it finishes.
  */
 type ExecutionInfo<T> = {
+  // This is mutable and updated as new deps are discovered
   depValuesDiscoveredSoFarDuringAsyncWork: DepValues,
   latestLoadable: LoadingLoadableType<T>,
   latestExecutionId: ExecutionId,
@@ -398,8 +399,6 @@ function selector<T>(
           clearExecutionInfo(store);
           throw CANCELED;
         }
-
-        updateExecutionInfoDepValues(store, executionId, depValues);
 
         if (isPromise(errorOrPromise)) {
           return wrapPendingDependencyPromise(
@@ -974,7 +973,7 @@ function selector<T>(
       ),
     ]);
 
-    function anyDepChanged(oldDepValues: DepValues): boolean {
+    function hasAnyDepChanged(oldDepValues: DepValues): boolean {
       for (const [depKey, oldLoadable] of oldDepValues) {
         if (!getCachedNodeLoadable(store, state, depKey).is(oldLoadable)) {
           return true;
@@ -988,7 +987,7 @@ function selector<T>(
         // If this execution is on the same version of state, then it's valid
         state.version === execInfo.stateVersion ||
         // If the deps for the execution match our current state, then it's valid
-        !anyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)
+        !hasAnyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)
       ) {
         return execInfo;
       }
