@@ -3,6 +3,8 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+- Update typing for family parameters to better support Map, Set, and classes with `toJSON()`. (#1709, #1703)
+
 ## 0.7 (2022-03-31)
 
 ### New Features

@@ -390,11 +390,14 @@
 
  // bigint not supported yet
  type Primitive = undefined | null | boolean | number | symbol | string;
+ interface HasToJSON { toJSON(): SerializableParam; }
 
  export type SerializableParam =
   | Primitive
-  | {toJSON: () => string}
+  | HasToJSON
   | ReadonlyArray<SerializableParam>
+  | ReadonlySet<SerializableParam>
+  | ReadonlyMap<SerializableParam, SerializableParam>
   | Readonly<{[key: string]: SerializableParam}>;
 
 interface AtomFamilyOptionsWithoutDefault<T, P extends SerializableParam> {

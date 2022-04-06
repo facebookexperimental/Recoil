@@ -25,13 +25,15 @@ const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
 
 type Primitive = void | null | boolean | number | string;
 interface HasToJSON {
-  toJSON: () => string;
+  toJSON(): Parameter;
 }
 export type Parameter =
   | Primitive
   | HasToJSON
   | $ReadOnlyArray<Parameter>
-  | $ReadOnly<{[string]: Parameter}>;
+  | $ReadOnly<{[string]: Parameter}>
+  | $ReadOnlySet<Parameter>
+  | $ReadOnlyMap<Parameter, Parameter>;
 
 // flowlint unclear-type:off
 export type ParameterizedScopeRules<P> = $ReadOnlyArray<
