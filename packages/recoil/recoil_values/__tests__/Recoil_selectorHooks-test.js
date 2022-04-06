@@ -42,6 +42,7 @@ let React,
   stringAtom,
   flushPromisesAndTimers,
   renderElements,
+  renderUnwrappedElements,
   renderElementsWithSuspenseCount,
   componentThatReadsAndWritesAtom,
   useRecoilState,
@@ -75,6 +76,7 @@ const testRecoil = getRecoilTestFn(() => {
     stringAtom,
     flushPromisesAndTimers,
     renderElements,
+    renderUnwrappedElements,
     renderElementsWithSuspenseCount,
     componentThatReadsAndWritesAtom,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
@@ -2083,6 +2085,68 @@ describe('Multiple stores', () => {
     act(() => resolvers.SET('RESOLVE'));
     await flushPromisesAndTimers();
     expect(c.textContent).toBe('"SET""SET:RESOLVE""OTHER:OTHER"');
+  });
+
+  // Test when multiple roots have a shared async selector with nested
+  // dependency on an atom initialized to a promise.  This stresses the
+  // logic for getting the current pending execution across other roots.
+  // (i.e. getExecutionInfoOfInProgressExecution() )
+  testRecoil('Nested atoms', async () => {
+    const myAtom = atom({
+      key: 'selector stores nested atom',
+      default: 'DEFAULT',
+      effects: [
+        ({setSelf}) => {
+          setSelf(new Promise(() => {}));
+        },
+      ],
+    });
+
+    const innerSelector = selector({
+      key: 'selector stores nested atom inner',
+      get: () => myAtom,
+    });
+
+    const outerSelector = selector({
+      key: 'selector stores nested atom outer',
+      get: () => innerSelector,
+    });
+
+    let setAtomA;
+    function SetAtomA() {
+      setAtomA = useSetRecoilState(myAtom);
+      return null;
+    }
+    let setAtomB;
+    function SetAtomB() {
+      setAtomB = useSetRecoilState(myAtom);
+      return null;
+    }
+
+    const c = renderUnwrappedElements(
+      <>
+        <RecoilRoot>
+          <React.Suspense fallback="LOAD_A ">
+            <ReadsAtom atom={outerSelector} />
+            <SetAtomA />
+          </React.Suspense>
+        </RecoilRoot>
+        <RecoilRoot>
+          <React.Suspense fallback="LOAD_B ">
+            <ReadsAtom atom={outerSelector} />
+            <SetAtomB />
+          </React.Suspense>
+        </RecoilRoot>
+      </>,
+    );
+    expect(c.textContent).toBe('LOAD_A LOAD_B ');
+
+    act(() => {
+      setAtomA('SETA');
+      setAtomB('SETB');
+    });
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('"SETA""SETB"');
   });
 });
 
