@@ -106,11 +106,14 @@ const {
 } = require('../core/Recoil_RecoilValueInterface');
 const {retainedByOptionWithDefault} = require('../core/Recoil_Retention');
 const {recoilCallback} = require('../hooks/Recoil_useRecoilCallback');
+const concatIterables = require('recoil-shared/util/Recoil_concatIterables');
 const deepFreezeValue = require('recoil-shared/util/Recoil_deepFreezeValue');
 const err = require('recoil-shared/util/Recoil_err');
+const filterIterable = require('recoil-shared/util/Recoil_filterIterable');
 const gkx = require('recoil-shared/util/Recoil_gkx');
 const invariant = require('recoil-shared/util/Recoil_invariant');
 const isPromise = require('recoil-shared/util/Recoil_isPromise');
+const mapIterable = require('recoil-shared/util/Recoil_mapIterable');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const {
   startPerfBlock,
@@ -590,7 +593,10 @@ function selector<T>(
          * to extend the tree cache to support caching loading states.
          */
         if (!isLatestExecution(store, executionId)) {
-          const executionInfo = getExecutionInfoOfInProgressExecution(state);
+          const executionInfo = getExecutionInfoOfInProgressExecution(
+            store,
+            state,
+          );
           if (executionInfo?.latestLoadable.state === 'loading') {
             /**
              * Returning promise here without wrapping as the wrapper logic was
@@ -808,9 +814,7 @@ function selector<T>(
             'Cache nodeKey is type string',
           );
 
-          const loadable = getCachedNodeLoadable(store, state, nodeKey);
-
-          return loadable.contents;
+          return getCachedNodeLoadable(store, state, nodeKey).contents;
         },
         {
           onNodeVisit: node => {
@@ -928,8 +932,10 @@ function selector<T>(
       return cachedVal;
     }
 
-    const inProgressExecutionInfo =
-      getExecutionInfoOfInProgressExecution(state);
+    const inProgressExecutionInfo = getExecutionInfoOfInProgressExecution(
+      store,
+      state,
+    );
 
     // FIXME: this won't work with custom caching b/c it uses separate cache
     if (inProgressExecutionInfo != null) {
@@ -952,54 +958,40 @@ function selector<T>(
    * execution whose dependency values match the values of the requesting store.
    */
   function getExecutionInfoOfInProgressExecution(
+    store: Store,
     state: TreeState,
   ): ?ExecutionInfo<T> {
-    const [, executionInfo] =
-      Array.from(executionInfoMap.entries()).find(([store, execInfo]) => {
-        return (
-          execInfo.latestLoadable != null &&
-          execInfo.latestExecutionId != null &&
-          !haveAsyncDepsChanged(store, state)
-        );
-      }) ?? [];
+    // Sort the pending executions so that our current store is checked first.
+    const pendingExecutions = concatIterables([
+      executionInfoMap.has(store)
+        ? [nullthrows(executionInfoMap.get(store))]
+        : [],
+      mapIterable(
+        filterIterable(executionInfoMap, ([s]) => s !== store),
+        ([, execInfo]) => execInfo,
+      ),
+    ]);
 
-    return executionInfo;
-  }
-
-  const mapOfCheckedVersions = new Map();
-
-  function haveAsyncDepsChanged(store: Store, state: TreeState): boolean {
-    const executionInfo = getExecutionInfo(store);
-
-    const oldDepValues =
-      executionInfo?.depValuesDiscoveredSoFarDuringAsyncWork ?? new Map();
-
-    const cachedDepValuesCheckedForThisVersion = Array(
-      (mapOfCheckedVersions.get(state.version) ?? new Map()).entries(),
-    );
-
-    const isCachedVersionSame =
-      mapOfCheckedVersions.has(state.version) &&
-      cachedDepValuesCheckedForThisVersion.length === oldDepValues.size &&
-      cachedDepValuesCheckedForThisVersion.every(([nodeKey, nodeVal]) => {
-        return oldDepValues.get(nodeKey) === nodeVal;
-      });
-
-    if (
-      oldDepValues == null ||
-      state.version === executionInfo?.stateVersion ||
-      isCachedVersionSame
-    ) {
+    function anyDepChanged(execDepValues: DepValues): boolean {
+      for (const [depKey, execLoadable] of execDepValues) {
+        if (!getCachedNodeLoadable(store, state, depKey).is(execLoadable)) {
+          return true;
+        }
+      }
       return false;
     }
 
-    mapOfCheckedVersions.set(state.version, new Map(oldDepValues));
-
-    return Array.from(oldDepValues).some(([nodeKey, oldVal]) => {
-      const loadable = getCachedNodeLoadable(store, state, nodeKey);
-
-      return loadable.contents !== oldVal.contents;
-    });
+    for (const execInfo of pendingExecutions) {
+      if (
+        // If this execution is on the same version of state, then it's valid
+        state.version === execInfo.stateVersion ||
+        // If the deps for the execution match our current state, then it's valid
+        !anyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)
+      ) {
+        return execInfo;
+      }
+    }
+    return undefined;
   }
 
   function getExecutionInfo(store: Store): ?ExecutionInfo<T> {

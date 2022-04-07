@@ -40,11 +40,13 @@ const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
 // using Recoil_stableStringify
 type Primitive = void | null | boolean | number | string;
 interface HasToJSON {
-  toJSON: () => string;
+  toJSON(): Parameter;
 }
 export type Parameter =
   | Primitive
   | HasToJSON
+  | $ReadOnlySet<Parameter>
+  | $ReadOnlyMap<Parameter, Parameter>
   | $ReadOnlyArray<Parameter>
   | $ReadOnly<{...}>;
 // | $ReadOnly<{[string]: Parameter}>; // TODO Better enforce object is serializable

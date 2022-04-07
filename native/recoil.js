@@ -6909,6 +6909,12 @@ const {
 
 
 
+
+
+
+
+
+
 const {
   startPerfBlock: startPerfBlock$1
 } = Recoil_PerformanceTimings;
@@ -7251,7 +7257,7 @@ function selector(options) {
 
 
       if (!isLatestExecution(store, executionId)) {
-        const executionInfo = getExecutionInfoOfInProgressExecution(state);
+        const executionInfo = getExecutionInfoOfInProgressExecution(store, state);
 
         if ((executionInfo === null || executionInfo === void 0 ? void 0 : executionInfo.latestLoadable.state) === 'loading') {
           /**
@@ -7434,8 +7440,7 @@ function selector(options) {
     try {
       cachedVal = cache.get(nodeKey => {
         !(typeof nodeKey === 'string') ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Cache nodeKey is type string') : Recoil_invariant(false) : void 0;
-        const loadable = getCachedNodeLoadable(store, state, nodeKey);
-        return loadable.contents;
+        return getCachedNodeLoadable(store, state, nodeKey).contents;
       }, {
         onNodeVisit: node => {
           if (node.type === 'branch' && node.nodeKey !== key) {
@@ -7533,7 +7538,7 @@ function selector(options) {
       return cachedVal;
     }
 
-    const inProgressExecutionInfo = getExecutionInfoOfInProgressExecution(state); // FIXME: this won't work with custom caching b/c it uses separate cache
+    const inProgressExecutionInfo = getExecutionInfoOfInProgressExecution(store, state); // FIXME: this won't work with custom caching b/c it uses separate cache
 
     if (inProgressExecutionInfo != null) {
       var _inProgressExecutionI;
@@ -7554,36 +7559,29 @@ function selector(options) {
    */
 
 
-  function getExecutionInfoOfInProgressExecution(state) {
-    var _Array$from$find;
+  function getExecutionInfoOfInProgressExecution(store, state) {
+    // Sort the pending executions so that our current store is checked first.
+    const pendingExecutions = Recoil_concatIterables([executionInfoMap.has(store) ? [Recoil_nullthrows(executionInfoMap.get(store))] : [], Recoil_mapIterable(Recoil_filterIterable(executionInfoMap, ([s]) => s !== store), ([, execInfo]) => execInfo)]);
 
-    const [, executionInfo] = (_Array$from$find = Array.from(executionInfoMap.entries()).find(([store, execInfo]) => {
-      return execInfo.latestLoadable != null && execInfo.latestExecutionId != null && !haveAsyncDepsChanged(store, state);
-    })) !== null && _Array$from$find !== void 0 ? _Array$from$find : [];
-    return executionInfo;
-  }
+    function anyDepChanged(execDepValues) {
+      for (const [depKey, execLoadable] of execDepValues) {
+        if (!getCachedNodeLoadable(store, state, depKey).is(execLoadable)) {
+          return true;
+        }
+      }
 
-  const mapOfCheckedVersions = new Map();
-
-  function haveAsyncDepsChanged(store, state) {
-    var _executionInfo$depVal, _mapOfCheckedVersions;
-
-    const executionInfo = getExecutionInfo(store);
-    const oldDepValues = (_executionInfo$depVal = executionInfo === null || executionInfo === void 0 ? void 0 : executionInfo.depValuesDiscoveredSoFarDuringAsyncWork) !== null && _executionInfo$depVal !== void 0 ? _executionInfo$depVal : new Map();
-    const cachedDepValuesCheckedForThisVersion = Array(((_mapOfCheckedVersions = mapOfCheckedVersions.get(state.version)) !== null && _mapOfCheckedVersions !== void 0 ? _mapOfCheckedVersions : new Map()).entries());
-    const isCachedVersionSame = mapOfCheckedVersions.has(state.version) && cachedDepValuesCheckedForThisVersion.length === oldDepValues.size && cachedDepValuesCheckedForThisVersion.every(([nodeKey, nodeVal]) => {
-      return oldDepValues.get(nodeKey) === nodeVal;
-    });
-
-    if (oldDepValues == null || state.version === (executionInfo === null || executionInfo === void 0 ? void 0 : executionInfo.stateVersion) || isCachedVersionSame) {
       return false;
     }
 
-    mapOfCheckedVersions.set(state.version, new Map(oldDepValues));
-    return Array.from(oldDepValues).some(([nodeKey, oldVal]) => {
-      const loadable = getCachedNodeLoadable(store, state, nodeKey);
-      return loadable.contents !== oldVal.contents;
-    });
+    for (const execInfo of pendingExecutions) {
+      if ( // If this execution is on the same version of state, then it's valid
+      state.version === execInfo.stateVersion || // If the deps for the execution match our current state, then it's valid
+      !anyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)) {
+        return execInfo;
+      }
+    }
+
+    return undefined;
   }
 
   function getExecutionInfo(store) {
