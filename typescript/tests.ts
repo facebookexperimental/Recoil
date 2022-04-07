@@ -447,6 +447,56 @@ isRecoilValue(mySelector1);
     get: () => myObj.b.d,
   });
 
+  const myArrSelFam = selectorFamily({
+    key: 'myArrSel',
+    get: (a: string) => () => myArr,
+  });
+
+  const myObjSelFam = selectorFamily({
+    key: 'myObjSel',
+    get: (a: string) => () => myObj,
+  });
+
+  const myMapSelFam = selectorFamily({
+    key: 'myMapSel',
+    get: (a: string) => () => myMap,
+  });
+
+  const mySetSelFam = selectorFamily({
+    key: 'mySetSel',
+    get: (a: string) => () => mySet,
+  });
+
+  const myFnSelFam = selectorFamily({
+    key: 'myFnSel',
+    get: (a: string) => () => myObj.b.d,
+  });
+
+  const myArrAtomFam = atomFamily({
+    key: 'myArrSel',
+    default: (a: string) => myArr,
+  });
+
+  const myObjAtomFam = atomFamily({
+    key: 'myObjSel',
+    default: (a: string) => myObj,
+  });
+
+  const myMapAtomFam = atomFamily({
+    key: 'myMapSel',
+    default: (a: string) => myMap,
+  });
+
+  const mySetAtomFam = atomFamily({
+    key: 'mySetSel',
+    default: (a: string) => mySet,
+  });
+
+  const myFnAtomFam = atomFamily({
+    key: 'myFnSel',
+    default: (a: string) => myObj.b.d,
+  });
+
   const arr1 = useRecoilValue(myArrAtom);
   const obj1 = useRecoilValue(myObjAtom);
   const map1 = useRecoilValue(myMapAtom);
@@ -506,6 +556,332 @@ isRecoilValue(mySelector1);
   set2.add(''); // $ExpectError
 
   set2.forEach(() => {});
+
+  fn1(10);
+
+  const arr3 = useRecoilValue(myArrSelFam(''));
+  const obj3 = useRecoilValue(myObjSelFam(''));
+  const map3 = useRecoilValue(myMapSelFam(''));
+  const set3 = useRecoilValue(mySetSelFam(''));
+  const fn3 = useRecoilValue(myFnSelFam(''));
+
+  arr3[0].a = 10; // $ExpectError
+  arr3.push(1); // $ExpectError
+  arr3.reverse(); // $ExpectError
+  arr3.sort(); // $ExpectError
+
+  arr3.every(() => {}); // OK because immutable
+  arr3.filter(() => {}); // OK because immutable
+
+  obj3.a = 2; // $ExpectError
+  obj3.b.c = 100;  // $ExpectError
+
+  obj3.b.d(10);
+
+  obj3.b.d = () => {}; // $ExpectError
+  map3.set('a', 1); // $ExpectError
+
+  map3.get(''); // OK because immutable
+
+  map3.size;
+
+  set3.add(''); // $ExpectError
+
+  set3.forEach(() => {});
+
+  fn1(10);
+
+  const arr4 = useRecoilValue(myArrAtomFam(''));
+  const obj4 = useRecoilValue(myObjAtomFam(''));
+  const map4 = useRecoilValue(myMapAtomFam(''));
+  const set4 = useRecoilValue(mySetAtomFam(''));
+  const fn4 = useRecoilValue(myFnAtomFam(''));
+
+  arr4[0].a = 10; // $ExpectError
+  arr4.push(1); // $ExpectError
+  arr4.reverse(); // $ExpectError
+  arr4.sort(); // $ExpectError
+
+  arr4.every(() => {}); // OK because immutable
+  arr4.filter(() => {}); // OK because immutable
+
+  obj4.a = 2; // $ExpectError
+  obj4.b.c = 100;  // $ExpectError
+
+  obj4.b.d(10);
+
+  obj4.b.d = () => {}; // $ExpectError
+  map4.set('a', 1); // $ExpectError
+
+  map4.get(''); // OK because immutable
+
+  map4.size;
+
+  set4.add(''); // $ExpectError
+
+  set4.forEach(() => {});
+
+  fn1(10);
+}
+
+/**
+ * recoil values are mutable when dangerouslyAllowMutability is set
+ */
+ {
+  const myArr = [{a: 10}];
+  const myObj = {
+    a: 10,
+    b: {
+      c: 10,
+      d: (a: number) => a,
+    },
+  };
+  const myMap = new Map([['', 1]]);
+  const mySet = new Set(['']);
+
+  const myArrAtom = atom({
+    key: 'myArrAtom',
+    default: myArr,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myObjAtom = atom({
+    key: 'myObjAtom',
+    default: myObj,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myMapAtom = atom({
+    key: 'myMapAtom',
+    default: myMap,
+    dangerouslyAllowMutability: true,
+  });
+
+  const mySetAtom = atom({
+    key: 'mySetAtom',
+    default: mySet,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myFnAtom = atom({
+    key: 'myFnAtom',
+    default: myObj.b.d,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myArrSel = selector({
+    key: 'myArrSel',
+    get: () => myArr,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myObjSel = selector({
+    key: 'myObjSel',
+    get: () => myObj,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myMapSel = selector({
+    key: 'myMapSel',
+    get: () => myMap,
+    dangerouslyAllowMutability: true,
+  });
+
+  const mySetSel = selector({
+    key: 'mySetSel',
+    get: () => mySet,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myFnSel = selector({
+    key: 'myFnSel',
+    get: () => myObj.b.d,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myArrSelFam = selectorFamily({
+    key: 'myArrSel',
+    get: (a: string) => () => myArr,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myObjSelFam = selectorFamily({
+    key: 'myObjSel',
+    get: (a: string) => () => myObj,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myMapSelFam = selectorFamily({
+    key: 'myMapSel',
+    get: (a: string) => () => myMap,
+    dangerouslyAllowMutability: true,
+  });
+
+  const mySetSelFam = selectorFamily({
+    key: 'mySetSel',
+    get: (a: string) => () => mySet,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myFnSelFam = selectorFamily({
+    key: 'myFnSel',
+    get: (a: string) => () => myObj.b.d,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myArrAtomFam = atomFamily({
+    key: 'myArrSel',
+    default: (a: string) => myArr,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myObjAtomFam = atomFamily({
+    key: 'myObjSel',
+    default: (a: string) => myObj,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myMapAtomFam = atomFamily({
+    key: 'myMapSel',
+    default: (a: string) => myMap,
+    dangerouslyAllowMutability: true,
+  });
+
+  const mySetAtomFam = atomFamily({
+    key: 'mySetSel',
+    default: (a: string) => mySet,
+    dangerouslyAllowMutability: true,
+  });
+
+  const myFnAtomFam = atomFamily({
+    key: 'myFnSel',
+    default: (a: string) => myObj.b.d,
+    dangerouslyAllowMutability: true,
+  });
+
+  const arr1 = useRecoilValue(myArrAtom);
+  const obj1 = useRecoilValue(myObjAtom);
+  const map1 = useRecoilValue(myMapAtom);
+  const set1 = useRecoilValue(mySetAtom);
+  const fn1 = useRecoilValue(myFnAtom);
+
+  arr1[0].a = 10;
+  arr1.push({ a: 1 });
+  arr1.reverse();
+  arr1.sort();
+
+  arr1.every(() => {});
+  arr1.filter(() => {});
+
+  obj1.a = 2;
+  obj1.b.c = 100;
+
+  obj1.b.d(10);
+  obj1.b.d = () => 5;
+
+  map1.set('a', 1);
+
+  map1.get('');
+  map1.size;
+
+  set1.add('');
+
+  set1.forEach(() => {});
+
+  fn1(10);
+
+  const arr2 = useRecoilValue(myArrSel);
+  const obj2 = useRecoilValue(myObjSel);
+  const map2 = useRecoilValue(myMapSel);
+  const set2 = useRecoilValue(mySetSel);
+  const fn2 = useRecoilValue(myFnSel);
+
+  arr2[0].a = 10;
+  arr2.push({ a: 1 });
+  arr2.reverse();
+  arr2.sort();
+
+  arr2.every(() => {});
+  arr2.filter(() => {});
+
+  obj2.a = 2;
+  obj2.b.c = 100;
+
+  obj2.b.d(10);
+  obj2.b.d = () => 5;
+
+  map2.set('a', 1);
+
+  map2.get('');
+  map2.size;
+
+  set2.add('');
+
+  set2.forEach(() => {});
+
+  fn1(10);
+
+  const arr3 = useRecoilValue(myArrSelFam(''));
+  const obj3 = useRecoilValue(myObjSelFam(''));
+  const map3 = useRecoilValue(myMapSelFam(''));
+  const set3 = useRecoilValue(mySetSelFam(''));
+  const fn3 = useRecoilValue(myFnSelFam(''));
+
+  arr3[0].a = 10;
+  arr3.push({a: 1});
+  arr3.reverse();
+  arr3.sort();
+
+  arr3.every(() => {});
+  arr3.filter(() => {});
+
+  obj3.a = 2;
+  obj3.b.c = 100;
+
+  obj3.b.d(10);
+
+  obj3.b.d = () => 4;
+  map3.set('a', 1);
+
+  map3.get('');
+
+  map3.size;
+
+  set3.add('');
+
+  set3.forEach(() => {});
+
+  fn1(10);
+
+  const arr4 = useRecoilValue(myArrAtomFam(''));
+  const obj4 = useRecoilValue(myObjAtomFam(''));
+  const map4 = useRecoilValue(myMapAtomFam(''));
+  const set4 = useRecoilValue(mySetAtomFam(''));
+  const fn4 = useRecoilValue(myFnAtomFam(''));
+
+  arr4[0].a = 10;
+  arr4.push({a: 1});
+  arr4.reverse();
+  arr4.sort();
+
+  arr4.every(() => {});
+  arr4.filter(() => {});
+
+  obj4.a = 2;
+  obj4.b.c = 100;
+
+  obj4.b.d(10);
+
+  obj4.b.d = () => 4;
+  map4.set('a', 1);
+
+  map4.get('');
+
+  map4.size;
+
+  set4.add('');
+
+  set4.forEach(() => {});
 
   fn1(10);
 }

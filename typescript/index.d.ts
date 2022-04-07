@@ -115,6 +115,9 @@
    default: RecoilValue<T> | Promise<T> | T;
  }
  export type AtomOptions<T> = AtomOptionsWithoutDefault<T> | AtomOptionsWithDefault<T>;
+ export type AtomOptionsMutable<T> = AtomOptions<T> & {
+  dangerouslyAllowMutability: true;
+ };
 
  /**
   * Will work for all types, but do not add a special case for Arrays specifically as
@@ -130,6 +133,7 @@
  /**
   * Creates an atom, which represents a piece of writeable state
   */
+ export function atom<T>(options: AtomOptionsMutable<T>): RecoilState<T>;
  export function atom<T>(options: AtomOptions<T>): RecoilState<DeepReadonly<T>>;
 
  export type GetRecoilValue = <T>(recoilVal: RecoilValue<T>) => T;
@@ -202,9 +206,19 @@
   ) => void;
  }
 
+export interface ReadOnlySelectorOptionsMutable<T> extends ReadOnlySelectorOptions<T> {
+  dangerouslyAllowMutability: true;
+}
+
+export interface ReadWriteSelectorOptionsMutable<T> extends ReadWriteSelectorOptions<T> {
+  dangerouslyAllowMutability: true;
+}
+
  /**
   * Creates a selector which represents derived state.
   */
+ export function selector<T>(options: ReadWriteSelectorOptionsMutable<T>): RecoilState<T>;
+ export function selector<T>(options: ReadOnlySelectorOptionsMutable<T>): RecoilValueReadOnly<T>;
  export function selector<T>(options: ReadWriteSelectorOptions<T>): RecoilState<DeepReadonly<T>>;
  export function selector<T>(options: ReadOnlySelectorOptions<T>): RecoilValueReadOnly<DeepReadonly<T>>;
 
@@ -404,17 +418,27 @@
   effects_UNSTABLE?: | ReadonlyArray<AtomEffect<T>> | ((param: P) => ReadonlyArray<AtomEffect<T>>);
   // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
  }
+
  interface AtomFamilyOptionsWithDefault<T, P extends SerializableParam>
    extends AtomFamilyOptionsWithoutDefault<T, P> {
   default: RecoilValue<T> | Promise<T> | T | ((param: P) => T | RecoilValue<T> | Promise<T>);
  }
+
  export type AtomFamilyOptions<T, P extends SerializableParam> =
    | AtomFamilyOptionsWithDefault<T, P>
    | AtomFamilyOptionsWithoutDefault<T, P>;
 
+export type AtomFamilyOptionsMutable<T, P extends SerializableParam> = AtomFamilyOptions<T, P> & {
+  dangerouslyAllowMutability: true,
+};
+
  /**
   * Returns a function which returns a memoized atom for each unique parameter value.
   */
+  export function atomFamily<T, P extends SerializableParam>(
+   options: AtomFamilyOptionsMutable<T, P>,
+  ): (param: P) => RecoilState<T>;
+
  export function atomFamily<T, P extends SerializableParam>(
   options: AtomFamilyOptions<T, P>,
  ): (param: P) => RecoilState<DeepReadonly<T>>;
@@ -428,6 +452,10 @@
   // cachePolicyForParams_UNSTABLE?: CachePolicyWithoutEviction; TODO: removing while we discuss long term API
   cachePolicy_UNSTABLE?: CachePolicyWithoutEquality; // TODO: using the more restrictive CachePolicyWithoutEquality while we discuss long term API
   dangerouslyAllowMutability?: boolean;
+ }
+
+ export interface ReadOnlySelectorFamilyOptionsMutable<T, P extends SerializableParam> extends ReadOnlySelectorFamilyOptions<T, P> {
+  dangerouslyAllowMutability: true;
  }
 
  export interface ReadWriteSelectorFamilyOptions<T, P extends SerializableParam> {
@@ -447,9 +475,17 @@
   dangerouslyAllowMutability?: boolean;
  }
 
+ export interface ReadWriteSelectorFamilyOptionsMutable<T, P extends SerializableParam> extends ReadWriteSelectorFamilyOptions<T, P> {
+  dangerouslyAllowMutability: true;
+ }
+
 /**
  * Returns a function which returns a memoized atom for each unique parameter value.
  */
+export function selectorFamily<T, P extends SerializableParam>(
+options: ReadWriteSelectorFamilyOptionsMutable<T, P>,
+): (param: P) => RecoilState<T>;
+
 export function selectorFamily<T, P extends SerializableParam>(
 options: ReadWriteSelectorFamilyOptions<T, P>,
 ): (param: P) => RecoilState<DeepReadonly<T>>;
@@ -457,6 +493,10 @@ options: ReadWriteSelectorFamilyOptions<T, P>,
 /**
  * Returns a function which returns a memoized atom for each unique parameter value.
  */
+export function selectorFamily<T, P extends SerializableParam>(
+options: ReadOnlySelectorFamilyOptionsMutable<T, P>,
+): (param: P) => RecoilValueReadOnly<T>;
+
 export function selectorFamily<T, P extends SerializableParam>(
 options: ReadOnlySelectorFamilyOptions<T, P>,
 ): (param: P) => RecoilValueReadOnly<DeepReadonly<T>>;
