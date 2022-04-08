@@ -2148,6 +2148,73 @@ describe('Multiple stores', () => {
     await flushPromisesAndTimers();
     expect(c.textContent).toBe('"SETA""SETB"');
   });
+
+  // Test that when a store is re-using another store's execution of a selector
+  // that async dependencies are updated so it can stop re-using it if state
+  // diverges from the original store.
+  testRecoil('Diverging shared selectors', async () => {
+    const myAtom = stringAtom();
+    atom({
+      key: 'selector stores nested atom',
+      default: 'DEFAULT',
+    });
+
+    const mySelector = selector({
+      key: 'selector stores nested atom inner',
+      get: async ({get}) => {
+        await Promise.resolve();
+        const value = get(myAtom);
+
+        if (value === 'RESOLVE') {
+          return value;
+        }
+
+        await new Promise(() => {});
+      },
+    });
+
+    let setAtomA;
+    function SetAtomA() {
+      setAtomA = useSetRecoilState(myAtom);
+      return null;
+    }
+    let setAtomB;
+    function SetAtomB() {
+      setAtomB = useSetRecoilState(myAtom);
+      return null;
+    }
+
+    const c = renderUnwrappedElements(
+      <>
+        <RecoilRoot>
+          <React.Suspense fallback="LOAD_A ">
+            <ReadsAtom atom={mySelector} />
+            <SetAtomA />
+          </React.Suspense>
+        </RecoilRoot>
+        <RecoilRoot>
+          <React.Suspense fallback="LOAD_B ">
+            <ReadsAtom atom={mySelector} />
+            <SetAtomB />
+          </React.Suspense>
+        </RecoilRoot>
+      </>,
+    );
+    expect(c.textContent).toBe('LOAD_A LOAD_B ');
+
+    act(() => {
+      setAtomA('SETA');
+    });
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+
+    act(() => {
+      setAtomB('RESOLVE');
+    });
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('LOAD_A "RESOLVE"');
+  });
 });
 
 describe('Counts', () => {
