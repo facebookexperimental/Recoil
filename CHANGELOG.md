@@ -8,6 +8,7 @@
 - Cleanup potential memory leak when using async selectors (#1714)
 - Fix potentially hung async selectors when shared across multiple roots that depend on atoms initialized with promises that don't resolve (#1714)
 - Atom effects can initialize or set atoms to wrapped values (#1681)
+- Selector cache lookup optimization (#)
 
 ## 0.7 (2022-03-31)
 
