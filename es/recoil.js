@@ -7085,8 +7085,6 @@ function selector(options) {
         throw CANCELED;
       }
 
-      updateExecutionInfoDepValues(store, executionId, depValues);
-
       if (Recoil_isPromise(errorOrPromise)) {
         return wrapPendingDependencyPromise(store, errorOrPromise, state, depValues, executionId, loadingDepsState);
       }
@@ -7562,7 +7560,7 @@ function selector(options) {
     // Sort the pending executions so that our current store is checked first.
     const pendingExecutions = Recoil_concatIterables([executionInfoMap.has(store) ? [Recoil_nullthrows(executionInfoMap.get(store))] : [], Recoil_mapIterable(Recoil_filterIterable(executionInfoMap, ([s]) => s !== store), ([, execInfo]) => execInfo)]);
 
-    function anyDepChanged(execDepValues) {
+    function hasAnyDepChanged(execDepValues) {
       for (const [depKey, execLoadable] of execDepValues) {
         if (!getCachedNodeLoadable(store, state, depKey).is(execLoadable)) {
           return true;
@@ -7575,7 +7573,7 @@ function selector(options) {
     for (const execInfo of pendingExecutions) {
       if ( // If this execution is on the same version of state, then it's valid
       state.version === execInfo.stateVersion || // If the deps for the execution match our current state, then it's valid
-      !anyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)) {
+      !hasAnyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)) {
         return execInfo;
       }
     }
