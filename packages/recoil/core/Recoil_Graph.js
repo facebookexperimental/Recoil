@@ -11,7 +11,7 @@
 
 'use strict';
 
-import type {DependencyMap, Graph} from './Recoil_GraphTypes';
+import type {Graph} from './Recoil_GraphTypes';
 import type {NodeKey, StateID} from './Recoil_Keys';
 import type {Store} from './Recoil_State';
 
@@ -19,7 +19,7 @@ const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
 const mapMap = require('recoil-shared/util/Recoil_mapMap');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
-export type {DependencyMap, Graph} from './Recoil_GraphTypes';
+export type {Graph} from './Recoil_GraphTypes';
 
 function makeGraph(): Graph {
   return {
@@ -40,61 +40,54 @@ function cloneGraph(graph: Graph): Graph {
 
 // Note that this overwrites the deps of existing nodes, rather than unioning
 // the new deps with the old deps.
-function mergeDependencyMapIntoGraph(
-  deps: DependencyMap,
+function mergeDepsIntoGraph(
+  key: NodeKey,
+  newDeps: $ReadOnlySet<NodeKey>,
   graph: Graph,
   // If olderGraph is given then we will not overwrite changes made to the given
   // graph compared with olderGraph:
   olderGraph?: Graph,
 ): void {
   const {nodeDeps, nodeToNodeSubscriptions} = graph;
+  const oldDeps = nodeDeps.get(key);
 
-  deps.forEach((upstreams, downstream) => {
-    const existingUpstreams = nodeDeps.get(downstream);
+  if (oldDeps && olderGraph && oldDeps !== olderGraph.nodeDeps.get(key)) {
+    return;
+  }
 
-    if (
-      existingUpstreams &&
-      olderGraph &&
-      existingUpstreams !== olderGraph.nodeDeps.get(downstream)
-    ) {
-      return;
+  // Update nodeDeps:
+  nodeDeps.set(key, newDeps);
+
+  // Add new deps to nodeToNodeSubscriptions:
+  const addedDeps =
+    oldDeps == null ? newDeps : differenceSets(newDeps, oldDeps);
+  for (const dep of addedDeps) {
+    if (!nodeToNodeSubscriptions.has(dep)) {
+      nodeToNodeSubscriptions.set(dep, new Set());
     }
+    const existing = nullthrows(nodeToNodeSubscriptions.get(dep));
+    existing.add(key);
+  }
 
-    // Update nodeDeps:
-    nodeDeps.set(downstream, new Set(upstreams));
-
-    // Add new deps to nodeToNodeSubscriptions:
-    const addedUpstreams =
-      existingUpstreams == null
-        ? upstreams
-        : differenceSets(upstreams, existingUpstreams);
-    addedUpstreams.forEach(upstream => {
-      if (!nodeToNodeSubscriptions.has(upstream)) {
-        nodeToNodeSubscriptions.set(upstream, new Set());
+  // Remove removed deps from nodeToNodeSubscriptions:
+  if (oldDeps) {
+    const removedDeps = differenceSets(oldDeps, newDeps);
+    for (const dep of removedDeps) {
+      if (!nodeToNodeSubscriptions.has(dep)) {
+        return;
       }
-      const existing = nullthrows(nodeToNodeSubscriptions.get(upstream));
-      existing.add(downstream);
-    });
-
-    // Remove removed deps from nodeToNodeSubscriptions:
-    if (existingUpstreams) {
-      const removedUpstreams = differenceSets(existingUpstreams, upstreams);
-      removedUpstreams.forEach(upstream => {
-        if (!nodeToNodeSubscriptions.has(upstream)) {
-          return;
-        }
-        const existing = nullthrows(nodeToNodeSubscriptions.get(upstream));
-        existing.delete(downstream);
-        if (existing.size === 0) {
-          nodeToNodeSubscriptions.delete(upstream);
-        }
-      });
+      const existing = nullthrows(nodeToNodeSubscriptions.get(dep));
+      existing.delete(key);
+      if (existing.size === 0) {
+        nodeToNodeSubscriptions.delete(dep);
+      }
     }
-  });
+  }
 }
 
-function saveDependencyMapToStore(
-  dependencyMap: DependencyMap,
+function saveDepsToStore(
+  key: NodeKey,
+  deps: $ReadOnlySet<NodeKey>,
   store: Store,
   version: StateID,
 ): void {
@@ -115,13 +108,13 @@ function saveDependencyMapToStore(
   // Merge the dependencies discovered into the store's dependency map
   // for the version that was read:
   const graph = store.getGraph(version);
-  mergeDependencyMapIntoGraph(dependencyMap, graph);
+  mergeDepsIntoGraph(key, deps, graph);
 
   // If this version is not the latest version, also write these dependencies
   // into later versions if they don't already have their own:
   if (version === storeState.previousTree?.version) {
     const currentGraph = store.getGraph(storeState.currentTree.version);
-    mergeDependencyMapIntoGraph(dependencyMap, currentGraph, graph);
+    mergeDepsIntoGraph(key, deps, currentGraph, graph);
   }
   if (
     version === storeState.previousTree?.version ||
@@ -130,39 +123,13 @@ function saveDependencyMapToStore(
     const nextVersion = storeState.nextTree?.version;
     if (nextVersion !== undefined) {
       const nextGraph = store.getGraph(nextVersion);
-      mergeDependencyMapIntoGraph(dependencyMap, nextGraph, graph);
+      mergeDepsIntoGraph(key, deps, nextGraph, graph);
     }
   }
-}
-
-function mergeDepsIntoDependencyMap(
-  from: DependencyMap,
-  into: DependencyMap,
-): void {
-  from.forEach((upstreamDeps, downstreamNode) => {
-    if (!into.has(downstreamNode)) {
-      into.set(downstreamNode, new Set());
-    }
-    const deps = nullthrows(into.get(downstreamNode));
-    upstreamDeps.forEach(dep => deps.add(dep));
-  });
-}
-
-function addToDependencyMap(
-  downstream: NodeKey,
-  upstream: NodeKey,
-  dependencyMap: DependencyMap,
-): void {
-  if (!dependencyMap.has(downstream)) {
-    dependencyMap.set(downstream, new Set());
-  }
-  nullthrows(dependencyMap.get(downstream)).add(upstream);
 }
 
 module.exports = {
-  addToDependencyMap,
   cloneGraph,
   graph: makeGraph,
-  mergeDepsIntoDependencyMap,
-  saveDependencyMapToStore,
+  saveDepsToStore,
 };
