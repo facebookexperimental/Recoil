@@ -7,6 +7,7 @@
 - Update typing for family parameters to better support Map, Set, and classes with `toJSON()`. (#1709, #1703)
 - Cleanup potential memory leak when using async selectors (#1714)
 - Fix potentially hung async selectors when shared across multiple roots that depend on atoms initialized with promises that don't resolve (#1714)
+- Selector cache lookup optimization (#1720)
 
 ## 0.7 (2022-03-31)
 

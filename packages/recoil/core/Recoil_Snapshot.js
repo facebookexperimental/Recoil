@@ -83,7 +83,8 @@ class Snapshot {
       storeID: getNextStoreID(),
       getState: () => storeState,
       replaceState: replacer => {
-        storeState.currentTree = replacer(storeState.currentTree); // no batching so nextTree is never active
+        // no batching, so nextTree is never active
+        storeState.currentTree = replacer(storeState.currentTree);
       },
       getGraph: version => {
         const graphs = storeState.graphsByVersion;
@@ -281,18 +282,20 @@ function cloneStoreState(
   const storeState = store.getState();
   const version = bumpVersion ? getNextTreeStateVersion() : treeState.version;
   return {
-    currentTree: bumpVersion
-      ? {
-          // TODO snapshots shouldn't really have versions because a new version number
-          // is always assigned when the snapshot is gone to.
-          version,
-          stateID: version,
-          transactionMetadata: {...treeState.transactionMetadata},
-          dirtyAtoms: new Set(treeState.dirtyAtoms),
-          atomValues: treeState.atomValues.clone(),
-          nonvalidatedAtoms: treeState.nonvalidatedAtoms.clone(),
-        }
-      : treeState,
+    // Always clone the TreeState to isolate stores from accidental mutations.
+    // For example, reading a selector from a cloned snapshot shouldn't cache
+    // in the original treestate which may cause the original to skip
+    // initialization of upstream atoms.
+    currentTree: {
+      // TODO snapshots shouldn't really have versions because a new version number
+      // is always assigned when the snapshot is gone to.
+      version: bumpVersion ? version : treeState.version,
+      stateID: bumpVersion ? version : treeState.stateID,
+      transactionMetadata: {...treeState.transactionMetadata},
+      dirtyAtoms: new Set(treeState.dirtyAtoms),
+      atomValues: treeState.atomValues.clone(),
+      nonvalidatedAtoms: treeState.nonvalidatedAtoms.clone(),
+    },
     commitDepth: 0,
     nextTree: null,
     previousTree: null,
