@@ -34,6 +34,7 @@
   useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
 } from 'recoil';
+import * as React from 'react';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -159,7 +160,7 @@ const selectorError3 = selector({
 selectorError3;
 
 // RecoilRoot
-RecoilRoot({});
+RecoilRoot({children: React.createElement('div')});
 RecoilRoot({
   initializeState: ({ set, reset }) => {
     set(myAtom, 5);
@@ -170,9 +171,16 @@ RecoilRoot({
     setUnvalidatedAtomValues({}); // $ExpectError
     set(writeableSelector, new DefaultValue());
   },
+  children: React.createElement('div'),
 });
-RecoilRoot({override: true});
-RecoilRoot({override: false});
+RecoilRoot({
+  override: true,
+  children: React.createElement('div'),
+});
+RecoilRoot({
+  override: false,
+  children: React.createElement('div'),
+});
 
 // Loadable
 function loadableTest(loadable: Loadable<number>) {

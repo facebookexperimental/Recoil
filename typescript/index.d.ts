@@ -29,7 +29,11 @@
  export type RecoilRootProps = {
   initializeState?: (mutableSnapshot: MutableSnapshot) => void,
   override?: true,
- } | {override: false};
+  children: React.ReactNode,
+ } | {
+  override: false,
+  children: React.ReactNode,
+ };
 
  /**
   * Root component for managing Recoil state.  Most Recoil hooks should be
