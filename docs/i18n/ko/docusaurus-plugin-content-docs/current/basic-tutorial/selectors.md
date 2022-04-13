@@ -64,7 +64,7 @@ function TodoList() {
 }
 ```
 
-UI는 `toDoListFilterState`의 기본값인 `"Show All"`과 동일하다. 필터를 변경하려면 우리는 `TodoListFilter` 컴포넌트를 구현해야 한다.
+UI는 `todoListFilterState`의 기본값인 `"Show All"`과 동일하다. 필터를 변경하려면 우리는 `TodoListFilter` 컴포넌트를 구현해야 한다.
 
 ```jsx
 function TodoListFilters() {
