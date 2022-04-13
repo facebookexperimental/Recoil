@@ -78,7 +78,7 @@ class Path {
 
   toString(): string {
     const pieces = [];
-    let current = this;
+    let current: ?Path = this;
 
     while (current != null) {
       const {field, parent} = current;

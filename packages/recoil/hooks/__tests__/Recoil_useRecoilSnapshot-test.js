@@ -352,7 +352,7 @@ describe('Snapshot Retention', () => {
       ],
     });
 
-    let setMount = _ => {
+    let setMount: $FlowFixMe = _ => {
       throw new Error('Test Error');
     };
     function UseRecoilSnapshot() {

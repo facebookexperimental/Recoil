@@ -600,7 +600,7 @@ describe('Atom effects', () => {
       ],
     });
 
-    let setMount = _ => {
+    let setMount: $FlowFixMe = _ => {
       throw new Error('Test Error');
     };
     function Component() {

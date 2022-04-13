@@ -163,8 +163,13 @@ function asyncSelectorThatPushesPromisesOntoArray(dep: RecoilValue<any>) {
     key: `selector${nextID++}`,
     get: ({get}) => {
       get(dep);
-      let resolve = _ => invariant(false, 'bug in test code'); // make flow happy with initialization
-      let reject = _ => invariant(false, 'bug in test code');
+      let resolve:
+        | ((_: number | $TEMPORARY$string<'hello'>) => $FlowFixMeEmpty)
+        // $FlowFixMe[speculation-ambiguous]
+        | ((result: Promise<$FlowFixMe> | $FlowFixMe) => void) = _ =>
+        invariant(false, 'bug in test code'); // make flow happy with initialization
+      let reject: (error: $FlowFixMe) => void = _ =>
+        invariant(false, 'bug in test code');
       const p = new Promise((res, rej) => {
         resolve = res;
         reject = rej;
@@ -1572,7 +1577,7 @@ describe('Async Selectors', () => {
         key: 'notifiesAllStores/snapshots/a',
         get: () => 'foo',
       });
-      let resolve = _ => {
+      let resolve: $FlowFixMe = _ => {
         throw new Error('error in test');
       };
       const selectorB = selector({
@@ -1633,7 +1638,7 @@ describe('Async Selectors', () => {
           get: () => 'SELECTOR A',
         });
 
-        let resolve = _ => {
+        let resolve: $FlowFixMe = _ => {
           throw new Error('error in test');
         };
         const selectorB = selector({

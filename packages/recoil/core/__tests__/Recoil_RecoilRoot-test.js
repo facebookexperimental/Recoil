@@ -269,10 +269,10 @@ describe('initializeState', () => {
     const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
     const initializeState = jest.fn(({set}) => set(myAtom, 'INIT'));
-    let forceUpdate = () => {
+    let forceUpdate: $FlowFixMe = () => {
       throw new Error('not rendered');
     };
-    let setRootKey = _ => {
+    let setRootKey: $FlowFixMe = _ => {
       throw new Error('');
     };
     function MyRoot() {

@@ -861,7 +861,7 @@ testRecoil(
     function testWithOrder(order) {
       const anAtom = counterAtom();
 
-      let q = [];
+      let q: Array<$FlowFixMe> = [];
       let seen = false;
       const original = Queue.enqueueExecution;
       try {
