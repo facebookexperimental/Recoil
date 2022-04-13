@@ -192,13 +192,19 @@ type ExecutionID = number;
  *    executions running, but there is only one 'latest' execution, which
  *    represents the execution that will make its way to the UI and make updates
  *    to global state when it finishes.
+ * 4. The set of stateVersions which have already been tested as valid for this
+ *    evalution.  This is an optimization to avoid having to transitively
+ *    check if any deps have changed for a state we have aleady checked.
+ *    If additional async dependencies are discovered later, they may have
+ *    different values in different stores/states, so this will have to be
+ *    cleared.
  */
 type ExecutionInfo<T> = {
   // This is mutable and updated as new deps are discovered
   depValuesDiscoveredSoFarDuringAsyncWork: DepValues,
   loadingLoadable: LoadingLoadableType<T>,
   executionID: ExecutionID,
-  stateVersion: StateID,
+  stateVersions: Map<StateID, boolean>,
 };
 
 // An object to hold the current state for loading dependencies for a particular
@@ -216,8 +222,8 @@ const dependencyStack = []; // for detecting circular dependencies.
 const waitingStores: Map<ExecutionID, Set<Store>> = new Map();
 
 const getNewExecutionID: () => ExecutionID = (() => {
-  let executionId = 0;
-  return () => executionId++;
+  let executionID = 0;
+  return () => executionID++;
 })();
 
 /* eslint-disable no-redeclare */
@@ -283,37 +289,67 @@ function selector<T>(
   function resolveAsync(
     store: Store,
     state: TreeState,
-    executionId: ExecutionID,
+    executionID: ExecutionID,
     loadable: Loadable<T>,
     depValues: DepValues,
   ): void {
     setCache(state, loadable, depValues);
-    notifyStoresOfResolvedAsync(store, executionId);
+    notifyStoresOfResolvedAsync(store, executionID);
   }
 
   function notifyStoresOfResolvedAsync(
     store: Store,
-    executionId: ExecutionID,
+    executionID: ExecutionID,
   ): void {
-    if (isLatestExecution(store, executionId)) {
+    if (isLatestExecution(store, executionID)) {
       clearExecutionInfo(store);
     }
-    const stores = waitingStores.get(executionId);
-    if (stores !== undefined) {
+    notifyWaitingStores(executionID, true);
+  }
+
+  /**
+   * Notify stores to pull the selector again if a new async dep was discovered.
+   * 1) Async selector adds a new dep but doesn't resolve yet.
+   *    Note that deps for an async selector are based on the state when the
+   *    evaluation started, in order to provide a consistent picture of state.
+   * 2) But, new value of dep based on the current state might cause the selector
+   *    to resolve or resolve differently.
+   * 3) Therefore, this notification will pull the selector based on the current
+   *    state for the components
+   */
+  function notifyStoresOfNewAsyncDep(
+    store: Store,
+    executionID: ExecutionID,
+  ): void {
+    if (isLatestExecution(store, executionID)) {
+      const executionInfo = nullthrows(getExecutionInfo(store));
+      executionInfo.stateVersions.clear();
+      notifyWaitingStores(executionID, false);
+    }
+  }
+
+  function notifyWaitingStores(
+    executionID: ExecutionID,
+    clearWaitlist: boolean,
+  ) {
+    const stores = waitingStores.get(executionID);
+    if (stores != null) {
       for (const waitingStore of stores) {
         markRecoilValueModified(waitingStore, nullthrows(recoilValue));
       }
-      waitingStores.delete(executionId);
+      if (clearWaitlist) {
+        waitingStores.delete(executionID);
+      }
     }
   }
 
   function markStoreWaitingForResolvedAsync(
     store: Store,
-    executionId: ExecutionID,
+    executionID: ExecutionID,
   ): void {
-    let stores = waitingStores.get(executionId);
+    let stores = waitingStores.get(executionID);
     if (stores == null) {
-      waitingStores.set(executionId, (stores = new Set()));
+      waitingStores.set(executionID, (stores = new Set()));
     }
     stores.add(store);
   }
@@ -352,7 +388,7 @@ function selector<T>(
     promise: Promise<T>,
     state: TreeState,
     depValues: DepValues,
-    executionId: ExecutionID,
+    executionID: ExecutionID,
     loadingDepsState: LoadingDepsState,
   ): Promise<T> {
     return promise
@@ -364,7 +400,7 @@ function selector<T>(
         }
 
         const loadable = loadableWithValue(value);
-        resolveAsync(store, state, executionId, loadable, depValues);
+        resolveAsync(store, state, executionID, loadable, depValues);
         return value;
       })
       .catch(errorOrPromise => {
@@ -380,13 +416,13 @@ function selector<T>(
             errorOrPromise,
             state,
             depValues,
-            executionId,
+            executionID,
             loadingDepsState,
           );
         }
 
         const loadable = loadableWithError(errorOrPromise);
-        resolveAsync(store, state, executionId, loadable, depValues);
+        resolveAsync(store, state, executionID, loadable, depValues);
         throw errorOrPromise;
       });
   }
@@ -426,7 +462,7 @@ function selector<T>(
     promise: Promise<mixed>,
     state: TreeState,
     existingDeps: DepValues,
-    executionId: ExecutionID,
+    executionID: ExecutionID,
     loadingDepsState: LoadingDepsState,
   ): Promise<T> {
     return promise
@@ -525,10 +561,10 @@ function selector<T>(
            * necessary with recoil_transition_support mode.
            */
           if (
-            isLatestExecution(store, executionId) ||
+            isLatestExecution(store, executionID) ||
             getExecutionInfo(store) == null
           ) {
-            notifyStoresOfResolvedAsync(store, executionId);
+            notifyStoresOfResolvedAsync(store, executionID);
           }
 
           if (cachedLoadable.state === 'hasValue') {
@@ -562,7 +598,7 @@ function selector<T>(
          * future we can make the behavior configurable. An ideal fix may be
          * to extend the tree cache to support caching loading states.
          */
-        if (!isLatestExecution(store, executionId)) {
+        if (!isLatestExecution(store, executionID)) {
           const executionInfo = getInProgressExecutionInfo(store, state);
           if (executionInfo != null) {
             /**
@@ -577,11 +613,11 @@ function selector<T>(
         const [loadable, depValues] = evaluateSelectorGetter(
           store,
           state,
-          executionId,
+          executionID,
         );
 
         if (loadable.state !== 'loading') {
-          resolveAsync(store, state, executionId, loadable, depValues);
+          resolveAsync(store, state, executionID, loadable, depValues);
         }
 
         if (loadable.state === 'hasError') {
@@ -600,7 +636,7 @@ function selector<T>(
         }
 
         const loadable = loadableWithError(error);
-        resolveAsync(store, state, executionId, loadable, existingDeps);
+        resolveAsync(store, state, executionID, loadable, existingDeps);
         throw error;
       });
   }
@@ -609,10 +645,10 @@ function selector<T>(
     store: Store,
     state: TreeState,
     deps: $ReadOnlySet<NodeKey>,
-    executionId: ?ExecutionID,
+    executionID: ?ExecutionID,
   ): void {
     if (
-      isLatestExecution(store, executionId) ||
+      isLatestExecution(store, executionID) ||
       state.version === store.getState()?.currentTree?.version ||
       state.version === store.getState()?.nextTree?.version
     ) {
@@ -632,7 +668,7 @@ function selector<T>(
   function evaluateSelectorGetter(
     store: Store,
     state: TreeState,
-    executionId: ExecutionID,
+    executionID: ExecutionID,
   ): [Loadable<T>, DepValues] {
     const endPerfBlock = startPerfBlock(key); // TODO T63965866: use execution ID here
     let duringSynchronousExecution = true;
@@ -671,7 +707,8 @@ function selector<T>(
       // knows if it has to restart evaluation if one of them is updated before
       // the asynchronous selector completely resolves.
       if (!duringSynchronousExecution) {
-        updateDeps(store, state, new Set(depValues.keys()), executionId);
+        updateDeps(store, state, new Set(depValues.keys()), executionID);
+        notifyStoresOfNewAsyncDep(store, executionID);
       }
 
       switch (depLoadable.state) {
@@ -723,7 +760,7 @@ function selector<T>(
           result,
           state,
           depValues,
-          executionId,
+          executionID,
           loadingDepsState,
         ).finally(finishEvaluation);
       } else {
@@ -740,7 +777,7 @@ function selector<T>(
           result,
           state,
           depValues,
-          executionId,
+          executionID,
           loadingDepsState,
         ).finally(finishEvaluation);
       } else {
@@ -758,8 +795,8 @@ function selector<T>(
     }
 
     duringSynchronousExecution = false;
-    updateExecutionInfoDepValues(store, executionId, depValues);
-    updateDeps(store, state, new Set(depValues.keys()), executionId);
+    updateExecutionInfoDepValues(store, executionID, depValues);
+    updateDeps(store, state, new Set(depValues.keys()), executionID);
     return [loadable, depValues];
   }
 
@@ -927,12 +964,16 @@ function selector<T>(
 
     for (const execInfo of pendingExecutions) {
       if (
-        // If this execution is on the same version of state, then it's valid
-        state.version === execInfo.stateVersion ||
+        // If this execution was already checked to be valid with this version
+        // of state, then let's use it!
+        execInfo.stateVersions.get(state.version) ||
         // If the deps for the execution match our current state, then it's valid
         !anyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)
       ) {
+        execInfo.stateVersions.set(state.version, true);
         return execInfo;
+      } else {
+        execInfo.stateVersions.set(state.version, false);
       }
     }
 
@@ -961,18 +1002,18 @@ function selector<T>(
       depValuesDiscoveredSoFarDuringAsyncWork: depValues,
       executionID: newExecutionID,
       loadingLoadable: loadable,
-      stateVersion: state.version,
+      stateVersions: new Map([[state.version, true]]),
     });
   }
 
   function updateExecutionInfoDepValues(
     store: Store,
-    executionId: ExecutionID,
+    executionID: ExecutionID,
     depValues: DepValues,
   ) {
     // We only need to bother updating the deps for the latest execution because
     // that's all getInProgressExecutionInfo() will be looking for.
-    if (isLatestExecution(store, executionId)) {
+    if (isLatestExecution(store, executionID)) {
       const executionInfo = getExecutionInfo(store);
       if (executionInfo != null) {
         executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
@@ -984,8 +1025,8 @@ function selector<T>(
     executionInfoMap.delete(store);
   }
 
-  function isLatestExecution(store: Store, executionId): boolean {
-    return executionId === getExecutionInfo(store)?.executionID;
+  function isLatestExecution(store: Store, executionID): boolean {
+    return executionID === getExecutionInfo(store)?.executionID;
   }
 
   /**
