@@ -3,11 +3,16 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
-- Avoid dev-mode console error with React 18 when using shared async selectors across multiple `<RecoilRoot>`'s. (#1712)
+## 0.7.1 (2022-04-12)
+
+### Typing
+- Add explict `children` prop to `<RecoilRoot>` and `useRecoilBridgeAcrossReactRoots_UNSTABLE()` for TypeScript for `@types/react` with React 18 (#1718, #1717, #1726, #1731)
 - Update typing for family parameters to better support Map, Set, and classes with `toJSON()`. (#1709, #1703)
+
+### Fixes
+- Avoid dev-mode console error with React 18 when using shared async selectors across multiple `<RecoilRoot>`'s. (#1712)
 - Cleanup potential memory leak when using async selectors (#1714)
 - Fix potentially hung async selectors when shared across multiple roots that depend on atoms initialized with promises that don't resolve (#1714)
-- Add explict `children` prop to `<RecoilRoot>` and `useRecoilBridgeAcrossReactRoots_UNSTABLE()` for TypeScript for `@types/react` with React 18 (#1718, #1717, #1726, #1731)
 
 ## 0.7 (2022-03-31)
 
