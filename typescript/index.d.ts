@@ -308,7 +308,7 @@
  export function useRecoilRefresher_UNSTABLE(recoilValue: RecoilValue<any>): () => void;
 
  // useRecoilBridgeAcrossReactRoots.d.ts
- export const RecoilBridge: React.FC;
+ export const RecoilBridge: React.FC<{children: React.ReactNode}>;
  /**
   * Returns a component that acts like a <RecoilRoot> but shares the same store
   * as the current <RecoilRoot>.

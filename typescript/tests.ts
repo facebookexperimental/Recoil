@@ -406,9 +406,12 @@ const transact: (p: number) => void = useRecoilTransaction_UNSTABLE(({get, set, 
  */
 {
   const RecoilBridgeComponent: typeof RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE();
-  RecoilBridgeComponent({});
+  RecoilBridgeComponent({children: React.createElement('div')});
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  RecoilBridgeComponent({initializeState: () => {}}); // $ExpectError
+  RecoilBridgeComponent({
+    children: React.createElement('div'),
+    initializeState: () => {}, // $ExpectError
+  });
 }
 
 /**
