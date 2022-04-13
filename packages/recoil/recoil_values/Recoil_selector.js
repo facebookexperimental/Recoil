@@ -318,32 +318,6 @@ function selector<T>(
     stores.add(store);
   }
 
-  function getCachedNodeLoadable<TT>(
-    store: Store,
-    state: TreeState,
-    nodeKey: NodeKey,
-  ): Loadable<TT> {
-    const isKeyPointingToSelector = store
-      .getState()
-      .knownSelectors.has(nodeKey);
-
-    /**
-     * It's important that we don't bypass calling getNodeLoadable for atoms
-     * as getNodeLoadable has side effects in state
-     */
-    if (isKeyPointingToSelector && state.atomValues.has(nodeKey)) {
-      return nullthrows(state.atomValues.get(nodeKey));
-    }
-
-    const loadable = getNodeLoadable(store, state, nodeKey);
-
-    if (loadable.state !== 'loading' && isKeyPointingToSelector) {
-      state.atomValues.set(nodeKey, loadable);
-    }
-
-    return loadable;
-  }
-
   /**
    * This function attaches a then() and a catch() to a promise that was
    * returned from a selector's get() (either explicitly or implicitly by
@@ -707,7 +681,7 @@ function selector<T>(
         setDepsInStore(store, state, deps, executionId);
       }
 
-      const depLoadable = getCachedNodeLoadable(store, state, depKey);
+      const depLoadable = getNodeLoadable(store, state, depKey);
 
       depValues.set(depKey, depLoadable);
 
@@ -803,12 +777,18 @@ function selector<T>(
     store: Store,
     state: TreeState,
   ): ?Loadable<T> {
-    const depsAfterCacheDone = new Set();
-    const executionInfo = getExecutionInfo(store);
+    // First, look up in the state cache
+    // If it's here, then the deps in the store should already be valid.
+    let cachedLoadable = state.atomValues.get(key);
+    if (cachedLoadable != null) {
+      return cachedLoadable;
+    }
 
-    let cachedVal;
+    // Second, look up in the selector cache and update the deps in the store
+    const depsAfterCacheLookup = new Set();
+    const executionInfo = getExecutionInfo(store);
     try {
-      cachedVal = cache.get(
+      cachedLoadable = cache.get(
         nodeKey => {
           invariant(
             typeof nodeKey === 'string',
@@ -820,7 +800,7 @@ function selector<T>(
         {
           onNodeVisit: node => {
             if (node.type === 'branch' && node.nodeKey !== key) {
-              depsAfterCacheDone.add(node.nodeKey);
+              depsAfterCacheLookup.add(node.nodeKey);
             }
           },
         },
@@ -831,24 +811,28 @@ function selector<T>(
       );
     }
 
-    /**
-     * Ensure store contains correct dependencies if we hit the cache so that
-     * the store deps and cache are in sync for a given state. This is important
-     * because store deps are normally updated when new executions are created,
-     * but cache hits don't trigger new executions but they still _may_ signifiy
-     * a change in deps in the store if the store deps for this state are empty
-     * or stale.
-     */
-    if (cachedVal) {
+    if (cachedLoadable) {
+      // Cache the results in the state to allow for cheaper lookup than
+      // iterating the tree cache of dependencies.
+      state.atomValues.set(key, cachedLoadable);
+
+      /**
+       * Ensure store contains correct dependencies if we hit the cache so that
+       * the store deps and cache are in sync for a given state. This is important
+       * because store deps are normally updated when new executions are created,
+       * but cache hits don't trigger new executions but they still _may_ signify
+       * a change in deps in the store if the store deps for this state are empty
+       * or stale.
+       */
       setDepsInStore(
         store,
         state,
-        depsAfterCacheDone,
+        depsAfterCacheLookup,
         executionInfo?.latestExecutionId,
       );
     }
 
-    return cachedVal;
+    return cachedLoadable;
   }
 
   /**
@@ -1083,6 +1067,10 @@ function selector<T>(
   }
 
   function selectorPeek(store: Store, state: TreeState): ?Loadable<T> {
+    const cachedLoadable = state.atomValues.get(key);
+    if (cachedLoadable != null) {
+      return cachedLoadable;
+    }
     return cache.get(nodeKey => {
       invariant(typeof nodeKey === 'string', 'Cache nodeKey is type string');
       return peekNodeLoadable(store, state, nodeKey)?.contents;
@@ -1125,7 +1113,7 @@ function selector<T>(
           throw err('Recoil: Async selector sets are not currently supported.');
         }
 
-        const loadable = getCachedNodeLoadable(store, state, depKey);
+        const loadable = getNodeLoadable(store, state, depKey);
 
         if (loadable.state === 'hasValue') {
           return loadable.contents;

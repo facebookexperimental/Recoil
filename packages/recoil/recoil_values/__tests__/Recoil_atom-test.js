@@ -1214,6 +1214,48 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('"OTHER""INIT"');
   });
 
+  testRecoil(
+    'atom effect runs twice when atom is read from a snapshot and the atom is read for first time in that snapshot',
+    ({strictMode, concurrentMode}) => {
+      let numTimesEffectInit = 0;
+      let latestSetSelf = a => a;
+
+      const atomWithEffect = atom({
+        key: 'atomWithEffect',
+        default: 0,
+        effects: [
+          ({setSelf}) => {
+            latestSetSelf = setSelf;
+            setSelf(1); // to accurately reproduce minimal reproducible example based on GitHub #1107 issue
+            numTimesEffectInit++;
+          },
+        ],
+      });
+
+      const Component = () => {
+        const readSelFromSnapshot = useRecoilCallback(({snapshot}) => () => {
+          snapshot.getLoadable(atomWithEffect);
+        });
+
+        readSelFromSnapshot(); // first initialization;
+
+        return useRecoilValue(atomWithEffect); // second initialization;
+      };
+
+      const c = renderElements(<Component />);
+      expect(c.textContent).toBe('1');
+      expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
+
+      act(() => latestSetSelf(100));
+      expect(c.textContent).toBe('100');
+      expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
+
+      act(() => latestSetSelf(200));
+      expect(c.textContent).toBe('200');
+      expect(numTimesEffectInit).toBe(strictMode && concurrentMode ? 3 : 2);
+    },
+  );
+
   /**
    * See github issue #1107 item #1
    */
@@ -1229,9 +1271,7 @@ describe('Effects', () => {
         effects: [
           ({setSelf}) => {
             latestSetSelf = setSelf;
-
-            setSelf(1); // to accurately reproduce minimal reproducible example based on GitHub issue
-
+            setSelf(1); // to accurately reproduce minimal reproducible example based on GitHub #1107 issue
             numTimesEffectInit++;
           },
         ],
