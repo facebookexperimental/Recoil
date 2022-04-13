@@ -10,31 +10,31 @@ A `selectorFamily` is a powerful pattern that is similar to a [`selector`](/docs
 ---
 Read-only selector family:
 ```jsx
-function selectorFamily<T, Parameter>({
+function selectorFamily<T, P: Parameter>({
   key: string,
 
-  get: Parameter => ({
+  get: P => ({
     get: GetRecoilValue
     getCallback: GetCallback<T>,
   }) =>
     T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>,
 
   dangerouslyAllowMutability?: boolean,
-}): Parameter => RecoilValueReadOnly<T>
+}): P => RecoilValueReadOnly<T>
 ```
 
 Writable selector family:
 ```jsx
-function selectorFamily<T, Parameter>({
+function selectorFamily<T, P: Parameter>({
   key: string,
 
-  get: Parameter => ({
+  get: P => ({
     get: GetRecoilValue
     getCallback: GetCallback<T>,
   }) =>
     T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>,
 
-  set: Parameter => (
+  set: P => (
     {
       get: GetRecoilValue,
       set: SetRecoilValue,
@@ -46,7 +46,7 @@ function selectorFamily<T, Parameter>({
   dangerouslyAllowMutability?: boolean,
 
   cachePolicy_UNSTABLE?: CachePolicy,
-}): Parameter => RecoilState<T>
+}): P => RecoilState<T>
 ```
 
 Where
@@ -83,6 +83,19 @@ type CachePolicy =
 The `selectorFamily()` essentially provides a map from the parameter to a selector.  You only need to provide a single key for the atom family and it will generate a unique key for each underlying selector.
 
 ## Parameter Type
+```jsx
+type Primitive = void | null | boolean | number | string;
+interface HasToJSON {
+  toJSON(): Parameter;
+}
+type Parameter =
+  | Primitive
+  | HasToJSON
+  | $ReadOnlyArray<Parameter>
+  | $ReadOnly<{[string]: Parameter}>
+  | $ReadOnlySet<Parameter>
+  | $ReadOnlyMap<Parameter, Parameter>;
+```
 There are restrictions on the type you can use as the family `Parameter`.  They may be generated at different callsites and we want equivalent parameters to reference the same underlying selector.  Therefore, parameters are compared using value-equality and must be serializable.  Using functions or mutable objects, such as Promises, in parameters is problematic.  To be serializable it must be either:
   * A primitive value
   * An array, object, `Map`, or `Set` of serializable values
