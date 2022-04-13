@@ -8,7 +8,7 @@ Returns a function that returns a writeable `RecoilState` [atom](/docs/api-refer
 ---
 
 ```jsx
-function atomFamily<T, Parameter>({
+function atomFamily<T, P: Parameter>({
   key: string,
 
   default?:
@@ -17,14 +17,14 @@ function atomFamily<T, Parameter>({
     | Loadable<T>
     | WrappedValue<T>
     | RecoilValue<T>
-    | (Parameter => T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>),
+    | (P => T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>),
 
   effects?:
     | $ReadOnlyArray<AtomEffect<T>>
     | (P => $ReadOnlyArray<AtomEffect<T>>),
 
   dangerouslyAllowMutability?: boolean,
-}): Parameter => RecoilState<T>
+}): P => RecoilState<T>
 ```
 
 - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
@@ -37,6 +37,19 @@ function atomFamily<T, Parameter>({
 An `atom` represents a piece of state with _Recoil_. An atom is created and registered per `<RecoilRoot>` by your app. But, what if your state isn’t global? What if your state is associated with a particular instance of a control, or with a particular element? For example, maybe your app is a UI prototyping tool where the user can dynamically add elements and each element has state, such as its position. Ideally, each element would get its own atom of state. You could implement this yourself via a memoization pattern. But, _Recoil_ provides this pattern for you with the `atomFamily()` utility. An Atom Family represents a collection of atoms. When you call `atomFamily()` it will return a function which provides the `RecoilState` atom based on the parameters you pass in.
 
 ## Parameter Type
+```jsx
+type Primitive = void | null | boolean | number | string;
+interface HasToJSON {
+  toJSON(): Parameter;
+}
+type Parameter =
+  | Primitive
+  | HasToJSON
+  | $ReadOnlyArray<Parameter>
+  | $ReadOnly<{[string]: Parameter}>
+  | $ReadOnlySet<Parameter>
+  | $ReadOnlyMap<Parameter, Parameter>;
+```
 The `atomFamily()` essentially provides a map from the parameter to an atom.  You only need to provide a single key for the atom family and it will generate a unique key for each underlying atom.  These atom keys can be used for persistence, and so must be stable across application executions.
 
 There are restrictions on the type you can use as the family `Parameter`.  They may be generated at different callsites and we want equivalent parameters to reference the same underlying atom.  Therefore, parameters are compared using value-equality and must be serializable.  To be serializable it must be either:
