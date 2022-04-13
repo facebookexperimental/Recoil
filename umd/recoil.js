@@ -6909,6 +6909,12 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
 
 
+
+
+
+
+
+
   const {
     startPerfBlock: startPerfBlock$1
   } = Recoil_PerformanceTimings;
@@ -7078,7 +7084,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           // The selector was released since the request began; ignore the response.
           clearExecutionInfo(store);
           throw CANCELED;
-        }
+        } // updateExecutionInfoDepValues(store, executionId, depValues);
+
 
         if (Recoil_isPromise(errorOrPromise)) {
           return wrapPendingDependencyPromise(store, errorOrPromise, state, depValues, executionId, loadingDepsState);
@@ -7552,39 +7559,28 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
 
     function getExecutionInfoOfInProgressExecution(store, state) {
-      var _pendingExecutions$fi;
-
       // Sort the pending executions so that our current store is checked first.
-      // This is particularly important so we always return a consistent
-      // execution for evaluating a selector with multiple attempts in a store.
-      const pendingExecutions = executionInfoMap.size > 1 ? [...(executionInfoMap.has(store) ? [[store, Recoil_nullthrows(executionInfoMap.get(store))]] : []), ...Array.from(executionInfoMap.entries()).filter(([s]) => s !== store)] : Array.from(executionInfoMap);
-      const [, executionInfo] = (_pendingExecutions$fi = pendingExecutions.find(([execStore, execInfo]) => {
-        return execInfo.latestLoadable != null && execInfo.latestExecutionId != null && !haveAsyncDepsChanged(execStore, state);
-      })) !== null && _pendingExecutions$fi !== void 0 ? _pendingExecutions$fi : [];
-      return executionInfo;
-    }
+      const pendingExecutions = Recoil_concatIterables([executionInfoMap.has(store) ? [Recoil_nullthrows(executionInfoMap.get(store))] : [], Recoil_mapIterable(Recoil_filterIterable(executionInfoMap, ([s]) => s !== store), ([, execInfo]) => execInfo)]);
 
-    const mapOfCheckedVersions = new Map();
+      function anyDepChanged(execDepValues) {
+        for (const [depKey, execLoadable] of execDepValues) {
+          if (!getNodeLoadable$2(store, state, depKey).is(execLoadable)) {
+            return true;
+          }
+        }
 
-    function haveAsyncDepsChanged(store, state) {
-      var _executionInfo$depVal, _mapOfCheckedVersions;
-
-      const executionInfo = getExecutionInfo(store);
-      const oldDepValues = (_executionInfo$depVal = executionInfo === null || executionInfo === void 0 ? void 0 : executionInfo.depValuesDiscoveredSoFarDuringAsyncWork) !== null && _executionInfo$depVal !== void 0 ? _executionInfo$depVal : new Map();
-      const cachedDepValuesCheckedForThisVersion = Array(((_mapOfCheckedVersions = mapOfCheckedVersions.get(state.version)) !== null && _mapOfCheckedVersions !== void 0 ? _mapOfCheckedVersions : new Map()).entries());
-      const isCachedVersionSame = mapOfCheckedVersions.has(state.version) && cachedDepValuesCheckedForThisVersion.length === oldDepValues.size && cachedDepValuesCheckedForThisVersion.every(([nodeKey, nodeVal]) => {
-        return oldDepValues.get(nodeKey) === nodeVal;
-      });
-
-      if (oldDepValues == null || state.version === (executionInfo === null || executionInfo === void 0 ? void 0 : executionInfo.stateVersion) || isCachedVersionSame) {
         return false;
       }
 
-      mapOfCheckedVersions.set(state.version, new Map(oldDepValues));
-      return Array.from(oldDepValues).some(([nodeKey, oldVal]) => {
-        const loadable = getCachedNodeLoadable(store, state, nodeKey);
-        return loadable.contents !== oldVal.contents;
-      });
+      for (const execInfo of pendingExecutions) {
+        if ( // If this execution is on the same version of state, then it's valid
+        state.version === execInfo.stateVersion || // If the deps for the execution match our current state, then it's valid
+        !anyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)) {
+          return execInfo;
+        }
+      }
+
+      return undefined;
     }
 
     function getExecutionInfo(store) {
