@@ -156,7 +156,38 @@ testRecoil('useRecoilSnapshot - goto snapshots', ({strictMode}) => {
 });
 
 testRecoil(
-  'useRecoilSnapshot - async selectors',
+  'useRecoilSnapshot - async selector',
+  async ({strictMode, concurrentMode}) => {
+    const [mySelector, resolve] = asyncSelector();
+
+    const snapshots = [];
+    function RecoilSnapshotAndSubscribe() {
+      const snapshot = useRecoilSnapshot();
+      snapshot.retain();
+      useEffect(() => {
+        snapshots.push(snapshot);
+      }, [snapshot]);
+      return null;
+    }
+
+    renderElements(<RecoilSnapshotAndSubscribe />);
+    expect(snapshots.length).toEqual(strictMode && concurrentMode ? 2 : 1);
+
+    act(() => resolve('RESOLVE'));
+    expect(snapshots.length).toEqual(strictMode && concurrentMode ? 2 : 1);
+
+    // On the first request the selector is unresolved and returns the promise
+    await expect(
+      snapshots[0].getLoadable(mySelector).contents,
+    ).resolves.toEqual('RESOLVE');
+
+    // On the second request the resolved value is cached.
+    expect(snapshots[0].getLoadable(mySelector).contents).toEqual('RESOLVE');
+  },
+);
+
+testRecoil(
+  'useRecoilSnapshot - cloned async selector',
   async ({strictMode, concurrentMode}) => {
     const [mySelector, resolve] = asyncSelector();
 
@@ -188,6 +219,7 @@ testRecoil(
     expect(c.textContent).toEqual('"RESOLVE"');
 
     expect(snapshots.length).toEqual(strictMode && concurrentMode ? 3 : 2);
+    // Snapshot contains cached result since it was cloned after resolved
     expect(snapshots[0].getLoadable(mySelector).contents).toEqual('RESOLVE');
   },
 );

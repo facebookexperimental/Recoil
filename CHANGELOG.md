@@ -3,7 +3,7 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
-- Selector cache lookup optimization (#1720)
+- Selector cache lookup optimization (#1720, #1736)
 
 ## 0.7.1 (2022-04-12)
 

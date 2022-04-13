@@ -1268,6 +1268,7 @@ describe('Async Selectors', () => {
     expect(el.textContent).toEqual('loading');
 
     await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
     expect(el.textContent).toEqual('"READY"');
   });
 
@@ -1624,80 +1625,77 @@ describe('Async Selectors', () => {
       expect(c.textContent).toEqual('bar');
     });
 
-    testRecoil(
-      'Selectors read in a another root notify all roots',
-      async () => {
-        // This version of the test uses another RecoilRoot as its second store
-        const switchAtom = atom({
-          key: 'notifiesAllStores/twoRoots/switch',
-          default: false,
-        });
+    testRecoil('Selectors read in another root notify all roots', async () => {
+      // This version of the test uses another RecoilRoot as its second store
+      const switchAtom = atom({
+        key: 'notifiesAllStores/twoRoots/switch',
+        default: false,
+      });
 
-        const selectorA = selector({
-          key: 'notifiesAllStores/twoRoots/a',
-          get: () => 'SELECTOR A',
-        });
+      const selectorA = selector({
+        key: 'notifiesAllStores/twoRoots/a',
+        get: () => 'SELECTOR A',
+      });
 
-        let resolve: $FlowFixMe = _ => {
-          throw new Error('error in test');
-        };
-        const selectorB = selector({
-          key: 'notifiesAllStores/twoRoots/b',
-          get: async () =>
-            new Promise(r => {
-              resolve = r;
-            }),
-        });
+      let resolve: string => void = () => {
+        throw new Error('error in test');
+      };
+      const selectorB = selector({
+        key: 'notifiesAllStores/twoRoots/b',
+        get: async () =>
+          new Promise(r => {
+            resolve = r;
+          }),
+      });
 
-        function TestComponent({
-          setSwitch,
-        }: {
-          setSwitch: ((boolean) => void) => void,
-        }) {
-          const [shouldQuery, setShouldQuery] = useRecoilState(switchAtom);
-          const query = useRecoilValueLoadable(
-            shouldQuery ? selectorB : selectorA,
-          );
-          setSwitch(setShouldQuery);
-          return query.state === 'hasValue' ? query.contents : 'loading';
-        }
-
-        let setRootASelector;
-        const rootA = renderElements(
-          <TestComponent
-            setSwitch={setSelector => {
-              setRootASelector = setSelector;
-            }}
-          />,
+      function TestComponent({
+        setSwitch,
+      }: {
+        setSwitch: ((boolean) => void) => void,
+      }) {
+        const [shouldQuery, setShouldQuery] = useRecoilState(switchAtom);
+        const query = useRecoilValueLoadable(
+          shouldQuery ? selectorB : selectorA,
         );
-        let setRootBSelector;
-        const rootB = renderElements(
-          <TestComponent
-            setSwitch={setSelector => {
-              setRootBSelector = setSelector;
-            }}
-          />,
-        );
+        setSwitch(setShouldQuery);
+        return query.state === 'hasValue' ? query.contents : 'loading';
+      }
 
-        expect(rootA.textContent).toEqual('SELECTOR A');
-        expect(rootB.textContent).toEqual('SELECTOR A');
+      let setRootASelector;
+      const rootA = renderElements(
+        <TestComponent
+          setSwitch={setSelector => {
+            setRootASelector = setSelector;
+          }}
+        />,
+      );
+      let setRootBSelector;
+      const rootB = renderElements(
+        <TestComponent
+          setSwitch={setSelector => {
+            setRootBSelector = setSelector;
+          }}
+        />,
+      );
 
-        act(() => setRootASelector(true)); // cause rootA to read the selector
-        expect(rootA.textContent).toEqual('loading');
-        expect(rootB.textContent).toEqual('SELECTOR A');
+      expect(rootA.textContent).toEqual('SELECTOR A');
+      expect(rootB.textContent).toEqual('SELECTOR A');
 
-        act(() => setRootBSelector(true)); // cause rootB to read the selector
-        expect(rootA.textContent).toEqual('loading');
-        expect(rootB.textContent).toEqual('loading');
+      act(() => setRootASelector(true)); // cause rootA to read the selector
+      expect(rootA.textContent).toEqual('loading');
+      expect(rootB.textContent).toEqual('SELECTOR A');
 
-        act(() => resolve('SELECTOR B'));
+      act(() => setRootBSelector(true)); // cause rootB to read the selector
+      expect(rootA.textContent).toEqual('loading');
+      expect(rootB.textContent).toEqual('loading');
 
-        await flushPromisesAndTimers();
+      act(() => resolve('SELECTOR B'));
 
-        expect(rootA.textContent).toEqual('SELECTOR B');
-        expect(rootB.textContent).toEqual('SELECTOR B');
-      },
-    );
+      await flushPromisesAndTimers();
+
+      expect(rootA.textContent).toEqual('SELECTOR B');
+      expect(rootB.textContent).toEqual('SELECTOR B');
+    });
   });
 });
 
@@ -2160,16 +2158,17 @@ describe('Multiple stores', () => {
   testRecoil('Diverging shared selectors', async () => {
     const myAtom = stringAtom();
     atom({
-      key: 'selector stores nested atom',
+      key: 'selector stores diverging atom',
       default: 'DEFAULT',
     });
 
     const mySelector = selector({
-      key: 'selector stores nested atom inner',
+      key: 'selector stores diverging selector',
       get: async ({get}) => {
         await Promise.resolve();
         const value = get(myAtom);
 
+        await Promise.resolve(); // So resolution occurs during act()
         if (value === 'RESOLVE') {
           return value;
         }
@@ -2212,9 +2211,80 @@ describe('Multiple stores', () => {
     });
     await flushPromisesAndTimers();
     await flushPromisesAndTimers();
+    expect(c.textContent).toBe('LOAD_A LOAD_B ');
 
     act(() => {
       setAtomB('RESOLVE');
+    });
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('LOAD_A "RESOLVE"');
+  });
+
+  testRecoil('Diverged shared selectors', async () => {
+    const myAtom = stringAtom();
+    atom({
+      key: 'selector stores diverged atom',
+      default: 'DEFAULT',
+    });
+
+    let addDeps;
+    const addDepsPromise = new Promise(resolve => {
+      addDeps = resolve;
+    });
+    const mySelector = selector({
+      key: 'selector stores diverged selector',
+      get: async ({get}) => {
+        await addDepsPromise;
+        const value = get(myAtom);
+
+        await Promise.resolve(); // So resolution occurs during act()
+        if (value === 'RESOLVE') {
+          return value;
+        }
+        await new Promise(() => {});
+      },
+    });
+
+    let setAtomA;
+    function SetAtomA() {
+      setAtomA = useSetRecoilState(myAtom);
+      return null;
+    }
+    let setAtomB;
+    function SetAtomB() {
+      setAtomB = useSetRecoilState(myAtom);
+      return null;
+    }
+
+    const c = renderUnwrappedElements(
+      <>
+        <RecoilRoot>
+          <React.Suspense fallback="LOAD_A ">
+            <ReadsAtom atom={mySelector} />
+            <SetAtomA />
+          </React.Suspense>
+        </RecoilRoot>
+        <RecoilRoot>
+          <React.Suspense fallback="LOAD_B ">
+            <ReadsAtom atom={mySelector} />
+            <SetAtomB />
+          </React.Suspense>
+        </RecoilRoot>
+      </>,
+    );
+    expect(c.textContent).toBe('LOAD_A LOAD_B ');
+
+    act(() => {
+      setAtomA('SETA');
+      setAtomB('RESOLVE');
+    });
+    await flushPromisesAndTimers();
+    await flushPromisesAndTimers();
+    expect(c.textContent).toBe('LOAD_A LOAD_B ');
+
+    await act(async () => {
+      addDeps();
     });
     await flushPromisesAndTimers();
     await flushPromisesAndTimers();
