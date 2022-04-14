@@ -2,12 +2,20 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://recoiljs.org/blog</id>
     <title>Recoil Blog</title>
-    <updated>2022-04-12T00:00:00.000Z</updated>
+    <updated>2022-04-14T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://recoiljs.org/blog"/>
     <subtitle>Recoil Blog</subtitle>
     <icon>https://recoiljs.org/img/favicon.png</icon>
     <rights>Copyright © 2022 Facebook, Inc.</rights>
+    <entry>
+        <title type="html"><![CDATA[Recoil 0.7.2]]></title>
+        <id>/2022/04/14/0.7.2-release</id>
+        <link href="https://recoiljs.org/blog/2022/04/14/0.7.2-release"/>
+        <updated>2022-04-14T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Optimizations and Fixes]]></summary>
+        <content type="html"><![CDATA[<h3>Optimizations and Fixes</h3><ul><li>Selector cache lookup optimizations (<a href="https://github.com/facebookexperimental/Recoil/pull/1720">#1720</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1736">#1736</a>)</li><li>Allow async selectors to re-evaluate when async dependencies are discovered with stale state (<a href="https://github.com/facebookexperimental/Recoil/pull/1736">#1736</a>)</li></ul>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Recoil 0.7.1]]></title>
         <id>/2022/04/12/0.7.1-release</id>

@@ -5,6 +5,14 @@
     "description": "Recoil Blog",
     "items": [
         {
+            "id": "/2022/04/14/0.7.2-release",
+            "content_html": "<h3>Optimizations and Fixes</h3><ul><li>Selector cache lookup optimizations (<a href=\"https://github.com/facebookexperimental/Recoil/pull/1720\">#1720</a>, <a href=\"https://github.com/facebookexperimental/Recoil/pull/1736\">#1736</a>)</li><li>Allow async selectors to re-evaluate when async dependencies are discovered with stale state (<a href=\"https://github.com/facebookexperimental/Recoil/pull/1736\">#1736</a>)</li></ul>",
+            "url": "https://recoiljs.org/ko/blog/2022/04/14/0.7.2-release",
+            "title": "Recoil 0.7.2",
+            "summary": "Optimizations and Fixes",
+            "date_modified": "2022-04-14T00:00:00.000Z"
+        },
+        {
             "id": "/2022/04/12/0.7.1-release",
             "content_html": "<h3>Typing</h3><ul><li>Add explicit and required <code>children</code> prop to <code>&lt;RecoilRoot&gt;</code> and <code>useRecoilBridgeAcrossReactRoots_UNSTABLE()</code> for TypeScript to support the <a href=\"https://solverfox.dev/writing/no-implicit-children/\">removal of implicit children</a> with <a href=\"https://github.com/DefinitelyTyped/DefinitelyTyped/pull/56210\">`@types/react@^18.0.0</a> for React 18. (<a href=\"https://github.com/facebookexperimental/Recoil/pull/1718\">#1718</a>, <a href=\"https://github.com/facebookexperimental/Recoil/pull/1717\">#1717</a>, <a href=\"https://github.com/facebookexperimental/Recoil/pull/1726\">#1726</a>, <a href=\"https://github.com/facebookexperimental/Recoil/pull/1731\">#1731</a>)</li><li>Update typing for <a href=\"/docs/api-reference/utils/atomFamily#parameter-type\">family parameters</a> to better support Map, Set, and classes with <code>toJSON()</code>. (<a href=\"https://github.com/facebookexperimental/Recoil/pull/1709\">#1709</a>, <a href=\"https://github.com/facebookexperimental/Recoil/pull/1703\">#1703</a>)</li></ul><h3>Fixes</h3><ul><li>Avoid dev-mode console error with React 18 when using shared async selectors across multiple <code>&lt;RecoilRoot&gt;</code>&#x27;s. (<a href=\"https://github.com/facebookexperimental/Recoil/pull/1712\">#1712</a>)</li><li>Cleanup potential memory leak when using async selectors. (<a href=\"https://github.com/facebookexperimental/Recoil/pull/1714\">#1714</a>)</li><li>Fix potentially hung async selectors when shared across multiple roots that depend on atoms initialized with promises that don&#x27;t resolve. (<a href=\"https://github.com/facebookexperimental/Recoil/pull/1714\">#1714</a>)</li></ul>",
             "url": "https://recoiljs.org/ko/blog/2022/04/12/0.7.1-release",

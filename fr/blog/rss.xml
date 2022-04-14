@@ -4,10 +4,18 @@
         <title>Recoil Blog</title>
         <link>https://recoiljs.org/fr/blog</link>
         <description>Recoil Blog</description>
-        <lastBuildDate>Tue, 12 Apr 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 14 Apr 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <copyright>Copyright © 2022 Facebook, Inc.</copyright>
+        <item>
+            <title><![CDATA[Recoil 0.7.2]]></title>
+            <link>https://recoiljs.org/fr/blog/2022/04/14/0.7.2-release</link>
+            <guid>/2022/04/14/0.7.2-release</guid>
+            <pubDate>Thu, 14 Apr 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[Optimizations and Fixes]]></description>
+            <content:encoded><![CDATA[<h3>Optimizations and Fixes</h3><ul><li>Selector cache lookup optimizations (<a href="https://github.com/facebookexperimental/Recoil/pull/1720">#1720</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1736">#1736</a>)</li><li>Allow async selectors to re-evaluate when async dependencies are discovered with stale state (<a href="https://github.com/facebookexperimental/Recoil/pull/1736">#1736</a>)</li></ul>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[Recoil 0.7.1]]></title>
             <link>https://recoiljs.org/fr/blog/2022/04/12/0.7.1-release</link>
