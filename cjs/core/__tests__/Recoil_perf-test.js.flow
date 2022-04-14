@@ -12,7 +12,7 @@
 
 import type {Loadable, RecoilState, RecoilValue} from '../../Recoil_index';
 
-const {atom, selector} = require('../../Recoil_index');
+const {atom, selector, selectorFamily} = require('../../Recoil_index');
 const {waitForAll} = require('../../recoil_values/Recoil_WaitFor');
 const {
   getRecoilValueAsLoadable,
@@ -22,22 +22,25 @@ const {performance} = require('perf_hooks');
 const {makeStore} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 const ITERATIONS = [1]; // Avoid iterating for automated testing
-// const ITERATIONS = [2, 2];
+// const ITERATIONS = [100];
+// const ITERATIONS = [1000];
 // const ITERATIONS = [10, 100, 1000];
 // const ITERATIONS = [10, 100, 1000, 10000];
 // const ITERATIONS = [10, 100, 1000, 10000, 100000];
 
 function testPerf(
   name: string,
-  fn: ({iterations: number, begin: () => void}) => void,
+  fn: ({iterations: number, perf: (() => void) => void}) => void,
 ) {
   test.each(ITERATIONS)(name, iterations => {
     store = makeStore();
-    let BEGIN = performance.now();
-    const begin = () => void (BEGIN = performance.now());
-    fn({iterations, begin});
-    const END = performance.now();
-    console.log(`${name}(${iterations})`, END - BEGIN);
+    const perf = cb => {
+      const BEGIN = performance.now();
+      cb();
+      const END = performance.now();
+      console.log(`${name}(${iterations})`, END - BEGIN);
+    };
+    fn({iterations, perf});
   });
 }
 
@@ -85,41 +88,106 @@ const helpersSelector = () =>
   });
 const getHelpers = () => getNodeValue(helpersSelector());
 
-testPerf('creating n atoms', ({iterations}) => {
+testPerf('create n atoms', ({iterations}) => {
   createAtoms(iterations);
 });
 
-testPerf('getting n atoms', ({iterations, begin}) => {
-  begin();
+testPerf('get n atoms', ({iterations, perf}) => {
   const atoms = createAtoms(iterations);
-  for (const node of atoms) {
-    getNodeValue(node);
-  }
+  perf(() => {
+    for (const node of atoms) {
+      getNodeValue(node);
+    }
+  });
 });
 
-testPerf('setting n atoms', ({iterations, begin}) => {
+testPerf('set n atoms', ({iterations, perf}) => {
   const atoms = createAtoms(iterations);
-  begin();
-  for (const node of atoms) {
-    setNode(node, 'SET');
-  }
+  perf(() => {
+    for (const node of atoms) {
+      setNode(node, 'SET');
+    }
+  });
 });
 
-testPerf('cloning n snapshots', ({iterations, begin}) => {
+testPerf('get n selectors', ({iterations, perf}) => {
+  const atoms = createAtoms(iterations);
+  const testFamily = selectorFamily({
+    key: 'PERF-getselectors',
+    get:
+      id =>
+      ({get}) =>
+        get(atoms[id]) + get(atoms[0]),
+  });
+  perf(() => {
+    for (let i = 0; i < iterations; i++) {
+      getNodeValue(testFamily(i));
+    }
+  });
+});
+
+testPerf('clone n snapshots', ({iterations, perf}) => {
   const atoms = createAtoms(iterations);
   const {getSnapshot} = getHelpers();
-  begin();
-  for (const node of atoms) {
-    // Set node to avoid hitting cached snapshots
-    setNode(node, 'SET');
-    const snapshot = getSnapshot();
-    expect(getNodeValue(node)).toBe('SET');
-    expect(snapshot.getLoadable(node).contents).toBe('SET');
-  }
+  perf(() => {
+    for (const node of atoms) {
+      // Set node to avoid hitting cached snapshots
+      setNode(node, 'SET');
+      const snapshot = getSnapshot();
+      expect(getNodeValue(node)).toBe('SET');
+      expect(snapshot.getLoadable(node).contents).toBe('SET');
+    }
+  });
 });
 
-testPerf('Selector dependencies', ({iterations, begin}) => {
+testPerf('get 1 selector with n dependencies', ({iterations, perf}) => {
   const atoms = createAtoms(iterations);
-  begin();
-  getNodeValue(waitForAll(atoms));
+  perf(() => {
+    getNodeValue(waitForAll(atoms));
+  });
 });
+
+testPerf('get 1 selector with n dependencies n times', ({iterations, perf}) => {
+  const atoms = createAtoms(iterations);
+  perf(() => {
+    for (let i = 0; i < iterations; i++) {
+      getNodeValue(waitForAll(atoms));
+    }
+  });
+});
+
+testPerf('get n selectors n times', ({iterations, perf}) => {
+  const atoms = createAtoms(iterations);
+  const testFamily = selectorFamily({
+    key: 'PERF-getselectors',
+    get:
+      id =>
+      ({get}) =>
+        get(atoms[id]) + get(atoms[0]),
+  });
+  perf(() => {
+    for (let i = 0; i < iterations; i++) {
+      for (let j = 0; j < iterations; j++) {
+        getNodeValue(testFamily(i));
+      }
+    }
+  });
+});
+
+testPerf(
+  'get n selectors with n dependencies n times',
+  ({iterations, perf}) => {
+    const atoms = createAtoms(iterations);
+    const testFamily = selectorFamily({
+      key: 'PERF-getselectors',
+      get: () => () => waitForAll(atoms),
+    });
+    perf(() => {
+      for (let i = 0; i < iterations; i++) {
+        for (let j = 0; j < iterations; j++) {
+          getNodeValue(testFamily(i));
+        }
+      }
+    });
+  },
+);

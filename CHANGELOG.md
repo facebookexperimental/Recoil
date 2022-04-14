@@ -3,10 +3,15 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+## 0.7.2 (2022-04-13)
+
+- Selector cache lookup optimizations (#1720, #1736)
+- Allow async selectors to re-evaluate when async dependencies are discovered with stale state (#1736)
+
 ## 0.7.1 (2022-04-12)
 
 ### Typing
-- Add explict `children` prop to `<RecoilRoot>` and `useRecoilBridgeAcrossReactRoots_UNSTABLE()` for TypeScript for `@types/react` with React 18 (#1718, #1717, #1726, #1731)
+- Add explicit `children` prop to `<RecoilRoot>` and `useRecoilBridgeAcrossReactRoots_UNSTABLE()` for TypeScript for `@types/react` with React 18 (#1718, #1717, #1726, #1731)
 - Update typing for family parameters to better support Map, Set, and classes with `toJSON()`. (#1709, #1703)
 
 ### Fixes
