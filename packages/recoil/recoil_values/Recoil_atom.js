@@ -108,13 +108,18 @@ export type PersistenceSettings<Stored> = $ReadOnly<{
   validator: (mixed, DefaultValue) => Stored | DefaultValue,
 }>;
 
-// TODO Support Loadable<T> and WrappedValue<T>
-type NewValue<T> = T | DefaultValue | Promise<T | DefaultValue>;
+// TODO Support Loadable<T>
+type NewValue<T> =
+  | T
+  | DefaultValue
+  | Promise<T | DefaultValue>
+  | WrappedValue<T>;
 type NewValueOrUpdater<T> =
   | T
   | DefaultValue
   | Promise<T | DefaultValue>
-  | ((T | DefaultValue) => T | DefaultValue);
+  | WrappedValue<T>
+  | ((T | DefaultValue) => T | DefaultValue | WrappedValue<T>);
 
 // Effect is called the first time a node is used with a <RecoilRoot>
 export type AtomEffect<T> = ({
@@ -127,7 +132,8 @@ export type AtomEffect<T> = ({
     | T
     | DefaultValue
     | Promise<T | DefaultValue>
-    | ((T | DefaultValue) => T | DefaultValue),
+    | WrappedValue<T>
+    | ((T | DefaultValue) => T | DefaultValue | WrappedValue<T>),
   ) => void,
   resetSelf: () => void,
 
@@ -167,6 +173,9 @@ type BaseAtomOptions<T> = $ReadOnly<{
   default: Promise<T> | Loadable<T> | WrappedValue<T> | T,
 }>;
 
+const unwrap = <T, S = T>(x: T | S | WrappedValue<T>): T | S =>
+  x instanceof WrappedValue ? x.value : x;
+
 function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   const {key, persistence_UNSTABLE: persistence} = options;
 
@@ -193,11 +202,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     ? options.default.state === 'loading'
       ? unwrapPromise((options.default: LoadingLoadableType<T>).contents)
       : options.default
-    : loadableWithValue(
-        options.default instanceof WrappedValue
-          ? options.default.value
-          : options.default,
-      );
+    : loadableWithValue(unwrap(options.default));
   maybeFreezeValueOrPromise(defaultLoadable.contents);
 
   let cachedAnswerForUnvalidatedValue: void | Loadable<T> = undefined;
@@ -280,8 +285,8 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     const effects = options.effects ?? options.effects_UNSTABLE;
     if (effects != null) {
       // This state is scoped by Store, since this is in the initAtom() closure
-      let duringInit = true;
       let initValue: NewValue<T> = DEFAULT_VALUE;
+      let isDuringInit = true;
       let isInitError: boolean = false;
       let pendingSetSelf: ?{
         effect: AtomEffect<T>,
@@ -292,7 +297,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         // Normally we can just get the current value of another atom.
         // But for our own value we need to check if there is a pending
         // initialized value or get the fallback default value.
-        if (duringInit && recoilValue.key === key) {
+        if (isDuringInit && recoilValue.key === key) {
           // Cast T to S
           const retValue: NewValue<S> = (initValue: any); // flowlint-line unclear-type:off
           return retValue instanceof DefaultValue
@@ -323,7 +328,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           store.getState().nextTree ?? store.getState().currentTree,
           recoilValue.key,
         );
-        return duringInit &&
+        return isDuringInit &&
           recoilValue.key === key &&
           !(initValue instanceof DefaultValue)
           ? {...info, isSet: true, loadable: getLoadable(recoilValue)}
@@ -332,7 +337,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
       const setSelf =
         (effect: AtomEffect<T>) => (valueOrUpdater: NewValueOrUpdater<T>) => {
-          if (duringInit) {
+          if (isDuringInit) {
             const currentLoadable = getLoadable(node);
             const currentValue: T | DefaultValue =
               currentLoadable.state === 'hasValue'
@@ -356,7 +361,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
             }
 
             if (typeof valueOrUpdater !== 'function') {
-              pendingSetSelf = {effect, value: valueOrUpdater};
+              pendingSetSelf = {
+                effect,
+                value: unwrap<T, DefaultValue>(valueOrUpdater),
+              };
             }
 
             setRecoilValue(
@@ -364,13 +372,14 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               node,
               typeof valueOrUpdater === 'function'
                 ? currentValue => {
-                    const newValue =
+                    const newValue = unwrap(
                       // cast to any because we can't restrict T from being a function without losing support for opaque types
-                      (valueOrUpdater: any)(currentValue); // flowlint-line unclear-type:off
+                      (valueOrUpdater: any)(currentValue), // flowlint-line unclear-type:off
+                    );
                     pendingSetSelf = {effect, value: newValue};
                     return newValue;
                   }
-                : valueOrUpdater,
+                : unwrap(valueOrUpdater),
             );
           }
         };
@@ -447,17 +456,17 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         }
       }
 
-      duringInit = false;
+      isDuringInit = false;
 
       // Mutate initial state in place since we know there are no other subscribers
       // since we are the ones initializing on first use.
       if (!(initValue instanceof DefaultValue)) {
-        const frozenInitValue = maybeFreezeValueOrPromise(initValue);
         const initLoadable = isInitError
           ? loadableWithError(initValue)
-          : isPromise(frozenInitValue)
-          ? loadableWithPromise(wrapPendingPromise(store, frozenInitValue))
-          : loadableWithValue(frozenInitValue);
+          : isPromise(initValue)
+          ? loadableWithPromise(wrapPendingPromise(store, initValue))
+          : loadableWithValue(unwrap(initValue));
+        maybeFreezeValueOrPromise(initLoadable.contents);
         initState.atomValues.set(key, initLoadable);
 
         // If there is a pending transaction, then also mutate the next state tree.
@@ -610,9 +619,7 @@ function atom<T>(options: AtomOptions<T>): RecoilState<T> {
   // @fb-only: ) {
     // @fb-only: return scopedAtom<T>({
       // @fb-only: ...restOptions,
-      // @fb-only: default: optionsDefault instanceof WrappedValue
-        // @fb-only: ? optionsDefault.value
-        // @fb-only: : optionsDefault,
+      // @fb-only: default: unwrap<T>(optionsDefault),
       // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     // @fb-only: });
   } else {
