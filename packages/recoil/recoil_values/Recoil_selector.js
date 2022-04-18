@@ -806,7 +806,8 @@ function selector<T>(
   ): ?Loadable<T> {
     // First, look up in the state cache
     // If it's here, then the deps in the store should already be valid.
-    let cachedLoadable = state.atomValues.get(key);
+    let cachedLoadable: ?(Loadable<$FlowFixMe> | Loadable<T>) =
+      state.atomValues.get(key);
     if (cachedLoadable != null) {
       return cachedLoadable;
     }
