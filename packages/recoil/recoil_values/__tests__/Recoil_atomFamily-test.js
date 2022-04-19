@@ -84,6 +84,8 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 let fbOnlyTest = test.skip;
+// $FlowFixMe[prop-missing]
+// $FlowFixMe[incompatible-type]
 // @fb-only: fbOnlyTest = testRecoil;
 
 let id = 0;
