@@ -1253,6 +1253,7 @@ describe('Effects', () => {
         default: 0,
         effects: [
           ({setSelf}) => {
+            // $FlowFixMe[incompatible-type]
             latestSetSelf = setSelf;
             setSelf(1); // to accurately reproduce minimal reproducible example based on GitHub #1107 issue
             numTimesEffectInit++;
@@ -1298,6 +1299,7 @@ describe('Effects', () => {
         default: 0,
         effects: [
           ({setSelf}) => {
+            // $FlowFixMe[incompatible-type]
             latestSetSelf = setSelf;
             setSelf(1); // to accurately reproduce minimal reproducible example based on GitHub #1107 issue
             numTimesEffectInit++;
