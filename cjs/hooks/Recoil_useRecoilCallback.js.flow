@@ -49,7 +49,7 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
   args: Args,
   extraInterface?: ExtraInterface,
 ): Return {
-  let ret: Return | Sentinel = SENTINEL;
+  let ret: $FlowFixMe = SENTINEL;
   let releaseSnapshot;
   batchUpdates(() => {
     const errMsg =

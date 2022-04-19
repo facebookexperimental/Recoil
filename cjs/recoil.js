@@ -6155,7 +6155,8 @@ class TreeCache {
         return node;
       }
 
-      const nodeValue = this._mapNodeValue(getNodeValue(node.nodeKey));
+      const nodeValue = this._mapNodeValue(getNodeValue(node.nodeKey)); // $FlowFixMe[incompatible-type]
+
 
       node = node.branches.get(nodeValue);
     }
@@ -7438,6 +7439,7 @@ function selector(options) {
     const depsAfterCacheLookup = new Set();
 
     try {
+      // $FlowFixMe[incompatible-type]
       cachedLoadable = cache.get(nodeKey => {
         !(typeof nodeKey === 'string') ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Cache nodeKey is type string') : Recoil_invariant(false) : void 0;
         return getNodeLoadable$2(store, state, nodeKey).contents;
@@ -7855,6 +7857,8 @@ const {
 
 
 
+const unwrap = x => x instanceof WrappedValue$2 ? x.value : x;
+
 function baseAtom(options) {
   const {
     key,
@@ -7873,7 +7877,7 @@ function baseAtom(options) {
     }));
   }
 
-  let defaultLoadable = Recoil_isPromise(options.default) ? unwrapPromise(options.default) : isLoadable$2(options.default) ? options.default.state === 'loading' ? unwrapPromise(options.default.contents) : options.default : loadableWithValue$3(options.default instanceof WrappedValue$2 ? options.default.value : options.default);
+  let defaultLoadable = Recoil_isPromise(options.default) ? unwrapPromise(options.default) : isLoadable$2(options.default) ? options.default.state === 'loading' ? unwrapPromise(options.default.contents) : options.default : loadableWithValue$3(unwrap(options.default));
   maybeFreezeValueOrPromise(defaultLoadable.contents);
   let cachedAnswerForUnvalidatedValue = undefined; // Cleanup handlers for this atom
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
@@ -7959,8 +7963,8 @@ function baseAtom(options) {
 
     if (effects != null) {
       // This state is scoped by Store, since this is in the initAtom() closure
-      let duringInit = true;
       let initValue = DEFAULT_VALUE$7;
+      let isDuringInit = true;
       let isInitError = false;
       let pendingSetSelf = null;
 
@@ -7968,7 +7972,7 @@ function baseAtom(options) {
         // Normally we can just get the current value of another atom.
         // But for our own value we need to check if there is a pending
         // initialized value or get the fallback default value.
-        if (duringInit && recoilValue.key === key) {
+        if (isDuringInit && recoilValue.key === key) {
           // Cast T to S
           const retValue = initValue; // flowlint-line unclear-type:off
 
@@ -7989,14 +7993,14 @@ function baseAtom(options) {
         var _store$getState$nextT4;
 
         const info = peekNodeInfo$3(store, (_store$getState$nextT4 = store.getState().nextTree) !== null && _store$getState$nextT4 !== void 0 ? _store$getState$nextT4 : store.getState().currentTree, recoilValue.key);
-        return duringInit && recoilValue.key === key && !(initValue instanceof DefaultValue$2) ? { ...info,
+        return isDuringInit && recoilValue.key === key && !(initValue instanceof DefaultValue$2) ? { ...info,
           isSet: true,
           loadable: getLoadable(recoilValue)
         } : info;
       }
 
       const setSelf = effect => valueOrUpdater => {
-        if (duringInit) {
+        if (isDuringInit) {
           const currentLoadable = getLoadable(node);
           const currentValue = currentLoadable.state === 'hasValue' ? currentLoadable.contents : DEFAULT_VALUE$7;
           initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict T from being a function without losing support for opaque types
@@ -8021,20 +8025,20 @@ function baseAtom(options) {
           if (typeof valueOrUpdater !== 'function') {
             pendingSetSelf = {
               effect,
-              value: valueOrUpdater
+              value: unwrap(valueOrUpdater)
             };
           }
 
           setRecoilValue$4(store, node, typeof valueOrUpdater === 'function' ? currentValue => {
-            const newValue = // cast to any because we can't restrict T from being a function without losing support for opaque types
-            valueOrUpdater(currentValue); // flowlint-line unclear-type:off
-
+            const newValue = unwrap( // cast to any because we can't restrict T from being a function without losing support for opaque types
+            valueOrUpdater(currentValue) // flowlint-line unclear-type:off
+            );
             pendingSetSelf = {
               effect,
               value: newValue
             };
             return newValue;
-          } : valueOrUpdater);
+          } : unwrap(valueOrUpdater));
         }
       };
 
@@ -8110,14 +8114,14 @@ function baseAtom(options) {
         }
       }
 
-      duringInit = false; // Mutate initial state in place since we know there are no other subscribers
+      isDuringInit = false; // Mutate initial state in place since we know there are no other subscribers
       // since we are the ones initializing on first use.
 
       if (!(initValue instanceof DefaultValue$2)) {
         var _store$getState$nextT5;
 
-        const frozenInitValue = maybeFreezeValueOrPromise(initValue);
-        const initLoadable = isInitError ? loadableWithError$2(initValue) : Recoil_isPromise(frozenInitValue) ? loadableWithPromise$2(wrapPendingPromise(store, frozenInitValue)) : loadableWithValue$3(frozenInitValue);
+        const initLoadable = isInitError ? loadableWithError$2(initValue) : Recoil_isPromise(initValue) ? loadableWithPromise$2(wrapPendingPromise(store, initValue)) : loadableWithValue$3(unwrap(initValue));
+        maybeFreezeValueOrPromise(initLoadable.contents);
         initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
         // This could happen if the atom was first initialized in an action that
         // also updated some other atom's state.
@@ -8237,9 +8241,7 @@ function atom(options) {
     // @fb-only: ) {
     // @fb-only: return scopedAtom<T>({
     // @fb-only: ...restOptions,
-    // @fb-only: default: optionsDefault instanceof WrappedValue
-    // @fb-only: ? optionsDefault.value
-    // @fb-only: : optionsDefault,
+    // @fb-only: default: unwrap<T>(optionsDefault),
     // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
     // @fb-only: });
   } else {

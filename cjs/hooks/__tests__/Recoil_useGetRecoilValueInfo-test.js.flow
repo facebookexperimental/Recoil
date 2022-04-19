@@ -57,6 +57,7 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
   };
   function GetRecoilValueInfo() {
     const getRecoilValueInfo = useGetRecoilValueInfo();
+    // $FlowFixMe[incompatible-type]
     getNodeInfo = node => ({...getRecoilValueInfo(node)});
     return null;
   }

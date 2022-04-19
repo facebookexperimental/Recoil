@@ -97,7 +97,8 @@
     | T
     | DefaultValue
     | Promise<T | DefaultValue>
-    | ((param: T | DefaultValue) => T | DefaultValue),
+    | WrappedValue<T>
+    | ((param: T | DefaultValue) => T | DefaultValue | WrappedValue<T>),
   ) => void,
   resetSelf: () => void,
 

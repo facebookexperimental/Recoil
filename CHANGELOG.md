@@ -3,6 +3,8 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+- Atom effects can initialize or set atoms to wrapped values (#1681)
+
 ## 0.7.2 (2022-04-13)
 
 - Selector cache lookup optimizations (#1720, #1736)

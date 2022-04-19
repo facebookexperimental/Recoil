@@ -376,7 +376,7 @@ describe('Effects', () => {
   testRecoil('initialization', () => {
     let inited = false;
     const myAtom = atom({
-      key: 'atom effect',
+      key: 'atom effect init',
       default: 'DEFAULT',
       effects: [
         ({node, trigger, setSelf}) => {
@@ -419,6 +419,34 @@ describe('Effects', () => {
     expect(c.textContent).toEqual('loading');
     act(() => jest.runAllTimers());
     expect(c.textContent).toEqual('"RESOLVE"');
+  });
+
+  testRecoil('set to Promise', async () => {
+    let setLater;
+    const myAtom = atom({
+      key: 'atom effect set promise',
+      default: 'DEFAULT',
+      effects: [
+        ({setSelf}) => {
+          setSelf(atom.value(Promise.resolve('INIT_PROMISE')));
+          setLater = setSelf;
+        },
+      ],
+    });
+    expect(getRecoilStateLoadable(myAtom).state).toBe('hasValue');
+    await expect(getRecoilStateLoadable(myAtom).contents).resolves.toBe(
+      'INIT_PROMISE',
+    );
+    act(() => setLater(atom.value(Promise.resolve('LATER_PROMISE'))));
+    expect(getRecoilStateLoadable(myAtom).state).toBe('hasValue');
+    await expect(getRecoilStateLoadable(myAtom).contents).resolves.toBe(
+      'LATER_PROMISE',
+    );
+    act(() => setLater(() => atom.value(Promise.resolve('UPDATER_PROMISE'))));
+    expect(getRecoilStateLoadable(myAtom).state).toBe('hasValue');
+    await expect(getRecoilStateLoadable(myAtom).contents).resolves.toBe(
+      'UPDATER_PROMISE',
+    );
   });
 
   testRecoil('order of effects', () => {
@@ -1225,6 +1253,7 @@ describe('Effects', () => {
         default: 0,
         effects: [
           ({setSelf}) => {
+            // $FlowFixMe[incompatible-type]
             latestSetSelf = setSelf;
             setSelf(1); // to accurately reproduce minimal reproducible example based on GitHub #1107 issue
             numTimesEffectInit++;
@@ -1270,6 +1299,7 @@ describe('Effects', () => {
         default: 0,
         effects: [
           ({setSelf}) => {
+            // $FlowFixMe[incompatible-type]
             latestSetSelf = setSelf;
             setSelf(1); // to accurately reproduce minimal reproducible example based on GitHub #1107 issue
             numTimesEffectInit++;
