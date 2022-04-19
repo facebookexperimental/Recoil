@@ -815,6 +815,7 @@ function selector<T>(
     // Second, look up in the selector cache and update the deps in the store
     const depsAfterCacheLookup = new Set();
     try {
+      // $FlowFixMe[incompatible-type]
       cachedLoadable = cache.get(
         nodeKey => {
           invariant(

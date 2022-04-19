@@ -79,6 +79,7 @@ class TreeCache<T = mixed> {
         return node;
       }
       const nodeValue = this._mapNodeValue(getNodeValue(node.nodeKey));
+      // $FlowFixMe[incompatible-type]
       node = node.branches.get(nodeValue);
     }
     return undefined;
