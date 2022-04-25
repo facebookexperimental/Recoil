@@ -6,6 +6,15 @@
   "module": "es/recoil.js",
   "react-native": "native/recoil.js",
   "unpkg": "umd/recoil.js",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "browser": "./es/recoil.js",
+      "umd": "./umd/recoil.js",
+      "import": "./es/recoil.mjs",
+      "require": "./cjs/recoil.js"
+    }
+  },
   "files": [
     "umd",
     "es",
