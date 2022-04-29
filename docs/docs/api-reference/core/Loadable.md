@@ -77,7 +77,7 @@ RecoilLoadable.of(RecoilLoadable.of('x'));
 RecoilLoadable.of(Promise.resolve('x'));
 ```
 
-Likewise, similar to `Promise.all()`, `ReocilLoadable.all()` can accept arrays of Loadables, Promises, or literal values:
+Likewise, similar to `Promise.all()`, `RecoilLoadable.all()` can accept arrays of Loadables, Promises, or literal values:
 
 ```jsx
 // Resolves to [1, 2, 3]
