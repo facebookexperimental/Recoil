@@ -333,7 +333,7 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
 // but state initialization only happens once the first time.
 function initialStoreState(initializeState): StoreState {
   // Initialize a snapshot and get its store
-  const snapshot = freshSnapshot().map(initializeState);
+  const snapshot = freshSnapshot(initializeState);
   const storeState = snapshot.getStore_INTERNAL().getState();
 
   // Counteract the snapshot auto-release
