@@ -125,6 +125,7 @@ type NewValueOrUpdater<T> =
 export type AtomEffect<T> = ({
   node: RecoilState<T>,
   storeID: StoreID,
+  parentStoreID_UNSTABLE?: StoreID,
   trigger: Trigger,
 
   // Call synchronously to initialize value or async to change it later
@@ -436,6 +437,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           const cleanup = effect({
             node,
             storeID: store.storeID,
+            parentStoreID_UNSTABLE: store.parentStoreID,
             trigger,
             setSelf: setSelf(effect),
             resetSelf: resetSelf(effect),

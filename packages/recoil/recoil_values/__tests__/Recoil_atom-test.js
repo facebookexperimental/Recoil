@@ -1549,6 +1549,29 @@ describe('Effects', () => {
     expect(effectStoreID).not.toEqual(undefined);
     expect(effectStoreID).toEqual(rootStoreID);
   });
+
+  testRecoil('parentStoreID matches <RecoilRoot>', async () => {
+    const myAtom = atom({
+      key: 'atom effect - parentStoreID',
+      effects: [
+        ({parentStoreID_UNSTABLE, setSelf}) => {
+          setSelf(parentStoreID_UNSTABLE);
+        },
+      ],
+    });
+
+    let prefetch;
+    function PrefetchComponent() {
+      const storeID = useRecoilStoreID();
+      prefetch = useRecoilCallback(({snapshot}) => () => {
+        const parentStoreID = snapshot.getLoadable(myAtom).getValue();
+        expect(storeID).toBe(parentStoreID);
+      });
+    }
+
+    renderElements(<PrefetchComponent />);
+    act(prefetch);
+  });
 });
 
 testRecoil('object is frozen when stored in atom', async () => {
