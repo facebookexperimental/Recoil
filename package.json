@@ -6,6 +6,7 @@
   "module": "es/recoil.js",
   "react-native": "native/recoil.js",
   "unpkg": "umd/recoil.js",
+  "types": "index.d.ts",
   "files": [
     "umd",
     "es",
