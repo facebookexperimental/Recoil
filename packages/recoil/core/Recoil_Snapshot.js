@@ -78,9 +78,10 @@ class Snapshot {
   _store: Store;
   _refCount: number = 1;
 
-  constructor(storeState: StoreState) {
+  constructor(storeState: StoreState, parentStoreID?: StoreID) {
     this._store = {
       storeID: getNextStoreID(),
+      parentStoreID,
       getState: () => storeState,
       replaceState: replacer => {
         // no batching, so nextTree is never active
@@ -339,7 +340,7 @@ const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] =
         version === 'latest'
           ? storeState.nextTree ?? storeState.currentTree
           : nullthrows(storeState.previousTree);
-      return new Snapshot(cloneStoreState(store, treeState));
+      return new Snapshot(cloneStoreState(store, treeState), store.storeID);
     },
     (store, version) =>
       String(version) +
@@ -373,6 +374,7 @@ class MutableSnapshot extends Snapshot {
         snapshot.getStore_INTERNAL().getState().currentTree,
         true,
       ),
+      snapshot.getStoreID(),
     );
     this._batch = batch;
   }

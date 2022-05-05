@@ -125,6 +125,7 @@ export type StoreState = {
 // It is constant within a given Recoil root.
 export type Store = $ReadOnly<{
   storeID: StoreID,
+  parentStoreID?: StoreID,
   getState: () => StoreState,
   replaceState: ((TreeState) => TreeState) => void,
   getGraph: StateID => Graph,

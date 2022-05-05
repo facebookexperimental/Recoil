@@ -644,4 +644,25 @@ describe('Atom effects', () => {
       testSnapshot.getStoreID(),
     );
   });
+
+  testRecoil('Parent StoreID', () => {
+    const myAtom = atom({
+      key: 'snapshot effects parentStoreID',
+      effects: [
+        ({storeID, parentStoreID_UNSTABLE, setSelf}) => {
+          setSelf({storeID, parentStoreID: parentStoreID_UNSTABLE});
+        },
+      ],
+    });
+
+    const testSnapshot = freshSnapshot();
+    const mappedSnapshot = testSnapshot.map(() => {});
+
+    expect(mappedSnapshot.getLoadable(myAtom).getValue().storeID).toBe(
+      mappedSnapshot.getStoreID(),
+    );
+    expect(mappedSnapshot.getLoadable(myAtom).getValue().parentStoreID).toBe(
+      testSnapshot.getStoreID(),
+    );
+  });
 });
