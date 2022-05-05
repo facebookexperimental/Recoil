@@ -90,6 +90,7 @@
  export type AtomEffect<T> = (param: {
   node: RecoilState<T>,
   storeID: StoreID,
+  parentStoreID_UNSTABLE?: StoreID,
   trigger: 'set' | 'get',
 
   // Call synchronously to initialize value or async to change it later

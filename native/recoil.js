@@ -3618,7 +3618,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
 class Snapshot {
   // eslint-disable-next-line fb-www/no-uninitialized-properties
-  constructor(storeState) {
+  constructor(storeState, parentStoreID) {
     _defineProperty(this, "_store", void 0);
 
     _defineProperty(this, "_refCount", 1);
@@ -3685,6 +3685,7 @@ class Snapshot {
 
     this._store = {
       storeID: getNextStoreID$1(),
+      parentStoreID,
       getState: () => storeState,
       replaceState: replacer => {
         // no batching, so nextTree is never active
@@ -3862,7 +3863,7 @@ const [memoizedCloneSnapshot, invalidateMemoizedSnapshot$2] = memoizeOneWithArgs
 
   const storeState = store.getState();
   const treeState = version === 'latest' ? (_storeState$nextTree = storeState.nextTree) !== null && _storeState$nextTree !== void 0 ? _storeState$nextTree : storeState.currentTree : Recoil_nullthrows(storeState.previousTree);
-  return new Snapshot(cloneStoreState(store, treeState));
+  return new Snapshot(cloneStoreState(store, treeState), store.storeID);
 }, (store, version) => {
   var _store$getState$nextT, _store$getState$previ;
 
@@ -3884,7 +3885,7 @@ function cloneSnapshot(store, version = 'latest') {
 
 class MutableSnapshot extends Snapshot {
   constructor(snapshot, batch) {
-    super(cloneStoreState(snapshot.getStore_INTERNAL(), snapshot.getStore_INTERNAL().getState().currentTree, true));
+    super(cloneStoreState(snapshot.getStore_INTERNAL(), snapshot.getStore_INTERNAL().getState().currentTree, true), snapshot.getStoreID());
 
     _defineProperty(this, "_batch", void 0);
 
@@ -4314,7 +4315,7 @@ function initialStoreState_DEPRECATED(store, initializeState) {
 
 function initialStoreState(initializeState) {
   // Initialize a snapshot and get its store
-  const snapshot = freshSnapshot$1().map(initializeState);
+  const snapshot = freshSnapshot$1(initializeState);
   const storeState = snapshot.getStore_INTERNAL().getState(); // Counteract the snapshot auto-release
 
   snapshot.retain(); // Cleanup any effects run during initialization and clear the handlers so
@@ -8089,6 +8090,7 @@ function baseAtom(options) {
           const cleanup = effect({
             node,
             storeID: store.storeID,
+            parentStoreID_UNSTABLE: store.parentStoreID,
             trigger,
             setSelf: setSelf(effect),
             resetSelf: resetSelf(effect),
