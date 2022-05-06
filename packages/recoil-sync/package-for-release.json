@@ -1,7 +1,8 @@
 {
-  "name": "refine",
-  "type": "module",
+  "name": "recoil-sync",
+  "version": "0.0.1-alpha.0",
   "description": "recoil-sync provides an add-on library to help synchronize Recoil state with external systems",
+  "type": "module",
   "main": "cjs/index.js",
   "module": "es/index.js",
   "react-native": "native/index.js",
@@ -10,6 +11,9 @@
   "files": ["umd", "es", "cjs", "native", "index.d.ts"],
   "repository": "https://github.com/facebookexperimental/Recoil.git",
   "license": "MIT",
+  "dependencies": {
+    "transit-js": "^0.8.874"
+  },
   "peerDependencies": {
     "recoil": ">=0.7.0"
   }

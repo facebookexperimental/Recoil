@@ -9,7 +9,11 @@
  */
 
 import {rollup} from 'rollup';
-import {recoilInputOptions, createOutputOption} from './rollup-configs.js';
+import {
+  recoilInputOptions,
+  recoilSyncInputOptions,
+  createOutputOption,
+} from './rollup-configs.js';
 import {exec} from 'child_process';
 import * as fs from 'fs';
 import {projectRootDir} from './project-root-dir.js';
@@ -18,6 +22,8 @@ const args = process.argv.slice(2);
 
 if (args[0] === 'all') {
   buildAll();
+} else if (args[0] === 'recoil') {
+  buildRecoil();
 }
 
 // constants
@@ -35,35 +41,32 @@ function createErrorHandler(message) {
 async function buildAll() {
   console.log('Building all packages...');
   await buildRecoil();
+  await buildRecoilSync();
 }
 
 async function buildRecoil() {
   console.log('Building recoil...');
+  const createRecoilOutputOptions = type =>
+    createOutputOption(type, 'recoil', 'recoil', 'Recoil');
   await build(
     'recoil (common)',
     recoilInputOptions.common,
-    ['cjs', 'es'].map(type =>
-      createOutputOption(type, 'recoil', 'recoil', 'Recoil'),
-    ),
+    ['cjs', 'es'].map(createRecoilOutputOptions),
   );
   await build(
     'recoil (dev)',
     recoilInputOptions.dev,
-    ['umd'].map(type => createOutputOption(type, 'recoil', 'recoil', 'Recoil')),
+    ['umd'].map(createRecoilOutputOptions),
   );
   await build(
     'recoil (prod)',
     recoilInputOptions.prod,
-    ['es-browsers', 'umd-prod'].map(type =>
-      createOutputOption(type, 'recoil', 'recoil', 'Recoil'),
-    ),
+    ['es-browsers', 'umd-prod'].map(createRecoilOutputOptions),
   );
   await build(
     'recoil (native)',
     recoilInputOptions.native,
-    ['native'].map(type =>
-      createOutputOption(type, 'recoil', 'recoil', 'Recoil'),
-    ),
+    ['native'].map(createRecoilOutputOptions),
   );
 
   console.log('Copying files...');
@@ -104,6 +107,68 @@ async function buildRecoil() {
     },
   );
   console.log('Successfully built recoil!');
+}
+
+async function buildRecoilSync() {
+  console.log('Building recoil-sync...');
+
+  const createRecoilSyncOutputOptions = type =>
+    createOutputOption(type, 'recoil-sync', 'index', 'RecoilSync');
+  await build(
+    'recoil-sync (common)',
+    recoilSyncInputOptions.common,
+    ['cjs', 'es'].map(createRecoilSyncOutputOptions),
+  );
+  await build(
+    'recoil-sync (dev)',
+    recoilSyncInputOptions.dev,
+    ['umd'].map(createRecoilSyncOutputOptions),
+  );
+  await build(
+    'recoil-sync (prod)',
+    recoilSyncInputOptions.prod,
+    ['es-browsers', 'umd-prod'].map(createRecoilSyncOutputOptions),
+  );
+
+  console.log('Copying files...');
+  fs.copyFile(
+    `${projectRootDir}/packages/recoil-sync/package-for-release.json`,
+    `${BUILD_TARGET}/recoil-sync/package.json`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy package-for-release.json'),
+  );
+
+  // TODO: add README.md for recoil-sync
+  fs.copyFile(
+    `${projectRootDir}/README.md`,
+    `${BUILD_TARGET}/recoil-sync/README.md`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy README.md'),
+  );
+
+  console.log('Copying index.d.ts for TypeScript support...');
+  fs.copyFile(
+    `${projectRootDir}/typescript/recoil-sync.d.ts`,
+    `${BUILD_TARGET}/recoil-sync/index.d.ts`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy recoil-sync.d.ts for recoil-sync'),
+  );
+
+  console.log('Generating Flow type files...');
+  exec(
+    `npx flow-copy-source packages/recoil-sync ${BUILD_TARGET}/recoil-sync/cjs`,
+    err => {
+      createErrorHandler('Failed to copy recoil source files for flow types')(
+        err,
+      );
+      fs.rename(
+        `${BUILD_TARGET}/recoil-sync/cjs/RecoilSync_index.js.flow`,
+        `${BUILD_TARGET}/recoil-sync/cjs/index.js.flow`,
+        createErrorHandler('Failed to rename RecoilSync_index.js.flow'),
+      );
+    },
+  );
+  console.log('Successfully built recoil-sync!');
 }
 
 async function build(name, inputOptions, outputOptionsList) {

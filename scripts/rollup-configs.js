@@ -17,8 +17,13 @@ import path from 'path';
 import {terser} from 'rollup-plugin-terser';
 import {projectRootDir} from './project-root-dir.js';
 
-const inputFile = 'packages/recoil/Recoil_index.js';
-const externalLibs = ['react', 'react-dom', 'react-native'];
+const externalLibs = [
+  'react',
+  'react-dom',
+  'react-native',
+  'recoil',
+  'transit-js',
+];
 
 const defaultNodeResolveConfig = {};
 const nodeResolvePlugin = nodeResolve(defaultNodeResolveConfig);
@@ -45,6 +50,9 @@ const commonPlugins = [
       }
       if (source === 'ReactNative') {
         return {id: 'react-native', external: true};
+      }
+      if (source === 'Recoil') {
+        return {id: 'recoil', external: true};
       }
       return null;
     },
@@ -85,6 +93,12 @@ const productionPlugins = [
 ];
 
 const outputFolder = 'build';
+const globals = {
+  react: 'React',
+  'react-dom': 'ReactDOM',
+  recoil: 'Recoil',
+  'transit-js': 'transit',
+};
 export function createOutputOption(type, folder, filename, UMDName) {
   switch (type) {
     case 'cjs':
@@ -111,10 +125,7 @@ export function createOutputOption(type, folder, filename, UMDName) {
         format: 'umd',
         name: UMDName,
         exports: 'named',
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        },
+        globals,
       };
     case 'umd-prod':
       return {
@@ -122,10 +133,7 @@ export function createOutputOption(type, folder, filename, UMDName) {
         format: 'umd',
         name: UMDName,
         exports: 'named',
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        },
+        globals,
       };
     case 'native':
       return {
@@ -138,24 +146,25 @@ export function createOutputOption(type, folder, filename, UMDName) {
   }
 }
 
+const recoilInputFile = 'packages/recoil/Recoil_index.js';
 export const recoilInputOptions = {
   common: {
-    input: inputFile,
+    input: recoilInputFile,
     external: externalLibs,
     plugins: commonPlugins,
   },
   dev: {
-    input: inputFile,
+    input: recoilInputFile,
     external: externalLibs,
     plugins: developmentPlugins,
   },
   prod: {
-    input: inputFile,
+    input: recoilInputFile,
     external: externalLibs,
     plugins: productionPlugins,
   },
   native: {
-    input: inputFile,
+    input: recoilInputFile,
     external: externalLibs,
     plugins: commonPlugins.map(plugin => {
       // Replace the default nodeResolve plugin
@@ -168,5 +177,24 @@ export const recoilInputOptions = {
 
       return plugin;
     }),
+  },
+};
+
+const recoilSyncInputFile = 'packages/recoil-sync/RecoilSync_index.js';
+export const recoilSyncInputOptions = {
+  common: {
+    input: recoilSyncInputFile,
+    external: externalLibs,
+    plugins: commonPlugins,
+  },
+  dev: {
+    input: recoilSyncInputFile,
+    external: externalLibs,
+    plugins: developmentPlugins,
+  },
+  prod: {
+    input: recoilSyncInputFile,
+    external: externalLibs,
+    plugins: productionPlugins,
   },
 };
