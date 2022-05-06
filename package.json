@@ -1,6 +1,7 @@
 {
   "name": "recoil",
   "version": "0.7.2",
+  "type": "module",
   "description": "Recoil - A state management library for React",
   "main": "cjs/recoil.js",
   "module": "es/recoil.js",
@@ -17,6 +18,7 @@
   "repository": "https://github.com/facebookexperimental/Recoil.git",
   "license": "MIT",
   "scripts": {
+    "test-build": "node scripts/build.js all",
     "prepare": "install-peers",
     "build": "rollup -c && node scripts/postbuild.js",
     "test": "jest packages/*",

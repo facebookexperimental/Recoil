@@ -7,3 +7,5 @@ yarn.lock
 flow-typed
 
 recoil_devtools_ext
+
+scripts/project-root-dir.js
