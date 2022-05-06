@@ -78,7 +78,9 @@ async function buildRecoil() {
   exec(
     `npx flow-copy-source packages/recoil ${BUILD_TARGET}/recoil/cjs`,
     err => {
-      createErrorHandler('Failed to copy recoil source files for flow types');
+      createErrorHandler('Failed to copy recoil source files for flow types')(
+        err,
+      );
       fs.rename(
         `${BUILD_TARGET}/recoil/cjs/Recoil_index.js.flow`,
         `${BUILD_TARGET}/recoil/cjs/recoil.js.flow`,
