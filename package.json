@@ -91,7 +91,7 @@
     }
   },
   "lint-staged": {
-    "*.{js,md,json}": "prettier --write",
-    "*.{js}": "eslint --fix"
+    "*.{js,mjs,md,json}": "prettier --write",
+    "*.{js,mjs}": "eslint --fix"
   }
 }

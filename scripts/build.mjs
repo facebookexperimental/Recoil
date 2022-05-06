@@ -83,6 +83,18 @@ async function buildRecoil() {
     fs.constants.COPYFILE_FICLONE,
     createErrorHandler('Failed to copy README.md'),
   );
+  fs.copyFile(
+    `${projectRootDir}/CHANGELOG.md`,
+    `${BUILD_TARGET}/recoil/CHANGELOG.md`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy CHANGELOG.md'),
+  );
+  fs.copyFile(
+    `${projectRootDir}/LICENSE`,
+    `${BUILD_TARGET}/recoil/LICENSE`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy LICENSE'),
+  );
 
   console.log('Copying index.d.ts for TypeScript support...');
   fs.copyFile(
@@ -144,6 +156,19 @@ async function buildRecoilSync() {
     `${BUILD_TARGET}/recoil-sync/README.md`,
     fs.constants.COPYFILE_FICLONE,
     createErrorHandler('Failed to copy README.md'),
+  );
+  // TODO: add CHANGELOG.md for recoil-sync
+  fs.copyFile(
+    `${projectRootDir}/CHANGELOG.md`,
+    `${BUILD_TARGET}/recoil-sync/CHANGELOG.md`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy CHANGELOG.md'),
+  );
+  fs.copyFile(
+    `${projectRootDir}/LICENSE`,
+    `${BUILD_TARGET}/recoil-sync/LICENSE`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy LICENSE'),
   );
 
   console.log('Copying index.d.ts for TypeScript support...');
