@@ -8,4 +8,4 @@ flow-typed
 
 recoil_devtools_ext
 
-scripts/project-root-dir.js
+script/project-root-dir.js
