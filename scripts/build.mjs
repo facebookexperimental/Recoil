@@ -13,10 +13,10 @@ import {
   recoilInputOptions,
   recoilSyncInputOptions,
   createOutputOption,
-} from './rollup-configs.js';
+} from './rollup-configs.mjs';
 import {exec} from 'child_process';
 import * as fs from 'fs';
-import {projectRootDir} from './project-root-dir.js';
+import {projectRootDir} from './project-root-dir.mjs';
 
 const args = process.argv.slice(2);
 

@@ -15,7 +15,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import path from 'path';
 import {terser} from 'rollup-plugin-terser';
-import {projectRootDir} from './project-root-dir.js';
+import {projectRootDir} from './project-root-dir.mjs';
 
 const externalLibs = [
   'react',
