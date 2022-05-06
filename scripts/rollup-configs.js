@@ -77,29 +77,29 @@ const productionPlugins = [
 ];
 
 const outputFolder = 'build';
-export function createOutputOption(type, filename, UMDName) {
+export function createOutputOption(type, folder, filename, UMDName) {
   switch (type) {
     case 'cjs':
       return {
-        file: `${outputFolder}/${filename}/cjs/${filename}.js`,
+        file: `${outputFolder}/${folder}/cjs/${filename}.js`,
         format: 'cjs',
         exports: 'named',
       };
     case 'es':
       return {
-        file: `${outputFolder}/${filename}/es/${filename}.js`,
+        file: `${outputFolder}/${folder}/es/${filename}.js`,
         format: 'es',
         exports: 'named',
       };
     case 'es-browsers':
       return {
-        file: `${outputFolder}/${filename}/es/${filename}.mjs`,
+        file: `${outputFolder}/${folder}/es/${filename}.mjs`,
         format: 'es',
         exports: 'named',
       };
     case 'umd':
       return {
-        file: `${outputFolder}/${filename}/umd/${filename}.js`,
+        file: `${outputFolder}/${folder}/umd/${filename}.js`,
         format: 'umd',
         name: UMDName,
         exports: 'named',
@@ -110,7 +110,7 @@ export function createOutputOption(type, filename, UMDName) {
       };
     case 'umd-prod':
       return {
-        file: `${outputFolder}/${filename}/umd/${filename}.min.js`,
+        file: `${outputFolder}/${folder}/umd/${filename}.min.js`,
         format: 'umd',
         name: UMDName,
         exports: 'named',
@@ -121,7 +121,7 @@ export function createOutputOption(type, filename, UMDName) {
       };
     case 'native':
       return {
-        file: `${outputFolder}/${filename}/native/${filename}.js`,
+        file: `${outputFolder}/${folder}/native/${filename}.js`,
         format: 'es',
         exports: 'named',
       };
