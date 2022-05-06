@@ -55,6 +55,14 @@ const commonPlugins = [
         find: 'recoil-shared',
         replacement: path.resolve(projectRootDir, 'packages/shared'),
       },
+      // temporarily bundle refine into recoil-sync
+      {
+        find: 'refine',
+        replacement: path.resolve(
+          projectRootDir,
+          'packages/refine/Refine_index.js',
+        ),
+      },
     ],
   }),
   nodeResolvePlugin,

@@ -66,6 +66,21 @@ async function buildRecoil() {
     ),
   );
 
+  console.log('Copying files...');
+  fs.copyFile(
+    `${projectRootDir}/packages/recoil/package-for-release.json`,
+    `${BUILD_TARGET}/recoil/package.json`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy package-for-release.json'),
+  );
+
+  fs.copyFile(
+    `${projectRootDir}/README.md`,
+    `${BUILD_TARGET}/recoil/README.md`,
+    fs.constants.COPYFILE_FICLONE,
+    createErrorHandler('Failed to copy README.md'),
+  );
+
   console.log('Copying index.d.ts for TypeScript support...');
   fs.copyFile(
     `${projectRootDir}/typescript/index.d.ts`,
