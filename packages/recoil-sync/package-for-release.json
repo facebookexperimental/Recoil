@@ -2,7 +2,6 @@
   "name": "recoil-sync",
   "version": "0.0.1-alpha.0",
   "description": "recoil-sync provides an add-on library to help synchronize Recoil state with external systems",
-  "type": "module",
   "main": "cjs/index.js",
   "module": "es/index.js",
   "unpkg": "umd/index.js",
