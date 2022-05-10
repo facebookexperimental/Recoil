@@ -3,11 +3,11 @@ title: Relay Environment
 sidebar_label: Relay Environment
 ---
 
-The first step for using the `recoil-relay` library is to register your Relay environment(s).  Each GraphQL [selector](/docs/recoil-relay/graphql_selectors) or [effect](/docs/recoil-relay/graphql_effects) requires an `environment` option which can either be a Relay Environment directly, or an **`EnvironmentKey`**.
+The first step for using the `recoil-relay` library is to register your Relay environment(s).  Each GraphQL [selector](/docs/recoil-relay/graphql_selectors) or [effect](/docs/recoil-relay/graphql_effects) requires an `environment` option which can either just be a Relay Environment directly or an **`EnvironmentKey`**.
 
 ### `EnvironmentKey`
 
-When using a **`EnvironmentKey`** with your GraphQL queries it matches up with a surrounding **`<RecoilRelayEnvironment>`** with the same `environmentKey` within your `<RecoilRoot>`.  This is helpful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded_queries).
+When using an **`EnvironmentKey`** with your GraphQL queries it is matched up with a surrounding **`<RecoilRelayEnvironment>`** with the same `environmentKey` within your `<RecoilRoot>`.  This is helpful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded_queries).
 
 ```jsx
 const myEnvironmentKey = new EnvironmentKey('My Environment');
