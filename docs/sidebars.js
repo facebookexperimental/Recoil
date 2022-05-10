@@ -127,4 +127,37 @@ module.exports = {
       ],
     },
   ],
+  'recoil-relay': [
+    'recoil-relay/introduction',
+    'recoil-relay/environment',
+    'recoil-relay/graphql_selectors',
+    'recoil-relay/preloaded_queries',
+    'recoil-relay/graphql_effects',
+    {
+      'API Reference': [
+        'recoil-sync/api/syncEffect',
+        'recoil-sync/api/useRecoilSync',
+        'recoil-sync/api/RecoilSync',
+        {
+          'URL Persistence': [
+            'recoil-sync/api/RecoilURLSync',
+            'recoil-sync/api/useRecoilURLSync',
+            'recoil-sync/api/urlSyncEffect',
+            {
+              JSON: [
+                'recoil-sync/api/RecoilURLSyncJSON',
+                'recoil-sync/api/useRecoilURLSyncJSON',
+              ],
+            },
+            {
+              Transit: [
+                'recoil-sync/api/RecoilURLSyncTransit',
+                'recoil-sync/api/useRecoilURLSyncTransit',
+              ],
+            },
+          ],
+        },
+      ],
+    }
+  ],
 };

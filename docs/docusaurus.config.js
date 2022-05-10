@@ -90,6 +90,12 @@ module.exports = {
           label: 'Refine',
           position: 'left',
         },
+        {
+          to: 'docs/recoil-relay/introduction',
+          activeBasePath: 'docs/recoil-relay',
+          label: 'GraphQL',
+          position: 'left',
+        },
         { to: 'resources', label: 'External Resources', position: 'left' },
         // Please keep GitHub link to the right for consistency.
         {
