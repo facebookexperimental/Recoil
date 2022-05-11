@@ -96,7 +96,6 @@ const {
 const {saveDepsToStore} = require('../core/Recoil_Graph');
 const {
   DEFAULT_VALUE,
-  RecoilValueNotReady,
   getConfigDeletionHandler,
   getNode,
   registerNode,
@@ -119,6 +118,7 @@ const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const {
   startPerfBlock,
 } = require('recoil-shared/util/Recoil_PerformanceTimings');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 type SelectorCallbackInterface<T> = $ReadOnly<{
   // TODO Technically this could be RecoilValueReadOnly, but trying to parameterize
@@ -1139,7 +1139,9 @@ function selector<T>(
         if (loadable.state === 'hasValue') {
           return loadable.contents;
         } else if (loadable.state === 'loading') {
-          throw new RecoilValueNotReady(depKey);
+          const msg = `Getting value of asynchronous atom or selector "${depKey}" in a pending state while setting selector "${key}" is not yet supported.`;
+          recoverableViolation(msg, 'recoil');
+          throw err(msg);
         } else {
           throw loadable.contents;
         }
@@ -1150,7 +1152,10 @@ function selector<T>(
         valueOrUpdater: ValueOrUpdater<S>,
       ) {
         if (syncSelectorSetFinished) {
-          throw err('Recoil: Async selector sets are not currently supported.');
+          const msg =
+            'Recoil: Async selector sets are not currently supported.';
+          recoverableViolation(msg, 'recoil');
+          throw err(msg);
         }
 
         const setValue =

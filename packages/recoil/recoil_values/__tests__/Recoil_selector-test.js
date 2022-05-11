@@ -676,62 +676,91 @@ describe('Dependencies', () => {
   });
 });
 
-testRecoil('async set not supported', async () => {
-  const myAtom = atom({
-    key: 'selector / async not supported / other atom',
-    default: 'DEFAULT',
+describe('Async Selector Set', () => {
+  testRecoil('async set not supported', () => {
+    const myAtom = stringAtom();
+    const mySelector = selector({
+      key: 'selector async set',
+      get: () => null,
+      // $FlowExpectedError[incompatible-call]
+      set: async ({set}, x) => set(myAtom, x),
+    });
+
+    expect(() => setValue(mySelector, 'ERROR')).toThrow('Async');
   });
 
-  const mySelector = selector({
-    key: 'selector / async set not supported / async set method',
-    get: () => myAtom,
-    // Set should not be async, this test checks that it throws an error.
-    // $FlowExpectedError
-    set: async ({set, reset}, newVal) => {
-      await Promise.resolve();
-      newVal instanceof DefaultValue ? reset(myAtom) : set(myAtom, 'SET');
-    },
+  testRecoil('async set call not supported', async () => {
+    const myAtom = atom({
+      key: 'selector / async not supported / other atom',
+      default: 'DEFAULT',
+    });
+
+    const mySelector = selector({
+      key: 'selector / async set not supported / async set method',
+      get: () => myAtom,
+      // Set should not be async, this test checks that it throws an error.
+      // $FlowExpectedError
+      set: async ({set, reset}, newVal) => {
+        await Promise.resolve();
+        newVal instanceof DefaultValue ? reset(myAtom) : set(myAtom, 'SET');
+      },
+    });
+
+    let setAttempt, resetAttempt;
+    const mySelector2 = selector({
+      key: 'selector / async set not supported / async upstream call',
+      get: () => myAtom,
+      set: ({set, reset}, newVal) => {
+        if (newVal instanceof DefaultValue) {
+          resetAttempt = Promise.resolve().then(() => {
+            reset(myAtom);
+          });
+        } else {
+          setAttempt = Promise.resolve().then(() => {
+            set(myAtom, 'SET');
+          });
+        }
+      },
+    });
+
+    const testSnapshot = freshSnapshot();
+    testSnapshot.retain();
+    expect(() =>
+      testSnapshot.map(({set}) => {
+        set(mySelector, 'SET');
+      }),
+    ).toThrow();
+    expect(() =>
+      testSnapshot.map(({reset}) => {
+        reset(mySelector);
+      }),
+    ).toThrow();
+    const setSnapshot = testSnapshot.map(({set, reset}) => {
+      set(mySelector2, 'SET');
+      reset(mySelector2);
+    });
+    setSnapshot.retain();
+
+    await flushPromisesAndTimers();
+    expect(setSnapshot.getLoadable(mySelector2).contents).toEqual('DEFAULT');
+    await expect(setAttempt).rejects.toThrowError();
+    await expect(resetAttempt).rejects.toThrowError();
   });
 
-  let setAttempt, resetAttempt;
-  const mySelector2 = selector({
-    key: 'selector / async set not supported / async upstream call',
-    get: () => myAtom,
-    set: ({set, reset}, newVal) => {
-      if (newVal instanceof DefaultValue) {
-        resetAttempt = Promise.resolve().then(() => {
-          reset(myAtom);
-        });
-      } else {
-        setAttempt = Promise.resolve().then(() => {
-          set(myAtom, 'SET');
-        });
-      }
-    },
-  });
+  testRecoil('set tries to get async value', () => {
+    const myAtom = atom({key: 'selector set get async atom'});
+    const mySelector = selector({
+      key: 'selector set get async selector',
+      get: () => myAtom,
+      set: ({get}) => {
+        get(myAtom);
+      },
+    });
 
-  const testSnapshot = freshSnapshot();
-  testSnapshot.retain();
-  expect(() =>
-    testSnapshot.map(({set}) => {
-      set(mySelector, 'SET');
-    }),
-  ).toThrow();
-  expect(() =>
-    testSnapshot.map(({reset}) => {
-      reset(mySelector);
-    }),
-  ).toThrow();
-  const setSnapshot = testSnapshot.map(({set, reset}) => {
-    set(mySelector2, 'SET');
-    reset(mySelector2);
+    expect(() => setValue(mySelector, 'ERROR')).toThrow(
+      'selector set get async',
+    );
   });
-  setSnapshot.retain();
-
-  await flushPromisesAndTimers();
-  expect(setSnapshot.getLoadable(mySelector2).contents).toEqual('DEFAULT');
-  await expect(setAttempt).rejects.toThrowError();
-  await expect(resetAttempt).rejects.toThrowError();
 });
 
 describe('User-thrown promises', () => {
