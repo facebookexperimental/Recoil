@@ -18,6 +18,9 @@ class AbstractRecoilValue<+T> {
   constructor(newKey: NodeKey) {
     this.key = newKey;
   }
+  toJSON(): {key: string} {
+    return {key: this.key};
+  }
 }
 
 class RecoilState<T> extends AbstractRecoilValue<T> {}

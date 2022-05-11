@@ -114,10 +114,8 @@ testRecoil('selectorFamily - date parameter', () => {
   });
 
   set(myAtom, 1);
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   expect(getValue(mySelector(new Date(2021, 2, 25))).getDate()).toBe(26);
   set(myAtom, 2);
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   expect(getValue(mySelector(new Date(2021, 2, 25))).getDate()).toBe(27);
 });
 

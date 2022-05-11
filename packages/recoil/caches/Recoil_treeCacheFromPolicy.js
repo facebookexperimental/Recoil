@@ -59,7 +59,6 @@ function getTreeCache<T>(
 ): TreeCacheImplementation<T> {
   switch (eviction) {
     case 'keep-all':
-      // $FlowFixMe[method-unbinding]
       return new TreeCache<T>({name, mapNodeValue});
     case 'lru':
       return treeCacheLRU<T>({

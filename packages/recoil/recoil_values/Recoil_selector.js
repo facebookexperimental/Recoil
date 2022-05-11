@@ -77,6 +77,7 @@ import type {
   GetRecoilValue,
   ResetRecoilState,
   SetRecoilState,
+  ValueOrUpdater,
 } from './Recoil_callbackTypes';
 
 const {
@@ -806,8 +807,7 @@ function selector<T>(
   ): ?Loadable<T> {
     // First, look up in the state cache
     // If it's here, then the deps in the store should already be valid.
-    let cachedLoadable: ?(Loadable<$FlowFixMe> | Loadable<T>) =
-      state.atomValues.get(key);
+    let cachedLoadable: ?Loadable<T> = state.atomValues.get(key);
     if (cachedLoadable != null) {
       return cachedLoadable;
     }
@@ -815,7 +815,6 @@ function selector<T>(
     // Second, look up in the selector cache and update the deps in the store
     const depsAfterCacheLookup = new Set();
     try {
-      // $FlowFixMe[incompatible-type]
       cachedLoadable = cache.get(
         nodeKey => {
           invariant(
@@ -1148,7 +1147,7 @@ function selector<T>(
 
       function setRecoilState<S>(
         recoilState: RecoilState<S>,
-        valueOrUpdater: S | DefaultValue | ((S, GetRecoilValue) => S),
+        valueOrUpdater: ValueOrUpdater<S>,
       ) {
         if (syncSelectorSetFinished) {
           throw err('Recoil: Async selector sets are not currently supported.');
@@ -1176,7 +1175,6 @@ function selector<T>(
       }
 
       const ret = set(
-        // $FlowFixMe[incompatible-call]
         {set: setRecoilState, get: getRecoilValue, reset: resetRecoilState},
         newValue,
       );

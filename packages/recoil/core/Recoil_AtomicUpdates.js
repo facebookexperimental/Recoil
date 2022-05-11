@@ -50,7 +50,7 @@ class TransactionInterfaceImpl {
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   get = <T>(recoilValue: RecoilValue<T>): T => {
     if (this._changes.has(recoilValue.key)) {
-      // $FlowFixMe[incompatible-return]
+      // $FlowIssue[incompatible-return]
       return this._changes.get(recoilValue.key);
     }
     if (!isAtom(recoilValue)) {

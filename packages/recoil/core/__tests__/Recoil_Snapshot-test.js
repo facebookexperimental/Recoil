@@ -145,7 +145,6 @@ testRecoil(
     let expectedSnapshotID = null;
 
     const myAtom = atom({key: 'Snapshot ID atom', default: 0});
-    // $FlowFixMe[incompatible-call] added when improving typing for this parameters
     const mySelector = constSelector(myAtom); // For read-only testing below
 
     const transactionObserver = ({snapshot}) => {
@@ -225,7 +224,6 @@ testRecoil('Read default loadable from snapshot', () => {
   expect(atomLoadable.state).toEqual('hasValue');
   expect(atomLoadable.contents).toEqual('DEFAULT');
 
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   const mySelector = constSelector(myAtom);
   const selectorLoadable = snapshot.getLoadable(mySelector);
   expect(selectorLoadable.state).toEqual('hasValue');
@@ -238,7 +236,6 @@ testRecoil('Read async selector from snapshot', async () => {
   const otherB = freshSnapshot();
 
   const [asyncSel, resolve] = asyncSelector();
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   const nestSel = constSelector(asyncSel);
 
   expect(snapshot.getLoadable(asyncSel).state).toEqual('loading');
@@ -268,7 +265,6 @@ testRecoil('Sync map of snapshot', () => {
     key: 'Snapshot Map Sync',
     default: 'DEFAULT',
   });
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   const mySelector = constSelector(myAtom);
 
   const atomLoadable = snapshot.getLoadable(myAtom);
@@ -600,7 +596,7 @@ describe('Atom effects', () => {
       ],
     });
 
-    let setMount: $FlowFixMe = _ => {
+    let setMount: boolean => void = () => {
       throw new Error('Test Error');
     };
     function Component() {

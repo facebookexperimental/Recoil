@@ -61,7 +61,7 @@ const testRecoil = getRecoilTestFn(() => {
 
 testRecoil('Reads Recoil values', async () => {
   const anAtom = atom({key: 'atom1', default: 'DEFAULT'});
-  let pTest: ?Promise<$FlowFixMeEmpty> = Promise.reject(
+  let pTest: ?Promise<mixed> = Promise.reject(
     new Error("Callback didn't resolve"),
   );
   let cb;
@@ -110,7 +110,7 @@ testRecoil('Can read Recoil values without throwing', async () => {
 testRecoil('Sets Recoil values (by queueing them)', async () => {
   const anAtom = atom({key: 'atom3', default: 'DEFAULT'});
   let cb;
-  let pTest: ?Promise<$FlowFixMeEmpty> = Promise.reject(
+  let pTest: ?Promise<mixed> = Promise.reject(
     new Error("Callback didn't resolve"),
   );
 
@@ -228,8 +228,8 @@ testRecoil('Reads from a snapshot created at callback call time', async () => {
 
   // But does not see an update flushed while the cb is in progress:
   seenValue = null;
-  let resumeCallback: (() => $FlowFixMeEmpty) | ((result: mixed) => void) =
-    () => invariant(false, 'must be initialized');
+  let resumeCallback: () => void = () =>
+    invariant(false, 'must be initialized');
   delay = () => {
     return new Promise(resolve => {
       resumeCallback = resolve;
@@ -393,14 +393,14 @@ testRecoil('Updates are batched', () => {
 
   invariant(store, 'store should be initialized');
   const originalReplaceState = store.replaceState;
-  // $FlowFixMe[cannot-write]
+  // $FlowExpectedError[cannot-write]
   store.replaceState = jest.fn(originalReplaceState);
 
   expect(store.replaceState).toHaveBeenCalledTimes(0);
   act(() => cb());
   expect(store.replaceState).toHaveBeenCalledTimes(1);
 
-  // $FlowFixMe[cannot-write]
+  // $FlowExpectedError[cannot-write]
   store.replaceState = originalReplaceState;
 });
 
