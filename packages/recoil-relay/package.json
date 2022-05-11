@@ -1,0 +1,14 @@
+{
+  "name": "recoil-relay",
+  "description": "This is the internal package.json enabling CommonJS module",
+  "main": "RecoilRelay_index.js",
+  "haste_commonjs": true,
+  "files": [
+    "RecoilRelay_index.js"
+  ],
+  "directories": {
+    "": "./"
+  },
+  "repository": "https://github.com/facebookexperimental/Recoil.git",
+  "license": "MIT"
+}
