@@ -2,7 +2,9 @@
 .*/__tests__.*
 .*/node_modules.*
 <PROJECT_ROOT>/cjs/.*
+# Disable for now as the NPM dependencies don't seem to be working...
 <PROJECT_ROOT>/packages/recoil-sync/.*
+<PROJECT_ROOT>/packages/recoil-relay/.*
 <PROJECT_ROOT>/packages-ext/todo-example/.*
 
 [include]
@@ -23,8 +25,12 @@ module.name_mapper='ReactTestUtils' -> '<PROJECT_ROOT>/node_modules/react-dom/te
 module.name_mapper='Recoil' -> '<PROJECT_ROOT>/packages/recoil'
 module.name_mapper='recoil' -> '<PROJECT_ROOT>/packages/recoil'
 module.name_mapper='recoil-sync' -> '<PROJECT_ROOT>/packages/recoil-syync'
+module.name_mapper='recoil-relay' -> '<PROJECT_ROOT>/packages/recoil-relay'
 module.name_mapper='refine' -> '<PROJECT_ROOT>/packages/refine'
 module.name_mapper='recoil-shared' -> '<PROJECT_ROOT>/packages/shared'
+module.name_mapper='relay-runtime' -> '<PROJECT_ROOT>/node_modules/relay-runtime/index.js.flow'
+module.name_mapper='react-relay' -> '<PROJECT_ROOT>/node_modules/react-relay'
+module.name_mapper='relay-test-utils' -> '<PROJECT_ROOT>/node_modules/relay-test-utils'
 
 exact_by_default=true
 

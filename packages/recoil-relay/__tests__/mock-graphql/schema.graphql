@@ -1,0 +1,49 @@
+# GraphQL Schema used for OSS unit tests
+
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+}
+
+type Query {
+    feedback(id: ID!): Feedback
+}
+
+type Mutation {
+    feedback_like(data: FeedbackLikeData!): FeedbackLikeResponsePayload
+}
+
+type Subscription {
+    feedback_like_subscribe(data: FeedbackLikeSubscribeData!): FeedbackLikeSubscribeResponsePayload
+}
+
+type Feedback {
+    id: ID!
+    seen_count: Int
+}
+
+type Actor {
+    id: ID!
+}
+
+input FeedbackLikeData {
+    feedback_id: ID!
+    actor_id: ID!
+}
+
+type FeedbackLikeResponsePayload {
+    feedback: Feedback
+    liker: Actor
+}
+
+input FeedbackLikeSubscribeData {
+    feedback_id: ID!
+}
+
+union FeedbackLikeSubscribeResponsePayload = FeedbackLikeResponsePayload
+
+type FeedbackLikeResponsePayload {
+    feedback: Feedback
+    liker: Actor
+}
