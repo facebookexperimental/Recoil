@@ -49,7 +49,7 @@ const testRecoil = getRecoilTestFn(() => {
   store = makeStore();
 });
 
-function get(atom) {
+function getLoadable(atom) {
   return getRecoilValueAsLoadable(store, atom).contents;
 }
 
@@ -79,10 +79,8 @@ let id = 0;
 function asyncSelector<T, S>(
   dep?: RecoilValue<S>,
 ): [RecoilValue<T>, (T) => void, (Error) => void, () => boolean] {
-  let resolve: (() => void) | ((result: Promise<T> | T) => void) = () =>
-    invariant(false, 'bug in test code'); // make flow happy with initialization
-  let reject: (() => void) | ((error: $FlowFixMe) => void) = () =>
-    invariant(false, 'bug in test code');
+  let resolve: T => void = () => invariant(false, 'bug in test code'); // make flow happy with initialization
+  let reject: mixed => void = () => invariant(false, 'bug in test code');
   let evaluated = false;
   const promise = new Promise((res, rej) => {
     resolve = res;
@@ -98,7 +96,6 @@ function asyncSelector<T, S>(
       return promise;
     },
   });
-  // $FlowFixMe[incompatible-return]
   return [sel, resolve, reject, () => evaluated];
 }
 
@@ -153,7 +150,7 @@ testRecoil('waitFor - resolve to values', async () => {
   ).resolves.toBe(1);
   // waitForAny returns a promise that resolves to the state with the next
   // resolved value.  So, that includes the first value and a promise for the second.
-  expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Promise);
 
   const anyTest0 = expect(
     getPromise(waitForAny(deps)).then(value => {
@@ -170,7 +167,7 @@ testRecoil('waitFor - resolve to values', async () => {
   ).resolves.toBe(1);
 
   // waitForAll returns a promise that resolves to the actual values
-  expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Promise);
   const allTest0 = expect(getPromise(waitForAll(deps))).resolves.toEqual([
     0, 1,
   ]);
@@ -182,7 +179,7 @@ testRecoil('waitFor - resolve to values', async () => {
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
   expect(getValue(waitForAny(deps))[0].contents).toBe(0);
   expect(getValue(waitForAny(deps))[1].contents).toBeInstanceOf(Promise);
-  expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Promise);
 
   const allTest1 = expect(getPromise(waitForAll(deps))).resolves.toEqual([
     0, 1,
@@ -221,12 +218,12 @@ testRecoil('waitFor - rejected', async () => {
 
   // All deps Loading Tests
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Promise);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAny(deps))).toEqual('loading');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Promise);
   const anyTest0 = expect(
     getPromise(waitForAny(deps)).then(res => {
       expect(res[0].contents).toBeInstanceOf(Error1);
@@ -236,7 +233,7 @@ testRecoil('waitFor - rejected', async () => {
   ).resolves.toEqual('success');
 
   expect(getState(waitForAll(deps))).toEqual('loading');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Promise);
   const allTest0 = expect(
     getPromise(waitForAll(deps)).catch(err => {
       expect(err).toBeInstanceOf(Error1);
@@ -245,7 +242,7 @@ testRecoil('waitFor - rejected', async () => {
   ).resolves.toEqual('failure');
 
   expect(getState(waitForAllSettled(deps))).toEqual('loading');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Promise);
   const allSettledTest0 = expect(
     getPromise(waitForAllSettled(deps)).then(res => {
       expect(res[0].contents).toBeInstanceOf(Error1);
@@ -259,20 +256,20 @@ testRecoil('waitFor - rejected', async () => {
   await flushPromisesAndTimers();
 
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAny(deps))).toEqual('hasValue');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAny(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForAny(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAll(deps))).toEqual('hasError');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Error1);
 
   expect(getState(waitForAllSettled(deps))).toEqual('loading');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Promise);
   const allSettledTest1 = expect(
     getPromise(waitForAllSettled(deps)).then(res => {
       expect(res[0].contents).toBeInstanceOf(Error1);
@@ -286,20 +283,20 @@ testRecoil('waitFor - rejected', async () => {
   await flushPromisesAndTimers();
 
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Error2);
 
   expect(getState(waitForAny(deps))).toEqual('hasValue');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAny(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForAny(deps))[1].contents).toBeInstanceOf(Error2);
 
   expect(getState(waitForAll(deps))).toEqual('hasError');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Error1);
 
   expect(getState(waitForAllSettled(deps))).toEqual('hasValue');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAllSettled(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForAllSettled(deps))[1].contents).toBeInstanceOf(Error2);
 
@@ -323,12 +320,12 @@ testRecoil('waitFor - resolve then reject', async () => {
 
   // All deps Loading Tests
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Promise);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAny(deps))).toEqual('loading');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Promise);
   const anyTest0 = expect(
     getPromise(waitForAny(deps)).then(res => {
       expect(res[0].contents).toEqual(1);
@@ -338,7 +335,7 @@ testRecoil('waitFor - resolve then reject', async () => {
   ).resolves.toEqual('success');
 
   expect(getState(waitForAll(deps))).toEqual('loading');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Promise);
   const allTest0 = expect(
     getPromise(waitForAll(deps)).catch(err => {
       expect(err).toBeInstanceOf(Error2);
@@ -347,7 +344,7 @@ testRecoil('waitFor - resolve then reject', async () => {
   ).resolves.toEqual('failure');
 
   expect(getState(waitForAllSettled(deps))).toEqual('loading');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Promise);
   const allSettledTest0 = expect(
     getPromise(waitForAllSettled(deps)).then(res => {
       expect(res[0].contents).toEqual(1);
@@ -361,23 +358,23 @@ testRecoil('waitFor - resolve then reject', async () => {
   await flushPromisesAndTimers();
 
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toEqual(1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAny(deps))).toEqual('hasValue');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAny(deps))[0].contents).toEqual(1);
   expect(getValue(waitForAny(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAll(deps))).toEqual('loading');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Promise);
   const allTest1 = expect(getPromise(waitForAll(deps))).rejects.toBeInstanceOf(
     Error2,
   );
 
   expect(getState(waitForAllSettled(deps))).toEqual('loading');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Promise);
   const allSettledTest1 = expect(
     getPromise(waitForAllSettled(deps)).then(res => {
       expect(res[0].contents).toEqual(1);
@@ -391,20 +388,20 @@ testRecoil('waitFor - resolve then reject', async () => {
   await flushPromisesAndTimers();
 
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toEqual(1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Error2);
 
   expect(getState(waitForAny(deps))).toEqual('hasValue');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAny(deps))[0].contents).toEqual(1);
   expect(getValue(waitForAny(deps))[1].contents).toBeInstanceOf(Error2);
 
   expect(getState(waitForAll(deps))).toEqual('hasError');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Error2);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Error2);
 
   expect(getState(waitForAllSettled(deps))).toEqual('hasValue');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAllSettled(deps))[0].contents).toEqual(1);
   expect(getValue(waitForAllSettled(deps))[1].contents).toBeInstanceOf(Error2);
 
@@ -429,12 +426,12 @@ testRecoil('waitFor - reject then resolve', async () => {
 
   // All deps Loading Tests
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Promise);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAny(deps))).toEqual('loading');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Promise);
   const anyTest0 = expect(
     getPromise(waitForAny(deps)).then(res => {
       expect(res[0].contents).toBeInstanceOf(Error1);
@@ -444,7 +441,7 @@ testRecoil('waitFor - reject then resolve', async () => {
   ).resolves.toEqual('success');
 
   expect(getState(waitForAll(deps))).toEqual('loading');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Promise);
   const allTest0 = expect(
     getPromise(waitForAll(deps)).catch(err => {
       expect(err).toBeInstanceOf(Error1);
@@ -453,7 +450,7 @@ testRecoil('waitFor - reject then resolve', async () => {
   ).resolves.toEqual('failure');
 
   expect(getState(waitForAllSettled(deps))).toEqual('loading');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Promise);
   const allSettledTest0 = expect(
     getPromise(waitForAllSettled(deps)).then(res => {
       expect(res[0].contents).toBeInstanceOf(Error1);
@@ -467,20 +464,20 @@ testRecoil('waitFor - reject then resolve', async () => {
   await flushPromisesAndTimers();
 
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAny(deps))).toEqual('hasValue');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAny(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForAny(deps))[1].contents).toBeInstanceOf(Promise);
 
   expect(getState(waitForAll(deps))).toEqual('hasError');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Error1);
 
   expect(getState(waitForAllSettled(deps))).toEqual('loading');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Promise);
   const allSettledTest1 = expect(
     getPromise(waitForAllSettled(deps)).then(res => {
       expect(res[0].contents).toBeInstanceOf(Error1);
@@ -494,20 +491,20 @@ testRecoil('waitFor - reject then resolve', async () => {
   await flushPromisesAndTimers();
 
   expect(getState(waitForNone(deps))).toEqual('hasValue');
-  expect(get(waitForNone(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForNone(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForNone(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForNone(deps))[1].contents).toEqual(1);
 
   expect(getState(waitForAny(deps))).toEqual('hasValue');
-  expect(get(waitForAny(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAny(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForAny(deps))[1].contents).toEqual(1);
 
   expect(getState(waitForAll(deps))).toEqual('hasError');
-  expect(get(waitForAll(deps))).toBeInstanceOf(Error1);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Error1);
 
   expect(getState(waitForAllSettled(deps))).toEqual('hasValue');
-  expect(get(waitForAllSettled(deps))).toBeInstanceOf(Array);
+  expect(getLoadable(waitForAllSettled(deps))).toBeInstanceOf(Array);
   expect(getValue(waitForAllSettled(deps))[0].contents).toBeInstanceOf(Error1);
   expect(getValue(waitForAllSettled(deps))[1].contents).toEqual(1);
 
@@ -534,7 +531,7 @@ testRecoil('waitFor - named dependency version', async () => {
     getValue(waitForNone(deps)).b.promiseMaybe(),
   ).resolves.toBe(1);
 
-  expect(get(waitForAny(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAny(deps))).toBeInstanceOf(Promise);
 
   const anyTest0 = expect(
     getPromise(waitForAny(deps)).then(value => {
@@ -551,7 +548,7 @@ testRecoil('waitFor - named dependency version', async () => {
     }),
   ).resolves.toBe(1);
 
-  expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Promise);
 
   const allTest0 = expect(getPromise(waitForAll(deps))).resolves.toEqual({
     a: 0,
@@ -564,7 +561,7 @@ testRecoil('waitFor - named dependency version', async () => {
   expect(getValue(waitForNone(deps)).b.contents).toBeInstanceOf(Promise);
   expect(getValue(waitForAny(deps)).a.contents).toBe(0);
   expect(getValue(waitForAny(deps)).b.contents).toBeInstanceOf(Promise);
-  expect(get(waitForAll(deps))).toBeInstanceOf(Promise);
+  expect(getLoadable(waitForAll(deps))).toBeInstanceOf(Promise);
 
   const allTest1 = expect(getPromise(waitForAll(deps))).resolves.toEqual({
     a: 0,

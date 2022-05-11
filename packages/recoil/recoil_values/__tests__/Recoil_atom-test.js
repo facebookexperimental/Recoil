@@ -1149,7 +1149,7 @@ describe('Effects', () => {
       ],
     });
 
-    let setMount: $FlowFixMe = _ => {
+    let setMount: boolean => void = _ => {
       throw new Error('Test Error');
     };
     const [ReadWriteAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);

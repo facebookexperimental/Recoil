@@ -55,7 +55,6 @@ describe('initializeState', () => {
       key: 'RecoilRoot - initializeState - atom',
       default: 'DEFAULT',
     });
-    // $FlowFixMe[incompatible-call] added when improving typing for this parameters
     const mySelector = constSelector(myAtom);
 
     function initializeState({set, getLoadable}) {
@@ -269,10 +268,10 @@ describe('initializeState', () => {
     const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
     const initializeState = jest.fn(({set}) => set(myAtom, 'INIT'));
-    let forceUpdate: $FlowFixMe = () => {
+    let forceUpdate: () => void = () => {
       throw new Error('not rendered');
     };
-    let setRootKey: $FlowFixMe = _ => {
+    let setRootKey: number => void = _ => {
       throw new Error('');
     };
     function MyRoot() {
