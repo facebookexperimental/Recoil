@@ -39,8 +39,8 @@ jobs:
       if: matrix.os == 'windows-latest'
     - run: yarn install
     - run: yarn flow
-    - run: yarn test
     - run: yarn test:typescript
+    - run: yarn test
     - run: yarn lint
     - run: yarn build
     - run: yarn pack
