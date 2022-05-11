@@ -26,16 +26,18 @@ let React,
   ErrorBoundary,
   renderRecoilElements,
   useState,
+  atom,
   atomFamily,
   useRelayEnvironment,
   graphQLSelectorFamily,
+  RecoilRelayEnvironment,
   RecoilRelayEnvironmentProvider,
   flushPromisesAndTimers;
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
   ({useState} = require('react'));
-  ({atomFamily} = require('Recoil'));
+  ({atom, atomFamily} = require('Recoil'));
   ({useRelayEnvironment} = require('react-relay'));
 
   ({act} = require('ReactTestUtils'));
@@ -50,6 +52,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   ({
     EnvironmentKey,
+    RecoilRelayEnvironment,
     RecoilRelayEnvironmentProvider,
   } = require('../RecoilRelay_Environments'));
   graphQLSelectorFamily = require('../RecoilRelay_graphQLSelectorFamily');
@@ -208,4 +211,77 @@ describe('Multiple Environments', () => {
     act(swapEnvironments);
     expect(c.textContent).toEqual(expect.stringContaining('EnvironmentKey'));
   });
+});
+
+// Confirm there is no memory leak by releasing Relay environments
+testRecoil('Relay environment is unloaded', async () => {
+  const environment = createMockEnvironment();
+  const enviornmentKey = new EnvironmentKey('env');
+
+  const queryA = atom({
+    key: 'graphql query preloaded 1',
+    effects: [
+      graphQLQueryEffect({
+        environment: enviornmentKey,
+        query: testFeedbackQuery,
+        variables: {id: 'ID'},
+        subscribeToLocalMutations_UNSTABLE: false,
+      }),
+    ],
+  });
+  const queryB = atom({
+    key: 'graphql query preloaded 2',
+    effects: [
+      graphQLQueryEffect({
+        environment: enviornmentKey,
+        query: testFeedbackQuery,
+        variables: {id: 'ID'},
+        subscribeToLocalMutations_UNSTABLE: false,
+      }),
+    ],
+  });
+
+  environment.mock.queueOperationResolver(operation =>
+    MockPayloadGenerator.generate(operation, {
+      ID: () => operation.request.variables.id,
+      Feedback: () => ({seen_count: 123}),
+    }),
+  );
+  environment.mock.queuePendingOperation(testFeedbackQuery, {id: 'ID'});
+
+  let unmountEnvironment, issueNewQuery;
+  function Component() {
+    const [unmount, setUnmount] = useState(false);
+    const [newQuery, setNewQuery] = useState(false);
+    unmountEnvironment = () => setUnmount(true);
+    issueNewQuery = () => setNewQuery(true);
+    return unmount ? (
+      newQuery ? (
+        <ErrorBoundary fallback={e => e.message}>
+          <ReadsAtom atom={queryB} />
+        </ErrorBoundary>
+      ) : (
+        <div />
+      )
+    ) : (
+      <RecoilRelayEnvironment
+        environment={environment}
+        environmentKey={enviornmentKey}>
+        <ReadsAtom atom={queryA} />
+      </RecoilRelayEnvironment>
+    );
+  }
+  const c = renderRecoilElements(<Component />);
+  // Confirm data is available synchronously with the first render
+  expect(c.textContent).toBe('{"feedback":{"id":"ID","seen_count":123}}');
+
+  // Unmount <RecoilRelayEnvironment> and give it a chance to cleanup
+  act(unmountEnvironment);
+  await flushPromisesAndTimers();
+
+  // Confirm environment is not retained and an error is thrown with query attempt
+  act(issueNewQuery);
+  expect(c.textContent).toEqual(
+    expect.stringContaining('RecoilRelayEnvironment'),
+  );
 });
