@@ -21,6 +21,7 @@ let React,
   testFeedbackQuery,
   commitLocalUpdate,
   MockPayloadGenerator,
+  useState,
   atom,
   atomFamily,
   graphQLQueryEffect,
@@ -29,6 +30,7 @@ let React,
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
+  ({useState} = require('react'));
   ({atom, atomFamily} = require('Recoil'));
   ({commitLocalUpdate} = require('react-relay'));
 
@@ -186,6 +188,19 @@ testRecoil('Relay Query that is preloaded', async () => {
       }),
     ],
   });
+  // This third atom will confirm that we can still load the pre-loaded data
+  // after subsequent updates.
+  const queryC = atom({
+    key: 'graphql query preloaded 3',
+    effects: [
+      graphQLQueryEffect({
+        environment: mockEnvironmentKey,
+        query: testFeedbackQuery,
+        variables: {id: 'ID'},
+        subscribeToLocalMutations_UNSTABLE: false,
+      }),
+    ],
+  });
 
   environment.mock.queueOperationResolver(operation =>
     MockPayloadGenerator.generate(operation, {
@@ -195,15 +210,29 @@ testRecoil('Relay Query that is preloaded', async () => {
   );
   environment.mock.queuePendingOperation(testFeedbackQuery, {id: 'ID'});
 
-  const c = renderElements(
-    <>
-      <ReadsAtom atom={queryA} />
-      <ReadsAtom atom={queryB} />
-    </>,
-  );
+  let enableQueryC;
+  function Component() {
+    const [state, setState] = useState(false);
+    enableQueryC = () => setState(true);
+    return (
+      <>
+        <ReadsAtom atom={queryA} />
+        <ReadsAtom atom={queryB} />
+        {state && <ReadsAtom atom={queryC} />}
+      </>
+    );
+  }
+  const c = renderElements(<Component />);
   // Confirm data is available synchronously with the first render
   expect(c.textContent).toBe(
     '{"feedback":{"id":"ID","seen_count":123}}{"feedback":{"id":"ID","seen_count":123}}',
+  );
+
+  // Confirm data is still synchronously available after updates.
+  await flushPromisesAndTimers();
+  act(enableQueryC);
+  expect(c.textContent).toBe(
+    '{"feedback":{"id":"ID","seen_count":123}}{"feedback":{"id":"ID","seen_count":123}}{"feedback":{"id":"ID","seen_count":123}}',
   );
 });
 
