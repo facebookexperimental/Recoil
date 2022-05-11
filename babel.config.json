@@ -13,6 +13,7 @@
         }
       }
     ],
+    "relay",
     "babel-preset-fbjs/plugins/dev-expression",
     "@babel/plugin-proposal-class-properties",
     "@babel/proposal-nullish-coalescing-operator",
