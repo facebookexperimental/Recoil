@@ -233,8 +233,7 @@ const errorThrowingAsyncSelector: <T, S>(
 
 const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
   value: T,
-  // $FlowFixMe[incompatible-type]
-): RecoilValueReadOnly<T> | RecoilValueReadOnly<mixed> =>
+): RecoilValueReadOnly<T> =>
   selector({
     key: `ResolvingSelector${id++}`,
     get: () => Promise.resolve(value),
@@ -249,11 +248,11 @@ const loadingAsyncSelector: () => RecoilValueReadOnly<void> = () =>
 function asyncSelector<T, S>(
   dep?: RecoilValue<S>,
 ): [RecoilValue<T>, (T) => void, (Error) => void] {
-  let resolve: (() => void) | ((result: Promise<T> | T) => void) = () =>
+  let resolve: (result: Promise<T> | T) => void = () =>
     invariant(false, 'bug in test code'); // make flow happy with initialization
-  let reject: (() => void) | ((error: $FlowFixMe) => void) = () =>
+  let reject: (error: mixed) => void = () =>
     invariant(false, 'bug in test code');
-  const promise = new Promise((res, rej) => {
+  const promise = new Promise<T>((res, rej) => {
     resolve = res;
     reject = rej;
   });
@@ -266,7 +265,6 @@ function asyncSelector<T, S>(
       return promise;
     },
   });
-  // $FlowFixMe[incompatible-return]
   return [sel, resolve, reject];
 }
 

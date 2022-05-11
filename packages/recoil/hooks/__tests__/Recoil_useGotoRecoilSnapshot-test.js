@@ -61,7 +61,6 @@ testRecoil('Goto mapped snapshot', async () => {
   });
   const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   const mySelector = constSelector(myAtom);
 
   const updatedSnapshot = snapshot.map(({set}) => {
@@ -110,7 +109,6 @@ testRecoil('Goto callback snapshot', () => {
   });
   const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   const mySelector = constSelector(myAtom);
 
   let cb;

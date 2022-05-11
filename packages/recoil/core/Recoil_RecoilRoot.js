@@ -293,8 +293,7 @@ if (__DEV__) {
 function initialStoreState_DEPRECATED(store, initializeState): StoreState {
   const initial: StoreState = makeEmptyStoreState();
   initializeState({
-    // $FlowFixMe[escaped-generic]
-    set: (atom, value) => {
+    set: <T>(atom: RecoilValue<T>, value: T) => {
       const state = initial.currentTree;
       const writes = setNodeValue(store, state, atom.key, value);
       const writtenNodes = new Set(writes.keys());

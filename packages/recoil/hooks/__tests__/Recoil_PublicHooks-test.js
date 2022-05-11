@@ -435,8 +435,7 @@ describe('Render counts', () => {
 
       const Component = (jest.fn(function ReadFromSelector({id}) {
         return useRecoilValue(selectAFakeId(id));
-        // $FlowFixMe[unclear-type]
-      }): Function);
+      }): ({id: number}) => React.Node);
 
       let increment;
 
@@ -861,7 +860,7 @@ testRecoil(
     function testWithOrder(order) {
       const anAtom = counterAtom();
 
-      let q: Array<$FlowFixMe> = [];
+      let q: Array<[string, () => mixed]> = [];
       let seen = false;
       const original = Queue.enqueueExecution;
       try {

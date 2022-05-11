@@ -62,7 +62,6 @@ testRecoil('useRecoilSnapshot - subscribe to updates', ({strictMode}) => {
   const [ReadsAndWritesAtom, setAtom, resetAtom] =
     componentThatReadsAndWritesAtom(myAtom);
 
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   const mySelector = constSelector(myAtom);
 
   const snapshots = [];
@@ -109,7 +108,7 @@ testRecoil('useRecoilSnapshot - goto snapshots', ({strictMode}) => {
   const [ReadsAndWritesAtomA, setAtomA] =
     componentThatReadsAndWritesAtom(atomA);
 
-  const atomB = atom({
+  const atomB = atom<string | number>({
     key: 'useRecoilSnapshot - goto B',
     default: 'DEFAULT',
   });
@@ -150,7 +149,6 @@ testRecoil('useRecoilSnapshot - goto snapshots', ({strictMode}) => {
   act(() => gotoSnapshot(snapshots[0]));
   expect(c.textContent).toEqual('"DEFAULT""DEFAULT"');
 
-  // $FlowFixMe[incompatible-call]
   act(() => gotoSnapshot(snapshots[2].map(({set}) => set(atomB, 3))));
   expect(c.textContent).toEqual('13');
 });
@@ -384,7 +382,7 @@ describe('Snapshot Retention', () => {
       ],
     });
 
-    let setMount: $FlowFixMe = _ => {
+    let setMount: boolean => void = () => {
       throw new Error('Test Error');
     };
     function UseRecoilSnapshot() {
