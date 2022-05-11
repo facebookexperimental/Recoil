@@ -1695,6 +1695,23 @@ describe('Async Selectors', () => {
       expect(rootB.textContent).toEqual('SELECTOR B');
     });
   });
+
+  describe('Async Selector Set', () => {
+    testRecoil('set tries to get async value', () => {
+      const myAtom = atom({key: 'selector set get async atom'});
+      const mySelector = selector({
+        key: 'selector set get async selector',
+        get: () => myAtom,
+        set: ({get}) => {
+          get(myAtom);
+        },
+      });
+
+      const [Comp, setState] = componentThatReadsAndWritesAtom(mySelector);
+      renderElements(<Comp />);
+      expect(() => setState()).toThrow('selector set get async');
+    });
+  });
 });
 
 // Test the following scenario:

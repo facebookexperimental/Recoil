@@ -27,7 +27,7 @@ const {
 } = require('./Recoil_FunctionalCore');
 const {getNextComponentID} = require('./Recoil_Keys');
 const {getNode, getNodeMaybe} = require('./Recoil_Node');
-const {DefaultValue, RecoilValueNotReady} = require('./Recoil_Node');
+const {DefaultValue} = require('./Recoil_Node');
 const {reactMode} = require('./Recoil_ReactMode');
 const {
   AbstractRecoilValue,
@@ -36,6 +36,7 @@ const {
   isRecoilValue,
 } = require('./Recoil_RecoilValue');
 const {invalidateMemoizedSnapshot} = require('./Recoil_SnapshotCache');
+const err = require('recoil-shared/util/Recoil_err');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
@@ -100,7 +101,9 @@ function valueFromValueOrUpdater<T>(
     const current = getNodeLoadable(store, state, key);
 
     if (current.state === 'loading') {
-      throw new RecoilValueNotReady(key);
+      const msg = `Tried to set atom or selector "${key}" using an updater function while the current state is pending, this is not currently supported.`;
+      recoverableViolation(msg, 'recoil');
+      throw err(msg);
     } else if (current.state === 'hasError') {
       throw current.contents;
     }
