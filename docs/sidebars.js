@@ -113,7 +113,7 @@ module.exports = {
           ],
         },
       ],
-    }
+    },
   ],
   refine: [
     'refine/Introduction',
@@ -130,34 +130,24 @@ module.exports = {
   'recoil-relay': [
     'recoil-relay/introduction',
     'recoil-relay/environment',
-    'recoil-relay/graphql_selectors',
-    'recoil-relay/preloaded_queries',
-    'recoil-relay/graphql_effects',
+    'recoil-relay/graphql-selectors',
+    'recoil-relay/preloaded-queries',
+    'recoil-relay/graphql-effects',
     {
       'API Reference': [
-        'recoil-sync/api/syncEffect',
-        'recoil-sync/api/useRecoilSync',
-        'recoil-sync/api/RecoilSync',
+        'recoil-relay/api/EnvironmentKey',
+        'recoil-relay/api/RecoilRelayEnvironment',
+        'recoil-relay/api/RecoilRelayEnvironmentProvider',
+        'recoil-relay/api/graphQLSelector',
+        'recoil-relay/api/graphQLSelectorFamily',
         {
-          'URL Persistence': [
-            'recoil-sync/api/RecoilURLSync',
-            'recoil-sync/api/useRecoilURLSync',
-            'recoil-sync/api/urlSyncEffect',
-            {
-              JSON: [
-                'recoil-sync/api/RecoilURLSyncJSON',
-                'recoil-sync/api/useRecoilURLSyncJSON',
-              ],
-            },
-            {
-              Transit: [
-                'recoil-sync/api/RecoilURLSyncTransit',
-                'recoil-sync/api/useRecoilURLSyncTransit',
-              ],
-            },
+          'Atom Effects': [
+            'recoil-relay/api/graphQLQueryEffect',
+            'recoil-relay/api/graphQLSubscriptionEffect',
+            'recoil-relay/api/graphQLMutationEffect',
           ],
         },
       ],
-    }
+    },
   ],
 };

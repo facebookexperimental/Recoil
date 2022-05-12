@@ -3,11 +3,11 @@ title: Relay Environment
 sidebar_label: Relay Environment
 ---
 
-The first step for using the `recoil-relay` library is to register your Relay environment(s).  Each GraphQL [selector](/docs/recoil-relay/graphql_selectors) or [effect](/docs/recoil-relay/graphql_effects) requires an `environment` option which can either just be a Relay Environment directly or an **`EnvironmentKey`**.
+The first step for using the `recoil-relay` library is to register your Relay environment(s).  Each GraphQL [selector](/docs/recoil-relay/graphql-selectors) or [effect](/docs/recoil-relay/graphql-effects) requires an `environment` option which can either just be a Relay Environment directly or an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey).
 
 ### `EnvironmentKey`
 
-When using an **`EnvironmentKey`** with your GraphQL queries it is matched up with a surrounding **`<RecoilRelayEnvironment>`** with the same `environmentKey` within your `<RecoilRoot>`.  This is helpful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded_queries).
+When using an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) with your GraphQL queries it is matched up with a surrounding [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) with the same `environmentKey` within your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot).  This is helpful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded_queries).
 
 ```jsx
 const myEnvironmentKey = new EnvironmentKey('My Environment');
@@ -28,7 +28,7 @@ function MyApp() {
 
 ### Environment Provider
 
-To use the Relay API, such as for committing mutations, with your environment the `<RelayEnvironmentProvider>` component is still required.  For your convenience there is a **`<RecoilRelayEnvrironmentProvider>`** component which combines both `<RecoilRelayEnvironment>` and `<RelayEnvironmentProvider>`.
+To use Relay hooks, such as for committing mutations, with your environment the [`<RelayEnvironmentProvider>`](https://relay.dev/docs/api-reference/relay-environment-provider) component is still required.  For your convenience there is a [**`<RecoilRelayEnvrironmentProvider>`**](/docs/recoil-relay/api/RecoilRelayEnvironmentProvider) component which combines both [`<RecoilRelayEnvironment>`](/docs/recoil-relay/api/RecoilRelayEnvironment) and [`<RelayEnvironmentProvider>`](https://relay.dev/docs/api-reference/relay-environment-provider).
 
 ```jsx
 const myEnvironmentKey = new EnvironmentKey('My Environment');
