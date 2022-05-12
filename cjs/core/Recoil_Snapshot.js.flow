@@ -247,9 +247,8 @@ class Snapshot {
   // eslint-disable-next-line fb-www/extra-arrow-initializer
   getInfo_UNSTABLE: <T>(RecoilValue<T>) => RecoilValueInfo<T> = <T>({
     key,
-  }: RecoilValue<T>) => {
+  }: RecoilValue<T>): RecoilValueInfo<T> => {
     this.checkRefCount_INTERNAL();
-    // $FlowFixMe[escaped-generic]
     return peekNodeInfo(this._store, this._store.getState().currentTree, key);
   };
 

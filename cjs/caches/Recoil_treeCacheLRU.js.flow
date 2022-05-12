@@ -43,7 +43,6 @@ function treeCacheLRU<T>({
     },
   });
 
-  // $FlowFixMe[method-unbinding]
   return cache;
 }
 

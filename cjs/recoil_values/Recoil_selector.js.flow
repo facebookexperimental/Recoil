@@ -77,6 +77,7 @@ import type {
   GetRecoilValue,
   ResetRecoilState,
   SetRecoilState,
+  ValueOrUpdater,
 } from './Recoil_callbackTypes';
 
 const {
@@ -95,7 +96,6 @@ const {
 const {saveDepsToStore} = require('../core/Recoil_Graph');
 const {
   DEFAULT_VALUE,
-  RecoilValueNotReady,
   getConfigDeletionHandler,
   getNode,
   registerNode,
@@ -118,6 +118,7 @@ const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const {
   startPerfBlock,
 } = require('recoil-shared/util/Recoil_PerformanceTimings');
+const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
 type SelectorCallbackInterface<T> = $ReadOnly<{
   // TODO Technically this could be RecoilValueReadOnly, but trying to parameterize
@@ -806,8 +807,7 @@ function selector<T>(
   ): ?Loadable<T> {
     // First, look up in the state cache
     // If it's here, then the deps in the store should already be valid.
-    let cachedLoadable: ?(Loadable<$FlowFixMe> | Loadable<T>) =
-      state.atomValues.get(key);
+    let cachedLoadable: ?Loadable<T> = state.atomValues.get(key);
     if (cachedLoadable != null) {
       return cachedLoadable;
     }
@@ -815,7 +815,6 @@ function selector<T>(
     // Second, look up in the selector cache and update the deps in the store
     const depsAfterCacheLookup = new Set();
     try {
-      // $FlowFixMe[incompatible-type]
       cachedLoadable = cache.get(
         nodeKey => {
           invariant(
@@ -1140,7 +1139,9 @@ function selector<T>(
         if (loadable.state === 'hasValue') {
           return loadable.contents;
         } else if (loadable.state === 'loading') {
-          throw new RecoilValueNotReady(depKey);
+          const msg = `Getting value of asynchronous atom or selector "${depKey}" in a pending state while setting selector "${key}" is not yet supported.`;
+          recoverableViolation(msg, 'recoil');
+          throw err(msg);
         } else {
           throw loadable.contents;
         }
@@ -1148,10 +1149,13 @@ function selector<T>(
 
       function setRecoilState<S>(
         recoilState: RecoilState<S>,
-        valueOrUpdater: S | DefaultValue | ((S, GetRecoilValue) => S),
+        valueOrUpdater: ValueOrUpdater<S>,
       ) {
         if (syncSelectorSetFinished) {
-          throw err('Recoil: Async selector sets are not currently supported.');
+          const msg =
+            'Recoil: Async selector sets are not currently supported.';
+          recoverableViolation(msg, 'recoil');
+          throw err(msg);
         }
 
         const setValue =
@@ -1176,7 +1180,6 @@ function selector<T>(
       }
 
       const ret = set(
-        // $FlowFixMe[incompatible-call]
         {set: setRecoilState, get: getRecoilValue, reset: resetRecoilState},
         newValue,
       );

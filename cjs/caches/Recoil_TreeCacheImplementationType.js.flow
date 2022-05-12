@@ -62,10 +62,10 @@ export type SetHandlers<T> = {
  * are used internally by the selector.
  */
 export interface TreeCacheImplementation<T> {
-  +get: (NodeValueGet, handlers?: GetHandlers<T>) => ?T;
-  +set: (NodeCacheRoute, T, handlers?: SetHandlers<T>) => void;
-  +delete: (TreeCacheLeaf<T>) => boolean;
-  +clear: () => void;
-  +root: () => ?TreeCacheNode<T>;
-  +size: () => number;
+  get(NodeValueGet, handlers?: GetHandlers<T>): ?T;
+  set(NodeCacheRoute, T, handlers?: SetHandlers<T>): void;
+  delete(TreeCacheLeaf<T>): boolean;
+  clear(): void;
+  root(): ?TreeCacheNode<T>;
+  size(): number;
 }

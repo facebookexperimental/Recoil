@@ -156,21 +156,17 @@ function additionSelector(
   return [sel, fn];
 }
 
-// flowlint-next-line unclear-type:off
-function asyncSelectorThatPushesPromisesOntoArray(dep: RecoilValue<any>) {
-  const promises = [];
-  const sel = selector({
+function asyncSelectorThatPushesPromisesOntoArray<T, S>(
+  dep: RecoilValue<S>,
+): [RecoilValue<T>, $ReadOnlyArray<[(T) => void, (mixed) => void]>] {
+  const promises: Array<[(T) => void, (mixed) => void]> = [];
+  const sel = selector<T>({
     key: `selector${nextID++}`,
     get: ({get}) => {
       get(dep);
-      let resolve:
-        | ((_: number | $TEMPORARY$string<'hello'>) => $FlowFixMeEmpty)
-        // $FlowFixMe[speculation-ambiguous]
-        | ((result: Promise<$FlowFixMe> | $FlowFixMe) => void) = _ =>
-        invariant(false, 'bug in test code'); // make flow happy with initialization
-      let reject: (error: $FlowFixMe) => void = _ =>
-        invariant(false, 'bug in test code');
-      const p = new Promise((res, rej) => {
+      let resolve: T => void = () => invariant(false, 'bug in test code'); // make flow happy with initialization
+      let reject: mixed => void = () => invariant(false, 'bug in test code');
+      const p = new Promise<T>((res, rej) => {
         resolve = res;
         reject = rej;
       });
@@ -1580,7 +1576,7 @@ describe('Async Selectors', () => {
         key: 'notifiesAllStores/snapshots/a',
         get: () => 'foo',
       });
-      let resolve: $FlowFixMe = _ => {
+      let resolve: string => void = () => {
         throw new Error('error in test');
       };
       const selectorB = selector({
@@ -1697,6 +1693,23 @@ describe('Async Selectors', () => {
 
       expect(rootA.textContent).toEqual('SELECTOR B');
       expect(rootB.textContent).toEqual('SELECTOR B');
+    });
+  });
+
+  describe('Async Selector Set', () => {
+    testRecoil('set tries to get async value', () => {
+      const myAtom = atom({key: 'selector set get async atom'});
+      const mySelector = selector({
+        key: 'selector set get async selector',
+        get: () => myAtom,
+        set: ({get}) => {
+          get(myAtom);
+        },
+      });
+
+      const [Comp, setState] = componentThatReadsAndWritesAtom(mySelector);
+      renderElements(<Comp />);
+      expect(() => setState()).toThrow('selector set get async');
     });
   });
 });

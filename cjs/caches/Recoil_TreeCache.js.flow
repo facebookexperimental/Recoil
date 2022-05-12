@@ -35,7 +35,8 @@ class ChangedPathError extends Error {}
 class TreeCache<T = mixed> {
   _name: ?string;
   _numLeafs: number;
-  _root: TreeCacheNode<T> | null;
+  // $FlowIssue[unclear-type]
+  _root: TreeCacheNode<any> | null;
 
   _onHit: $NonMaybeType<Options<T>['onHit']>;
   _onSet: $NonMaybeType<Options<T>['onSet']>;
@@ -54,7 +55,8 @@ class TreeCache<T = mixed> {
     return this._numLeafs;
   }
 
-  root(): TreeCacheNode<T> | null {
+  // $FlowIssue[unclear-type]
+  root(): TreeCacheNode<any> | null {
     return this._root;
   }
 
@@ -71,7 +73,8 @@ class TreeCache<T = mixed> {
     }
 
     // Iterate down the tree based on the current node values until we hit a leaf
-    let node = this._root;
+    // $FlowIssue[unclear-type]
+    let node: ?TreeCacheNode<any> = this._root;
     while (node) {
       handlers?.onNodeVisit(node);
       if (node.type === 'leaf') {
@@ -79,7 +82,6 @@ class TreeCache<T = mixed> {
         return node;
       }
       const nodeValue = this._mapNodeValue(getNodeValue(node.nodeKey));
-      // $FlowFixMe[incompatible-type]
       node = node.branches.get(nodeValue);
     }
     return undefined;

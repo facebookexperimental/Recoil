@@ -374,6 +374,7 @@
 
   key: NodeKey;
   constructor(newKey: NodeKey);
+  toJSON(): {key: string};
  }
 
  declare class AbstractRecoilValueReadonly<T> {
@@ -381,6 +382,7 @@
 
   key: NodeKey;
   constructor(newKey: NodeKey);
+  toJSON(): {key: string};
  }
 
  export class RecoilState<T> extends AbstractRecoilValue<T> {}

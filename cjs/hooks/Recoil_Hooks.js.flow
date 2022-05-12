@@ -60,7 +60,7 @@ function handleLoadable<T>(
       storeRef.current.getState().suspendedComponentResolvers.add(resolve);
     });
 
-    // $FlowFixMe Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
+    // $FlowExpectedError Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
     // @fb-only: promise.displayName = `Recoil State: ${recoilValue.key}`;
 
     throw promise;

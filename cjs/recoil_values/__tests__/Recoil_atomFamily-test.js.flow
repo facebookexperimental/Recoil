@@ -192,15 +192,10 @@ testRecoil('Works with date as parameter', () => {
     key: 'dateFamily',
     default: _date => 0,
   });
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(0);
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   expect(get(dateAtomFamily(new Date(2021, 2, 26)))).toBe(0);
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   set(dateAtomFamily(new Date(2021, 2, 25)), 1);
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(1);
-  // $FlowFixMe[incompatible-call] added when improving typing for this parameters
   expect(get(dateAtomFamily(new Date(2021, 2, 26)))).toBe(0);
 });
 

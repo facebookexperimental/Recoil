@@ -497,6 +497,12 @@ class AbstractRecoilValue {
     this.key = newKey;
   }
 
+  toJSON() {
+    return {
+      key: this.key
+    };
+  }
+
 }
 
 class RecoilState extends AbstractRecoilValue {}
@@ -636,14 +642,6 @@ const {
 class DefaultValue {}
 
 const DEFAULT_VALUE = new DefaultValue();
-
-class RecoilValueNotReady extends Error {
-  constructor(key) {
-    super(`Tried to set the value of Recoil selector ${key} using an updater function, but it is an async selector in a pending or error state; this is not supported.`);
-  }
-
-}
-
 // flowlint-next-line unclear-type:off
 const nodes = new Map(); // flowlint-next-line unclear-type:off
 
@@ -745,8 +743,7 @@ var Recoil_Node = {
   recoilValuesForKeys,
   NodeMissingError,
   DefaultValue,
-  DEFAULT_VALUE,
-  RecoilValueNotReady
+  DEFAULT_VALUE
 };
 
 /**
@@ -2637,8 +2634,7 @@ const {
 } = Recoil_Node;
 
 const {
-  DefaultValue: DefaultValue$1,
-  RecoilValueNotReady: RecoilValueNotReady$1
+  DefaultValue: DefaultValue$1
 } = Recoil_Node;
 
 const {
@@ -2655,6 +2651,8 @@ const {
 const {
   invalidateMemoizedSnapshot: invalidateMemoizedSnapshot$1
 } = Recoil_SnapshotCache;
+
+
 
 
 
@@ -2710,7 +2708,9 @@ function valueFromValueOrUpdater(store, state, {
     const current = getNodeLoadable$1(store, state, key);
 
     if (current.state === 'loading') {
-      throw new RecoilValueNotReady$1(key);
+      const msg = `Tried to set atom or selector "${key}" using an updater function while the current state is pending, this is not currently supported.`;
+      Recoil_recoverableViolation(msg);
+      throw Recoil_err(msg);
     } else if (current.state === 'hasError') {
       throw current.contents;
     } // T itself may be a function, so our refinement is not sufficient:
@@ -3663,8 +3663,7 @@ class Snapshot {
     _defineProperty(this, "getInfo_UNSTABLE", ({
       key
     }) => {
-      this.checkRefCount_INTERNAL(); // $FlowFixMe[escaped-generic]
-
+      this.checkRefCount_INTERNAL();
       return peekNodeInfo$1(this._store, this._store.getState().currentTree, key);
     });
 
@@ -4284,7 +4283,6 @@ if (process.env.NODE_ENV !== "production") {
 function initialStoreState_DEPRECATED(store, initializeState) {
   const initial = makeEmptyStoreState$2();
   initializeState({
-    // $FlowFixMe[escaped-generic]
     set: (atom, value) => {
       const state = initial.currentTree;
       const writes = setNodeValue$2(store, state, atom.key, value);
@@ -4805,7 +4803,7 @@ function handleLoadable(loadable, recoilValue, storeRef) {
   } else if (loadable.state === 'loading') {
     const promise = new Promise(resolve => {
       storeRef.current.getState().suspendedComponentResolvers.add(resolve);
-    }); // $FlowFixMe Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
+    }); // $FlowExpectedError Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
     // @fb-only: promise.displayName = `Recoil State: ${recoilValue.key}`;
 
     throw promise;
@@ -5453,14 +5451,10 @@ function mergeMaps(...maps) {
     let nextKey;
 
     while (!(nextKey = iterator.next()).done) {
-      // $FlowFixMe[incompatible-call] - map/iterator knows nothing about flow types
+      // $FlowIssue[incompatible-call] - map/iterator knows nothing about flow types
       result.set(nextKey.value, maps[i].get(nextKey.value));
     }
   }
-  /* $FlowFixMe[incompatible-return] (>=0.66.0 site=www,mobile) This comment
-   * suppresses an error found when Flow v0.66 was deployed. To see the error
-   * delete this comment and run Flow. */
-
 
   return result;
 }
@@ -5794,7 +5788,7 @@ class TransactionInterfaceImpl {
 
     _defineProperty(this, "get", recoilValue => {
       if (this._changes.has(recoilValue.key)) {
-        // $FlowFixMe[incompatible-return]
+        // $FlowIssue[incompatible-return]
         return this._changes.get(recoilValue.key);
       }
 
@@ -6102,6 +6096,7 @@ const {
 class ChangedPathError extends Error {}
 
 class TreeCache {
+  // $FlowIssue[unclear-type]
   constructor(options) {
     var _options$onHit, _options$onSet, _options$mapNodeValue;
 
@@ -6127,7 +6122,8 @@ class TreeCache {
 
   size() {
     return this._numLeafs;
-  }
+  } // $FlowIssue[unclear-type]
+
 
   root() {
     return this._root;
@@ -6143,6 +6139,7 @@ class TreeCache {
     if (this._root == null) {
       return undefined;
     } // Iterate down the tree based on the current node values until we hit a leaf
+    // $FlowIssue[unclear-type]
 
 
     let node = this._root;
@@ -6156,8 +6153,7 @@ class TreeCache {
         return node;
       }
 
-      const nodeValue = this._mapNodeValue(getNodeValue(node.nodeKey)); // $FlowFixMe[incompatible-type]
-
+      const nodeValue = this._mapNodeValue(getNodeValue(node.nodeKey));
 
       node = node.branches.get(nodeValue);
     }
@@ -6511,8 +6507,7 @@ function treeCacheLRU({
         cache.delete(lruNode.key);
       }
     }
-  }); // $FlowFixMe[method-unbinding]
-
+  });
   return cache;
 }
 
@@ -6691,7 +6686,6 @@ function getValueMapper(equality) {
 function getTreeCache(eviction, maxSize, mapNodeValue, name) {
   switch (eviction) {
     case 'keep-all':
-      // $FlowFixMe[method-unbinding]
       return new TreeCache$2({
         name,
         mapNodeValue
@@ -6807,7 +6801,7 @@ function deepFreezeValue(value) {
   Object.freeze(value); // Make all properties read-only
 
   for (const key in value) {
-    // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    // $FlowIssue[method-unbinding] added when improving typing for this parameters
     if (Object.prototype.hasOwnProperty.call(value, key)) {
       const prop = value[key]; // Prevent infinite recurssion for circular references.
 
@@ -6867,7 +6861,6 @@ const {
 
 const {
   DEFAULT_VALUE: DEFAULT_VALUE$6,
-  RecoilValueNotReady: RecoilValueNotReady$2,
   getConfigDeletionHandler: getConfigDeletionHandler$1,
   getNode: getNode$6,
   registerNode: registerNode$1
@@ -6910,6 +6903,8 @@ const {
 const {
   startPerfBlock: startPerfBlock$1
 } = Recoil_PerformanceTimings;
+
+
 
 class Canceled {}
 
@@ -7440,7 +7435,6 @@ function selector(options) {
     const depsAfterCacheLookup = new Set();
 
     try {
-      // $FlowFixMe[incompatible-type]
       cachedLoadable = cache.get(nodeKey => {
         !(typeof nodeKey === 'string') ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'Cache nodeKey is type string') : Recoil_invariant(false) : void 0;
         return getNodeLoadable$2(store, state, nodeKey).contents;
@@ -7728,7 +7722,9 @@ function selector(options) {
         if (loadable.state === 'hasValue') {
           return loadable.contents;
         } else if (loadable.state === 'loading') {
-          throw new RecoilValueNotReady$2(depKey);
+          const msg = `Getting value of asynchronous atom or selector "${depKey}" in a pending state while setting selector "${key}" is not yet supported.`;
+          Recoil_recoverableViolation(msg);
+          throw Recoil_err(msg);
         } else {
           throw loadable.contents;
         }
@@ -7736,7 +7732,9 @@ function selector(options) {
 
       function setRecoilState(recoilState, valueOrUpdater) {
         if (syncSelectorSetFinished) {
-          throw Recoil_err('Recoil: Async selector sets are not currently supported.');
+          const msg = 'Recoil: Async selector sets are not currently supported.';
+          Recoil_recoverableViolation(msg);
+          throw Recoil_err(msg);
         }
 
         const setValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
@@ -7750,8 +7748,7 @@ function selector(options) {
         setRecoilState(recoilState, DEFAULT_VALUE$6);
       }
 
-      const ret = set( // $FlowFixMe[incompatible-call]
-      {
+      const ret = set({
         set: setRecoilState,
         get: getRecoilValue,
         reset: resetRecoilState
@@ -8391,20 +8388,17 @@ function getValueMapper$1(equality) {
 function getCache(eviction, maxSize, mapKey) {
   switch (eviction) {
     case 'keep-all':
-      // $FlowFixMe[method-unbinding]
       return new MapCache$1({
         mapKey
       });
 
     case 'lru':
-      // $FlowFixMe[method-unbinding]
       return new LRUCache$2({
         mapKey,
         maxSize: Recoil_nullthrows(maxSize)
       });
 
     case 'most-recent':
-      // $FlowFixMe[method-unbinding]
       return new LRUCache$2({
         mapKey,
         maxSize: 1
