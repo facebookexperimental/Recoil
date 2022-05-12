@@ -106,6 +106,7 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
   } else {
     releaseSnapshot?.();
   }
+  // $FlowFixMe[incompatible-cast]
   return (ret: Return);
 }
 
