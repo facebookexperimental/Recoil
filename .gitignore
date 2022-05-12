@@ -76,6 +76,7 @@ typings/
 .cache
 
 # build outputs
+build
 cjs
 es
 native

@@ -1,6 +1,7 @@
 [ignore]
 .*/__tests__.*
 .*/node_modules.*
+<PROJECT_ROOT>/build/.*
 <PROJECT_ROOT>/cjs/.*
 # Disable for now as the NPM dependencies don't seem to be working...
 <PROJECT_ROOT>/packages/recoil-sync/.*
