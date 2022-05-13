@@ -8,33 +8,54 @@ Returns a function that returns a writeable `RecoilState` [atom](/docs/api-refer
 ---
 
 ```jsx
-function atomFamily<T, Parameter>({
+function atomFamily<T, P: Parameter>({
   key: string,
 
-  default:
-    | RecoilValue<T>
-    | Promise<T>
+  default?:
     | T
-    | (Parameter => T | RecoilValue<T> | Promise<T>),
+    | Promise<T>
+    | Loadable<T>
+    | WrappedValue<T>
+    | RecoilValue<T>
+    | (P => T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>),
 
   effects?:
     | $ReadOnlyArray<AtomEffect<T>>
     | (P => $ReadOnlyArray<AtomEffect<T>>),
 
   dangerouslyAllowMutability?: boolean,
-}): Parameter => RecoilState<T>
+}): P => RecoilState<T>
 ```
 
 - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-- `default` - The initial value of the atom. It may either be a value directly, a `RecoilValue` or `Promise` that represents the default value, or a function to get the default value. The callback function is passed a copy of the parameter used when the `atomFamily` function is called.
+- `default` - The initial value of the atom.  Like an atom, it may either be a value directly or a `Promise`, [`Loadable`](/docs/api-reference/core/Loadable), wrapped value, or another atom/selector that represents the default value.  Atom families can also be a function that is passed a parameter and returns the default for that family member.  If not provided, the atom will start in a pending state and trigger Suspense.
 - `effects` - An optional array, or callback to get the array based on the family parameter, of [Atom Effects](/docs/guides/atom-effects).
 - `dangerouslyAllowMutability` - Recoil depends on atom state changes to know when to notify components that use the atoms to re-render.  If an atom's value were mutated, it may bypass this and cause state to change without properly notifying subscribing components.  To help protect against this all stored values are frozen.  In some cases it may be desireable to override this using this option.
 
 ---
 
-An `atom` represents a piece of state with _Recoil_. An atom is created and registered per `<RecoilRoot>` by your app. But, what if your state isn’t global? What if your state is associated with a particular instance of a control, or with a particular element? For example, maybe your app is a UI prototyping tool where the user can dynamically add elements and each element has state, such as its position. Ideally, each element would get its own atom of state. You could implement this yourself via a memoization pattern. But, _Recoil_ provides this pattern for you with the `atomFamily` utility. An Atom Family represents a collection of atoms. When you call `atomFamily` it will return a function which provides the `RecoilState` atom based on the parameters you pass in.
+An `atom` represents a piece of state with _Recoil_. An atom is created and registered per `<RecoilRoot>` by your app. But, what if your state isn’t global? What if your state is associated with a particular instance of a control, or with a particular element? For example, maybe your app is a UI prototyping tool where the user can dynamically add elements and each element has state, such as its position. Ideally, each element would get its own atom of state. You could implement this yourself via a memoization pattern. But, _Recoil_ provides this pattern for you with the `atomFamily()` utility. An Atom Family represents a collection of atoms. When you call `atomFamily()` it will return a function which provides the `RecoilState` atom based on the parameters you pass in.
 
-The `atomFamily` essentially provides a map from the parameter to an atom.  You only need to provide a single key for the `atomFamily` and it will generate a unique key for each underlying atom.  These atom keys can be used for persistence, and so must be stable across application executions.  The parameters may also be generated at different callsites and we want equivalent parameters to use the same underlying atom.  Therefore, value-equality is used instead of reference-equality for `atomFamily` parameters.  This imposes restrictions on the types which can be used for the parameter.  `atomFamily` accepts primitive types, or arrays or objects which can contain arrays, objects, or primitive types.
+## Parameter Type
+```jsx
+type Primitive = void | null | boolean | number | string;
+interface HasToJSON {
+  toJSON(): Parameter;
+}
+type Parameter =
+  | Primitive
+  | HasToJSON
+  | $ReadOnlyArray<Parameter>
+  | $ReadOnly<{[string]: Parameter}>
+  | $ReadOnlySet<Parameter>
+  | $ReadOnlyMap<Parameter, Parameter>;
+```
+The `atomFamily()` essentially provides a map from the parameter to an atom.  You only need to provide a single key for the atom family and it will generate a unique key for each underlying atom.  These atom keys can be used for persistence, and so must be stable across application executions.
+
+There are restrictions on the type you can use as the family `Parameter`.  They may be generated at different callsites and we want equivalent parameters to reference the same underlying atom.  Therefore, parameters are compared using value-equality and must be serializable.  To be serializable it must be either:
+  * A primitive value
+  * An array, object, `Map`, or `Set` of serializable values
+  * Contain a `toJSON()` method which returns a serializable value, similar to `JSON.stringify()`
 
 ## Example
 
@@ -119,4 +140,4 @@ function PaneView() {
 
 ## Persistence
 
-Persistence observers will persist the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to only use parameters which are primitives or simple compound objects containing primitives. Custom classes or functions are not allowed.
+Persistence observers and [atom effects](/docs/guides/atom-effects) will sync the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to [serializable parameters](/docs/api-reference/utils/atomFamily#parameter-type). Custom classes or functions are not allowed.

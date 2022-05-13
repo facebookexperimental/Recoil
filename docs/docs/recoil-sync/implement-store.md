@@ -11,9 +11,9 @@ While the library comes with some built-in stores, you can implement your own us
 
 See the [API reference](/docs/recoil-sync/api/useRecoilSync) for the full details on the callbacks.
 
-## Example
+## Example Syncing with React Props
 
-An example store that will initialize atoms based on React prop values:
+An example store using [`<RecoilSync>`](/docs/recoil-sync/api/RecoilSync) that will initialize atoms based on React prop values:
 ```jsx
 function InitFromProps(props) {
   return (
@@ -25,7 +25,9 @@ function InitFromProps(props) {
 }
 ```
 
-An example store that will synchronize with a custom database:
+## Example Syncing with User Database
+
+An example store using [`useRecoilSync()`](/docs/recoil-sync/api/useRecoilSync) that will synchronize with a custom database:
 ```jsx
 function SyncWithDB() {
   const connection = useMyDB();

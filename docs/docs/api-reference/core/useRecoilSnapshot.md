@@ -9,7 +9,7 @@ This hook synchronously returns a [`Snapshot`](/docs/api-reference/core/Snapshot
 function useRecoilSnapshot(): Snapshot
 ```
 
-Be careful using this hook because it will cause the component to re-render for *all* Recoil state changes.   In the future we hope to provide the ability to debounce for performance.
+Be careful using this hook because it will cause the component to re-render for *all* Recoil state changes.   Snapshots obtained from `useRecoilSnapshot()` will be retained at least for the duration that the component using them is mounted.
 
 ### Debug Example
 ```jsx

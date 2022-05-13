@@ -148,7 +148,7 @@ function AnotherApp() {
 
 ## Advanced Atom Mappings
 
-Atoms may not map to items in the external store one-to-one.  [This example](/docs/recoil-sync/introduction#upgrade-atom-key) describes using `read` to implement a key upgrade.  The `read` and `write` options for [`syncEffect()`](/docs/recoil-sync/api/syncEffect) can be used to implement more complex mappings.
+Atoms may not map to items in the external store one-to-one.  [This example](/docs/recoil-sync/sync-effect#upgrade-atom-key) describes using `read` to implement a key upgrade.  The `read` and `write` options for [`syncEffect()`](/docs/recoil-sync/api/syncEffect) can be used to implement more complex mappings.
 
 Care must be taken with advanced mappings as there could be ordering issues, atoms may try to overwrite the same items, etc.
 

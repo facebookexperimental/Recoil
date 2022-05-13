@@ -8,24 +8,33 @@ Returns a function that returns a read-only `RecoilValueReadOnly` or writeable `
 A `selectorFamily` is a powerful pattern that is similar to a [`selector`](/docs/api-reference/core/selector), but allows you to pass parameters to the `get` and `set` callbacks of a `selector`.  The `selectorFamily()` utility returns a function which can be called with user-defined parameters and returns a selector. Each unique parameter value will return the same memoized selector instance.
 
 ---
-
+Read-only selector family:
 ```jsx
-function selectorFamily<T, Parameter>({
+function selectorFamily<T, P: Parameter>({
   key: string,
 
-  get: Parameter => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
+  get: P => ({
+    get: GetRecoilValue
+    getCallback: GetCallback<T>,
+  }) =>
+    T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>,
 
   dangerouslyAllowMutability?: boolean,
-}): Parameter => RecoilValueReadOnly<T>
+}): P => RecoilValueReadOnly<T>
 ```
 
+Writable selector family:
 ```jsx
-function selectorFamily<T, Parameter>({
+function selectorFamily<T, P: Parameter>({
   key: string,
 
-  get: Parameter => ({get: GetRecoilValue}) => Promise<T> | RecoilValue<T> | T,
+  get: P => ({
+    get: GetRecoilValue
+    getCallback: GetCallback<T>,
+  }) =>
+    T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>,
 
-  set: Parameter => (
+  set: P => (
     {
       get: GetRecoilValue,
       set: SetRecoilValue,
@@ -37,16 +46,22 @@ function selectorFamily<T, Parameter>({
   dangerouslyAllowMutability?: boolean,
 
   cachePolicy_UNSTABLE?: CachePolicy,
-}): Parameter => RecoilState<T>
+}): P => RecoilState<T>
 ```
 
 Where
 
 ```jsx
 type ValueOrUpdater<T> =  T | DefaultValue | ((prevValue: T) => T | DefaultValue);
+
 type GetRecoilValue = <T>(RecoilValue<T>) => T;
 type SetRecoilValue = <T>(RecoilState<T>, ValueOrUpdater<T>) => void;
 type ResetRecoilValue = <T>(RecoilState<T>) => void;
+
+type GetCallback<T> =
+  <Args, Return>(
+    callback: ({node: RecoilState<T>, ...CallbackInterface}) => (...Args) => Return,
+  ) => (...Args) => Return;
 
 type CachePolicy =
   | {eviction: 'lru', maxSize: number}
@@ -65,7 +80,26 @@ type CachePolicy =
 
 ---
 
-The `selectorFamily` essentially provides a map from the parameter to a selector.  Because the parameters are often generated at the callsites using the family, and we want equivalent parameters to re-use the same underlying selector, it uses value-equality by default instead of reference-equality.  (There is an unstable API to adjust this behavior).  This imposes restrictions on the types which can be used for the parameter.  Please use a primitive type or an object that can be serialized.  Recoil uses a custom serializer that can support objects and arrays, some containers (such as ES6 Sets and Maps), is invariant of object key ordering, supports Symbols, Iterables, and uses `toJSON` properties for custom serialization (such as provided with libraries like Immutable containers).  Using functions or mutable objects, such as Promises, in parameters is problematic.
+The `selectorFamily()` essentially provides a map from the parameter to a selector.  You only need to provide a single key for the atom family and it will generate a unique key for each underlying selector.
+
+## Parameter Type
+```jsx
+type Primitive = void | null | boolean | number | string;
+interface HasToJSON {
+  toJSON(): Parameter;
+}
+type Parameter =
+  | Primitive
+  | HasToJSON
+  | $ReadOnlyArray<Parameter>
+  | $ReadOnly<{[string]: Parameter}>
+  | $ReadOnlySet<Parameter>
+  | $ReadOnlyMap<Parameter, Parameter>;
+```
+There are restrictions on the type you can use as the family `Parameter`.  They may be generated at different callsites and we want equivalent parameters to reference the same underlying selector.  Therefore, parameters are compared using value-equality and must be serializable.  Using functions or mutable objects, such as Promises, in parameters is problematic.  To be serializable it must be either:
+  * A primitive value
+  * An array, object, `Map`, or `Set` of serializable values
+  * Contain a `toJSON()` method which returns a serializable value, similar to `JSON.stringify()`
 
 ## Example
 

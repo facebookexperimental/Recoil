@@ -14,9 +14,12 @@ class Snapshot {
   getLoadable: <T>(RecoilValue<T>) => Loadable<T>;
   getPromise: <T>(RecoilValue<T>) => Promise<T>;
 
-  // API to transform snapshots for transactions
+  // API to transform state to a new immutable Snapshot
   map: (MutableSnapshot => void) => Snapshot;
   asyncMap: (MutableSnapshot => Promise<void>) => Promise<Snapshot>;
+
+  // Get a StoreID similar to useRecoilStoreID()
+  getStoreID: () => StoreID;
 
   // Developer Tools API
   getID: () => SnapshotID;
@@ -83,20 +86,35 @@ The following hook can be used for updating the current Recoil state to match th
 
 Snapshots are only retained for the duration of the callback that obtained them.  To use them after that they should be explicitly retained using `retain()`.
 
-From a callback:
 ```jsx
-useRecoilCallback(({snapshot}) => async () => {
-  const release = snapshot.retain();
+test('My Test', async () => {
+  const testSnapshot = snapshot_UNSTABLE();
+  const releaseSnapshot = initialSnapshot.retain();
+
   try {
-    await onSomething();
-    doSomethingWithSnapshot(snapshot);
+    await something;
+    ... use testSnapshot ...
   } finally {
-    release();
+    releaseSnapshot();
   }
 });
 ```
 
-Note that an asynchronous selector must be actively used by some `<RecoilRoot>` or `Snapshot` in order to ensure it is not canceled.  So, if you are only accessing an asynchronous selector via snapshots, they must be retained in order to guarantee you can observe the resolved value.
+```jsx
+function MyComponent() {
+  const myCallback = useRecoilCallback(({snapshot}) => () => {
+    const release = snapshot.retain();
+    setTimeout(() => {
+      ... use snapshot ...
+      release();
+    }, 1000);
+  });
+
+  ...
+}
+```
+
+Note that asynchronous selectors must be actively used by some `<RecoilRoot>` or `Snapshot` in order to ensure they are not canceled.  If you are only accessing an asynchronous selector via snapshots they must be retained in order to guarantee you can observe the resolved value.
 
 ## Developer Tools
 

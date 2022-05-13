@@ -10,7 +10,8 @@ An *atom* represents state in Recoil.  The `atom()` function returns a writeable
 ```jsx
 function atom<T>({
   key: string,
-  default: T | Promise<T> | RecoilValue<T>,
+
+  default?: T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>,
 
   effects?: $ReadOnlyArray<AtomEffect<T>>,
 
@@ -19,13 +20,16 @@ function atom<T>({
 ```
 
   - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
-  - `default` - The initial value of the atom or a `Promise` or another atom or selector representing a value of the same type.  If a selector is used as the default, the atom may dynamically update if the default selector updates; once the atom is set then it will retain the value it was set to.
+  - `default` - The initial value of the atom.  It can also be a `Promise`, [`Loadable`](/docs/api-reference/core/Loadable), wrapped value, or another atom or selector of the same type representing the default value.
+    - If a selector is used as the default the atom will dynamically update as the default selector updates.  Once the atom is set, then it will retain that value unless the atom is reset.
+    - If no `default` is provided, as oppose to a value which could include `null` or `undefined`, the atom will start in a "pending" state and trigger Suspense until it is set.
+    - If you would like to set the default atom value directly to a `Promise`, `Loadable`, atom, selector, or function without unwrapping it, then you can wrap it with `atom.value(...)`.
   - `effects` - An optional array of [Atom Effects](/docs/guides/atom-effects) for the atom.
   - `dangerouslyAllowMutability` - In some cases it may be desireable to allow mutating of objects stored in atoms that don't represent state changes.  Use this option to override freezing objects in development mode.
 
 ---
 
-Recoil manages atom state changes to know when to notify components subscribing to that atom to re-render, so you should use the hooks listed below to change atom state.  If an object stored in an atom was mutated directly it may bypass this and cause state changes without properly notifying subscribing components.  To help detect bugs Recoil will freeze objects stored in atoms in development mode.
+Recoil manages atom state changes to know when to notify components subscribing to that atom to re-render, so you should use the hooks listed below to change atom state.  If an object stored in an atom was mutated directly it may bypass this and cause state changes without properly notifying subscribing components.  To help detect bugs like this Recoil will freeze objects stored in atoms in development mode.
 
 Most often, you'll use the following hooks to interact with atoms:
 

@@ -2,7 +2,7 @@
 title: Selectors
 ---
 
-A **selector** represents a piece of **derived state**. You can think of derived state as the output of passing state to a pure function that modifies the given state in some way.
+A **selector** represents a piece of **derived state**. You can think of derived state as the output of passing state to a pure function that derives a new value from the said state.
 
 Derived state is a powerful concept because it lets us build dynamic data that depends on other data. In the context of our todo list application, the following are considered derived state:
 
@@ -13,7 +13,7 @@ To implement a filtered todo list, we need to choose a set of filter criteria wh
 
 ```javascript
 const todoListFilterState = atom({
-  key: 'todoListFilterState',
+  key: 'TodoListFilter',
   default: 'Show All',
 });
 ```
@@ -22,7 +22,7 @@ Using `todoListFilterState` and `todoListState`, we can build a `filteredTodoLis
 
 ```javascript
 const filteredTodoListState = selector({
-  key: 'filteredTodoListState',
+  key: 'FilteredTodoList',
   get: ({get}) => {
     const filter = get(todoListFilterState);
     const list = get(todoListState);
@@ -100,7 +100,7 @@ While we could create a selector for each of the stats, an easier approach would
 
 ```javascript
 const todoListStatsState = selector({
-  key: 'todoListStatsState',
+  key: 'TodoListStats',
   get: ({get}) => {
     const todoList = get(todoListState);
     const totalNum = todoList.length;

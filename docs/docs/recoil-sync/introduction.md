@@ -6,6 +6,7 @@ sidebar_label: Introduction
 ---
 > ## ❗️ _Preview Documentation_ ❗️
 > ***This is preview documentation for the recoil-sync library before it is released.***<br/>
+> ***[Source is available here](https://github.com/facebookexperimental/Recoil/tree/main/packages/recoil-sync).***
 >
 
 ---
@@ -53,4 +54,4 @@ function MyApp() {
 }
 ```
 
-That's it!  Now this atom will initialize its state based on the URL during initial load, any state mutations will update the URL, and changes in the URL (such as the back button) will update the atom.  See below for discussion of more advanced scenarios:
+That's it!  Now this atom will initialize its state based on the URL during initial load, any state mutations will update the URL, and changes in the URL (such as the back button) will update the atom.  See more examples in the [Sync Effect](/docs/recoil-sync/sync-effect), [Store Implementation](/docs/recoil-sync/implement-store), and [URL Persistence](/docs/recoil-sync/url-persistence) guides.

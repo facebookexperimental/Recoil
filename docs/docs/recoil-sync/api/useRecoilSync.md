@@ -3,7 +3,7 @@ title: useRecoilSync(...)
 sidebar_label: useRecoilSync()
 ---
 
-A hook from the [Recoil Sync library](/docs/recoil-sync/introduction) to define an external store for atoms to sync with using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) atom effect.
+A hook from the [Recoil Sync library](/docs/recoil-sync/introduction) to [define an external store](/docs/recoil-sync/implement-store) for atoms to sync with using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) atom effect.
 
 ---
 
@@ -26,7 +26,6 @@ The `read()` callback defines how to read an item from the external store.  This
 
 ```jsx
 type ReadItem = ItemKey =>
-  | void
   | DefaultValue
   | Promise<DefaultValue | mixed>
   | Loadable<DefaultValue | mixed>
@@ -34,7 +33,7 @@ type ReadItem = ItemKey =>
 ```
 
 
-You may return the actual value of the item in the store.  If the item is not set or available in the store you may return `undefined` or `DefaultValue`.  It is also possible to return an async `Promise` to the value if it requires an async operation to read from the store.  You can also give a [`Loadable`](/docs/api-reference/core/Loadable) representation which is also useful for providing an error state if necessary.
+You may return the actual value of the item in the store.  If the item is not set or available in the store you may return `DefaultValue`.  It is also possible to return an async `Promise` to the value if it requires an async operation to read from the store.  You can also give a [`Loadable`](/docs/api-reference/core/Loadable) representation, which is useful for providing an error state if necessary.
 
 ## Write Interface
 The `write()` callback is called when atom states are mutated so you can define how to write these changes to the external store.
@@ -77,4 +76,4 @@ You can return a callback handler function from your `listen()` implementation t
 
 ## Examples
 
-See the [Recoil Sync library guide](/docs/recoil-sync/introduction#implementing-a-store) for examples.
+See the ["Implementing a Store"](/docs/recoil-sync/implement-store) guide for examples.
