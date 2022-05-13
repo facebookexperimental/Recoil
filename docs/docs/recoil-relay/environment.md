@@ -7,7 +7,7 @@ To use GraphQL with the `recoil-relay` library you'll need to reference your Rel
 
 ### `EnvironmentKey`
 
-When using an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) with your GraphQL queries it is matched up with a surrounding [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) with the same `environmentKey` within your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot).  This is useful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded_queries).
+When using an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) with your GraphQL queries it is matched up with a surrounding [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) with the same `environmentKey` within your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot).  This is useful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded-queries).
 
 ```jsx
 const myEnvironmentKey = new EnvironmentKey('My Environment');
