@@ -82,30 +82,30 @@ function graphQLSelectorFamily<
   default?: T | (P => T),
   mutations?: {
     mutation: Mutation<TMutationVariables, TMutationData, TMutationRawResponse>,
-    variables: T => ?TMutationVariables,
+    variables: T => ?TMutationVariables | (P => ?TMutationVariables),
   },
 }): P => RecoilState<T> {
   const internalAtoms = atomFamily<
-    | {source: 'local', data: T}
+    | {source: 'local', parameter: P, data: T}
     | {source: 'remote', response: TData}
     | DefaultValue,
     ?TVariables,
   >({
     key,
     default: new DefaultValue(),
-    effects: param =>
+    effects: vars =>
       [
         query.params.operationKind === 'query'
           ? graphQLQueryEffect({
               environment,
-              variables: param,
+              variables: vars,
               // $FlowIssue[incompatible-call] Type is opaque, no way to refine
               query,
               mapResponse: response => ({source: 'remote', response}),
             })
           : graphQLSubscriptionEffect({
               environment,
-              variables: param,
+              variables: vars,
               // $FlowIssue[incompatible-call] Type is opaque, no way to refine
               subscription: query,
               mapResponse: response => ({source: 'remote', response}),
@@ -114,14 +114,24 @@ function graphQLSelectorFamily<
           graphQLMutationEffect({
             environment,
             mutation: mutations.mutation,
-            variables: localUpdate =>
-              // commit mutation if atom is updated locally
-              localUpdate.source === 'local' &&
-              // Avoid mutation operation if user issued a reset and
-              // did not provide a default value.
-              !(localUpdate instanceof DefaultValue)
-                ? mutations.variables(localUpdate.data)
-                : null,
+            variables: localUpdate => {
+              if (
+                // commit mutation only if atom is updated locally
+                localUpdate.source === 'local' &&
+                // Avoid mutation operation if user issued a reset and
+                // did not provide a default value.
+                !(localUpdate instanceof DefaultValue)
+              ) {
+                const variablesIntermediate = mutations.variables(
+                  localUpdate.data,
+                );
+                return typeof variablesIntermediate === 'function'
+                  ? variablesIntermediate(localUpdate.parameter)
+                  : variablesIntermediate;
+              } else {
+                return null;
+              }
+            },
           }),
       ].filter(Boolean),
   });
@@ -173,9 +183,9 @@ function graphQLSelectorFamily<
           getAtom(parameter, get),
           newValue instanceof DefaultValue
             ? 'default' in options
-              ? {source: 'local', data: defaultValue(parameter)}
+              ? {source: 'local', parameter, data: defaultValue(parameter)}
               : newValue
-            : {source: 'local', data: newValue},
+            : {source: 'local', parameter, data: newValue},
         ),
   });
 }

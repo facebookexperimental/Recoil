@@ -411,8 +411,8 @@ describe('mutations', () => {
       mapResponse: data => data.feedback?.seen_count,
       mutations: {
         mutation: testFeedbackMutation,
-        variables: count => ({
-          data: {feedback_id: 'ID', actor_id: count?.toString()},
+        variables: count => id => ({
+          data: {feedback_id: id, actor_id: count?.toString()},
         }),
       },
     });

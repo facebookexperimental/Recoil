@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {GetRecoilValue, RecoilState} from 'Recoil';
@@ -54,6 +55,7 @@ function graphQLSelector<
   TMutationRawResponse = void,
 >({
   variables,
+  mutations,
   ...options
 }: {
   environment: IEnvironment | EnvironmentKey,
@@ -77,6 +79,7 @@ function graphQLSelector<
         ? undefined
         : () => cbs =>
             typeof variables === 'function' ? variables(cbs) : variables,
+    mutations: mutations == null ? undefined : {...mutations},
   })();
 }
 
