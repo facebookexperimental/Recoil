@@ -3,7 +3,7 @@ title: graphQLSubscriptionEffect()
 sidebar_label: graphQLSubscriptionEffect()
 ---
 
-The underlying [atom effect](/docs/guides/atom-effects) for syncing a Recoil [atom](/docs/api-reference/core/atom) with a GraphQL subscription.  It initializes an atom based on the results of a GraphQL subscription and subscribes to updates from the server.
+The underlying [atom effect](/docs/guides/atom-effects) for syncing a Recoil [atom](/docs/api-reference/core/atom) with a **GraphQL subscription**.  It initializes an atom based on the results of a GraphQL subscription and subscribes to updates from the server.
 
 ---
 
@@ -23,7 +23,7 @@ function graphQLSubscriptionEffect<
 
 - `environment`: The Relay Environment or an [`EnvironmentKey`](/docs/recoil-relay/api/EnvironmentKey) to match with the environment provided with [`<RecoilRelayEnvironemnt>`](/docs/recoil-relay/api/RecoilRelayEnvironment).
 - `subscription`: The GraphQL subscription to query.
-- `variables`: Variables object provided as input to the GraphQL query.  If `null`, then skip query and use the default atom value.
+- `variables`: [Variables](https://graphql.org/learn/queries/#variables) object provided as input to the GraphQL query.  If `null`, then skip query and use the default atom value.
 - `mapResponse`: Optional callback to map the query response to the atom value.
 
 ---

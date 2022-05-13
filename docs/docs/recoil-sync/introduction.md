@@ -5,7 +5,7 @@ sidebar_label: Introduction
 
 ---
 > ## ❗️ _Preview Documentation_ ❗️
-> ***This is preview documentation for the Recoil Sync library for feedback or planning before it is released.***<br/>
+> ***This is preview documentation for the recoil-sync library before it is released.***<br/>
 >
 
 ---

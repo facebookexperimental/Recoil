@@ -7,7 +7,7 @@ The underlying Relay GraphQL support is provided via the [GraphQL Atom Effects](
 
 ## Simple GraphQL Query
 
-[**`graphQLSelector()`**](/docs/recoil-relay/api/graphQLSelector) can be used to create a selector which is synced with a **GraphQL query**.  This selector helps GraphQL queries and the Recoil data-flow graph stay in sync.  It can depend on upstream Recoil atoms/selectors to determine the `variables` to use for the GraphQL query or transform the results.  Any local updates or mutations to the Relay GraphQL state will also automatically sync with the selector and cause it to update.  This allows you to treat the server as the source of truth with the selector as a local cache.
+[**`graphQLSelector()`**](/docs/recoil-relay/api/graphQLSelector) can be used to create a selector which is synced with a [**GraphQL query**](https://graphql.org/learn/queries/).  This selector helps GraphQL queries and the Recoil data-flow graph stay in sync.  It can depend on upstream Recoil atoms/selectors to determine the [`variables`](https://graphql.org/learn/queries/#variables) to use for the GraphQL query or transform the results.  Any live queries, deferred data, local updates or mutations to the Relay GraphQL state will also automatically sync with the selector and cause it to update.  This allows you to treat the server as the source of truth with the selector as a local cache.
 
 ```jsx
 const seenCountQuery = graphQLSelector({
@@ -114,7 +114,7 @@ function MyComponent(props) {
 ```
 ## Write-through Cache
 
-Another pattern you can use for updating state is to treat the Recoil selector as a local write-through cache for the server.  It is a writable selector, so local updates will immediately be reflected in the UI.  If you provide **GraphQL mutation** information, then updating the selector will also initiate a mutation with the server.
+Another pattern you can use for updating state is to treat the Recoil selector as a local write-through cache for the server.  It is a writable selector, so local updates will immediately be reflected in the UI.  If you provide [**GraphQL mutation**](https://graphql.org/learn/queries/#mutations) information, then updating the selector will also initiate a mutation with the server.
 
 ```jsx
 const eventState = graphQLSelector({
@@ -163,7 +163,7 @@ Note that when using Recoil as a write-through cache like this the Relay concept
 
 ## GraphQL Subscriptions
 
-While GraphQL selectors will subscribe to changes from locally issued mutations, you may also want to subscribe to mutations that are remotely initiated by the server.  In this situation you can use a **GraphQL _subscription_** instead of a GraphQL _query_.  GraphQL subscriptions require a different implementation on the server to support initiating remote updates.
+While GraphQL selectors will subscribe to changes from locally issued mutations or live updates, you may also want to subscribe to updates pushed by the server.  In this situation you can use a **GraphQL _subscription_** instead of a GraphQL _query_.  GraphQL subscriptions require a different implementation on the server to support initiating remote updates.
 
 ```jsx
 const seenCountSubscription = graphQLSelector({

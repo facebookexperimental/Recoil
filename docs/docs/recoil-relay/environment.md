@@ -3,11 +3,11 @@ title: Relay Environment
 sidebar_label: Relay Environment
 ---
 
-The first step for using the `recoil-relay` library is to register your Relay environment(s).  Each GraphQL [selector](/docs/recoil-relay/graphql-selectors) or [effect](/docs/recoil-relay/graphql-effects) requires an `environment` option which can either just be a Relay Environment directly or an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey).
+To use GraphQL with the `recoil-relay` library you'll need to reference your Relay environment(s).  Each GraphQL [selector](/docs/recoil-relay/graphql-selectors) or [effect](/docs/recoil-relay/graphql-effects) requires an `environment` option which can either reference a Relay Environment directly or be an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) that matches up with a [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) compnoent that registered a Relay environment.
 
 ### `EnvironmentKey`
 
-When using an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) with your GraphQL queries it is matched up with a surrounding [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) with the same `environmentKey` within your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot).  This is helpful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded_queries).
+When using an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) with your GraphQL queries it is matched up with a surrounding [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) with the same `environmentKey` within your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot).  This is useful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded_queries).
 
 ```jsx
 const myEnvironmentKey = new EnvironmentKey('My Environment');

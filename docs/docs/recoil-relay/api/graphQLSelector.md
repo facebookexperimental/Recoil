@@ -3,7 +3,7 @@ title: graphQLSelector()
 sidebar_label: graphQLSelector()
 ---
 
-`graphQLSelector()` creates a Recoil [selector](/docs/api-reference/core/selector) which syncs with the provided Relay environment and GraphQL query or subscription.  The selector will automatically update if any local commits or updates are performed which mutate that part of the graph.  The selector acts like a local cache with the server as the source of truth.  It is writable and can be configured to commit mutations to the server when updated as a write-through cache.
+`graphQLSelector()` creates a Recoil [selector](/docs/api-reference/core/selector) which syncs with the provided Relay environment and [GraphQL query or subscription](https://graphql.org/learn/queries/).  The selector will automatically update with any deferred data, live queries, or if any local commits or updates are performed which mutate that part of the graph.  The selector acts like a local cache with the server as the source of truth.  It is writable and can be configured to commit mutations to the server when updated as a write-through cache.
 
 If you would like to pass a parameter from the consumer callsite to the query variables consider [`graphQLSelectorFamily()`](/docs/recoil-relay/api/graphQLSelectorFamily).
 
@@ -41,11 +41,11 @@ function graphQLSelector<
 ```
 * **`key`** - A unique string used to identify the selector.
 * **`environment`** - The Relay Environment or an [`EnvironmentKey`](/docs/recoil-relay/api/EnvironmentKey) to match with an environment pprovided by a surrounding [`<RecoilRelayEnvironment>`](/docs/recoil-relay/api/RecoilRelayEnvironment).
-* **`query`** - A GraphQL Query or Subscription.
-* **`variables`** - Callback to provide the variables object to use for the query.  This may be the variables object directly or a callback which has a `get()` function that allows the selector to reference other upstream Recoil atoms/selectors.  If `null` is provided as the variables then no query will be performed and the `default` value will be used instead.
+* **`query`** - A [GraphQL Query or Subscription](https://graphql.org/learn/queries/).
+* **`variables`** - Callback to provide the [variables](https://graphql.org/learn/queries/#variables) object to use for the query.  This may be the variables object directly or a callback which has a `get()` function that allows the selector to reference other upstream Recoil atoms/selectors.  If `null` is provided as the variables then no query will be performed and the `default` value will be used instead.
 * **`mapResponse`** - Optional callbak to transform the GraphQL results for using as the value of the selector.  It is also provided a `get()` function so it can reference other Recoil atoms/selectors to perform the transformation.
 * **`default`** - The default value to use if `null` is provided as the `variables`.  If `default` is not provided then the selector will remain in a pending state.
-* **`mutations`** - Optional configuration of a GraphQL Mutation and variables to commit if the selector is explicitly written to.
+* **`mutations`** - Optional configuration of a [GraphQL Mutation](https://graphql.org/learn/queries/#mutations) and variables to commit if the selector is explicitly written to.
 ---
 
 ### Simple Example

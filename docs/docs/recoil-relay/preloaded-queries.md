@@ -5,7 +5,7 @@ sidebar_label: Preloaded Queries
 
 ## Pre-fetch GraphQL
 
-GraphQL queries can also be pre-fetched using the [pre-fetching pattern](/docs/guides/asynchronous-data-queries#pre-fetching)
+GraphQL queries can also be pre-fetched using the [pre-fetching pattern](/docs/guides/asynchronous-data-queries#pre-fetching):
 
 ```jsx
 function CurrentUserInfo() {
@@ -37,9 +37,9 @@ function CurrentUserInfo() {
 
 ## Preloaded GraphQL
 
-If you are using [EntryPoints](https://relay.dev/docs/guides/entrypoints), then you can preload queries in parallel with loading most of the JS for your page.
+If you are using [EntryPoints](https://relay.dev/docs/api-reference/use-entrypoint-loader/), then you can preload queries in parallel with loading most of the JS for your page.
 
-First, make sure you register an `EnvironmentKey` for your preloaded queries at your applications root:
+First, make sure you [register an `EnvironmentKey`](/docs/recoil-relay/environment) for your preloaded queries at your applications root:
 ```jsx
 export const preloadedEnvironmentKey = new EnvironmentKey('preloaded');
 
