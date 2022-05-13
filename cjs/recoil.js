@@ -175,6 +175,7 @@ class ValueLoadable extends BaseLoadable {
     } catch (e) {
       return Recoil_isPromise(e) ? // If we "suspended", then try again.
       // errors and subsequent retries will be handled in 'loading' case
+      // $FlowFixMe[prop-missing]
       loadableWithPromise(e.next(() => this.map(map))) : loadableWithError(e);
     }
   }
@@ -5990,7 +5991,8 @@ function recoilCallback(store, fn, args, extraInterface) {
     var _releaseSnapshot2;
 
     (_releaseSnapshot2 = releaseSnapshot) === null || _releaseSnapshot2 === void 0 ? void 0 : _releaseSnapshot2();
-  }
+  } // $FlowFixMe[incompatible-cast]
+
 
   return ret;
 }

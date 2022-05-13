@@ -97,6 +97,7 @@ class ValueLoadable<T> extends BaseLoadable<T> {
       return isPromise(e)
         ? // If we "suspended", then try again.
           // errors and subsequent retries will be handled in 'loading' case
+          // $FlowFixMe[prop-missing]
           loadableWithPromise(e.next(() => this.map(map)))
         : loadableWithError(e);
     }
