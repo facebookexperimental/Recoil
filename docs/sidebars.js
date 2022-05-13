@@ -114,7 +114,7 @@ module.exports = {
           ],
         },
       ],
-    }
+    },
   ],
   refine: [
     'refine/Introduction',
@@ -125,6 +125,29 @@ module.exports = {
         'refine/api/Primitive_Checkers',
         'refine/api/Collection_Checkers',
         'refine/api/Advanced_Checkers',
+      ],
+    },
+  ],
+  'recoil-relay': [
+    'recoil-relay/introduction',
+    'recoil-relay/environment',
+    'recoil-relay/graphql-selectors',
+    'recoil-relay/preloaded-queries',
+    'recoil-relay/graphql-effects',
+    {
+      'API Reference': [
+        'recoil-relay/api/EnvironmentKey',
+        'recoil-relay/api/RecoilRelayEnvironment',
+        'recoil-relay/api/RecoilRelayEnvironmentProvider',
+        'recoil-relay/api/graphQLSelector',
+        'recoil-relay/api/graphQLSelectorFamily',
+        {
+          'Atom Effects': [
+            'recoil-relay/api/graphQLQueryEffect',
+            'recoil-relay/api/graphQLSubscriptionEffect',
+            'recoil-relay/api/graphQLMutationEffect',
+          ],
+        },
       ],
     },
   ],

@@ -6,7 +6,7 @@ sidebar_label: Refine
 ---
 > ## ❗️ _Preview Documentation_ ❗️
 > ***This is preview documentation for the Refine library.***<br/>
-> ***Refine will be bundled as part of the [Recoil Sync](/docs/recoil-sync/introduction) package when released.***<br/>
+> ***Refine will initially be bundled as part of the [Recoil Sync](/docs/recoil-sync/introduction) package when released.***
 > ***[Source is available here](https://github.com/facebookexperimental/Recoil/tree/main/packages/refine).***
 >
 
