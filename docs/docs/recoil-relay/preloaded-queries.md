@@ -58,18 +58,18 @@ export function AppRoot() {
 ```
 Then, direct your queries to use this `preloadedEnvironmentKey` and add a `@preloadable` decorator to the GraphQL:
 ```jsx
-export const seenCountQuery = graphQLSelector({
-  key: 'SeenCount',
+export const userQuery = graphQLSelector({
+  key: 'UserQuery',
   environmentKey: preloadedEnvironmentKey,
   query: graphql`
-    query FeedbackQuery($id: ID!) @preloadable {
-      feedback(id: $id) {
-        seen_count
+    query UserQuery($id: ID!) @preloadable {
+      user(id: $id) {
+        name
       }
     }
   `,
   variables: ({get}) => ({id: get(currentIDAtom)}),
-  mapResponse: data => data?.feedback?.seen_count,
+  mapResponse: data => data?.user,
 });
 ```
 Finally, add this query to the preloaded queries in your `*.entrypoint.js` file:
@@ -77,8 +77,8 @@ Finally, add this query to the preloaded queries in your `*.entrypoint.js` file:
 const MyEntryPoint = {
   getPreloadProps: params => ({
     queries: {
-      seenCountQuery: {
-        parameters: require('FeedbackQuery$Parameters'),
+      userQuery: {
+        parameters: require('UserQuery$Parameters'),
         variables: {id: params.id},
       },
   }),

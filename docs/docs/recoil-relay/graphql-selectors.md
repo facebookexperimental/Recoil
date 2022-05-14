@@ -10,18 +10,18 @@ The underlying Relay GraphQL support is provided via the [GraphQL Atom Effects](
 [**`graphQLSelector()`**](/docs/recoil-relay/api/graphQLSelector) can be used to create a selector which is synced with a [**GraphQL query**](https://graphql.org/learn/queries/).  This selector helps GraphQL queries and the Recoil data-flow graph stay in sync.  It can depend on upstream Recoil atoms/selectors to determine the [`variables`](https://graphql.org/learn/queries/#variables) to use for the GraphQL query or transform the results.  Any live queries, deferred data, local updates or mutations to the Relay GraphQL state will also automatically sync with the selector and cause it to update.  This allows you to treat the server as the source of truth with the selector as a local cache.
 
 ```jsx
-const seenCountQuery = graphQLSelector({
-  key: 'SeenCount',
+const userNameQuery = graphQLSelector({
+  key: 'UserName',
   environment: myEnvironmentKey,
   query: graphql`
-    query FeedbackQuery($id: ID!) {
-      feedback(id: $id) {
-        seen_count
+    query UserNameQuery($id: ID!) {
+      user(id: $id) {
+        name
       }
     }
   `,
   variables: ({get}) => ({id: get(currentIDAtom)}),
-  mapResponse: data => data?.feedback?.seen_count,
+  mapResponse: data => data.user?.name,
 });
 ```
 ```jsx
@@ -34,12 +34,12 @@ function MyComponent() {
 In addition to using other upstream atoms/selectors to compute the GraphQL query variables, the `graphQLSelector()` can also be used by other downstream selectors to provide derived state.
 
 ```jsx
-const iconForSeenCountState = selector({
-  key: 'IconForSeenCount',
+const pictureForUserState = selector({
+  key: 'PictureForUser',
   get: async ({get}) => {
-    const seenCount = get(seenCountQuery);
-    const icon = await fetch(urlForCountIcon(seenCount));
-    return icon;
+    const username = get(userNameQuery);
+    const picture = await fetch(urlForUserNamePicture(username));
+    return picture;
   },
 });
 ```
@@ -49,27 +49,28 @@ const iconForSeenCountState = selector({
 [**`graphQLSelectorFamily()`**](/docs/recoil-relay/api/graphQLSelectorFamily) allows you to use parameters in addition to other Recoil state for computing query variables.  Parameters can be determined basd on a component's props, React state, used in another Recoil selector, etc.
 
 ```jsx
-const eventQuery = graphQLSelectorFamily({
-  key: 'EventQuery',
+const userQuery = graphQLSelectorFamily({
+  key: 'UserQuery',
   environment: myEnvironmentKey,
   query: graphql`
-    query MyEventQuery($eventID: ID!, $clientID: ClientID!) {
-      myevent(id: $eventID, client_id: $clientID) {
+    query UserQuery($id: ID!, $clientID: ClientID!) {
+      user(id: $id, client_id: $clientID) {
         name
-        timestamp
+        address
       }
     }
   `,
-  variables: eventID => ({get}) => ({eventID, clientID: get(clientIDAtom}),
+  variables: id => ({get}) => ({id, clientID: get(clientIDAtom}),
+  mapResponse: data => data.user,
 });
 ```
 ```jsx
 function MyComponent(props) {
-  const eventInfo = useRecoilValue(eventQuery(props.eventID));
+  const user = useRecoilValue(userQuery(props.userID));
 
   return (
     <div>
-      <h1>{eventInfo.data.name}</h1>
+      <h1>{user.name}</h1>
     </div>
   );
 }
@@ -83,11 +84,11 @@ The GraphQL selectors will perform an initial query as well as subscribe to any 
 
 ```jsx
 function MyComponent(props) {
-  const eventInfo = useRecoilValue(eventQuery(props.eventID));
+  const user = useRecoilValue(userQuery(props.userID));
   const [commitEvent] = useMutation(graphql`
-    mutation MyEventMutation($input: MyEventNameChangeData!) {
-      myevent_mutation(data: $input) {
-        myevent {
+    mutation UserMutation($input: UsertNameChangeData!) {
+      user_mutation(data: $input) {
+        user {
           id
           name
         }
@@ -97,12 +98,12 @@ function MyComponent(props) {
 
   return (
     <div>
-      <h1>{eventInfo.data.name}</h1>
+      <h1>{user.name}</h1>
       <button onClick={() => {
         commitEvent({
           variables: {
             input: {
-              id: props.eventID,
+              id: props.userID,
               name: 'New Name',
             },
           },
@@ -117,42 +118,44 @@ function MyComponent(props) {
 Another pattern you can use for updating state is to treat the Recoil selector as a local write-through cache for the server.  It is a writable selector, so local updates will immediately be reflected in the UI.  If you provide [**GraphQL mutation**](https://graphql.org/learn/queries/#mutations) information, then updating the selector will also initiate a mutation with the server.
 
 ```jsx
-const eventState = graphQLSelector({
-  key: 'Event',
+const userState = graphQLSelector({
+  key: 'User',
   environment: relayFBEnvironmentKey,
   query: graphql`
-    query MyEventQuery($eventID: ID!, $clientID: ClientID!) {
-      myevent(id: $eventID, client_id: $clientID) {
+    query UserQuery($eventID: ID!, $clientID: ClientID!) {
+      user(id: $eventID, client_id: $clientID) {
         name
         timestamp
       }
     }
   `,
-  variables: eventID => ({get}) => ({eventID, clientID: get(clientIDAtom}),
+  variables: id => ({get}) => ({id, clientID: get(clientIDAtom}),
+  mapResponse: data => data.user,
+
   mutations: {
     mutation: graphql`
-      mutation MyEventMutation($input: MyEventNameChangeData!) {
-        myevent_mutation(data: $input) {
-          myevent {
+      mutation UserMutation($input: UserNameChangeData!) {
+        user_mutation(data: $input) {
+          user {
             id
             name
           }
         }
       }
     `,
-    variables: newEventData => eventID => ({input: {eventID, name: newEventData.name}}),
+    variables: newUserData => id => ({input: {id, name: newUserData.name}}),
   },
 });
 ```
 ```jsx
 function MyComponent() {
-  const [event, setEvent] = useRecoilState(eventState);
+  const [user, setUser] = useRecoilState(userState);
 
   return (
     <div>
-      <h1>{eventInfo.data.name}</h1>
+      <h1>{user.name}</h1>
       <button onClick={() => {
-        setEvent(event => ({...event, name: 'New Name'}));
+        setEvent(user => ({...user, name: 'New Name'}));
       }}>Change Name</button>
     </div>
   );
@@ -166,17 +169,18 @@ Note that when using Recoil as a write-through cache like this the Relay concept
 While GraphQL selectors will subscribe to changes from locally issued mutations or live updates, you may also want to subscribe to updates pushed by the server.  In this situation you can use a **GraphQL _subscription_** instead of a GraphQL _query_.  GraphQL subscriptions require a different implementation on the server to support initiating remote updates.
 
 ```jsx
-const seenCountSubscription = graphQLSelector({
-  key: 'SeenCountSubscription',
+const userSubscription = graphQLSelector({
+  key: 'UserSubscription',
   environment: myEnvironmentKey,
   query: graphql`
-    subscription FeedbackSubscription($id: ID!) {
-      feedback(id: $id) {
-        seen_count
+    subscription UserSubscription($id: ID!) {
+      user(id: $id) {
+        name
+        address
       }
     }
   `,
   variables: ({get}) => ({id: get(currentIDAtom)}),
-  mapResponse: data => data?.feedback?.seen_count,
+  mapResponse: data => data.user,
 });
 ```

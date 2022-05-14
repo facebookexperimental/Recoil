@@ -25,7 +25,7 @@ const userNameQuery = graphQLSelector({
     }
   `,
   variables: ({get}) => ({id: get(currentIDAtom)}),
-  mapResponse: data => data?.user?.name,
+  mapResponse: data => data.user?.name,
 });
 ```
 Then use it like any other Recoil [selector](/docs/api-reference/core/selector):

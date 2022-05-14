@@ -64,6 +64,7 @@ const eventQuery = graphQLSelector({
     }
   `,
   variables: {id: 123},
+  mapResponse: data => data,
 });
 ```
 
@@ -84,6 +85,7 @@ const eventQuery = graphQLSelector({
     }
   `,
   variables: ({get}) => ({id: get(currentIDAtom)}),
+  mapResponse: data => data.myevent,
 });
 ```
 
@@ -103,7 +105,7 @@ const eventNameQuery = graphQLSelector({
     }
   `,
   variables: ({get}) => ({id: get(currentIDAtom)}),
-  mapResponse: data => data?.myevent?.name,
+  mapResponse: data => data.myevent?.name,
 });
 ```
 The transformation can also reference other Recoil atoms/selectors.  It will subscribe to that upstream state and automatically update if the upstream state changes.
@@ -120,7 +122,7 @@ const eventNameQuery = graphQLSelector({
     }
   `,
   variables: ({get}) => ({id: get(currentIDAtom)}),
-  mapResponse: (data, {get}) => get(prefixAtom) + ':' + data?.myevent?.name,
+  mapResponse: (data, {get}) => get(prefixAtom) + ':' + data.myevent?.name,
 });
 ```
 
@@ -140,6 +142,7 @@ const eventNameQuery = graphQLSelector({
       }
     }
   `,
+  default: 'PLACEHOLDER NAME',
   variables: ({get}) => {
     const id = get(currentIDAtom);
     if (!isIDValid(id)) {
@@ -148,8 +151,7 @@ const eventNameQuery = graphQLSelector({
       return {id};
     }
   },
-  default: 'PLACEHOLDER NAME',
-  mapResponse: data => data?.myevent?.name,
+  mapResponse: data => data.myevent?.name,
 });
 ```
 
