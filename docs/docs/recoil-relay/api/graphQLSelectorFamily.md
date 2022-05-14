@@ -71,6 +71,7 @@ const eventQuery = graphQLSelectorFamily({
     }
   `,
   variables: id => ({id}),
+  mapResponse: data => data.myevent,
 });
 ```
 ```jsx
@@ -79,7 +80,7 @@ function MyComponent(props) {
 
   return (
     <div>
-      <h1>{eventInfo.data.name}</h1>
+      <h1>{eventInfo.name}</h1>
     </div>
   );
 }
@@ -103,7 +104,7 @@ const eventQuery = graphQLSelectorFamily({
   variables: id => ({get}) => ({id, clientID: get(clientIDAtom)}),
   mapResponse: (data, {get}) => id => ({
     id,
-    name: data?.name,
+    name: data.myevent?.name,
     region: get(regionForIDSelector(id)),
   }),
 });
