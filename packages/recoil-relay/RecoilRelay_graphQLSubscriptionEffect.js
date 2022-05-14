@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {EnvironmentKey} from './RecoilRelay_Environments';
@@ -51,7 +52,7 @@ function graphQLSubscriptionEffect<
 }: {
   environment: IEnvironment | EnvironmentKey,
   subscription: GraphQLSubscription<TVariables, TData, TRawResponse>,
-  variables: ?TVariables,
+  variables: TVariables | null,
   mapResponse?: TData => T,
 }): AtomEffect<T> {
   return ({node, setSelf, trigger, storeID, parentStoreID_UNSTABLE}) => {
