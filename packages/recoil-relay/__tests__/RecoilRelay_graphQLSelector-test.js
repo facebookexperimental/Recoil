@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 const {
@@ -60,8 +61,12 @@ testRecoil('Sanity Query', async () => {
     environment,
     query: testFeedbackQuery,
     variables: ({get}) => ({id: 'ID-' + get(myAtom)}),
-    mapResponse: ({feedback}, {get}) =>
-      `${feedback?.id ?? ''}:${get(myAtom)}-${feedback?.seen_count ?? ''}`,
+    mapResponse: ({feedback}, {get, variables}) => {
+      expect(variables).toEqual({id: 'ID-' + get(myAtom)});
+      return `${feedback?.id ?? ''}:${get(myAtom)}-${
+        feedback?.seen_count ?? ''
+      }`;
+    },
     mutations: {
       mutation: testFeedbackMutation,
       variables: count => ({
