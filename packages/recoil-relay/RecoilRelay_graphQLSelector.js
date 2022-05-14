@@ -64,7 +64,7 @@ function graphQLSelector<
     | Query<TVariables, TData, TRawResponse>
     | GraphQLSubscription<TVariables, TData, TRawResponse>,
   variables?: TVariables | (({get: GetRecoilValue}) => ?TVariables),
-  mapResponse?: (TData, {get: GetRecoilValue}) => T,
+  mapResponse?: (TData, {get: GetRecoilValue, variables: TVariables}) => T,
   // The default value to use if variables returns null
   default?: T,
   mutations?: {
