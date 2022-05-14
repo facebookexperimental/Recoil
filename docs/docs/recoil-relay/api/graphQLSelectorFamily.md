@@ -26,14 +26,13 @@ function graphQLSelectorFamily<
     | GraphQLSubscription<TVariables, TData, TRawResponse>,
 
   variables:
-    | null
     | TVariables
     | P => null | TVariables
     | P => ({get: GetRecoilValue}) => null | TVariables,
 
-  mapReponse?:
-    | (TData, {get: GetRecoilValue}) => T
-    | (TData, {get: GetRecoilValue}) => P => T,
+  mapReponse:
+    | (TData, {get: GetRecoilValue, variables: TVariables}) => T
+    | (TData, {get: GetRecoilValue, variables: TVariables}) => P => T,
 
   default?:
     | T
@@ -50,9 +49,9 @@ function graphQLSelectorFamily<
 ```
 * **`key`** - A unique string used to identify the selector.
 * **`environment`** - The Relay Environment or an [`EnvironmentKey`](/docs/recoil-relay/api/EnvironmentKey) to match with an environment pprovided by a surrounding [`<RecoilRelayEnvironment>`](/docs/recoil-relay/api/RecoilRelayEnvironment).
-* **`query`** - A GraphQL [Query](https://graphql.org/learn/queries/) or Subscription.
+* **`query`** - A [GraphQL Query or Subscription](https://graphql.org/learn/queries/).
 * **`variables`** - Callback to provide the [variables](https://graphql.org/learn/queries/#variables) object to use for the query.  This may be the variables object directly or a callback which is provided the famliy parameter and returns the variables.  A nested callback can also be used that gets a `get()` function that allows the selector to reference other upstream Recoil atoms/selectors.  If `null` is provided as the variables then no query will be performed and the `default` value will be used instead.
-* **`mapResponse`** - Optional callbak to transform the GraphQL results for using as the value of the selector.  It is also provided a `get()` function so it can reference other Recoil atoms/selectors to perform the transformation.  A nested callback that receives the family parameter can also be used.
+* **`mapResponse`** - Callbak to transform the GraphQL results for using as the value of the selector.  It is also provided a `get()` function so it can reference other Recoil atoms/selectors to perform the transformation.  A nested callback that receives the family parameter can also be used.
 * **`default`** - The default value to use if `null` is provided as the `variables`.  A callback can be used which gets the family parameter as an argument.  If `default` is not provided then the selector will remain in a pending state.
 * **`mutations`** - Optional configuration of a [GraphQL Mutation](https://graphql.org/learn/queries/#mutations) and variables to commit if the selector is explicitly written to.
 ---
