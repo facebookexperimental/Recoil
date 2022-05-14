@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {EnvironmentKey} from './RecoilRelay_Environments';
@@ -62,7 +63,7 @@ function graphQLMutationEffect<
 }: {
   environment: IEnvironment | EnvironmentKey,
   mutation: Mutation<TVariables, TResponse, TRawResponse>,
-  variables: T => ?TVariables,
+  variables: T => TVariables | null,
   updater?: SelectorStoreUpdater<TResponse>,
   optimisticUpdater?: SelectorStoreUpdater<TResponse>,
   optimisticResponse?: TResponse,
