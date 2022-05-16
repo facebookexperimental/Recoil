@@ -98,7 +98,7 @@ function graphQLQueryEffect<
 }: {
   environment: IEnvironment | EnvironmentKey,
   query: Query<TVariables, TData, TRawResponse>,
-  variables: ?TVariables,
+  variables: TVariables | null,
   mapResponse?: TData => T,
   subscribeToLocalMutations_UNSTABLE?: boolean,
 }): AtomEffect<T> {

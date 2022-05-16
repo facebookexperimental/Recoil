@@ -64,8 +64,7 @@ function graphQLSelectorFamily<
   key,
   environment,
   query,
-  // $FlowIssue[incompatible-type]
-  variables = x => () => x,
+  variables,
   // $FlowIssue[incompatible-type]
   mapResponse = x => x,
   mutations,
@@ -76,9 +75,9 @@ function graphQLSelectorFamily<
   query:
     | Query<TVariables, TData, TRawResponse>
     | GraphQLSubscription<TVariables, TData, TRawResponse>,
-  variables?:
+  variables:
     | TVariables
-    | (P => ?TVariables | (({get: GetRecoilValue}) => ?TVariables)),
+    | (P => TVariables | null | (({get: GetRecoilValue}) => TVariables | null)),
   mapResponse?: (
     TData,
     {get: GetRecoilValue, variables: TVariables},
@@ -87,14 +86,17 @@ function graphQLSelectorFamily<
   default?: T | (P => T),
   mutations?: {
     mutation: Mutation<TMutationVariables, TMutationData, TMutationRawResponse>,
-    variables: T => ?TMutationVariables | (P => ?TMutationVariables),
+    variables: T =>
+      | TMutationVariables
+      | null
+      | (P => TMutationVariables | null),
   },
 }): P => RecoilState<T> {
   const internalAtoms = atomFamily<
     | {source: 'local', parameter: P, data: T}
     | {source: 'remote', response: TData}
     | DefaultValue,
-    ?TVariables,
+    TVariables | null,
   >({
     key,
     default: new DefaultValue(),
@@ -143,8 +145,9 @@ function graphQLSelectorFamily<
 
   function getVariables(parameter, get) {
     const variablesIntermediate:
-      | ?TVariables
-      | (({get: GetRecoilValue}) => ?TVariables) =
+      | null
+      | TVariables
+      | (({get: GetRecoilValue}) => TVariables | null) =
       typeof variables === 'function' ? variables(parameter) : variables;
     return typeof variablesIntermediate === 'function'
       ? variablesIntermediate({get})
