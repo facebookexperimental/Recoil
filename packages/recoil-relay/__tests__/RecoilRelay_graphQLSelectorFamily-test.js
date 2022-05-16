@@ -219,7 +219,12 @@ testRecoil('mapResponse', async () => {
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
     variables: id => ({id}),
-    mapResponse: data => data.feedback?.seen_count,
+    mapResponse:
+      (data, {variables}) =>
+      id => {
+        expect(variables).toEqual({id});
+        return data.feedback?.seen_count;
+      },
   });
 
   const c = renderElements(<ReadsAtom atom={query('ID')} />);
