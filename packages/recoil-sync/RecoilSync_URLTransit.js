@@ -101,7 +101,9 @@ function useRecoilURLSyncTransit({
   const reader = useMemo(
     () =>
       transit.reader('json', {
-        handlers: handlers.reduce((c, {tag, read}) => {
+        handlers: handlers.reduce<{
+          [string]: ($FlowFixMe) => $FlowFixMe,
+        }>((c, {tag, read}) => {
           c[tag] = read;
           return c;
         }, {}),
