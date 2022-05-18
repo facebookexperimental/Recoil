@@ -90,5 +90,8 @@ nightly-build-files
 # NPM Package lock since we use yarn.lock
 package-lock.json
 
+# Generated documentation from the docs branch
+/docs
+
 # Generated files for recoil-relay unit tests
 recoil-relay/__tests__/mock-graphql/__generated__
