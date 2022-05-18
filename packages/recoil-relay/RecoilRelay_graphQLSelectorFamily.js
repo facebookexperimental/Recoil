@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {EnvironmentKey} from './RecoilRelay_Environments';
@@ -25,6 +26,7 @@ const {DefaultValue, atomFamily, selectorFamily} = require('Recoil');
 const graphQLMutationEffect = require('./RecoilRelay_graphQLMutationEffect');
 const graphQLQueryEffect = require('./RecoilRelay_graphQLQueryEffect');
 const graphQLSubscriptionEffect = require('./RecoilRelay_graphQLSubscriptionEffect');
+const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 
 /**
  * graphQLSelectorFamily() implements a selectorFamily() that syncs with a
@@ -77,7 +79,10 @@ function graphQLSelectorFamily<
   variables?:
     | TVariables
     | (P => ?TVariables | (({get: GetRecoilValue}) => ?TVariables)),
-  mapResponse?: (TData, {get: GetRecoilValue}) => T | (P => T),
+  mapResponse?: (
+    TData,
+    {get: GetRecoilValue, variables: TVariables},
+  ) => T | (P => T),
   // The default value to use if variables returns null
   default?: T | (P => T),
   mutations?: {
@@ -136,17 +141,14 @@ function graphQLSelectorFamily<
       ].filter(Boolean),
   });
 
-  function getAtom(parameter, get) {
+  function getVariables(parameter, get) {
     const variablesIntermediate:
       | ?TVariables
       | (({get: GetRecoilValue}) => ?TVariables) =
       typeof variables === 'function' ? variables(parameter) : variables;
-    const variablesFinal: ?TVariables =
-      typeof variablesIntermediate === 'function'
-        ? variablesIntermediate({get})
-        : variablesIntermediate;
-
-    return internalAtoms(variablesFinal);
+    return typeof variablesIntermediate === 'function'
+      ? variablesIntermediate({get})
+      : variablesIntermediate;
   }
 
   const defaultValue: P => T = parameter =>
@@ -161,7 +163,8 @@ function graphQLSelectorFamily<
     get:
       parameter =>
       ({get}) => {
-        const result = get(getAtom(parameter, get));
+        const vars = getVariables(parameter, get);
+        const result = get(internalAtoms(vars));
         if (result instanceof DefaultValue) {
           return 'default' in options
             ? defaultValue(parameter)
@@ -170,7 +173,10 @@ function graphQLSelectorFamily<
         if (result.source === 'local') {
           return result.data;
         }
-        const mapped = mapResponse(result.response, {get});
+        const mapped = mapResponse(result.response, {
+          get,
+          variables: nullthrows(vars),
+        });
         return typeof mapped === 'function'
           ? // $FlowIssue[incompatible-use]
             mapped(parameter)
@@ -180,7 +186,7 @@ function graphQLSelectorFamily<
       parameter =>
       ({set, get}, newValue) =>
         set(
-          getAtom(parameter, get),
+          internalAtoms(getVariables(parameter, get)),
           newValue instanceof DefaultValue
             ? 'default' in options
               ? {source: 'local', parameter, data: defaultValue(parameter)}
