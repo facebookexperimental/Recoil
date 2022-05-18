@@ -36,7 +36,7 @@ function logError<T>(node: RecoilState<T>, msg) {
  * - `subscription`: The GraphQL subscription to query.
  * - `variables`: Variables object provided as input to GraphQL subscription.
  *   If null, then skip subscription and use default value.
- * - `mapResponse`: Optional callback to map the subscription response to the atom value.
+ * - `mapResponse`: Callback to map the subscription response to the atom value.
  */
 function graphQLSubscriptionEffect<
   TVariables: Variables,
@@ -47,13 +47,12 @@ function graphQLSubscriptionEffect<
   environment: environmentOpt,
   subscription,
   variables,
-  // $FlowIssue[incompatible-type]
-  mapResponse = x => x,
+  mapResponse,
 }: {
   environment: IEnvironment | EnvironmentKey,
   subscription: GraphQLSubscription<TVariables, TData, TRawResponse>,
   variables: TVariables | null,
-  mapResponse?: TData => T,
+  mapResponse: TData => T,
 }): AtomEffect<T> {
   return ({node, setSelf, trigger, storeID, parentStoreID_UNSTABLE}) => {
     if (variables == null) {

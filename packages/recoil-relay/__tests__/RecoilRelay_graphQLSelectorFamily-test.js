@@ -59,7 +59,8 @@ testRecoil('Relay Query with <RecoilRoot>', async () => {
     key: 'graphql query',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
-    variables: x => x,
+    variables: vars => vars,
+    mapResponse: data => data,
   });
 
   const c = renderElements(<ReadsAtom atom={query({id: 'ID'})} />);
@@ -91,7 +92,8 @@ testRecoil('Relay Query with Snapshot Preloaded', async () => {
     key: 'graphql snapshot query preloaded',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
-    variables: x => x,
+    variables: vars => vars,
+    mapResponse: data => data,
   });
 
   expect(snapshot.getLoadable(query({id: 'ID'})).getValue()).toEqual({
@@ -107,7 +109,8 @@ testRecoil('Relay Query Error with <RecoilRoot>', async () => {
     key: 'graphql query error',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
-    variables: x => x,
+    variables: vars => vars,
+    mapResponse: data => data,
   });
 
   const c = renderElements(<ReadsAtom atom={query({id: 'ID'})} />);
@@ -126,7 +129,8 @@ testRecoil('Relay Query Error with Snapshot', async () => {
     key: 'graphql snapshot query error',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
-    variables: x => x,
+    variables: vars => vars,
+    mapResponse: data => data,
   });
 
   expect(snapshot.getLoadable(query({id: 'ID'})).state).toBe('loading');
@@ -147,6 +151,7 @@ testRecoil('Relay Query that is already loaded', async () => {
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
     variables: {id: 'ID'},
+    mapResponse: data => data,
   });
 
   environment.mock.queueOperationResolver(operation =>
@@ -169,7 +174,8 @@ testRecoil('Relay Query Deferred', async () => {
     key: 'graphql query deferred',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
-    variables: x => x,
+    variables: vars => vars,
+    mapResponse: data => data,
   });
 
   const c = renderElements(<ReadsAtom atom={query({id: 'ID'})} />);
@@ -290,7 +296,8 @@ testRecoil('null variables', async () => {
     key: 'graphql null variables',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
-    variables: x => x,
+    variables: vars => vars,
+    mapResponse: data => data,
   });
 
   const c = renderElements(<ReadsAtom atom={query(null)} />);
@@ -306,8 +313,9 @@ testRecoil('null variables with default', async () => {
     key: 'graphql null variables with default',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
-    variables: () => null,
     default: id => 'DEFAULT-' + id,
+    variables: () => null,
+    mapResponse: data => data,
   });
 
   const c = renderElements(<ReadsAtom atom={query('ID')} />);

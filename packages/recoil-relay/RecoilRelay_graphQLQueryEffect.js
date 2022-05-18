@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {EnvironmentKey} from './RecoilRelay_Environments';
@@ -77,7 +78,7 @@ function subscibeToLocalRelayCache<
  * - `query`: The GraphQL query to query.
  * - `variables`: Variables object provided as input to GraphQL query.
  *   If null, then skip query and use default value.
- * - `mapResponse`: Optional callback to map the query response to the atom value.
+ * - `mapResponse`: Callback to map the query response to the atom value.
  * - `subscribeToLocalMutations_UNSTABLE` - By default this effect will subscribe to
  *   mutations from local `commitMutation()` or `graphQLMutationEffect()` for the
  *   same part of the graph.  If you also need to subscribe to remote mutations,
@@ -92,14 +93,13 @@ function graphQLQueryEffect<
   environment: environmentOpt,
   query,
   variables,
-  // $FlowIssue[incompatible-type]
-  mapResponse = x => x,
+  mapResponse,
   subscribeToLocalMutations_UNSTABLE = true,
 }: {
   environment: IEnvironment | EnvironmentKey,
   query: Query<TVariables, TData, TRawResponse>,
   variables: TVariables | null,
-  mapResponse?: TData => T,
+  mapResponse: TData => T,
   subscribeToLocalMutations_UNSTABLE?: boolean,
 }): AtomEffect<T> {
   return ({node, setSelf, trigger, storeID, parentStoreID_UNSTABLE}) => {

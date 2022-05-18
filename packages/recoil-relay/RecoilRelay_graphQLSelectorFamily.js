@@ -65,8 +65,7 @@ function graphQLSelectorFamily<
   environment,
   query,
   variables,
-  // $FlowIssue[incompatible-type]
-  mapResponse = x => x,
+  mapResponse,
   mutations,
   ...options
 }: {
@@ -78,7 +77,7 @@ function graphQLSelectorFamily<
   variables:
     | TVariables
     | (P => TVariables | null | (({get: GetRecoilValue}) => TVariables | null)),
-  mapResponse?: (
+  mapResponse: (
     TData,
     {get: GetRecoilValue, variables: TVariables},
   ) => T | (P => T),
