@@ -63,22 +63,19 @@ function graphQLSelector<
   query:
     | Query<TVariables, TData, TRawResponse>
     | GraphQLSubscription<TVariables, TData, TRawResponse>,
-  variables?: TVariables | (({get: GetRecoilValue}) => ?TVariables),
+  variables: TVariables | (({get: GetRecoilValue}) => TVariables | null),
   mapResponse?: (TData, {get: GetRecoilValue, variables: TVariables}) => T,
   // The default value to use if variables returns null
   default?: T,
   mutations?: {
     mutation: Mutation<TMutationVariables, TMutationData, TMutationRawResponse>,
-    variables: T => ?TMutationVariables,
+    variables: T => TMutationVariables | null,
   },
 }): RecoilState<T> {
   return graphQLSelectorFamily({
     ...options,
-    variables:
-      variables == null
-        ? undefined
-        : () => cbs =>
-            typeof variables === 'function' ? variables(cbs) : variables,
+    variables: () => cbs =>
+      typeof variables === 'function' ? variables(cbs) : variables,
     mutations: mutations == null ? undefined : {...mutations},
   })();
 }
