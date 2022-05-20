@@ -84,7 +84,7 @@ async function buildRecoil() {
     createErrorHandler('Failed to copy README.md'),
   );
   fs.copyFile(
-    `${projectRootDir}/CHANGELOG.md`,
+    `${projectRootDir}/CHANGELOG-recoil.md`,
     `${BUILD_TARGET}/recoil/CHANGELOG.md`,
     fs.constants.COPYFILE_FICLONE,
     createErrorHandler('Failed to copy CHANGELOG.md'),
@@ -150,16 +150,14 @@ async function buildRecoilSync() {
     createErrorHandler('Failed to copy package-for-release.json'),
   );
 
-  // TODO: add README.md for recoil-sync
   fs.copyFile(
-    `${projectRootDir}/README.md`,
+    `${projectRootDir}/README-recoil-sync.md`,
     `${BUILD_TARGET}/recoil-sync/README.md`,
     fs.constants.COPYFILE_FICLONE,
     createErrorHandler('Failed to copy README.md'),
   );
-  // TODO: add CHANGELOG.md for recoil-sync
   fs.copyFile(
-    `${projectRootDir}/CHANGELOG.md`,
+    `${projectRootDir}/CHANGELOG-recoil-sync.md`,
     `${BUILD_TARGET}/recoil-sync/CHANGELOG.md`,
     fs.constants.COPYFILE_FICLONE,
     createErrorHandler('Failed to copy CHANGELOG.md'),
