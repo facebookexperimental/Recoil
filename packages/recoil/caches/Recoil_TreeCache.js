@@ -104,7 +104,11 @@ class TreeCache<T = mixed> {
 
         // node now refers to the next node down in the tree
         const parent = node;
+        // $FlowFixMe[prop-missing]
+        // $FlowFixMe[incompatible-type]
         node = parent ? parent.branches.get(branchKey) : root;
+        // $FlowFixMe[prop-missing]
+        // $FlowFixMe[incompatible-type]
         node = node ?? {
           type: 'branch',
           nodeKey,
