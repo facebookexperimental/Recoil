@@ -329,7 +329,7 @@ const testGKs =
   (
     testDescription: string,
     assertionsFn: AssertionsFn,
-    {gks: additionalGKs = []}: TestOptions = {},
+    {gks: additionalGKs = []}: TestOptions = {...null},
   ) => {
     function runTests({
       strictMode,
