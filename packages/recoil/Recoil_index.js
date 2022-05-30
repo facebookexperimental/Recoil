@@ -45,6 +45,14 @@ export type {
 const {RecoilLoadable} = require('./adt/Recoil_Loadable');
 const {DefaultValue} = require('./core/Recoil_Node');
 const {RecoilRoot, useRecoilStoreID} = require('./core/Recoil_RecoilRoot');
+// const {
+//   RecoilRoot,
+//   useRecoilStoreID,
+//   getRecoil,
+//   getRecoilPromise,
+//   setRecoil,
+//   resetRecoil,
+// } = require('./core/Recoil_Nexus');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {retentionZone} = require('./core/Recoil_RetentionZone');
 const {freshSnapshot} = require('./core/Recoil_Snapshot');
@@ -95,6 +103,12 @@ module.exports = {
   RecoilRoot,
   useRecoilStoreID,
   useRecoilBridgeAcrossReactRoots_UNSTABLE: useRecoilBridgeAcrossReactRoots,
+
+  // Nexus outside React
+  // getRecoil,
+  // getRecoilPromise,
+  // setRecoil,
+  // resetRecoil,
 
   // Atoms/Selectors
   atom,

@@ -12,8 +12,8 @@
 
 import type {StoreID} from './Recoil_Keys';
 import type {MutableSource} from './Recoil_ReactMode';
-import type {RecoilValue} from './Recoil_RecoilValue';
-import type {MutableSnapshot} from './Recoil_Snapshot';
+import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
+import type {MutableSnapshot, Snapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
 
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
@@ -357,19 +357,19 @@ function RecoilRoot_INTERNAL({
 }: InternalProps): React.Node {
   // prettier-ignore
   // @fb-only: useEffect(() => {
-    // @fb-only: if (gkx('recoil_usage_logging')) {
-      // @fb-only: try {
-        // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
-          // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
-          // @fb-only: path: URI.getRequestURI().getPath(),
-        // @fb-only: }));
-      // @fb-only: } catch {
-        // @fb-only: recoverableViolation(
-          // @fb-only: 'Error when logging Recoil Usage event',
-          // @fb-only: 'recoil',
-        // @fb-only: );
-      // @fb-only: }
-    // @fb-only: }
+  // @fb-only: if (gkx('recoil_usage_logging')) {
+  // @fb-only: try {
+  // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+  // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
+  // @fb-only: path: URI.getRequestURI().getPath(),
+  // @fb-only: }));
+  // @fb-only: } catch {
+  // @fb-only: recoverableViolation(
+  // @fb-only: 'Error when logging Recoil Usage event',
+  // @fb-only: 'recoil',
+  // @fb-only: );
+  // @fb-only: }
+  // @fb-only: }
   // @fb-only: }, []);
 
   let storeStateRef: {current: StoreState}; // eslint-disable-line prefer-const
