@@ -23,6 +23,8 @@ const externalLibs = [
   'react-native',
   'recoil',
   'transit-js',
+  'relay-runtime',
+  'react-relay',
 ];
 
 const defaultNodeResolveConfig = {};
@@ -92,36 +94,80 @@ const productionPlugins = [
   terser({mangle: false}),
 ];
 
-const outputFolder = 'build';
+const nativePlugins = commonPlugins.map(plugin =>
+  // Replace the default nodeResolvePlugin
+  plugin !== nodeResolvePlugin ? plugin :
+    nodeResolve({
+      ...defaultNodeResolveConfig,
+      extensions: ['.native.js', '.js'],
+    })
+);
+
+export function createInputOption(buildType, folder, inputFile) {
+  switch (buildType) {
+    case 'common':
+      return {
+        input: `packages/${folder}/${inputFile}`,
+        external: externalLibs,
+        plugins: commonPlugins,
+      };
+    case 'dev':
+      return {
+        input: `packages/${folder}/${inputFile}`,
+        external: externalLibs,
+        plugins: developmentPlugins,
+        };
+    case 'prod':
+      return {
+        input: `packages/${folder}/${inputFile}`,
+        external: externalLibs,
+        plugins: productionPlugins,
+        };
+    case 'native':
+      return {
+        input: `packages/${folder}/${inputFile}`,
+        external: externalLibs,
+        plugins: nativePlugins,
+        };
+    default:
+      throw new Error(`Unknown input type: ${buildType}`);
+  }
+}
+
+const BUILD_TARGET = 'build';
+
 const globals = {
   react: 'React',
   'react-dom': 'ReactDOM',
   recoil: 'Recoil',
   'transit-js': 'transit',
+  'relay-runtime': 'relay-runtime',
+  'react-relay': 'react-relay',
 };
-export function createOutputOption(type, folder, filename, UMDName) {
-  switch (type) {
+
+export function createOutputOption(packageType, folder, UMDName) {
+  switch (packageType) {
     case 'cjs':
       return {
-        file: `${outputFolder}/${folder}/cjs/${filename}.js`,
+        file: `${BUILD_TARGET}/${folder}/cjs/index.js`,
         format: 'cjs',
         exports: 'named',
       };
     case 'es':
       return {
-        file: `${outputFolder}/${folder}/es/${filename}.js`,
+        file: `${BUILD_TARGET}/${folder}/es/index.js`,
         format: 'es',
         exports: 'named',
       };
     case 'es-browsers':
       return {
-        file: `${outputFolder}/${folder}/es/${filename}.mjs`,
+        file: `${BUILD_TARGET}/${folder}/es/index.mjs`,
         format: 'es',
         exports: 'named',
       };
     case 'umd':
       return {
-        file: `${outputFolder}/${folder}/umd/${filename}.js`,
+        file: `${BUILD_TARGET}/${folder}/umd/index.js`,
         format: 'umd',
         name: UMDName,
         exports: 'named',
@@ -129,7 +175,7 @@ export function createOutputOption(type, folder, filename, UMDName) {
       };
     case 'umd-prod':
       return {
-        file: `${outputFolder}/${folder}/umd/${filename}.min.js`,
+        file: `${BUILD_TARGET}/${folder}/umd/index.min.js`,
         format: 'umd',
         name: UMDName,
         exports: 'named',
@@ -137,64 +183,11 @@ export function createOutputOption(type, folder, filename, UMDName) {
       };
     case 'native':
       return {
-        file: `${outputFolder}/${folder}/native/${filename}.js`,
+        file: `${BUILD_TARGET}/${folder}/native/index.js`,
         format: 'es',
         exports: 'named',
       };
     default:
-      throw new Error(`Unknown output type: ${type}`);
+      throw new Error(`Unknown output type: ${packageType}`);
   }
 }
-
-const recoilInputFile = 'packages/recoil/Recoil_index.js';
-export const recoilInputOptions = {
-  common: {
-    input: recoilInputFile,
-    external: externalLibs,
-    plugins: commonPlugins,
-  },
-  dev: {
-    input: recoilInputFile,
-    external: externalLibs,
-    plugins: developmentPlugins,
-  },
-  prod: {
-    input: recoilInputFile,
-    external: externalLibs,
-    plugins: productionPlugins,
-  },
-  native: {
-    input: recoilInputFile,
-    external: externalLibs,
-    plugins: commonPlugins.map(plugin => {
-      // Replace the default nodeResolve plugin
-      if (plugin === nodeResolvePlugin) {
-        return nodeResolve({
-          ...defaultNodeResolveConfig,
-          extensions: ['.native.js', '.js'],
-        });
-      }
-
-      return plugin;
-    }),
-  },
-};
-
-const recoilSyncInputFile = 'packages/recoil-sync/RecoilSync_index.js';
-export const recoilSyncInputOptions = {
-  common: {
-    input: recoilSyncInputFile,
-    external: externalLibs,
-    plugins: commonPlugins,
-  },
-  dev: {
-    input: recoilSyncInputFile,
-    external: externalLibs,
-    plugins: developmentPlugins,
-  },
-  prod: {
-    input: recoilSyncInputFile,
-    external: externalLibs,
-    plugins: productionPlugins,
-  },
-};

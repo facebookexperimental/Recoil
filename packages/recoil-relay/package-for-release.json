@@ -1,7 +1,7 @@
 {
-  "name": "recoil-sync",
+  "name": "recoil-relay",
   "version": "0.1.0",
-  "description": "recoil-sync provides an add-on library to help synchronize Recoil state with external systems",
+  "description": "recoil-relay helps Recoil perform type safe and efficient queries using GraphQL with Relay",
   "main": "cjs/index.js",
   "module": "es/index.js",
   "unpkg": "umd/index.js",
@@ -9,10 +9,10 @@
   "files": ["umd", "es", "cjs", "index.d.ts"],
   "repository": "https://github.com/facebookexperimental/Recoil.git",
   "license": "MIT",
-  "dependencies": {
-    "transit-js": "^0.8.874"
-  },
+  "dependencies": {},
   "peerDependencies": {
-    "recoil": ">=0.7.3"
+    "recoil": ">=0.7.3",
+    "react-relay": ">=13.2.0",
+    "relay-runtime": ">=13.2.0"
   }
 }
