@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "lib": ["es6"],
+    "lib": ["es6", "dom"],
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strictFunctionTypes": true,
@@ -14,10 +14,11 @@
   },
   "files": [
     "index.d.ts",
-    "refine.d.ts",
-    "recoil-sync.d.ts",
     "tests.ts",
+    "refine.d.ts",
     "refine-test.ts",
-    "recoil-sync-test.ts"
+    "recoil-sync.d.ts",
+    "recoil-sync-test.ts",
+    "recoil-relay.d.ts"
   ]
 }
