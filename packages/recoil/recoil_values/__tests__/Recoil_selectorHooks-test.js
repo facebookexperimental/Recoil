@@ -61,7 +61,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({act} = require('ReactTestUtils'));
 
   ({batchUpdates} = require('../../core/Recoil_Batching'));
-  ({RecoilRoot} = require('../../core/Recoil_RecoilRoot'));
+  ({RecoilRoot} = require('../../core/Recoil_RecoilNexus'));
   atom = require('../../recoil_values/Recoil_atom');
   constSelector = require('../../recoil_values/Recoil_constSelector');
   errorSelector = require('../../recoil_values/Recoil_errorSelector');
