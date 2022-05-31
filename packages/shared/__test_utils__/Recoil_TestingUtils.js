@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {Store} from '../../recoil/core/Recoil_State';
@@ -329,7 +330,7 @@ const testGKs =
   (
     testDescription: string,
     assertionsFn: AssertionsFn,
-    {gks: additionalGKs = []}: TestOptions = {...null},
+    {gks: additionalGKs = []}: TestOptions = {gks: []},
   ) => {
     function runTests({
       strictMode,
