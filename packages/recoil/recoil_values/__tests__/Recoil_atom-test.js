@@ -53,7 +53,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
   ({RecoilRoot} = require('../../core/Recoil_RecoilNexus'));
-  ({useRecoilStoreID} = require('../../core/Recoil_RecoilNexus'));
+  ({useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
   ({isRecoilValue} = require('../../core/Recoil_RecoilValue'));
   ({RecoilLoadable, isLoadable} = require('../../adt/Recoil_Loadable'));
   ({

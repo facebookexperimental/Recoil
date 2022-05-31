@@ -27,6 +27,8 @@ let React,
   renderElements,
   renderUnwrappedElements,
   RecoilRoot,
+  getRecoil,
+  setRecoil,
   useStoreRef;
 
 const testRecoil = getRecoilTestFn(() => {
@@ -479,7 +481,7 @@ describe('override prop', () => {
     const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
     const container = renderElements(
-      <RecoilRoot>
+      <RecoilRoot override={false}>
         <ReadsWritesAtom />
       </RecoilRoot>,
     );

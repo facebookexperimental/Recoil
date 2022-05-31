@@ -89,21 +89,21 @@ type Props =
     };
 
 function RecoilRoot(props: Props): React.Node {
-  const {override, children, ...propsExceptOverrideAndChildren} = props;
+  const {override, children, ...propsExceptOverride} = props;
 
   const ancestorStoreRef = useStoreRef();
   if (override === false && ancestorStoreRef.current !== defaultStore) {
     // If ancestorStoreRef.current !== defaultStore, it means that this
     // RecoilRoot is not nested within another.
-    return children;
+    return (
+      <>
+        <RecoilNexus />
+        {props.children}
+      </>
+    );
   }
 
-  return (
-    <RecoilRoot_INTERNAL {...propsExceptOverrideAndChildren}>
-      <RecoilNexus />
-      {children}
-    </RecoilRoot_INTERNAL>
-  );
+  return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
 }
 
 function getRecoil<T>(atom: RecoilValue<T>): T {
