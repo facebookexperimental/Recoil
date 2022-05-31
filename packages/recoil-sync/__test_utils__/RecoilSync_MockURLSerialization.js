@@ -63,11 +63,11 @@ function TestURLSync({
   return null;
 }
 
-function encodeState(obj) {
+function encodeState(obj: {...}) {
   return encodeURIComponent(JSON.stringify(obj));
 }
 
-function encodeURLPart(href: string, loc: LocationOption, obj): string {
+function encodeURLPart(href: string, loc: LocationOption, obj: {...}): string {
   const url = new URL(href);
   switch (loc.part) {
     case 'href':

@@ -9,8 +9,9 @@
  * @format
  */
 'use strict';
-
 import type {AtomEffect, Loadable, RecoilState, StoreID} from 'Recoil';
+import type {RecoilValueInfo} from 'Recoil_FunctionalCore';
+import type {RecoilValue} from 'Recoil_RecoilValue';
 import type {Checker} from 'refine';
 
 const {
@@ -257,10 +258,10 @@ function writeAtomItemsToDiff<T>(
         }".`,
       );
     });
-  const read = itemKey =>
+  const read = (itemKey: ItemKey) =>
     diff.has(itemKey) ? diff.get(itemKey) : readFromStorageRequired(itemKey);
-  const write = <S>(k, l: DefaultValue | S) => void diff.set(k, l);
-  const reset = k => void diff.set(k, DEFAULT_VALUE);
+  const write = <S>(k: ItemKey, l: DefaultValue | S) => void diff.set(k, l);
+  const reset = (k: ItemKey) => void diff.set(k, DEFAULT_VALUE);
 
   options.write(
     {write, reset, read},
@@ -272,7 +273,9 @@ function writeAtomItemsToDiff<T>(
 const itemsFromSnapshot = (
   recoilStoreID: StoreID,
   storeKey: StoreKey,
-  getInfo,
+  getInfo:
+    | (<T>(RecoilValue<T>) => RecoilValueInfo<T>)
+    | (<S>(RecoilValue<S>) => RecoilValueInfo<S>),
 ): ItemSnapshot => {
   const items: ItemSnapshot = new Map();
   for (const [, {atom, effects}] of registries.getAtomRegistry(
@@ -298,7 +301,9 @@ function getWriteInterface(
   recoilStoreID: StoreID,
   storeKey: StoreKey,
   diff: ItemDiff,
-  getInfo,
+  getInfo:
+    | (<T>(RecoilValue<T>) => RecoilValueInfo<T>)
+    | (<S>(RecoilValue<S>) => RecoilValueInfo<S>),
 ): WriteInterface {
   // Use a Proxy so we only generate `allItems` if it's actually used.
   return lazyProxy(

@@ -10,6 +10,8 @@
  */
 
 'use strict';
+import type {RelayMockEnvironment} from '../../../../relay/oss/relay-test-utils/RelayModernMockEnvironment';
+import type {Node} from 'react';
 
 const {
   getRecoilTestFn,
@@ -78,13 +80,17 @@ describe('Multiple Environments', () => {
       ],
     });
 
-    function AssertEnvironment({environment}) {
+    function AssertEnvironment({
+      environment,
+    }: $TEMPORARY$object<{environment: RelayMockEnvironment}>) {
       expect(environment).toBe(useRelayEnvironment());
       return null;
     }
 
     let swapEnvironments;
-    function RegisterRelayEnvironments({children}) {
+    function RegisterRelayEnvironments({
+      children,
+    }: $TEMPORARY$object<{children: Array<Node>}>) {
       const [changeEnv, setChangeEnv] = useState(false);
       swapEnvironments = () => setChangeEnv(true);
       return (
@@ -156,13 +162,17 @@ describe('Multiple Environments', () => {
       mapResponse: data => data.feedback?.seen_count,
     });
 
-    function AssertEnvironment({environment}) {
+    function AssertEnvironment({
+      environment,
+    }: $TEMPORARY$object<{environment: RelayMockEnvironment}>) {
       expect(environment).toBe(useRelayEnvironment());
       return null;
     }
 
     let swapEnvironments;
-    function RegisterRelayEnvironments({children}) {
+    function RegisterRelayEnvironments({
+      children,
+    }: $TEMPORARY$object<{children: Array<Node>}>) {
       const [changeEnv, setChangeEnv] = useState(false);
       swapEnvironments = () => setChangeEnv(true);
       return (

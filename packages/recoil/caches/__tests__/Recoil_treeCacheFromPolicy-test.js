@@ -10,6 +10,7 @@
  */
 
 'use strict';
+import type {NodeKey} from 'Recoil_Keys';
 
 const {
   getRecoilTestFn,
@@ -21,7 +22,7 @@ const testRecoil = getRecoilTestFn(() => {
   treeCacheFromPolicy = require('../Recoil_treeCacheFromPolicy');
 });
 
-const valGetterFromPath = path => nodeKey =>
+const valGetterFromPath = path => (nodeKey: NodeKey) =>
   path.find(([k]) => k === nodeKey)?.[1];
 const clonePath = path => JSON.parse(JSON.stringify(path));
 

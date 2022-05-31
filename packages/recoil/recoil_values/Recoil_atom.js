@@ -212,7 +212,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
   const cleanupEffectsByStore: Map<Store, Array<() => void>> = new Map();
 
-  function maybeFreezeValueOrPromise(valueOrPromise) {
+  function maybeFreezeValueOrPromise(valueOrPromise: mixed) {
     if (__DEV__) {
       if (options.dangerouslyAllowMutability !== true) {
         if (isPromise(valueOrPromise)) {
@@ -372,7 +372,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               store,
               node,
               typeof valueOrUpdater === 'function'
-                ? currentValue => {
+                ? (currentValue: $FlowFixMe) => {
                     const newValue = unwrap(
                       // cast to any because we can't restrict T from being a function without losing support for opaque types
                       (valueOrUpdater: any)(currentValue), // flowlint-line unclear-type:off
@@ -384,10 +384,12 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
             );
           }
         };
-      const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE);
+      const resetSelf = (effect: AtomEffect<T>) => () =>
+        setSelf(effect)(DEFAULT_VALUE);
 
       const onSet =
-        effect => (handler: (T, T | DefaultValue, boolean) => void) => {
+        (effect: AtomEffect<T>) =>
+        (handler: (T, T | DefaultValue, boolean) => void) => {
           const {release} = store.subscribeToTransactions(currentStore => {
             // eslint-disable-next-line prefer-const
             let {currentTree, previousTree} = currentStore.getState();
@@ -481,7 +483,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     return cleanupAtom;
   }
 
-  function peekAtom(_store, state: TreeState): Loadable<T> {
+  function peekAtom(_store: Store, state: TreeState): Loadable<T> {
     return (
       state.atomValues.get(key) ??
       cachedAnswerForUnvalidatedValue ??
@@ -645,7 +647,7 @@ function atomWithFallback<T>(
         ? undefined
         : {
             ...options.persistence_UNSTABLE,
-            validator: storedValue =>
+            validator: (storedValue: mixed) =>
               storedValue instanceof DefaultValue
                 ? storedValue
                 : nullthrows(options.persistence_UNSTABLE).validator(

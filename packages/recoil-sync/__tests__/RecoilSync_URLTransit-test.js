@@ -105,12 +105,21 @@ const HANDLERS = [
   {
     tag: 'USER',
     class: MyClass,
-    write: x => [x.prop],
-    read: ([x]) => new MyClass(x),
+    write: (x: $FlowFixMe) => [x.prop],
+    read: ([x]: $FlowFixMe) => new MyClass(x),
   },
 ];
 
-async function testTransit(loc, atoms, contents, beforeURL, afterURL) {
+async function testTransit(
+  loc:
+    | $TEMPORARY$object<{param?: string, part: 'queryParams'}>
+    | $TEMPORARY$object<{part: 'hash'}>
+    | $TEMPORARY$object<{part: 'search'}>,
+  atoms,
+  contents: string,
+  beforeURL: string,
+  afterURL: string,
+) {
   history.replaceState(null, '', beforeURL);
 
   const container = renderElements(

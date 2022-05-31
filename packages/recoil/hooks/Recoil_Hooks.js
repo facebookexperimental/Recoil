@@ -9,12 +9,12 @@
  * @format
  */
 'use strict';
-
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
 import type {NodeKey} from '../core/Recoil_State';
+import type {StoreRef} from 'Recoil_State';
 
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE} = require('../core/Recoil_Node');
@@ -48,7 +48,7 @@ const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 function handleLoadable<T>(
   loadable: Loadable<T>,
   recoilValue: RecoilValue<T>,
-  storeRef,
+  storeRef: StoreRef,
 ): T {
   // We can't just throw the promise we are waiting on to Suspense.  If the
   // upstream dependencies change it may produce a state in which the component
@@ -71,7 +71,19 @@ function handleLoadable<T>(
   }
 }
 
-function validateRecoilValue<T>(recoilValue: RecoilValue<T>, hookName) {
+function validateRecoilValue<T>(
+  recoilValue: RecoilValue<T>,
+  hookName:
+    | $TEMPORARY$string<'useRecoilState'>
+    | $TEMPORARY$string<'useRecoilStateLoadable'>
+    | $TEMPORARY$string<'useRecoilState_TRANSITION_SUPPORT_UNSTABLE'>
+    | $TEMPORARY$string<'useRecoilValue'>
+    | $TEMPORARY$string<'useRecoilValueLoadable'>
+    | $TEMPORARY$string<'useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE'>
+    | $TEMPORARY$string<'useRecoilValue_TRANSITION_SUPPORT_UNSTABLE'>
+    | $TEMPORARY$string<'useResetRecoilState'>
+    | $TEMPORARY$string<'useSetRecoilState'>,
+) {
   if (!isRecoilValue(recoilValue)) {
     throw err(
       `Invalid argument to ${hookName}: expected an atom or selector but got ${String(

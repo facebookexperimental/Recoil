@@ -147,10 +147,10 @@ export type RecoilURLSyncOptions = {
 };
 
 const DEFAULT_BROWSER_INTERFACE = {
-  replaceURL: url => history.replaceState(null, '', url),
-  pushURL: url => history.pushState(null, '', url),
+  replaceURL: (url: string) => history.replaceState(null, '', url),
+  pushURL: (url: string) => history.pushState(null, '', url),
   getURL: () => window.document.location,
-  listenChangeURL: handleUpdate => {
+  listenChangeURL: (handleUpdate: () => void) => {
     window.addEventListener('popstate', handleUpdate);
     return () => window.removeEventListener('popstate', handleUpdate);
   },

@@ -16,6 +16,7 @@ import type {
 } from '../../core/Recoil_RecoilValue';
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
 import type {NodeKey} from 'Recoil_Keys';
+import type {Node} from 'react';
 
 const {
   getRecoilTestFn,
@@ -168,12 +169,14 @@ testRecoil(
       return null;
     }
     let setVisible;
-    function Switch({children}) {
+    function Switch({children}: $TEMPORARY$object<{children: Node}>) {
       const [visible, mySetVisible] = useState(false);
       setVisible = mySetVisible;
       return visible ? children : null;
     }
-    function MyReadsAtom({getAtom}) {
+    function MyReadsAtom({
+      getAtom,
+    }: $TEMPORARY$object<{getAtom: () => null | RecoilState<number>}>) {
       const [value] = useRecoilState((getAtom(): any)); // flowlint-line unclear-type:off
       return value;
     }

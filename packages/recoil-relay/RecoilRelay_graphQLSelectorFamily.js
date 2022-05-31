@@ -142,7 +142,7 @@ function graphQLSelectorFamily<
       ].filter(Boolean),
   });
 
-  function getVariables(parameter, get) {
+  function getVariables(parameter: P, get: GetRecoilValue) {
     const variablesIntermediate:
       | null
       | TVariables

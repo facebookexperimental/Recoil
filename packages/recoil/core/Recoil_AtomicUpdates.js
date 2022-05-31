@@ -40,7 +40,7 @@ class TransactionInterfaceImpl {
   _treeState: TreeState;
   _changes: Map<NodeKey, mixed>;
 
-  constructor(store, treeState) {
+  constructor(store: Store, treeState: TreeState) {
     this._store = store;
     this._treeState = treeState;
     this._changes = new Map();

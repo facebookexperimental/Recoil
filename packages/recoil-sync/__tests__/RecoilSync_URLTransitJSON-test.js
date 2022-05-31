@@ -64,7 +64,7 @@ const atomObject = atom({
   ],
 });
 
-async function testURL(contents, beforeURL, afterURL) {
+async function testURL(contents: string, beforeURL: string, afterURL: string) {
   history.replaceState(null, '', beforeURL);
 
   const container = renderElements(

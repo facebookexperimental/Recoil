@@ -9,6 +9,7 @@
  * @format
  */
 'use strict';
+import type {RecoilInterface} from 'Recoil_Hooks';
 
 const {
   getRecoilTestFn,
@@ -41,7 +42,7 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 testRecoil('Interface for non-react code - useRecoilState', () => {
-  function nonReactCode(recoilInterface) {
+  function nonReactCode(recoilInterface: RecoilInterface) {
     return recoilInterface.getRecoilState(counterAtom);
   }
 
@@ -60,7 +61,7 @@ testRecoil('Interface for non-react code - useRecoilState', () => {
 });
 
 testRecoil('Interface for non-react code - useRecoilStateNoThrow', () => {
-  function nonReactCode(recoilInterface) {
+  function nonReactCode(recoilInterface: RecoilInterface) {
     const [loadable, setValue] =
       recoilInterface.getRecoilStateLoadable(counterAtom);
     const value = loadable.state === 'hasValue' ? loadable.contents : null;
@@ -84,7 +85,7 @@ testRecoil('Interface for non-react code - useRecoilStateNoThrow', () => {
 testRecoil(
   'Interface for non-react code - useRecoilValue, useSetRecoilState',
   () => {
-    function nonReactCode(recoilInterface) {
+    function nonReactCode(recoilInterface: RecoilInterface) {
       return [
         recoilInterface.getRecoilValue(counterAtom),
         recoilInterface.getSetRecoilState(counterAtom),
@@ -107,7 +108,7 @@ testRecoil(
 );
 
 testRecoil('Interface for non-react code - useRecoilValueNoThrow', () => {
-  function nonReactCode(recoilInterface) {
+  function nonReactCode(recoilInterface: RecoilInterface) {
     const value = recoilInterface
       .getRecoilValueLoadable(counterAtom)
       .valueMaybe();

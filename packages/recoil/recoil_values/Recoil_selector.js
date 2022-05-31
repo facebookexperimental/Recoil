@@ -1026,7 +1026,7 @@ function selector<T>(
     executionInfoMap.delete(store);
   }
 
-  function isLatestExecution(store: Store, executionID): boolean {
+  function isLatestExecution(store: Store, executionID: ?ExecutionID): boolean {
     return executionID === getExecutionInfo(store)?.executionID;
   }
 
@@ -1072,7 +1072,7 @@ function selector<T>(
     }
   }
 
-  function detectCircularDependencies(fn) {
+  function detectCircularDependencies(fn: () => Loadable<T>) {
     if (dependencyStack.includes(key)) {
       const message = `Recoil selector has circular dependencies: ${dependencyStack
         .slice(dependencyStack.indexOf(key))
@@ -1125,7 +1125,11 @@ function selector<T>(
      * ES5 strict mode prohibits defining non-top-level function declarations,
      * so don't use function declaration syntax here
      */
-    const selectorSet = (store, state, newValue): AtomWrites => {
+    const selectorSet = (
+      store: Store,
+      state: TreeState,
+      newValue: T | DefaultValue,
+    ): AtomWrites => {
       let syncSelectorSetFinished = false;
       const writes: AtomWrites = new Map();
 

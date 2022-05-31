@@ -31,7 +31,7 @@ const MIXED_CHECKER: Checker<mixed> = value => success(value, []);
 function literal<T: string | boolean | number | null | void>(
   literalValue: T,
 ): Checker<T> {
-  const str = value => JSON.stringify(value);
+  const str = (value: T) => JSON.stringify(value);
   return (value, path = new Path()) => {
     return value === literalValue
       ? success(literalValue, [])

@@ -34,7 +34,14 @@ describe('Test URL Persistence', () => {
     history.replaceState(null, '', '/path/page.html?foo=bar#anchor');
   });
 
-  function testWriteToURL(loc, remainder) {
+  function testWriteToURL(
+    loc:
+      | $TEMPORARY$object<{param?: string, part: 'queryParams'}>
+      | $TEMPORARY$object<{part: 'hash'}>
+      | $TEMPORARY$object<{part: 'href'}>
+      | $TEMPORARY$object<{part: 'search'}>,
+    remainder: () => void,
+  ) {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',
@@ -137,7 +144,13 @@ describe('Test URL Persistence', () => {
     ]);
   });
 
-  function testReadFromURL(loc) {
+  function testReadFromURL(
+    loc:
+      | $TEMPORARY$object<{param?: string, part: 'queryParams'}>
+      | $TEMPORARY$object<{part: 'hash'}>
+      | $TEMPORARY$object<{part: 'href'}>
+      | $TEMPORARY$object<{part: 'search'}>,
+  ) {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',

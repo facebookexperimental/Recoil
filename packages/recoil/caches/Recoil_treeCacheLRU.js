@@ -18,7 +18,7 @@ const {TreeCache} = require('./Recoil_TreeCache');
 function treeCacheLRU<T>({
   name,
   maxSize,
-  mapNodeValue = v => v,
+  mapNodeValue = (v: mixed) => v,
 }: {
   name?: string,
   maxSize: number,

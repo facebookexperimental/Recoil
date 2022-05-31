@@ -71,7 +71,15 @@ const atomDate = atom({
   effects: [syncEffect({refine: jsonDate(), syncDefault: true})],
 });
 
-async function testJSON(loc, contents, beforeURL, afterURL) {
+async function testJSON(
+  loc:
+    | $TEMPORARY$object<{param?: string, part: 'queryParams'}>
+    | $TEMPORARY$object<{part: 'hash'}>
+    | $TEMPORARY$object<{part: 'search'}>,
+  contents: string,
+  beforeURL: string,
+  afterURL: string,
+) {
   history.replaceState(null, '', beforeURL);
 
   const container = renderElements(

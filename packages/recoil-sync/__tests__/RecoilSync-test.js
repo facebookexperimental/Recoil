@@ -978,7 +978,12 @@ test('Persist on read - async', async () => {
 });
 
 test('Sync based on component props', async () => {
-  function SyncWithProps(props) {
+  function SyncWithProps(
+    props: $TEMPORARY$object<{
+      eggs: $TEMPORARY$string<'EGGS'>,
+      spam: $TEMPORARY$string<'SPAM'>,
+    }>,
+  ) {
     useRecoilSync({
       read: itemKey => (itemKey in props ? props[itemKey] : new DefaultValue()),
     });
@@ -1375,7 +1380,7 @@ test('Unregister store and atoms', () => {
     subscriberRefCounts[idx] = (subscriberRefCounts[idx] ?? 0) + 1;
     return () => unregister(idx);
   });
-  function TestSyncUnregister({idx}) {
+  function TestSyncUnregister({idx}: $TEMPORARY$object<{idx: number}>) {
     const listen = useCallback(() => register(idx), [idx]);
     useRecoilSync({listen});
     return null;

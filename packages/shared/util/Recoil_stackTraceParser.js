@@ -99,7 +99,7 @@ function parseChrome(line: string): ?Frame {
 const winjsRe =
   /^\s*at (?:((?:\[object object\])?.+) )?\(?((?:file|ms-appx|https?|webpack|blob):.*?):(\d+)(?::(\d+))?\)?\s*$/i;
 
-function parseWinjs(line): ?Frame {
+function parseWinjs(line: string): ?Frame {
   const parts = winjsRe.exec(line);
 
   if (!parts) {
@@ -119,7 +119,7 @@ const geckoRe =
   /^\s*(.*?)(?:\((.*?)\))?(?:^|@)((?:file|https?|blob|chrome|webpack|resource|\[native).*?|[^@]*bundle)(?::(\d+))?(?::(\d+))?\s*$/i;
 const geckoEvalRe = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
 
-function parseGecko(line): ?Frame {
+function parseGecko(line: string): ?Frame {
   const parts = geckoRe.exec(line);
 
   if (!parts) {
@@ -148,7 +148,7 @@ function parseGecko(line): ?Frame {
 const javaScriptCoreRe =
   /^\s*(?:([^@]*)(?:\((.*?)\))?@)?(\S.*?):(\d+)(?::(\d+))?\s*$/i;
 
-function parseJSC(line): ?Frame {
+function parseJSC(line: string): ?Frame {
   const parts = javaScriptCoreRe.exec(line);
 
   if (!parts) {
@@ -167,7 +167,7 @@ function parseJSC(line): ?Frame {
 const nodeRe =
   /^\s*at (?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
 
-function parseNode(line): ?Frame {
+function parseNode(line: string): ?Frame {
   const parts = nodeRe.exec(line);
 
   if (!parts) {

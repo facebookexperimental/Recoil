@@ -6,8 +6,8 @@
  * @format
  */
 'use strict';
-
 import type {Store} from '../Recoil_State';
+import type {MutableSnapshot} from 'Recoil_Snapshot';
 
 const {
   getRecoilTestFn,
@@ -57,7 +57,7 @@ describe('initializeState', () => {
     });
     const mySelector = constSelector(myAtom);
 
-    function initializeState({set, getLoadable}) {
+    function initializeState({set, getLoadable}: MutableSnapshot) {
       expect(getLoadable(myAtom).contents).toEqual('DEFAULT');
       expect(getLoadable(mySelector).contents).toEqual('DEFAULT');
       set(myAtom, 'INITIALIZE');
@@ -86,7 +86,7 @@ describe('initializeState', () => {
       set: ({set}, newValue) => set(myAtom, newValue),
     });
 
-    function initializeState({set, getLoadable}) {
+    function initializeState({set, getLoadable}: MutableSnapshot) {
       expect(getLoadable(myAtom).contents).toEqual('DEFAULT');
       expect(getLoadable(mySelector).contents).toEqual('DEFAULT');
       set(mySelector, 'INITIALIZE');
@@ -123,7 +123,7 @@ describe('initializeState', () => {
         ],
       });
 
-      function initializeState({set}) {
+      function initializeState({set}: MutableSnapshot) {
         set(myAtom, current => {
           // Effects are run first
           expect(current).toEqual('EFFECT');

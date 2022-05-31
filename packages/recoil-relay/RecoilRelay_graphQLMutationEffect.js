@@ -27,7 +27,7 @@ const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViola
 
 // TODO Use async atom support to set atom to error state.
 // For now, log as a recoverableViolation() so errors aren't lost.
-function logError<T>(node: RecoilState<T>, msg) {
+function logError<T>(node: RecoilState<T>, msg: string) {
   recoverableViolation(
     `Error syncing atom "${node.key}" with GraphQL: ${msg}`,
     'recoil',

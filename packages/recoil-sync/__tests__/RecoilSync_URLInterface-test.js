@@ -26,18 +26,18 @@ const urls: Array<string> = [];
 const subscriptions: Set<() => void> = new Set();
 const currentURL = () => urls[urls.length - 1];
 const link = window.document.createElement('a');
-const absoluteURL = url => {
+const absoluteURL = (url: string) => {
   link.href = url;
   return link.href;
 };
 const expectURL = parts => testExpectURL(parts, currentURL());
 const mockBrowserURL = {
-  replaceURL: url => {
+  replaceURL: (url: string) => {
     urls[urls.length - 1] = absoluteURL(url);
   },
-  pushURL: url => void urls.push(absoluteURL(url)),
+  pushURL: (url: string) => void urls.push(absoluteURL(url)),
   getURL: () => absoluteURL(currentURL()),
-  listenChangeURL: handler => {
+  listenChangeURL: (handler: () => void) => {
     subscriptions.add(handler);
     return () => void subscriptions.delete(handler);
   },

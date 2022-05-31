@@ -29,7 +29,9 @@ function useRecoilBridgeAcrossReactRoots(): RecoilBridge {
   const store = useStoreRef().current;
   return useMemo(() => {
     // eslint-disable-next-line no-shadow
-    function RecoilBridge({children}) {
+    function RecoilBridge({
+      children,
+    }: $TEMPORARY$object<{children: React.Node}>) {
       return <RecoilRoot store_INTERNAL={store}>{children}</RecoilRoot>;
     }
     return RecoilBridge;

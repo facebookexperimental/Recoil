@@ -9,6 +9,7 @@
  * @format
  */
 'use strict';
+import type {RecoilValueReadOnly} from 'Recoil_RecoilValue';
 
 const {
   getRecoilTestFn,
@@ -29,7 +30,7 @@ const testRecoil = getRecoilTestFn(() => {
   store = makeStore();
 });
 
-function getError(recoilValue): Error {
+function getError(recoilValue: RecoilValueReadOnly<mixed>): Error {
   const error = getRecoilValueAsLoadable(store, recoilValue).errorOrThrow();
   if (!(error instanceof Error)) {
     throw new Error('Expected error to be an instance of Error');

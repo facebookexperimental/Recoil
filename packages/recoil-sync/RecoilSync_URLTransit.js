@@ -44,19 +44,19 @@ const BUILTIN_HANDLERS = [
     tag: 'Date',
     class: Date,
     write: x => x.toISOString(),
-    read: str => new Date(str),
+    read: (str: $FlowFixMe) => new Date(str),
   },
   {
     tag: 'Set',
     class: Set,
     write: x => Array.from(x),
-    read: arr => new Set(arr),
+    read: (arr: $FlowFixMe) => new Set(arr),
   },
   {
     tag: 'Map',
     class: Map,
     write: x => Array.from(x.entries()),
-    read: arr => new Map(arr),
+    read: (arr: $FlowFixMe) => new Map(arr),
   },
   {
     tag: '__DV',

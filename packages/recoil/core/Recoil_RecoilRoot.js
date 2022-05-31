@@ -9,12 +9,12 @@
  * @format
  */
 'use strict';
-
 import type {StoreID} from './Recoil_Keys';
 import type {MutableSource} from './Recoil_ReactMode';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
+import type {NodeKey, StateID} from 'Recoil_Keys';
 
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
@@ -290,7 +290,13 @@ if (__DEV__) {
 
 // When removing this deprecated function, remove stateBySettingRecoilValue
 // which will no longer be needed.
-function initialStoreState_DEPRECATED(store, initializeState): StoreState {
+function initialStoreState_DEPRECATED(
+  store: Store,
+  initializeState: ({
+    set: <T>(RecoilValue<T>, T) => void,
+    setUnvalidatedAtomValues: (Map<string, mixed>) => void,
+  }) => void,
+): StoreState {
   const initial: StoreState = makeEmptyStoreState();
   initializeState({
     set: <T>(atom: RecoilValue<T>, value: T) => {
@@ -330,7 +336,9 @@ function initialStoreState_DEPRECATED(store, initializeState): StoreState {
 // they are then re-run when used as part of rendering.  These semantics are
 // compatible with React StrictMode where effects may be re-run multiple times
 // but state initialization only happens once the first time.
-function initialStoreState(initializeState): StoreState {
+function initialStoreState(
+  initializeState: MutableSnapshot => void,
+): StoreState {
   // Initialize a snapshot and get its store
   const snapshot = freshSnapshot(initializeState);
   const storeState = snapshot.getStore_INTERNAL().getState();
@@ -374,7 +382,7 @@ function RecoilRoot_INTERNAL({
 
   let storeStateRef: {current: StoreState}; // eslint-disable-line prefer-const
 
-  const getGraph = version => {
+  const getGraph = (version: StateID) => {
     const graphs = storeStateRef.current.graphsByVersion;
     if (graphs.has(version)) {
       return nullthrows(graphs.get(version));
@@ -384,7 +392,7 @@ function RecoilRoot_INTERNAL({
     return newGraph;
   };
 
-  const subscribeToTransactions = (callback, key) => {
+  const subscribeToTransactions = (callback: Store => void, key: ?NodeKey) => {
     if (key == null) {
       // Global transaction subscriptions
       const {transactionSubscriptions} = storeRef.current.getState();
@@ -425,7 +433,7 @@ function RecoilRoot_INTERNAL({
     }
   };
 
-  const replaceState = replacer => {
+  const replaceState = (replacer: TreeState => TreeState) => {
     startNextTreeIfNeeded(storeRef.current);
     // Use replacer to get the next state:
     const nextTree = nullthrows(storeStateRef.current.nextTree);

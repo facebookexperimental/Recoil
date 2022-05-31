@@ -141,8 +141,8 @@ function findReleasableNodes(
 
 // Children before parents
 function getDownstreamNodesInTopologicalOrder(
-  store,
-  treeState,
+  store: Store,
+  treeState: TreeState,
   nodes: Set<NodeKey>, // Mutable set is destroyed in place
   doNotDescendInto1: Set<NodeKey>,
   doNotDescendInto2: Set<NodeKey>,

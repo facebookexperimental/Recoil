@@ -9,8 +9,8 @@
  * @format
  */
 'use strict';
-
 import type {Snapshot} from '../Recoil_Snapshot';
+import type {RecoilState, RecoilValueReadOnly} from 'Recoil_RecoilValue';
 
 const {
   getRecoilTestFn,
@@ -56,7 +56,10 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 // Use this to spread proxy results into an object for Jest's toMatchObject()
-function getInfo(snapshot, node) {
+function getInfo(
+  snapshot: Snapshot,
+  node: RecoilState<string> | RecoilValueReadOnly<string>,
+) {
   return {...snapshot.getInfo_UNSTABLE(node)};
 }
 
@@ -147,7 +150,12 @@ testRecoil(
     const myAtom = atom({key: 'Snapshot ID atom', default: 0});
     const mySelector = constSelector(myAtom); // For read-only testing below
 
-    const transactionObserver = ({snapshot}) => {
+    const transactionObserver = ({
+      snapshot,
+    }: {
+      previousSnapshot: Snapshot,
+      snapshot: Snapshot,
+    }) => {
       const snapshotID = snapshot.getID();
       if (expectedSnapshotID != null) {
         expect(seenIDs.has(snapshotID)).toBe(true);

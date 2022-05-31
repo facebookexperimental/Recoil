@@ -10,6 +10,7 @@
  */
 
 'use strict';
+import type {NodeKey} from 'Recoil_Keys';
 
 const {
   getRecoilTestFn,
@@ -144,7 +145,8 @@ describe('TreeCache', () => {
       onHit,
     });
 
-    const getter = nodeKey => route1.find(([key]) => key === nodeKey)?.[1];
+    const getter = (nodeKey: NodeKey) =>
+      route1.find(([key]) => key === nodeKey)?.[1];
 
     cache.set(route1, loadable1);
 

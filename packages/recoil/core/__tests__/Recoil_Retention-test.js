@@ -9,8 +9,8 @@
  * @format
  */
 'use strict';
-
 import type {RecoilState} from '../../core/Recoil_RecoilValue';
+import type {RetentionZone} from 'Recoil_RetentionZone';
 
 const {
   getRecoilTestFn,
@@ -58,7 +58,13 @@ const testRecoil = getRecoilTestFn(() => {
 });
 
 let nextKey = 0;
-function atomRetainedBy(retainedBy) {
+function atomRetainedBy(
+  retainedBy:
+    | void
+    | RetentionZone
+    | $TEMPORARY$string<'components'>
+    | $TEMPORARY$array<RetentionZone>,
+) {
   return atom({
     key: `retention/${nextKey++}`,
     default: 0,
@@ -66,9 +72,9 @@ function atomRetainedBy(retainedBy) {
   });
 }
 
-function switchComponent(defaultVisible) {
-  let innerSetVisible = _ => undefined;
-  const setVisible = v => innerSetVisible(v); // acts like a ref basically
+function switchComponent(defaultVisible: boolean) {
+  let innerSetVisible = (_: boolean) => undefined;
+  const setVisible = (v: boolean) => innerSetVisible(v); // acts like a ref basically
   function Switch({children}) {
     let visible;
     [visible, innerSetVisible] = useState(defaultVisible);
@@ -451,7 +457,7 @@ describe('Retention during a transaction', () => {
       const zoneA = retentionZone();
       const zoneB = retentionZone();
       const anAtom = atomRetainedBy([zoneA, zoneB]);
-      function RetainsZone({zone}) {
+      function RetainsZone({zone}: $TEMPORARY$object<{zone: RetentionZone}>) {
         useRetain(zone);
         return null;
       }

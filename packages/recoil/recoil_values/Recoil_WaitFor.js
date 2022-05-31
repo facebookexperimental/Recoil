@@ -9,12 +9,12 @@
  * @format
  */
 'use strict';
-
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {
   RecoilValue,
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
+import type {GetRecoilValue} from 'Recoil_callbackTypes';
 
 const {
   loadableWithError,
@@ -39,7 +39,10 @@ const isPromise = require('recoil-shared/util/Recoil_isPromise');
 
 // Issue parallel requests for all dependencies and return the current
 // status if they have results, have some error, or are still pending.
-function concurrentRequests(getRecoilValue, deps) {
+function concurrentRequests(
+  getRecoilValue: GetRecoilValue,
+  deps: $ReadOnlyArray<RecoilValue<mixed>>,
+) {
   const results = Array(deps.length).fill(undefined);
   const exceptions = Array(deps.length).fill(undefined);
   for (const [i, dep] of deps.entries()) {
@@ -53,7 +56,7 @@ function concurrentRequests(getRecoilValue, deps) {
   return [results, exceptions];
 }
 
-function isError(exp) {
+function isError(exp: $FlowFixMe) {
   return exp != null && !isPromise(exp);
 }
 
@@ -86,8 +89,8 @@ function wrapLoadables(
   dependencies:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | {+[string]: RecoilValueReadOnly<mixed>},
-  results,
-  exceptions,
+  results: Array<$FlowFixMe>,
+  exceptions: Array<$FlowFixMe>,
 ) {
   const output = exceptions.map((exception, idx) =>
     exception == null
