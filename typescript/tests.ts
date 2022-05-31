@@ -1,3 +1,5 @@
+// Minimum TypeScript Version: 3.9
+
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -160,8 +162,8 @@ const selectorError3 = selector({
 selectorError3;
 
 // RecoilRoot
-RecoilRoot({children: React.createElement('div')});
-RecoilRoot({
+RecoilRoot({children: React.createElement('div')}); // $ExpectType ReactElement<any, any> | null
+RecoilRoot({ // $ExpectType ReactElement<any, any> | null
   initializeState: ({ set, reset }) => {
     set(myAtom, 5);
     reset(myAtom);
@@ -173,11 +175,11 @@ RecoilRoot({
   },
   children: React.createElement('div'),
 });
-RecoilRoot({
+RecoilRoot({ // $ExpectType ReactElement<any, any> | null
   override: true,
   children: React.createElement('div'),
 });
-RecoilRoot({
+RecoilRoot({ // $ExpectType ReactElement<any, any> | null
   override: false,
   children: React.createElement('div'),
 });
@@ -239,7 +241,7 @@ useRecoilState(waAtom); // $ExpectType [string, SetterOrUpdater<string>]
 useRecoilState<number>(waAtom); // $ExpectError
 useRecoilState<number | string>(waAtom); // $ExpectError
 useRecoilValue<number>(waAtom); // $ExpectError
-useRecoilValue<number | string>(waAtom); // $ExpectType string | number
+const t8: string | number = useRecoilValue<number | string>(waAtom);
 useRecoilValue<number>(nsAtom); // $ExpectError
 
 useRecoilValue(myAtom); // $ExpectType number
