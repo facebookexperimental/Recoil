@@ -41,6 +41,18 @@
   */
  export const RecoilRoot: React.FC<RecoilRootProps>;
 
+ type Nexus = {
+  get: <T>(atom: RecoilValue<T>) => T,
+  getPromise: <T>(atom: RecoilValue<T>) => Promise<T>,
+  set: <T>(atom: RecoilState<T>, valOrUpdater: T | ((currVal: T) => T)) => void,
+  reset: <T>(atom: RecoilState<T>) => void,
+ };
+
+ export const getRecoil = Nexus["get"];
+ export const getRecoilPromise = Nexus["getPromise"];
+ export const setRecoil = Nexus["set"];
+ export const resetRecoil = Nexus["reset"];
+
  // Snapshot.d.ts
  declare const SnapshotID_OPAQUE: unique symbol;
  export interface SnapshotID {

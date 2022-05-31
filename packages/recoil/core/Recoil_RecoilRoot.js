@@ -11,8 +11,8 @@
 'use strict';
 import type {StoreID} from './Recoil_Keys';
 import type {MutableSource} from './Recoil_ReactMode';
-import type {RecoilValue} from './Recoil_RecoilValue';
-import type {MutableSnapshot} from './Recoil_Snapshot';
+import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
+import type {MutableSnapshot, Snapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
 import type {NodeKey, StateID} from 'Recoil_Keys';
 
@@ -365,19 +365,19 @@ function RecoilRoot_INTERNAL({
 }: InternalProps): React.Node {
   // prettier-ignore
   // @fb-only: useEffect(() => {
-    // @fb-only: if (gkx('recoil_usage_logging')) {
-      // @fb-only: try {
-        // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
-          // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
-          // @fb-only: path: URI.getRequestURI().getPath(),
-        // @fb-only: }));
-      // @fb-only: } catch {
-        // @fb-only: recoverableViolation(
-          // @fb-only: 'Error when logging Recoil Usage event',
-          // @fb-only: 'recoil',
-        // @fb-only: );
-      // @fb-only: }
-    // @fb-only: }
+  // @fb-only: if (gkx('recoil_usage_logging')) {
+  // @fb-only: try {
+  // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+  // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
+  // @fb-only: path: URI.getRequestURI().getPath(),
+  // @fb-only: }));
+  // @fb-only: } catch {
+  // @fb-only: recoverableViolation(
+  // @fb-only: 'Error when logging Recoil Usage event',
+  // @fb-only: 'recoil',
+  // @fb-only: );
+  // @fb-only: }
+  // @fb-only: }
   // @fb-only: }, []);
 
   let storeStateRef: {current: StoreState}; // eslint-disable-line prefer-const
@@ -533,49 +533,13 @@ function RecoilRoot_INTERNAL({
   );
 }
 
-type Props =
-  | {
-      initializeState_DEPRECATED?: ({
-        set: <T>(RecoilValue<T>, T) => void,
-        setUnvalidatedAtomValues: (Map<string, mixed>) => void,
-      }) => void,
-      initializeState?: MutableSnapshot => void,
-      store_INTERNAL?: Store,
-      override?: true,
-      children: React.Node,
-    }
-  | {
-      store_INTERNAL?: Store,
-      /**
-       * Defaults to true. If override is true, this RecoilRoot will create a
-       * new Recoil scope. If override is false and this RecoilRoot is nested
-       * within another RecoilRoot, this RecoilRoot will perform no function.
-       * Children of this RecoilRoot will access the Recoil values of the
-       * nearest ancestor RecoilRoot.
-       */
-      override: false,
-      children: React.Node,
-    };
-
-function RecoilRoot(props: Props): React.Node {
-  const {override, ...propsExceptOverride} = props;
-
-  const ancestorStoreRef = useStoreRef();
-  if (override === false && ancestorStoreRef.current !== defaultStore) {
-    // If ancestorStoreRef.current !== defaultStore, it means that this
-    // RecoilRoot is not nested within another.
-    return props.children;
-  }
-
-  return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
-}
-
 function useRecoilStoreID(): StoreID {
   return useStoreRef().current.storeID;
 }
 
 module.exports = {
-  RecoilRoot,
+  RecoilRoot_INTERNAL,
+  defaultStore,
   useStoreRef,
   useRecoilMutableSource,
   useRecoilStoreID,

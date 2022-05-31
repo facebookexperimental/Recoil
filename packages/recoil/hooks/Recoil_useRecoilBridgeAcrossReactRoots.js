@@ -11,7 +11,8 @@
 'use strict';
 
 const {reactMode} = require('../core/Recoil_ReactMode');
-const {RecoilRoot, useStoreRef} = require('../core/Recoil_RecoilRoot');
+const {RecoilRoot} = require('../core/Recoil_RecoilNexus');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 const React = require('react');
 const {useMemo} = require('react');
 

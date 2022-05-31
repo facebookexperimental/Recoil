@@ -52,7 +52,7 @@ const testRecoil = getRecoilTestFn(() => {
     renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   ({freshSnapshot} = require('../Recoil_Snapshot'));
-  ({RecoilRoot} = require('../Recoil_RecoilRoot'));
+  ({RecoilRoot} = require('../Recoil_RecoilNexus'));
 });
 
 // Use this to spread proxy results into an object for Jest's toMatchObject()

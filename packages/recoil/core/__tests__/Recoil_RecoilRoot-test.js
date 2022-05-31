@@ -27,6 +27,8 @@ let React,
   renderElements,
   renderUnwrappedElements,
   RecoilRoot,
+  getRecoil,
+  setRecoil,
   useStoreRef;
 
 const testRecoil = getRecoilTestFn(() => {
@@ -46,7 +48,8 @@ const testRecoil = getRecoilTestFn(() => {
     renderElements,
     renderUnwrappedElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
-  ({RecoilRoot, useStoreRef} = require('../Recoil_RecoilRoot'));
+  ({useStoreRef} = require('../Recoil_RecoilRoot'));
+  ({RecoilRoot, getRecoil, setRecoil} = require('../Recoil_RecoilNexus'));
 });
 
 describe('initializeState', () => {
@@ -468,4 +471,26 @@ describe('override prop', () => {
       expect(container.textContent).toEqual('"SET"');
     },
   );
+
+  testRecoil('A RecoilRoot provides access outside React as well', () => {
+    const myAtom = atom({
+      key: 'RecoilRoot/override/atom',
+      default: 'DEFAULT',
+    });
+
+    const [ReadsWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
+
+    const container = renderElements(
+      <RecoilRoot override={false}>
+        <ReadsWritesAtom />
+      </RecoilRoot>,
+    );
+
+    expect(container.textContent).toEqual('"DEFAULT"');
+
+    expect(getRecoil(myAtom)).toEqual('DEFAULT');
+
+    setRecoil(myAtom, 'SET');
+    expect(container.textContent).toEqual('"SET"');
+  });
 });

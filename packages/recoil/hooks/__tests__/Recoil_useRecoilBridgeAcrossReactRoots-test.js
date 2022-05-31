@@ -42,7 +42,8 @@ const testRecoil = getRecoilTestFn(() => {
     componentThatReadsAndWritesAtom,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
 
-  ({RecoilRoot, useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
+  ({RecoilRoot} = require('../../core/Recoil_RecoilNexus'));
+  ({useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
   atom = require('../../recoil_values/Recoil_atom');
   useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 });
