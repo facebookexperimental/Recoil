@@ -8,13 +8,14 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
-import type {StoreID} from './Recoil_Keys';
+
+import type {NodeKey, StateID, StoreID} from './Recoil_Keys';
 import type {MutableSource} from './Recoil_ReactMode';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
-import type {NodeKey, StateID} from 'Recoil_Keys';
 
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');

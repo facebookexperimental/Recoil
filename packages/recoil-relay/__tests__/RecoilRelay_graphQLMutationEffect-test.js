@@ -113,12 +113,12 @@ testRecoil('Updaters', async () => {
 
   const optimisticUpdater = jest.fn((store, data) => {
     expect(data?.feedback_like?.feedback?.id).toEqual('ID');
-    expect(data?.feedback_like?.liker?.id).toEqual('OPTIMISTIC_ACTOR');
+    expect(data?.feedback_like?.liker?.id).toEqual('OPTIMISTIC_SET');
 
     const feedback = store.get('ID');
     expect(feedback?.getValue('id')).toBe('ID');
-    const liker = store.get('OPTIMISTIC_ACTOR');
-    expect(liker?.getValue('id')).toBe('OPTIMISTIC_ACTOR');
+    const liker = store.get('OPTIMISTIC_SET');
+    expect(liker?.getValue('id')).toBe('OPTIMISTIC_SET');
   });
 
   const myAtom = atom({
@@ -129,14 +129,14 @@ testRecoil('Updaters', async () => {
         environment,
         mutation: testFeedbackMutation,
         variables: actor_id => ({data: {feedback_id: 'ID', actor_id}}),
-        updater,
-        optimisticUpdater,
-        optimisticResponse: {
+        updater_UNSTABLE: updater,
+        optimisticUpdater_UNSTABLE: optimisticUpdater,
+        optimisticResponse_UNSTABLE: actor_id => ({
           feedback_like: {
             feedback: {id: 'ID'},
-            liker: {id: 'OPTIMISTIC_ACTOR', __typename: 'Actor'},
+            liker: {id: 'OPTIMISTIC_' + actor_id, __typename: 'Actor'},
           },
-        },
+        }),
       }),
     ],
   });
