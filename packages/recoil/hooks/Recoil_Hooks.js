@@ -8,13 +8,14 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
+
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
-import type {NodeKey} from '../core/Recoil_State';
-import type {StoreRef} from 'Recoil_State';
+import type {NodeKey, StoreRef} from '../core/Recoil_State';
 
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE} = require('../core/Recoil_Node');
