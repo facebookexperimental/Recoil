@@ -8,13 +8,15 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
+
 import type {Loadable} from '../adt/Recoil_Loadable';
 import type {
   RecoilValue,
   RecoilValueReadOnly,
 } from '../core/Recoil_RecoilValue';
-import type {GetRecoilValue} from 'Recoil_callbackTypes';
+import type {GetRecoilValue} from './Recoil_callbackTypes';
 
 const {
   loadableWithError,

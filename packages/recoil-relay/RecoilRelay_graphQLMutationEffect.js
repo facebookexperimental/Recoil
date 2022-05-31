@@ -56,18 +56,18 @@ function graphQLMutationEffect<
   environment: environmentOpt,
   mutation,
   variables,
-  updater,
-  optimisticUpdater,
-  optimisticResponse,
-  uploadables,
+  updater_UNSTABLE: updater,
+  optimisticUpdater_UNSTABLE: optimisticUpdater,
+  optimisticResponse_UNSTABLE: optimisticResponse,
+  uploadables_UNSTABLE: uploadables,
 }: {
   environment: IEnvironment | EnvironmentKey,
   mutation: Mutation<TVariables, TResponse, TRawResponse>,
   variables: T => TVariables | null,
-  updater?: SelectorStoreUpdater<TResponse>,
-  optimisticUpdater?: SelectorStoreUpdater<TResponse>,
-  optimisticResponse?: TResponse,
-  uploadables?: UploadableMap,
+  updater_UNSTABLE?: SelectorStoreUpdater<TResponse>,
+  optimisticUpdater_UNSTABLE?: SelectorStoreUpdater<TResponse>,
+  optimisticResponse_UNSTABLE?: T => TResponse,
+  uploadables_UNSTABLE?: UploadableMap,
 }): AtomEffect<T> {
   let currentMutationID = 0;
   return ({node, onSet, setSelf, storeID, parentStoreID_UNSTABLE}) => {
@@ -100,7 +100,7 @@ function graphQLMutationEffect<
           },
           updater,
           optimisticUpdater,
-          optimisticResponse,
+          optimisticResponse: optimisticResponse?.(newValue),
           uploadables,
         });
       }
