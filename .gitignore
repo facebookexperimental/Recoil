@@ -94,4 +94,4 @@ package-lock.json
 /docs
 
 # Generated files for recoil-relay unit tests
-recoil-relay/__tests__/mock-graphql/__generated__
+packages/recoil-relay/__tests__/mock-graphql/__generated__

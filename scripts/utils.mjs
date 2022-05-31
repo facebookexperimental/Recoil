@@ -1,5 +1,3 @@
-// Minimum TypeScript Version: 3.9
-
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -7,6 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  *
  * @emails oncall+recoil
+ * @format
  */
 
-// Stub file for dtslint
+export function createErrorHandler(message) {
+  return err => {
+    if (err) {
+      console.error(`${message}\n`);
+      throw err;
+    }
+  };
+}
