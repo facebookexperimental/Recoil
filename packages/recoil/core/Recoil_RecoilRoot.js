@@ -525,49 +525,13 @@ function RecoilRoot_INTERNAL({
   );
 }
 
-type Props =
-  | {
-      initializeState_DEPRECATED?: ({
-        set: <T>(RecoilValue<T>, T) => void,
-        setUnvalidatedAtomValues: (Map<string, mixed>) => void,
-      }) => void,
-      initializeState?: MutableSnapshot => void,
-      store_INTERNAL?: Store,
-      override?: true,
-      children: React.Node,
-    }
-  | {
-      store_INTERNAL?: Store,
-      /**
-       * Defaults to true. If override is true, this RecoilRoot will create a
-       * new Recoil scope. If override is false and this RecoilRoot is nested
-       * within another RecoilRoot, this RecoilRoot will perform no function.
-       * Children of this RecoilRoot will access the Recoil values of the
-       * nearest ancestor RecoilRoot.
-       */
-      override: false,
-      children: React.Node,
-    };
-
-function RecoilRoot(props: Props): React.Node {
-  const {override, ...propsExceptOverride} = props;
-
-  const ancestorStoreRef = useStoreRef();
-  if (override === false && ancestorStoreRef.current !== defaultStore) {
-    // If ancestorStoreRef.current !== defaultStore, it means that this
-    // RecoilRoot is not nested within another.
-    return props.children;
-  }
-
-  return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
-}
-
 function useRecoilStoreID(): StoreID {
   return useStoreRef().current.storeID;
 }
 
 module.exports = {
-  RecoilRoot,
+  RecoilRoot_INTERNAL,
+  defaultStore,
   useStoreRef,
   useRecoilMutableSource,
   useRecoilStoreID,
