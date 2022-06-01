@@ -11,7 +11,7 @@ sidebar_label: Introduction
 
 ---
 
-The `recoil-sync` package provides an add-on library to help synchronize Recoil state with external systems.  Simple [asynchronous data queries](/docs/guides/asynchronous-data-queries) can be implemented via selectors or `useEffect()`, or [atom effects](/docs/guides/atom-effects) can be used for bi-directional syncing of individual atoms.  The `recoil-sync` add-on package provides some additional functionality:
+The [`recoil-sync`](https://www.npmjs.com/package/recoil-sync) package provides an add-on library to help synchronize Recoil state with external systems.  Simple [asynchronous data queries](/docs/guides/asynchronous-data-queries) can be implemented via selectors or `useEffect()`, or [atom effects](/docs/guides/atom-effects) can be used for bi-directional syncing of individual atoms.  The `recoil-sync` add-on package provides some additional functionality:
 
 * **Batching Atomic Transactions** - Updates for multiple atoms can be batched together as a single transaction with the external system.  This can be important if an atomic transaction is required for consistent state of related atoms.
 * **Abstract and Flexible** - This API allows users to specify what atoms to sync separately from describing the mechanism of how to sync.  This allows components to use atoms and sync with different systems in different environments without changing their implementation.  For example, a component may use atoms that persist to the URL when used in a stand-alone tool while persisting to a custom user database when embedded in another tool.
@@ -58,6 +58,6 @@ That's it!  Now this atom will initialize its state based on the URL during init
 
 ## Installation
 
-Please see the [Recoil installation guide](/docs/introduction/installation) and add `recoil-sync` as an additional dependency.
+Please see the [Recoil installation guide](/docs/introduction/installation) and add [`recoil-sync`](https://www.npmjs.com/package/recoil-sync) as an additional dependency.
 
 `recoil-sync` also includes the [`refine`](/docs/refine/introduction) library.

@@ -110,6 +110,8 @@ native
 umd
 /index.d.ts
 nightly-build-files
+/build
+/packages
 
 # Mac
 .DS_Store
