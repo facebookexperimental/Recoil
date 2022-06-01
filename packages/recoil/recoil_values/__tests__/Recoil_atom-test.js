@@ -5,10 +5,13 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
+import type {DefaultValue as $IMPORTED_TYPE$_DefaultValue} from 'Recoil_Node';
+import type {RecoilState} from 'Recoil_RecoilValue';
 
 const {
   getRecoilTestFn,
@@ -98,11 +101,15 @@ function getRecoilStatePromise<T>(recoilValue: RecoilValue<T>): Promise<T> {
   return getRecoilStateLoadable(recoilValue).promiseOrThrow();
 }
 
-function set(recoilValue, value: mixed) {
+function set(recoilValue: RecoilState<$FlowFixMe>, value: mixed) {
   setRecoilValue(store, recoilValue, value);
 }
 
-function reset(recoilValue) {
+function reset(
+  recoilValue: RecoilState<
+    $TEMPORARY$string<'DEFAULT'> | $TEMPORARY$string<'INIT'>,
+  >,
+) {
   setRecoilValue(store, recoilValue, DEFAULT_VALUE);
 }
 
@@ -888,12 +895,18 @@ describe('Effects', () => {
   testRecoil('onSet', () => {
     const oldSets = {a: 0, b: 0};
     const newSets = {a: 0, b: 0};
-    const observer = key => (newValue, oldValue, isReset) => {
-      expect(oldValue).toEqual(oldSets[key]);
-      expect(newValue).toEqual(newSets[key]);
-      expect(isReset).toEqual(newValue === 0);
-      oldSets[key] = newValue;
-    };
+    const observer =
+      (key: $TEMPORARY$string<'a'> | $TEMPORARY$string<'b'>) =>
+      (
+        newValue: number,
+        oldValue: number | $IMPORTED_TYPE$_DefaultValue,
+        isReset: boolean,
+      ) => {
+        expect(oldValue).toEqual(oldSets[key]);
+        expect(newValue).toEqual(newSets[key]);
+        expect(isReset).toEqual(newValue === 0);
+        oldSets[key] = newValue;
+      };
 
     const atomA = atom({
       key: 'atom effect onSet A',
@@ -957,7 +970,9 @@ describe('Effects', () => {
       ],
     });
 
-    function TransactionObserver({callback}) {
+    function TransactionObserver({
+      callback,
+    }: $TEMPORARY$object<{callback: () => void}>) {
       useRecoilTransactionObserver(callback);
       return null;
     }
@@ -1246,7 +1261,7 @@ describe('Effects', () => {
     'atom effect runs twice when atom is read from a snapshot and the atom is read for first time in that snapshot',
     ({strictMode, concurrentMode}) => {
       let numTimesEffectInit = 0;
-      let latestSetSelf = a => a;
+      let latestSetSelf = (a: number) => a;
 
       const atomWithEffect = atom({
         key: 'atomWithEffect',
@@ -1292,7 +1307,7 @@ describe('Effects', () => {
     'atom effect runs twice when selector that depends on that atom is read from a snapshot and the atom is read for first time in that snapshot',
     ({strictMode, concurrentMode}) => {
       let numTimesEffectInit = 0;
-      let latestSetSelf = a => a;
+      let latestSetSelf = (a: number) => a;
 
       const atomWithEffect = atom({
         key: 'atomWithEffect',
