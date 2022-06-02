@@ -27,8 +27,8 @@ function graphQLSelectorFamily<
 
   variables:
     | TVariables
-    | P => null | TVariables
-    | P => ({get: GetRecoilValue}) => null | TVariables,
+    | P => TVariables | null
+    | P => ({get: GetRecoilValue}) => TVariables | null,
 
   mapReponse:
     | (TData, {get: GetRecoilValue, variables: TVariables}) => T
@@ -41,8 +41,8 @@ function graphQLSelectorFamily<
   mutations?: {
     mutation: Mutation<TMutationVariables, TMudationData, TMutationRawResposne>,
     variables:
-      | T => null | TMutationVariables
-      | T => P => null | TMutationVariables,
+      | T => TMutationVariables | null
+      | T => P => TMutationVariables | null,
   },
 
 }): P => RecoilState<T>

@@ -16,7 +16,7 @@ function graphQLSubscriptionEffect<
 >({
   environment: IEnvironment | EnvironmentKey,
   subscription: GraphQLSubscription<TVariables, TData, TRawResponse>,
-  variables: null | TVariables,
+  variables: TVariables | null,
   mapResponse: TData => T,
 }): AtomEffect<T>
 ```

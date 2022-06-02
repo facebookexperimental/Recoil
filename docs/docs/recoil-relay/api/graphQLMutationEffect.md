@@ -18,11 +18,11 @@ function graphQLMutationEffect<
 >({
   environment: IEnvironment | EnvironmentKey,
   mutation: Mutation<TVariables, TResponse, TRawResponse>,
-  variables: T => null | TVariables,
+  variables: T => TVariables | null,
 
   updater_UNSTABLE?: SelectorStoreUpdater<TResponse>,
   optimisticUpdater_UNSTABLE?: SelectorStoreUpdater<TResponse>,
-  optimisticResponse_UNSTABLE?: TResponse,
+  optimisticResponse_UNSTABLE?: T => TResponse,
   uploadables_UNSTABLE?: UploadableMap,
 }): AtomEffect<T>
 ```

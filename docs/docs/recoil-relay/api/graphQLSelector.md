@@ -28,7 +28,7 @@ function graphQLSelector<
 
   variables:
     | TVariables
-    | (({get: GetRecoilValue}) => (null | TVariables)),
+    | (({get: GetRecoilValue}) => (TVariables | null)),
 
   mapReponse: (TData, {get: GetRecoilValue, variables: TVariable}) => T,
 

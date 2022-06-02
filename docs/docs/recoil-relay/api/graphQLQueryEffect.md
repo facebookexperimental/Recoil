@@ -18,7 +18,7 @@ function graphQLQueryEffect<
 >({
   environment: IEnvironment | EnvironmentKey,
   query: Query<TVariables, TData, TRawResponse>,
-  variables: null | TVariables,
+  variables: TVariables | null,
   mapResponse: TData => T,
 }): AtomEffect<T>
 ```
