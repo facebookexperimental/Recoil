@@ -2,27 +2,60 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://recoiljs.org/zh-hans/blog</id>
     <title>Recoil Blog</title>
-    <updated>2022-04-14T00:00:00.000Z</updated>
+    <updated>2022-06-02T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://recoiljs.org/zh-hans/blog"/>
     <subtitle>Recoil Blog</subtitle>
     <icon>https://recoiljs.org/zh-hans/img/favicon.png</icon>
     <rights>Copyright © 2022 Facebook, Inc.</rights>
     <entry>
+        <title type="html"><![CDATA[Recoil Relay 0.1.0]]></title>
+        <id>/2022/06/02/recoil-relay-0.1.0-release</id>
+        <link href="https://recoiljs.org/zh-hans/blog/2022/06/02/recoil-relay-0.1.0-release"/>
+        <updated>2022-06-02T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Initial open source release for the recoil-relay library for using GraphQL!]]></summary>
+        <content type="html"><![CDATA[<p>Initial open source release for the <a href="/docs/recoil-relay/introduction"><code>recoil-relay</code></a> library for using <strong>GraphQL</strong>!</p><p>This library helps Recoil perform type safe and efficient queries using <a href="https://graphql.org/">GraphQL</a> with the <a href="https://relay.dev">Relay</a> library.  It provides selectors which can easily query with GraphQL.  The queries are synced with the Recoil data-flow graph so downstream selectors can derive state from them, they can depend on upstream Recoil state, and they are automatically subscribed to any changes in the graph from Relay.  Everything stays in sync automatically.</p><h3>Example</h3><p>A GraphQL query is as simple as defining a <a href="/docs/recoil-relay/graphql-selectors">GraphQL selector</a>:</p><pre><code class="language-jsx">const userNameQuery = graphQLSelector({
+  key: &#x27;UserName&#x27;,
+  environment: myEnvironment,
+  query: graphql`
+    query UserQuery($id: ID!) {
+      user(id: $id) {
+        name
+      }
+    }
+  `,
+  variables: ({get}) =&gt; ({id: get(currentIDAtom)}),
+  mapResponse: data =&gt; data.user?.name,
+});
+</code></pre><p>Then use it like any other Recoil <a href="/docs/introduction/core-concepts#selectors">selector</a>:</p><pre><code class="language-jsx">function MyComponent() {
+  const userName = useRecoilValue(userNameQuery);
+  return &lt;span&gt;{userName}&lt;/span&gt;;
+}
+</code></pre>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Recoil 0.7.3]]></title>
+        <id>/2022/06/01/recoil-0.7.3-release</id>
+        <link href="https://recoiljs.org/zh-hans/blog/2022/06/01/recoil-0.7.3-release"/>
+        <updated>2022-06-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[- Enable atoms and selectors to be used in family parameters (#1740)]]></summary>
+        <content type="html"><![CDATA[<ul><li>Enable atoms and selectors to be used in <a href="/docs/api-reference/utils/selectorFamily#parameter-type">family parameters</a> (<a href="https://github.com/facebookexperimental/Recoil/pull/1740">#1740</a>)</li><li>Add <code>parentStoreID_UNSTABLE</code> to atom effects for the parent Recoil store the atom instance was cloned from.  This enables the <a href="/docs/recoil-relay/preloaded-queries#pre-fetch-graphql">pre-fetch pattern for GraphQL</a>.  (<a href="https://github.com/facebookexperimental/Recoil/pull/1744">#1744</a>)</li><li>Atom effects can initialize or set atoms to wrapped values (<a href="https://github.com/facebookexperimental/Recoil/pull/1681">#1681</a>)</li></ul>]]></content>
+    </entry>
+    <entry>
         <title type="html"><![CDATA[Recoil 0.7.2]]></title>
         <id>/2022/04/14/0.7.2-release</id>
         <link href="https://recoiljs.org/zh-hans/blog/2022/04/14/0.7.2-release"/>
         <updated>2022-04-14T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Optimizations and Fixes]]></summary>
-        <content type="html"><![CDATA[<h3>Optimizations and Fixes</h3><ul><li>Selector cache lookup optimizations (<a href="https://github.com/facebookexperimental/Recoil/pull/1720">#1720</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1736">#1736</a>)</li><li>Allow async selectors to re-evaluate when async dependencies are discovered with stale state (<a href="https://github.com/facebookexperimental/Recoil/pull/1736">#1736</a>)</li></ul>]]></content>
+        <summary type="html"><![CDATA[Selector optimizations and fixes]]></summary>
+        <content type="html"><![CDATA[<p>Selector optimizations and fixes</p><h3>Optimizations and Fixes</h3><ul><li>Selector cache lookup optimizations (<a href="https://github.com/facebookexperimental/Recoil/pull/1720">#1720</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1736">#1736</a>)</li><li>Allow async selectors to re-evaluate when async dependencies are discovered with stale state (<a href="https://github.com/facebookexperimental/Recoil/pull/1736">#1736</a>)</li></ul>]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[Recoil 0.7.1]]></title>
         <id>/2022/04/12/0.7.1-release</id>
         <link href="https://recoiljs.org/zh-hans/blog/2022/04/12/0.7.1-release"/>
         <updated>2022-04-12T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Typing]]></summary>
-        <content type="html"><![CDATA[<h3>Typing</h3><ul><li>Add explicit and required <code>children</code> prop to <code>&lt;RecoilRoot&gt;</code> and <code>useRecoilBridgeAcrossReactRoots_UNSTABLE()</code> for TypeScript to support the <a href="https://solverfox.dev/writing/no-implicit-children/">removal of implicit children</a> with <a href="https://github.com/DefinitelyTyped/DefinitelyTyped/pull/56210">`@types/react@^18.0.0</a> for React 18. (<a href="https://github.com/facebookexperimental/Recoil/pull/1718">#1718</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1717">#1717</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1726">#1726</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1731">#1731</a>)</li><li>Update typing for <a href="/docs/api-reference/utils/atomFamily#parameter-type">family parameters</a> to better support Map, Set, and classes with <code>toJSON()</code>. (<a href="https://github.com/facebookexperimental/Recoil/pull/1709">#1709</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1703">#1703</a>)</li></ul><h3>Fixes</h3><ul><li>Avoid dev-mode console error with React 18 when using shared async selectors across multiple <code>&lt;RecoilRoot&gt;</code>&#x27;s. (<a href="https://github.com/facebookexperimental/Recoil/pull/1712">#1712</a>)</li><li>Cleanup potential memory leak when using async selectors. (<a href="https://github.com/facebookexperimental/Recoil/pull/1714">#1714</a>)</li><li>Fix potentially hung async selectors when shared across multiple roots that depend on atoms initialized with promises that don&#x27;t resolve. (<a href="https://github.com/facebookexperimental/Recoil/pull/1714">#1714</a>)</li></ul>]]></content>
+        <summary type="html"><![CDATA[Typing and various improvements]]></summary>
+        <content type="html"><![CDATA[<p>Typing and various improvements</p><h3>Typing</h3><ul><li>Add explicit and required <code>children</code> prop to <code>&lt;RecoilRoot&gt;</code> and <code>useRecoilBridgeAcrossReactRoots_UNSTABLE()</code> for TypeScript to support the <a href="https://solverfox.dev/writing/no-implicit-children/">removal of implicit children</a> with <a href="https://github.com/DefinitelyTyped/DefinitelyTyped/pull/56210">`@types/react@^18.0.0</a> for React 18. (<a href="https://github.com/facebookexperimental/Recoil/pull/1718">#1718</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1717">#1717</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1726">#1726</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1731">#1731</a>)</li><li>Update typing for <a href="/docs/api-reference/utils/atomFamily#parameter-type">family parameters</a> to better support Map, Set, and classes with <code>toJSON()</code>. (<a href="https://github.com/facebookexperimental/Recoil/pull/1709">#1709</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1703">#1703</a>)</li></ul><h3>Fixes</h3><ul><li>Avoid dev-mode console error with React 18 when using shared async selectors across multiple <code>&lt;RecoilRoot&gt;</code>&#x27;s. (<a href="https://github.com/facebookexperimental/Recoil/pull/1712">#1712</a>)</li><li>Cleanup potential memory leak when using async selectors. (<a href="https://github.com/facebookexperimental/Recoil/pull/1714">#1714</a>)</li><li>Fix potentially hung async selectors when shared across multiple roots that depend on atoms initialized with promises that don&#x27;t resolve. (<a href="https://github.com/facebookexperimental/Recoil/pull/1714">#1714</a>)</li></ul>]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[Recoil 0.7]]></title>
