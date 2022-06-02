@@ -18,12 +18,12 @@ function graphQLMutationEffect<
 >({
   environment: IEnvironment | EnvironmentKey,
   mutation: Mutation<TVariables, TResponse, TRawResponse>,
-  variables: T => null | TVariables,
+  variables: T => TVariables | null,
 
-  updater?: SelectorStoreUpdater<TResponse>,
-  optimisticUpdater?: SelectorStoreUpdater<TResponse>,
-  optimisticResponse?: TResponse,
-  uploadables?: UploadableMap,
+  updater_UNSTABLE?: SelectorStoreUpdater<TResponse>,
+  optimisticUpdater_UNSTABLE?: SelectorStoreUpdater<TResponse>,
+  optimisticResponse_UNSTABLE?: T => TResponse,
+  uploadables_UNSTABLE?: UploadableMap,
 }): AtomEffect<T>
 ```
 
@@ -32,9 +32,9 @@ function graphQLMutationEffect<
 - `variables`: Callback provided the new atom value that returns the variables object provided as input to the GraphQL mutation.  If it returns `null` then the mutation is skipped.
 
 Optional options:
-- `updater`: Optional `updater()` function passed to `commitMutation()`.
-- `optimisticUpdater`: Optional `optimisticUpdater()` function passed to `commitMutation()`.
-- `optimisticResponse`: Optional optimistic response passed to `commitMutation()`.
-- `uploadables`: Optional `uploadables` passed to `commitMutation()`.
+- `updater_UNSTABLE`: Optional `updater()` function passed to `commitMutation()`.
+- `optimisticUpdater_UNSTABLE`: Optional `optimisticUpdater()` function passed to `commitMutation()`.
+- `optimisticResponse_UNSTABLE`: Optional optimistic response passed to `commitMutation()`.
+- `uploadables_UNSTABLE`: Optional `uploadables` passed to `commitMutation()`.
 
 ---

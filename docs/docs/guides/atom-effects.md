@@ -11,6 +11,9 @@ An *atom effect* is a *function* with the following definition.
 type AtomEffect<T> = ({
   node: RecoilState<T>, // A reference to the atom itself
   storeID: StoreID, // ID for the <RecoilRoot> or Snapshot store associated with this effect.
+  // ID for the parent Store the current instance was cloned from.  For example,
+  // the host <RecoilRoot> store for `useRecoilCallback()` snapshots.
+  parentStoreID_UNSTABLE: StoreID,
   trigger: 'get' | 'set', // The action which triggered initialization of the atom
 
   // Callbacks to set or reset the value of the atom.
@@ -20,6 +23,7 @@ type AtomEffect<T> = ({
     | T
     | DefaultValue
     | Promise<T | DefaultValue> // Only allowed for initialization at this time
+    | WrappedValue<T>
     | ((T | DefaultValue) => T | DefaultValue),
   ) => void,
   resetSelf: () => void,

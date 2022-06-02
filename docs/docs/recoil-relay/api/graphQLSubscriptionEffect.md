@@ -16,15 +16,15 @@ function graphQLSubscriptionEffect<
 >({
   environment: IEnvironment | EnvironmentKey,
   subscription: GraphQLSubscription<TVariables, TData, TRawResponse>,
-  variables: null | TVariables,
-  mapResponse?: TData => T,
+  variables: TVariables | null,
+  mapResponse: TData => T,
 }): AtomEffect<T>
 ```
 
 - `environment`: The Relay Environment or an [`EnvironmentKey`](/docs/recoil-relay/api/EnvironmentKey) to match with the environment provided with [`<RecoilRelayEnvironemnt>`](/docs/recoil-relay/api/RecoilRelayEnvironment).
 - `subscription`: The GraphQL subscription to query.
 - `variables`: [Variables](https://graphql.org/learn/queries/#variables) object provided as input to the GraphQL query.  If `null`, then skip query and use the default atom value.
-- `mapResponse`: Optional callback to map the query response to the atom value.
+- `mapResponse`: Callback to map the query response to the atom value.
 
 ---
 
