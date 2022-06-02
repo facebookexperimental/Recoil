@@ -23,7 +23,7 @@ const userNameQuery = graphQLSelector({
   mapResponse: data => data.user?.name,
 });
 ```
-Then use it like any other Recoil [selector](/docs/api-reference/core/selector):
+Then use it like any other Recoil [selector](/docs/introduction/core-concepts#selectors):
 ```jsx
 function MyComponent() {
   const userName = useRecoilValue(userNameQuery);
