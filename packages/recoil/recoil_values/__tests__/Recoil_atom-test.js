@@ -1003,6 +1003,8 @@ describe('Effects', () => {
   testRecoil('onSet History', () => {
     const history: Array<() => void> = []; // Array of undo functions
 
+    /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
+     * Flow's LTI update could not be added via codemod */
     function historyEffect({setSelf, onSet}) {
       onSet((_, oldValue) => {
         history.push(() => {
@@ -1600,6 +1602,8 @@ testRecoil('object is frozen when stored in atom', async () => {
     return value;
   }
 
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
   function isFrozen(value, getter = x => x) {
     const object = valueAfterSettingInAtom({x: value});
     return Object.isFrozen(getter(object.x));

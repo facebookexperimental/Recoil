@@ -115,6 +115,8 @@ async function testTransit(
     | $TEMPORARY$object<{param?: string, part: 'queryParams'}>
     | $TEMPORARY$object<{part: 'hash'}>
     | $TEMPORARY$object<{part: 'search'}>,
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
   atoms,
   contents: string,
   beforeURL: string,

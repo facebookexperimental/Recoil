@@ -114,6 +114,8 @@ function componentThatWritesAtom<T>(
   return [(Component: any), x => updateValue(x)];
 }
 
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function ObservesTransactions({fn}) {
   useTransactionObservation_DEPRECATED(fn);
   return null;

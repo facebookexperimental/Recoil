@@ -76,6 +76,8 @@ function wrapResults(
   dependencies:
     | $ReadOnlyArray<RecoilValueReadOnly<mixed>>
     | {+[string]: RecoilValueReadOnly<mixed>},
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
   results,
 ) {
   return Array.isArray(dependencies)

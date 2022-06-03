@@ -80,6 +80,8 @@ function getPromise<T>(recoilValue: RecoilValue<T>): Promise<T> {
   return getLoadable(recoilValue).promiseOrThrow();
 }
 
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function getError(recoilValue): Error {
   const error = getLoadable(recoilValue).errorOrThrow();
   if (!(error instanceof Error)) {

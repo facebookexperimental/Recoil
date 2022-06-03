@@ -43,18 +43,24 @@ const BUILTIN_HANDLERS = [
   {
     tag: 'Date',
     class: Date,
+    /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
+     * Flow's LTI update could not be added via codemod */
     write: x => x.toISOString(),
     read: (str: $FlowFixMe) => new Date(str),
   },
   {
     tag: 'Set',
     class: Set,
+    /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
+     * Flow's LTI update could not be added via codemod */
     write: x => Array.from(x),
     read: (arr: $FlowFixMe) => new Set(arr),
   },
   {
     tag: 'Map',
     class: Map,
+    /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
+     * Flow's LTI update could not be added via codemod */
     write: x => Array.from(x.entries()),
     read: (arr: $FlowFixMe) => new Map(arr),
   },

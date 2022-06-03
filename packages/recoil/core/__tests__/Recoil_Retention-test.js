@@ -75,6 +75,8 @@ function atomRetainedBy(
 function switchComponent(defaultVisible: boolean) {
   let innerSetVisible = (_: boolean) => undefined;
   const setVisible = (v: boolean) => innerSetVisible(v); // acts like a ref basically
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
   function Switch({children}) {
     let visible;
     [visible, innerSetVisible] = useState(defaultVisible);
@@ -90,6 +92,8 @@ function switchComponent(defaultVisible: boolean) {
 function testWhetherAtomIsRetained(
   shouldBeRetained: boolean,
   node: RecoilState<number>,
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
   otherChildren = null,
 ): void {
   const [AtomSwitch, setAtomVisible] = switchComponent(false);

@@ -92,15 +92,21 @@ let fbOnlyTest = test.skip;
 
 let id = 0;
 
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function get(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue).contents;
 }
 
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function getLoadable(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue);
 }
 
 function set(
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
   recoilValue,
   value:
     | void
@@ -459,6 +465,8 @@ testRecoil(
       setVisible = mySetVisible;
       return visible ? children : null;
     }
+    /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
+     * Flow's LTI update could not be added via codemod */
     function MyReadsAtom({getAtom}) {
       const [param, setParam] = useState({num: 10});
       setAtomParam = setParam;

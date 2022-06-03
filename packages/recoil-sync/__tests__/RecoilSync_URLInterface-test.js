@@ -30,6 +30,8 @@ const absoluteURL = (url: string) => {
   link.href = url;
   return link.href;
 };
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 const expectURL = parts => testExpectURL(parts, currentURL());
 const mockBrowserURL = {
   replaceURL: (url: string) => {
