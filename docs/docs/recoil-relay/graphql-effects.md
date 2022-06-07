@@ -12,5 +12,5 @@ This effect initializes an atom with the results of a **GraphQL query**. Data ma
 ### [**`graphQLSubscriptionEffect()`**](/docs/recoil-relay/api/graphQLSubscriptionEffect)
 If you also want to subscribe to mutations initiated remotely from the server, in addition to local changes, then you can implement a **GraphQL subscription** on the server and use this instead of a query.
 
-### [**`graphQLMutatonEffect()`**](/docs/recoil-relay/api/graphQLMutationEffect)
+### [**`graphQLMutationEffect()`**](/docs/recoil-relay/api/graphQLMutationEffect)
 This effect allows an atom to act as a write-through cache. Any local mutations to the atom will be committed as a **GraphQL mutation** operation.
