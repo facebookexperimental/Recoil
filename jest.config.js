@@ -25,8 +25,6 @@ module.exports = {
     '/packages-ext/',
     '/__generated__/',
     '/mock-graphql/',
-    // Temporarily skip recoil-sync until we enable transit-js dependency
-    '/packages/recoil-sync',
   ],
   setupFiles: ['./setupJestMock.js'],
 };
