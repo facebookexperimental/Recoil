@@ -43,9 +43,9 @@ jobs:
     - run: yarn test
     - run: yarn lint
     - run: yarn build
-    - run: yarn pack
+    - run: yarn run pack
     - name: Create package
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: package
-        path: "*.tgz"
+        path: "build/recoil/*.tgz"

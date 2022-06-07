@@ -13,10 +13,10 @@ jobs:
     - uses: actions/checkout@v2
     # config GIT so it can do git push
     - uses: fregante/setup-git-user@v1
-    - name: Use Node.js 12.x
+    - name: Use Node.js 16.x
       uses: actions/setup-node@v1
       with:
-        node-version: 12.x
+        node-version: 16.x
     - run: npm i -g yarn
     - run: yarn install --frozen-lockfile
     - run: yarn deploy-nightly

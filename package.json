@@ -1,6 +1,6 @@
 {
   "name": "recoil",
-  "version": "0.7.2",
+  "private": true,
   "description": "Recoil - A state management library for React",
   "main": "cjs/index.js",
   "module": "es/index.js",
@@ -17,8 +17,7 @@
   "license": "MIT",
   "scripts": {
     "prepare": "install-peers",
-    "build": "rollup -c && node scripts/postbuild.js",
-    "build-TMP": "node scripts/build.mjs",
+    "build": "node scripts/build.mjs",
     "pack": "node scripts/pack.mjs",
     "test": "yarn relay && jest packages/*",
     "format": "prettier --write \"./**/*.{js,md,json}\"",
