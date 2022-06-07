@@ -5,7 +5,10 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
+
+import type {LocationOption} from '../RecoilSync_URL';
 
 const {atom} = require('Recoil');
 
@@ -67,15 +70,12 @@ const atomObject = atom({
 });
 const atomDate = atom({
   key: 'date',
-  default: new Date('October 26, 1985'),
+  default: new Date('7:00 GMT October 26, 1985'),
   effects: [syncEffect({refine: jsonDate(), syncDefault: true})],
 });
 
 async function testJSON(
-  loc:
-    | $TEMPORARY$object<{param?: string, part: 'queryParams'}>
-    | $TEMPORARY$object<{part: 'hash'}>
-    | $TEMPORARY$object<{part: 'search'}>,
+  loc: LocationOption,
   contents: string,
   beforeURL: string,
   afterURL: string,

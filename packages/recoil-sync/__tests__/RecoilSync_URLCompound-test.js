@@ -5,6 +5,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 const {act} = require('ReactTestUtils');
@@ -109,7 +110,7 @@ test('Many items to one atom', async () => {
   expect(container.textContent).toBe('{"foo":1}');
 
   // Test subscribe to URL updates
-  gotoURL([[loc, {foo: 1, bar: 2}]]);
+  await gotoURL([[loc, {foo: 1, bar: 2}]]);
   expect(container.textContent).toBe('{"bar":2,"foo":1}');
 
   // Test mutating atoms will update URL
@@ -170,7 +171,7 @@ test('One item to multiple atoms', async () => {
   expect(container.textContent).toBe('1null');
 
   // Test subscribe to URL updates
-  gotoURL([[loc, {compound: {foo: 1, bar: 2}}]]);
+  await gotoURL([[loc, {compound: {foo: 1, bar: 2}}]]);
   expect(container.textContent).toBe('12');
 
   // Test mutating atoms will update URL
@@ -237,7 +238,7 @@ test('One item to atom family', async () => {
   expect(container.textContent).toBe('1null');
 
   // Test subscribe to URL updates
-  gotoURL([[loc, {compound: {foo: 1, bar: 2}}]]);
+  await gotoURL([[loc, {compound: {foo: 1, bar: 2}}]]);
   expect(container.textContent).toBe('12');
 
   // Test mutating atoms will update URL

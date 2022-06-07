@@ -5,7 +5,10 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
+
+import type {LocationOption} from '../RecoilSync_URL';
 
 const {act} = require('ReactTestUtils');
 const {atom} = require('Recoil');
@@ -34,14 +37,7 @@ describe('Test URL Persistence', () => {
     history.replaceState(null, '', '/path/page.html?foo=bar#anchor');
   });
 
-  function testWriteToURL(
-    loc:
-      | $TEMPORARY$object<{param?: string, part: 'queryParams'}>
-      | $TEMPORARY$object<{part: 'hash'}>
-      | $TEMPORARY$object<{part: 'href'}>
-      | $TEMPORARY$object<{part: 'search'}>,
-    remainder: () => void,
-  ) {
+  function testWriteToURL(loc: LocationOption, remainder: () => void) {
     const atomA = atom({
       key: nextKey(),
       default: 'DEFAULT',
