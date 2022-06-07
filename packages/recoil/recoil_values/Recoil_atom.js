@@ -55,6 +55,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {Loadable, LoadingLoadableType} from '../adt/Recoil_Loadable';
@@ -667,6 +668,12 @@ function atomWithFallback<T>(
       return baseValue instanceof DefaultValue ? options.default : baseValue;
     },
     set: ({set}, newValue) => set(base, newValue),
+    // This selector does not need to cache as it is a wrapper selector
+    // and the selector within the wrapper selector will have a cache
+    // option by default
+    cachePolicy_UNSTABLE: {
+      eviction: 'most-recent',
+    },
     dangerouslyAllowMutability: options.dangerouslyAllowMutability,
   });
   setConfigDeletionHandler(sel.key, getConfigDeletionHandler(options.key));
