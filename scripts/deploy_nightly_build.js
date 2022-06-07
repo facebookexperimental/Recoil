@@ -9,17 +9,13 @@
  * @format
  */
 
-const {files, repository, version} = require('../package.json');
+const {repository} = require('../package.json');
 const {execSync} = require('child_process');
 
 const DEST_FOLDER = 'nightly-build-files/';
 const DEST_BRANCH = 'nightly';
 
-const COMMIT_MSG = `Publishing a nightly build as ${version}`;
-
-const SOURCES = ['CHANGELOG.md', 'LICENSE', 'README.md', 'package.json'].concat(
-  files,
-);
+const COMMIT_MSG = `Publishing a nightly build`;
 
 const cwd = process.cwd();
 
@@ -33,7 +29,7 @@ execSync(`git clone -b ${DEST_BRANCH} ${repository} ${DEST_FOLDER} --depth 1`, {
 });
 
 console.log('Copying sources...');
-execSync(`cp -r ${SOURCES.join(' ')} ${DEST_FOLDER}`, {cwd});
+execSync(`cp -r build/recoil ${DEST_FOLDER}`, {cwd});
 
 console.log('Committing and pushing...');
 execSync(
