@@ -978,12 +978,7 @@ test('Persist on read - async', async () => {
 });
 
 test('Sync based on component props', async () => {
-  function SyncWithProps(
-    props: $TEMPORARY$object<{
-      eggs: $TEMPORARY$string<'EGGS'>,
-      spam: $TEMPORARY$string<'SPAM'>,
-    }>,
-  ) {
+  function SyncWithProps(props: {eggs: string, spam: string}) {
     useRecoilSync({
       read: itemKey => (itemKey in props ? props[itemKey] : new DefaultValue()),
     });

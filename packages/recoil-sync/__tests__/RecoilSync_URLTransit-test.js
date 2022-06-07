@@ -5,7 +5,10 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
+
+import type {LocationOption} from '../RecoilSync_URL';
 
 const {atom, selector} = require('Recoil');
 
@@ -82,7 +85,7 @@ const atomMap = atom({
 });
 const atomDate = atom({
   key: 'date',
-  default: new Date('October 26, 1985'),
+  default: new Date('7:00 GMT October 26, 1985'),
   effects: [syncEffect({refine: date(), syncDefault: true})],
 });
 const atomUser = atom({
@@ -111,10 +114,7 @@ const HANDLERS = [
 ];
 
 async function testTransit(
-  loc:
-    | $TEMPORARY$object<{param?: string, part: 'queryParams'}>
-    | $TEMPORARY$object<{part: 'hash'}>
-    | $TEMPORARY$object<{part: 'search'}>,
+  loc: LocationOption,
   /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
    * LTI update could not be added via codemod */
   atoms,

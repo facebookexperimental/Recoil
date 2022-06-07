@@ -29,7 +29,8 @@
     "deploy-nightly": "yarn build && node scripts/deploy_nightly_build.js"
   },
   "dependencies": {
-    "hamt_plus": "1.0.2"
+    "hamt_plus": "1.0.2",
+    "transit-js": "^0.8.874"
   },
   "peerDependencies": {
     "react": ">=16.13.1"
