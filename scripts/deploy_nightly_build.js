@@ -29,7 +29,7 @@ execSync(`git clone -b ${DEST_BRANCH} ${repository} ${DEST_FOLDER} --depth 1`, {
 });
 
 console.log('Copying sources...');
-execSync(`cp -r build/recoil ${DEST_FOLDER}`, {cwd});
+execSync(`cp -r build/recoil/* ${DEST_FOLDER}`, {cwd});
 
 console.log('Committing and pushing...');
 execSync(
