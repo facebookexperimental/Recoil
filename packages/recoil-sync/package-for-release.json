@@ -1,6 +1,6 @@
 {
   "name": "recoil-sync",
-  "version": "0.1.1-alpha.1",
+  "version": "0.1.0-alpha.1",
   "description": "recoil-sync provides an add-on library to help synchronize Recoil state with external systems",
   "main": "cjs/index.js",
   "module": "es/index.js",
