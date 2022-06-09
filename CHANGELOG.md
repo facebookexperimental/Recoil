@@ -3,8 +3,10 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+## 0.7.3 (2022-06-01)
+
 - Atom effects can initialize or set atoms to wrapped values (#1681)
-- Add `parentStoreID_UNSTABLE` to atom effects.  This will match up with the store that the current store was cloned from, such as the host `<RecoilRoot>` store for `useRecoilCallback()` snapshots. (#1744)
+- Add `parentStoreID_UNSTABLE` to atom effects which is the ID of the parent store it cloned from, such as the host `<RecoilRoot>` store for `useRecoilCallback()` snapshots. (#1744)
 - Enable atoms and selectors to be used in family parameters (#1740)
 
 ## 0.7.2 (2022-04-13)

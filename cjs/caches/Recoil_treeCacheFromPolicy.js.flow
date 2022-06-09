@@ -23,7 +23,11 @@ const err = require('recoil-shared/util/Recoil_err');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const stableStringify = require('recoil-shared/util/Recoil_stableStringify');
 
-const defaultPolicy = {
+const defaultPolicy: {
+  equality: 'reference',
+  eviction: 'keep-all',
+  maxSize: number,
+} = {
   equality: 'reference',
   eviction: 'keep-all',
   maxSize: Infinity,
@@ -34,7 +38,8 @@ function treeCacheFromPolicy<T>(
     equality = defaultPolicy.equality,
     eviction = defaultPolicy.eviction,
     maxSize = defaultPolicy.maxSize,
-  }: CachePolicy = defaultPolicy,
+  }: // $FlowFixMe[incompatible-type]
+  CachePolicy = defaultPolicy,
   name?: string,
 ): TreeCacheImplementation<T> {
   const valueMapper = getValueMapper(equality);

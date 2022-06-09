@@ -34,7 +34,7 @@ function testPerf(
 ) {
   test.each(ITERATIONS)(name, iterations => {
     store = makeStore();
-    const perf = cb => {
+    const perf = (cb: () => void) => {
       const BEGIN = performance.now();
       cb();
       const END = performance.now();
@@ -54,7 +54,7 @@ function getNodeValue<T>(recoilValue: RecoilValue<T>): T {
   return getNodeLoadable(recoilValue).getValue();
 }
 
-function setNode(recoilValue, value: mixed) {
+function setNode(recoilValue: RecoilState<string>, value: mixed) {
   setRecoilValue(store, recoilValue, value);
   // $FlowFixMe[unsafe-addition]
   // $FlowFixMe[cannot-write]
@@ -63,7 +63,7 @@ function setNode(recoilValue, value: mixed) {
 
 let nextAtomKey = 0;
 
-function createAtoms(num): Array<RecoilState<string>> {
+function createAtoms(num: number): Array<RecoilState<string>> {
   const atoms = Array(num);
   const atomKey = nextAtomKey++;
   for (let i = 0; i < num; i++) {

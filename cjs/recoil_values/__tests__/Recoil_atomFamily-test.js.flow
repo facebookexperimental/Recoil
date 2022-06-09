@@ -9,9 +9,11 @@
  * @format
  */
 'use strict';
-
 import type {Store} from '../../core/Recoil_State';
+import type {Parameter} from 'Recoil_atomFamily';
 import type {StoreID as StoreIDType} from 'Recoil_Keys';
+import type {RecoilState} from 'Recoil_RecoilValue';
+import type {Node} from 'react';
 
 const {
   getRecoilTestFn,
@@ -90,15 +92,40 @@ let fbOnlyTest = test.skip;
 
 let id = 0;
 
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function get(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue).contents;
 }
 
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 function getLoadable(recoilValue) {
   return getRecoilValueAsLoadable(store, recoilValue);
 }
 
-function set(recoilValue, value) {
+function set(
+  /* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+   * LTI update could not be added via codemod */
+  recoilValue,
+  value:
+    | void
+    | number
+    | $TEMPORARY$string<'VALUE'>
+    | $TEMPORARY$string<'bar'>
+    | $TEMPORARY$string<'eggs'>
+    | $TEMPORARY$string<'spam'>
+    | $TEMPORARY$string<'xValue'>
+    | $TEMPORARY$string<'xValue1'>
+    | $TEMPORARY$string<'xValue2'>
+    | $TEMPORARY$string<'xValue3'>
+    | $TEMPORARY$string<'xValue4'>
+    | $TEMPORARY$string<'yValue'>
+    | $TEMPORARY$string<'yValue1'>
+    | $TEMPORARY$string<'yValue2'>
+    | $TEMPORARY$string<'yValue3'>
+    | $TEMPORARY$string<'yValue4'>,
+) {
   setRecoilValue(store, recoilValue, value);
 }
 
@@ -364,12 +391,16 @@ testRecoil('Returns the fallback for parameterized atoms', () => {
     return null;
   }
   let setVisible;
-  function Switch({children}) {
+  function Switch({children}: $TEMPORARY$object<{children: Node}>) {
     const [visible, mySetVisible] = useState(false);
     setVisible = mySetVisible;
     return visible ? children : null;
   }
-  function MyReadsAtom({getAtom}) {
+  function MyReadsAtom({
+    getAtom,
+  }: $TEMPORARY$object<{
+    getAtom: () => null | (Parameter => RecoilState<number>),
+  }>) {
     const [param, setParam] = useState({num: 1});
     setAtomParam = setParam;
     // flowlint-next-line unclear-type:off
@@ -429,11 +460,13 @@ testRecoil(
       return null;
     }
     let setVisible;
-    function Switch({children}) {
+    function Switch({children}: $TEMPORARY$object<{children: Node}>) {
       const [visible, mySetVisible] = useState(false);
       setVisible = mySetVisible;
       return visible ? children : null;
     }
+    /* $FlowFixMe[missing-local-annot] The type annotation(s) required by
+     * Flow's LTI update could not be added via codemod */
     function MyReadsAtom({getAtom}) {
       const [param, setParam] = useState({num: 10});
       setAtomParam = setParam;
@@ -498,7 +531,9 @@ testRecoil('Independent atom subscriptions', ({gks}) => {
     default: 'DEFAULT',
   });
 
-  const TrackingComponent = param => {
+  const TrackingComponent = (
+    param: $TEMPORARY$string<'A'> | $TEMPORARY$string<'B'>,
+  ) => {
     let numUpdates = 0;
     let setValue;
 
@@ -515,7 +550,7 @@ testRecoil('Independent atom subscriptions', ({gks}) => {
       );
     };
 
-    return [Component, value => setValue(value), () => numUpdates];
+    return [Component, (value: number) => setValue(value), () => numUpdates];
   };
 
   const [ComponentA, setValueA, getNumUpdatesA] = TrackingComponent('A');
@@ -656,7 +691,13 @@ describe('Effects', () => {
     });
 
     const storeIDs: {[string]: StoreIDType} = {};
-    function StoreID({rootKey}) {
+    function StoreID({
+      rootKey,
+    }:
+      | $TEMPORARY$object<{rootKey: $TEMPORARY$string<'A'>}>
+      | $TEMPORARY$object<{rootKey: $TEMPORARY$string<'A1'>}>
+      | $TEMPORARY$object<{rootKey: $TEMPORARY$string<'A2'>}>
+      | $TEMPORARY$object<{rootKey: $TEMPORARY$string<'B'>}>) {
       const storeID = useRecoilStoreID();
       storeIDs[rootKey] = storeID;
       return null;

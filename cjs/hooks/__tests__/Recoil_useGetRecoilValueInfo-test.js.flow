@@ -9,6 +9,7 @@
  * @format
  */
 'use strict';
+import type {RecoilState, RecoilValueReadOnly} from 'Recoil_RecoilValue';
 
 const {
   getRecoilTestFn,
@@ -51,7 +52,7 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
     get: ({get}) => get(selectorA) + get(myAtom),
   });
 
-  let getNodeInfo = _ => {
+  let getNodeInfo = (_: RecoilState<string> | RecoilValueReadOnly<string>) => {
     expect(false).toBe(true);
     throw new Error('getRecoilValue not set');
   };

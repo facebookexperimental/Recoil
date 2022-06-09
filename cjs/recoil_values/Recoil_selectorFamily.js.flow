@@ -139,7 +139,10 @@ function selectorFamily<T, Params: Parameter>(
       }) ?? 'void'
     }/${nextIndex++}`; // Append index in case values serialize to the same key string
 
-    const myGet = callbacks => options.get(params)(callbacks);
+    const myGet = (callbacks: {
+      get: GetRecoilValue,
+      getCallback: GetCallback<T>,
+    }) => options.get(params)(callbacks);
     const myCachePolicy = options.cachePolicy_UNSTABLE;
 
     const retainedBy =
@@ -150,7 +153,14 @@ function selectorFamily<T, Params: Parameter>(
     let newSelector;
     if (options.set != null) {
       const set = options.set;
-      const mySet = (callbacks, newValue) => set(params)(callbacks, newValue);
+      const mySet = (
+        callbacks: {
+          get: GetRecoilValue,
+          reset: ResetRecoilState,
+          set: SetRecoilState,
+        },
+        newValue: T | DefaultValue,
+      ) => set(params)(callbacks, newValue);
       newSelector = selector<T>({
         key: myKey,
         get: myGet,

@@ -63,7 +63,7 @@ testRecoil('Works with useTransition', async ({concurrentMode}) => {
   // Basic implementation of a cache that suspends:
   const cache = new Map();
   const resolvers = [];
-  function getItem(index) {
+  function getItem(index: number) {
     if (cache.has(index) && cache.get(index)?.state === 'ready') {
       return cache.get(index)?.value;
     } else if (cache.has(index)) {
@@ -90,7 +90,7 @@ testRecoil('Works with useTransition', async ({concurrentMode}) => {
     }
   }
 
-  function ItemContents({index}) {
+  function ItemContents({index}: $TEMPORARY$object<{index: number}>) {
     const item = getItem(index);
     return (
       <div>
@@ -99,7 +99,7 @@ testRecoil('Works with useTransition', async ({concurrentMode}) => {
     );
   }
 
-  function Item({index}) {
+  function Item({index}: $TEMPORARY$object<{index: number}>) {
     return (
       <React.Suspense fallback="Suspended">
         <ItemContents index={index} />
@@ -176,7 +176,7 @@ testRecoil('useRecoilValue()', async ({concurrentMode}) => {
       },
   });
 
-  function Component({index}) {
+  function Component({index}: $TEMPORARY$object<{index: number}>) {
     const value = useRecoilValue(query(index));
     return (
       <>
@@ -295,7 +295,7 @@ testRecoil(
         },
     });
 
-    function Component({index}) {
+    function Component({index}: $TEMPORARY$object<{index: number}>) {
       const value = useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(query(index));
       return (
         <>

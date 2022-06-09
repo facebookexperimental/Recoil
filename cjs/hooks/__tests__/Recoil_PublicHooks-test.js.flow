@@ -10,13 +10,13 @@
  */
 /* eslint-disable fb-www/react-no-useless-fragment */
 'use strict';
-
 import type {
   RecoilState,
   RecoilValue,
   RecoilValueReadOnly,
 } from '../../core/Recoil_RecoilValue';
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
+import type {Node} from 'react';
 
 const {
   getRecoilTestFn,
@@ -150,13 +150,18 @@ function componentThatWritesAtom<T>(
   return [(Component: any), x => updateValue(x)];
 }
 
-function componentThatReadsTwoAtoms(one, two) {
+function componentThatReadsTwoAtoms(
+  one: RecoilState<number>,
+  two: RecoilState<number> | RecoilValueReadOnly<number>,
+) {
   return (jest.fn(function ReadTwoAtoms() {
     return `${useRecoilValue(one)},${useRecoilValue(two)}`;
   }): any); // flowlint-line unclear-type:off
 }
 
-function componentThatReadsAtomWithCommitCount(recoilState) {
+function componentThatReadsAtomWithCommitCount(
+  recoilState: RecoilState<number> | RecoilValueReadOnly<number>,
+) {
   const commit = jest.fn(() => {});
   function ReadAtom() {
     return (
@@ -168,7 +173,7 @@ function componentThatReadsAtomWithCommitCount(recoilState) {
   return [ReadAtom, commit];
 }
 
-function componentThatToggles(a, b) {
+function componentThatToggles(a: Node, b: null) {
   const toggle = {current: () => invariant(false, 'bug in test code')};
   const Toggle = () => {
     const [value, setValue] = useState(false);
@@ -178,7 +183,7 @@ function componentThatToggles(a, b) {
   return [Toggle, toggle];
 }
 
-function baseRenderCount(gks): number {
+function baseRenderCount(gks: Array<string>): number {
   return reactMode().mode === 'LEGACY' &&
     !gks.includes('recoil_suppress_rerender_in_callback')
     ? 1
@@ -475,7 +480,7 @@ describe('Component Subscriptions', () => {
       const anAtom = counterAtom();
 
       let setVisible;
-      function Switch({children}) {
+      function Switch({children}: $TEMPORARY$object<{children: Node}>) {
         const [visible, mySetVisible] = useState(false);
         setVisible = mySetVisible;
         return visible ? children : null;
@@ -507,7 +512,7 @@ describe('Component Subscriptions', () => {
     const anAtom = counterAtom();
 
     let setVisible;
-    function Switch({children}) {
+    function Switch({children}: $TEMPORARY$object<{children: Node}>) {
       const [visible, mySetVisible] = useState(true);
       setVisible = mySetVisible;
       return visible ? children : null;
@@ -679,7 +684,7 @@ describe('Component Subscriptions', () => {
       const [aSelector, _] = plusOneSelector(anAtom);
 
       let setVisible;
-      function Switch({children}) {
+      function Switch({children}: $TEMPORARY$object<{children: Node}>) {
         const [visible, mySetVisible] = useState(true);
         setVisible = mySetVisible;
         return visible ? children : null;
@@ -857,7 +862,11 @@ testRecoil(
       return;
     }
 
-    function testWithOrder(order) {
+    function testWithOrder(
+      order: $TEMPORARY$array<
+        $TEMPORARY$string<'Batcher'> | $TEMPORARY$string<'SetsDuringEffect'>,
+      >,
+    ) {
       const anAtom = counterAtom();
 
       let q: Array<[string, () => mixed]> = [];

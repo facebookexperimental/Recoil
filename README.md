@@ -1,12 +1,15 @@
 # Recoil &middot; [![NPM Version](https://img.shields.io/npm/v/recoil)](https://www.npmjs.com/package/recoil) [![Node.js CI](https://github.com/facebookexperimental/Recoil/workflows/Node.js%20CI/badge.svg)](https://github.com/facebookexperimental/Recoil/actions) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/facebookexperimental/Recoil/blob/main/LICENSE) [![Follow on Twitter](https://img.shields.io/twitter/follow/recoiljs?label=Follow%20Recoil&style=social)](https://twitter.com/recoiljs)
 
-Recoil is an experimental set of utilities for state management with React.
+Recoil is an experimental state management framework for React.
 
 Please see the website: https://recoiljs.org
 
 ## Installation
 
-The Recoil package lives in [npm](https://www.npmjs.com/get-npm). To install the latest stable version, run the following command:
+The Recoil package lives in [npm](https://www.npmjs.com/get-npm).  Please see the [installation guide](https://recoiljs.org/docs/introduction/installation)
+
+
+To install the latest stable version, run the following command:
 
 ```shell
 npm install recoil

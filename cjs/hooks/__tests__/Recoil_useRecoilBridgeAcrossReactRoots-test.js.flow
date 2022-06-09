@@ -9,8 +9,9 @@
  * @format
  */
 'use strict';
-
 import type {StoreID} from '../../core/Recoil_Keys';
+import type {MutableSnapshot} from 'Recoil_Snapshot';
+import type {Node} from 'react';
 
 const {
   getRecoilTestFn,
@@ -46,7 +47,7 @@ const testRecoil = getRecoilTestFn(() => {
   useRecoilBridgeAcrossReactRoots = require('../Recoil_useRecoilBridgeAcrossReactRoots');
 });
 
-function NestedReactRoot({children}) {
+function NestedReactRoot({children}: $TEMPORARY$object<{children: Node}>) {
   const ref = useRef<?HTMLDivElement>();
   const RecoilBridge = useRecoilBridgeAcrossReactRoots();
 
@@ -75,7 +76,7 @@ testRecoil(
       default: 'DEFAULT',
     });
 
-    function initializeState({set, getLoadable}) {
+    function initializeState({set, getLoadable}: MutableSnapshot) {
       expect(getLoadable(myAtom).contents).toEqual('DEFAULT');
       set(myAtom, 'INITIALIZE');
       expect(getLoadable(myAtom).contents).toEqual('INITIALIZE');

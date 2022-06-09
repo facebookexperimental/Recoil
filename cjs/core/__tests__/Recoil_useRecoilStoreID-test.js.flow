@@ -25,7 +25,13 @@ const testRecoil = getRecoilTestFn(() => {
 
 testRecoil('useRecoilStoreID', () => {
   const storeIDs: {[string]: StoreIDType} = {};
-  function StoreID({rootKey}) {
+  function StoreID({
+    rootKey,
+  }:
+    | $TEMPORARY$object<{rootKey: $TEMPORARY$string<'A'>}>
+    | $TEMPORARY$object<{rootKey: $TEMPORARY$string<'A1'>}>
+    | $TEMPORARY$object<{rootKey: $TEMPORARY$string<'A2'>}>
+    | $TEMPORARY$object<{rootKey: $TEMPORARY$string<'B'>}>) {
     const storeID = useRecoilStoreID();
     storeIDs[rootKey] = storeID;
     return null;

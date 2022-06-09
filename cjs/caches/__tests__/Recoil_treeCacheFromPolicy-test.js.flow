@@ -10,6 +10,7 @@
  */
 
 'use strict';
+import type {NodeKey} from 'Recoil_Keys';
 
 const {
   getRecoilTestFn,
@@ -21,8 +22,12 @@ const testRecoil = getRecoilTestFn(() => {
   treeCacheFromPolicy = require('../Recoil_treeCacheFromPolicy');
 });
 
-const valGetterFromPath = path => nodeKey =>
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
+const valGetterFromPath = path => (nodeKey: NodeKey) =>
   path.find(([k]) => k === nodeKey)?.[1];
+/* $FlowFixMe[missing-local-annot] The type annotation(s) required by Flow's
+ * LTI update could not be added via codemod */
 const clonePath = path => JSON.parse(JSON.stringify(path));
 
 describe('treeCacheFromPolicy()', () => {

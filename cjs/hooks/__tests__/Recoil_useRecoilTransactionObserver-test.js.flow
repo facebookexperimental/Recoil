@@ -9,6 +9,7 @@
  * @format
  */
 'use strict';
+import type {Snapshot} from 'Recoil_Snapshot';
 
 const {
   getRecoilTestFn,
@@ -43,7 +44,11 @@ const testRecoil = getRecoilTestFn(() => {
   ({useRecoilTransactionObserver} = require('../Recoil_SnapshotHooks'));
 });
 
-function TransactionObserver({callback}) {
+function TransactionObserver({
+  callback,
+}: $TEMPORARY$object<{
+  callback: ({previousSnapshot: Snapshot, snapshot: Snapshot}) => void,
+}>) {
   useRecoilTransactionObserver(callback);
   return null;
 }

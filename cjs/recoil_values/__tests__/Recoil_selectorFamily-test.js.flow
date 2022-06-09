@@ -9,8 +9,8 @@
  * @format
  */
 'use strict';
-
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
+import type {RecoilState} from 'Recoil_RecoilValue';
 
 const {
   getRecoilTestFn,
@@ -49,7 +49,7 @@ function getValue<T>(recoilValue: RecoilValue<T>): T {
   return getRecoilValueAsLoadable<T>(store, recoilValue).valueOrThrow();
 }
 
-function set(recoilValue, value) {
+function set(recoilValue: RecoilState<number>, value: number) {
   setRecoilValue(store, recoilValue, value);
 }
 

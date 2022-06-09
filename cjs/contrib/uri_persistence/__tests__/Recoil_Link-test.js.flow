@@ -9,6 +9,7 @@
  * @format
  */
 'use strict';
+import type {MutableSnapshot, Snapshot} from 'Recoil_Snapshot';
 
 const {Simulate, act} = require('ReactTestUtils');
 
@@ -28,7 +29,13 @@ const {
 const myAtom = atom<string>({key: 'Link Snapshot', default: 'DEFAULT'});
 const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
 
-const LinkToSnapshot = ({snapshot, children}) => (
+const LinkToSnapshot = ({
+  snapshot,
+  children,
+}: $TEMPORARY$object<{
+  children: Array<$TEMPORARY$string<'LINK-'> | string>,
+  snapshot: Snapshot,
+}>) => (
   <LinkToRecoilSnapshot
     snapshot={snapshot}
     uriFromSnapshot={({getLoadable}) =>
@@ -40,7 +47,13 @@ const LinkToSnapshot = ({snapshot, children}) => (
   </LinkToRecoilSnapshot>
 );
 
-const LinkToStateChange = ({stateChange, children}) => (
+const LinkToStateChange = ({
+  stateChange,
+  children,
+}: $TEMPORARY$object<{
+  children: $TEMPORARY$string<'LINK'>,
+  stateChange: MutableSnapshot => void,
+}>) => (
   <LinkToRecoilStateChange
     stateChange={stateChange}
     uriFromSnapshot={({getLoadable}) =>

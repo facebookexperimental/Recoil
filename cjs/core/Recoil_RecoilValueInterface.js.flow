@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
@@ -192,7 +193,7 @@ function writeLoadableToTreeState(
   state.nonvalidatedAtoms.delete(key);
 }
 
-function applyActionsToStore(store, actions) {
+function applyActionsToStore(store: Store, actions: Array<Action<mixed>>) {
   store.replaceState(state => {
     const newState = copyTreeState(state);
     for (const action of actions) {

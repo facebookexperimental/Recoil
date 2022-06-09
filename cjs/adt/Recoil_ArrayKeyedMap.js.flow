@@ -88,7 +88,7 @@ class ArrayKeyedMap<V> {
 
   entries(): Iterator<[$ReadOnlyArray<mixed>, V]> {
     const answer = [];
-    function recurse(level, prefix) {
+    function recurse(level: any | Map<any, any>, prefix: Array<mixed>) {
       level.forEach((v, k) => {
         if (k === LEAF) {
           answer.push([prefix, v]);

@@ -10,13 +10,13 @@
  */
 /* eslint-disable fb-www/react-no-useless-fragment */
 'use strict';
-
 import type {
   RecoilState,
   RecoilValue,
   RecoilValueReadOnly,
 } from '../../core/Recoil_RecoilValue';
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
+import type {Node} from 'react';
 
 const {
   getRecoilTestFn,
@@ -190,7 +190,9 @@ function componentThatWritesAtom<T>(
   return [(Component: any), x => updateValue(x)];
 }
 
-function componentThatReadsAtomWithCommitCount(recoilState) {
+function componentThatReadsAtomWithCommitCount(
+  recoilState: RecoilValueReadOnly<number>,
+) {
   const commit = jest.fn(() => {});
   function ReadAtom() {
     return (
@@ -202,7 +204,7 @@ function componentThatReadsAtomWithCommitCount(recoilState) {
   return [ReadAtom, commit];
 }
 
-function componentThatToggles(a, b) {
+function componentThatToggles(a: Node, b: null) {
   const toggle = {current: () => invariant(false, 'bug in test code')};
   const Toggle = () => {
     const [value, setValue] = useState(false);
@@ -212,7 +214,7 @@ function componentThatToggles(a, b) {
   return [Toggle, toggle];
 }
 
-function advanceTimersBy(ms) {
+function advanceTimersBy(ms: number) {
   // Jest does the right thing for runAllTimers but not advanceTimersByTime:
   act(() => {
     jest.runAllTicks();
@@ -223,7 +225,7 @@ function advanceTimersBy(ms) {
   });
 }
 
-function baseRenderCount(gks): number {
+function baseRenderCount(gks: Array<string>): number {
   return reactMode().mode === 'LEGACY' &&
     !gks.includes('recoil_suppress_rerender_in_callback')
     ? 1
@@ -1274,7 +1276,9 @@ describe('Async Selectors', () => {
     const [aSelector, _] = plusOneAsyncSelector(anAtom);
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
 
-    function ReadsAtomWithoutSuspense({state}) {
+    function ReadsAtomWithoutSuspense({
+      state,
+    }: $TEMPORARY$object<{state: RecoilValueReadOnly<number>}>) {
       const loadable = useRecoilValueLoadable(state);
       if (loadable.state === 'loading') {
         return 'loading not with suspense';
@@ -1313,7 +1317,9 @@ describe('Async Selectors', () => {
       const [aSelector, _] = plusOneAsyncSelector(anAtom);
       const [Component, updateValue] = componentThatWritesAtom(anAtom);
 
-      function ReadsAtomWithoutSuspense({state}) {
+      function ReadsAtomWithoutSuspense({
+        state,
+      }: $TEMPORARY$object<{state: RecoilValueReadOnly<number>}>) {
         return (
           useRecoilValueLoadable(state).valueMaybe() ??
           'loading not with suspense'
@@ -1783,7 +1789,11 @@ testRecoil('Change component prop to suspend and wake', () => {
   const awakeSelector = constSelector('WAKE');
   const suspendedSelector = loadingAsyncSelector();
 
-  function TestComponent({side}) {
+  function TestComponent({
+    side,
+  }: $TEMPORARY$object<{
+    side: $TEMPORARY$string<'AWAKE'> | $TEMPORARY$string<'SLEEP'>,
+  }>) {
     return (
       useRecoilValue(side === 'AWAKE' ? awakeSelector : suspendedSelector) ??
       'LOADING'
@@ -2413,7 +2423,8 @@ describe('Counts', () => {
         const value = useRecoilValue(mySelector);
         const setAtomValue = useSetRecoilState(myAtom);
         const resetAtomValue = useResetRecoilState(myAtom);
-        setAtom = x => setAtomValue({value: x});
+        setAtom = (x: $TEMPORARY$string<'CHANGE'> | $TEMPORARY$string<'SET'>) =>
+          setAtomValue({value: x});
         resetAtom = resetAtomValue;
         return value;
       }

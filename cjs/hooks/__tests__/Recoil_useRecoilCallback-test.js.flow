@@ -9,6 +9,7 @@
  * @format
  */
 'use strict';
+import type {Snapshot} from 'Recoil_Snapshot';
 
 const {
   getRecoilTestFn,
@@ -705,7 +706,8 @@ describe('Snapshot', () => {
     }
     renderElements(<Component />);
 
-    const getAtom = snapshot => snapshot?.getLoadable(myAtom).getValue();
+    const getAtom = (snapshot: void | Snapshot) =>
+      snapshot?.getLoadable(myAtom).getValue();
 
     const initialSnapshot = getSnapshot?.();
     expect(getAtom(initialSnapshot)).toEqual('DEFAULT');
@@ -762,7 +764,8 @@ describe('Snapshot', () => {
     }
     renderElements(<Component />);
 
-    const getAtom = snapshot => snapshot?.getLoadable(myAtom).getValue();
+    const getAtom = (snapshot: void | Snapshot) =>
+      snapshot?.getLoadable(myAtom).getValue();
 
     act(() => setMyAtom('SET'));
     const setSnapshot = getSnapshot?.();

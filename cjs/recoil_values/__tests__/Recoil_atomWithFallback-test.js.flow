@@ -9,9 +9,10 @@
  * @format
  */
 'use strict';
-
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 import type {Store} from '../../core/Recoil_State';
+import type {RecoilState} from 'Recoil_RecoilValue';
+import type {Node} from 'react';
 
 const {
   getRecoilTestFn,
@@ -69,11 +70,16 @@ const testRecoil = getRecoilTestFn(() => {
   subscribeToRecoilValue(store, hasFallbackAtom, () => undefined);
 });
 
-function get(recoilValue) {
+function get(
+  recoilValue: RecoilState<string> | RecoilState<?string> | RecoilValue<number>,
+) {
   return getRecoilValueAsLoadable(store, recoilValue).contents;
 }
 
-function set(recoilValue, value) {
+function set(
+  recoilValue: RecoilState<?string> | RecoilValue<number>,
+  value: ?(number | $TEMPORARY$string<'VALUE'>),
+) {
   setRecoilValue(store, recoilValue, value);
 }
 
@@ -94,12 +100,14 @@ describe('ReturnDefaultOrFallback', () => {
       return null;
     }
     let setVisible;
-    function Switch({children}) {
+    function Switch({children}: $TEMPORARY$object<{children: Node}>) {
       const [visible, mySetVisible] = useState(false);
       setVisible = mySetVisible;
       return visible ? children : null;
     }
-    function MyReadsAtom({getAtom}) {
+    function MyReadsAtom({
+      getAtom,
+    }: $TEMPORARY$object<{getAtom: () => null | RecoilState<number>}>) {
       // flowlint-next-line unclear-type:off
       const [value] = useRecoilState((getAtom(): any));
       return value;
@@ -139,12 +147,14 @@ describe('ReturnDefaultOrFallback', () => {
       return null;
     }
     let setVisible;
-    function Switch({children}) {
+    function Switch({children}: $TEMPORARY$object<{children: Node}>) {
       const [visible, mySetVisible] = useState(false);
       setVisible = mySetVisible;
       return visible ? children : null;
     }
-    function MyReadsAtom({getAtom}) {
+    function MyReadsAtom({
+      getAtom,
+    }: $TEMPORARY$object<{getAtom: () => null | RecoilState<number>}>) {
       // flowlint-next-line unclear-type:off
       const [value] = useRecoilState((getAtom(): any));
       return value;
