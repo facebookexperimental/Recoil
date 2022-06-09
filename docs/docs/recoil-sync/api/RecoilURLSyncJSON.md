@@ -1,6 +1,6 @@
 ---
-title: <RecoilURLSyncJSON ...props />
-sidebar_label: <RecoilURLSyncJSON/>
+title: <RecoilURLSyncJSON>
+sidebar_label: <RecoilURLSyncJSON>
 ---
 
 A component from the [Recoil Sync library](/docs/recoil-sync/introduction) to sync atoms using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) or [`urlSyncEffect()`](/docs/recoil-sync/api/urlSyncEffect) atom effects with the browser URL.

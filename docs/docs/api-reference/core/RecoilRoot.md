@@ -1,6 +1,6 @@
 ---
-title: <RecoilRoot ...props />
-sidebar_label: <RecoilRoot />
+title: <RecoilRoot>
+sidebar_label: <RecoilRoot>
 ---
 
 Provides the context in which atoms have values. Must be an ancestor of any component that uses any Recoil hooks.
