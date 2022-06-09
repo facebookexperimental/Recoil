@@ -20,13 +20,13 @@ import {
   StoreKey,
 
   // Core Recoil Sync
-  useRecoilSync,
+  RecoilSync,
   syncEffect,
 
   // Recoil Sync URL
-  useRecoilURLSync,
-  useRecoilURLSyncJSON,
-  useRecoilURLSyncTransit,
+  RecoilURLSync,
+  RecoilURLSyncJSON,
+  RecoilURLSyncTransit,
   urlSyncEffect,
 } from 'recoil-sync';
 import {
@@ -40,25 +40,25 @@ const storeKey: StoreKey = 'str';
 
 const DEFAULT_VALUE = new DefaultValue();
 
-// useRecoilSync()
-useRecoilSync(); // $ExpectError
-useRecoilSync({bad: 'BAD'}); // $ExpectError
-useRecoilSync({storeKey});
-useRecoilSync({storeKey: 0}); // $ExpectError
-useRecoilSync({read: (x: ItemKey) => undefined});
-useRecoilSync({read: (x: ItemKey) => 'any'});
-useRecoilSync({read: (x: ItemKey) => DEFAULT_VALUE});
-useRecoilSync({read: (x: ItemKey) => Promise.resolve('any')});
-useRecoilSync({read: (x: ItemKey) => RecoilLoadable.of('any')});
-useRecoilSync({read: (x: number) => 'BAD'}); // $ExpectError
-useRecoilSync({write: ({diff, allItems}) => {
+// <RecoilSync>
+RecoilSync(); // $ExpectError
+RecoilSync({bad: 'BAD'}); // $ExpectError
+RecoilSync({storeKey});
+RecoilSync({storeKey: 0}); // $ExpectError
+RecoilSync({read: (x: ItemKey) => undefined});
+RecoilSync({read: (x: ItemKey) => 'any'});
+RecoilSync({read: (x: ItemKey) => DEFAULT_VALUE});
+RecoilSync({read: (x: ItemKey) => Promise.resolve('any')});
+RecoilSync({read: (x: ItemKey) => RecoilLoadable.of('any')});
+RecoilSync({read: (x: number) => 'BAD'}); // $ExpectError
+RecoilSync({write: ({diff, allItems}) => {
   const diffMap: Map<ItemKey, unknown> = diff;
   const allItemsMap: Map<ItemKey, unknown> = allItems;
   const bad1: Map<ItemKey, string> = allItems; // $ExpectError
   const bad2: string = allItems; // $ExpectError
 }});
-useRecoilSync({write: ({bad}) => {}}); // $ExpectError
-useRecoilSync({listen: ({updateItem, updateAllKnownItems}) => {
+RecoilSync({write: ({bad}) => {}}); // $ExpectError
+RecoilSync({listen: ({updateItem, updateAllKnownItems}) => {
   updateItem(); // $ExpectError
   updateItem(0); // $ExpectError
   updateItem(itemKey); // $ExpectError
@@ -103,9 +103,10 @@ syncEffect({ // $ExpectType AtomEffect<number>
   },
 });
 
-// useRecoilURLSync()
-useRecoilURLSync(); // $ExpectError
-useRecoilURLSync({
+// <RecoilURLSync>
+RecoilURLSync(); // $ExpectError
+RecoilURLSync({
+  children: null,
   storeKey,
   location: {part: 'queryParams'},
   serialize: String,
@@ -129,35 +130,40 @@ urlSyncEffect({ // $ExpectType AtomEffect<number>
   history: 'push',
 });
 
-// useRecoilURLSyncJSON()
-useRecoilURLSyncJSON(); // $ExpectError
-useRecoilURLSyncJSON({
+// <RecoilURLSyncJSON>
+RecoilURLSyncJSON(); // $ExpectError
+RecoilURLSyncJSON({
+  children: null,
   storeKey,
   location: {part: 'queryParams'},
   serialize: String, // $ExpectError
   deserialize: (x: string) => x,
 });
-useRecoilURLSyncJSON({
+RecoilURLSyncJSON({
+  children: null,
   storeKey,
   location: {part: 'queryParams'},
 });
 
-// useRecoilURLSyncTransit()
+// <RecoilURLSyncTransit>
 class MyClass {
   prop: number;
 }
-useRecoilURLSyncTransit(); // $ExpectError
-useRecoilURLSyncTransit({
+RecoilURLSyncTransit(); // $ExpectError
+RecoilURLSyncTransit({
+  children: null,
   storeKey,
   location: {part: 'queryParams'},
   serialize: String, // $ExpectError
   deserialize: (x: string) => x,
 });
-useRecoilURLSyncTransit({
+RecoilURLSyncTransit({
+  children: null,
   storeKey,
   location: {part: 'queryParams'},
 });
-useRecoilURLSyncTransit({
+RecoilURLSyncTransit({
+  children: null,
   storeKey,
   location: {part: 'queryParams'},
   handlers: [

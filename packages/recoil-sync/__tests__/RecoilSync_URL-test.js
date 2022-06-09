@@ -57,12 +57,11 @@ describe('Test URL Persistence', () => {
     const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
     const [IgnoreAtom, setIgnore] = componentThatReadsAndWritesAtom(ignoreAtom);
     const container = renderElements(
-      <>
-        <TestURLSync location={loc} />
+      <TestURLSync location={loc}>
         <AtomA />
         <AtomB />
         <IgnoreAtom />
-      </>,
+      </TestURLSync>,
     );
 
     expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');
@@ -178,12 +177,11 @@ describe('Test URL Persistence', () => {
     );
 
     const container = renderElements(
-      <>
-        <TestURLSync location={loc} />
+      <TestURLSync location={loc}>
         <ReadsAtom atom={atomA} />
         <ReadsAtom atom={atomB} />
         <ReadsAtom atom={atomC} />
-      </>,
+      </TestURLSync>,
     );
 
     expect(container.textContent).toBe('"A""B""DEFAULT"');
@@ -261,12 +259,11 @@ describe('Test URL Persistence', () => {
     );
 
     const container = renderElements(
-      <>
-        <TestURLSync location={loc} />
+      <TestURLSync location={loc}>
         <ReadsAtom atom={atomA} />
         <ReadsAtom atom={atomB} />
         <ReadsAtom atom={atomC} />
-      </>,
+      </TestURLSync>,
     );
 
     expect(container.textContent).toBe('"DEFAULT""123"123');
@@ -392,11 +389,10 @@ describe('Test URL Persistence', () => {
     });
 
     const container = renderElements(
-      <>
-        <TestURLSync location={loc} />
+      <TestURLSync location={loc}>
         <ReadsAtom atom={atomA} />
         <ReadsAtom atom={atomB} />
-      </>,
+      </TestURLSync>,
     );
 
     await flushPromisesAndTimers();

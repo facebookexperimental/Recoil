@@ -5,11 +5,12 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {BrowserInterface, LocationOption} from '../RecoilSync_URL';
 
-const {useRecoilURLSync} = require('../RecoilSync_URL');
+const {RecoilURLSync} = require('../RecoilSync_URL');
 const React = require('react');
 const {useCallback} = require('react');
 const {
@@ -25,10 +26,12 @@ function TestURLSync({
   storeKey,
   location,
   browserInterface,
+  children = null,
 }: {
   storeKey?: string,
   location: LocationOption,
   browserInterface?: BrowserInterface,
+  children?: React.Node,
 }): React.Node {
   const serialize = useCallback(
     items => {
@@ -53,14 +56,19 @@ function TestURLSync({
     },
     [location.part],
   );
-  useRecoilURLSync({
-    storeKey,
-    location,
-    serialize,
-    deserialize,
-    browserInterface,
-  });
-  return null;
+
+  return (
+    <RecoilURLSync
+      {...{
+        storeKey,
+        location,
+        serialize,
+        deserialize,
+        browserInterface,
+      }}>
+      {children}
+    </RecoilURLSync>
+  );
 }
 
 function encodeState(obj: {...}) {

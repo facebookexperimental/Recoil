@@ -125,12 +125,11 @@ async function testTransit(
   history.replaceState(null, '', beforeURL);
 
   const container = renderElements(
-    <>
-      <RecoilURLSyncTransit location={loc} handlers={HANDLERS} />
+    <RecoilURLSyncTransit location={loc} handlers={HANDLERS}>
       {atoms.map(testAtom => (
         <ReadsAtom atom={testAtom} />
       ))}
-    </>,
+    </RecoilURLSyncTransit>,
   );
   expect(container.textContent).toBe(contents);
   await flushPromisesAndTimers();

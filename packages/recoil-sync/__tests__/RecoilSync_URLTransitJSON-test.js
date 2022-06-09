@@ -5,6 +5,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 const {atom} = require('Recoil');
@@ -68,18 +69,17 @@ async function testURL(contents: string, beforeURL: string, afterURL: string) {
   history.replaceState(null, '', beforeURL);
 
   const container = renderElements(
-    <>
-      <RecoilURLSyncTransit
-        storeKey="transit"
-        location={{part: 'queryParams', param: 'transit'}}
-      />
-      <RecoilURLSyncJSON storeKey="json" location={{part: 'queryParams'}} />
-      <ReadsAtom atom={atomBoolean} />
-      <ReadsAtom atom={atomNumber} />
-      <ReadsAtom atom={atomString} />
-      <ReadsAtom atom={atomArray} />
-      <ReadsAtom atom={atomObject} />
-    </>,
+    <RecoilURLSyncTransit
+      storeKey="transit"
+      location={{part: 'queryParams', param: 'transit'}}>
+      <RecoilURLSyncJSON storeKey="json" location={{part: 'queryParams'}}>
+        <ReadsAtom atom={atomBoolean} />
+        <ReadsAtom atom={atomNumber} />
+        <ReadsAtom atom={atomString} />
+        <ReadsAtom atom={atomArray} />
+        <ReadsAtom atom={atomObject} />
+      </RecoilURLSyncJSON>
+    </RecoilURLSyncTransit>,
   );
   expect(container.textContent).toBe(contents);
   await flushPromisesAndTimers();

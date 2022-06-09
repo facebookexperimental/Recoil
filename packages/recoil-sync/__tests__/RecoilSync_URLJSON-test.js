@@ -83,8 +83,7 @@ async function testJSON(
   history.replaceState(null, '', beforeURL);
 
   const container = renderElements(
-    <>
-      <RecoilURLSyncJSON location={loc} />
+    <RecoilURLSyncJSON location={loc}>
       <ReadsAtom atom={atomUndefined} />
       <ReadsAtom atom={atomNull} />
       <ReadsAtom atom={atomBoolean} />
@@ -93,7 +92,7 @@ async function testJSON(
       <ReadsAtom atom={atomArray} />
       <ReadsAtom atom={atomObject} />
       <ReadsAtom atom={atomDate} />
-    </>,
+    </RecoilURLSyncJSON>,
   );
   expect(container.textContent).toBe(contents);
   await flushPromisesAndTimers();
