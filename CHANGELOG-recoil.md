@@ -3,6 +3,8 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+- Cleanup memory leak when using atoms with selector defaults. (#1821, #1840, #1844)
+
 ## 0.7.3 (2022-06-01)
 
 - Atom effects can initialize or set atoms to wrapped values (#1681)
