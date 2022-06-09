@@ -9,10 +9,7 @@
  */
 
 import {rollup} from 'rollup';
-import {
-  createInputOption,
-  createOutputOption,
-} from './rollup-configs.mjs';
+import {createInputOption, createOutputOption} from './rollup-configs.mjs';
 import {exec} from 'child_process';
 import * as fs from 'fs';
 import {projectRootDir} from './project-root-dir.mjs';
@@ -30,6 +27,15 @@ const PACKAGES = {
       dev: ['umd'],
       prod: ['es-browsers', 'umd-prod'],
       native: ['native'],
+    },
+  },
+  refine: {
+    inputFile: 'Refine_index.js',
+    umdName: 'Refine',
+    builds: {
+      common: ['cjs', 'es'],
+      dev: ['umd'],
+      prod: ['es-browsers', 'umd-prod'],
     },
   },
   'recoil-sync': {
@@ -64,7 +70,7 @@ if (target === 'all' || target == null) {
 }
 
 async function buildAll() {
-  console.log('Building all packages...');
+  console.log('Building all packages...\n');
   for (const [target, config] of Object.entries(PACKAGES)) {
     await buildPackage(target, config);
   }
@@ -76,7 +82,10 @@ async function buildPackage(target, config) {
     await buildRollup(
       `recoil (${buildType})`,
       createInputOption(buildType, target, config.inputFile),
-      packageTypes.map(type => createOutputOption(type, target, config.umdName)));
+      packageTypes.map(type =>
+        createOutputOption(type, target, config.umdName),
+      ),
+    );
   }
 
   console.log('Copying files...');
@@ -111,7 +120,9 @@ async function buildPackage(target, config) {
     `${projectRootDir}/typescript/${target}.d.ts`,
     `${BUILD_TARGET}/${target}/index.d.ts`,
     fs.constants.COPYFILE_FICLONE,
-    createErrorHandler(`Failed to copy ${target}.d.ts for TypeScript index.d.ts`),
+    createErrorHandler(
+      `Failed to copy ${target}.d.ts for TypeScript index.d.ts`,
+    ),
   );
 
   console.log('Generating Flow type files...');
@@ -126,7 +137,7 @@ async function buildPackage(target, config) {
       );
     },
   );
-  console.log(`Successfully built ${target}!`);
+  console.log(`Successfully built ${target}!\n`);
 }
 
 async function buildRollup(name, inputOptions, outputOptionsList) {
