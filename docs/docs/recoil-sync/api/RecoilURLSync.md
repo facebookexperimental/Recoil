@@ -57,7 +57,7 @@ These callbacks should be memoized with something like `useCallback()` to avoid 
 
 ## Browser Abstraction
 
-By default `<RecoilURLSync/>` will sync directly with the URL in the browser.  However, you may override this by providing a custom browser interface implementation:
+By default `<RecoilURLSync>` will sync directly with the URL in the browser.  However, you may override this by providing a custom browser interface implementation.  This is also important to provide if you may be executing in a server-side rendering (SSR) environment.
 
 ```jsx
 type BrowserInterface = {

@@ -5,7 +5,7 @@ sidebar_label: <RecoilURLSyncTransit>
 
 A component from the [Recoil Sync library](/docs/recoil-sync/introduction) to sync atoms using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) or [`urlSyncEffect()`](/docs/recoil-sync/api/urlSyncEffect) atom effects with the browser URL.
 
-This is identical to the [`<RecoilURLSync/>`](/docs/recoil-sync/api/RecoilURLSync) component except that it provides built-in [Transit encoding](https://github.com/cognitect/transit-js).
+This is identical to the [`<RecoilURLSync>`](/docs/recoil-sync/api/RecoilURLSync) component except that it provides built-in [Transit encoding](https://github.com/cognitect/transit-js).
 
 ```jsx
 function RecoilURLSyncTransit(props: {
@@ -30,7 +30,7 @@ type TransitHandler<T, S> = {
 };
 ```
 
-For example:
+### Example
 ```jsx
 class ViewState {
   active: boolean;
