@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {RecoilValueReadOnly} from '../core/Recoil_RecoilValue';
