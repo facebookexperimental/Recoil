@@ -11,7 +11,7 @@
 
  import * as React from 'react';
  import {
-   DefaultValue, Loadable, AtomEffect,
+   DefaultValue, Loadable, AtomEffect, RecoilState,
  } from 'recoil';
  import {
    Checker,
@@ -25,14 +25,14 @@
  export type ItemKey = string;
  export type StoreKey = string;
 
- // useRecoilSync() - read
+ // <RecoilSync> - read
  export type ReadItem = (itemKey: ItemKey) =>
  | DefaultValue
  | Promise<DefaultValue | unknown>
  | Loadable<DefaultValue | unknown>
  | unknown;
 
- // useRecoilSync() - write
+ // <RecoilSync> - write
  export type ItemDiff = Map<ItemKey, DefaultValue | unknown>;
  export type ItemSnapshot = Map<ItemKey, DefaultValue | unknown>;
  export interface WriteInterface {
@@ -41,7 +41,7 @@
  }
  export type WriteItems = (state: WriteInterface) => void;
 
- // useRecoilSync() - listen
+ // <RecoilSync> - listen
  export type UpdateItem = (itemKey: ItemKey, newValue: DefaultValue | unknown) => void;
  export type UpdateAllKnownItems = (items: ItemSnapshot) => void;
  export interface ListenInterface {
@@ -50,16 +50,14 @@
  }
  export type ListenToItems = (callbacks: ListenInterface) => void | (() => void);
 
- // useRecoilSync()
+ // <RecoilSync>
  export interface RecoilSyncOptions {
+   children: React.ReactNode;
    storeKey?: StoreKey;
    write?: WriteItems;
    read?: ReadItem;
    listen?: ListenToItems;
  }
- export function useRecoilSync(opt: RecoilSyncOptions): void;
-
- // <RecoilSync/>
  export const RecoilSync: React.FC<RecoilSyncOptions>;
 
  // syncEffect() - read
@@ -97,7 +95,7 @@
  // RecoilSync_URL
  ////////////////////////
 
- // useRecoilURLSync()
+ // <RecoilURLSync>
  export type LocationOption =
    | {part: 'href'}
    | {part: 'hash'}
@@ -112,6 +110,7 @@
  }
 
  export interface RecoilURLSyncOptions {
+   children: React.ReactNode;
    storeKey?: StoreKey;
    location: LocationOption;
    serialize: (data: unknown) => string;
@@ -119,9 +118,6 @@
    browserInterface?: BrowserInterface;
  }
 
- export function useRecoilURLSync(opt: RecoilURLSyncOptions): void;
-
- // <RecoilURLSync/>
  export const RecoilURLSync: React.FC<RecoilURLSyncOptions>;
 
  // urlSyncEffect()
@@ -133,7 +129,6 @@
 
  // JSON
  export type RecoilURLSyncJSONOptions = Omit<Omit<RecoilURLSyncOptions, 'serialize'>, 'deserialize'>;
- export function useRecoilURLSyncJSON(opt: RecoilURLSyncJSONOptions): void;
  export const RecoilURLSyncJSON: React.FC<RecoilURLSyncJSONOptions>;
 
  // Transit
@@ -146,5 +141,4 @@
  export interface RecoilURLSyncTransitOptions extends Omit<Omit<RecoilURLSyncOptions, 'serialize'>, 'deserialize'> {
    handlers?: ReadonlyArray<TransitHandler<any, any>>;
  }
- export function useRecoilURLSyncTransit(opt: RecoilURLSyncTransitOptions): void;
  export const RecoilURLSyncTransit: React.FC<RecoilURLSyncTransitOptions>;

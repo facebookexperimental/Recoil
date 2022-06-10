@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {
@@ -139,6 +140,7 @@ export type BrowserInterface = {
   listenChangeURL?: (handler: () => void) => () => void,
 };
 export type RecoilURLSyncOptions = {
+  children: React.Node,
   storeKey?: StoreKey,
   location: LocationOption,
   serialize: mixed => string,
@@ -156,13 +158,14 @@ const DEFAULT_BROWSER_INTERFACE = {
   },
 };
 
-function useRecoilURLSync({
+function RecoilURLSync({
   storeKey,
   location: loc,
   serialize,
   deserialize,
   browserInterface,
-}: RecoilURLSyncOptions): void {
+  children,
+}: RecoilURLSyncOptions): React.Node {
   const {getURL, replaceURL, pushURL, listenChangeURL} = {
     ...DEFAULT_BROWSER_INTERFACE,
     ...(browserInterface ?? {}),
@@ -252,11 +255,8 @@ function useRecoilURLSync({
   );
 
   useRecoilSync({storeKey, read, write, listen});
-}
 
-function RecoilURLSync(props: RecoilURLSyncOptions): React.Node {
-  useRecoilURLSync(props);
-  return null;
+  return children;
 }
 
 ///////////////////////
@@ -298,7 +298,6 @@ function urlSyncEffect<T>({
 }
 
 module.exports = {
-  useRecoilURLSync,
   RecoilURLSync,
   urlSyncEffect,
 };

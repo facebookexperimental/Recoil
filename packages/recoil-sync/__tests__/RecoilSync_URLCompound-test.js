@@ -44,10 +44,9 @@ test('Upgrade item ID', async () => {
 
   const [Atom, setAtom, resetAtom] = componentThatReadsAndWritesAtom(myAtom);
   const container = renderElements(
-    <>
-      <RecoilURLSyncJSON location={loc} />
+    <RecoilURLSyncJSON location={loc}>
       <Atom />
-    </>,
+    </RecoilURLSyncJSON>,
   );
 
   // Test that we can load based on old key
@@ -100,10 +99,9 @@ test('Many items to one atom', async () => {
 
   const [Atom, setAtom, resetAtom] = componentThatReadsAndWritesAtom(myAtom);
   const container = renderElements(
-    <>
-      <RecoilURLSyncJSON location={loc} />
+    <RecoilURLSyncJSON location={loc}>
       <Atom />
-    </>,
+    </RecoilURLSyncJSON>,
   );
 
   // Test initialize value from URL
@@ -160,11 +158,10 @@ test('One item to multiple atoms', async () => {
   const [Foo, setFoo, resetFoo] = componentThatReadsAndWritesAtom(fooAtom);
   const [Bar, setBar, resetBar] = componentThatReadsAndWritesAtom(barAtom);
   const container = renderElements(
-    <>
-      <RecoilURLSyncJSON location={loc} />
+    <RecoilURLSyncJSON location={loc}>
       <Foo />
       <Bar />
-    </>,
+    </RecoilURLSyncJSON>,
   );
 
   // Test initialize value from URL
@@ -227,11 +224,10 @@ test('One item to atom family', async () => {
     myAtoms('bar'),
   );
   const container = renderElements(
-    <>
-      <RecoilURLSyncJSON location={loc} />
+    <RecoilURLSyncJSON location={loc}>
       <Foo />
       <Bar />
-    </>,
+    </RecoilURLSyncJSON>,
   );
 
   // Test initialize value from URL

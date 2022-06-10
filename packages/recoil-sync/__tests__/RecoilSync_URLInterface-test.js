@@ -5,6 +5,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 const {act} = require('ReactTestUtils');
@@ -72,12 +73,11 @@ test('Push URLs in mock history', async () => {
   const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
   const [AtomC, setC] = componentThatReadsAndWritesAtom(atomC);
   const container = renderElements(
-    <>
-      <TestURLSync location={loc} browserInterface={mockBrowserURL} />
+    <TestURLSync location={loc} browserInterface={mockBrowserURL}>
       <AtomA />
       <AtomB />
       <AtomC />
-    </>,
+    </TestURLSync>,
   );
 
   expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');

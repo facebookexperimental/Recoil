@@ -8,7 +8,9 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
+
 import type {AtomEffect, Loadable, RecoilState, StoreID} from 'Recoil';
 import type {RecoilValueInfo} from 'Recoil_FunctionalCore';
 import type {RecoilValue} from 'Recoil_RecoilValue';
@@ -483,9 +485,15 @@ function useRecoilSync({
   );
 }
 
-function RecoilSync(props: RecoilSyncOptions): React.Node {
+function RecoilSync({
+  children,
+  ...props
+}: {
+  ...RecoilSyncOptions,
+  children: React.Node,
+}): React.Node {
   useRecoilSync(props);
-  return null;
+  return children;
 }
 
 ///////////////////////

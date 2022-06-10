@@ -5,6 +5,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 const {act} = require('ReactTestUtils');

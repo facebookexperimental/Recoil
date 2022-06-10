@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {
@@ -31,20 +32,10 @@ import type {
   TransitHandler,
 } from './RecoilSync_URLTransit';
 
-const {RecoilSync, syncEffect, useRecoilSync} = require('./RecoilSync');
-const {
-  RecoilURLSync,
-  urlSyncEffect,
-  useRecoilURLSync,
-} = require('./RecoilSync_URL');
-const {
-  RecoilURLSyncJSON,
-  useRecoilURLSyncJSON,
-} = require('./RecoilSync_URLJSON');
-const {
-  RecoilURLSyncTransit,
-  useRecoilURLSyncTransit,
-} = require('./RecoilSync_URLTransit');
+const {RecoilSync, syncEffect} = require('./RecoilSync');
+const {RecoilURLSync, urlSyncEffect} = require('./RecoilSync_URL');
+const {RecoilURLSyncJSON} = require('./RecoilSync_URLJSON');
+const {RecoilURLSyncTransit} = require('./RecoilSync_URLTransit');
 
 export type {
   // Keys
@@ -71,14 +62,10 @@ export type {
 
 module.exports = {
   // Core Recoil Sync
-  useRecoilSync,
   RecoilSync,
   syncEffect,
 
   // Recoil Sync URL
-  useRecoilURLSync,
-  useRecoilURLSyncJSON,
-  useRecoilURLSyncTransit,
   RecoilURLSync,
   RecoilURLSyncJSON,
   RecoilURLSyncTransit,

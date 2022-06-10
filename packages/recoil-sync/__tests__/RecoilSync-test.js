@@ -5,6 +5,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {ItemKey, ItemSnapshot, ListenInterface} from '../RecoilSync';
@@ -22,6 +23,7 @@ const {
 } = require('Recoil');
 
 const {
+  RecoilSync,
   registries_FOR_TESTING,
   syncEffect,
   useRecoilSync,
@@ -44,38 +46,42 @@ function TestRecoilSync({
   storage,
   regListen,
   allItemsRef,
+  children = null,
 }: {
   storeKey?: string,
   storage: Map<string, mixed>,
   regListen?: ListenInterface => void,
   allItemsRef?: {current: Map<string, DefaultValue | mixed>},
+  children?: React.Node,
 }) {
-  useRecoilSync({
-    storeKey,
-    read: itemKey => {
-      if (itemKey === 'error') {
-        throw new Error('READ ERROR');
-      }
-      return storage.has(itemKey) ? storage.get(itemKey) : new DefaultValue();
-    },
-    write: ({diff, allItems}) => {
-      for (const [key, value] of diff.entries()) {
-        value instanceof DefaultValue
-          ? storage.delete(key)
-          : storage.set(key, value);
-      }
-      for (const [itemKey, value] of diff) {
-        expect(allItems.get(itemKey)).toEqual(value);
-      }
-      if (allItemsRef != null) {
-        allItemsRef.current = allItems;
-      }
-    },
-    listen: listenInterface => {
-      regListen?.(listenInterface);
-    },
-  });
-  return null;
+  return (
+    <RecoilSync
+      storeKey={storeKey}
+      read={itemKey => {
+        if (itemKey === 'error') {
+          throw new Error('READ ERROR');
+        }
+        return storage.has(itemKey) ? storage.get(itemKey) : new DefaultValue();
+      }}
+      write={({diff, allItems}) => {
+        for (const [key, value] of diff.entries()) {
+          value instanceof DefaultValue
+            ? storage.delete(key)
+            : storage.set(key, value);
+        }
+        for (const [itemKey, value] of diff) {
+          expect(allItems.get(itemKey)).toEqual(value);
+        }
+        if (allItemsRef != null) {
+          allItemsRef.current = allItems;
+        }
+      }}
+      listen={listenInterface => {
+        regListen?.(listenInterface);
+      }}>
+      {children}
+    </RecoilSync>
+  );
 }
 
 ///////////////////////
@@ -103,12 +109,11 @@ test('Write to storage', async () => {
   const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
   const [IgnoreAtom, setIgnore] = componentThatReadsAndWritesAtom(ignoreAtom);
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <AtomA />
       <AtomB />
       <IgnoreAtom />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(storage.size).toBe(0);
@@ -190,12 +195,11 @@ test('Read from storage', async () => {
   ]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
       <ReadsAtom atom={atomC} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('"A""B""DEFAULT"');
@@ -211,10 +215,9 @@ test('Read from storage async', async () => {
   const storage = new Map([['recoil-sync read async', Promise.resolve('A')]]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('loading');
@@ -294,15 +297,14 @@ test('Read from storage error', async () => {
   ]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={mySelector({myAtom: atomA})} />
       <ReadsAtom atom={mySelector({myAtom: atomB})} />
       <ReadsAtom atom={mySelector({myAtom: atomC})} />
       <ReadsAtom atom={mySelector({myAtom: atomD})} />
       <ReadsAtom atom={mySelector({myAtom: atomE})} />
       <ReadsAtom atom={mySelector({myAtom: atomF})} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe(
@@ -352,15 +354,14 @@ test('Read nullable', async () => {
   ]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomUndefinedA} />
       <ReadsAtom atom={atomUndefinedB} />
       <ReadsAtom atom={atomUndefinedC} />
       <ReadsAtom atom={atomNullA} />
       <ReadsAtom atom={atomNullB} />
       <ReadsAtom atom={atomNullC} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('loading');
@@ -392,12 +393,11 @@ test('Abort read', async () => {
   ]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
       <ReadsAtom atom={atomC} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('loading');
@@ -439,13 +439,12 @@ test('Abort vs reset', async () => {
   ]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
       <ReadsAtom atom={atomC} />
       <ReadsAtom atom={atomD} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('loading');
@@ -528,13 +527,12 @@ test('Read from storage upgrade - multiple effects', async () => {
   ]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
       <ReadsAtom atom={atomC} />
       <ReadsAtom atom={atomD} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('loading');
@@ -605,13 +603,12 @@ test('Read from storage upgrade', async () => {
   ]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
       <ReadsAtom atom={atomC} />
       <ReadsAtom atom={atomD} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('loading');
@@ -735,26 +732,24 @@ test('Listen to storage', async () => {
     throw new Error('Failed to register 2');
   };
   const container = renderElements(
-    <>
-      <TestRecoilSync
-        storeKey="SYNC_1"
-        storage={storage1}
-        regListen={listenInterface => {
-          updateItem1 = listenInterface.updateItem;
-          updateAll1 = listenInterface.updateAllKnownItems;
-        }}
-      />
+    <TestRecoilSync
+      storeKey="SYNC_1"
+      storage={storage1}
+      regListen={listenInterface => {
+        updateItem1 = listenInterface.updateItem;
+        updateAll1 = listenInterface.updateAllKnownItems;
+      }}>
       <TestRecoilSync
         storeKey="SYNC_2"
         storage={storage2}
         regListen={listenInterface => {
           updateItem2 = listenInterface.updateItem;
-        }}
-      />
-      <ReadsAtom atom={atomA} />
-      <ReadsAtom atom={atomB} />
-      <ReadsAtom atom={atomC} />
-    </>,
+        }}>
+        <ReadsAtom atom={atomA} />
+        <ReadsAtom atom={atomB} />
+        <ReadsAtom atom={atomC} />
+      </TestRecoilSync>
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('"A""B""C2"');
@@ -890,11 +885,10 @@ test('Persist on read', async () => {
   const storage = new Map();
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(storage.size).toBe(0);
@@ -940,11 +934,10 @@ test('Persist on read - async', async () => {
   const storage = new Map();
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
-    </>,
+    </TestRecoilSync>,
   );
 
   await flushPromisesAndTimers();
@@ -978,11 +971,22 @@ test('Persist on read - async', async () => {
 });
 
 test('Sync based on component props', async () => {
-  function SyncWithProps(props: {eggs: string, spam: string}) {
-    useRecoilSync({
-      read: itemKey => (itemKey in props ? props[itemKey] : new DefaultValue()),
-    });
-    return null;
+  function SyncWithProps({
+    children,
+    ...props
+  }: {
+    children: React.Node,
+    eggs: string,
+    spam: string,
+  }) {
+    return (
+      <RecoilSync
+        read={itemKey =>
+          itemKey in props ? props[itemKey] : new DefaultValue()
+        }>
+        {children}
+      </RecoilSync>
+    );
   }
 
   const atomA = atom({
@@ -1002,12 +1006,11 @@ test('Sync based on component props', async () => {
   });
 
   const container = renderElements(
-    <>
-      <SyncWithProps spam="SPAM" eggs="EGGS" />
+    <SyncWithProps spam="SPAM" eggs="EGGS">
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
       <ReadsAtom atom={atomC} />
-    </>,
+    </SyncWithProps>,
   );
 
   expect(container.textContent).toBe('"SPAM""EGGS""DEFAULT"');
@@ -1026,12 +1029,11 @@ test('Sync Atom Family', async () => {
   ]);
 
   const container = renderElements(
-    <>
-      <TestRecoilSync storage={storage} />
+    <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atoms('a')} />
       <ReadsAtom atom={atoms('b')} />
       <ReadsAtom atom={atoms('c')} />
-    </>,
+    </TestRecoilSync>,
   );
 
   expect(container.textContent).toBe('"A""B""DEFAULT"');
@@ -1085,11 +1087,10 @@ describe('Complex Mappings', () => {
     const storage = new Map();
     const allItemsRef = {current: new Map()};
     const container = renderElements(
-      <>
-        <TestRecoilSync storage={storage} allItemsRef={allItemsRef} />
+      <TestRecoilSync storage={storage} allItemsRef={allItemsRef}>
         <ReadsAtom atom={atomA} />
         <AtomB />
-      </>,
+      </TestRecoilSync>,
     );
 
     expect(container.textContent).toBe('"A""DEFAULT"');
@@ -1155,10 +1156,9 @@ describe('Complex Mappings', () => {
     const storage = new Map([['other', 'OTHER']]);
 
     const container = renderElements(
-      <>
-        <TestRecoilSync storage={storage} />
+      <TestRecoilSync storage={storage}>
         <ReadsAtom atom={myAtom} />
-      </>,
+      </TestRecoilSync>,
     );
 
     expect(container.textContent).toBe('"SELF"');
@@ -1186,15 +1186,13 @@ describe('Complex Mappings', () => {
     ]);
     let updateItem;
     const container = renderElements(
-      <>
-        <TestRecoilSync
-          storage={storage}
-          regListen={listenInterface => {
-            updateItem = listenInterface.updateItem;
-          }}
-        />
+      <TestRecoilSync
+        storage={storage}
+        regListen={listenInterface => {
+          updateItem = listenInterface.updateItem;
+        }}>
         <ReadsAtom atom={myAtom} />
-      </>,
+      </TestRecoilSync>,
     );
 
     // Test mapping while initializing values
@@ -1215,6 +1213,7 @@ describe('Complex Mappings', () => {
 
 // Currently useRecoilSync() must be called in React component tree
 // before the first use of atoms to be initialized.
+// This is why we only expose <RecoilSync> and not useRecoilSync().
 test('Reading before sync hook', async () => {
   const atoms = atomFamily({
     key: 'recoil-sync order',
@@ -1224,9 +1223,7 @@ test('Reading before sync hook', async () => {
 
   function SyncOrder() {
     const b = useRecoilValue(atoms('b'));
-    useRecoilSync({
-      read: itemKey => itemKey.toUpperCase(),
-    });
+    useRecoilSync({read: itemKey => itemKey.toUpperCase()});
     const c = useRecoilValue(atoms('c'));
     return (
       <div>
@@ -1375,10 +1372,15 @@ test('Unregister store and atoms', () => {
     subscriberRefCounts[idx] = (subscriberRefCounts[idx] ?? 0) + 1;
     return () => unregister(idx);
   });
-  function TestSyncUnregister({idx}: $TEMPORARY$object<{idx: number}>) {
+  function TestSyncUnregister({
+    children,
+    idx,
+  }: {
+    children: React.Node,
+    idx: number,
+  }) {
     const listen = useCallback(() => register(idx), [idx]);
-    useRecoilSync({listen});
-    return null;
+    return <RecoilSync {...{listen}}>{children}</RecoilSync>;
   }
 
   let setNumRoots;
@@ -1388,8 +1390,9 @@ test('Unregister store and atoms', () => {
     return Array.from(Array(roots).keys()).map(i => (
       <RecoilRoot key={i}>
         {i}
-        <TestSyncUnregister idx={i} />
-        <ReadsAtom atom={myAtom} />
+        <TestSyncUnregister idx={i}>
+          <ReadsAtom atom={myAtom} />
+        </TestSyncUnregister>
       </RecoilRoot>
     ));
   }

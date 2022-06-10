@@ -8,11 +8,12 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {RecoilURLSyncOptions} from './RecoilSync_URL';
 
-const {useRecoilURLSync} = require('./RecoilSync_URL');
+const {RecoilURLSync} = require('./RecoilSync_URL');
 const React = require('react');
 const {useCallback} = require('react');
 const err = require('recoil-shared/util/Recoil_err');
@@ -26,7 +27,7 @@ export type RecoilURLSyncJSONOptions = $Rest<
   },
 >;
 
-function useRecoilURLSyncJSON(options: RecoilURLSyncJSONOptions): void {
+function RecoilURLSyncJSON(options: RecoilURLSyncJSONOptions): React.Node {
   if (options.location.part === 'href') {
     throw err('"href" location is not supported for JSON encoding');
   }
@@ -38,12 +39,8 @@ function useRecoilURLSyncJSON(options: RecoilURLSyncJSONOptions): void {
     [],
   );
   const deserialize = useCallback(x => JSON.parse(x), []);
-  useRecoilURLSync({...options, serialize, deserialize});
+
+  return <RecoilURLSync {...{...options, serialize, deserialize}} />;
 }
 
-function RecoilURLSyncJSON(props: RecoilURLSyncJSONOptions): React.Node {
-  useRecoilURLSyncJSON(props);
-  return null;
-}
-
-module.exports = {useRecoilURLSyncJSON, RecoilURLSyncJSON};
+module.exports = {RecoilURLSyncJSON};
