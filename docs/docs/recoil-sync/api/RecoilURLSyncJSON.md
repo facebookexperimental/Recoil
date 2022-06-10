@@ -5,7 +5,7 @@ sidebar_label: <RecoilURLSyncJSON>
 
 A component from the [Recoil Sync library](/docs/recoil-sync/introduction) to sync atoms using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) or [`urlSyncEffect()`](/docs/recoil-sync/api/urlSyncEffect) atom effects with the browser URL.
 
-This is identical to the [`<RecoilURLSync/>`](/docs/recoil-sync/api/RecoilURLSync) component except that it provides built-in JSON encoding and does not accept `serialize`/`deserialize` options.
+This is identical to the [`<RecoilURLSync>`](/docs/recoil-sync/api/RecoilURLSync) component except that it provides built-in JSON encoding and does not accept `serialize`/`deserialize` options.
 
 ---
 
