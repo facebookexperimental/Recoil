@@ -8,6 +8,7 @@
  * @flow strict
  * @format
  */
+
 'use strict';
 
 import type {CheckerReturnType} from '../Refine_Checkers';
