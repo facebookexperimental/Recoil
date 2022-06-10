@@ -248,7 +248,7 @@ const currentUserIDState = atom({
 
 ### Initialize with `Promise` (Promise로 초기화하기)
 
-Promise와 `setSelf()`를 동기적으로 호출하면,  `<RecoilRoot />` 내부의 구성요소를 `<Suspense />` 구성요소로 감싸 Recoil이 지속 된 값을 로드 할 때까지 기다리는 동안 fallcack을 보여주는 것이 가능합니다. `<Suspense>`는 `setSelf()`에 제공된 `setSelf()`가 resolve 될 때까지 fallback을 보여줍니다. Atom이 Promise가 resolve 되기 전에 값으로 설정되면 초기화된 값은 무시됩니다.
+Promise와 `setSelf()`를 동기적으로 호출하면,  `<RecoilRoot />` 내부의 구성요소를 `<Suspense />` 구성요소로 감싸 Recoil이 지속 된 값을 로드 할 때까지 기다리는 동안 fallback을 보여주는 것이 가능합니다. `<Suspense>`는 `setSelf()`에 제공된 `setSelf()`가 resolve 될 때까지 fallback을 보여줍니다. Atom이 Promise가 resolve 되기 전에 값으로 설정되면 초기화된 값은 무시됩니다.
 
 나중의 atom들이 "리셋"되면, 초기화된 값이 아니라 기본값으로 되돌아갑니다.
 
