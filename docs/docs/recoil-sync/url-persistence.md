@@ -17,14 +17,15 @@ const currentUserState = atom<number>({
 });
 ```
 
-Then, at the root of your application, simply include `<RecoilURLSyncJSON />` to sync all of those tagged atoms with the URL
+Then, at the root of your application, simply include [`<RecoilURLSyncJSON>`](/docs/recoil-sync/api/RecoilURLSyncJSON) to sync all of those tagged atoms with the URL
 
 ```jsx
 function MyApp() {
   return (
     <RecoilRoot>
-      <RecoilURLSyncJSON location={{part: 'queryParams'}} />
-      ...
+      <RecoilURLSyncJSON location={{part: 'queryParams'}}>
+        ...
+      </RecoilURLSyncJSON>
     </RecoilRoot>
   )
 }
@@ -39,10 +40,10 @@ https://test.com/myapp?CurrentUser=123
 ### State Serialization
 There are two built-in mechanisms available to encode state in the URL:
 
-* **JSON** - Use [`<RecoilURLSyncJSON />`](/docs/recoil-sync/api/RecoilURLSyncJSON) or [`useRecoilURLSyncJSON()`](/docs/recoil-sync/api/useRecoilURLSyncJSON).  [JSON encoding](https://en.wikipedia.org/wiki/JSON) is simple and easy to read.  However it does not support custom user classes or containers such as `Map()` and `Set()`.  It will work with `Date` objects if you use the [`jsonDate()`](/docs/refine/api/Primitive_Checkers#jsondate) checker from Refine.
-* **Transit** - Use [`<RecoilURLSyncTransit />`](/docs/recoil-sync/api/RecoilURLSyncTransit) or [`useRecoilURLSyncTransit()`](/docs/recoil-sync/api/useRecoilURLSyncTransit).  [Transit encoding](https://github.com/cognitect/transit-js) is a bit more verbose, but it does support `Map()` and `Set()` containers, and can be extended to encode your own classes by providing custom handlers.
+* **JSON** - Use [`<RecoilURLSyncJSON>`](/docs/recoil-sync/api/RecoilURLSyncJSON).  [JSON encoding](https://en.wikipedia.org/wiki/JSON) is simple and easy to read.  However it does not support custom user classes or containers such as `Map()` and `Set()`.  It will work with `Date` objects if you use the [`jsonDate()`](/docs/refine/api/Primitive_Checkers#jsondate) checker from Refine.
+* **Transit** - Use [`<RecoilURLSyncTransit>`](/docs/recoil-sync/api/RecoilURLSyncTransit).  [Transit encoding](https://github.com/cognitect/transit-js) is a bit more verbose, but it does support `Map()` and `Set()` containers, and can be extended to encode your own classes by providing custom handlers.
 
-You can also use the base [`<RecoilURLSync />`](/docs/recoil-sync/api/RecoilURLSync) or [`useRecoilURLSync())`](/docs/recoil-sync/api/useRecoilURLSync) implementation and provide your own `serialize()` and `deserialize()` implementations.
+You can also use the base [`<RecoilURLSync>`](/docs/recoil-sync/api/RecoilURLSync) implementation and provide your own `serialize()` and `deserialize()` implementations.
 
 ### Part of the URL
 
@@ -79,20 +80,22 @@ const viewStateChecker = custom(x => x instanceof ViewState ? x : null);
 function MyApp() {
   return (
     <RecoilRoot>
-      <RecoilURLSyncJSON storeKey="json-url" location={{part: 'queryParams'}} />
-      <RecoilURLSyncTransit
-        storeKey="transit-url"
-        location={{part: 'queryParam', param: 'state'}}
-        handlers={[
-          {
-            tag: 'VS',
-            class: ViewState,
-            write: x => [x.active, x.pos],
-            read: ([active, pos]) => new ViewState(active, pos),
-          },
-        ]}
-      />
-      ...
+      <RecoilURLSyncJSON storeKey="json-url" location={{part: 'queryParams'}}>
+        <RecoilURLSyncTransit
+          storeKey="transit-url"
+          location={{part: 'queryParam', param: 'state'}}
+          handlers={[
+            {
+              tag: 'VS',
+              class: ViewState,
+              write: x => [x.active, x.pos],
+              read: ([active, pos]) => new ViewState(active, pos),
+            },
+          ]}
+        />
+          ...
+        </RecoilURLSyncTransit>
+      </RecoilURLSyncJSON>
     </RecoilRoot>
   )
 }

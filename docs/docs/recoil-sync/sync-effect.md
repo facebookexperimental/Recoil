@@ -127,8 +127,9 @@ A standalone app might sync that atom with the URL:
 function MyStandaloneApp() {
   return (
     <RecoilRoot>
-      <RecoilURLSyncTransit storeKey="ui_state" location={{part: 'hash'}} />
+      <RecoilURLSyncTransit storeKey="ui_state" location={{part: 'hash'}}>
         ...
+      </RecoilURLSyncTransit>
     </RecoilRoot>
   );
 }
@@ -139,8 +140,9 @@ While another app that uses components which use the same atom might want to syn
 function AnotherApp() {
   return (
     <RecoilRoot>
-      <RecoilSyncLocalStorage storeKey="ui_state" />
+      <RecoilSyncLocalStorage storeKey="ui_state">
         ...
+      </RecoilSyncLocalStorage>
     </RecoilRoot>
   )
 }

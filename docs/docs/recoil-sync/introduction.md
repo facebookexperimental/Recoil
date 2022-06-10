@@ -23,7 +23,7 @@ The `recoil-sync` library also provides built-in implementations for external st
 
 ---
 
-The basic idea is that a [`syncEffect()`](/docs/recoil-sync/sync-effect) can be added to each atom that you wish to sync, and then a [`useRecoilSync()`](/docs/recoil-sync/api/useRecoilSync) or [`<RecoilSync/>`](/docs/recoil-sync/api/RecoilSync) is added inside your `<RecoilRoot>` to specify how to sync those atoms.  You can use built-in stores such as [`<RecoilURLSyncJSON>`](/docs/recoil-sync/url-persistence), [make your own](/docs/recoil-sync/implement-store), or sync different groups of atoms with different stores.
+The basic idea is that a [`syncEffect()`](/docs/recoil-sync/sync-effect) can be added to each atom that you wish to sync, and then a [`<RecoilSync>`](/docs/recoil-sync/api/RecoilSync) is added inside your `<RecoilRoot>` to specify how to sync those atoms.  You can use built-in stores such as [`<RecoilURLSyncJSON>`](/docs/recoil-sync/url-persistence), [make your own](/docs/recoil-sync/implement-store), or even sync different groups of atoms with different stores.
 
 ## Example
 
@@ -41,14 +41,15 @@ const currentUserState = atom<number>({
 });
 ```
 
-Then, at the root of your application, simply include `<RecoilURLSyncJSON />` to sync all of those tagged atoms with the URL
+Then, at the root of your application, simply include [`<RecoilURLSyncJSON>`](/docs/recoil-sync/api/RecoilURLSyncJSON) to sync all of those tagged atoms with the URL
 
 ```jsx
 function MyApp() {
   return (
     <RecoilRoot>
-      <RecoilURLSyncJSON location={{part: 'queryParams'}} />
-      ...
+      <RecoilURLSyncJSON location={{part: 'queryParams'}}>
+        ...
+      </RecoilURLSyncJSON>
     </RecoilRoot>
   )
 }

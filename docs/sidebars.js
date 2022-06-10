@@ -91,26 +91,14 @@ module.exports = {
     'recoil-sync/url-persistence',
     {
       'API Reference': [
-        'recoil-sync/api/syncEffect',
-        'recoil-sync/api/useRecoilSync',
         'recoil-sync/api/RecoilSync',
+        'recoil-sync/api/syncEffect',
         {
           'URL Persistence': [
             'recoil-sync/api/RecoilURLSync',
-            'recoil-sync/api/useRecoilURLSync',
             'recoil-sync/api/urlSyncEffect',
-            {
-              JSON: [
-                'recoil-sync/api/RecoilURLSyncJSON',
-                'recoil-sync/api/useRecoilURLSyncJSON',
-              ],
-            },
-            {
-              Transit: [
-                'recoil-sync/api/RecoilURLSyncTransit',
-                'recoil-sync/api/useRecoilURLSyncTransit',
-              ],
-            },
+            'recoil-sync/api/RecoilURLSyncJSON',
+            'recoil-sync/api/RecoilURLSyncTransit',
           ],
         },
       ],

@@ -1,6 +1,6 @@
 ---
-title: <RecoilURLSyncTransit ...props />
-sidebar_label: <RecoilURLSyncTransit/>
+title: <RecoilURLSyncTransit>
+sidebar_label: <RecoilURLSyncTransit>
 ---
 
 A component from the [Recoil Sync library](/docs/recoil-sync/introduction) to sync atoms using the [`syncEffect()`](/docs/recoil-sync/api/syncEffect) or [`urlSyncEffect()`](/docs/recoil-sync/api/urlSyncEffect) atom effects with the browser URL.
