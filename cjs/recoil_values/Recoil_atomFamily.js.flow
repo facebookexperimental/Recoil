@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
