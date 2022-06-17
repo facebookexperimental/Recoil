@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "transit-js": "^0.8.874",
-    "@recoiljs/refine": "0.1.1-alpha.1"
+    "@recoiljs/refine": "0.1.0-alpha.1"
   },
   "peerDependencies": {
     "recoil": ">=0.7.3"
