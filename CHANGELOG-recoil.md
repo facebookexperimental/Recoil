@@ -1,6 +1,7 @@
 # Change Log
 
 ## UPCOMING
+
 **_Add new changes here as they land_**
 
 - Cleanup memory leak when using atoms with selector defaults. (#1821, #1840, #1844)
@@ -19,10 +20,12 @@
 ## 0.7.1 (2022-04-12)
 
 ### Typing
+
 - Add explicit `children` prop to `<RecoilRoot>` and `useRecoilBridgeAcrossReactRoots_UNSTABLE()` for TypeScript for `@types/react` with React 18 (#1718, #1717, #1726, #1731)
 - Update typing for family parameters to better support Map, Set, and classes with `toJSON()`. (#1709, #1703)
 
 ### Fixes
+
 - Avoid dev-mode console error with React 18 when using shared async selectors across multiple `<RecoilRoot>`'s. (#1712)
 - Cleanup potential memory leak when using async selectors (#1714)
 - Fix potentially hung async selectors when shared across multiple roots that depend on atoms initialized with promises that don't resolve (#1714)
@@ -30,21 +33,25 @@
 ## 0.7 (2022-03-31)
 
 ### New Features
-- The `default` value is now optional for `atom()` and `atomFamily()`.  If not provided the atom will initialize to a pending state. (#1639)
+
+- The `default` value is now optional for `atom()` and `atomFamily()`. If not provided the atom will initialize to a pending state. (#1639)
 - Add `getStoreID()` method to `Snapshot` (#1612)
 - Publish `RecoilLoadable.loading()` factory for making an async `Loadable` which never resolves. (#1641)
 
 ### Breaking Changes
+
 - Selector's `get()` and Atom's `default` can now accept a `Loadable` to put the node in that state.
   If you wish to store a `Loadable`, `Promise`, or `RecoilValue` directly you can wrap it with `selector.value()` or `atom.value()`. (#1640)
 - `useRecoilCallback()` now provides a snapshot for the latest state instead of the latest rendered state, which had bugs (#1610, #1604)
 
 ### Improvements / Optimizations
+
 - Automatically retain snapshots for the duration of async callbacks. (#1632)
-- Optimization for more selector dependencies.  2x improvement with 100 dependencies, 4x with 1,000, and now able to support 10,000+. (#1651, #1515, #914)
+- Optimization for more selector dependencies. 2x improvement with 100 dependencies, 4x with 1,000, and now able to support 10,000+. (#1651, #1515, #914)
 - Better error reporting when selectors provide inconsistent results (#1696)
 
 ### Fixes
+
 - Avoid spurious console errors from effects when calling `setSelf()` from `onSet()` handlers. (#1589, #1582)
 - Freezing user values in dev mode now works in JS environments without the `Window` interface. (#1571)
 
@@ -63,6 +70,7 @@
   - Renders now occur before transaction observers instead of after.
 
 ### New Features
+
 - Add `refresh()` to the `useRecoilCallback()` interface for refreshing selector caches. (#1413)
 - Callbacks from selector's `getCallback()` can now mutate, refresh, and transact Recoil state, in addition to reading it, for parity with `useRecoilCallback()`. (#1498)
 - Recoil StoreID's for `<RecoilRoot>` and `Snapshot` stores accessible via `useRecoilStoreID()` hook (#1417) or `storeID` parameter for atom effects (#1414).
@@ -87,6 +95,7 @@
 - Memoize the results of lazy proxies. (#1548)
 
 ### Breaking Changes
+
 - Rename atom effects from `effects_UNSTABLE` to just `effects`, as the interface is mostly stabilizing. (#1520)
 - Atom effect initialization takes precedence over initialization with `<RecoilRoot initializeState={...} >`. (#1509)
 - `useGetRecoilValueInfo_UNSTABLE()` and `Snapshot#getInfo_UNSTABLE()` always report the node `type`. (#1547)

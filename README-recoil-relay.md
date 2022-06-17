@@ -4,9 +4,10 @@ The `recoil-relay` library helps [Recoil](https://recoiljs.org) perform type saf
 
 Please see the [**Recoil Relay GraphQL Documentation**](https://recoiljs.org/docs/recoil-relay/introduction)
 
-`recoil-relay` provides `graphQLSelector()` and `graphQLSelectorFamily()` selectors which can easily query with GraphQL.  The queries are synced with the Recoil data-flow graph so downstream selectors can derive state from them, they can depend on upstream Recoil state, and they are automatically subscribed to any changes in the graph from Relay.  Everything stays in sync automatically.
+`recoil-relay` provides `graphQLSelector()` and `graphQLSelectorFamily()` selectors which can easily query with GraphQL. The queries are synced with the Recoil data-flow graph so downstream selectors can derive state from them, they can depend on upstream Recoil state, and they are automatically subscribed to any changes in the graph from Relay. Everything stays in sync automatically.
 
 ## Example
+
 After setting up your Relay environment adding a GraphQL query is as simple as defining a [GraphQL selector](https://recoiljs.org/docs/recoil-relay/graphql-selectors).
 
 ```jsx
@@ -24,7 +25,9 @@ const userNameQuery = graphQLSelector({
   mapResponse: data => data.user?.name,
 });
 ```
+
 Then use it like any other Recoil [selector](https://recoiljs.org/docs/api-reference/core/selector):
+
 ```jsx
 function MyComponent() {
   const userName = useRecoilValue(userNameQuery);
@@ -34,7 +37,7 @@ function MyComponent() {
 
 ## Installation
 
-Please see the [Recoil installation guide](https://recoiljs.org/docs/introduction/installation) for installing Recoil and the [Relay documentation](https://relay.dev/docs/getting-started/installation-and-setup/) for installing and setting up the Relay library, GraphQL compiler, Babel plugin, and ESLint plugin.  Then add `recoil-relay` as a dependency.
+Please see the [Recoil installation guide](https://recoiljs.org/docs/introduction/installation) for installing Recoil and the [Relay documentation](https://relay.dev/docs/getting-started/installation-and-setup/) for installing and setting up the Relay library, GraphQL compiler, Babel plugin, and ESLint plugin. Then add `recoil-relay` as a dependency.
 
 ## Contributing
 
