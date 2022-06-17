@@ -132,8 +132,8 @@ async function buildPackage(target, config) {
       createErrorHandler('Failed to copy source files for Flow types')(err);
       fs.rename(
         `${BUILD_TARGET}/${target}/cjs/${config.inputFile}.flow`,
-        `${BUILD_TARGET}/${target}/cjs/${target}.js.flow`,
-        createErrorHandler(`Failed to rename ${target}.js.flow`),
+        `${BUILD_TARGET}/${target}/cjs/index.js.flow`,
+        createErrorHandler(`Failed to rename ${config.inputFile}.js.flow`),
       );
     },
   );
