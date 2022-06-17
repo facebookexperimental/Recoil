@@ -90,13 +90,13 @@ function VideosContainer() {
   return (
     <div className="container text--center margin-bottom--lg margin-top--lg">
       <div className="row">
-        <div className="col">
+        <div className={classnames( "col", styles.iframeContainer)}>
           <h2>Brief Introduction into Recoil</h2>
-          <div>
+          <div style={{padding: "1px", maxWidth: "560px", width: "100%"}}>
             <iframe
-              width="560"
+              width="100%"
               height="315"
-              src="https://www.youtube-nocookie.com/embed/U9XStcquQyY"
+              src="https://www.youtube-nocookie.com/embed/U9XStcquQyY?"
               title="Explain Like I'm 5: Recoil"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -104,11 +104,11 @@ function VideosContainer() {
             />
           </div>
         </div>
-        <div className="col">
+        <div className={classnames("col", styles.iframeContainer)}>
           <h2>Deep Dive into Recoil</h2>
-          <div>
+          <div style={{padding: "1px", maxWidth: "560px", width: "100%"}}>
             <iframe
-              width="560"
+              width="100%"
               height="315"
               src="https://www.youtube-nocookie.com/embed/_ISAA_Jt9kI"
               title="Recoil: State Management for Today's React - Dave McCabe aka @mcc_abe at @ReactEurope 2020"

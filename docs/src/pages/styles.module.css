@@ -65,3 +65,10 @@
     width: 125px;
   }
 }
+
+.iframeContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
