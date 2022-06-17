@@ -9,7 +9,6 @@
  */
 'use strict';
 
-/* global chrome */
 import type {DevToolsOptions, PostMessageData} from '../../types/DevtoolsTypes';
 
 const {
