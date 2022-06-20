@@ -8,8 +8,11 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
-import type {Snapshot} from 'Recoil_Snapshot';
+
+import type {Snapshot} from '../../core/Recoil_Snapshot';
+import type {RecoilCallbackInterface} from '../Recoil_useRecoilCallback';
 
 const {
   getRecoilTestFn,
@@ -666,6 +669,7 @@ describe('Snapshot', () => {
           resolveCallback = resolve;
         });
       });
+      return null;
     }
 
     renderElements(<Component />);
@@ -687,6 +691,48 @@ describe('Snapshot', () => {
       act(() => resolveSelector2());
       await expect(selector2Promise).rejects.toEqual({});
     }
+  });
+
+  testRecoil('Access snapshot asynchronously', async () => {
+    const myAtom = stringAtom();
+
+    let setAtom;
+    function Component() {
+      const childFunction = async (
+        args: RecoilCallbackInterface,
+        newValue: string,
+      ) => {
+        const oldValue = await args.snapshot.getPromise(myAtom);
+        args.set(myAtom, newValue);
+        return oldValue;
+      };
+
+      const parentFunction = async (
+        args: RecoilCallbackInterface,
+        newValue: string,
+      ) => {
+        await Promise.resolve();
+        return childFunction(args, newValue);
+      };
+
+      setAtom = useRecoilCallback(
+        args => async newValue => parentFunction(args, newValue),
+      );
+      return useRecoilValue(myAtom);
+    }
+
+    const c = renderElements(<Component />);
+
+    expect(c.textContent).toBe('DEFAULT');
+
+    let oldValue;
+    await act(async () => (oldValue = await setAtom('SET')));
+    expect(oldValue).toBe('DEFAULT');
+    expect(c.textContent).toBe('SET');
+
+    await act(async () => (oldValue = await setAtom('SET2')));
+    expect(oldValue).toBe('SET');
+    expect(c.textContent).toBe('SET2');
   });
 
   testRecoil('Snapshot is cached', () => {
