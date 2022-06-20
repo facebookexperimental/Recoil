@@ -1,6 +1,6 @@
 {
   "name": "recoil-sync",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0",
   "description": "recoil-sync provides an add-on library to help synchronize Recoil state with external systems",
   "main": "cjs/index.js",
   "module": "es/index.js",
@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "transit-js": "^0.8.874",
-    "@recoiljs/refine": "0.1.0-alpha.1"
+    "@recoiljs/refine": "0.1.0"
   },
   "peerDependencies": {
     "recoil": ">=0.7.3"
