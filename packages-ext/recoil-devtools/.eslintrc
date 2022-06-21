@@ -1,6 +1,11 @@
 {
-  "plugins": ["react-hooks"],
+  "plugins": [
+    "react-hooks",
+    "unused-imports"
+  ],
   "rules": {
+    "no-unused-vars": "error",
+    "unused-imports/no-unused-imports": "error",
     "react-hooks/exhaustive-deps": "error",
     "react-hooks/rules-of-hooks": "error"
   }
