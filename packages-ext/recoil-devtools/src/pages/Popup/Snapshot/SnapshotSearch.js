@@ -10,10 +10,10 @@
 
 import React, {useCallback, useContext, useMemo, useRef, useState} from 'react';
 import debounce from '../../../utils/debounce';
-import SnapshotContext from './SnapshotContext';
+import SearchContext from './SearchContext';
 
 export default function SnapshotSearch(): React$MixedElement {
-  const {searchVal, setSearchVal} = useContext(SnapshotContext);
+  const {searchVal, setSearchVal} = useContext(SearchContext);
   const inputRef = useRef(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleKeyDown = useCallback(

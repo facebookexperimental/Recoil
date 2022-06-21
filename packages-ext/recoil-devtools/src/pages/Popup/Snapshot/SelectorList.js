@@ -11,14 +11,14 @@
 import ConnectionContext from '../ConnectionContext';
 import Item from '../Items/Item';
 import {useSelectedTransaction} from '../useSelectionHooks';
-import SnapshotContext from './SnapshotContext';
+import SearchContext from './SearchContext';
 
 import {useSelectorsList} from './snapshotHooks';
 
 import React, {useContext, useMemo} from 'react';
 
 export default function SelectorList(): React$Node {
-  const {searchVal} = useContext(SnapshotContext);
+  const {searchVal} = useContext(SearchContext);
   const connection = useContext(ConnectionContext);
   const selectors = useSelectorsList() ?? [];
   const filteredSelectors = selectors.filter(({name}) =>

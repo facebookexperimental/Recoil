@@ -12,12 +12,12 @@ import type {SetterOrUpdater} from '../../../../../../packages/recoil/hooks/Reco
 
 import React from 'react';
 
-type SnapshotContext = {
+type SearchContext = {
   searchVal: string,
   setSearchVal: SetterOrUpdater<string>,
 };
 
-const context: React$Context<SnapshotContext> =
-  React.createContext<SnapshotContext>({searchVal: '', setSearchVal: () => {}});
+const context: React$Context<SearchContext> =
+  React.createContext<SearchContext>({searchVal: '', setSearchVal: () => {}});
 
 export default context;
