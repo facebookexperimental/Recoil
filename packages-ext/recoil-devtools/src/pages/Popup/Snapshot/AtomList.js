@@ -13,31 +13,14 @@ import Item from '../Items/Item';
 import {useSelectedTransaction} from '../useSelectionHooks';
 import SnapshotContext from './SnapshotContext';
 
+import {useAtomsList} from './snapshotHooks';
+
 import React, {useContext, useMemo} from 'react';
 
 export default function AtomsList(): React$Node {
   const {searchVal} = useContext(SnapshotContext);
-  const [txID] = useSelectedTransaction();
   const connection = useContext(ConnectionContext);
-  const {snapshot, sortedKeys} = useMemo(() => {
-    const localSnapshot = connection?.tree?.getSnapshot(txID);
-    return {
-      snapshot: localSnapshot,
-      sortedKeys: Object.keys(localSnapshot ?? {}).sort(),
-    };
-  }, [connection, txID]);
-
-  if (snapshot == null || connection == null) {
-    return null;
-  }
-
-  const atoms = [];
-  sortedKeys.forEach(key => {
-    const node = connection.getNode(key);
-    if (node?.type !== 'selector') {
-      atoms.push({name: key, content: snapshot[key]});
-    }
-  });
+  const atoms = useAtomsList() ?? [];
 
   const filteredAtoms = atoms.filter(({name}) =>
     name.toLowerCase().includes(searchVal.toLowerCase()),

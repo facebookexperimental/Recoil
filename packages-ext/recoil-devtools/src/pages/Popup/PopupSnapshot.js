@@ -33,35 +33,6 @@ const styles = {
 
 function SnapshotRenderer(): React.Node {
   const [searchVal, setSearchVal] = useState('');
-  const connection = useContext(ConnectionContext);
-  const [txID] = useSelectedTransaction();
-  const {snapshot, sortedKeys} = useMemo(() => {
-    const localSnapshot = connection?.tree?.getSnapshot(txID);
-    return {
-      snapshot: localSnapshot,
-      sortedKeys: Object.keys(localSnapshot ?? {}).sort(),
-    };
-  }, [connection, txID]);
-
-  if (snapshot == null || connection == null) {
-    return null;
-  }
-
-  const atoms = [];
-  const selectors = [];
-  sortedKeys.forEach(key => {
-    const node = connection.getNode(key);
-    const list = node?.type === 'selector' ? selectors : atoms;
-    list.push(
-      <Item
-        isRoot={true}
-        name={key}
-        key={key}
-        content={snapshot[key]}
-        node={node}
-      />,
-    );
-  });
 
   return (
     <SnapshotContext.Provider value={{searchVal, setSearchVal}}>

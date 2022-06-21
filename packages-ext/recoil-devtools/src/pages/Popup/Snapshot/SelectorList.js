@@ -13,30 +13,14 @@ import Item from '../Items/Item';
 import {useSelectedTransaction} from '../useSelectionHooks';
 import SnapshotContext from './SnapshotContext';
 
+import {useSelectorsList} from './snapshotHooks';
+
 import React, {useContext, useMemo} from 'react';
 
 export default function SelectorList(): React$Node {
   const {searchVal} = useContext(SnapshotContext);
   const connection = useContext(ConnectionContext);
-  const [txID] = useSelectedTransaction();
-  const {snapshot, sortedKeys} = useMemo(() => {
-    const localSnapshot = connection?.tree?.getSnapshot(txID);
-    return {
-      snapshot: localSnapshot,
-      sortedKeys: Object.keys(localSnapshot ?? {}).sort(),
-    };
-  }, [connection, txID]);
-
-  if (snapshot == null || connection == null) {
-    return null;
-  }
-  const selectors = [];
-  sortedKeys.forEach(key => {
-    const node = connection.getNode(key);
-    if (node?.type === 'selector') {
-      selectors.push({name: key, content: snapshot[key]});
-    }
-  });
+  const selectors = useSelectorsList() ?? [];
   const filteredSelectors = selectors.filter(({name}) =>
     name.toLowerCase().includes(searchVal.toLowerCase()),
   );
