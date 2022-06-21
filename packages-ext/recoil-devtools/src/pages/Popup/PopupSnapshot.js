@@ -15,8 +15,10 @@ import Item from './Items/Item';
 
 const ConnectionContext = require('./ConnectionContext');
 const {useSelectedTransaction} = require('./useSelectionHooks');
+const AtomList = require('./Snapshot/AtomList.js').default;
+const SnapshotContext = require('./Snapshot/SnapshotContext.js').default;
 const React = require('react');
-const {useContext, useMemo} = require('react');
+const {useContext, useMemo, useState} = require('react');
 
 const styles = {
   container: {
@@ -28,6 +30,7 @@ const styles = {
 };
 
 function SnapshotRenderer(): React.Node {
+  const [searchVal, setSearchVal] = useState('');
   const connection = useContext(ConnectionContext);
   const [txID] = useSelectedTransaction();
   const {snapshot, sortedKeys} = useMemo(() => {
@@ -59,12 +62,13 @@ function SnapshotRenderer(): React.Node {
   });
 
   return (
-    <div style={styles.container}>
-      <h2>Atoms</h2>
-      {atoms.length > 0 ? atoms : 'No atoms to show.'}
-      <h2>Selectors</h2>
-      {selectors.length > 0 ? selectors : 'No selectors to show.'}
-    </div>
+    <SnapshotContext.Provider value={{searchVal, setSearchVal}}>
+      <div style={styles.container}>
+        <AtomList />
+        <h2>Selectors</h2>
+        {selectors.length > 0 ? selectors : 'No selectors to show.'}
+      </div>
+    </SnapshotContext.Provider>
   );
 }
 
