@@ -16,6 +16,7 @@ import Item from './Items/Item';
 const ConnectionContext = require('./ConnectionContext');
 const {useSelectedTransaction} = require('./useSelectionHooks');
 const AtomList = require('./Snapshot/AtomList.js').default;
+const SelectorList = require('./Snapshot/SelectorList.js').default;
 const SnapshotSearch = require('./Snapshot/SnapshotSearch.js').default;
 const SnapshotContext = require('./Snapshot/SnapshotContext.js').default;
 const React = require('react');
@@ -67,8 +68,7 @@ function SnapshotRenderer(): React.Node {
       <div style={styles.container}>
         <SnapshotSearch />
         <AtomList />
-        <h2>Selectors</h2>
-        {selectors.length > 0 ? selectors : 'No selectors to show.'}
+        <SelectorList />
       </div>
     </SnapshotContext.Provider>
   );
