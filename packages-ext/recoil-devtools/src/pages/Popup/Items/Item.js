@@ -33,8 +33,6 @@ type KeyProps = {
   isRoot?: boolean,
 };
 
-const noop = () => {};
-
 function Item({
   name,
   content,

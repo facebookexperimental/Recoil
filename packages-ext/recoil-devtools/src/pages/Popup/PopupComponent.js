@@ -9,9 +9,6 @@
  */
 'use strict';
 
-
-const {RecoilDevToolsActions} = require('../../constants/Constants');
-const {debug} = require('../../utils/Logger');
 const ConnectionContext = require('./ConnectionContext');
 const Header = require('./PopupHeader');
 const Main = require('./PopupMainContent');

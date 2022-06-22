@@ -11,14 +11,10 @@
 
 import Item from './Item';
 
-const {formatForDiff} = require('../../../utils/Serialization');
 const {SerializedValueType} = require('../../../utils/Serialization');
 const ConnectionContext = require('../ConnectionContext');
 const {useSelectedTransaction} = require('../useSelectionHooks');
 const CollapsibleItem = require('./CollapsibleItem');
-const ItemDescription = require('./ItemDescription');
-const ItemLabel = require('./ItemLabel');
-const JsonDiff = require('jsondiffpatch-for-react').default;
 const nullthrows = require('nullthrows');
 const React = require('react');
 const {useContext} = require('react');
@@ -37,10 +33,9 @@ const styles = {
 
 type Props = {
   name: string,
-  isDiff?: boolean,
 };
 
-function ItemDependencies({name, isDiff = false}: Props): React.Node {
+function ItemDependencies({name}: Props): React.Node {
   const connection = nullthrows(useContext(ConnectionContext));
   const [txID] = useSelectedTransaction();
 

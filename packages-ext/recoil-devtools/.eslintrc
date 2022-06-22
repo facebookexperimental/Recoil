@@ -5,7 +5,7 @@
   ],
   "rules": {
     "unused-imports/no-unused-vars": [
-      "error",
+      "warn",
       {
         "vars": "all",
         "varsIgnorePattern": "^_",
@@ -13,7 +13,7 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-imports": "warn",
     "react-hooks/exhaustive-deps": "error",
     "react-hooks/rules-of-hooks": "error"
   }

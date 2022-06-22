@@ -48,7 +48,7 @@ function DiffItem({
   const connection = nullthrows(useContext(ConnectionContext));
   const [txID] = useSelectedTransaction();
 
-  const {tree, dependencies} = connection;
+  const {tree} = connection;
   const {value, previous} = useMemo(
     () => ({
       value: tree.get(name, txID),

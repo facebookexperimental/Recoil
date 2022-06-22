@@ -9,16 +9,12 @@
  */
 'use strict';
 
-
-
-const ConnectionContext = require('./ConnectionContext');
-const {useSelectedTransaction} = require('./useSelectionHooks');
 const AtomList = require('./Snapshot/AtomList.js').default;
 const SelectorList = require('./Snapshot/SelectorList.js').default;
 const SnapshotSearch = require('./Snapshot/SnapshotSearch.js').default;
 const SearchContext = require('./Snapshot/SearchContext.js').default;
 const React = require('react');
-const {useContext, useMemo, useState} = require('react');
+const {useState} = require('react');
 
 const styles = {
   container: {

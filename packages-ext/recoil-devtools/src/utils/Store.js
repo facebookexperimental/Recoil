@@ -17,9 +17,6 @@ import type {
 
 const {RecoilDevToolsActions} = require('../constants/Constants');
 const Connection = require('./Connection');
-const {debug} = require('./Logger');
-
-type Handler = ({connectionId: string, ...}) => void;
 
 class Store {
   connections: Map<number, Connection>;

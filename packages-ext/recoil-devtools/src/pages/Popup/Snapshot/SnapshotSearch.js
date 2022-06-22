@@ -17,7 +17,7 @@ export default function SnapshotSearch(): React$MixedElement {
   const inputRef = useRef(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleKeyDown = useCallback(
-    debounce((e: SyntheticKeyboardEvent<HTMLInputElement>) => {
+    debounce((_e: SyntheticKeyboardEvent<HTMLInputElement>) => {
       setSearchVal(inputRef.current?.value ?? '');
     }, 300),
     [setSearchVal],

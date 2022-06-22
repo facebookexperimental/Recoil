@@ -25,8 +25,6 @@ function PopupDiff(): React.Node {
   }
 
   const transaction = connection.transactions.get(txID);
-  const tree = connection.tree;
-  const depsTree = connection.dependencies;
 
   return (
     <>

@@ -32,9 +32,7 @@ global.__DEV__ = true;
 
 const {
   ExtensionSource,
-  ExtensionSourceContentScript,
   RecoilDevToolsActions,
-  MessageChunkSize,
 } = require('../../../constants/Constants');
 
 // Mock constants
@@ -49,7 +47,8 @@ jest.mock('../../../constants/Constants', () => ({
   MessageChunkSize: 50,
 }));
 
-const {initContentScriptListeners} = require('../ContentScript');
+// Side-effect: initializes handlers variable
+require('../ContentScript');
 
 describe('initializing Content Script listeners', () => {
   it('sets events handler', () => {

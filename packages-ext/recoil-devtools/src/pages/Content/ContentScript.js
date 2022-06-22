@@ -17,7 +17,7 @@ const {
   MessageChunkSize,
   RecoilDevToolsActions,
 } = require('../../constants/Constants');
-const {debug, warn} = require('../../utils/Logger');
+const {warn} = require('../../utils/Logger');
 const nullthrows = require('nullthrows');
 
 // Init message listeners

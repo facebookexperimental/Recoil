@@ -13,7 +13,6 @@ import type Connection from '../../utils/Connection';
 import type Store from '../../utils/Store';
 
 const {RecoilDevToolsActions} = require('../../constants/Constants');
-const {debug} = require('../../utils/Logger');
 const ConnectionContext = require('./ConnectionContext');
 const PopupComponent = require('./PopupComponent');
 const React = require('react');

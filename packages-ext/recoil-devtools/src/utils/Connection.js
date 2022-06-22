@@ -68,7 +68,7 @@ class Connection {
     this.persistValues(values, 0);
   }
 
-  processMessage(msg: BackgroundPostMessage, isInit: boolean = false): number {
+  processMessage(msg: BackgroundPostMessage, _isInit: boolean = false): number {
     const txID = this.transactions.getNextIndex();
     if (msg.message?.modifiedValues != null) {
       this.transactions.add({

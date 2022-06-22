@@ -9,9 +9,7 @@
  */
 'use strict';
 
-import type {
-  SerializedValue,
-} from '../../../utils/Serialization';
+import type {SerializedValue} from '../../../utils/Serialization';
 
 import Item from './Item';
 
@@ -111,7 +109,7 @@ const ItemRenderers = {
   [SerializedValueType.error]: ({value}: {value: string}) =>
     ItemRenderers[SerializedValueType.primitive]({value}),
   [SerializedValueType.promise]: function SerializedValueTypePromise({
-    value,
+    value: _value,
   }: {
     value: string,
   }) {
