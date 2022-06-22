@@ -9,9 +9,7 @@
  */
 'use strict';
 
-import type {SnapshotType} from '../../types/DevtoolsTypes';
 
-import Item from './Items/Item';
 
 const ConnectionContext = require('./ConnectionContext');
 const {useSelectedTransaction} = require('./useSelectionHooks');

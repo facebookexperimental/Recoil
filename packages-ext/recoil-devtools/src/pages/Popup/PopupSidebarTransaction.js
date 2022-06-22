@@ -10,7 +10,6 @@
 'use strict';
 
 import type {TransactionType} from '../../types/DevtoolsTypes';
-import type Connection from '../../utils/Connection';
 
 const ConnectionContext = require('./ConnectionContext');
 const NodeName = require('./Items/NodeName').default;

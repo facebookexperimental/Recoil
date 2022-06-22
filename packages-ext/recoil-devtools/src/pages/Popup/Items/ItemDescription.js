@@ -11,7 +11,6 @@
 
 import type {
   SerializedValue,
-  SupportedSerializedValueTypes,
 } from '../../../utils/Serialization';
 
 const {SerializedValueType} = require('../../../utils/Serialization');

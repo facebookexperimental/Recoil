@@ -9,10 +9,8 @@
  */
 'use strict';
 
-import type {
-  DependenciesSnapshotType,
-  SnapshotType,
-} from '../../types/DevtoolsTypes';
+
+
 
 const {
   createGraph,

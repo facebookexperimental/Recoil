@@ -9,7 +9,6 @@
  */
 'use strict';
 
-import type {TransactionType} from '../../types/DevtoolsTypes';
 
 const {RecoilDevToolsActions} = require('../../constants/Constants');
 const {debug} = require('../../utils/Logger');

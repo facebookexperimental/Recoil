@@ -8,7 +8,6 @@
  * @format
  */
 'use strict';
-import type Connection from '../../../utils/Connection';
 
 import Item from './Item';
 

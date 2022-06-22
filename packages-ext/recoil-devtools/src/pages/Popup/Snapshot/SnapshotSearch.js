@@ -8,7 +8,7 @@
  * @format
  */
 
-import React, {useCallback, useContext, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useContext, useRef} from 'react';
 import debounce from '../../../utils/debounce';
 import SearchContext from './SearchContext';
 

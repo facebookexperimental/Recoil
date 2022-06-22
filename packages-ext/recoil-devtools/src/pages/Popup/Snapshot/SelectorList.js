@@ -10,12 +10,11 @@
 
 import ConnectionContext from '../ConnectionContext';
 import Item from '../Items/Item';
-import {useSelectedTransaction} from '../useSelectionHooks';
 import SearchContext from './SearchContext';
 
 import {useSelectorsList} from './snapshotHooks';
 
-import React, {useContext, useMemo} from 'react';
+import React, {useContext} from 'react';
 
 export default function SelectorList(): React$Node {
   const {searchVal} = useContext(SearchContext);

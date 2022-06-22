@@ -10,7 +10,6 @@
 'use strict';
 import type Connection from '../../utils/Connection';
 
-import type {TransactionType} from '../../types/DevtoolsTypes';
 import type Store from '../../utils/Store';
 
 const {RecoilDevToolsActions} = require('../../constants/Constants');
