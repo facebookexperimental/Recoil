@@ -155,7 +155,7 @@ function MyComponent() {
     <div>
       <h1>{user.name}</h1>
       <button onClick={() => {
-        setEvent(user => ({...user, name: 'New Name'}));
+        setUser(user => ({...user, name: 'New Name'}));
       }}>Change Name</button>
     </div>
   );
