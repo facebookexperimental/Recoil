@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 import type {TransactionInterface} from '../core/Recoil_AtomicUpdates';
