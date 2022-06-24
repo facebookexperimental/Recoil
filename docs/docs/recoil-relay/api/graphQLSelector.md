@@ -43,7 +43,7 @@ function graphQLSelector<
 ```
 * **`key`** - A unique string used to identify the selector.
 * **`environment`** - The Relay Environment or an [`EnvironmentKey`](/docs/recoil-relay/api/EnvironmentKey) to match with an environment pprovided by a surrounding [`<RecoilRelayEnvironment>`](/docs/recoil-relay/api/RecoilRelayEnvironment).
-* **`query`** - A [GraphQL Query or Subscription](https://graphql.org/learn/queries/).  [Fragments](/docs/recoil-relay/graphql-selectors#graphql-fragments) are supported in queries.
+* **`query`** - A [GraphQL Query or Subscription](https://graphql.org/learn/queries/).  [Fragments](/docs/recoil-relay/graphql-queries#graphql-fragments) are supported in queries.
 * **`variables`** - Callback to provide the [variables](https://graphql.org/learn/queries/#variables) object to use for the query.  This may be the variables object directly or a callback which has a `get()` function that allows the selector to reference other upstream Recoil atoms/selectors.  If `null` is provided as the variables then no query will be performed and the `default` value will be used instead.
 * **`mapResponse`** - Callbak to transform the GraphQL results for using as the value of the selector.  It is also provided a `get()` function so it can reference other Recoil atoms/selectors to perform the transformation.
 * **`default`** - The default value to use if `null` is provided as the `variables`.  If `default` is not provided then the selector will remain in a pending state.
@@ -157,7 +157,7 @@ const eventNameQuery = graphQLSelector({
 
 ### GraphQL Fragments
 
-GraphQL [fragments](/docs/recoil-relay/graphql-selectors#graphql-fragments) are also supported in queries.
+GraphQL [fragments](/docs/recoil-relay/graphql-queries#graphql-fragments) are also supported in queries.
 
 ### Mutations
-`graphQLSelector()` acts as a local cache for the GraphQL server state as the source of truth.  It is writable and can be configured to commit a mutation to the server if written to.  See the [write-through cache example](/docs/recoil-relay/graphql-selectors#write-through-cache).
+`graphQLSelector()` acts as a local cache for the GraphQL server state as the source of truth.  It is writable and can be configured to commit a mutation to the server if written to.  See the [write-through cache example](/docs/recoil-relay/graphql-mutations#write-through-cache).

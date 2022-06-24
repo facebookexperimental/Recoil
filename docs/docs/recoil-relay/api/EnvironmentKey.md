@@ -3,7 +3,7 @@ title: EnvironmentKey
 sidebar_label: EnvironmentKey
 ---
 
-An `EnvironmentKey` is class that can be used to match up a Relay Environment registered with [`<RecoilRelayEnvironment>`](/docs/recoil-relay/api/RecoilRelayEnvironment) in your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) with a GraphQL [selector](/docs/recoil-relay/graphql-selectors) or [atom effect](/docs/recoil-relay/graphql-effects) that uses it to query.
+An `EnvironmentKey` is class that can be used to match up a Relay Environment registered with [`<RecoilRelayEnvironment>`](/docs/recoil-relay/api/RecoilRelayEnvironment) in your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot) with a GraphQL [selector](/docs/recoil-relay/graphql-queries) or [atom effect](/docs/recoil-relay/graphql-effects) that uses it to query.
 
 ```jsx
 const myEnvironmentKey = new EnvironmentKey('My Environment');
