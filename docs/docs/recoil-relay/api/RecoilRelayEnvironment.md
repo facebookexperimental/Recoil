@@ -3,7 +3,7 @@ title: <RecoilRelayEnvironment>
 sidebar_label: <RecoilRelayEnvironment>
 ---
 
-A component that registers a Relay Environment to be used by GraphQL [selectors](/docs/recoil-relay/graphql-selectors) or [atom effects](/docs/recoil-relay/graphql-effects) referenced by its child components with matching [`EnvironmentKey`](/docs/recoil-relay/api/EnvironmentKey).
+A component that registers a Relay Environment to be used by GraphQL [selectors](/docs/recoil-relay/graphql-queries) or [atom effects](/docs/recoil-relay/graphql-effects) referenced by its child components with matching [`EnvironmentKey`](/docs/recoil-relay/api/EnvironmentKey).
 
 ---
 ### Props

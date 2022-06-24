@@ -119,8 +119,9 @@ module.exports = {
   'recoil-relay': [
     'recoil-relay/introduction',
     'recoil-relay/environment',
-    'recoil-relay/graphql-selectors',
-    'recoil-relay/preloaded-queries',
+    'recoil-relay/graphql-queries',
+    'recoil-relay/graphql-mutations',
+    'recoil-relay/graphql-subscriptions',
     'recoil-relay/graphql-effects',
     {
       'API Reference': [

@@ -3,11 +3,11 @@ title: Relay Environment
 sidebar_label: Relay Environment
 ---
 
-To use GraphQL with the `recoil-relay` library you'll need to reference your Relay environment(s).  Each GraphQL [selector](/docs/recoil-relay/graphql-selectors) or [effect](/docs/recoil-relay/graphql-effects) requires an `environment` option which can either reference a Relay Environment directly or be an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) that matches up with a [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) compnoent that registered a Relay environment.
+To use GraphQL with the `recoil-relay` library you'll need to reference your Relay environment(s).  Each GraphQL [selector](/docs/recoil-relay/graphql-queries) or [effect](/docs/recoil-relay/graphql-effects) requires an `environment` option which can either reference a Relay Environment directly or be an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) that matches up with a [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) component that registered a Relay environment.
 
 ### `EnvironmentKey`
 
-When using an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) with your GraphQL queries it is matched up with a surrounding [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) with the same `environmentKey` within your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot).  This is useful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/preloaded-queries).
+When using an [**`EnvironmentKey`**](/docs/recoil-relay/api/EnvironmentKey) with your GraphQL queries it is matched up with a surrounding [**`<RecoilRelayEnvironment>`**](/docs/recoil-relay/api/RecoilRelayEnvironment) with the same `environmentKey` within your [`<RecoilRoot>`](/docs/api-reference/core/RecoilRoot).  This is useful in case the environment object is only available at runtime when actually rendering your component, such as for [preloaded queries](/docs/recoil-relay/graphql-queries#preloaded-graphql).
 
 ```jsx
 const myEnvironmentKey = new EnvironmentKey('My Environment');
