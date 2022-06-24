@@ -80,7 +80,36 @@ GraphQL queries can also be [preloaded](/docs/recoil-relay/preloaded-queries).
 
 ## GraphQL Fragments
 
-GraphQL queries can also include [GraphQL fragments](https://graphql.org/learn/queries/#fragments) through the use of
+GraphQL queries can also include [GraphQL fragments](https://graphql.org/learn/queries/#fragments) through the use of `readInlineData()`.
+
+```jsx
+const userNameFragment = graphql`
+  fragment UserNameFragment on User @inline {
+    name
+  }
+`;
+```
+
+```jsx
+import {readInlineData} from 'relay-runtime';
+
+const userNameQuery = graphQLSelectorFamily({
+  key: 'UserNameQuery',
+  environment: myEnvironmentKey,
+  query: graphql`
+    query UserNameQuery($id: ID!) {
+      user(id: $id) {
+        ...UserNameFragment
+      }
+    }
+  `,
+  variables: id => ({id}),
+  mapResponse: response => {
+    const userFragment = readInlineData(userNameFragment, response.user);
+    return userFragment?.name;
+  },
+})
+```
 
 ## GraphQL Mutations
 

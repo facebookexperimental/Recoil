@@ -24,7 +24,7 @@ function graphQLQueryEffect<
 ```
 
 - `environment`: The Relay Environment or an [`EnvironmentKey`](/docs/recoil-relay/api/EnvironmentKey) to match with the environment provided with [`<RecoilRelayEnvironemnt>`](/docs/recoil-relay/api/RecoilRelayEnvironment).
-- `query`: The [GraphQL query](https://graphql.org/learn/queries/) to query.
+- `query`: The [GraphQL query](https://graphql.org/learn/queries/) to query.  [Fragments](/docs/recoil-relay/graphql-selectors#graphql-fragments) are supported in queries.
 - `variables`: [Variables](https://graphql.org/learn/queries/#variables) object provided as input to the GraphQL query.  If `null`, then skip query and use the default atom value.
 - `mapResponse`: Callback to map the query response to the atom value.
 

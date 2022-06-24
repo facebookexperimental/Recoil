@@ -7,7 +7,7 @@ The underlying GraphQL synchronization support is provided via [atom effects](/d
 
 There are three atom effects that correspond with the three types of [GraphQL operations](https://graphql.org/learn/queries/#operation-name):
 ### [**`graphQLQueryEffect()`**](/docs/recoil-relay/api/graphQLQueryEffect)
-This effect initializes an atom with the results of a **GraphQL query**. Data may potentially load incrementally with `@defer` or live queries. This effect will also automatically update the atom if you issue a local Relay [`commitMutation()`](https://relay.dev/docs/api-reference/commit-mutation) call for the same part of the graph.
+This effect initializes an atom with the results of a **GraphQL query**. Data may potentially load incrementally with `@defer` or live queries. This effect will also automatically update the atom if you issue a local Relay [`commitMutation()`](https://relay.dev/docs/api-reference/commit-mutation) call for the same part of the graph.  GraphQL [fragments](/docs/recoil-relay/graphql-selectors#graphql-fragments) are also supported.
 
 ### [**`graphQLSubscriptionEffect()`**](/docs/recoil-relay/api/graphQLSubscriptionEffect)
 If you also want to subscribe to mutations initiated remotely from the server, in addition to local changes, then you can implement a **GraphQL subscription** on the server and use this instead of a query.
