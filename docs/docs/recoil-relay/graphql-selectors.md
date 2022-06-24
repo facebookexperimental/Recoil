@@ -78,6 +78,39 @@ function MyComponent(props) {
 
 GraphQL queries can also be [preloaded](/docs/recoil-relay/preloaded-queries).
 
+## GraphQL Fragments
+
+GraphQL queries can also include [GraphQL fragments](https://graphql.org/learn/queries/#fragments) through the use of `readInlineData()`.
+
+```jsx
+const userNameFragment = graphql`
+  fragment UserNameFragment on User @inline {
+    name
+  }
+`;
+```
+
+```jsx
+import {readInlineData} from 'relay-runtime';
+
+const userNameQuery = graphQLSelectorFamily({
+  key: 'UserNameQuery',
+  environment: myEnvironmentKey,
+  query: graphql`
+    query UserNameQuery($id: ID!) {
+      user(id: $id) {
+        ...UserNameFragment
+      }
+    }
+  `,
+  variables: id => ({id}),
+  mapResponse: response => {
+    const userFragment = readInlineData(userNameFragment, response.user);
+    return userFragment?.name;
+  },
+})
+```
+
 ## GraphQL Mutations
 
 The GraphQL selectors will perform an initial query as well as subscribe to any changes.  You can use Relay APIs such as [**`useMutation()`**](https://relay.dev/docs/api-reference/use-mutation) and[**`commitMutation()`**](https://relay.dev/docs/api-reference/commit-mutation) to update the state on the server.  These changes will also sync and cause the Recoil GraphQL selectors to update.  This allows you to treat the server as the source of truth with the selector as a local cache.
