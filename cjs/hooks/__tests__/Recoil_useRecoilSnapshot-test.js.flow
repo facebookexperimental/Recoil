@@ -8,6 +8,7 @@
  * @flow strict-local
  * @format
  */
+
 'use strict';
 
 const {
@@ -24,6 +25,7 @@ let React,
   selector,
   ReadsAtom,
   asyncSelector,
+  stringAtom,
   componentThatReadsAndWritesAtom,
   flushPromisesAndTimers,
   renderElements,
@@ -41,6 +43,7 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     ReadsAtom,
     asyncSelector,
+    stringAtom,
     componentThatReadsAndWritesAtom,
     flushPromisesAndTimers,
     renderElements,
@@ -55,10 +58,7 @@ testRecoil('useRecoilSnapshot - subscribe to updates', ({strictMode}) => {
   if (strictMode) {
     return;
   }
-  const myAtom = atom({
-    key: 'useRecoilSnapshot - subscribe',
-    default: 'DEFAULT',
-  });
+  const myAtom = stringAtom();
   const [ReadsAndWritesAtom, setAtom, resetAtom] =
     componentThatReadsAndWritesAtom(myAtom);
 
@@ -442,4 +442,62 @@ describe('Snapshot Retention', () => {
       expect(snapshotFirstCnt).toBe(0);
     }
   });
+});
+
+testRecoil('useRecoilSnapshot - re-render', () => {
+  const myAtom = stringAtom();
+  const [ReadsAndWritesAtom, setAtom, resetAtom] =
+    componentThatReadsAndWritesAtom(myAtom);
+
+  const snapshots = [];
+  let forceUpdate;
+  function RecoilSnapshotAndSubscribe() {
+    const [, setState] = useState([]);
+    forceUpdate = () => setState([]);
+
+    const snapshot = useRecoilSnapshot();
+    snapshots.push(snapshot);
+    return null;
+  }
+
+  const c = renderElements(
+    <>
+      <ReadsAndWritesAtom />
+      <RecoilSnapshotAndSubscribe />
+    </>,
+  );
+
+  expect(c.textContent).toEqual('"DEFAULT"');
+  expect(snapshots[snapshots.length - 1].getLoadable(myAtom).contents).toBe(
+    'DEFAULT',
+  );
+
+  act(forceUpdate);
+  expect(snapshots[snapshots.length - 1].getLoadable(myAtom).contents).toBe(
+    'DEFAULT',
+  );
+
+  act(() => setAtom('SET'));
+  expect(c.textContent).toEqual('"SET"');
+  expect(snapshots[snapshots.length - 1].getLoadable(myAtom).contents).toBe(
+    'SET',
+  );
+
+  act(forceUpdate);
+  expect(c.textContent).toEqual('"SET"');
+  expect(snapshots[snapshots.length - 1].getLoadable(myAtom).contents).toBe(
+    'SET',
+  );
+
+  act(resetAtom);
+  expect(c.textContent).toEqual('"DEFAULT"');
+  expect(snapshots[snapshots.length - 1].getLoadable(myAtom).contents).toBe(
+    'DEFAULT',
+  );
+
+  act(forceUpdate);
+  expect(c.textContent).toEqual('"DEFAULT"');
+  expect(snapshots[snapshots.length - 1].getLoadable(myAtom).contents).toBe(
+    'DEFAULT',
+  );
 });

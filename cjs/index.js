@@ -5626,7 +5626,13 @@ function useRecoilSnapshot() {
       releaseRef.current = null;
     }
 
-    return release;
+    return () => {
+      // Defer the release.  If "Fast Refresh"" is used then the component may
+      // re-render with the same state.  The previous cleanup will then run and
+      // then the new effect will run. We don't want the snapshot to be released
+      // by that cleanup before the new effect has a chance to retain it again.
+      window.setTimeout(release, 0);
+    };
   }, [snapshot]); // Retain snapshot until above effect is run.
   // Release after a threshold in case component is suspended.
 
