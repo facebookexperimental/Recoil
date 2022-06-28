@@ -34,12 +34,14 @@ function useRecoilCallback<Args, ReturnValue>(
 * **`deps`** - An optional set of dependencies for memoizing the callback.  Like `useCallback()`, the produced callback will not be memoized by default and will produce a new function with each render.  You can pass an empty array to always return the same function instance.  If you pass values in the `deps` array a new function will be used if the reference equality of any dep changes.  Those values can then be used from within the body of your callback without getting stale.  (See [`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback))  You can [update eslint](/docs/introduction/installation#eslint) to help ensure this is used correctly.
 
 ### Callback Interface
-* **`snapshot`** - The [`Snapshot`](/docs/api-reference/core/Snapshot) provides a read-only look at the Recoil atom state when the callback was called.  While the atom values are static, asynchronous selectors may still resolve.  Snapshots will be retained for the duration of sync or async callbacks, but if you store and use them beyond that scope then you need to [explicitly retain them](/docs/api-reference/core/Snapshot#asynchronous-use-of-snapshots).
+* **`snapshot`** - The [`Snapshot`](/docs/api-reference/core/Snapshot) provides a read-only look at the Recoil atom state when the snapshot was accessed.  While the atom values are static, asynchronous selectors may still resolve.  Snapshots will be retained for the duration of sync or async callbacks, but if you store and use it beyond that scope then you need to [explicitly retain it](/docs/api-reference/core/Snapshot#asynchronous-use-of-snapshots).
 * **`gotoSnapshot`** - Enqueue updating the global state to match the provided [`Snapshot`](/docs/api-reference/core/Snapshot).
 * **`set`** - Enqueue setting the value of an atom or selector.  Like elsewhere, you may either provide the new value directly or an updater function that returns the new value and takes the current value as a parameter.  The current value represents all other enqueued state changes to date in the current transaction.
 * **`reset`** - Reset the value of an atom or selector to its default.
 * **`refresh`** - Refresh selector caches.
 * **`transact_UNSTABLE`** - Execute a transaction.  See the [`useRecoilTransaction_UNSTABLE()` documentation](/docs/api-reference/core/useRecoilTransaction).
+
+Note: The callback interface may compute properties lazily on-demand as an optimization to avoid overhead.  Because of this you should not pass the callback interface through using the spread operator, but either explicitly dereference properties or pass the entire proxy object.
 
 ### Lazy Read Example
 
