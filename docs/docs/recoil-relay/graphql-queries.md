@@ -78,7 +78,7 @@ function MyComponent(props) {
 
 ## GraphQL Fragments
 
-GraphQL queries can also include [**GraphQL fragments**](https://graphql.org/learn/queries/#fragments) through the use of `readInlineData()`.
+GraphQL queries can also include [**GraphQL fragments**](https://graphql.org/learn/queries/#fragments) through the use of [`@inline`](https://relay.dev/docs/api-reference/graphql-and-directives/#inline) directive and `readInlineData()`.
 
 ```jsx
 const userNameFragment = graphql`
