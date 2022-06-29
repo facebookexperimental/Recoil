@@ -7,6 +7,7 @@
  * @emails oncall+recoil
  * @flow strict
  * @format
+ * @oncall recoil
  */
 
 const {repository} = require('../package.json');
