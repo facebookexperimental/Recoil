@@ -16,6 +16,7 @@
    * @emails oncall+recoil
    * 
    * @format
+   * @oncall recoil
    */
 
   function err(message) {
@@ -543,6 +544,7 @@
    * @emails oncall+recoil
    * 
    * @format
+   * @oncall recoil
    */
 
   function sprintf(format, ...args) {
@@ -605,6 +607,7 @@
    * @emails oncall+recoil
    * 
    * @format
+   * @oncall recoil
    */
 
   function recoverableViolation(message, _projectName, {
@@ -3285,12 +3288,13 @@
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
    *
+   * This is to export esstiential functions from react-dom
+   * for our web build
+   *
    * @emails oncall+recoil
    * 
    * @format
-   *
-   * This is to export esstiential functions from react-dom
-   * for our web build
+   * @oncall recoil
    */
   const {
     unstable_batchedUpdates
@@ -5885,6 +5889,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
    * @emails oncall+recoil
    * 
    * @format
+   * @oncall recoil
    */
 
   function invariant(condition, message) {

@@ -10,6 +10,7 @@ import reactDom from 'react-dom';
  * @emails oncall+recoil
  * 
  * @format
+ * @oncall recoil
  */
 
 function err(message) {
@@ -537,6 +538,7 @@ var Recoil_RecoilValue$1 = /*#__PURE__*/Object.freeze({
  * @emails oncall+recoil
  * 
  * @format
+ * @oncall recoil
  */
 
 function sprintf(format, ...args) {
@@ -599,6 +601,7 @@ var Recoil_mapIterable = mapIterable;
  * @emails oncall+recoil
  * 
  * @format
+ * @oncall recoil
  */
 
 function recoverableViolation(message, _projectName, {
@@ -3282,12 +3285,13 @@ var Recoil_Retention = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
+ * This is to export esstiential functions from react-dom
+ * for our web build
+ *
  * @emails oncall+recoil
  * 
  * @format
- *
- * This is to export esstiential functions from react-dom
- * for our web build
+ * @oncall recoil
  */
 const {
   unstable_batchedUpdates
@@ -5884,6 +5888,7 @@ var Recoil_AtomicUpdates$1 = /*#__PURE__*/Object.freeze({
  * @emails oncall+recoil
  * 
  * @format
+ * @oncall recoil
  */
 
 function invariant(condition, message) {
