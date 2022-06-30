@@ -7,6 +7,7 @@
  * @emails oncall+perf_viz
  * @flow strict-local
  * @format
+ * @oncall perf_viz
  */
 'use strict';
 import type {Snapshot} from 'Recoil_Snapshot';

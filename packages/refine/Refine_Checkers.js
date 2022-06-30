@@ -10,6 +10,7 @@
  * @emails oncall+monitoring_interfaces
  * @flow strict
  * @format
+ * @oncall monitoring_interfaces
  */
 'use strict';
 
