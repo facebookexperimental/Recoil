@@ -62,10 +62,29 @@ const testFeedbackMutation = graphql`
   }
 `;
 
+const testFeedbackFragment = graphql`
+  fragment RecoilRelayMockQueriesFeedbackFragment on Feedback @inline {
+    id
+    seen_count
+  }
+`;
+
+const testFeedbackFragmentQuery = graphql`
+  query RecoilRelayMockQueriesFeedbackFragmentQuery($id: ID!)
+  # @fb_owner(oncall: "recoil")
+  @relay_test_operation {
+    feedback(id: $id) {
+      ...RecoilRelayMockQueriesFeedbackFragment
+    }
+  }
+`;
+
 /* eslint-enable relay/unused-fields */
 
 module.exports = {
   testFeedbackQuery,
   testFeedbackSubscription,
   testFeedbackMutation,
+  testFeedbackFragment,
+  testFeedbackFragmentQuery,
 };
