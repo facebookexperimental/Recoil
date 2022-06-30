@@ -6,7 +6,8 @@ Please see the website: https://recoiljs.org
 
 ## Installation
 
-The Recoil package lives in [npm](https://www.npmjs.com/get-npm). Please see the [installation guide](https://recoiljs.org/docs/introduction/installation)
+The Recoil package lives in [npm](https://www.npmjs.com/get-npm).  Please see the [installation guide](https://recoiljs.org/docs/introduction/installation)
+
 
 To install the latest stable version, run the following command:
 

@@ -4,17 +4,16 @@
 
 Refine is currently bundled as part of the [Recoil Sync](https://recoiljs.org/docs/recoil-sync/introduction) package.
 
-Please see the [**Refine Documentation**](https://recoiljs.org/docs/refine/Introduction). To get started learning about Refine, check out the documentation on the core concepts of [Utilities](https://recoiljs.org/docs/refine/api/Utilities) and [Checkers](https://recoiljs.org/docs/refine/api/Checkers).
+Please see the [**Refine Documentation**](https://recoiljs.org/docs/refine/Introduction).  To get started learning about Refine, check out the documentation on the core concepts of [Utilities](https://recoiljs.org/docs/refine/api/Utilities) and [Checkers](https://recoiljs.org/docs/refine/api/Checkers).
 
 ## Why would I want to use Refine?
-
 - Refine is useful when your code encounters `unknown` TypeScript type or `mixed` Flow type values and you need to [assert those values have a specific static type](https://recoiljs.org/docs/refine/Introduction#type-refinement-example).
 - Refine provides an API for building type-refinement helper functions which can validate that an unknown value conforms to an expected type.
 - Refine can validate input values and [upgrade from previous versions](https://recoiljs.org/docs/refine/Introduction#backward-compatible-example).
 
 ## Type Refinement Example
 
-Coerce unknown types to a strongly typed variable. [`assertion()`](https://recoiljs.org/docs/refine/api/Utilities#assertion) will throw if the input doesn't match the expected type while [`coercion()`](https://recoiljs.org/docs/refine/api/Utilities#coercion) will return `null`.
+Coerce unknown types to a strongly typed variable.  [`assertion()`](https://recoiljs.org/docs/refine/api/Utilities#assertion) will throw if the input doesn't match the expected type while [`coercion()`](https://recoiljs.org/docs/refine/api/Utilities#coercion) will return `null`.
 
 ```jsx
 const myObjectChecker = object({
@@ -47,12 +46,15 @@ const obj2: {str: string} = coercion(myChecker('hello'));
 const obj3: {str: string} = coercion(myChecker(123));
 ```
 
+
 ## JSON Parser Example
 
 Refine wraps `JSON` to provide a built-in strongly typed parser.
 
 ```jsx
-const myParser = jsonParser(array(object({num: number()})));
+const myParser = jsonParser(
+    array(object({num: number()}))
+);
 
 const result = myParser('[{"num": 1}, {"num": 2}]');
 
@@ -66,7 +68,7 @@ if (result != null) {
 
 ## Usage in Recoil Sync
 
-The **Recoil Sync** library leverages **Refine** for type refinement, input validation, and upgrading types for backward compatibility. See the [`recoil-sync` docs](https://recoiljs.org/docs/recoil-sync/introduction) for more details.
+The **Recoil Sync** library leverages **Refine** for type refinement, input validation, and upgrading types for backward compatibility.  See the [`recoil-sync` docs](https://recoiljs.org/docs/recoil-sync/introduction) for more details.
 
 ## Installation
 

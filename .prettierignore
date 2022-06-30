@@ -1,11 +1,11 @@
-node_modules
-
-build
+node_modules/
+build/
+cjs/
+flow-typed/
+recoil_devtools_ext/
+es/
 
 yarn.lock
-
-flow-typed
-
-recoil_devtools_ext
-
 script/project-root-dir.js
+
+*.md
