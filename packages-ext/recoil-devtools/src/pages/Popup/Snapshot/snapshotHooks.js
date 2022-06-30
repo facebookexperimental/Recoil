@@ -27,18 +27,21 @@ export const useAtomsList = (): ?Array<NodeInfo> => {
     };
   }, [connection, txID]);
 
+  const atoms = useMemo(() => {
+    const value = [];
+    sortedKeys.forEach(key => {
+      const node = connection?.getNode(key);
+      const content = snapshot?.[key];
+      if (node != null && node.type === 'atom' && content != null) {
+        value.push({name: key, content});
+      }
+    });
+    return value;
+  }, [connection, snapshot, sortedKeys]);
+
   if (snapshot == null || connection == null) {
     return null;
   }
-
-  const atoms = [];
-  sortedKeys.forEach(key => {
-    const node = connection.getNode(key);
-    if (node?.type === 'atom') {
-      atoms.push({name: key, content: snapshot[key]});
-    }
-  });
-
   return atoms;
 };
 
@@ -58,17 +61,20 @@ export const useSelectorsList = (): ?Array<NodeInfo> => {
     };
   }, [connection, txID]);
 
+  const selectors = useMemo(() => {
+    const value = [];
+    sortedKeys.forEach(key => {
+      const node = connection?.getNode(key);
+      const content = snapshot?.[key];
+      if (node != null && node.type === 'selector' && content != null) {
+        value.push({name: key, content});
+      }
+    });
+    return value;
+  }, [connection, snapshot, sortedKeys]);
+
   if (snapshot == null || connection == null) {
     return null;
   }
-
-  const selectors = [];
-  sortedKeys.forEach(key => {
-    const node = connection.getNode(key);
-    if (node?.type === 'selector') {
-      selectors.push({name: key, content: snapshot[key]});
-    }
-  });
-
   return selectors;
 };
