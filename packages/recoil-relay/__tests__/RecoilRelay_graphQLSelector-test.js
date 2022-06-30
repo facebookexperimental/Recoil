@@ -18,10 +18,13 @@ const {
 let React,
   act,
   MockPayloadGenerator,
+  readInlineData,
   stringAtom,
   testFeedbackQuery,
   testFeedbackSubscription,
   testFeedbackMutation,
+  testFeedbackFragment,
+  testFeedbackFragmentQuery,
   mockRelayEnvironment,
   graphQLSelector,
   ReadsAtom,
@@ -32,6 +35,7 @@ const testRecoil = getRecoilTestFn(() => {
   React = require('react');
 
   ({act} = require('ReactTestUtils'));
+  ({readInlineData} = require('relay-runtime'));
   ({MockPayloadGenerator} = require('relay-test-utils'));
   ({
     ReadsAtom,
@@ -44,6 +48,8 @@ const testRecoil = getRecoilTestFn(() => {
     testFeedbackQuery,
     testFeedbackMutation,
     testFeedbackSubscription,
+    testFeedbackFragment,
+    testFeedbackFragmentQuery,
   } = require('./mock-graphql/RecoilRelay_MockQueries'));
 
   graphQLSelector = require('../RecoilRelay_graphQLSelector');
@@ -150,4 +156,35 @@ testRecoil('Sanity Subscription', async () => {
   );
   await flushPromisesAndTimers();
   expect(c.textContent).toBe('789');
+});
+
+testRecoil('GraphQL Fragments', async () => {
+  const {environment, renderElements} = mockRelayEnvironment();
+
+  const query = graphQLSelector({
+    key: 'graphql fragment query',
+    environment,
+    query: testFeedbackFragmentQuery,
+    variables: {id: 'ID1'},
+    mapResponse: ({feedback: response}, {variables}) => {
+      expect(variables).toEqual({id: 'ID1'});
+      const feedback = readInlineData(testFeedbackFragment, response);
+      return feedback?.seen_count;
+    },
+  });
+
+  const c = renderElements(<ReadsAtom atom={query} />);
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('loading');
+
+  act(() =>
+    environment.mock.resolveMostRecentOperation(operation =>
+      MockPayloadGenerator.generate(operation, {
+        ID: () => operation.request.variables.id,
+        Feedback: () => ({seen_count: 123}),
+      }),
+    ),
+  );
+  await flushPromisesAndTimers();
+  expect(c.textContent).toBe('123');
 });
