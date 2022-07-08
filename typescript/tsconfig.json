@@ -10,7 +10,10 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
-    "paths": {"recoil": ["./recoil.d.ts"]}
+    "paths": {
+      "recoil": ["./recoil.d.ts"],
+      "@recoiljs/refine": ["./refine.d.ts"]
+    }
   },
   "files": [
     "recoil.d.ts",

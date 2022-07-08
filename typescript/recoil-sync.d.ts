@@ -15,7 +15,7 @@
  } from 'recoil';
  import {
    Checker,
- } from 'refine';
+ } from '@recoiljs/refine';
 
  ////////////////////////
  // Core RecoilSync
