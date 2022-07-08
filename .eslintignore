@@ -3,3 +3,11 @@ node_modules
 yarn.lock
 
 docs
+
+cjs/
+
+es/
+
+native/
+
+recoil_devtools_ext/

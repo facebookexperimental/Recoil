@@ -11,11 +11,9 @@
 'use strict';
 import type Connection from '../../utils/Connection';
 
-import type {TransactionType} from '../../types/DevtoolsTypes';
 import type Store from '../../utils/Store';
 
 const {RecoilDevToolsActions} = require('../../constants/Constants');
-const {debug} = require('../../utils/Logger');
 const ConnectionContext = require('./ConnectionContext');
 const PopupComponent = require('./PopupComponent');
 const React = require('react');
@@ -43,8 +41,7 @@ function PopupApp({
     if (port.current !== null) {
       port.current.disconnect();
     }
-    // $FlowFixMe: chrome types
-    port.current = chrome.extension.connect({name: 'Recoil Devtools Popup'});
+    port.current = chrome.runtime.connect();
 
     port.current.postMessage({
       action: RecoilDevToolsActions.SUBSCRIBE_POPUP,

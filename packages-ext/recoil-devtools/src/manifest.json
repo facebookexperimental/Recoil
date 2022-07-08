@@ -26,7 +26,7 @@
     "icon-34.png"
   ],
   "manifest_version": 2,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "update_url": "https://www.internalfb.com/intern/browser_extensions/chrome/update.xml"
 }

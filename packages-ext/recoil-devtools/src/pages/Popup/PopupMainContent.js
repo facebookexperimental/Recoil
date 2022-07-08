@@ -17,7 +17,6 @@ const ConnectionContext = require('./ConnectionContext');
 const DependencyGraph = require('./PopupDependencyGraph');
 const Diff = require('./PopupDiff');
 const Snapshot = require('./PopupSnapshot').default;
-const Tabs = require('./Tabs');
 const React = require('react');
 const {useContext} = require('react');
 

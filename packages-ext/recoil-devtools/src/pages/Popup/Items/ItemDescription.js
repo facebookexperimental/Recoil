@@ -10,10 +10,7 @@
  */
 'use strict';
 
-import type {
-  SerializedValue,
-  SupportedSerializedValueTypes,
-} from '../../../utils/Serialization';
+import type {SerializedValue} from '../../../utils/Serialization';
 
 const {SerializedValueType} = require('../../../utils/Serialization');
 const React = require('react');

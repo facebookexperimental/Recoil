@@ -91,16 +91,6 @@ export type BackgroundPostMessageContent = $ReadOnly<{
   modifiedValues?: ValuesMessageType,
 }>;
 
-export type ConnectionPort = {
-  sender: Sender,
-  name: ?string,
-  postMessage: ({
-    action: RecoilDevToolsActionsType,
-    connectionId: number,
-    ...
-  }) => void,
-};
-
 export type Sender = {
   tab: {
     id: number,

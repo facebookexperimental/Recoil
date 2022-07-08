@@ -9,7 +9,6 @@
  * @oncall recoil
  */
 'use strict';
-import type Connection from '../../../utils/Connection';
 
 import ItemDependencies from './ItemDependencies';
 
@@ -50,7 +49,7 @@ function DiffItem({
   const connection = nullthrows(useContext(ConnectionContext));
   const [txID] = useSelectedTransaction();
 
-  const {tree, dependencies} = connection;
+  const {tree} = connection;
   const {value, previous} = useMemo(
     () => ({
       value: tree.get(name, txID),

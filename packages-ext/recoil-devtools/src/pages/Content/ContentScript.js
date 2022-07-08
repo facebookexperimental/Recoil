@@ -10,7 +10,6 @@
  */
 'use strict';
 
-/* global chrome */
 import type {DevToolsOptions, PostMessageData} from '../../types/DevtoolsTypes';
 
 const {
@@ -19,7 +18,7 @@ const {
   MessageChunkSize,
   RecoilDevToolsActions,
 } = require('../../constants/Constants');
-const {debug, warn} = require('../../utils/Logger');
+const {warn} = require('../../utils/Logger');
 const nullthrows = require('nullthrows');
 
 // Init message listeners
@@ -107,7 +106,6 @@ function initPageScript() {
   const pageScript = document.createElement('script');
   pageScript.type = 'text/javascript';
 
-  // $FlowFixMe
   pageScript.src = chrome.extension.getURL('pageScript.bundle.js');
   // remove the pageScript node after it has run
   pageScript.onload = function () {

@@ -12,21 +12,17 @@
 
 import type {
   BackgroundPostMessage,
-  ConnectionPort,
   RecoilDevToolsActionsType,
   ValuesMessageType,
 } from '../types/DevtoolsTypes';
 
 const {RecoilDevToolsActions} = require('../constants/Constants');
 const Connection = require('./Connection');
-const {debug} = require('./Logger');
-
-type Handler = ({connectionId: string, ...}) => void;
 
 class Store {
   connections: Map<number, Connection>;
   connectionIndex: number;
-  subscriptions: Set<ConnectionPort>;
+  subscriptions: Set<chrome$Port>;
   lastConnection: ?string;
 
   constructor() {
@@ -41,7 +37,7 @@ class Store {
     initialValues?: ValuesMessageType,
     displayName: ?string,
     devMode: ?boolean,
-    port: ConnectionPort,
+    port: chrome$Port,
   ) {
     this.connections.set(
       connectionId,
@@ -86,13 +82,13 @@ class Store {
     return Array.from(this.connections)[this.connections.size - 1]?.[0] ?? null;
   }
 
-  subscribe(popup: ConnectionPort) {
+  subscribe(popup: chrome$Port) {
     if (!this.subscriptions.has(popup)) {
       this.subscriptions.add(popup);
     }
   }
 
-  unsubscribe(popup: ConnectionPort) {
+  unsubscribe(popup: chrome$Port) {
     this.subscriptions.delete(popup);
   }
 

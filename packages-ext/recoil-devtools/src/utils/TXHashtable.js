@@ -9,12 +9,6 @@
  * @oncall recoil
  */
 'use strict';
-import type {SerializedValue} from './Serialization';
-type TXItem = {
-  transactionId: number,
-  timestamp: number,
-  value: SerializedValue,
-};
 
 const nullthrows = require('nullthrows');
 const EvictableList = require('./EvictableList');

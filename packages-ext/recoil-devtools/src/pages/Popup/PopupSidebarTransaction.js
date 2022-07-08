@@ -11,12 +11,11 @@
 'use strict';
 
 import type {TransactionType} from '../../types/DevtoolsTypes';
-import type Connection from '../../utils/Connection';
 
 const ConnectionContext = require('./ConnectionContext');
 const NodeName = require('./Items/NodeName').default;
 const React = require('react');
-const {useCallback, useContext, useEffect, useRef} = require('react');
+const {useCallback, useContext} = require('react');
 
 const styles = {
   transaction: {

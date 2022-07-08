@@ -137,7 +137,7 @@ var options = {
           from: 'src/manifest.json',
           to: path.join(__dirname, buildFolder),
           force: true,
-          transform(content, path) {
+          transform(content, _path) {
             // generates the manifest file using the package.json informations
             return Buffer.from(
               JSON.stringify({

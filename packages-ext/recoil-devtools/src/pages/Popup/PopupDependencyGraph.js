@@ -10,16 +10,7 @@
  */
 'use strict';
 
-import type {
-  DependenciesSnapshotType,
-  SnapshotType,
-} from '../../types/DevtoolsTypes';
-
-const {
-  createGraph,
-  createSankeyData,
-  flattenLevels,
-} = require('../../utils/GraphUtils');
+const {createSankeyData} = require('../../utils/GraphUtils');
 const Sankey = require('../../utils/sankey/Sankey');
 const {
   butterflyGraphLayout,
@@ -27,12 +18,9 @@ const {
 } = require('../../utils/sankey/SankeyGraphLayout');
 const ConnectionContext = require('./ConnectionContext');
 const {useSelectedTransaction} = require('./useSelectionHooks');
-const d3 = require('d3');
 const nullthrows = require('nullthrows');
 const React = require('react');
-const {useContext, useEffect, useMemo, useRef, useState} = require('react');
-
-const powerSourceColor = d3.scaleOrdinal(d3.schemeCategory10);
+const {useContext, useMemo, useState} = require('react');
 
 const styles = {
   references: {
@@ -145,7 +133,7 @@ function PopupDependencyGraph(): React.Node {
             data: nodes,
             getNodeKey: n => n,
             getNodeName: n => (n.length < 25 ? n : `${n.substr(0, 22)}...`),
-            getNodeValue: n => 1,
+            getNodeValue: _n => 1,
           }}
           links={{
             data: edges,
@@ -177,7 +165,7 @@ function PopupDependencyGraph(): React.Node {
           layout={layout}
           nodeThickness={20}
           linkStyles={{stroke: 'lightblue', opacity: 0.4}}
-          linkColor={l => 'lightblue'}
+          linkColor={_l => 'lightblue'}
           getNodeTooltip={n => String(n.key)}
           getLinkTooltip={n =>
             `${n.source?.key ?? ''} => ${n.target?.key ?? ''}`

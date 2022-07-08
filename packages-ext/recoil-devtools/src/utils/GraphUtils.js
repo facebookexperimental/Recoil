@@ -13,9 +13,7 @@ import type {
   DependenciesSetType,
   DependenciesSnapshotType,
   NodesSnapshotType,
-  SnapshotType,
 } from '../types/DevtoolsTypes';
-import type Connection from './Connection';
 
 const nullthrows = require('nullthrows');
 

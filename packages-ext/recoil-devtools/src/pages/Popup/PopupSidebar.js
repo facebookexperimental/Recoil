@@ -11,13 +11,11 @@
 'use strict';
 
 import type {TransactionType} from '../../types/DevtoolsTypes';
-import type Connection from '../../utils/Connection';
 
 const ConnectionContext = require('./ConnectionContext');
 const Transaction = require('./PopupSidebarTransaction');
 const {useSelectedTransaction} = require('./useSelectionHooks');
 const {useFilter} = require('./useSelectionHooks');
-const nullthrows = require('nullthrows');
 const React = require('react');
 const {useContext, useMemo} = require('react');
 const styles = {
@@ -55,7 +53,7 @@ function Sidebar(): React.MixedElement {
   }, [filter, allTransactions]);
   return (
     <aside style={styles.sidebar}>
-      {transactions.map((tx, i) => (
+      {transactions.map((tx, _index) => (
         <Transaction
           transaction={tx}
           key={tx.id}

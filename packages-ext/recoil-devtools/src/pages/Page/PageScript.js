@@ -12,7 +12,6 @@
 
 import type {
   DevToolsConnnectProps,
-  DevToolsOptions,
   RecoilDevToolsActionsType,
   RecoilSnapshot,
 } from '../../types/DevtoolsTypes';

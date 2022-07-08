@@ -3,4 +3,4 @@ module.exports = {
   src: './packages/recoil-relay/__tests__',
   schema: './packages/recoil-relay/__tests__/mock-graphql/schema.graphql',
   exclude: ['**/node_modules/**', '**/__mocks__/**', '**/__generated__/**'],
-}
+};
