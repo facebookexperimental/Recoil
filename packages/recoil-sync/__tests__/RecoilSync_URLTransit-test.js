@@ -36,7 +36,7 @@ const {
 } = require('refine');
 
 class MyClass {
-  prop;
+  prop: string;
   constructor(msg: string) {
     this.prop = msg;
   }
