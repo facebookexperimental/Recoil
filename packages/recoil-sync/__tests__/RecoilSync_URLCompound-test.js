@@ -61,7 +61,14 @@ test('Upgrade item ID', async () => {
   // Test that we can reset the atom and get the default instead of the old key's value
   act(resetAtom);
   expect(container.textContent).toEqual('"DEFAULT"');
-  expectURL([[loc, {}]]);
+  expectURL([
+    [
+      loc,
+      {
+        ...null,
+      },
+    ],
+  ]);
 });
 
 test('Many items to one atom', async () => {
@@ -85,6 +92,7 @@ test('Many items to one atom', async () => {
           return;
         }
         for (const key of Object.keys(newValue)) {
+          // $FlowFixMe[prop-missing]
           write(key, newValue[key]);
         }
       },
@@ -92,7 +100,9 @@ test('Many items to one atom', async () => {
 
   const myAtom = atom({
     key: 'recoil-url-sync many-to-one',
-    default: {},
+    default: {
+      ...null,
+    },
     effects: [manyToOneSyncEffct()],
   });
 
@@ -118,7 +128,14 @@ test('Many items to one atom', async () => {
 
   // Test reseting atoms will update URL
   act(resetAtom);
-  expectURL([[loc, {}]]);
+  expectURL([
+    [
+      loc,
+      {
+        ...null,
+      },
+    ],
+  ]);
 });
 
 test('One item to multiple atoms', async () => {
@@ -186,7 +203,16 @@ test('One item to multiple atoms', async () => {
   expectURL([[loc, {compound: {bar: 4}}]]);
   act(resetBar);
   expect(container.textContent).toBe('0null');
-  expectURL([[loc, {compound: {}}]]);
+  expectURL([
+    [
+      loc,
+      {
+        compound: {
+          ...null,
+        },
+      },
+    ],
+  ]);
 });
 
 test('One item to atom family', async () => {
@@ -252,5 +278,14 @@ test('One item to atom family', async () => {
   expectURL([[loc, {compound: {bar: 4}}]]);
   act(resetBar);
   expect(container.textContent).toBe('nullnull');
-  expectURL([[loc, {compound: {}}]]);
+  expectURL([
+    [
+      loc,
+      {
+        compound: {
+          ...null,
+        },
+      },
+    ],
+  ]);
 });
