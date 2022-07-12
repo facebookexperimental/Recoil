@@ -1879,15 +1879,20 @@ describe('Multiple stores', () => {
   });
 
   testRecoil('async in multiple', async () => {
-    const resolvers = {};
+    const resolvers = {
+      ...null,
+    };
     const promises = {
       DEFAULT: new Promise(resolve => {
+        // $FlowFixMe[prop-missing]
         resolvers.DEFAULT = resolve;
       }),
       STALE: new Promise(resolve => {
+        // $FlowFixMe[prop-missing]
         resolvers.STALE = resolve;
       }),
       UPDATE: new Promise(resolve => {
+        // $FlowFixMe[prop-missing]
         resolvers.UPDATE = resolve;
       }),
     };
@@ -1930,16 +1935,19 @@ describe('Multiple stores', () => {
     act(() => setAtomA('UPDATE'));
     expect(c.textContent).toBe('LOADING_ALOADING_B');
 
+    // $FlowFixMe[prop-missing]
     act(() => resolvers.STALE('STALE'));
     await flushPromisesAndTimers();
     await flushPromisesAndTimers(); // Double flush for open source environment
     expect(c.textContent).toBe('LOADING_ALOADING_B');
 
+    // $FlowFixMe[prop-missing]
     act(() => resolvers.UPDATE('RESOLVE_A'));
     await flushPromisesAndTimers();
     await flushPromisesAndTimers(); // Double flush for open source environment
     expect(c.textContent).toBe('"UPDATE:RESOLVE_A"LOADING_B');
 
+    // $FlowFixMe[prop-missing]
     act(() => resolvers.DEFAULT('RESOLVE_B'));
     await flushPromisesAndTimers();
     await flushPromisesAndTimers(); // Double flush for open source environment
@@ -2040,10 +2048,15 @@ describe('Multiple stores', () => {
   testRecoil('dynamic dependencies in multiple', async () => {
     const myAtom = stringAtom();
 
-    const resolvers = {};
+    const resolvers = {
+      ...null,
+    };
     const promises = {
+      // $FlowFixMe[prop-missing]
       DEFAULT: new Promise(resolve => (resolvers.DEFAULT = resolve)),
+      // $FlowFixMe[prop-missing]
       SET: new Promise(resolve => (resolvers.SET = resolve)),
+      // $FlowFixMe[prop-missing]
       OTHER: new Promise(resolve => (resolvers.OTHER = resolve)),
     };
     const mySelector = selector({
@@ -2101,16 +2114,19 @@ describe('Multiple stores', () => {
     expect(c.textContent).toBe('"SET""loading""loading"');
 
     // Resolving original promise does nothing
+    // $FlowFixMe[prop-missing]
     act(() => resolvers.DEFAULT('IGNORE'));
     expect(c.textContent).toBe('"SET""loading""loading"');
 
     // Resolving store B
+    // $FlowFixMe[prop-missing]
     act(() => resolvers.OTHER('OTHER'));
     await flushPromisesAndTimers();
     await flushPromisesAndTimers(); // Double flush for open source environment
     expect(c.textContent).toBe('"SET""loading""OTHER:OTHER"');
 
     // Resolving store A
+    // $FlowFixMe[prop-missing]
     act(() => resolvers.SET('RESOLVE'));
     await flushPromisesAndTimers();
     expect(c.textContent).toBe('"SET""SET:RESOLVE""OTHER:OTHER"');
