@@ -1879,9 +1879,7 @@ describe('Multiple stores', () => {
   });
 
   testRecoil('async in multiple', async () => {
-    const resolvers = {
-      ...null,
-    };
+    const resolvers = {};
     const promises = {
       DEFAULT: new Promise(resolve => {
         // $FlowFixMe[prop-missing]
@@ -2048,9 +2046,7 @@ describe('Multiple stores', () => {
   testRecoil('dynamic dependencies in multiple', async () => {
     const myAtom = stringAtom();
 
-    const resolvers = {
-      ...null,
-    };
+    const resolvers = {};
     const promises = {
       // $FlowFixMe[prop-missing]
       DEFAULT: new Promise(resolve => (resolvers.DEFAULT = resolve)),
