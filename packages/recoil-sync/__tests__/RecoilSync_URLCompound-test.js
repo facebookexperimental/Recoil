@@ -61,14 +61,7 @@ test('Upgrade item ID', async () => {
   // Test that we can reset the atom and get the default instead of the old key's value
   act(resetAtom);
   expect(container.textContent).toEqual('"DEFAULT"');
-  expectURL([
-    [
-      loc,
-      {
-        ...null,
-      },
-    ],
-  ]);
+  expectURL([[loc, {}]]);
 });
 
 test('Many items to one atom', async () => {
@@ -100,9 +93,7 @@ test('Many items to one atom', async () => {
 
   const myAtom = atom({
     key: 'recoil-url-sync many-to-one',
-    default: {
-      ...null,
-    },
+    default: {},
     effects: [manyToOneSyncEffct()],
   });
 
@@ -128,14 +119,7 @@ test('Many items to one atom', async () => {
 
   // Test reseting atoms will update URL
   act(resetAtom);
-  expectURL([
-    [
-      loc,
-      {
-        ...null,
-      },
-    ],
-  ]);
+  expectURL([[loc, {}]]);
 });
 
 test('One item to multiple atoms', async () => {
@@ -207,9 +191,7 @@ test('One item to multiple atoms', async () => {
     [
       loc,
       {
-        compound: {
-          ...null,
-        },
+        compound: {},
       },
     ],
   ]);
@@ -282,9 +264,7 @@ test('One item to atom family', async () => {
     [
       loc,
       {
-        compound: {
-          ...null,
-        },
+        compound: {},
       },
     ],
   ]);
