@@ -718,6 +718,7 @@ describe('Async Selector Set', () => {
       default: 'DEFAULT',
     });
 
+    // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector / async set not supported / async set method',
       get: () => myAtom,
