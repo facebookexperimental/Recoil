@@ -9,6 +9,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {
@@ -231,7 +232,7 @@ class TreeCache<T = mixed> {
     this._root = null;
   }
 
-  invalidCacheError() {
+  invalidCacheError(): $FlowFixMeEmpty {
     const CHANGED_PATH_ERROR_MESSAGE = isFastRefreshEnabled()
       ? 'Possible Fast Refresh module reload detected.  ' +
         'This may also be caused by an selector returning inconsistent values. ' +
