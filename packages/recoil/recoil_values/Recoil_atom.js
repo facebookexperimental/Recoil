@@ -51,7 +51,6 @@
  * Ordinary atoms may be upgraded to scoped atoms. To un-scope an atom, add a new
  * scope rule consisting of a constant.
  *
- * @emails oncall+recoil
  * @flow strict-local
  * @format
  * @oncall recoil

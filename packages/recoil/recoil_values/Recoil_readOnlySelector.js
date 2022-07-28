@@ -6,7 +6,6 @@
  *
  * Wraps another recoil value and prevents writing to it.
  *
- * @emails oncall+recoil
  * @flow strict-local
  * @format
  * @oncall recoil

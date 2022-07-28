@@ -9,7 +9,6 @@
  * equality semantics of built-in Map. Operations are at worst O(n*b) where n is
  * the array length and b is the complexity of the built-in operation.
  *
- * @emails oncall+recoil
  * @flow
  * @format
  * @oncall recoil

@@ -7,7 +7,6 @@
  * Helper module for using refine on JSON objects.
  * see wiki for more info: https://fburl.com/wiki/14q16qqy
  *
- * @emails oncall+monitoring_interfaces
  * @flow strict
  * @format
  * @oncall monitoring_interfaces

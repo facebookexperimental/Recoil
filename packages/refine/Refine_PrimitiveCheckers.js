@@ -7,7 +7,6 @@
  * refine: type-refinement combinator library for checking mixed values
  * see wiki for more info: https://fburl.com/wiki/14q16qqy
  *
- * @emails oncall+monitoring_interfaces
  * @flow strict
  * @format
  * @oncall monitoring_interfaces

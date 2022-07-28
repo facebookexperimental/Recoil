@@ -1,7 +1,6 @@
 /**
  * Copyright (c) Facebook, Inc. and its affiliates. Confidential and proprietary.
  *
- * @emails oncall+recoil
  * @flow strict-local
  * @format
  * @oncall recoil

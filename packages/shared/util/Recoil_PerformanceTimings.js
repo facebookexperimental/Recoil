@@ -6,7 +6,6 @@
  *
  * This is a stub for some integration into FB internal stuff
  *
- * @emails oncall+recoil
  * @flow strict
  * @format
  * @oncall recoil

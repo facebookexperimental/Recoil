@@ -6,7 +6,6 @@
  *
  * Utilities for working with built-in Maps and Sets without mutating them.
  *
- * @emails oncall+recoil
  * @flow strict
  * @format
  * @oncall recoil
