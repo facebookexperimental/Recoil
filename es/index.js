@@ -41,7 +41,6 @@ var Recoil_err = err_1;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -368,7 +367,6 @@ var Recoil_Loadable$1 = /*#__PURE__*/Object.freeze({
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -482,7 +480,6 @@ var Recoil_ReactMode = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -573,7 +570,6 @@ var Recoil_expectationViolation = expectationViolation_1;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -754,7 +750,6 @@ var Recoil_Node = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -1985,7 +1980,6 @@ var Recoil_PersistentMap$1 = /*#__PURE__*/Object.freeze({
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -2022,7 +2016,6 @@ var Recoil_differenceSets = differenceSets;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -2148,7 +2141,6 @@ var Recoil_Graph = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -2232,7 +2224,6 @@ var Recoil_State = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -2257,7 +2248,6 @@ var Recoil_RetentionZone = {
  *
  * Utilities for working with built-in Maps and Sets without mutating them.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -2314,7 +2304,6 @@ var Recoil_CopyOnWrite = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -2343,7 +2332,6 @@ var Recoil_filterIterable = filterIterable;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -2606,7 +2594,6 @@ var Recoil_FunctionalCore = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -2972,7 +2959,6 @@ var Recoil_RecoilValueInterface = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -3324,7 +3310,6 @@ var ReactBatchedUpdates = {
  * This is to export esstiential functions from react-dom
  * for our web build
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -3346,7 +3331,6 @@ var Recoil_ReactBatchedUpdates = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -3407,7 +3391,6 @@ var Recoil_Batching = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -3440,7 +3423,6 @@ var Recoil_concatIterables = concatIterables;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -3468,7 +3450,6 @@ var Recoil_Environment = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -3979,7 +3960,6 @@ var Recoil_Snapshot$1 = /*#__PURE__*/Object.freeze({
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -4552,7 +4532,6 @@ var Recoil_RecoilRoot = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -4707,7 +4686,6 @@ var Recoil_useRetain = useRetain;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -5401,7 +5379,6 @@ var Recoil_Hooks = {
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -5431,7 +5408,6 @@ var Recoil_filterMap = filterMap;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -5461,7 +5437,6 @@ var Recoil_filterSet = filterSet;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -6094,7 +6069,6 @@ var Recoil_useRecoilTransaction = useRecoilTransaction;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -6754,7 +6728,6 @@ var Recoil_treeCacheFromPolicy = treeCacheFromPolicy;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -6862,7 +6835,6 @@ var Recoil_deepFreezeValue = deepFreezeValue;
  *
  * This is a stub for some integration into FB internal stuff
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -8334,7 +8306,6 @@ var Recoil_atom = atom;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -8694,7 +8665,6 @@ var Recoil_errorSelector = errorSelector;
  *
  * Wraps another recoil value and prevents writing to it.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil

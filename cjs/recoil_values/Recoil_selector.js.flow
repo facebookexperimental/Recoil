@@ -47,7 +47,6 @@
  *     set: ({set, reset, get}, newValue) => set(atomA, newValue / 100),
  *   });
  *
- * @emails oncall+recoil
  * @flow strict-local
  * @format
  * @oncall recoil
