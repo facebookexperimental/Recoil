@@ -3,7 +3,6 @@
  *
  * Recoil DevTools browser extension.
  *
- * @emails oncall+recoil
  * @format
  * @oncall recoil
  */

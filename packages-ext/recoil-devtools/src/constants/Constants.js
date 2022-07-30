@@ -4,7 +4,6 @@
  * This Recoil Plugin adds support for Redux Dev Tools (https://fburl.com/sjb1mvms).
  * It allows you to watch Recoil state changes as they happen.
  *
- * @emails oncall+recoil
  * @flow strict-local
  * @format
  * @oncall recoil
