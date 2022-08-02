@@ -7,7 +7,6 @@ import reactDom from 'react-dom';
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -535,7 +534,6 @@ var Recoil_RecoilValue$1 = /*#__PURE__*/Object.freeze({
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -598,7 +596,6 @@ var Recoil_mapIterable = mapIterable;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -3288,7 +3285,6 @@ var Recoil_Retention = {
  * This is to export esstiential functions from react-dom
  * for our web build
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil
@@ -5885,7 +5881,6 @@ var Recoil_AtomicUpdates$1 = /*#__PURE__*/Object.freeze({
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
  * 
  * @format
  * @oncall recoil

@@ -13,7 +13,6 @@
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
    *
-   * @emails oncall+recoil
    * 
    * @format
    * @oncall recoil
@@ -541,7 +540,6 @@
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
    *
-   * @emails oncall+recoil
    * 
    * @format
    * @oncall recoil
@@ -604,7 +602,6 @@
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
    *
-   * @emails oncall+recoil
    * 
    * @format
    * @oncall recoil
@@ -3291,7 +3288,6 @@
    * This is to export esstiential functions from react-dom
    * for our web build
    *
-   * @emails oncall+recoil
    * 
    * @format
    * @oncall recoil
@@ -5886,7 +5882,6 @@ This is currently a DEV-only warning but will become a thrown exception in the n
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
    *
-   * @emails oncall+recoil
    * 
    * @format
    * @oncall recoil
