@@ -7,7 +7,6 @@
  * This is to export esstiential functions from react-dom
  * for our react-native build
  *
- * @emails oncall+recoil
  * @flow strict
  * @format
  * @oncall recoil
