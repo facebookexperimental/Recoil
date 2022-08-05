@@ -96,7 +96,7 @@ function TodoListFilters() {
 - 완료되지 않은 todo 항목들의 총개수
 - 완료된 항목의 백분율
 
-각 통계에 대해 selector를 만들 수 있지만, 필요한 데이터를 포함하는 객체를 반환하는 selector 하나를 만드는 것이 더 쉬운 방법일 것이다. 우리는 이 selector를 'toDoListStatsState'라고 부를 것이다.
+각 통계에 대해 selector를 만들 수 있지만, 필요한 데이터를 포함하는 객체를 반환하는 selector 하나를 만드는 것이 더 쉬운 방법일 것이다. 우리는 이 selector를 `todoListStatsState`라고 부를 것이다.
 
 ```javascript
 const todoListStatsState = selector({
