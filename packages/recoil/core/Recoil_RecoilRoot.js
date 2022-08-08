@@ -559,7 +559,7 @@ type Props =
       children: React.Node,
     };
 
-function RecoilRoot(props: Props): React.Node {
+const RecoilRoot = memo((props: Props): React.Node => {
   const {override, ...propsExceptOverride} = props;
 
   const ancestorStoreRef = useStoreRef();
@@ -570,7 +570,7 @@ function RecoilRoot(props: Props): React.Node {
   }
 
   return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
-}
+})
 
 function useRecoilStoreID(): StoreID {
   return useStoreRef().current.storeID;
