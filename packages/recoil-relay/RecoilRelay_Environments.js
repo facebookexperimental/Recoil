@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {Snapshot, StoreID} from 'Recoil';
@@ -65,16 +66,16 @@ function registerRelayEnvironment(
   // production the environment registered should never change.
   const pendingCleanup = cleanupHandlers.get(storeID)?.get(environmentKey);
   if (pendingCleanup != null) {
-    clearTimeout(pendingCleanup);
+    window.clearTimeout(pendingCleanup);
     cleanupHandlers.get(storeID)?.delete(environmentKey);
   }
   return () => {
-    const cleanupHandle = setTimeout(() => {
+    const cleanupHandle = window.setTimeout(() => {
       environmentStore.get(storeID)?.delete(environmentKey);
     }, 0);
     const oldHandler = cleanupHandlers.get(storeID)?.get(environmentKey);
     if (oldHandler != null) {
-      clearTimeout(oldHandler);
+      window.clearTimeout(oldHandler);
     }
     if (!cleanupHandlers.has(storeID)) {
       cleanupHandlers.set(storeID, new Map());

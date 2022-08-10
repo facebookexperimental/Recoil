@@ -3,7 +3,7 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
-- Fix useRecoilSnapshot() with React's Fast Refresh during development (#1891)
+- Fix useRecoilSnapshot() with React's Fast Refresh during development (#1891, #1943)
 
 ## 0.7.4 (2022-06-21)
 

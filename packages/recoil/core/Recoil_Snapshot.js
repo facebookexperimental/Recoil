@@ -140,7 +140,8 @@ class Snapshot {
    */
   autoRelease_INTERNAL(): void {
     if (!isSSR) {
-      window.setTimeout(() => this._release(), 0);
+      // Use timeout of 10 to workaround Firefox issue: https://github.com/facebookexperimental/Recoil/issues/1936
+      window.setTimeout(() => this._release(), 10);
     }
   }
 
@@ -195,7 +196,8 @@ class Snapshot {
   }
 
   // We want to allow the methods to be destructured and used as accessors
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
+  /* eslint-disable fb-www/extra-arrow-initializer */
+
   getLoadable: <T>(RecoilValue<T>) => Loadable<T> = <T>(
     recoilValue: RecoilValue<T>,
   ): Loadable<T> => {
@@ -203,8 +205,6 @@ class Snapshot {
     return getRecoilValueAsLoadable(this._store, recoilValue);
   };
 
-  // We want to allow the methods to be destructured and used as accessors
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   getPromise: <T>(RecoilValue<T>) => Promise<T> = <T>(
     recoilValue: RecoilValue<T>,
   ): Promise<T> => {
@@ -212,8 +212,6 @@ class Snapshot {
     return this.getLoadable(recoilValue).toPromise();
   };
 
-  // We want to allow the methods to be destructured and used as accessors
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   getNodes_UNSTABLE: (
     {
       isModified?: boolean,
@@ -245,7 +243,6 @@ class Snapshot {
 
   // Report the current status of a node.
   // This peeks the current state and does not affect the snapshot state at all
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   getInfo_UNSTABLE: <T>(RecoilValue<T>) => RecoilValueInfo<T> = <T>({
     key,
   }: RecoilValue<T>): RecoilValueInfo<T> => {
@@ -253,7 +250,6 @@ class Snapshot {
     return peekNodeInfo(this._store, this._store.getState().currentTree, key);
   };
 
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   map: ((MutableSnapshot) => void) => Snapshot = mapper => {
     this.checkRefCount_INTERNAL();
     const mutableSnapshot = new MutableSnapshot(this, batchUpdates);
@@ -261,7 +257,6 @@ class Snapshot {
     return mutableSnapshot;
   };
 
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   asyncMap: ((MutableSnapshot) => Promise<void>) => Promise<Snapshot> =
     async mapper => {
       this.checkRefCount_INTERNAL();
@@ -273,6 +268,8 @@ class Snapshot {
       mutableSnapshot.autoRelease_INTERNAL();
       return mutableSnapshot;
     };
+
+  /* eslint-enable fb-www/extra-arrow-initializer */
 }
 
 function cloneStoreState(
@@ -379,8 +376,6 @@ class MutableSnapshot extends Snapshot {
     this._batch = batch;
   }
 
-  // We want to allow the methods to be destructured and used as accessors
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   set: SetRecoilState = <T>(
     recoilState: RecoilState<T>,
     newValueOrUpdater: ValueOrUpdater<T>,
@@ -397,8 +392,6 @@ class MutableSnapshot extends Snapshot {
     });
   };
 
-  // We want to allow the methods to be destructured and used as accessors
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   reset: ResetRecoilState = <T>(recoilState: RecoilState<T>) => {
     this.checkRefCount_INTERNAL();
     const store = this.getStore_INTERNAL();
@@ -409,8 +402,6 @@ class MutableSnapshot extends Snapshot {
     });
   };
 
-  // We want to allow the methods to be destructured and used as accessors
-  // eslint-disable-next-line fb-www/extra-arrow-initializer
   setUnvalidatedAtomValues_DEPRECATED: (Map<NodeKey, mixed>) => void = (
     values: Map<NodeKey, mixed>,
   ) => {
