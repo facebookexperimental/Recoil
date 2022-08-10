@@ -19,6 +19,7 @@ module.system=node
 
 suppress_type=$FlowIssue
 suppress_type=$FlowFixMe
+suppress_type=$FlowFixMeEmpty
 suppress_type=$FlowOSSFixMe
 
 module.name_mapper='React' -> '<PROJECT_ROOT>/node_modules/react'
