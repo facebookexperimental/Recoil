@@ -8,7 +8,9 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 import type {RecoilState} from 'Recoil';
@@ -90,33 +92,14 @@ function getError(recoilValue): Error {
   return error;
 }
 
-function setValue(
-  recoilState:
-    | RecoilState<string>
-    | $IMPORTED_TYPE$_RecoilState_1<null>
-    | $IMPORTED_TYPE$_RecoilState_1<$FlowFixMeEmpty>
-    | $IMPORTED_TYPE$_RecoilState_1<number>
-    | $IMPORTED_TYPE$_RecoilState_1<$TEMPORARY$string<'DEFAULT'>>
-    | $IMPORTED_TYPE$_RecoilState_1<$TEMPORARY$string<'a'>>
-    | $IMPORTED_TYPE$_RecoilState_1<boolean>,
-  value:
-    | boolean
-    | number
-    | string
-    | $TEMPORARY$string<'ERROR'>
-    | $TEMPORARY$string<'SET'>
-    | $TEMPORARY$string<'SET2'>
-    | $TEMPORARY$string<'b'>,
-) {
+function setValue<T>(recoilState: RecoilState<T>, value: T) {
   setRecoilValue(store, recoilState, value);
   // $FlowExpectedError[unsafe-addition]
   // $FlowExpectedError[cannot-write]
   store.getState().currentTree.version++;
 }
 
-function resetValue(
-  recoilState: $IMPORTED_TYPE$_RecoilState_1<$TEMPORARY$string<'DEFAULT'>>,
-) {
+function resetValue<T>(recoilState: RecoilState<T>) {
   setRecoilValue(store, recoilState, new DefaultValue());
   // $FlowExpectedError[unsafe-addition]
   // $FlowExpectedError[cannot-write]
