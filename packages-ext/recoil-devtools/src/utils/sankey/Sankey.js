@@ -7,6 +7,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {Events, Styles} from './CV2_D3';
@@ -87,7 +88,7 @@ type Props<N, L> = $ReadOnly<{
 const functor: <T>(any) => T = <T>(x: T) =>
   // $FlowFixMe[escaped-generic]
   // $FlowFixMe[incompatible-type]
-  typeof x === 'function' ? x : <T>() => x;
+  typeof x === 'function' ? x : () => x;
 
 /**
  * @explorer-desc
