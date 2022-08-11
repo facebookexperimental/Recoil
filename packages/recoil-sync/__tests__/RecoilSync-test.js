@@ -36,6 +36,7 @@ const {
   flushPromisesAndTimers,
   renderElements,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
 const {asType, dict, literal, match, number, string} = require('refine');
 
 ////////////////////////////
@@ -60,6 +61,9 @@ function TestRecoilSync({
       read={itemKey => {
         if (itemKey === 'error') {
           throw new Error('READ ERROR');
+        }
+        if (itemKey === 'reject') {
+          return Promise.reject(new Error('READ REJECT'));
         }
         return storage.has(itemKey) ? storage.get(itemKey) : new DefaultValue();
       }}
@@ -275,6 +279,16 @@ test('Read from storage error', async () => {
       }),
     ],
   });
+  const atomG = atom({
+    key: 'recoil-sync read error G',
+    default: 'DEFAULTx',
+    effects: [
+      syncEffect({
+        itemKey: 'reject',
+        refine: string(),
+      }),
+    ],
+  });
 
   const mySelector = selectorFamily({
     key: 'recoil-sync read error selector',
@@ -284,6 +298,9 @@ test('Read from storage error', async () => {
         try {
           return get(myAtom);
         } catch (e) {
+          if (isPromise(e)) {
+            return e.catch(err => err);
+          }
           return e.message;
         }
       },
@@ -304,11 +321,13 @@ test('Read from storage error', async () => {
       <ReadsAtom atom={mySelector({myAtom: atomD})} />
       <ReadsAtom atom={mySelector({myAtom: atomE})} />
       <ReadsAtom atom={mySelector({myAtom: atomF})} />
+      <ReadsAtom atom={mySelector({myAtom: atomG})} />
     </TestRecoilSync>,
   );
 
+  await flushPromisesAndTimers();
   expect(container.textContent).toBe(
-    '"ERROR A""DEFAULT""READ ERROR""DEFAULT""[<root>]: value is not a string""DEFAULT"',
+    '"ERROR A""DEFAULT""READ ERROR""DEFAULT""[<root>]: value is not a string""DEFAULT""READ REJECT"',
   );
 });
 
