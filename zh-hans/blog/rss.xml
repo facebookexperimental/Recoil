@@ -4,10 +4,18 @@
         <title>Recoil Blog</title>
         <link>https://recoiljs.org/zh-hans/blog</link>
         <description>Recoil Blog</description>
-        <lastBuildDate>Tue, 21 Jun 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 11 Aug 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <copyright>Copyright © 2022 Facebook, Inc.</copyright>
+        <item>
+            <title><![CDATA[Recoil 0.7.5]]></title>
+            <link>https://recoiljs.org/zh-hans/blog/2022/08/11/recoil-0.7.5-release</link>
+            <guid>/2022/08/11/recoil-0.7.5-release</guid>
+            <pubDate>Thu, 11 Aug 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[- Fix useRecoilSnapshot() with React's Fast Refresh during development (#1891)]]></description>
+            <content:encoded><![CDATA[<ul><li>Fix <code>useRecoilSnapshot()</code> with React&#x27;s Fast Refresh during development (<a href="https://github.com/facebookexperimental/Recoil/pull/1891">#1891</a>)</li><li>Fix <code>useRecoilSnapshot()</code> and <a href="https://recoiljs.org/docs/recoil-sync/introduction"><code>recoil-sync</code></a> with changed browser behavior starting with Chrome v104 (<a href="https://github.com/facebookexperimental/Recoil/pull/1943">#1943</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1936">#1936</a>)</li></ul>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[Recoil Sync 0.1.0]]></title>
             <link>https://recoiljs.org/zh-hans/blog/2022/06/21/recoil-sync-0.1.0-release</link>
