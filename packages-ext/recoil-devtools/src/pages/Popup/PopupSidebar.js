@@ -7,6 +7,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {TransactionType} from '../../types/DevtoolsTypes';
@@ -38,18 +39,22 @@ function Sidebar(): React.MixedElement {
   const connection = useContext(ConnectionContext);
   const [selected, setSelected] = useSelectedTransaction();
   const [filter] = useFilter();
-  const allTransactions: TransactionType[] =
-    connection?.transactions?.getArray() ?? [];
+  const allTransactions: ?Array<TransactionType> =
+    connection?.transactions?.getArray();
   const transactions = useMemo(() => {
-    if (filter !== '') {
-      return allTransactions.filter(tx =>
-        tx.modifiedValues.some(
-          node => node.name.toLowerCase().indexOf(filter.toLowerCase()) !== -1,
-        ),
-      );
+    if (allTransactions == null) {
+      return [];
     }
-    return allTransactions;
+    return filter !== ''
+      ? allTransactions.filter(tx =>
+          tx.modifiedValues.some(
+            node =>
+              node.name.toLowerCase().indexOf(filter.toLowerCase()) !== -1,
+          ),
+        )
+      : allTransactions;
   }, [filter, allTransactions]);
+
   return (
     <aside style={styles.sidebar}>
       {transactions.map((tx, _index) => (

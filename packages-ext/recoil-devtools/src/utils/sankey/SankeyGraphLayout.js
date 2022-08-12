@@ -5,6 +5,7 @@
  * @format
  * @oncall obviz
  */
+
 'use strict';
 
 import type {LayoutFunction} from './Sankey';
@@ -487,11 +488,11 @@ const flowGraphLayout = <N, L>(
   };
 
   return ({graph, positionRange}) => {
-    limitNodes(graph, layoutOptions.nodeLimit);
-    const depthDomain = flowLayoutNodeDepths(graph, layoutOptions);
+    limitNodes(graph, layoutOptionsConfig.nodeLimit);
+    const depthDomain = flowLayoutNodeDepths(graph, layoutOptionsConfig);
     const positionDomain = layoutPositions(
       graph,
-      layoutOptions,
+      layoutOptionsConfig,
       positionRange[1],
     );
     return {graph, positionDomain, depthDomain};

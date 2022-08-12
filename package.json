@@ -73,6 +73,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-relay": "^1.8.3",
     "eslint-plugin-rulesdir": "^0.2.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "flow-bin": "^0.164.0",
     "flow-copy-source": "^2.0.9",
     "flow-interfaces-chrome": "^0.6.0",
