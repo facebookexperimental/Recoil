@@ -202,7 +202,8 @@ function useRecoilSnapshot(): Snapshot {
       // re-render with the same state.  The previous cleanup will then run and
       // then the new effect will run. We don't want the snapshot to be released
       // by that cleanup before the new effect has a chance to retain it again.
-      window.setTimeout(release, 0);
+      // Use timeout of 10 to workaround Firefox issue: https://github.com/facebookexperimental/Recoil/issues/1936
+      window.setTimeout(release, 10);
     };
   }, [snapshot]);
 

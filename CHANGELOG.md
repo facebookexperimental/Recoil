@@ -3,7 +3,10 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+## 0.7.5 (2022-08-11)
+
 - Fix useRecoilSnapshot() with React's Fast Refresh during development (#1891)
+- Fix useRecoilSnapshot() and recoil-sync with changed browser behavior starting with Chrome v104 (#1943, #1936)
 
 ## 0.7.4 (2022-06-21)
 

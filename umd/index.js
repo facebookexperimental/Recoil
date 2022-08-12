@@ -3747,7 +3747,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
     autoRelease_INTERNAL() {
       if (!isSSR$1) {
-        window.setTimeout(() => this._release(), 0);
+        // Use timeout of 10 to workaround Firefox issue: https://github.com/facebookexperimental/Recoil/issues/1936
+        window.setTimeout(() => this._release(), 10);
       }
     }
 
@@ -3802,7 +3803,10 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       this.checkRefCount_INTERNAL();
       return this._store.storeID;
     } // We want to allow the methods to be destructured and used as accessors
-    // eslint-disable-next-line fb-www/extra-arrow-initializer
+
+    /* eslint-disable fb-www/extra-arrow-initializer */
+
+    /* eslint-enable fb-www/extra-arrow-initializer */
 
 
   }
@@ -3925,9 +3929,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       });
 
       this._batch = batch;
-    } // We want to allow the methods to be destructured and used as accessors
-    // eslint-disable-next-line fb-www/extra-arrow-initializer
-
+    }
 
   }
 
@@ -5626,7 +5628,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         // re-render with the same state.  The previous cleanup will then run and
         // then the new effect will run. We don't want the snapshot to be released
         // by that cleanup before the new effect has a chance to retain it again.
-        window.setTimeout(release, 0);
+        // Use timeout of 10 to workaround Firefox issue: https://github.com/facebookexperimental/Recoil/issues/1936
+        window.setTimeout(release, 10);
       };
     }, [snapshot]); // Retain snapshot until above effect is run.
     // Release after a threshold in case component is suspended.
