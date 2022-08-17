@@ -11,6 +11,7 @@
  * @format
  * @oncall monitoring_interfaces
  */
+
 'use strict';
 
 import type {Checker} from './Refine_Checkers';
@@ -42,7 +43,8 @@ function literal<T: string | boolean | number | null | void>(
 /**
  * boolean value checker
  */
-function boolean(): Checker<boolean> {
+function bool(): Checker<boolean> {
+  // NOTE boolean is a reserved word so boolean() will not export properly in OSS
   return (value, path = new Path()) =>
     typeof value === 'boolean'
       ? success(value, [])
@@ -121,7 +123,7 @@ function stringLiterals<T: {+[string]: string}>(
   enumValues: T,
 ): Checker<$Values<T>> {
   return (value, path = new Path()) => {
-    if (!(typeof value === 'string')) {
+    if (typeof value !== 'string') {
       return failure('value must be a string', path);
     }
     const out = enumValues[value];
@@ -182,7 +184,7 @@ function jsonDate(): Checker<Date> {
 module.exports = {
   mixed,
   literal,
-  boolean,
+  bool,
   number,
   string,
   stringLiterals,

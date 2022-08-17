@@ -13,14 +13,14 @@
 
 const {object} = require('../Refine_ContainerCheckers');
 const {jsonParser, jsonParserEnforced} = require('../Refine_JSON');
-const {boolean, number, string} = require('../Refine_PrimitiveCheckers');
+const {bool, number, string} = require('../Refine_PrimitiveCheckers');
 const {nullable} = require('../Refine_UtilityCheckers');
 const invariant = require('recoil-shared/util/Recoil_invariant');
 
 describe('json', () => {
   it('should correctly parse valid json', () => {
     const parse = jsonParser(
-      object({a: string(), b: nullable(number()), c: boolean()}),
+      object({a: string(), b: nullable(number()), c: bool()}),
     );
 
     const result = parse('{"a": "test", "c": true}');
@@ -33,7 +33,7 @@ describe('json', () => {
     const MESSAGE = 'IS_NULL_OR_INVALID';
 
     const parse = jsonParserEnforced(
-      object({a: string(), b: nullable(number()), c: boolean()}),
+      object({a: string(), b: nullable(number()), c: bool()}),
       MESSAGE,
     );
 
