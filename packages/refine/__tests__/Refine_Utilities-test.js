@@ -58,6 +58,9 @@ describe('or', () => {
     const parser = or(string(), number());
     const result = parser(true);
     invariant(result.type === 'failure', 'should fail');
+    expect(result.message).toEqual(
+      'value did not match any types in or(): value is not a string, value is not a number',
+    );
   });
 });
 
@@ -79,6 +82,9 @@ describe('union', () => {
     const parser = union(string(), number());
     const result = parser(true);
     invariant(result.type === 'failure', 'should fail');
+    expect(result.message).toEqual(
+      'value did not match any types in union: value is not a string, value is not a number',
+    );
   });
 });
 

@@ -13,7 +13,7 @@
  */
 'use strict';
 
-import type {Checker, CheckResult} from './Refine_Checkers';
+import type {Checker, CheckFailure, CheckResult} from './Refine_Checkers';
 
 const {Path, compose, failure, success} = require('./Refine_Checkers');
 
@@ -36,6 +36,17 @@ function asType<A, B>(checker: Checker<A>, cast: A => B): Checker<B> {
   );
 }
 
+function unionFailure(
+  message: string,
+  path: Path,
+  failures: $ReadOnlyArray<CheckFailure>,
+): CheckFailure {
+  return failure(
+    `${message}: ${failures.map(f => f.message).join(', ')}`,
+    path,
+  );
+}
+
 /**
  * checker which asserts the value matches
  * at least one of the two provided checkers
@@ -52,7 +63,7 @@ function or<A, B>(aChecker: Checker<A>, bChecker: Checker<B>): Checker<A | B> {
       return success(b.value, b.warnings);
     }
 
-    return failure('value did not match any types in or()', path);
+    return unionFailure('value did not match any types in or()', path, [a, b]);
   };
 }
 
@@ -66,14 +77,20 @@ function or<A, B>(aChecker: Checker<A>, bChecker: Checker<B>): Checker<A | B> {
  */
 function union<V>(...checkers: $ReadOnlyArray<Checker<V>>): Checker<V> {
   return (value, path = new Path()) => {
+    const failures = [];
     for (const checker of checkers) {
       const result = checker(value, path);
       if (result.type === 'success') {
         return success(result.value, result.warnings);
       }
+      failures.push(result);
     }
 
-    return failure('value did not match any types in union', path);
+    return unionFailure(
+      'value did not match any types in union',
+      path,
+      failures,
+    );
   };
 }
 
