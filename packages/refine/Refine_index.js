@@ -38,7 +38,7 @@ const {
 } = require('./Refine_ContainerCheckers');
 const {jsonParser, jsonParserEnforced} = require('./Refine_JSON');
 const {
-  boolean,
+  bool,
   date,
   jsonDate,
   literal,
@@ -71,7 +71,7 @@ module.exports = {
   // Checkers - Primitives
   mixed,
   literal,
-  boolean,
+  bool,
   number,
   string,
   stringLiterals,

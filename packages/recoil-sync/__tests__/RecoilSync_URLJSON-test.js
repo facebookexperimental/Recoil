@@ -22,7 +22,7 @@ const {
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {
   array,
-  boolean,
+  bool,
   jsonDate,
   literal,
   number,
@@ -44,7 +44,7 @@ const atomNull = atom({
 const atomBoolean = atom({
   key: 'boolean',
   default: true,
-  effects: [syncEffect({refine: boolean(), syncDefault: true})],
+  effects: [syncEffect({refine: bool(), syncDefault: true})],
 });
 const atomNumber = atom({
   key: 'number',
