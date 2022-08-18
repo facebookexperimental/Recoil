@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkrecoil=self.webpackChunkrecoil||[]).push([[8405],{5842:function(e){e.exports=JSON.parse('{"permalink":"/zh-hans/blog/page/2","page":2,"postsPerPage":10,"totalPages":2,"totalCount":20,"previousPage":"/zh-hans/blog","nextPage":null,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

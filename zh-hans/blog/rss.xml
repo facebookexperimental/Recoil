@@ -4,10 +4,18 @@
         <title>Recoil Blog</title>
         <link>https://recoiljs.org/zh-hans/blog</link>
         <description>Recoil Blog</description>
-        <lastBuildDate>Thu, 11 Aug 2022 00:00:00 GMT</lastBuildDate>
+        <lastBuildDate>Thu, 18 Aug 2022 00:00:00 GMT</lastBuildDate>
         <docs>https://validator.w3.org/feed/docs/rss2.html</docs>
         <generator>https://github.com/jpmonette/feed</generator>
         <copyright>Copyright © 2022 Facebook, Inc.</copyright>
+        <item>
+            <title><![CDATA[Refine 0.1.1]]></title>
+            <link>https://recoiljs.org/zh-hans/blog/2022/08/18/refine-0.1.1-release</link>
+            <guid>/2022/08/18/refine-0.1.1-release</guid>
+            <pubDate>Thu, 18 Aug 2022 00:00:00 GMT</pubDate>
+            <description><![CDATA[- Rename boolean() export to bool() since boolean is a reserved word (#1922, #1962, #1971)]]></description>
+            <content:encoded><![CDATA[<ul><li>Rename <code>boolean()</code> export to <a href="/docs/refine/api/Primitive_Checkers#boolean"><code>bool()</code></a> since <code>boolean</code> is a reserved word (<a href="https://github.com/facebookexperimental/Recoil/pull/1922">#1922</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1962">#1962</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1971">#1971</a>)</li><li>Remove reference to <code>native</code> directory in <code>package.json</code> to cleanup errors for <code>react-native</code>. (<a href="https://github.com/facebookexperimental/Recoil/pull/1931">#1931</a>)</li><li>Export <code>Path</code> class for custom checkers. (<a href="https://github.com/facebookexperimental/Recoil/pull/1950">#1950</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1956">#1956</a>)</li><li>Extend the failure message of <a href="/docs/refine/api/Advanced_Checkers#union"><code>union()</code></a> and <a href="/docs/refine/api/Advanced_Checkers#or"><code>or()</code></a> with each type. (<a href="https://github.com/facebookexperimental/Recoil/pull/1961">#1961</a>)</li></ul>]]></content:encoded>
+        </item>
         <item>
             <title><![CDATA[Recoil 0.7.5]]></title>
             <link>https://recoiljs.org/zh-hans/blog/2022/08/11/recoil-0.7.5-release</link>

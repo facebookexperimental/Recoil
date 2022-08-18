@@ -2,12 +2,20 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://recoiljs.org/ko/blog</id>
     <title>Recoil Blog</title>
-    <updated>2022-08-11T00:00:00.000Z</updated>
+    <updated>2022-08-18T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://recoiljs.org/ko/blog"/>
     <subtitle>Recoil Blog</subtitle>
     <icon>https://recoiljs.org/ko/img/favicon.png</icon>
     <rights>Copyright © 2022 Facebook, Inc.</rights>
+    <entry>
+        <title type="html"><![CDATA[Refine 0.1.1]]></title>
+        <id>/2022/08/18/refine-0.1.1-release</id>
+        <link href="https://recoiljs.org/ko/blog/2022/08/18/refine-0.1.1-release"/>
+        <updated>2022-08-18T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[- Rename boolean() export to bool() since boolean is a reserved word (#1922, #1962, #1971)]]></summary>
+        <content type="html"><![CDATA[<ul><li>Rename <code>boolean()</code> export to <a href="/docs/refine/api/Primitive_Checkers#boolean"><code>bool()</code></a> since <code>boolean</code> is a reserved word (<a href="https://github.com/facebookexperimental/Recoil/pull/1922">#1922</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1962">#1962</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1971">#1971</a>)</li><li>Remove reference to <code>native</code> directory in <code>package.json</code> to cleanup errors for <code>react-native</code>. (<a href="https://github.com/facebookexperimental/Recoil/pull/1931">#1931</a>)</li><li>Export <code>Path</code> class for custom checkers. (<a href="https://github.com/facebookexperimental/Recoil/pull/1950">#1950</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1956">#1956</a>)</li><li>Extend the failure message of <a href="/docs/refine/api/Advanced_Checkers#union"><code>union()</code></a> and <a href="/docs/refine/api/Advanced_Checkers#or"><code>or()</code></a> with each type. (<a href="https://github.com/facebookexperimental/Recoil/pull/1961">#1961</a>)</li></ul>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Recoil 0.7.5]]></title>
         <id>/2022/08/11/recoil-0.7.5-release</id>
