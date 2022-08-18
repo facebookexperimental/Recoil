@@ -71,7 +71,7 @@ If you would like to throw on invalid / null JSON, you can use `jsonParserEnforc
 ```jsx
 // creates a json parser which will throw on invalid values
 const parse = jsonParserEnforced(
-  object({a: string(), b: nullable(number()), c: boolean()}),
+  object({a: string(), b: nullable(number()), c: bool()}),
 
   // message to append to error message
   'Configuration is invalid'
