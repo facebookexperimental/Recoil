@@ -15,7 +15,7 @@ import type {CheckerReturnType} from '../Refine_Checkers';
 
 const {assertion, coercion} = require('../Refine_API');
 const {
-  boolean,
+  bool,
   date,
   jsonDate,
   literal,
@@ -69,9 +69,9 @@ describe('literal', () => {
   });
 });
 
-describe('boolean', () => {
+describe('bool', () => {
   it('should correctly parse true', () => {
-    const coerce = boolean();
+    const coerce = bool();
     const result = coerce(true);
     invariant(result.type === 'success', 'should succeed');
 
@@ -82,14 +82,14 @@ describe('boolean', () => {
   });
 
   it('should correctly parse false', () => {
-    const coerce = boolean();
+    const coerce = bool();
     const result = coerce(false);
     invariant(result.type === 'success', 'should succeed');
     invariant(result.value === false, 'value should be false');
   });
 
   it('should correctly parse invalid', () => {
-    const coerce = boolean();
+    const coerce = bool();
     const result = coerce(1);
     invariant(result.type === 'failure', 'should fail');
   });
