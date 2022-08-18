@@ -31,7 +31,7 @@ Validates a value as a strictly typed tuple.
 
 ```jsx
 // define checker
-const check = tuple(number(), string(), boolean());
+const check = tuple(number(), string(), bool());
 
 // test a value
 const result = check([1,'2', false]);

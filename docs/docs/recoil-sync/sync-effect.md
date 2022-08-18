@@ -29,7 +29,7 @@ More complex example:
   syncEffect({ refine: object({
     id: number(),
     friends: array(number()),
-    positions: dict(tuple(boolean(), number())),
+    positions: dict(tuple(bool(), number())),
   })}),
 ```
 

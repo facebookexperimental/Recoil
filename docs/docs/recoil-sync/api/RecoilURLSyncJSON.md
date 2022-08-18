@@ -11,7 +11,7 @@ This is identical to the [`<RecoilURLSync>`](/docs/recoil-sync/api/RecoilURLSync
 
 The [JSON standard](https://en.wikipedia.org/wiki/JSON) encodes JavaScript primitives and objects with the corresponding [Refine](/docs/refine/introduction) checkers:
 * **null** - [`literal(null)`](/docs/refine/api/Primitive_Checkers#literal) or [`nullable(...)`](/docs/refine/api/Primitive_Checkers#nullable)
-* **boolean** - [`boolean()`](/docs/refine/api/Primitive_Checkers#boolean)
+* **boolean** - [`bool()`](/docs/refine/api/Primitive_Checkers#bool)
 * **number** - [`number()`](/docs/refine/api/Primitive_Checkers#number)
 * **string** - [`string()`](/docs/refine/api/Primitive_Checkers#string)
 * **Array** - [`array(...)`](/docs/refine/api/Collection_Checkers#array) or [`tuple(...)`](/docs/refine/api/Collection_Checkers#tuple)

@@ -7,13 +7,13 @@ The starting place for building a [Refine checker](/docs/refine/api/Checkers) is
 
 These are the initial building blocks which can be composed into higher order combinators using collections or other custom combinators.
 
-## `boolean()`
+## `bool()`
 
 Validates a value as a `boolean`
 
 ```jsx
 // define checker
-const check = boolean();
+const check = bool();
 
 // test a value
 const result = check(false);

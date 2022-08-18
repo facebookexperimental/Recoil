@@ -28,7 +28,7 @@ Generalized version of `or()` to multiple values. (Note: there is currently a li
 
 ```jsx
 // define checker
-const check = union(number(), array(string()), boolean());
+const check = union(number(), array(string()), bool());
 
 // test a value
 assert(check(1).type === 'success');
