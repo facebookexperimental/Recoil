@@ -72,7 +72,7 @@ function parseURL(
       const {param} = loc;
       if (param != null) {
         const stateStr = searchParams.get(param);
-        return stateStr != null ? wrapState(deserialize(stateStr)) : null;
+        return stateStr != null ? wrapState(deserialize(stateStr)) : new Map();
       }
       return new Map(
         Array.from(searchParams.entries()).map(([key, value]) => {
