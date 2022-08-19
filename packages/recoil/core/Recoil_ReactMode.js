@@ -86,7 +86,7 @@ function reactMode(): {mode: ReactMode, early: boolean, concurrent: boolean} {
 function isFastRefreshEnabled(): boolean {
   // @fb-only: const {isAcceptingUpdate} = require('__debug');
   // @fb-only: return typeof isAcceptingUpdate === 'function' && isAcceptingUpdate();
-  return false; // @oss-only
+  return true; // @oss-only
 }
 
 module.exports = {
