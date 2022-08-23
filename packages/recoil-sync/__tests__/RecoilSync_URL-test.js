@@ -369,42 +369,73 @@ describe('Test URL Persistence', () => {
       [loc2, {}],
     ]);
   });
+});
 
-  test('Persist default on read', async () => {
-    const loc = {part: 'hash'};
+test('Remove parameter', async () => {
+  const loc = {part: 'queryParams', param: 'param'};
 
-    const atomA = atom({
-      key: 'recoil-url-sync persist on read default',
-      default: 'DEFAULT',
-      effects: [syncEffect({refine: string(), syncDefault: true})],
-    });
-    const atomB = atom({
-      key: 'recoil-url-sync persist on read init',
-      default: 'DEFAULT',
-      effects: [
-        ({setSelf}) => setSelf('INIT_BEFORE'),
-        syncEffect({refine: string(), syncDefault: true}),
-        ({setSelf}) => setSelf('INIT_AFTER'),
-      ],
-    });
-
-    const container = renderElements(
-      <TestURLSync location={loc}>
-        <ReadsAtom atom={atomA} />
-        <ReadsAtom atom={atomB} />
-      </TestURLSync>,
-    );
-
-    await flushPromisesAndTimers();
-    expect(container.textContent).toBe('"DEFAULT""INIT_AFTER"');
-    expectURL([
-      [
-        loc,
-        {
-          'recoil-url-sync persist on read default': 'DEFAULT',
-          'recoil-url-sync persist on read init': 'INIT_AFTER',
-        },
-      ],
-    ]);
+  const atomA = atom({
+    key: 'recoil-url-sync remove param',
+    default: 'DEFAULT',
+    effects: [syncEffect({itemKey: 'item', refine: string()})],
   });
+
+  const container = renderElements(
+    <TestURLSync location={loc}>
+      <ReadsAtom atom={atomA} />
+    </TestURLSync>,
+  );
+  expect(container.textContent).toBe('"DEFAULT"');
+
+  // Updating URL will cause atom to be set (Note manual triggering of popstate)
+  history.replaceState(null, '', encodeURL([[loc, {item: 'SET'}]]));
+  history.pushState(null, 'void');
+  history.back();
+  await flushPromisesAndTimers();
+  expect(container.textContent).toBe('"SET"');
+
+  // clear all query params from the URL to confirm it resets the atoms.
+  history.replaceState(null, '', location.origin);
+  history.pushState(null, 'void');
+  history.back();
+  await flushPromisesAndTimers();
+  expect(container.textContent).toBe('"DEFAULT"');
+});
+
+test('Persist default on read', async () => {
+  const loc = {part: 'hash'};
+
+  const atomA = atom({
+    key: 'recoil-url-sync persist on read default',
+    default: 'DEFAULT',
+    effects: [syncEffect({refine: string(), syncDefault: true})],
+  });
+  const atomB = atom({
+    key: 'recoil-url-sync persist on read init',
+    default: 'DEFAULT',
+    effects: [
+      ({setSelf}) => setSelf('INIT_BEFORE'),
+      syncEffect({refine: string(), syncDefault: true}),
+      ({setSelf}) => setSelf('INIT_AFTER'),
+    ],
+  });
+
+  const container = renderElements(
+    <TestURLSync location={loc}>
+      <ReadsAtom atom={atomA} />
+      <ReadsAtom atom={atomB} />
+    </TestURLSync>,
+  );
+
+  await flushPromisesAndTimers();
+  expect(container.textContent).toBe('"DEFAULT""INIT_AFTER"');
+  expectURL([
+    [
+      loc,
+      {
+        'recoil-url-sync persist on read default': 'DEFAULT',
+        'recoil-url-sync persist on read init': 'INIT_AFTER',
+      },
+    ],
+  ]);
 });
