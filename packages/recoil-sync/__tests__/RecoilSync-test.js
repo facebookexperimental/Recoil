@@ -1399,7 +1399,7 @@ test('Unregister store and atoms', () => {
     idx: number,
   }) {
     const listen = useCallback(() => register(idx), [idx]);
-    return <RecoilSync {...{listen}}>{children}</RecoilSync>;
+    return <RecoilSync listen={listen}>{children}</RecoilSync>;
   }
 
   let setNumRoots;
