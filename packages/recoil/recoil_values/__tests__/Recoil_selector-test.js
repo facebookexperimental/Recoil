@@ -705,7 +705,6 @@ describe('Async Selector Set', () => {
       key: 'selector / async set not supported / async set method',
       get: () => myAtom,
       // Set should not be async, this test checks that it throws an error.
-      // $FlowExpectedError
       set: async ({set, reset}, newVal) => {
         await Promise.resolve();
         newVal instanceof DefaultValue ? reset(myAtom) : set(myAtom, 'SET');
