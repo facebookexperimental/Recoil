@@ -5995,8 +5995,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       var _releaseSnapshot2;
 
       (_releaseSnapshot2 = releaseSnapshot) === null || _releaseSnapshot2 === void 0 ? void 0 : _releaseSnapshot2();
-    } // $FlowFixMe[incompatible-cast]
-
+    }
 
     return ret;
   }
@@ -8232,8 +8231,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     const { // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
       ...restOptions
     } = options;
-    const optionsDefault = 'default' in options ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
-    // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
+    const optionsDefault = 'default' in options ? // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
     options.default : new Promise(() => {});
 
     if (isRecoilValue$4(optionsDefault) // Continue to use atomWithFallback for promise defaults for scoped atoms
@@ -8487,8 +8485,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         cachePolicyForParams_UNSTABLE,
         ...atomOptions
       } = options;
-      const optionsDefault = 'default' in options ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
-      // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
+      const optionsDefault = 'default' in options ? // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
       options.default : new Promise(() => {});
       const newAtom = Recoil_atom({ ...atomOptions,
         key: `${options.key}__${(_stableStringify = Recoil_stableStringify(params)) !== null && _stableStringify !== void 0 ? _stableStringify : 'void'}`,
