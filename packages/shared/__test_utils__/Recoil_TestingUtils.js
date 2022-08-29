@@ -148,6 +148,7 @@ function renderConcurrentReactRoot<Props>(
       'Concurrent rendering is not available with the current version of React.',
     );
   }
+  // $FlowFixMe[not-a-function] unstable_createRoot is not part of react-dom typing // @oss-only
   createRoot(container).render(contents);
 }
 
