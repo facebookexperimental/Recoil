@@ -52,7 +52,13 @@ function TestURLSync({
       if (stateStr == null || stateStr === 'anchor' || stateStr === 'foo=bar') {
         return {};
       }
-      return JSON.parse(stateStr);
+      try {
+        return JSON.parse(stateStr);
+      } catch {
+        // Catch errors for open source CI tests which tend to keep previous tests alive so they are
+        // still subscribed to URL changes from future tests and may get invalid JSON as a result.
+        return {error: 'PARSE ERROR'};
+      }
     },
     [location.part],
   );
