@@ -96,3 +96,6 @@ function TimeTravelObserver() {
   );
 }
 ```
+## Inspecting current state (현재 상태 검사)
+
+[`useGetRecoilValueInfo_UNSTABLE()`](/docs/api-reference/core/useGetRecoilValueInfo)는 현재 상태를 엿보고 atom 및 Selector에 대한 정보를 얻는 데 사용할 수 있는 콜백을 제공합니다. 대부분의 경우 이것은 현재 [`Snapshot`](/docs/api-reference/core/Snapshot)에서 [`getInfo_UNSTABLE()`](/docs/api-reference/core/Snapshot#debug-information)을 호출하는 것과 같습니다. 단, Atom를 구독하는 React 컴포넌트 세트와 같은 추가 정보를 제공할 수 있는 점을 제외하고 이는 변경될 수 있으며 Recoil 상태의 스냅샷과 연결되지 않습니다.
