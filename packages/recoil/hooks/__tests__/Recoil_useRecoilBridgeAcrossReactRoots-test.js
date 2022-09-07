@@ -8,7 +8,9 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {StoreID} from '../../core/Recoil_Keys';
 import type {MutableSnapshot} from 'Recoil_Snapshot';
 import type {Node} from 'react';
@@ -56,7 +58,7 @@ function NestedReactRoot({children}: $TEMPORARY$object<{children: Node}>) {
       <RecoilBridge>{children}</RecoilBridge>,
       ref.current,
     );
-  }, [children]);
+  }, [RecoilBridge, children]);
 
   return <div ref={ref} />;
 }
