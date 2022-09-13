@@ -14,7 +14,6 @@
 import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 import type {RecoilState} from 'Recoil';
-import type {RecoilState as $IMPORTED_TYPE$_RecoilState_1} from 'Recoil_RecoilValue';
 
 const {
   getRecoilTestFn,
