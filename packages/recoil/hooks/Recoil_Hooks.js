@@ -114,6 +114,7 @@ export type RecoilInterface = {
 function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const componentName = useComponentName();
   const storeRef = useStoreRef();
+  // eslint-disable-next-line fb-www/react-no-unused-state-hook
   const [, forceUpdate] = useState([]);
 
   const recoilValuesUsed = useRef<$ReadOnlySet<NodeKey>>(new Set());
@@ -501,6 +502,7 @@ function useRecoilValueLoadable_LEGACY<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
+  // eslint-disable-next-line fb-www/react-no-unused-state-hook
   const [, forceUpdate] = useState([]);
   const componentName = useComponentName();
 
