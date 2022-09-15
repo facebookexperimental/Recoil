@@ -308,7 +308,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
 
 const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
 
-function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
+function useRecoilValueLoadable_SYNC_EXTERNAL_STORE_IMPL<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
@@ -577,6 +577,27 @@ function useRecoilValueLoadable_LEGACY<T>(
   }, [componentName, getLoadable, recoilValue, storeRef]);
 
   return loadable;
+}
+
+// Recoil will attemp to detect if `useSyncExternalStore()` is supported in
+// Recoil_ReactMode.js before calling it.  However, sometimes the host
+// environment supports it but creates additional React renderers, such as with
+// `react-three-fiber`, which do not.  Since React goes through a proxy
+// dispatcher we can't simply check if `useSyncExternalStore()` is defined.
+// Thus, this workaround will catch the situation and fallback to using
+// just `useState()` and `useEffect()`.
+function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
+  recoilValue: RecoilValue<T>,
+): Loadable<T> {
+  try {
+    return useRecoilValueLoadable_SYNC_EXTERNAL_STORE_IMPL(recoilValue);
+  } catch (e) {
+    if (e.message.includes('useSyncExternalStore is not a function')) {
+      // eslint-disable-next-line fb-www/react-hooks
+      return useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue);
+    }
+    throw e;
+  }
 }
 
 /**
