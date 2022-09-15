@@ -680,6 +680,7 @@ function atomWithFallback<T>(
   return sel;
 }
 
+// $FlowFixMe[missing-local-annot]
 atom.value = value => new WrappedValue(value);
 
 module.exports = (atom: {

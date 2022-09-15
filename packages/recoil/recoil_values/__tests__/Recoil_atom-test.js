@@ -726,6 +726,7 @@ describe('Effects', () => {
               !(newValue instanceof DefaultValue) &&
               newValue.patch != patch
             ) {
+              // $FlowFixMe[prop-missing]
               setSelf({value: 'TRANSFORM_ALT ' + newValue.value, patch});
             }
           });
@@ -736,6 +737,7 @@ describe('Effects', () => {
               !(newValue instanceof DefaultValue) &&
               newValue.patch != patch
             ) {
+              // $FlowFixMe[prop-missing]
               setSelf({value: 'TRANSFORM ' + newValue.value, patch});
             }
           });
