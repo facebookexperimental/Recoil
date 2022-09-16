@@ -103,6 +103,7 @@ const myAtom = atom<number>({
   default: 0,
   effects: [
     syncEffect({
+      itemKey: 'new_key',
       read: ({read}) => read('new_key') ?? read('old_key'),
     }),
   ],
