@@ -40,6 +40,7 @@ const {jsonParser, jsonParserEnforced} = require('./Refine_JSON');
 const {
   bool,
   date,
+  enumObject,
   jsonDate,
   literal,
   mixed,
@@ -75,6 +76,7 @@ module.exports = {
   number,
   string,
   stringLiterals,
+  enumObject,
   date,
   jsonDate,
 
