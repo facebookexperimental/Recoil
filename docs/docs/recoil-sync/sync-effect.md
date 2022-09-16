@@ -35,6 +35,42 @@ More complex example:
 
 See the [Refine documentation](/docs/refine/introduction) for details.
 
+## Item and Store Keys
+
+The `itemKey` specifies a unique key to identify the item for the store, if not specified it defaults to the atom's key.  If a custom [`read()`](/docs/recoil-sync/api/syncEffect#read-interface) or [`write()`](/docs/recoil-sync/api/syncEffect#write-interface) is used then it can override the item key to [upgrade](#upgrade-atom-key) or use [multiple item keys](#many-to-one).
+
+A `storeKey` can be used to specify which external store to sync with.  It should match up with the `storeKey` for the cooresponding [`<RecoilSync>`](/docs/recoil-sync/api/RecoilURLSync).  This is useful when [upgrading](#upgrade-atom-storage) or if there are [more than one store](#syncing-with-multiple-storages).
+
+```jsx
+atom({
+  key: 'AtomKey',
+  effects: [
+    syncEffect({
+      itemKey: 'myItem',
+      storeKey: 'storeA',
+      refine: string(),
+    }),
+  ],
+});
+```
+
+### Atom Families
+
+Atoms in an [atom family](/docs/api-reference/utils/atomFamily) can also by synchronized with [`syncEffect()`](/docs/recoil-sync/api/syncEffect).  Each individual atom in the family is treated as a separate item to sync.  The default item key will include a serialization of the family parameter.  If you specify your own `itemKey` then you should also encode the family parameter to uniquely identify each atom; the parameter can be obtained by using a callback for the atom family `effects` option.
+
+```jsx
+atomFamily({
+  key: 'AtomKey',
+  effects: param => [
+    syncEffect({
+      itemKey: `myItem-${param}`,
+      storeKey: 'storeA',
+      refine: string(),
+    }),
+  ],
+});
+```
+
 ## Backward Compatibility
 
 It can be important to support legacy systems or external systems with previous versions of state.  There are several mechanisms available for this
@@ -67,7 +103,6 @@ const myAtom = atom<number>({
   default: 0,
   effects: [
     syncEffect({
-      itemKey: 'new_key',
       read: ({read}) => read('new_key') ?? read('old_key'),
     }),
   ],
