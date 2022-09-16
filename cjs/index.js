@@ -7829,6 +7829,7 @@ function selector(options) {
 }
 /* eslint-enable no-redeclare */
 // $FlowIssue[incompatible-use]
+// $FlowFixMe[missing-local-annot]
 
 
 selector.value = value => new WrappedValue$1(value);
@@ -8316,7 +8317,8 @@ function atomWithFallback(options) {
   });
   setConfigDeletionHandler$1(sel.key, getConfigDeletionHandler$2(options.key));
   return sel;
-}
+} // $FlowFixMe[missing-local-annot]
+
 
 atom.value = value => new WrappedValue$2(value);
 

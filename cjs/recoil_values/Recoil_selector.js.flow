@@ -1235,6 +1235,7 @@ function selector<T>(
 /* eslint-enable no-redeclare */
 
 // $FlowIssue[incompatible-use]
+// $FlowFixMe[missing-local-annot]
 selector.value = value => new WrappedValue(value);
 
 module.exports = (selector: {
