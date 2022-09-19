@@ -66,7 +66,7 @@
     "babel-preset-fbjs": "^3.3.0",
     "dtslint": "^4.2.0",
     "eslint": "^8.2.0",
-    "eslint-plugin-fb-www": "^1.10.0",
+    "eslint-plugin-fb-www": "^1.11.0",
     "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-jest": "^23.13.2",
     "eslint-plugin-react": "^7.20.0",
