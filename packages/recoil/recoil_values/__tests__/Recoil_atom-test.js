@@ -134,10 +134,19 @@ testRecoil('atom can read and write value', () => {
 });
 
 describe('Creating two atoms with the same key', () => {
-  // Following approach in Recoil_selector-test.js for spying on console output
+  // Following approach in Recoil_selector-test.js for spying on console output and
+  // testing values of window.__DEV__
   let loggedError, loggedWarning, originalConsoleError, originalConsoleWarn;
+  let originalWindowDev;
+  // Following https://stackoverflow.com/a/48042799 for method to stub and
+  // restore process.env
+  const originalProcessEnv = process.env;
 
   beforeEach(() => {
+    jest.resetModules();
+    process.env = {...originalProcessEnv};
+    originalWindowDev = window.__DEV__;
+
     loggedError = undefined;
     loggedWarning = undefined;
     originalConsoleError = console.error;
@@ -153,19 +162,26 @@ describe('Creating two atoms with the same key', () => {
   });
 
   afterEach(() => {
+    // restore original values
+    window.__DEV__ = originalWindowDev;
+    process.env = originalProcessEnv;
     console.error = originalConsoleError;
     console.warn = originalConsoleWarn;
   });
 
   [
-    {windowDevValue: true, logType: 'error'},
-    {windowDevValue: false, logType: 'warn'},
-  ].forEach(({windowDevValue, logType}) => {
-    describe(`when window.__DEV__=${windowDevValue}`, () => {
-      testRecoil(`logs to console.${logType}`, () => {
+    {windowDevValue: true, suppress: undefined, expectedLog: 'console.error'},
+    {windowDevValue: false, suppress: undefined, expectedLog: 'console.warn'},
+    {windowDevValue: true, suppress: true, expectedLog: 'nowhere'},
+    {windowDevValue: false, suppress: true, expectedLog: 'nowhere'},
+  ].forEach(({windowDevValue, suppress, expectedLog}) => {
+    describe(`when window.__DEV__=${windowDevValue} and ${
+      suppress ? 'suppressing' : 'not suppressing'
+    } warnings`, () => {
+      testRecoil(`logs to ${expectedLog}`, () => {
         // Following approach in Recoil_selector-test.js for testing values of window.__DEV__.
-        const originalWindowDev = window.__DEV__;
         window.__DEV__ = windowDevValue;
+        process.env.SUPPRESS_DUPLICATE_ATOM_KEY_WARNING = suppress;
 
         // Create two atoms with the same key
         const _myAtom = atom<string>({
@@ -178,22 +194,19 @@ describe('Creating two atoms with the same key', () => {
         });
 
         // Verify the expected console logs.
-        if (logType === 'error') {
+        if (expectedLog === 'console.error') {
           expect(loggedError).toBeInstanceOf(Error);
           expect(loggedError.name).toBe('Expectation Violation');
           expect(loggedError.message).toMatch(/Duplicate atom key/);
         } else {
           expect(loggedError).toBeUndefined();
         }
-        if (logType === 'warn') {
+        if (expectedLog === 'console.warn') {
           expect(typeof loggedWarning).toBe('string');
           expect(loggedWarning).toMatch(/Duplicate atom key/);
         } else {
           expect(loggedWarning).toBeUndefined();
         }
-
-        // Restore the prior value of window.__DEV__
-        window.__DEV__ = originalWindowDev;
       });
     });
   });
