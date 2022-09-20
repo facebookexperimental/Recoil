@@ -133,6 +133,72 @@ testRecoil('atom can read and write value', () => {
   expect(getValue(myAtom)).toBe('VALUE');
 });
 
+describe('Creating two atoms with the same key', () => {
+  // Following approach in Recoil_selector-test.js for spying on console output
+  let loggedError, loggedWarning, originalConsoleError, originalConsoleWarn;
+
+  beforeEach(() => {
+    loggedError = undefined;
+    loggedWarning = undefined;
+    originalConsoleError = console.error;
+    console.error = (...args) => {
+      loggedError = args[0];
+      originalConsoleError(...args);
+    };
+    originalConsoleWarn = console.warn;
+    console.warn = (...args) => {
+      loggedWarning = args[0];
+      originalConsoleWarn(...args);
+    };
+  });
+
+  afterEach(() => {
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+  });
+
+  [
+    {windowDevValue: true, logType: 'error'},
+    {windowDevValue: false, logType: 'warn'},
+  ].forEach(({windowDevValue, logType}) => {
+    describe(`when window.__DEV__=${windowDevValue}`, () => {
+      testRecoil(`logs to console.${logType}`, () => {
+        // Following approach in Recoil_selector-test.js for testing values of window.__DEV__.
+        const originalWindowDev = window.__DEV__;
+        window.__DEV__ = windowDevValue;
+
+        // Create two atoms with the same key
+        const _myAtom = atom<string>({
+          key: 'an atom',
+          default: 'DEFAULT',
+        });
+        const _myAtom2 = atom<string>({
+          key: 'an atom', // with the same key!
+          default: 'DEFAULT 2',
+        });
+
+        // Verify the expected console logs.
+        if (logType === 'error') {
+          expect(loggedError).toBeInstanceOf(Error);
+          expect(loggedError.name).toBe('Expectation Violation');
+          expect(loggedError.message).toMatch(/Duplicate atom key/);
+        } else {
+          expect(loggedError).toBeUndefined();
+        }
+        if (logType === 'warn') {
+          expect(typeof loggedWarning).toBe('string');
+          expect(loggedWarning).toMatch(/Duplicate atom key/);
+        } else {
+          expect(loggedWarning).toBeUndefined();
+        }
+
+        // Restore the prior value of window.__DEV__
+        window.__DEV__ = originalWindowDev;
+      });
+    });
+  });
+});
+
 describe('Valid values', () => {
   testRecoil('atom can store null and undefined', () => {
     const myAtom = atom<?string>({
