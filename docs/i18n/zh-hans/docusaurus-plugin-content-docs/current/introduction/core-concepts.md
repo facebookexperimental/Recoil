@@ -27,7 +27,7 @@ Atom 需要一个唯一的 key 值，该 key 可用于调试、持久化以及�
 function FontButton() {
   const [fontSize, setFontSize] = useRecoilState(fontSizeState);
   return (
-    <button onClick={() => setFontSize((size) => size + 1)} style={{fontSize}}>
+    <button onClick={() => setFontSize((size) => size + 1)} style={{fontSize: `${fontSize}px`}}>
       Click to Enlarge
     </button>
   );
@@ -39,7 +39,7 @@ function FontButton() {
 ```jsx
 function Text() {
   const [fontSize, setFontSize] = useRecoilState(fontSizeState);
-  return <p style={{fontSize}}>This text will increase in size too.</p>;
+  return <p style={{fontSize: `${fontSize}px`}}>This text will increase in size too.</p>;
 }
 ```
 
@@ -80,7 +80,7 @@ function FontButton() {
     <>
       <div>Current font size: {fontSizeLabel}</div>
 
-      <button onClick={() => setFontSize(fontSize + 1)} style={{fontSize}}>
+      <button onClick={() => setFontSize(fontSize + 1)} style={{fontSize: fontSizeLabel}}>
         Click to Enlarge
       </button>
     </>
