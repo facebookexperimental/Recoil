@@ -4823,7 +4823,8 @@ function validateRecoilValue(recoilValue, hookName) {
  * */
 function useRecoilInterface_DEPRECATED() {
   const componentName = Recoil_useComponentName();
-  const storeRef = useStoreRef$2();
+  const storeRef = useStoreRef$2(); // eslint-disable-next-line fb-www/react-no-unused-state-hook
+
   const [, forceUpdate] = useState$1([]);
   const recoilValuesUsed = useRef$4(new Set());
   recoilValuesUsed.current = new Set(); // Track the RecoilValues used just during this render
@@ -5125,7 +5126,8 @@ function useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue) {
 }
 
 function useRecoilValueLoadable_LEGACY(recoilValue) {
-  const storeRef = useStoreRef$2();
+  const storeRef = useStoreRef$2(); // eslint-disable-next-line fb-www/react-no-unused-state-hook
+
   const [, forceUpdate] = useState$1([]);
   const componentName = Recoil_useComponentName();
   const getLoadable = useCallback$1(() => {
