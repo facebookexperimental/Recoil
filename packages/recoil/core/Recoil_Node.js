@@ -109,7 +109,11 @@ function recoilValuesForKeys(
 }
 
 function registerNode<T>(node: Node<T>): RecoilValue<T> {
-  if (nodes.has(node.key) && !process.env.SUPPRESS_DUPLICATE_ATOM_KEY_WARNING) {
+  // Gracefully & safely check for intent of environmental variable, which is a string or undefined
+  const suppressWarning =
+    process.env.SUPPRESS_DUPLICATE_ATOM_KEY_WARNING?.trim().toLowerCase() ===
+    'true';
+  if (nodes.has(node.key) && !suppressWarning) {
     const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
       production. But it is safe to ignore this warning if it occurred because of
       hot module replacement.`;

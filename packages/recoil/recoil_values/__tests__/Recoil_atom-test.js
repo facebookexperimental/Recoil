@@ -172,8 +172,8 @@ describe('Creating two atoms with the same key', () => {
   [
     {windowDevValue: true, suppress: undefined, expectedLog: 'console.error'},
     {windowDevValue: false, suppress: undefined, expectedLog: 'console.warn'},
-    {windowDevValue: true, suppress: true, expectedLog: 'nowhere'},
-    {windowDevValue: false, suppress: true, expectedLog: 'nowhere'},
+    {windowDevValue: true, suppress: 'true', expectedLog: 'nowhere'},
+    {windowDevValue: false, suppress: 'TRUE', expectedLog: 'nowhere'},
   ].forEach(({windowDevValue, suppress, expectedLog}) => {
     describe(`when window.__DEV__=${windowDevValue} and ${
       suppress ? 'suppressing' : 'not suppressing'
