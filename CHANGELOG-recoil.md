@@ -3,7 +3,7 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
-- Workaround for React 18 environments with nested renderers that don't support `useSyncExternalStore()` (#2001)
+- Workaround for React 18 environments with nested renderers that don't support `useSyncExternalStore()` (#2001, #2010)
 
 ## 0.7.5 (2022-08-11)
 
