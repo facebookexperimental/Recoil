@@ -22,6 +22,8 @@ Transit encoding is not as terse or readable as just using [JSON](/docs/recoil-s
 
 Handlers for custom user classes can be defined with the `handlers` prop:
 
+- **`handlers`** - Optional array of handlers for [Custom Classes](#custom-classes). It is important that this is a stable or memoized array instance. Otherwise you may miss URL changes as the listener is re-subscribed.
+
 ```tsx
 type TransitHandler<T, S> = {
   tag: string;
