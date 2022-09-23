@@ -21,17 +21,19 @@ Transit encoding is not as terse or readable as just using [JSON](/docs/recoil-s
 ## Custom Classes
 
 Handlers for custom user classes can be defined with the `handlers` prop:
-```jsx
+
+```tsx
 type TransitHandler<T, S> = {
-  tag: string,
-  class: Class<T>,
-  write: T => S,
-  read: S => T,
+  tag: string;
+  class: Class<T>;
+  write: (T) => S;
+  read: (S) => T;
 };
 ```
 
 ### Example
-```jsx
+
+```tsx
 class ViewState {
   active: boolean;
   pos: [number, number];
@@ -39,9 +41,9 @@ class ViewState {
     this.active = active;
     this.pos = pos;
   }
-  ...
-};
-const viewStateChecker = custom(x => x instanceof ViewState ? x : null);
+  // ...
+}
+const viewStateChecker = custom((x) => (x instanceof ViewState ? x : null));
 
 function MyApp() {
   return (
@@ -53,19 +55,19 @@ function MyApp() {
           {
             tag: 'VS',
             class: ViewState,
-            write: x => [x.active, x.pos],
+            write: (x) => [x.active, x.pos],
             read: ([active, pos]) => new ViewState(active, pos),
           },
         ]}
       />
-      ...
+      {/* ... */}
     </RecoilRoot>
-  )
+  );
 }
 
 const ViewState = atom<ViewState>({
   key: 'ViewState',
   default: new ViewState(true, [1, 2]),
-  effects: [syncEffect({ storeKey: 'transit-url', refine: viewStateChecker })],
+  effects: [syncEffect({storeKey: 'transit-url', refine: viewStateChecker})],
 });
 ```
