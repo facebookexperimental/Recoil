@@ -20,6 +20,7 @@ import type {NodeKey, StoreRef} from '../core/Recoil_State';
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE} = require('../core/Recoil_Node');
 const {
+  currentRendererSupportsUseSyncExternalStore,
   reactMode,
   useMutableSource,
   useSyncExternalStore,
@@ -309,7 +310,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
 
 const recoilComponentGetRecoilValueCount_FOR_TESTING = {current: 0};
 
-function useRecoilValueLoadable_SYNC_EXTERNAL_STORE_IMPL<T>(
+function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
@@ -581,27 +582,6 @@ function useRecoilValueLoadable_LEGACY<T>(
   return loadable;
 }
 
-// Recoil will attemp to detect if `useSyncExternalStore()` is supported in
-// Recoil_ReactMode.js before calling it.  However, sometimes the host
-// environment supports it but creates additional React renderers, such as with
-// `react-three-fiber`, which do not.  Since React goes through a proxy
-// dispatcher we can't simply check if `useSyncExternalStore()` is defined.
-// Thus, this workaround will catch the situation and fallback to using
-// just `useState()` and `useEffect()`.
-function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
-  recoilValue: RecoilValue<T>,
-): Loadable<T> {
-  try {
-    return useRecoilValueLoadable_SYNC_EXTERNAL_STORE_IMPL(recoilValue);
-  } catch (e) {
-    if (e.message.includes('useSyncExternalStore is not a function')) {
-      // eslint-disable-next-line fb-www/react-hooks
-      return useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue);
-    }
-    throw e;
-  }
-}
-
 /**
   Like useRecoilValue(), but either returns the value if available or
   just undefined if not available for any reason, such as pending or error.
@@ -616,7 +596,16 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   }
   return {
     TRANSITION_SUPPORT: useRecoilValueLoadable_TRANSITION_SUPPORT,
-    SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
+    // Recoil will attemp to detect if `useSyncExternalStore()` is supported with
+    // `reactMode()` before calling it.  However, sometimes the host React
+    // environment supports it but uses additional React renderers (such as with
+    // `react-three-fiber`) which do not.  While this is technically a user issue
+    // by using a renderer with React 18+ that doesn't fully support React 18 we
+    // don't want to break users if it can be avoided. As the current renderer can
+    // change at runtime, we need to dynamically check and fallback if necessary.
+    SYNC_EXTERNAL_STORE: currentRendererSupportsUseSyncExternalStore()
+      ? useRecoilValueLoadable_SYNC_EXTERNAL_STORE
+      : useRecoilValueLoadable_TRANSITION_SUPPORT,
     MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
     LEGACY: useRecoilValueLoadable_LEGACY,
   }[reactMode().mode](recoilValue);

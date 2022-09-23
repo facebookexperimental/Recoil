@@ -393,7 +393,37 @@ Recoil_gkx_OSS.clear = () => {
 
 var Recoil_gkx = Recoil_gkx_OSS; // @oss-only
 
+/**
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * 
+ * @format
+ * @oncall recoil
+ */
+
+function recoverableViolation(message, _projectName, {
+  error
+} = {}) {
+  if (process.env.NODE_ENV !== "production") {
+    console.error(message, error);
+  }
+
+  return null;
+}
+
+var recoverableViolation_1 = recoverableViolation;
+
+// @oss-only
+
+
+var Recoil_recoverableViolation = recoverableViolation_1;
+
 var _createMutableSource, _useMutableSource, _useSyncExternalStore;
+
+
 
 
 
@@ -407,6 +437,32 @@ const useMutableSource = // flowlint-next-line unclear-type:off
 const useSyncExternalStore = // flowlint-next-line unclear-type:off
 (_useSyncExternalStore = react.useSyncExternalStore) !== null && _useSyncExternalStore !== void 0 ? _useSyncExternalStore : // flowlint-next-line unclear-type:off
 react.unstable_useSyncExternalStore;
+let ReactRendererVersionMismatchWarnOnce = false; // Check if the current renderer supports `useSyncExternalStore()`.
+// Since React goes through a proxy dispatcher and the current renderer can
+// change we can't simply check if `React.useSyncExternalStore()` is defined.
+
+function currentRendererSupportsUseSyncExternalStore() {
+  var _ReactCurrentDispatch;
+
+  // $FlowFixMe[incompatible-use]
+  const {
+    ReactCurrentDispatcher,
+    ReactCurrentOwner
+  } =
+  /* $FlowFixMe[prop-missing] This workaround was approved as a safer mechanism
+   * to detect if the current renderer supports useSyncExternalStore()
+   * https://fb.workplace.com/groups/reactjs/posts/9558682330846963/ */
+  react.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+  const dispatcher = (_ReactCurrentDispatch = ReactCurrentDispatcher === null || ReactCurrentDispatcher === void 0 ? void 0 : ReactCurrentDispatcher.current) !== null && _ReactCurrentDispatch !== void 0 ? _ReactCurrentDispatch : ReactCurrentOwner.currentDispatcher;
+  const isUseSyncExternalStoreSupported = dispatcher.useSyncExternalStore != null;
+
+  if (useSyncExternalStore && !isUseSyncExternalStoreSupported && !ReactRendererVersionMismatchWarnOnce) {
+    ReactRendererVersionMismatchWarnOnce = true;
+    Recoil_recoverableViolation('A React renderer without React 18+ API support is being used with React 18+.');
+  }
+
+  return isUseSyncExternalStoreSupported;
+}
 
 /**
  * mode: The React API and approach to use for syncing state with React
@@ -469,6 +525,7 @@ var Recoil_ReactMode = {
   createMutableSource,
   useMutableSource,
   useSyncExternalStore,
+  currentRendererSupportsUseSyncExternalStore,
   reactMode,
   isFastRefreshEnabled
 };
@@ -589,34 +646,6 @@ function mapIterable(iterable, callback) {
 }
 
 var Recoil_mapIterable = mapIterable;
-
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- * @format
- * @oncall recoil
- */
-
-function recoverableViolation(message, _projectName, {
-  error
-} = {}) {
-  if (process.env.NODE_ENV !== "production") {
-    console.error(message, error);
-  }
-
-  return null;
-}
-
-var recoverableViolation_1 = recoverableViolation;
-
-// @oss-only
-
-
-var Recoil_recoverableViolation = recoverableViolation_1;
 
 const {
   isFastRefreshEnabled: isFastRefreshEnabled$1
@@ -4744,6 +4773,7 @@ const {
 } = Recoil_Node;
 
 const {
+  currentRendererSupportsUseSyncExternalStore: currentRendererSupportsUseSyncExternalStore$1,
   reactMode: reactMode$3,
   useMutableSource: useMutableSource$1,
   useSyncExternalStore: useSyncExternalStore$1
@@ -4980,7 +5010,7 @@ const recoilComponentGetRecoilValueCount_FOR_TESTING = {
   current: 0
 };
 
-function useRecoilValueLoadable_SYNC_EXTERNAL_STORE_IMPL(recoilValue) {
+function useRecoilValueLoadable_SYNC_EXTERNAL_STORE(recoilValue) {
   const storeRef = useStoreRef$2();
   const componentName = Recoil_useComponentName();
   const getSnapshot = useCallback$1(() => {
@@ -5207,26 +5237,6 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
     return subscription.release;
   }, [componentName, getLoadable, recoilValue, storeRef]);
   return loadable;
-} // Recoil will attemp to detect if `useSyncExternalStore()` is supported in
-// Recoil_ReactMode.js before calling it.  However, sometimes the host
-// environment supports it but creates additional React renderers, such as with
-// `react-three-fiber`, which do not.  Since React goes through a proxy
-// dispatcher we can't simply check if `useSyncExternalStore()` is defined.
-// Thus, this workaround will catch the situation and fallback to using
-// just `useState()` and `useEffect()`.
-
-
-function useRecoilValueLoadable_SYNC_EXTERNAL_STORE(recoilValue) {
-  try {
-    return useRecoilValueLoadable_SYNC_EXTERNAL_STORE_IMPL(recoilValue);
-  } catch (e) {
-    if (e.message.includes('useSyncExternalStore is not a function')) {
-      // eslint-disable-next-line fb-www/react-hooks
-      return useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue);
-    }
-
-    throw e;
-  }
 }
 /**
   Like useRecoilValue(), but either returns the value if available or
@@ -5246,7 +5256,14 @@ function useRecoilValueLoadable(recoilValue) {
 
   return {
     TRANSITION_SUPPORT: useRecoilValueLoadable_TRANSITION_SUPPORT,
-    SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
+    // Recoil will attemp to detect if `useSyncExternalStore()` is supported with
+    // `reactMode()` before calling it.  However, sometimes the host React
+    // environment supports it but uses additional React renderers (such as with
+    // `react-three-fiber`) which do not.  While this is technically a user issue
+    // by using a renderer with React 18+ that doesn't fully support React 18 we
+    // don't want to break users if it can be avoided. As the current renderer can
+    // change at runtime, we need to dynamically check and fallback if necessary.
+    SYNC_EXTERNAL_STORE: currentRendererSupportsUseSyncExternalStore$1() ? useRecoilValueLoadable_SYNC_EXTERNAL_STORE : useRecoilValueLoadable_TRANSITION_SUPPORT,
     MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
     LEGACY: useRecoilValueLoadable_LEGACY
   }[reactMode$3().mode](recoilValue);
