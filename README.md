@@ -2,7 +2,17 @@
 
 Recoil is an experimental state management framework for React.
 
-Please see the website: https://recoiljs.org
+Website: https://recoiljs.org
+
+## Documentation
+
+Documentation: https://recoiljs.org/docs/introduction/core-concepts
+
+
+API Reference: https://recoiljs.org/docs/api-reference/core/RecoilRoot
+
+
+Tutorials: https://recoiljs.org/resources
 
 ## Installation
 
