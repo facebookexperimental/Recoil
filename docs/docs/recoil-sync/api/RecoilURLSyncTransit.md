@@ -7,7 +7,7 @@ A component from the [Recoil Sync library](/docs/recoil-sync/introduction) to sy
 
 This is identical to the [`<RecoilURLSync>`](/docs/recoil-sync/api/RecoilURLSync) component except that it provides built-in [Transit encoding](https://github.com/cognitect/transit-js).
 
-```jsx
+```tsx
 function RecoilURLSyncTransit(props: {
   ...RecoilURLSyncOptions,
   handlers?: Array<TransitHandler<any, any>>,
@@ -45,20 +45,22 @@ class ViewState {
 }
 const viewStateChecker = custom((x) => (x instanceof ViewState ? x : null));
 
+const HANDLERS = [
+  {
+    tag: 'VS',
+    class: ViewState,
+    write: (x) => [x.active, x.pos],
+    read: ([active, pos]) => new ViewState(active, pos),
+  },
+];
+
 function MyApp() {
   return (
     <RecoilRoot>
       <RecoilURLSyncTransit
         storeKey="transit-url"
         location={{part: 'queryParam', param: 'state'}}
-        handlers={[
-          {
-            tag: 'VS',
-            class: ViewState,
-            write: (x) => [x.active, x.pos],
-            read: ([active, pos]) => new ViewState(active, pos),
-          },
-        ]}
+        handlers={HANDLERS}
       />
       {/* ... */}
     </RecoilRoot>
