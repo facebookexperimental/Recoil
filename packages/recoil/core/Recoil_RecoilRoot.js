@@ -383,7 +383,7 @@ function RecoilRoot_INTERNAL({
 
   let storeStateRef: {current: StoreState}; // eslint-disable-line prefer-const
 
-  const getGraph = useMemo((version: StateID) => {
+  const getGraph = useCallback((version: StateID) => {
     const graphs = storeStateRef.current.graphsByVersion;
     if (graphs.has(version)) {
       return nullthrows(graphs.get(version));
