@@ -744,6 +744,9 @@ test('Listen to storage', async () => {
     () => {
       throw new Error('Failed to register 1');
     };
+  let updateItems1: ItemSnapshot => void = _ => {
+    throw new Error('Failed to register 1');
+  };
   let updateAll1: ItemSnapshot => void = _ => {
     throw new Error('Failed to register 1');
   };
@@ -756,6 +759,7 @@ test('Listen to storage', async () => {
       storage={storage1}
       regListen={listenInterface => {
         updateItem1 = listenInterface.updateItem;
+        updateItems1 = listenInterface.updateItems;
         updateAll1 = listenInterface.updateAllKnownItems;
       }}>
       <TestRecoilSync
@@ -830,6 +834,11 @@ test('Listen to storage', async () => {
   // TODO Atom should be put in an error state, but is just reset for now.
   expect(container.textContent).toBe('"DEFAULT""BBB""DEFAULT"');
   // expect(storage1.get('recoil-sync listen')?.errorOrThrow()).toBe(ERROR);
+
+  // Update Items
+  // Set A while keeping B and C
+  act(() => updateItems1(new Map([['recoil-sync listen', 'AAAA']])));
+  expect(container.textContent).toBe('"AAAA""BBB""DEFAULT"');
 
   // Update All Items
   // Set A while resetting B

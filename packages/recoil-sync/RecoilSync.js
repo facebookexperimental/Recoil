@@ -52,9 +52,11 @@ export type ReadItem = ItemKey =>
   | mixed;
 
 export type UpdateItem = <T>(ItemKey, DefaultValue | T) => void;
+export type UpdateItems = ItemSnapshot => void;
 export type UpdateAllKnownItems = ItemSnapshot => void;
 export type ListenInterface = {
   updateItem: UpdateItem,
+  updateItems: UpdateItems,
   updateAllKnownItems: UpdateAllKnownItems,
 };
 export type ListenToItems = ListenInterface => void | (() => void);
@@ -472,8 +474,8 @@ function useRecoilSync({
   useEffect(
     () =>
       // TODO try/catch errors and set atom to error state if actionOnFailure is errorState
-      listen?.({updateItem, updateAllKnownItems}),
-    [updateItem, updateAllKnownItems, listen],
+      listen?.({updateItem, updateItems, updateAllKnownItems}),
+    [updateItem, updateItems, updateAllKnownItems, listen],
   );
 
   // Register Storage
