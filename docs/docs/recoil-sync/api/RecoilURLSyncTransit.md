@@ -14,6 +14,8 @@ function RecoilURLSyncTransit(props: {
 }): React.Node
 ```
 
+- **`handlers`** - Optional array of handlers for [Custom Classes](#custom-classes). It is important that this is a stable or memoized array instance. Otherwise you may miss URL changes as the listener is re-subscribed.
+
 ---
 
 Transit encoding is not as terse or readable as just using [JSON](/docs/recoil-sync/api/RecoilURLSyncJSON), however it can support `Map` and `Set` JavaScript containers as well as custom user classes.
@@ -21,8 +23,6 @@ Transit encoding is not as terse or readable as just using [JSON](/docs/recoil-s
 ## Custom Classes
 
 Handlers for custom user classes can be defined with the `handlers` prop:
-
-- **`handlers`** - Optional array of handlers for [Custom Classes](#custom-classes). It is important that this is a stable or memoized array instance. Otherwise you may miss URL changes as the listener is re-subscribed.
 
 ```tsx
 type TransitHandler<T, S> = {
@@ -39,7 +39,7 @@ type TransitHandler<T, S> = {
 class ViewState {
   active: boolean;
   pos: [number, number];
-  constructor(active, pos) {
+  constructor(active: boolean, pos: [number, number]) {
     this.active = active;
     this.pos = pos;
   }
@@ -61,10 +61,10 @@ function MyApp() {
     <RecoilRoot>
       <RecoilURLSyncTransit
         storeKey="transit-url"
-        location={{part: 'queryParam', param: 'state'}}
-        handlers={HANDLERS}
-      />
-      {/* ... */}
+        location={{part: 'queryParams', param: 'state'}}
+        handlers={HANDLERS}>
+        {/* children */}
+      </RecoilURLSyncTransit>
     </RecoilRoot>
   );
 }
