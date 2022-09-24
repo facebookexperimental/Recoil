@@ -61,10 +61,12 @@ The `listen()` callback allows you to subscribe to async updates from the extern
 
 ```jsx
 type UpdateItem = <T>(ItemKey, DefaultValue | T) => void;
+type UpdateItems = ItemSnapshot => void;
 type UpdateAllKnownItems = ItemSnapshot => void;
 
 type ListenToItems = ({
   updateItem: UpdateItem,
+  updateItems: UpdateItems,
   updateAllKnownItems: UpdateAllKnownItems,
 }) => void | (() => void);
 ```
@@ -72,6 +74,7 @@ type ListenToItems = ({
 The `listen()` callback is provided some callbacks in its parameter that allow you to update items to a new value.  Any atoms which have read from those items are "subscribed" and will have their state updated by reading from the updated items.
 
 - `updateItem()` - This will update the value of a single item by providing a key and value.  If the value is `DefaultValue` then it will reset the item to the default.  This only updates a single item, other items will not be affected.
+- `updateItems()` - This will update multiple items by providing a Map of item keys and values.  Again, if the value of any is `DefaultValue` then it will reset those items.  This only updates the provided items, other items will not be affected.
 - `updateAllKnownItems()` - This will update multiple items by providing a Map of item keys and values.  Again, if the value of any is `DefaultValue` then it will reset those items.  This function will update *all* of the known items that have been read by atoms syncing with this store.  That means if an item key is not included in the provided Map then that item will be reset to default.
 
 You can return a callback handler function from your `listen()` implementation that will be called when the store effect is cleaned up.  This can be used to cleanup your subscription to the external store.
