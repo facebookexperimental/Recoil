@@ -65,13 +65,11 @@ function TestURLSync({
 
   return (
     <RecoilURLSync
-      {...{
-        storeKey,
-        location,
-        serialize,
-        deserialize,
-        browserInterface,
-      }}>
+      storeKey={storeKey}
+      location={location}
+      serialize={serialize}
+      deserialize={deserialize}
+      browserInterface={browserInterface}>
       {children}
     </RecoilURLSync>
   );
