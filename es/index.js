@@ -530,6 +530,65 @@ var Recoil_ReactMode = {
   isFastRefreshEnabled
 };
 
+class RecoilFlags {
+  constructor() {
+    _defineProperty(this, "_duplicateAtomKeyCheckEnabled", true);
+  }
+
+  isDuplicateAtomKeyCheckingEnabled() {
+    return this._duplicateAtomKeyCheckEnabled;
+  }
+
+  setDuplicateAtomKeyCheckingEnabled(value) {
+    this._duplicateAtomKeyCheckEnabled = value;
+  }
+
+}
+
+const flags = new RecoilFlags();
+const PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS = 'RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS';
+/**
+ * Allow NextJS/etc to set the initial state 'process.env.RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS'
+ * Note:  we don't assume 'process' is available in all runtime environments
+ *
+ * @see https://github.com/facebookexperimental/Recoil/issues/733
+ */
+
+function applyProcessEnvFlagOverrides() {
+  var _process, _process$env$PROCESS_, _process$env$PROCESS_2;
+
+  // note: this check is needed in addition to the check below, runtime error will occur without it!
+  // eslint-disable-next-line fb-www/typeof-undefined
+  if (typeof process === 'undefined') {
+    return;
+  }
+
+  if (((_process = process) === null || _process === void 0 ? void 0 : _process.env) == null) {
+    return;
+  }
+
+  const sanitizedValue = (_process$env$PROCESS_ = process.env[PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS]) === null || _process$env$PROCESS_ === void 0 ? void 0 : (_process$env$PROCESS_2 = _process$env$PROCESS_.toLowerCase()) === null || _process$env$PROCESS_2 === void 0 ? void 0 : _process$env$PROCESS_2.trim();
+
+  if (sanitizedValue == null || sanitizedValue === '') {
+    return;
+  }
+
+  const allowedValues = ['true', 'false'];
+
+  if (!allowedValues.includes(sanitizedValue)) {
+    throw Recoil_err(`process.env.${PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS} sanitized value must be 'true', 'false', or empty: ${sanitizedValue}`);
+  }
+
+  const suppressed = sanitizedValue === 'true';
+  flags.setDuplicateAtomKeyCheckingEnabled(!suppressed);
+}
+
+applyProcessEnvFlagOverrides();
+
+var Recoil_RecoilFlags = /*#__PURE__*/Object.freeze({
+  __proto__: null
+});
+
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -663,6 +722,8 @@ const {
 
 
 
+
+
 class DefaultValue {}
 
 const DEFAULT_VALUE = new DefaultValue();
@@ -676,9 +737,9 @@ function recoilValuesForKeys(keys) {
   return Recoil_mapIterable(keys, key => Recoil_nullthrows(recoilValues.get(key)));
 }
 
-function registerNode(node) {
-  if (nodes.has(node.key)) {
-    const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
+function checkForDuplicateAtomKey(key) {
+  if (nodes.has(key)) {
+    const message = `Duplicate atom key "${key}". This is a FATAL ERROR in
       production. But it is safe to ignore this warning if it occurred because of
       hot module replacement.`;
 
@@ -691,6 +752,12 @@ function registerNode(node) {
       // @fb-only: recoverableViolation(message, 'recoil');
       console.warn(message); // @oss-only
     }
+  }
+}
+
+function registerNode(node) {
+  if (Recoil_RecoilFlags.isDuplicateAtomKeyCheckingEnabled()) {
+    checkForDuplicateAtomKey(node.key);
   }
 
   nodes.set(node.key, node);

@@ -4,6 +4,9 @@
 **_Add new changes here as they land_**
 
 - Workaround for React 18 environments with nested renderers that don't support `useSyncExternalStore()` (#2001, #2010)
+- Workaround for noisy "duplicate atom key" console output in NextJS (#733, #2020)
+  - Set `process.env.RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECK` to `true` to suppress all console warnings and errors related to this
+  - This does infact disable all errors / warnings for duplicate atom keys, so use with caution!
 
 ## 0.7.5 (2022-08-11)
 

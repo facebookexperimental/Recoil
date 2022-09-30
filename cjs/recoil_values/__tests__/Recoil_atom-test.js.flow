@@ -24,6 +24,7 @@ let React,
   DEFAULT_VALUE,
   DefaultValue,
   RecoilRoot,
+  RecoilFlags,
   isRecoilValue,
   RecoilLoadable,
   isLoadable,
@@ -56,6 +57,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
   ({RecoilRoot, useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
+  RecoilFlags = require('../../core/Recoil_RecoilFlags');
   ({isRecoilValue} = require('../../core/Recoil_RecoilValue'));
   ({RecoilLoadable, isLoadable} = require('../../adt/Recoil_Loadable'));
   ({
@@ -131,6 +133,102 @@ testRecoil('atom can read and write value', () => {
   expect(getValue(myAtom)).toBe('DEFAULT');
   act(() => set(myAtom, 'VALUE'));
   expect(getValue(myAtom)).toBe('VALUE');
+});
+
+describe('creating two atoms with the same key', () => {
+  let consoleErrorSpy, consoleWarnSpy;
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error');
+    consoleWarnSpy = jest.spyOn(console, 'warn');
+    // squelch output from the actual consoles
+    consoleErrorSpy.mockImplementation(() => undefined);
+    consoleWarnSpy.mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks(); // spys are mocks, now unmock them
+  });
+
+  const createAtomsWithDuplicateKeys = () => {
+    // Create two atoms with the same key
+    const _myAtom = atom<string>({
+      key: 'an atom',
+      default: 'DEFAULT',
+    });
+    const _myAtom2 = atom<string>({
+      key: 'an atom', // with the same key!
+      default: 'DEFAULT 2',
+    });
+  };
+
+  describe('log behavior with __DEV__ setting', () => {
+    // eslint-disable-next-line fb-www/check-dev-condition
+    const originalDev = __DEV__;
+    afterEach(() => {
+      __DEV__ = originalDev;
+    });
+
+    testRecoil('logs to error and warning in development mode', () => {
+      __DEV__ = true;
+      createAtomsWithDuplicateKeys();
+
+      const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
+      const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
+
+      expect(loggedError).toBeInstanceOf(Error);
+      expect(loggedError.message).toMatch(/Duplicate atom/);
+      expect(loggedWarning).toMatch(/Duplicate atom/);
+    });
+
+    testRecoil('logs to error only in production mode', () => {
+      __DEV__ = false;
+      createAtomsWithDuplicateKeys();
+
+      const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
+      const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
+
+      expect(loggedError).toBeDefined();
+      expect(loggedError).toMatch(/Duplicate atom/);
+      expect(loggedWarning).toBeUndefined();
+    });
+  });
+
+  testRecoil(
+    'disabling the duplicate checking flag stops console output ',
+    () => {
+      RecoilFlags.setDuplicateAtomKeyCheckingEnabled(false);
+
+      createAtomsWithDuplicateKeys();
+
+      const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
+      const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
+      expect(loggedError).toBeUndefined();
+      expect(loggedWarning).toBeUndefined();
+    },
+  );
+
+  describe('support for process.env.RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS if present (workaround for NextJS)', () => {
+    const originalProcessEnv = process.env;
+    beforeEach(() => {
+      process.env = {...originalProcessEnv};
+      process.env.RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS = 'true';
+    });
+
+    afterEach(() => {
+      process.env = originalProcessEnv;
+    });
+
+    testRecoil('duplicate checking is disabled when true', () => {
+      createAtomsWithDuplicateKeys();
+
+      expect(RecoilFlags.isDuplicateAtomKeyCheckingEnabled()).toBe(false);
+      const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
+      const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
+      expect(loggedError).toBeUndefined();
+      expect(loggedWarning).toBeUndefined();
+    });
+  });
 });
 
 describe('Valid values', () => {
