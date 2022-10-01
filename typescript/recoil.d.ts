@@ -582,4 +582,4 @@ export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T
  /**
   * Factory to produce a Recoil snapshot object with all atoms in the default state.
   */
- export function snapshot_UNSTABLE(initializeState?: (shapshot: MutableSnapshot) => void): Snapshot;
+ export function snapshot_UNSTABLE(initializeState?: (mutableSnapshot: MutableSnapshot) => void): Snapshot;
