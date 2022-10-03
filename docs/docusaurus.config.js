@@ -104,7 +104,7 @@ module.exports = {
           label: 'GraphQL',
           position: 'left',
         },
-        { to: 'resources', label: 'External Resources', position: 'left' },
+        { to: 'resources', label: 'Tutorials', position: 'left' },
         // Please keep GitHub link to the right for consistency.
         {
           href: 'https://github.com/facebookexperimental/Recoil',

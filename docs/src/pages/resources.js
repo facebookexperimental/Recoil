@@ -10,11 +10,36 @@ function Resources() {
           <div className="col col--8 col--offset-2 markdown">
             <h1 className="margin-bottom--sm">
               <Translate id="resourcePage.head.title">
-                External Resources
+                External Tutorials
               </Translate>
             </h1>
+
             <h2>
-              <Translate id="resourcePage.learn.title">Learn Recoil</Translate>
+              <Translate id="resourcePage.sideguide.title">SideGuide Interactive Tutorial</Translate>
+            </h2>
+            <p>
+              <a
+                href="https://www.sideguide.dev/"
+                target="_blank">
+                SideGuide
+              </a>{' '}
+              <Translate id="resourcePage.sideguide.tutorial">
+                has created an interactive tutorial for learning the basics with Recoil.
+                Learn about creating your app and using atoms and selectors with
+                live editable code samples.
+              </Translate>
+            </p>
+            <a
+              className="button button--outline button--secondary button--lg"
+              href="https://app.sideguide.dev/recoil/tutorial/"
+              target="_blank">
+              <Translate id="resourcePage.sideguide.link">
+                Interactive Tutorial
+              </Translate>
+            </a>
+
+            <h2>
+              <Translate id="resourcePage.learn.title">Learn Recoil Video Course</Translate>
             </h2>
             <p>
               <a
