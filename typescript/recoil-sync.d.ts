@@ -43,9 +43,11 @@
 
  // <RecoilSync> - listen
  export type UpdateItem = (itemKey: ItemKey, newValue: DefaultValue | unknown) => void;
+ export type UpdateItems = (items: ItemSnapshot) => void;
  export type UpdateAllKnownItems = (items: ItemSnapshot) => void;
  export interface ListenInterface {
    updateItem: UpdateItem;
+   updateItems: UpdateItems;
    updateAllKnownItems: UpdateAllKnownItems;
  }
  export type ListenToItems = (callbacks: ListenInterface) => void | (() => void);
