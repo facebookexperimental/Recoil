@@ -341,3 +341,34 @@ describe('URL Transit Parse', () => {
       '/?withFallback=%5B%22%7E%23%27%22%2C%22SET%22%5D',
     ));
 });
+
+describe('URL Transit - handlers prop', () => {
+  let expectationViolation;
+  beforeEach(() => {
+    expectationViolation = jest.fn();
+    jest.mock('Recoil_expectationViolation', expectationViolation);
+  });
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  test('detect unstable handlers', async () => {
+    const container = document.createElement('div');
+    function renderWithTransitHandlers(handlers: []) {
+      renderElements(
+        <RecoilURLSyncTransit location={{part: 'hash'}} handlers={handlers}>
+          <ReadsAtom atom={atomNull} />
+        </RecoilURLSyncTransit>,
+        container,
+      );
+    }
+    const handlersA = [];
+    const handlersB = [];
+    renderWithTransitHandlers(handlersA);
+    renderWithTransitHandlers(handlersA);
+    expect(expectationViolation).toBeCalledTimes(0);
+
+    renderWithTransitHandlers(handlersB);
+    expect(expectationViolation).toBeCalledTimes(1);
+  });
+});
