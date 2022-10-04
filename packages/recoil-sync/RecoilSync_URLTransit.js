@@ -17,8 +17,10 @@ const {DefaultValue} = require('Recoil');
 
 const {RecoilURLSync} = require('./RecoilSync_URL');
 const React = require('react');
-const {useCallback, useMemo} = require('react');
+const {useCallback, useEffect, useMemo} = require('react');
 const err = require('recoil-shared/util/Recoil_err');
+const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
+const usePrevious = require('recoil-shared/util/Recoil_usePrevious');
 const transit = require('transit-js');
 
 export type TransitHandler<T, S> = {
@@ -80,6 +82,20 @@ function RecoilURLSyncTransit({
   if (options.location.part === 'href') {
     throw err('"href" location is not supported for Transit encoding');
   }
+
+  const previousHandlers = usePrevious(handlersProp);
+  useEffect(() => {
+    if (__DEV__) {
+      if (previousHandlers != null && previousHandlers !== handlersProp) {
+        const message = `<RecoilURLSyncTransit> 'handlers' prop was detected to be unstable.
+          It is important that this is a stable or memoized array instance.
+          Otherwise you may miss URL changes as the listener is re-subscribed.
+        `;
+
+        expectationViolation(message);
+      }
+    }
+  }, [previousHandlers, handlersProp]);
 
   const handlers = useMemo(
     () => [...BUILTIN_HANDLERS, ...(handlersProp ?? [])],
