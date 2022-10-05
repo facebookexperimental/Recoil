@@ -24,7 +24,7 @@ let React,
   DEFAULT_VALUE,
   DefaultValue,
   RecoilRoot,
-  RecoilFlags,
+  RecoilEnv,
   isRecoilValue,
   RecoilLoadable,
   isLoadable,
@@ -57,7 +57,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
   ({RecoilRoot, useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
-  RecoilFlags = require('../../core/Recoil_RecoilFlags');
+  RecoilEnv = require('../../core/Recoil_RecoilEnv');
   ({isRecoilValue} = require('../../core/Recoil_RecoilValue'));
   ({RecoilLoadable, isLoadable} = require('../../adt/Recoil_Loadable'));
   ({
@@ -199,7 +199,7 @@ describe('creating two atoms with the same key', () => {
   testRecoil(
     'disabling the duplicate checking flag stops console output ',
     () => {
-      RecoilFlags.setDuplicateAtomKeyCheckingEnabled(false);
+      RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false;
 
       createAtomsWithDuplicateKeys();
 
@@ -210,11 +210,11 @@ describe('creating two atoms with the same key', () => {
     },
   );
 
-  describe('support for process.env.RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS if present (workaround for NextJS)', () => {
+  describe('support for process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED if present (workaround for NextJS)', () => {
     const originalProcessEnv = process.env;
     beforeEach(() => {
       process.env = {...originalProcessEnv};
-      process.env.RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS = 'true';
+      process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = 'false';
     });
 
     afterEach(() => {
@@ -224,7 +224,7 @@ describe('creating two atoms with the same key', () => {
     testRecoil('duplicate checking is disabled when true', () => {
       createAtomsWithDuplicateKeys();
 
-      expect(RecoilFlags.isDuplicateAtomKeyCheckingEnabled()).toBe(false);
+      expect(RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED).toBe(false);
       const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
       const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
       expect(loggedError).toBeUndefined();
