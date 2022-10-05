@@ -13,25 +13,16 @@
 
 const err = require('recoil-shared/util/Recoil_err');
 
-class RecoilFlags {
-  _duplicateAtomKeyCheckEnabled: boolean = true;
+export type RecoilEnv = {
+  RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED: boolean,
+};
 
-  isDuplicateAtomKeyCheckingEnabled(): boolean {
-    return this._duplicateAtomKeyCheckEnabled;
-  }
-
-  setDuplicateAtomKeyCheckingEnabled(value: boolean) {
-    this._duplicateAtomKeyCheckEnabled = value;
-  }
-}
-
-const flags: RecoilFlags = new RecoilFlags();
-
-const PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS =
-  'RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS';
+const env: RecoilEnv = {
+  RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED: true,
+};
 
 /**
- * Allow NextJS/etc to set the initial state 'process.env.RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS'
+ * Allow NodeJS/NextJS/etc to set the initial state through process.env variable
  * Note:  we don't assume 'process' is available in all runtime environments
  *
  * @see https://github.com/facebookexperimental/Recoil/issues/733
@@ -48,9 +39,7 @@ function applyProcessEnvFlagOverrides() {
   }
 
   const sanitizedValue =
-    process.env[
-      PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS
-    ]?.toLowerCase()?.trim();
+    process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED?.toLowerCase()?.trim();
 
   if (sanitizedValue == null || sanitizedValue === '') {
     return;
@@ -59,14 +48,13 @@ function applyProcessEnvFlagOverrides() {
   const allowedValues = ['true', 'false'];
   if (!allowedValues.includes(sanitizedValue)) {
     throw err(
-      `process.env.${PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS} sanitized value must be 'true', 'false', or empty: ${sanitizedValue}`,
+      `process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED value must be 'true', 'false', or empty: ${sanitizedValue}`,
     );
   }
 
-  const suppressed = sanitizedValue === 'true';
-  flags.setDuplicateAtomKeyCheckingEnabled(!suppressed);
+  env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = sanitizedValue === 'true';
 }
 
 applyProcessEnvFlagOverrides();
 
-module.exports = flags;
+module.exports = env;

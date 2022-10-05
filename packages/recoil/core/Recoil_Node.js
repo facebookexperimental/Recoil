@@ -17,7 +17,7 @@ import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
 const {isFastRefreshEnabled} = require('./Recoil_ReactMode');
-const RecoilFlags = require('./Recoil_RecoilFlags');
+const RecoilEnv = require('./Recoil_RecoilEnv');
 const RecoilValueClasses = require('./Recoil_RecoilValue');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
@@ -129,7 +129,7 @@ function checkForDuplicateAtomKey(key: string): void {
 }
 
 function registerNode<T>(node: Node<T>): RecoilValue<T> {
-  if (RecoilFlags.isDuplicateAtomKeyCheckingEnabled()) {
+  if (RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED) {
     checkForDuplicateAtomKey(node.key);
   }
   nodes.set(node.key, node);

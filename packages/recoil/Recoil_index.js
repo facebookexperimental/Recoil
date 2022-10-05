@@ -44,6 +44,7 @@ export type {
 
 const {RecoilLoadable} = require('./adt/Recoil_Loadable');
 const {DefaultValue} = require('./core/Recoil_Node');
+const RecoilEnv = require('./core/Recoil_RecoilEnv');
 const {RecoilRoot, useRecoilStoreID} = require('./core/Recoil_RecoilRoot');
 const {isRecoilValue} = require('./core/Recoil_RecoilValue');
 const {retentionZone} = require('./core/Recoil_RetentionZone');
@@ -90,6 +91,9 @@ module.exports = {
   DefaultValue,
   isRecoilValue,
   RecoilLoadable,
+
+  // Global Recoil environment settiongs
+  RecoilEnv,
 
   // Recoil Root
   RecoilRoot,
