@@ -35,6 +35,13 @@
   children: React.ReactNode,
  };
 
+// recoilEnv.d.ts
+export interface RecoilEnv {
+  RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED: boolean;
+}
+
+export const RecoilEnv: RecoilEnv;
+
  /**
   * Root component for managing Recoil state.  Most Recoil hooks should be
   * called from a component nested in a <RecoilRoot>
