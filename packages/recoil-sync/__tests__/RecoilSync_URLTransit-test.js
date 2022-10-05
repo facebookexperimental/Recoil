@@ -343,14 +343,25 @@ describe('URL Transit Parse', () => {
 });
 
 describe('URL Transit - handlers prop', () => {
-  let expectationViolation;
+  let consoleErrorSpy;
+  const originalDEV = window.__DEV__;
+
   beforeEach(() => {
-    expectationViolation = jest.fn();
-    jest.mock('Recoil_expectationViolation', expectationViolation);
+    window.__DEV__ = true;
+    consoleErrorSpy = jest.spyOn(console, 'error');
   });
+
   afterEach(() => {
-    jest.resetAllMocks();
+    window.__DEV__ = originalDEV;
+    consoleErrorSpy.mockRestore();
   });
+
+  function wasExpectationViolationCalled(): boolean {
+    const expectationViolation = consoleErrorSpy.mock.calls.find(call =>
+      call[0]?.message?.match(/RecoilURLSyncTransit.*unstable/),
+    );
+    return !!expectationViolation;
+  }
 
   test('detect unstable handlers', async () => {
     const container = document.createElement('div');
@@ -364,11 +375,12 @@ describe('URL Transit - handlers prop', () => {
     }
     const handlersA = [];
     const handlersB = [];
+
     renderWithTransitHandlers(handlersA);
     renderWithTransitHandlers(handlersA);
-    expect(expectationViolation).toBeCalledTimes(0);
+    expect(wasExpectationViolationCalled()).toBe(false);
 
     renderWithTransitHandlers(handlersB);
-    expect(expectationViolation).toBeCalledTimes(1);
+    expect(wasExpectationViolationCalled()).toBe(true);
   });
 });
