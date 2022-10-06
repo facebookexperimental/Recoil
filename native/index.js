@@ -530,32 +530,18 @@ var Recoil_ReactMode = {
   isFastRefreshEnabled
 };
 
-class RecoilFlags {
-  constructor() {
-    _defineProperty(this, "_duplicateAtomKeyCheckEnabled", true);
-  }
-
-  isDuplicateAtomKeyCheckingEnabled() {
-    return this._duplicateAtomKeyCheckEnabled;
-  }
-
-  setDuplicateAtomKeyCheckingEnabled(value) {
-    this._duplicateAtomKeyCheckEnabled = value;
-  }
-
-}
-
-const flags = new RecoilFlags();
-const PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS = 'RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS';
+const env = {
+  RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED: true
+};
 /**
- * Allow NextJS/etc to set the initial state 'process.env.RECOIL_SUPPRESS_DUPLICATE_ATOM_KEY_CHECKS'
+ * Allow NodeJS/NextJS/etc to set the initial state through process.env variable
  * Note:  we don't assume 'process' is available in all runtime environments
  *
  * @see https://github.com/facebookexperimental/Recoil/issues/733
  */
 
 function applyProcessEnvFlagOverrides() {
-  var _process, _process$env$PROCESS_, _process$env$PROCESS_2;
+  var _process, _process$env$RECOIL_D, _process$env$RECOIL_D2;
 
   // note: this check is needed in addition to the check below, runtime error will occur without it!
   // eslint-disable-next-line fb-www/typeof-undefined
@@ -567,7 +553,7 @@ function applyProcessEnvFlagOverrides() {
     return;
   }
 
-  const sanitizedValue = (_process$env$PROCESS_ = process.env[PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS]) === null || _process$env$PROCESS_ === void 0 ? void 0 : (_process$env$PROCESS_2 = _process$env$PROCESS_.toLowerCase()) === null || _process$env$PROCESS_2 === void 0 ? void 0 : _process$env$PROCESS_2.trim();
+  const sanitizedValue = (_process$env$RECOIL_D = process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED) === null || _process$env$RECOIL_D === void 0 ? void 0 : (_process$env$RECOIL_D2 = _process$env$RECOIL_D.toLowerCase()) === null || _process$env$RECOIL_D2 === void 0 ? void 0 : _process$env$RECOIL_D2.trim();
 
   if (sanitizedValue == null || sanitizedValue === '') {
     return;
@@ -576,18 +562,14 @@ function applyProcessEnvFlagOverrides() {
   const allowedValues = ['true', 'false'];
 
   if (!allowedValues.includes(sanitizedValue)) {
-    throw Recoil_err(`process.env.${PROCESS_ENV_KEY__SUPRESS_DUPLICATE_ATOM_KEY_CHECKS} sanitized value must be 'true', 'false', or empty: ${sanitizedValue}`);
+    throw Recoil_err(`process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED value must be 'true', 'false', or empty: ${sanitizedValue}`);
   }
 
-  const suppressed = sanitizedValue === 'true';
-  flags.setDuplicateAtomKeyCheckingEnabled(!suppressed);
+  env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = sanitizedValue === 'true';
 }
 
 applyProcessEnvFlagOverrides();
-
-var Recoil_RecoilFlags = /*#__PURE__*/Object.freeze({
-  __proto__: null
-});
+var Recoil_RecoilEnv = env;
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -756,7 +738,7 @@ function checkForDuplicateAtomKey(key) {
 }
 
 function registerNode(node) {
-  if (Recoil_RecoilFlags.isDuplicateAtomKeyCheckingEnabled()) {
+  if (Recoil_RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED) {
     checkForDuplicateAtomKey(node.key);
   }
 
@@ -8992,6 +8974,8 @@ const {
   DefaultValue: DefaultValue$3
 } = Recoil_Node;
 
+
+
 const {
   RecoilRoot: RecoilRoot$2,
   useRecoilStoreID: useRecoilStoreID$1
@@ -9068,6 +9052,8 @@ var Recoil_index = {
   DefaultValue: DefaultValue$3,
   isRecoilValue: isRecoilValue$5,
   RecoilLoadable,
+  // Global Recoil environment settiongs
+  RecoilEnv: Recoil_RecoilEnv,
   // Recoil Root
   RecoilRoot: RecoilRoot$2,
   useRecoilStoreID: useRecoilStoreID$1,
@@ -9114,40 +9100,41 @@ var Recoil_index = {
 var Recoil_index_1 = Recoil_index.DefaultValue;
 var Recoil_index_2 = Recoil_index.isRecoilValue;
 var Recoil_index_3 = Recoil_index.RecoilLoadable;
-var Recoil_index_4 = Recoil_index.RecoilRoot;
-var Recoil_index_5 = Recoil_index.useRecoilStoreID;
-var Recoil_index_6 = Recoil_index.useRecoilBridgeAcrossReactRoots_UNSTABLE;
-var Recoil_index_7 = Recoil_index.atom;
-var Recoil_index_8 = Recoil_index.selector;
-var Recoil_index_9 = Recoil_index.atomFamily;
-var Recoil_index_10 = Recoil_index.selectorFamily;
-var Recoil_index_11 = Recoil_index.constSelector;
-var Recoil_index_12 = Recoil_index.errorSelector;
-var Recoil_index_13 = Recoil_index.readOnlySelector;
-var Recoil_index_14 = Recoil_index.noWait;
-var Recoil_index_15 = Recoil_index.waitForNone;
-var Recoil_index_16 = Recoil_index.waitForAny;
-var Recoil_index_17 = Recoil_index.waitForAll;
-var Recoil_index_18 = Recoil_index.waitForAllSettled;
-var Recoil_index_19 = Recoil_index.useRecoilValue;
-var Recoil_index_20 = Recoil_index.useRecoilValueLoadable;
-var Recoil_index_21 = Recoil_index.useRecoilState;
-var Recoil_index_22 = Recoil_index.useRecoilStateLoadable;
-var Recoil_index_23 = Recoil_index.useSetRecoilState;
-var Recoil_index_24 = Recoil_index.useResetRecoilState;
-var Recoil_index_25 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
-var Recoil_index_26 = Recoil_index.useRecoilRefresher_UNSTABLE;
-var Recoil_index_27 = Recoil_index.useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE;
-var Recoil_index_28 = Recoil_index.useRecoilValue_TRANSITION_SUPPORT_UNSTABLE;
-var Recoil_index_29 = Recoil_index.useRecoilState_TRANSITION_SUPPORT_UNSTABLE;
-var Recoil_index_30 = Recoil_index.useRecoilCallback;
-var Recoil_index_31 = Recoil_index.useRecoilTransaction_UNSTABLE;
-var Recoil_index_32 = Recoil_index.useGotoRecoilSnapshot;
-var Recoil_index_33 = Recoil_index.useRecoilSnapshot;
-var Recoil_index_34 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
-var Recoil_index_35 = Recoil_index.snapshot_UNSTABLE;
-var Recoil_index_36 = Recoil_index.useRetain;
-var Recoil_index_37 = Recoil_index.retentionZone;
+var Recoil_index_4 = Recoil_index.RecoilEnv;
+var Recoil_index_5 = Recoil_index.RecoilRoot;
+var Recoil_index_6 = Recoil_index.useRecoilStoreID;
+var Recoil_index_7 = Recoil_index.useRecoilBridgeAcrossReactRoots_UNSTABLE;
+var Recoil_index_8 = Recoil_index.atom;
+var Recoil_index_9 = Recoil_index.selector;
+var Recoil_index_10 = Recoil_index.atomFamily;
+var Recoil_index_11 = Recoil_index.selectorFamily;
+var Recoil_index_12 = Recoil_index.constSelector;
+var Recoil_index_13 = Recoil_index.errorSelector;
+var Recoil_index_14 = Recoil_index.readOnlySelector;
+var Recoil_index_15 = Recoil_index.noWait;
+var Recoil_index_16 = Recoil_index.waitForNone;
+var Recoil_index_17 = Recoil_index.waitForAny;
+var Recoil_index_18 = Recoil_index.waitForAll;
+var Recoil_index_19 = Recoil_index.waitForAllSettled;
+var Recoil_index_20 = Recoil_index.useRecoilValue;
+var Recoil_index_21 = Recoil_index.useRecoilValueLoadable;
+var Recoil_index_22 = Recoil_index.useRecoilState;
+var Recoil_index_23 = Recoil_index.useRecoilStateLoadable;
+var Recoil_index_24 = Recoil_index.useSetRecoilState;
+var Recoil_index_25 = Recoil_index.useResetRecoilState;
+var Recoil_index_26 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
+var Recoil_index_27 = Recoil_index.useRecoilRefresher_UNSTABLE;
+var Recoil_index_28 = Recoil_index.useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE;
+var Recoil_index_29 = Recoil_index.useRecoilValue_TRANSITION_SUPPORT_UNSTABLE;
+var Recoil_index_30 = Recoil_index.useRecoilState_TRANSITION_SUPPORT_UNSTABLE;
+var Recoil_index_31 = Recoil_index.useRecoilCallback;
+var Recoil_index_32 = Recoil_index.useRecoilTransaction_UNSTABLE;
+var Recoil_index_33 = Recoil_index.useGotoRecoilSnapshot;
+var Recoil_index_34 = Recoil_index.useRecoilSnapshot;
+var Recoil_index_35 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
+var Recoil_index_36 = Recoil_index.snapshot_UNSTABLE;
+var Recoil_index_37 = Recoil_index.useRetain;
+var Recoil_index_38 = Recoil_index.retentionZone;
 
 export default Recoil_index;
-export { Recoil_index_1 as DefaultValue, Recoil_index_3 as RecoilLoadable, Recoil_index_4 as RecoilRoot, Recoil_index_7 as atom, Recoil_index_9 as atomFamily, Recoil_index_11 as constSelector, Recoil_index_12 as errorSelector, Recoil_index_2 as isRecoilValue, Recoil_index_14 as noWait, Recoil_index_13 as readOnlySelector, Recoil_index_37 as retentionZone, Recoil_index_8 as selector, Recoil_index_10 as selectorFamily, Recoil_index_35 as snapshot_UNSTABLE, Recoil_index_25 as useGetRecoilValueInfo_UNSTABLE, Recoil_index_32 as useGotoRecoilSnapshot, Recoil_index_6 as useRecoilBridgeAcrossReactRoots_UNSTABLE, Recoil_index_30 as useRecoilCallback, Recoil_index_26 as useRecoilRefresher_UNSTABLE, Recoil_index_33 as useRecoilSnapshot, Recoil_index_21 as useRecoilState, Recoil_index_22 as useRecoilStateLoadable, Recoil_index_29 as useRecoilState_TRANSITION_SUPPORT_UNSTABLE, Recoil_index_5 as useRecoilStoreID, Recoil_index_34 as useRecoilTransactionObserver_UNSTABLE, Recoil_index_31 as useRecoilTransaction_UNSTABLE, Recoil_index_19 as useRecoilValue, Recoil_index_20 as useRecoilValueLoadable, Recoil_index_27 as useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE, Recoil_index_28 as useRecoilValue_TRANSITION_SUPPORT_UNSTABLE, Recoil_index_24 as useResetRecoilState, Recoil_index_36 as useRetain, Recoil_index_23 as useSetRecoilState, Recoil_index_17 as waitForAll, Recoil_index_18 as waitForAllSettled, Recoil_index_16 as waitForAny, Recoil_index_15 as waitForNone };
+export { Recoil_index_1 as DefaultValue, Recoil_index_4 as RecoilEnv, Recoil_index_3 as RecoilLoadable, Recoil_index_5 as RecoilRoot, Recoil_index_8 as atom, Recoil_index_10 as atomFamily, Recoil_index_12 as constSelector, Recoil_index_13 as errorSelector, Recoil_index_2 as isRecoilValue, Recoil_index_15 as noWait, Recoil_index_14 as readOnlySelector, Recoil_index_38 as retentionZone, Recoil_index_9 as selector, Recoil_index_11 as selectorFamily, Recoil_index_36 as snapshot_UNSTABLE, Recoil_index_26 as useGetRecoilValueInfo_UNSTABLE, Recoil_index_33 as useGotoRecoilSnapshot, Recoil_index_7 as useRecoilBridgeAcrossReactRoots_UNSTABLE, Recoil_index_31 as useRecoilCallback, Recoil_index_27 as useRecoilRefresher_UNSTABLE, Recoil_index_34 as useRecoilSnapshot, Recoil_index_22 as useRecoilState, Recoil_index_23 as useRecoilStateLoadable, Recoil_index_30 as useRecoilState_TRANSITION_SUPPORT_UNSTABLE, Recoil_index_6 as useRecoilStoreID, Recoil_index_35 as useRecoilTransactionObserver_UNSTABLE, Recoil_index_32 as useRecoilTransaction_UNSTABLE, Recoil_index_20 as useRecoilValue, Recoil_index_21 as useRecoilValueLoadable, Recoil_index_28 as useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE, Recoil_index_29 as useRecoilValue_TRANSITION_SUPPORT_UNSTABLE, Recoil_index_25 as useResetRecoilState, Recoil_index_37 as useRetain, Recoil_index_24 as useSetRecoilState, Recoil_index_18 as waitForAll, Recoil_index_19 as waitForAllSettled, Recoil_index_17 as waitForAny, Recoil_index_16 as waitForNone };
