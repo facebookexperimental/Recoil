@@ -14,8 +14,7 @@
 
 'use strict';
 
-import type {Checker} from './Refine_Checkers';
-import type {CheckFailure} from 'Refine_Checkers';
+import type {Checker, CheckFailure} from './Refine_Checkers';
 
 const {Path, compose, failure, success} = require('./Refine_Checkers');
 
