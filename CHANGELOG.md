@@ -3,9 +3,11 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+## 0.7.6 (2022-10-06)
+
 - Workaround for React 18 environments with nested renderers that don't support `useSyncExternalStore()` (#2001, #2010)
-- Expose flag to disable "duplicate atom key" checking / logging, as it was too noisy in environments such as NextJS. (#733, #2020)
-  - Import RecoilEnv from the recoil package, and set `RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false` in code to disable the checking and logging.
+- Expose flag to disable "duplicate atom key" checking / logging, as it was too noisy in environments such as NextJS. (#733, #2020, #2046)
+  - Import `RecoilEnv` from the recoil package, and set `RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false` in code to disable the checking and logging.
   - We also support `process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED=false` in NodeJS environments such as NextJs
   - Caution: This does infact disable all checks for duplicate atom keys, so use with caution!
 
