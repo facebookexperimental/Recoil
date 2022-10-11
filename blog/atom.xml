@@ -2,12 +2,28 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://recoiljs.org/blog</id>
     <title>Recoil Blog</title>
-    <updated>2022-08-18T00:00:00.000Z</updated>
+    <updated>2022-10-11T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://recoiljs.org/blog"/>
     <subtitle>Recoil Blog</subtitle>
     <icon>https://recoiljs.org/img/favicon.png</icon>
     <rights>Copyright © 2022 Facebook, Inc.</rights>
+    <entry>
+        <title type="html"><![CDATA[Recoil 0.7.6]]></title>
+        <id>/2022/10/11/recoil-0.7.6-release</id>
+        <link href="https://recoiljs.org/blog/2022/10/11/recoil-0.7.6-release"/>
+        <updated>2022-10-11T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[- Expose flag to disable "duplicate atom key" checking / logging, as it was too noisy in environments such as NextJS or some dev environments using Fast Refresh. (#733, #2020, #2046)]]></summary>
+        <content type="html"><![CDATA[<ul><li><p>Expose flag to disable &quot;duplicate atom key&quot; checking / logging, as it was too noisy in environments such as NextJS or some dev environments using Fast Refresh. (<a href="https://github.com/facebookexperimental/Recoil/pull/733">#733</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2020">#2020</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2046">#2046</a>)</p><ul><li>Import <code>RecoilEnv</code> from the recoil package, and set <code>RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false</code> in code to disable the checking and logging.</li><li>We also support <code>process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED=false</code> in NodeJS environments such as NextJs</li><li><strong><em>Caution</em></strong>: This disables all checks for duplicate atom keys including legitimate errors, so use with caution!</li></ul></li><li><p>Workaround for React 18 environments with nested renderers that don&#x27;t support <code>useSyncExternalStore()</code>. (<a href="https://github.com/facebookexperimental/Recoil/pull/2001">#2001</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2010">#2010</a>)</p></li></ul>]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Recoil Sync 0.2]]></title>
+        <id>/2022/10/06/recoil-sync-0.2.0-release</id>
+        <link href="https://recoiljs.org/blog/2022/10/06/recoil-sync-0.2.0-release"/>
+        <updated>2022-10-06T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[- Export updateItems() for the listen prop callback in ` in addition to updateItem() and updateAllKnownItems()`. (#2017, #2035)]]></summary>
+        <content type="html"><![CDATA[<ul><li>Export <code>updateItems()</code> for the <a href="https://recoiljs.org/docs/recoil-sync/api/RecoilSync#listen-interface"><code>listen</code></a> prop callback in <a href="https://recoiljs.org/docs/recoil-sync/api/RecoilSync"><code>&lt;RecoilSync&gt;</code></a> in addition to <code>updateItem()</code> and <code>updateAllKnownItems()</code>. (<a href="https://github.com/facebookexperimental/Recoil/pull/2017">#2017</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2035">#2035</a>)</li><li>Removing a parameter from the URL will reset atoms when using location <code>queryParams</code> with a <code>param</code>.  This is a slight breaking change when an atom might sync with multiple URL params. (<a href="https://github.com/facebookexperimental/Recoil/pull/1900">#1900</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1976">#1976</a>)</li><li>Add a dev warning if an unstable <code>handlers</code> prop is detected for <a href="https://recoiljs.org/docs/recoil-sync/api/RecoilURLSyncTransit"><code>&lt;RecoilURLSyncTransit&gt;</code></a>. (<a href="https://github.com/facebookexperimental/Recoil/pull/2044">#2044</a>)</li></ul>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Refine 0.1.1]]></title>
         <id>/2022/08/18/refine-0.1.1-release</id>
@@ -25,7 +41,7 @@
         <content type="html"><![CDATA[<ul><li>Fix <code>useRecoilSnapshot()</code> with React&#x27;s Fast Refresh during development (<a href="https://github.com/facebookexperimental/Recoil/pull/1891">#1891</a>)</li><li>Fix <code>useRecoilSnapshot()</code> and <a href="https://recoiljs.org/docs/recoil-sync/introduction"><code>recoil-sync</code></a> with changed browser behavior starting with Chrome v104 (<a href="https://github.com/facebookexperimental/Recoil/pull/1943">#1943</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1936">#1936</a>)</li></ul>]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[Recoil Sync 0.1.0]]></title>
+        <title type="html"><![CDATA[Recoil Sync 0.1]]></title>
         <id>/2022/06/21/recoil-sync-0.1.0-release</id>
         <link href="https://recoiljs.org/blog/2022/06/21/recoil-sync-0.1.0-release"/>
         <updated>2022-06-21T00:00:00.000Z</updated>
@@ -49,7 +65,7 @@
 </code></pre><p>That&#x27;s it!  Now this atom will initialize its state based on the URL during initial load, any state mutations will update the URL, and changes in the URL (such as the back button) will update the atom.  See more examples in the <a href="/docs/recoil-sync/sync-effect">Sync Effect</a>, <a href="/docs/recoil-sync/implement-store">Store Implementation</a>, and <a href="/docs/recoil-sync/url-persistence">URL Persistence</a> guides.</p>]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[Refine 0.1.0]]></title>
+        <title type="html"><![CDATA[Refine 0.1]]></title>
         <id>/2022/06/21/refine-0.1.0-release</id>
         <link href="https://recoiljs.org/blog/2022/06/21/refine-0.1.0-release"/>
         <updated>2022-06-21T00:00:00.000Z</updated>
@@ -98,7 +114,7 @@ if (result != null) {
         <content type="html"><![CDATA[<ul><li>Fix missing flow types (<a href="https://github.com/facebookexperimental/Recoil/pull/1857">#1857</a>)</li><li>Cleanup memory leak when using atoms with selector defaults. (<a href="https://github.com/facebookexperimental/Recoil/pull/1821">#1821</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1840">#1840</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1844">#1844</a>)</li></ul>]]></content>
     </entry>
     <entry>
-        <title type="html"><![CDATA[Recoil Relay 0.1.0]]></title>
+        <title type="html"><![CDATA[Recoil Relay 0.1]]></title>
         <id>/2022/06/02/recoil-relay-0.1.0-release</id>
         <link href="https://recoiljs.org/blog/2022/06/02/recoil-relay-0.1.0-release"/>
         <updated>2022-06-02T00:00:00.000Z</updated>
