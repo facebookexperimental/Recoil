@@ -1,5 +1,5 @@
 ---
-title: Recoil Sync 0.1.0
+title: Recoil Sync 0.1
 ---
 
 Initial open source release for the [`recoil-sync`](https://www.npmjs.com/package/recoil-sync) NPM package!  Recoil Sync provides an add-on library to help synchronize Recoil state with external systems.  Simple [asynchronous data queries](/docs/guides/asynchronous-data-queries) can be implemented via selectors or `useEffect()`, or [atom effects](/docs/guides/atom-effects) can be used for bi-directional syncing of individual atoms.  The `recoil-sync` add-on package provides some additional functionality:
