@@ -1,5 +1,5 @@
 ---
-title: Recoil Relay 0.1.0
+title: Recoil Relay 0.1
 ---
 
 Initial open source release for the [`recoil-relay`](/docs/recoil-relay/introduction) library for using **GraphQL**!

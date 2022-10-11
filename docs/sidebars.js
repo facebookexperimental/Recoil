@@ -82,6 +82,7 @@ module.exports = {
           'api-reference/core/useRecoilBridgeAcrossReactRoots',
         ],
       },
+      'api-reference/core/RecoilEnv',
     ],
   },
   'recoil-sync': [
