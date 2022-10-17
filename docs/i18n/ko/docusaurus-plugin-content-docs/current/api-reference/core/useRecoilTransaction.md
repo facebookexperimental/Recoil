@@ -26,13 +26,13 @@ function useRecoilTransaction_UNSTABLE<Args>(
 ): (...Args) => void
 ```
 
-* **`callback`** - User callback function with a wrapper function that provides the transaction interface.  ***This function must be pure without any side-effects.***
-* **`deps`** - An optional set of dependencies for memoizing the callback.  Like `useCallback()`, the produced transaction callback will not be memoized by default and will produce a new function with each render.  You can pass an empty array to always return the same function instance.  If you pass values in the `deps` array, a new function will be used if the reference equality of any dep changes.  Those values can then be used from within the body of your callback without getting stale.  (See [`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback))  You can [update eslint](/docs/introduction/installation#eslint) to help ensure this is used correctly.
+* **`callback`** - 트랜잭션 인터페이스를 제공하는 래퍼 함수가 있는 사용자 콜백 함수입니다. ***이 기능은 어떠한 사이드이펙트 없이 순수해야 합니다.***
+* **`deps`** - 콜백의 메모이제이션을 위한 선택적 디펜던시 집합입니다.  `useCallback()`과 마찬가지로 생성된 트랜잭션 콜백은 기본적으로 메모되지 않으며 각 렌더에서 새 함수를 생성합니다.  빈 배열을 전달하여 항상 동일한 함수 인스턴스를 반환할 수 있습니다.  `deps` 배열에 값을 전달하면,  dep의 등식이 변경되면 새 함수가 사용됩니다.  T이러한 값은 콜백 본문 내에서 오래되지 않고 사용할 수 있습니다. (See [`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback)) [update eslint](/docs/introduction/installation#eslint) eslint를 업데이트하여 올바르게 사용할 수 있도록 할 수 있습니다.
 
 Transaction Interface:
-* **`get`** - Get the current value for the requested Recoil state, reflecting any writes performed earlier in the transaction.  This currently only supports synchronous atoms.
-* **`set`** - Set the value of an atom.  You may either provide the new value directly or an updater function that returns the new value and takes the current value as a parameter.  The current value represents all other pending state changes to date in the current transaction.
-* **`reset`** - Reset the value of an atom to its default.
+* **`get`** - 트랜잭션 이전에 수행된 모든 쓰기를 반영하여 요청된 Recoil 상태에 대한 현재 값을 가져옵니다.  이것은 현재 동기 Atom만 지원합니다.
+* **`set`** - Atom 값을 설정합니다.  새 값을 직접 제공하거나 새 값을 반환하고 현재 값을 매개 변수로 사용하는 업데이트 프로그램 기능을 제공할 수 있습니다. 현재 값은 현재 트랜잭션에서 현재까지 보류 중인 다른 모든 상태 변경을 나타냅니다.
+* **`reset`** - Atom 값을 기본값으로 재설정합니다.
 
 ### Transaction Example
 
