@@ -9,7 +9,9 @@
  * @oncall recoil
  */
 /* eslint-disable fb-www/react-no-useless-fragment */
+
 'use strict';
+
 import type {
   RecoilState,
   RecoilValue,
@@ -595,14 +597,6 @@ describe('Component Subscriptions', () => {
       // Now update the atom that it used to be subscribed to but should be no longer:
       act(() => updateValueA(2));
       expect(container.textContent).toEqual('0');
-
-      // TODO: find out why OSS has additional render
-      if (
-        reactMode().mode === 'LEGACY' &&
-        !gks.includes('recoil_suppress_rerender_in_callback')
-      ) {
-        baseCalls += 1; // @oss-only
-      }
 
       expect(Component).toHaveBeenCalledTimes((baseCalls + 3) * sm); // Important part: same as before
 
