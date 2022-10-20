@@ -64,6 +64,7 @@ function handleLoadable<T>(
       if (isSSR) {
         loadable.contents.then(d => {
           resolve(d);
+          storeRef.current.getState().suspendedComponentResolvers.delete(resolve);
           return d;
         });
       }
