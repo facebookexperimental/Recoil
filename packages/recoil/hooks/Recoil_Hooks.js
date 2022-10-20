@@ -46,6 +46,7 @@ const expectationViolation = require('recoil-shared/util/Recoil_expectationViola
 const gkx = require('recoil-shared/util/Recoil_gkx');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
+const {isSSR} = require('recoil-shared/util/Recoil_Environment');
 
 function handleLoadable<T>(
   loadable: Loadable<T>,
@@ -60,6 +61,12 @@ function handleLoadable<T>(
   } else if (loadable.state === 'loading') {
     const promise = new Promise(resolve => {
       storeRef.current.getState().suspendedComponentResolvers.add(resolve);
+      if (isSSR) {
+        loadable.contents.then(d => {
+          resolve(d);
+          return d;
+        });
+      }
     });
 
     // $FlowExpectedError Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
