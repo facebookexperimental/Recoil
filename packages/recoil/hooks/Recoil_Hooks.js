@@ -47,6 +47,7 @@ const gkx = require('recoil-shared/util/Recoil_gkx');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 const {isSSR} = require('recoil-shared/util/Recoil_Environment');
+const {isPromise} = require('recoil-shared/util/Recoil_isPromise');
 
 function handleLoadable<T>(
   loadable: Loadable<T>,
@@ -59,14 +60,21 @@ function handleLoadable<T>(
   if (loadable.state === 'hasValue') {
     return loadable.contents;
   } else if (loadable.state === 'loading') {
-    const promise = new Promise(resolve => {
-      storeRef.current.getState().suspendedComponentResolvers.add(resolve);
-      if (isSSR) {
-        loadable.contents.then(d => {
-          resolve(d);
-          storeRef.current.getState().suspendedComponentResolvers.delete(resolve);
-          return d;
-        });
+    const promise = new Promise((resolve, reject) => {
+      const suspendedComponentResolvers = storeRef.current.getState().suspendedComponentResolvers;
+      suspendedComponentResolvers.add(resolve);
+      if (isSSR && isPromise(loadable.contents)) {
+        loadable
+          .contents
+          .then((d) => {
+            resolve(d);
+            suspendedComponentResolvers.delete(resolve);
+            return d;
+          })
+          .catch(ex => {
+            suspendedComponentResolvers.delete(resolve);
+            reject(ex);
+          });
       }
     });
 
