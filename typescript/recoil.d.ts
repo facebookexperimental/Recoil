@@ -405,7 +405,7 @@ export const RecoilEnv: RecoilEnv;
 
  // bigint not supported yet
  type Primitive = undefined | null | boolean | number | symbol | string;
- interface HasToJSON { toJSON(): SerializableParam; }
+ export interface HasToJSON { toJSON(): SerializableParam; }
 
  export type SerializableParam =
   | Primitive
