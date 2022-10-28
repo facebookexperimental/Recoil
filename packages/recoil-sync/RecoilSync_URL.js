@@ -30,6 +30,7 @@ const err = require('recoil-shared/util/Recoil_err');
 const {assertion, mixed, writableDict} = require('refine');
 
 type NodeKey = string;
+// $FlowFixMe[reference-before-declaration]
 type ItemState = CheckerReturnType<typeof itemStateChecker>;
 type AtomRegistration = {
   history: HistoryOption,
