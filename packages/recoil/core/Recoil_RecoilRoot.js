@@ -383,7 +383,7 @@ function RecoilRoot_INTERNAL({
 
   let storeStateRef: {current: StoreState}; // eslint-disable-line prefer-const
 
-  const getGraph = (version: StateID) => {
+  const getGraph = useCallback((version: StateID) => {
     const graphs = storeStateRef.current.graphsByVersion;
     if (graphs.has(version)) {
       return nullthrows(graphs.get(version));
@@ -391,9 +391,9 @@ function RecoilRoot_INTERNAL({
     const newGraph = graph();
     graphs.set(version, newGraph);
     return newGraph;
-  };
+  }, [storeStateRef.current]);
 
-  const subscribeToTransactions = (callback: Store => void, key: ?NodeKey) => {
+  const subscribeToTransactions = useMemo((callback: Store => void, key: ?NodeKey) => {
     if (key == null) {
       // Global transaction subscriptions
       const {transactionSubscriptions} = storeRef.current.getState();
@@ -424,17 +424,17 @@ function RecoilRoot_INTERNAL({
         },
       };
     }
-  };
+  },[storeRef.current]);
 
-  const addTransactionMetadata = (metadata: {...}) => {
+  const addTransactionMetadata = useCallback((metadata: {...}) => {
     startNextTreeIfNeeded(storeRef.current);
     for (const k of Object.keys(metadata)) {
       nullthrows(storeRef.current.getState().nextTree).transactionMetadata[k] =
         metadata[k];
     }
-  };
+  }, [storeRef.current, startNextTreeIfNeeded]);
 
-  const replaceState = (replacer: TreeState => TreeState) => {
+  const replaceState = useCallback((replacer: TreeState => TreeState) => {
     startNextTreeIfNeeded(storeRef.current);
     // Use replacer to get the next state:
     const nextTree = nullthrows(storeStateRef.current.nextTree);
@@ -461,7 +461,7 @@ function RecoilRoot_INTERNAL({
       notifyComponents(storeRef.current, storeStateRef.current, replaced);
     }
     nullthrows(notifyBatcherOfChange.current)();
-  };
+  }, [storeStateRef.current, storeRef.current, startNextTreeIfNeeded, notifyComponents, stateReplacerIsBeingExecuted]);
 
   const notifyBatcherOfChange = useRef<null | (mixed => void)>(null);
   const setNotifyBatcherOfChange = useCallback(
