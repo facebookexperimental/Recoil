@@ -57,7 +57,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
   ({RecoilRoot, useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
-  RecoilEnv = require('../../core/Recoil_RecoilEnv');
+  RecoilEnv = require('recoil-shared/util/Recoil_RecoilEnv');
   ({isRecoilValue} = require('../../core/Recoil_RecoilValue'));
   ({RecoilLoadable, isLoadable} = require('../../adt/Recoil_Loadable'));
   ({

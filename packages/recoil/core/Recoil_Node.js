@@ -17,7 +17,7 @@ import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
 const {isFastRefreshEnabled} = require('./Recoil_ReactMode');
-const RecoilEnv = require('./Recoil_RecoilEnv');
+const RecoilEnv = require('recoil-shared/util/Recoil_RecoilEnv');
 const RecoilValueClasses = require('./Recoil_RecoilValue');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
