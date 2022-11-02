@@ -2,6 +2,7 @@
 
 ## UPCOMING
 **_Add new changes here as they land_**
+ - Fix potential unhandled promise rejection in `useRecoilCallback()` (#2075)
 
 ## 0.7.6 (2022-10-06)
 

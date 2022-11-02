@@ -6074,7 +6074,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     !!(ret instanceof Sentinel) ?  Recoil_invariant(false, 'batchUpdates should return immediately')  : void 0;
 
     if (Recoil_isPromise(ret)) {
-      ret.finally(() => {
+      ret = ret.finally(() => {
         var _releaseSnapshot;
 
         (_releaseSnapshot = releaseSnapshot) === null || _releaseSnapshot === void 0 ? void 0 : _releaseSnapshot();

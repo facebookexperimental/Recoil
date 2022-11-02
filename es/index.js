@@ -6073,7 +6073,7 @@ function recoilCallback(store, fn, args, extraInterface) {
   !!(ret instanceof Sentinel) ? process.env.NODE_ENV !== "production" ? Recoil_invariant(false, 'batchUpdates should return immediately') : Recoil_invariant(false) : void 0;
 
   if (Recoil_isPromise(ret)) {
-    ret.finally(() => {
+    ret = ret.finally(() => {
       var _releaseSnapshot;
 
       (_releaseSnapshot = releaseSnapshot) === null || _releaseSnapshot === void 0 ? void 0 : _releaseSnapshot();
