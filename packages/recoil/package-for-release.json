@@ -1,6 +1,6 @@
 {
   "name": "recoil",
-  "version": "0.7.4",
+  "version": "0.7.6",
   "description": "Recoil - A state management library for React",
   "main": "cjs/index.js",
   "module": "es/index.js",

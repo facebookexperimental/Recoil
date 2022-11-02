@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 export type {AssertionFunction, CoercionFunction} from './Refine_API';
@@ -18,11 +19,11 @@ export type {
   CheckResult,
   CheckSuccess,
   CheckerReturnType,
-  Path,
 } from './Refine_Checkers';
 export type {OptionalPropertyChecker} from './Refine_ContainerCheckers';
 
 const {assertion, coercion} = require('./Refine_API');
+const {Path} = require('./Refine_Checkers');
 const {
   array,
   dict,
@@ -37,8 +38,9 @@ const {
 } = require('./Refine_ContainerCheckers');
 const {jsonParser, jsonParserEnforced} = require('./Refine_JSON');
 const {
-  boolean,
+  bool,
   date,
+  enumObject,
   jsonDate,
   literal,
   mixed,
@@ -65,14 +67,16 @@ module.exports = {
   coercion,
   jsonParser,
   jsonParserEnforced,
+  Path,
 
   // Checkers - Primitives
   mixed,
   literal,
-  boolean,
+  bool,
   number,
   string,
   stringLiterals,
+  enumObject,
   date,
   jsonDate,
 

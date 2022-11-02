@@ -1,12 +1,12 @@
 // Minimum TypeScript Version: 3.9
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
+ * @oncall recoil
  */
 
  import {
@@ -35,6 +35,7 @@
   useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
+  RecoilEnv,
 } from 'recoil';
 import * as React from 'react';
 
@@ -183,6 +184,10 @@ RecoilRoot({ // $ExpectType ReactElement<any, any> | null
   override: false,
   children: React.createElement('div'),
 });
+
+// RecoilEnv
+RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false;
+RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = true;
 
 // Loadable
 function loadableTest(loadable: Loadable<number>) {

@@ -1,12 +1,12 @@
 // Minimum TypeScript Version: 3.9
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
+ * @oncall recoil
  */
 
 type CheckerResult<V> = V extends Checker<infer Result>
@@ -15,7 +15,9 @@ type CheckerResult<V> = V extends Checker<infer Result>
   ? OptionalResult
   : never;
 
-export type CheckerReturnType<V> = V extends Checker<infer Result> ? Result : never;
+export type CheckerReturnType<V> = V extends Checker<infer Result>
+  ? Result
+  : never;
 
 /**
  * This file is a manual translation of the flow types, which are the source of truth, so we should not introduce new terminology or behavior in this file.
@@ -145,9 +147,7 @@ export function coercion<T>(
  * checker to assert if a mixed value is an array of
  * values determined by a provided checker
  */
-export function array<V>(
-  valueChecker: Checker<V>,
-): Checker<ReadonlyArray<V>>;
+export function array<V>(valueChecker: Checker<V>): Checker<ReadonlyArray<V>>;
 
 /**
  * checker to assert if a mixed value is a tuple of values
@@ -205,9 +205,12 @@ type CheckersToValues<Checkers extends CheckerObject> = {
   [K in keyof Checkers]: CheckerResult<Checkers[K]>;
 };
 
-type WhereValue<Checkers extends CheckerObject, Condition> = Pick<Checkers, {
-  [Key in keyof Checkers]: Checkers[Key] extends Condition ? Key : never;
-}[keyof Checkers]>;
+type WhereValue<Checkers extends CheckerObject, Condition> = Pick<
+  Checkers,
+  {
+    [Key in keyof Checkers]: Checkers[Key] extends Condition ? Key : never;
+  }[keyof Checkers]
+>;
 
 type RequiredCheckerProperties<Checkers extends CheckerObject> = WhereValue<
   Checkers,
@@ -218,8 +221,9 @@ type OptionalCheckerProperties<Checkers extends CheckerObject> = Partial<
   WhereValue<Checkers, OptionalPropertyChecker<unknown>>
 >;
 
-type ObjectCheckerResult<Checkers extends CheckerObject> =
-  CheckersToValues<RequiredCheckerProperties<Checkers> & OptionalCheckerProperties<Checkers>>;
+type ObjectCheckerResult<Checkers extends CheckerObject> = CheckersToValues<
+  RequiredCheckerProperties<Checkers> & OptionalCheckerProperties<Checkers>
+>;
 
 /**
  * checker to assert if a mixed value is a fixed-property object,
@@ -249,7 +253,7 @@ type ObjectCheckerResult<Checkers extends CheckerObject> =
  * ```
  */
 export function object<Checkers extends CheckerObject>(
-  checkers: Checkers
+  checkers: Checkers,
 ): Checker<Readonly<ObjectCheckerResult<Checkers>>>;
 
 /**
@@ -268,9 +272,7 @@ export function map<K, V>(
 /**
  * identical to `array()` except the resulting value is a writable flow type.
  */
-export function writableArray<V>(
-  valueChecker: Checker<V>,
-): Checker<V[]>;
+export function writableArray<V>(valueChecker: Checker<V>): Checker<V[]>;
 
 /**
  * identical to `dict()` except the resulting value is a writable flow type.
@@ -282,9 +284,7 @@ export function writableDict<V>(
 /**
  * identical to `object()` except the resulting value is a writable flow type.
  */
-export function writableObject<
-  Checkers extends CheckerObject,
->(
+export function writableObject<Checkers extends CheckerObject>(
   checkers: Checkers,
 ): Checker<ObjectCheckerResult<Checkers>>;
 
@@ -318,14 +318,14 @@ export function mixed(): Checker<unknown>;
 /**
  * checker to assert if a mixed value matches a literal value
  */
-export function literal<
-  T extends string | boolean | number | null | undefined,
->(literalValue: T): Checker<T>;
+export function literal<T extends string | boolean | number | null | undefined>(
+  literalValue: T,
+): Checker<T>;
 
 /**
  * boolean value checker
  */
-export function boolean(): Checker<boolean>;
+export function bool(): Checker<boolean>;
 
 /**
  * checker to assert if a mixed value is a number
@@ -410,9 +410,7 @@ export function union<Checkers extends ReadonlyArray<Checker<unknown>>>(
  * );
  * ```
  */
-export function match<T>(
-  ...checkers: ReadonlyArray<Checker<T>>
-): Checker<T>;
+export function match<T>(...checkers: ReadonlyArray<Checker<T>>): Checker<T>;
 
 /**
  * wraps a given checker, making the valid value nullable
@@ -516,10 +514,7 @@ export function voidable<T>(
  * ```
  * Both `{}` and `{num: 123}` will refine to `{num: 123}`
  */
-export function withDefault<T>(
-  checker: Checker<T>,
-  fallback: T,
-): Checker<T>;
+export function withDefault<T>(checker: Checker<T>, fallback: T): Checker<T>;
 
 /**
  * wraps a checker with a logical constraint.

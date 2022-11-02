@@ -3,14 +3,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A type-refinement / validator combinator library for mixed / unknown values in Flow or TypeScript",
   "main": "cjs/index.js",
   "module": "es/index.js",
-  "react-native": "native/index.js",
   "unpkg": "umd/index.js",
   "types": "index.d.ts",
-  "files": ["umd", "es", "cjs", "native", "index.d.ts"],
+  "files": ["umd", "es", "cjs", "index.d.ts"],
   "repository": "https://github.com/facebookexperimental/Recoil.git",
   "license": "MIT"
 }

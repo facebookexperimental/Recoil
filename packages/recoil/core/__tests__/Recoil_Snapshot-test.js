@@ -8,7 +8,9 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {Snapshot} from '../Recoil_Snapshot';
 import type {RecoilState, RecoilValueReadOnly} from 'Recoil_RecoilValue';
 
@@ -582,10 +584,6 @@ describe('Atom effects', () => {
     // Auto-release snapshot
     await flushPromisesAndTimers();
     expect(effectsRefCount).toBe(0);
-    if (gks.includes('recoil_memory_management_2020')) {
-      // TODO Enable when this is an error
-      // expect(() => fresh.getLoadable(myAtom)).toThrow();
-    }
   });
 
   testRecoil('RecoilRoot Snapshot', () => {

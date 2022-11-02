@@ -19,14 +19,12 @@ const {
   flushPromisesAndTimers,
   renderElements,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
-const {array, boolean, number, object, string, tuple} = require('refine');
+const {array, bool, number, object, string, tuple} = require('refine');
 
 const atomBoolean = atom({
   key: 'boolean',
   default: true,
-  effects: [
-    syncEffect({storeKey: 'json', refine: boolean(), syncDefault: true}),
-  ],
+  effects: [syncEffect({storeKey: 'json', refine: bool(), syncDefault: true})],
 });
 const atomNumber = atom({
   key: 'number',

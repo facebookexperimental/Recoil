@@ -63,6 +63,12 @@ test('Listen to URL changes', async () => {
           'recoil-url-sync listen to multiple storage': 'C',
         },
       ],
+      [
+        locBar,
+        {
+          'recoil-url-sync listen to multiple storage': 'C',
+        },
+      ],
     ]),
   );
 
@@ -76,7 +82,6 @@ test('Listen to URL changes', async () => {
     </>,
   );
 
-  // Initial load will use the fallback storage for C
   expect(container.textContent).toBe('"A""B""C"');
   expectURL([
     [
@@ -84,6 +89,12 @@ test('Listen to URL changes', async () => {
       {
         'recoil-url-sync listen': 'A',
         'KEY A': 'B',
+        'recoil-url-sync listen to multiple storage': 'C',
+      },
+    ],
+    [
+      locBar,
+      {
         'recoil-url-sync listen to multiple storage': 'C',
       },
     ],
@@ -97,26 +108,31 @@ test('Listen to URL changes', async () => {
         {
           'recoil-url-sync listen': 'AA',
           'KEY A': 'B',
-          'recoil-url-sync listen to multiple storage': 'C1',
+          'recoil-url-sync listen to multiple storage': 'C',
+        },
+      ],
+      [
+        locBar,
+        {
+          'recoil-url-sync listen to multiple storage': 'C',
         },
       ],
     ]),
   );
-  expect(container.textContent).toBe('"AA""B""C1"');
-  // Changing value of C caused it to sync with locBar
+  expect(container.textContent).toBe('"AA""B""C"');
   expectURL([
     [
       locFoo,
       {
         'recoil-url-sync listen': 'AA',
         'KEY A': 'B',
-        'recoil-url-sync listen to multiple storage': 'C1',
+        'recoil-url-sync listen to multiple storage': 'C',
       },
     ],
     [
       locBar,
       {
-        'recoil-url-sync listen to multiple storage': 'C1',
+        'recoil-url-sync listen to multiple storage': 'C',
       },
     ],
   ]);
@@ -129,7 +145,13 @@ test('Listen to URL changes', async () => {
         {
           'recoil-url-sync listen': 'AA',
           'KEY A': 'BB',
-          'recoil-url-sync listen to multiple storage': 'C1',
+          'recoil-url-sync listen to multiple storage': 'C',
+        },
+      ],
+      [
+        locBar,
+        {
+          'recoil-url-sync listen to multiple storage': 'C',
         },
       ],
     ]),
@@ -140,17 +162,17 @@ test('Listen to URL changes', async () => {
       {
         'recoil-url-sync listen': 'AA',
         'KEY A': 'BB',
-        'recoil-url-sync listen to multiple storage': 'C1',
+        'recoil-url-sync listen to multiple storage': 'C',
       },
     ],
     [
       locBar,
       {
-        'recoil-url-sync listen to multiple storage': 'C1',
+        'recoil-url-sync listen to multiple storage': 'C',
       },
     ],
   ]);
-  expect(container.textContent).toBe('"AA""BB""C1"');
+  expect(container.textContent).toBe('"AA""BB""C"');
   await act(() =>
     gotoURL([
       [
@@ -159,12 +181,18 @@ test('Listen to URL changes', async () => {
           'recoil-url-sync listen': 'AA',
           'KEY A': 'BB',
           'KEY B': 'BBB',
-          'recoil-url-sync listen to multiple storage': 'C1',
+          'recoil-url-sync listen to multiple storage': 'C',
+        },
+      ],
+      [
+        locBar,
+        {
+          'recoil-url-sync listen to multiple storage': 'C',
         },
       ],
     ]),
   );
-  expect(container.textContent).toBe('"AA""BBB""C1"');
+  expect(container.textContent).toBe('"AA""BBB""C"');
   await act(() =>
     gotoURL([
       [
@@ -173,12 +201,18 @@ test('Listen to URL changes', async () => {
           'recoil-url-sync listen': 'AA',
           'KEY A': 'IGNORE',
           'KEY B': 'BBB',
-          'recoil-url-sync listen to multiple storage': 'C1',
+          'recoil-url-sync listen to multiple storage': 'C',
+        },
+      ],
+      [
+        locBar,
+        {
+          'recoil-url-sync listen to multiple storage': 'C',
         },
       ],
     ]),
   );
-  expect(container.textContent).toBe('"AA""BBB""C1"');
+  expect(container.textContent).toBe('"AA""BBB""C"');
   await act(() =>
     gotoURL([
       [
@@ -186,12 +220,18 @@ test('Listen to URL changes', async () => {
         {
           'recoil-url-sync listen': 'AA',
           'KEY A': 'BBBB',
-          'recoil-url-sync listen to multiple storage': 'C1',
+          'recoil-url-sync listen to multiple storage': 'C',
+        },
+      ],
+      [
+        locBar,
+        {
+          'recoil-url-sync listen to multiple storage': 'C',
         },
       ],
     ]),
   );
-  expect(container.textContent).toBe('"AA""BBBB""C1"');
+  expect(container.textContent).toBe('"AA""BBBB""C"');
 
   // Subscribe to reset
   await act(() =>
@@ -199,12 +239,13 @@ test('Listen to URL changes', async () => {
       [
         locFoo,
         {
-          'recoil-url-sync listen to multiple storage': 'C1',
+          'recoil-url-sync listen to multiple storage': 'C',
         },
       ],
+      [locBar, {}],
     ]),
   );
-  expect(container.textContent).toBe('"DEFAULT""DEFAULT""C1"');
+  expect(container.textContent).toBe('"DEFAULT""DEFAULT""DEFAULT"');
 
   // Subscribe to new value from different storage
   await act(() =>
@@ -232,12 +273,12 @@ test('Listen to URL changes', async () => {
       [
         locBar,
         {
-          'recoil-url-sync listen to multiple storage': 'CC2',
+          'recoil-url-sync listen to multiple storage': 'CC',
         },
       ],
     ]),
   );
-  expect(container.textContent).toBe('"DEFAULT""DEFAULT""CC2"');
+  expect(container.textContent).toBe('"DEFAULT""DEFAULT""CC"');
   await act(() =>
     gotoURL([
       [

@@ -20,6 +20,7 @@ import type {NodeKey, StoreRef} from '../core/Recoil_State';
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE} = require('../core/Recoil_Node');
 const {
+  currentRendererSupportsUseSyncExternalStore,
   reactMode,
   useMutableSource,
   useSyncExternalStore,
@@ -114,6 +115,7 @@ export type RecoilInterface = {
 function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const componentName = useComponentName();
   const storeRef = useStoreRef();
+  // eslint-disable-next-line fb-www/react-no-unused-state-hook
   const [, forceUpdate] = useState([]);
 
   const recoilValuesUsed = useRef<$ReadOnlySet<NodeKey>>(new Set());
@@ -501,6 +503,7 @@ function useRecoilValueLoadable_LEGACY<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
   const storeRef = useStoreRef();
+  // eslint-disable-next-line fb-www/react-no-unused-state-hook
   const [, forceUpdate] = useState([]);
   const componentName = useComponentName();
 
@@ -593,7 +596,16 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   }
   return {
     TRANSITION_SUPPORT: useRecoilValueLoadable_TRANSITION_SUPPORT,
-    SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
+    // Recoil will attemp to detect if `useSyncExternalStore()` is supported with
+    // `reactMode()` before calling it.  However, sometimes the host React
+    // environment supports it but uses additional React renderers (such as with
+    // `react-three-fiber`) which do not.  While this is technically a user issue
+    // by using a renderer with React 18+ that doesn't fully support React 18 we
+    // don't want to break users if it can be avoided. As the current renderer can
+    // change at runtime, we need to dynamically check and fallback if necessary.
+    SYNC_EXTERNAL_STORE: currentRendererSupportsUseSyncExternalStore()
+      ? useRecoilValueLoadable_SYNC_EXTERNAL_STORE
+      : useRecoilValueLoadable_TRANSITION_SUPPORT,
     MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
     LEGACY: useRecoilValueLoadable_LEGACY,
   }[reactMode().mode](recoilValue);

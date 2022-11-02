@@ -23,8 +23,8 @@ class ArrayKeyedMap<V> {
   _base: Map<any, any> = new Map();
 
   constructor(
-    // $FlowFixMe[incompatible-type]
     existing?: ArrayKeyedMap<V> | Iterable<[mixed, V]>,
+    // $FlowFixMe[incompatible-return]
   ): ArrayKeyedMap<V> {
     if (existing instanceof ArrayKeyedMap) {
       for (const [k, v] of existing.entries()) {

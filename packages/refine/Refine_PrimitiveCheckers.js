@@ -11,6 +11,7 @@
  * @format
  * @oncall monitoring_interfaces
  */
+
 'use strict';
 
 import type {Checker} from './Refine_Checkers';
@@ -42,7 +43,8 @@ function literal<T: string | boolean | number | null | void>(
 /**
  * boolean value checker
  */
-function boolean(): Checker<boolean> {
+function bool(): Checker<boolean> {
+  // NOTE boolean is a reserved word so boolean() will not export properly in OSS
   return (value, path = new Path()) =>
     typeof value === 'boolean'
       ? success(value, [])
@@ -117,21 +119,51 @@ function string(regex?: RegExp): Checker<string> {
  * const suitChecker = stringLiterls(suits);
  * ```
  */
-function stringLiterals<T: {+[string]: string}>(
+function stringLiterals<T: {+[string]: mixed}>(
   enumValues: T,
 ): Checker<$Values<T>> {
   return (value, path = new Path()) => {
-    if (!(typeof value === 'string')) {
+    if (typeof value !== 'string') {
       return failure('value must be a string', path);
     }
     const out = enumValues[value];
     if (out == null) {
       return failure(
-        `value is not one of ${Object.values(enumValues).join(', ')}`,
+        `value is not one of ${Object.keys(enumValues).join(', ')}`,
         path,
       );
     }
     return success(out, []);
+  };
+}
+
+/*
+ * Checker to assert if a mixed value matches a string | number value of an
+ * object. This is useful for non Flow enums, in the form of {[string]: string}
+ * or {[string]: number}.
+ *
+ * For example:
+ * ```jsx
+ * const MyEnum = {foo: 'bar', baz: 'bat'};
+ * const enumObjectChecker = enumObject(MyEnum);
+ * const value: 'bar' | 'bat' = assertion(enumObjectChecker())(x);
+ * ```
+ */
+function enumObject<T: {+[string]: string} | {+[string]: number}>(
+  enumObj: T,
+): Checker<$Values<T>> {
+  const enumValues = Object.keys(enumObj).reduce(
+    (res, key) => Object.assign(res, {[enumObj[key]]: enumObj[key]}),
+    {},
+  );
+  const stringLiteralsChecker = stringLiterals(enumValues);
+  return (rawValue, path = new Path()) => {
+    const value = typeof rawValue === 'number' ? rawValue.toString() : rawValue;
+    const result = stringLiteralsChecker(value, path);
+    if (result.type === 'success' && typeof result.value !== typeof rawValue) {
+      return failure('input must be the same type as the enum values', path);
+    }
+    return result;
   };
 }
 
@@ -182,10 +214,11 @@ function jsonDate(): Checker<Date> {
 module.exports = {
   mixed,
   literal,
-  boolean,
+  bool,
   number,
   string,
   stringLiterals,
   date,
   jsonDate,
+  enumObject,
 };

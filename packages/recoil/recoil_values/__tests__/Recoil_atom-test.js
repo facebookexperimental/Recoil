@@ -24,6 +24,7 @@ let React,
   DEFAULT_VALUE,
   DefaultValue,
   RecoilRoot,
+  RecoilEnv,
   isRecoilValue,
   RecoilLoadable,
   isLoadable,
@@ -56,6 +57,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   ({DEFAULT_VALUE, DefaultValue} = require('../../core/Recoil_Node'));
   ({RecoilRoot, useRecoilStoreID} = require('../../core/Recoil_RecoilRoot'));
+  RecoilEnv = require('../../core/Recoil_RecoilEnv');
   ({isRecoilValue} = require('../../core/Recoil_RecoilValue'));
   ({RecoilLoadable, isLoadable} = require('../../adt/Recoil_Loadable'));
   ({
@@ -131,6 +133,104 @@ testRecoil('atom can read and write value', () => {
   expect(getValue(myAtom)).toBe('DEFAULT');
   act(() => set(myAtom, 'VALUE'));
   expect(getValue(myAtom)).toBe('VALUE');
+});
+
+describe('creating two atoms with the same key', () => {
+  let consoleErrorSpy, consoleWarnSpy;
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error');
+    consoleWarnSpy = jest.spyOn(console, 'warn');
+    // squelch output from the actual consoles
+    consoleErrorSpy.mockImplementation(() => undefined);
+    consoleWarnSpy.mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks(); // spys are mocks, now unmock them
+  });
+
+  const createAtomsWithDuplicateKeys = () => {
+    // Create two atoms with the same key
+    const _myAtom = atom<string>({
+      key: 'an atom',
+      default: 'DEFAULT',
+    });
+    const _myAtom2 = atom<string>({
+      key: 'an atom', // with the same key!
+      default: 'DEFAULT 2',
+    });
+  };
+
+  describe('log behavior with __DEV__ setting', () => {
+    const originalDEV = window.__DEV__;
+
+    beforeEach(() => {
+      window.__DEV__ = true;
+    });
+
+    afterEach(() => {
+      window.__DEV__ = originalDEV;
+    });
+
+    testRecoil('logs to error and warning in development mode', () => {
+      __DEV__ = true;
+      createAtomsWithDuplicateKeys();
+
+      const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
+      const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
+
+      // either is ok, implementation difference between fb and oss
+      expect(loggedError ?? loggedWarning).toBeDefined();
+    });
+
+    testRecoil('logs to error only in production mode', () => {
+      __DEV__ = false;
+      createAtomsWithDuplicateKeys();
+
+      const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
+      const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
+
+      // either is ok, implementation difference between fb and oss
+      expect(loggedError ?? loggedWarning).toBeDefined();
+    });
+  });
+
+  testRecoil(
+    'disabling the duplicate checking flag stops console output ',
+    () => {
+      RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false;
+
+      createAtomsWithDuplicateKeys();
+
+      const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
+      const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
+      expect(loggedError).toBeUndefined();
+      expect(loggedWarning).toBeUndefined();
+    },
+  );
+
+  describe('support for process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED if present (workaround for NextJS)', () => {
+    const originalProcessEnv = process.env;
+    beforeEach(() => {
+      process.env = {...originalProcessEnv};
+      process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = 'false';
+    });
+
+    afterEach(() => {
+      process.env = originalProcessEnv;
+    });
+
+    testRecoil('duplicate checking is disabled when true', () => {
+      createAtomsWithDuplicateKeys();
+
+      expect(RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED).toBe(false);
+      const loggedError = consoleErrorSpy.mock.calls[0]?.[0];
+      const loggedWarning = consoleWarnSpy.mock.calls[0]?.[0];
+      expect(loggedError).toBeUndefined();
+      expect(loggedWarning).toBeUndefined();
+    });
+  });
 });
 
 describe('Valid values', () => {
@@ -726,6 +826,7 @@ describe('Effects', () => {
               !(newValue instanceof DefaultValue) &&
               newValue.patch != patch
             ) {
+              // $FlowFixMe[prop-missing]
               setSelf({value: 'TRANSFORM_ALT ' + newValue.value, patch});
             }
           });
@@ -736,6 +837,7 @@ describe('Effects', () => {
               !(newValue instanceof DefaultValue) &&
               newValue.patch != patch
             ) {
+              // $FlowFixMe[prop-missing]
               setSelf({value: 'TRANSFORM ' + newValue.value, patch});
             }
           });

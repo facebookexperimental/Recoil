@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
@@ -16,6 +17,7 @@ import type {RetainedBy} from './Recoil_RetainedBy';
 import type {AtomWrites, NodeKey, Store, TreeState} from './Recoil_State';
 
 const {isFastRefreshEnabled} = require('./Recoil_ReactMode');
+const RecoilEnv = require('./Recoil_RecoilEnv');
 const RecoilValueClasses = require('./Recoil_RecoilValue');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
@@ -108,9 +110,9 @@ function recoilValuesForKeys(
   return mapIterable(keys, key => nullthrows(recoilValues.get(key)));
 }
 
-function registerNode<T>(node: Node<T>): RecoilValue<T> {
-  if (nodes.has(node.key)) {
-    const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
+function checkForDuplicateAtomKey(key: string): void {
+  if (nodes.has(key)) {
+    const message = `Duplicate atom key "${key}". This is a FATAL ERROR in
       production. But it is safe to ignore this warning if it occurred because of
       hot module replacement.`;
 
@@ -123,6 +125,12 @@ function registerNode<T>(node: Node<T>): RecoilValue<T> {
       // @fb-only: recoverableViolation(message, 'recoil');
       console.warn(message); // @oss-only
     }
+  }
+}
+
+function registerNode<T>(node: Node<T>): RecoilValue<T> {
+  if (RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED) {
+    checkForDuplicateAtomKey(node.key);
   }
   nodes.set(node.key, node);
 

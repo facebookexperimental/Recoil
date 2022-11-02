@@ -36,6 +36,7 @@ const {
   flushPromisesAndTimers,
   renderElements,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
 const {asType, dict, literal, match, number, string} = require('refine');
 
 ////////////////////////////
@@ -60,6 +61,9 @@ function TestRecoilSync({
       read={itemKey => {
         if (itemKey === 'error') {
           throw new Error('READ ERROR');
+        }
+        if (itemKey === 'reject') {
+          return Promise.reject(new Error('READ REJECT'));
         }
         return storage.has(itemKey) ? storage.get(itemKey) : new DefaultValue();
       }}
@@ -275,6 +279,16 @@ test('Read from storage error', async () => {
       }),
     ],
   });
+  const atomG = atom({
+    key: 'recoil-sync read error G',
+    default: 'DEFAULTx',
+    effects: [
+      syncEffect({
+        itemKey: 'reject',
+        refine: string(),
+      }),
+    ],
+  });
 
   const mySelector = selectorFamily({
     key: 'recoil-sync read error selector',
@@ -284,6 +298,9 @@ test('Read from storage error', async () => {
         try {
           return get(myAtom);
         } catch (e) {
+          if (isPromise(e)) {
+            return e.catch(err => err);
+          }
           return e.message;
         }
       },
@@ -304,11 +321,13 @@ test('Read from storage error', async () => {
       <ReadsAtom atom={mySelector({myAtom: atomD})} />
       <ReadsAtom atom={mySelector({myAtom: atomE})} />
       <ReadsAtom atom={mySelector({myAtom: atomF})} />
+      <ReadsAtom atom={mySelector({myAtom: atomG})} />
     </TestRecoilSync>,
   );
 
+  await flushPromisesAndTimers();
   expect(container.textContent).toBe(
-    '"ERROR A""DEFAULT""READ ERROR""DEFAULT""[<root>]: value is not a string""DEFAULT"',
+    '"ERROR A""DEFAULT""READ ERROR""DEFAULT""[<root>]: value is not a string""DEFAULT""READ REJECT"',
   );
 });
 
@@ -725,6 +744,9 @@ test('Listen to storage', async () => {
     () => {
       throw new Error('Failed to register 1');
     };
+  let updateItems1: ItemSnapshot => void = _ => {
+    throw new Error('Failed to register 1');
+  };
   let updateAll1: ItemSnapshot => void = _ => {
     throw new Error('Failed to register 1');
   };
@@ -737,6 +759,7 @@ test('Listen to storage', async () => {
       storage={storage1}
       regListen={listenInterface => {
         updateItem1 = listenInterface.updateItem;
+        updateItems1 = listenInterface.updateItems;
         updateAll1 = listenInterface.updateAllKnownItems;
       }}>
       <TestRecoilSync
@@ -811,6 +834,11 @@ test('Listen to storage', async () => {
   // TODO Atom should be put in an error state, but is just reset for now.
   expect(container.textContent).toBe('"DEFAULT""BBB""DEFAULT"');
   // expect(storage1.get('recoil-sync listen')?.errorOrThrow()).toBe(ERROR);
+
+  // Update Items
+  // Set A while keeping B and C
+  act(() => updateItems1(new Map([['recoil-sync listen', 'AAAA']])));
+  expect(container.textContent).toBe('"AAAA""BBB""DEFAULT"');
 
   // Update All Items
   // Set A while resetting B
@@ -1380,7 +1408,7 @@ test('Unregister store and atoms', () => {
     idx: number,
   }) {
     const listen = useCallback(() => register(idx), [idx]);
-    return <RecoilSync {...{listen}}>{children}</RecoilSync>;
+    return <RecoilSync listen={listen}>{children}</RecoilSync>;
   }
 
   let setNumRoots;

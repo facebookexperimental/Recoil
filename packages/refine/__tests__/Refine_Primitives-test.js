@@ -12,11 +12,14 @@
 'use strict';
 
 import type {CheckerReturnType} from '../Refine_Checkers';
+import type {CoercionFunction} from 'Refine_API';
+import type {Checker} from 'Refine_Checkers';
 
 const {assertion, coercion} = require('../Refine_API');
 const {
-  boolean,
+  bool,
   date,
+  enumObject,
   jsonDate,
   literal,
   number,
@@ -69,9 +72,9 @@ describe('literal', () => {
   });
 });
 
-describe('boolean', () => {
+describe('bool', () => {
   it('should correctly parse true', () => {
-    const coerce = boolean();
+    const coerce = bool();
     const result = coerce(true);
     invariant(result.type === 'success', 'should succeed');
 
@@ -82,14 +85,14 @@ describe('boolean', () => {
   });
 
   it('should correctly parse false', () => {
-    const coerce = boolean();
+    const coerce = bool();
     const result = coerce(false);
     invariant(result.type === 'success', 'should succeed');
     invariant(result.value === false, 'value should be false');
   });
 
   it('should correctly parse invalid', () => {
-    const coerce = boolean();
+    const coerce = bool();
     const result = coerce(1);
     invariant(result.type === 'failure', 'should fail');
   });
@@ -159,6 +162,44 @@ describe('stringLiterals', () => {
     const value = assert('foo');
     // $FlowExpectedError - it is expected to fail
     ('invalid': typeof value);
+  });
+});
+
+type ExampleEnumType = 'baz' | 'bat';
+const ExampleEnum = Object.freeze({foo: 'baz', bar: 'bat'});
+
+describe('enumObject', () => {
+  it('parse strings', () => {
+    const checker: Checker<ExampleEnumType> = enumObject(ExampleEnum);
+    const coerce: CoercionFunction<ExampleEnumType> = coercion(checker);
+    expect(coerce(false)).toEqual(null);
+    expect(coerce('fail')).toEqual(null);
+    expect(coerce('foo')).toEqual(null);
+    expect(coerce(1)).toEqual(null);
+    expect(coerce('baz')).toEqual('baz');
+
+    // Confirm it can be typed as a union of string literals
+    const _x: null | void | 'baz' | 'bat' = coerce('baz');
+
+    type ExampleEnumCheckerReturnType = CheckerReturnType<typeof checker>;
+
+    ('baz': ExampleEnumCheckerReturnType);
+
+    // $FlowExpectedError
+    ('bad string': ExampleEnumCheckerReturnType);
+  });
+
+  it('parse numbers', () => {
+    const coerce = coercion(enumObject({'1': 3, '2': 4}));
+    expect(coerce(false)).toEqual(null);
+    expect(coerce('fail')).toEqual(null);
+    expect(coerce('2')).toEqual(null);
+    expect(coerce('3')).toEqual(null);
+    expect(coerce(2)).toEqual(null);
+    expect(coerce(3)).toEqual(3);
+
+    // Confirm it can be typed as a union of string literals
+    const _x: null | void | 3 | 4 = coerce(4);
   });
 });
 

@@ -101,13 +101,12 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
     'batchUpdates should return immediately',
   );
   if (isPromise(ret)) {
-    ret.finally(() => {
+    ret = ret.finally(() => {
       releaseSnapshot?.();
     });
   } else {
     releaseSnapshot?.();
   }
-  // $FlowFixMe[incompatible-cast]
   return (ret: Return);
 }
 

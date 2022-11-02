@@ -7,7 +7,7 @@
 <PROJECT_ROOT>/packages/recoil-sync/.*
 <PROJECT_ROOT>/packages/recoil-relay/.*
 <PROJECT_ROOT>/packages-ext/todo-example/.*
-<PROJECT_ROOT>/packages-ext/recoil-devtools/recoil_devtools_ext/.*
+<PROJECT_ROOT>/packages-ext/recoil-devtools/.*
 
 [include]
 
@@ -19,6 +19,7 @@ module.system=node
 
 suppress_type=$FlowIssue
 suppress_type=$FlowFixMe
+suppress_type=$FlowFixMeEmpty
 suppress_type=$FlowOSSFixMe
 
 module.name_mapper='React' -> '<PROJECT_ROOT>/node_modules/react'
@@ -36,15 +37,26 @@ module.name_mapper='react-relay' -> '<PROJECT_ROOT>/node_modules/react-relay'
 module.name_mapper='relay-test-utils' -> '<PROJECT_ROOT>/node_modules/relay-test-utils'
 
 exact_by_default=true
+babel_loose_array_spread=true
+enums=true
+exact_empty_objects=true
+
+inference_mode=constrain_writes
+
+experimental.enforce_local_inference_annotations=true
+experimental.enforce_this_annotations=true
+experimental.enforce_class_annotations=true
 
 [strict]
 deprecated-type
 sketchy-null
 unclear-type
 unsafe-getters-setters
+untyped-import
+untyped-type-import
 
 [lints]
 all=warn
 
 [version]
-^0.164.0
+^0.185.2

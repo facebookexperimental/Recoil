@@ -11,9 +11,10 @@
  * @format
  * @oncall monitoring_interfaces
  */
+
 'use strict';
 
-import type {Checker} from './Refine_Checkers';
+import type {Checker, CheckFailure} from './Refine_Checkers';
 
 const {Path, compose, failure, success} = require('./Refine_Checkers');
 
@@ -40,7 +41,7 @@ function array<V>(valueChecker: Checker<V>): Checker<$ReadOnlyArray<V>> {
 
     const len = value.length;
     const out = new Array(len);
-    const warnings = [];
+    const warnings: Array<CheckFailure> = [];
 
     for (let i = 0; i < len; i++) {
       const element = value[i];
@@ -80,7 +81,7 @@ function tuple<Checkers: $ReadOnlyArray<Checker<mixed>>>(
       return failure('value is not an array', path);
     }
     const out = new Array(checkers.length);
-    const warnings = [];
+    const warnings: Array<CheckFailure> = [];
     for (const [i, checker] of checkers.entries()) {
       const result = checker(value[i], path.extend(`[${i}]`));
       if (result.type === 'failure') {
@@ -108,7 +109,7 @@ function dict<V>(
     }
 
     const out: {[key: string]: V} = {};
-    const warnings = [];
+    const warnings: Array<CheckFailure> = [];
     for (const [key, element] of Object.entries(value)) {
       const result = valueChecker(element, path.extend(`.${key}`));
 
@@ -211,7 +212,7 @@ function object<
     }
 
     const out: {[string]: mixed} = {};
-    const warnings = [];
+    const warnings: Array<CheckFailure> = [];
 
     for (const key of checkerProperties) {
       const provided: Checker<mixed> | OptionalProperty<mixed> = checkers[key];
@@ -255,7 +256,7 @@ function set<T>(checker: Checker<T>): Checker<$ReadOnlySet<T>> {
     }
 
     const out = new Set();
-    const warnings = [];
+    const warnings: Array<CheckFailure> = [];
     for (const item of value) {
       const result = checker(item, path.extend('[]'));
       if (result.type === 'failure') {
@@ -283,7 +284,7 @@ function map<K, V>(
     }
 
     const out = new Map();
-    const warnings = [];
+    const warnings: Array<CheckFailure> = [];
     for (const [k, v] of value.entries()) {
       const keyResult = keyChecker(k, path.extend(`[${k}] key`));
       if (keyResult.type === 'failure') {

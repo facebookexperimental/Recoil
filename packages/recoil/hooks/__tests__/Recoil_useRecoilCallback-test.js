@@ -397,14 +397,12 @@ testRecoil('Updates are batched', () => {
 
   invariant(store, 'store should be initialized');
   const originalReplaceState = store.replaceState;
-  // $FlowExpectedError[cannot-write]
   store.replaceState = jest.fn(originalReplaceState);
 
   expect(store.replaceState).toHaveBeenCalledTimes(0);
   act(() => cb());
   expect(store.replaceState).toHaveBeenCalledTimes(1);
 
-  // $FlowExpectedError[cannot-write]
   store.replaceState = originalReplaceState;
 });
 

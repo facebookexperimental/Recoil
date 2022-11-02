@@ -22,7 +22,7 @@ const {
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {
   array,
-  boolean,
+  bool,
   custom,
   date,
   literal,
@@ -49,7 +49,7 @@ const atomNull = atom({
 const atomBoolean = atom({
   key: 'boolean',
   default: true,
-  effects: [syncEffect({refine: boolean(), syncDefault: true})],
+  effects: [syncEffect({refine: bool(), syncDefault: true})],
 });
 const atomNumber = atom({
   key: 'number',
@@ -340,4 +340,47 @@ describe('URL Transit Parse', () => {
       '/?withFallback="SET"',
       '/?withFallback=%5B%22%7E%23%27%22%2C%22SET%22%5D',
     ));
+});
+
+describe('URL Transit - handlers prop', () => {
+  let consoleErrorSpy;
+  const originalDEV = window.__DEV__;
+
+  beforeEach(() => {
+    window.__DEV__ = true;
+    consoleErrorSpy = jest.spyOn(console, 'error');
+  });
+
+  afterEach(() => {
+    window.__DEV__ = originalDEV;
+    consoleErrorSpy.mockRestore();
+  });
+
+  function wasExpectationViolationCalled(): boolean {
+    const expectationViolation = consoleErrorSpy.mock.calls.find(call =>
+      call[0]?.message?.match(/RecoilURLSyncTransit.*unstable/),
+    );
+    return !!expectationViolation;
+  }
+
+  test('detect unstable handlers', async () => {
+    const container = document.createElement('div');
+    function renderWithTransitHandlers(handlers: []) {
+      renderElements(
+        <RecoilURLSyncTransit location={{part: 'hash'}} handlers={handlers}>
+          <ReadsAtom atom={atomNull} />
+        </RecoilURLSyncTransit>,
+        container,
+      );
+    }
+    const handlersA = [];
+    const handlersB = [];
+
+    renderWithTransitHandlers(handlersA);
+    renderWithTransitHandlers(handlersA);
+    expect(wasExpectationViolationCalled()).toBe(false);
+
+    renderWithTransitHandlers(handlersB);
+    expect(wasExpectationViolationCalled()).toBe(true);
+  });
 });

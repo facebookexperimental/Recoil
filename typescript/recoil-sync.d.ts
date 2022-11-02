@@ -1,12 +1,12 @@
 // Minimum TypeScript Version: 3.9
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
+ * @oncall recoil
  */
 
  import * as React from 'react';
@@ -43,9 +43,11 @@
 
  // <RecoilSync> - listen
  export type UpdateItem = (itemKey: ItemKey, newValue: DefaultValue | unknown) => void;
+ export type UpdateItems = (items: ItemSnapshot) => void;
  export type UpdateAllKnownItems = (items: ItemSnapshot) => void;
  export interface ListenInterface {
    updateItem: UpdateItem;
+   updateItems: UpdateItems;
    updateAllKnownItems: UpdateAllKnownItems;
  }
  export type ListenToItems = (callbacks: ListenInterface) => void | (() => void);

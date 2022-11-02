@@ -15,7 +15,7 @@ import type {Checker} from '../Refine_Checkers';
 
 const {coercion} = require('../Refine_API');
 const {array, object} = require('../Refine_ContainerCheckers');
-const {boolean, number, string} = require('../Refine_PrimitiveCheckers');
+const {bool, number, string} = require('../Refine_PrimitiveCheckers');
 const {
   asType,
   constraint,
@@ -58,12 +58,15 @@ describe('or', () => {
     const parser = or(string(), number());
     const result = parser(true);
     invariant(result.type === 'failure', 'should fail');
+    expect(result.message).toEqual(
+      'value did not match any types in or(): value is not a string, value is not a number',
+    );
   });
 });
 
 describe('union', () => {
   it('should match value when correct', () => {
-    const parser = union(string(), number(), boolean());
+    const parser = union(string(), number(), bool());
     const result = parser('test');
     invariant(result.type === 'success', 'should succeed');
     expect(result.value).toEqual('test');
@@ -79,6 +82,9 @@ describe('union', () => {
     const parser = union(string(), number());
     const result = parser(true);
     invariant(result.type === 'failure', 'should fail');
+    expect(result.message).toEqual(
+      'value did not match any types in union: value is not a string, value is not a number',
+    );
   });
 });
 
@@ -171,8 +177,8 @@ describe('nullable', () => {
       b: object({
         c: nullable(number(), nullConfig),
         d: object({
-          e: boolean(),
-          f: nullable(boolean(), nullConfig),
+          e: bool(),
+          f: nullable(bool(), nullConfig),
         }),
       }),
     });

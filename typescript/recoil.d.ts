@@ -1,12 +1,12 @@
 // Minimum TypeScript Version: 3.9
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
+ * @oncall recoil
  */
 
 /**
@@ -34,6 +34,13 @@
   override: false,
   children: React.ReactNode,
  };
+
+// recoilEnv.d.ts
+export interface RecoilEnv {
+  RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED: boolean;
+}
+
+export const RecoilEnv: RecoilEnv;
 
  /**
   * Root component for managing Recoil state.  Most Recoil hooks should be
@@ -582,4 +589,4 @@ export function noWait<T>(state: RecoilValue<T>): RecoilValueReadOnly<Loadable<T
  /**
   * Factory to produce a Recoil snapshot object with all atoms in the default state.
   */
- export function snapshot_UNSTABLE(initializeState?: (shapshot: MutableSnapshot) => void): Snapshot;
+ export function snapshot_UNSTABLE(initializeState?: (mutableSnapshot: MutableSnapshot) => void): Snapshot;

@@ -1,17 +1,17 @@
 // Minimum TypeScript Version: 3.9
 
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @emails oncall+recoil
+ * @oncall recoil
  */
 
 import {
   CheckerReturnType,
-  boolean,
+  bool,
   stringLiterals,
   string,
   number,
@@ -62,7 +62,7 @@ import {
  *
  */
 {
-  const rboolean = boolean()({});
+  const rboolean = bool()({});
   if (rboolean.type === 'success') {
     const v: boolean = rboolean.value;
   }
@@ -92,7 +92,7 @@ import {
     const v: string | number = rsorn.value;
   }
 
-  const rsunionn = union(string(), number(), boolean())({});
+  const rsunionn = union(string(), number(), bool())({});
   if (rsunionn.type === 'success') {
     const v: string | number | boolean = rsunionn.value;
   }
@@ -188,7 +188,10 @@ import {
 {
   const rmap = map(array(string()), dict(number()))({});
   if (rmap.type === 'success') {
-    const v: ReadonlyMap<readonly string[], Readonly<{[key: string]: number}>> = rmap.value;
+    const v: ReadonlyMap<
+      readonly string[],
+      Readonly<{[key: string]: number}>
+    > = rmap.value;
   }
 }
 
@@ -212,8 +215,8 @@ import {
 
   const rmatch = match(
     asType(number(), n => n.toString()),
-    asType(boolean(), b => b.toString()),
-    string()
+    asType(bool(), b => b.toString()),
+    string(),
   )({});
 
   if (rmatch.type === 'success') {
@@ -222,7 +225,9 @@ import {
 
   class Custom {}
 
-  const isCustomClass = custom(value => value instanceof Custom ? value : null);
+  const isCustomClass = custom(value =>
+    value instanceof Custom ? value : null,
+  );
   const rcustomclass = isCustomClass({});
 
   if (rcustomclass.type === 'success') {

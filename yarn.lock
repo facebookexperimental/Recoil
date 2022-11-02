@@ -1989,9 +1989,9 @@ camelcase@^6.0.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-6.0.0.tgz#5259f7c30e35e278f1bdc2a4d91230b37cad981e"
 
 caniuse-lite@^1.0.30001274:
-  version "1.0.30001279"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001279.tgz#eb06818da481ef5096a3b3760f43e5382ed6b0ce"
-  integrity sha512-VfEHpzHEXj6/CxggTwSFoZBBYGQfQv9Cf42KPlO79sWXCD1QNKWKsKzFeWL7QpZHJQYAvocqV6Rty1yJMkqWLQ==
+  version "1.0.30001418"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001418.tgz"
+  integrity sha512-oIs7+JL3K9JRQ3jPZjlH6qyYDp+nBTCais7hjh0s+fuBwufc7uZ7hPYMXrDOJhV360KGMTcczMRObk0/iMqZRg==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -2578,10 +2578,10 @@ escodegen@^2.0.0:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-fb-www@^1.10.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-fb-www/-/eslint-plugin-fb-www-1.10.0.tgz#705dad1e12d4ae19c7b2ce5ae6ee88641d8dbbbe"
-  integrity sha512-9vBnFCNUXGBlD8DWGVw5TJ8vvHxyEN7QXs2OADW2Vq3mHkntKdiC8QhzGUCPtsCE9hdhxO0tu5mUkvhnjzICgg==
+eslint-plugin-fb-www@^1.11.0:
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-fb-www/-/eslint-plugin-fb-www-1.11.0.tgz#303565a7e701a7dc0f13bbd471c6f476f3236bea"
+  integrity sha512-/6gZpGKBUZJlcD5rg2X6nC8P7eHUu1g7rvowpuQ6YqidxrIdg+ZNGsdRRzGSzc5FawDPlZhJVQvbqyarrnGamw==
 
 eslint-plugin-flowtype@^8.0.3:
   version "8.0.3"
@@ -2630,6 +2630,18 @@ eslint-plugin-rulesdir@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-rulesdir/-/eslint-plugin-rulesdir-0.2.0.tgz#0d729e3f11bcb1a18d9b724a29a6d1a082ac2d62"
   integrity sha512-PPQPCsPkzF3upl1862swPA1bmDAAHKHmJJ4JTHJ11JCVCU4sycB0K5LLA/Rwr6r4VbnpScvUvHV4hqfdjvFmhQ==
+
+eslint-plugin-unused-imports@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-unused-imports/-/eslint-plugin-unused-imports-2.0.0.tgz#d8db8c4d0cfa0637a8b51ce3fd7d1b6bc3f08520"
+  integrity sha512-3APeS/tQlTrFa167ThtP0Zm0vctjr4M44HMpeg1P4bK6wItarumq0Ma82xorMKdFsWpphQBlRPzw/pxiVELX1A==
+  dependencies:
+    eslint-rule-composer "^0.3.0"
+
+eslint-rule-composer@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/eslint-rule-composer/-/eslint-rule-composer-0.3.0.tgz#79320c927b0c5c0d3d3d2b76c8b4a488f25bbaf9"
+  integrity sha512-bt+Sh8CtDmn2OajxvNO+BX7Wn4CIWMpTRm3MaiKPCQcnnlm0CS2mhui6QaoeQugs+3Kj2ESKEEGJUdVafwhiCg==
 
 eslint-scope@^5.0.0:
   version "5.1.0"
@@ -2981,10 +2993,10 @@ flatted@^3.1.0:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.2.4.tgz#28d9969ea90661b5134259f312ab6aa7929ac5e2"
   integrity sha512-8/sOawo8tJ4QOBX8YlQBMxL8+RLZfxMQOif9o0KUKTNTjMYElWPE0r/m5VNFxTRd0NSw8qSy8dajrwX4RYI1Hw==
 
-flow-bin@^0.164.0:
-  version "0.164.0"
-  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.164.0.tgz#dc2a1f1cd59670e7d95320232a673c6e31b11ff3"
-  integrity sha512-cSAA0LLa1SlQ1YmNCYpJ19ES39WYrqjfxX8Oqhbvn6+DET8Cs+EnVkJWHVSkfK8zUupbxvSt7pDoFXePYbcJRA==
+flow-bin@^0.185.2:
+  version "0.185.2"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.185.2.tgz#b45a07d45cf641198e86e47848e35f64b0688c4c"
+  integrity sha512-Vphs8Z4Qo17dzlPKe/l8M85JvGn1Tf5NV6xESZLg8p9ktdIbNUYaxnq/WBQPoESiLrGdrC2v+rfezfh3tvxkvQ==
 
 flow-copy-source@^2.0.9:
   version "2.0.9"
