@@ -8,28 +8,25 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
-const gks = new Map()
-  .set('recoil_hamt_2020', true)
-  .set('recoil_sync_external_store', true)
-  .set('recoil_suppress_rerender_in_callback', true)
-  .set('recoil_memory_managament_2020', true);
+const RecoilEnv = require('./Recoil_RecoilEnv');
 
 function Recoil_gkx_OSS(gk: string): boolean {
-  return gks.get(gk) ?? false;
+  return RecoilEnv.RECOIL_GKS_ENABLED.has(gk);
 }
 
 Recoil_gkx_OSS.setPass = (gk: string): void => {
-  gks.set(gk, true);
+  RecoilEnv.RECOIL_GKS_ENABLED.add(gk);
 };
 
 Recoil_gkx_OSS.setFail = (gk: string): void => {
-  gks.set(gk, false);
+  RecoilEnv.RECOIL_GKS_ENABLED.delete(gk);
 };
 
 Recoil_gkx_OSS.clear = (): void => {
-  gks.clear();
+  RecoilEnv.RECOIL_GKS_ENABLED.clear();
 };
 
 module.exports = Recoil_gkx_OSS; // @oss-only

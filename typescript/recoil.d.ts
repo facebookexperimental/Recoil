@@ -38,6 +38,7 @@
 // recoilEnv.d.ts
 export interface RecoilEnv {
   RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED: boolean;
+  RECOIL_GKS_ENABLED: Set<string>;
 }
 
 export const RecoilEnv: RecoilEnv;
