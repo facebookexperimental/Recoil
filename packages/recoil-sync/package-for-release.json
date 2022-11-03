@@ -10,6 +10,7 @@
   "repository": "https://github.com/facebookexperimental/Recoil.git",
   "license": "MIT",
   "dependencies": {
+    "query-string": "^7.1.1",
     "transit-js": "^0.8.874",
     "@recoiljs/refine": "^0.1.1"
   },

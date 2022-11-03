@@ -95,3 +95,6 @@ package-lock.json
 
 # Generated files for recoil-relay unit tests
 packages/recoil-relay/__tests__/mock-graphql/__generated__
+
+# VS Code
+/.vscode
