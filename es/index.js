@@ -360,35 +360,89 @@ var Recoil_Loadable$1 = /*#__PURE__*/Object.freeze({
   RecoilLoadable: Recoil_Loadable_7
 });
 
+const env = {
+  RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED: true,
+  // Note: RECOIL_GKS_ENABLED settings will only be honored in OSS builds of Recoil
+  RECOIL_GKS_ENABLED: new Set(['recoil_hamt_2020', 'recoil_sync_external_store', 'recoil_suppress_rerender_in_callback', 'recoil_memory_managament_2020'])
+};
+
+function readProcessEnvBooleanFlag(name, set) {
+  var _process$env$name, _process$env$name$toL;
+
+  const sanitizedValue = (_process$env$name = process.env[name]) === null || _process$env$name === void 0 ? void 0 : (_process$env$name$toL = _process$env$name.toLowerCase()) === null || _process$env$name$toL === void 0 ? void 0 : _process$env$name$toL.trim();
+
+  if (sanitizedValue == null || sanitizedValue === '') {
+    return;
+  }
+
+  const allowedValues = ['true', 'false'];
+
+  if (!allowedValues.includes(sanitizedValue)) {
+    throw Recoil_err(`process.env.${name} value must be 'true', 'false', or empty: ${sanitizedValue}`);
+  }
+
+  set(sanitizedValue === 'true');
+}
+
+function readProcessEnvStringArrayFlag(name, set) {
+  var _process$env$name2;
+
+  const sanitizedValue = (_process$env$name2 = process.env[name]) === null || _process$env$name2 === void 0 ? void 0 : _process$env$name2.trim();
+
+  if (sanitizedValue == null || sanitizedValue === '') {
+    return;
+  }
+
+  set(sanitizedValue.split(/\s*,\s*|\s+/));
+}
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Allow NodeJS/NextJS/etc to set the initial state through process.env variable
+ * Note:  we don't assume 'process' is available in all runtime environments
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- * 
- * @format
- * @oncall recoil
+ * @see https://github.com/facebookexperimental/Recoil/issues/733
  */
 
-const gks = new Map().set('recoil_hamt_2020', true).set('recoil_sync_external_store', true).set('recoil_suppress_rerender_in_callback', true).set('recoil_memory_managament_2020', true);
+
+function applyProcessEnvFlagOverrides() {
+  var _process;
+
+  // note: this check is needed in addition to the check below, runtime error will occur without it!
+  // eslint-disable-next-line fb-www/typeof-undefined
+  if (typeof process === 'undefined') {
+    return;
+  }
+
+  if (((_process = process) === null || _process === void 0 ? void 0 : _process.env) == null) {
+    return;
+  }
+
+  readProcessEnvBooleanFlag('RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED', value => {
+    env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = value;
+  });
+  readProcessEnvStringArrayFlag('RECOIL_GKS_ENABLED', value => {
+    value.forEach(gk => {
+      env.RECOIL_GKS_ENABLED.add(gk);
+    });
+  });
+}
+
+applyProcessEnvFlagOverrides();
+var Recoil_RecoilEnv = env;
 
 function Recoil_gkx_OSS(gk) {
-  var _gks$get;
-
-  return (_gks$get = gks.get(gk)) !== null && _gks$get !== void 0 ? _gks$get : false;
+  return Recoil_RecoilEnv.RECOIL_GKS_ENABLED.has(gk);
 }
 
 Recoil_gkx_OSS.setPass = gk => {
-  gks.set(gk, true);
+  Recoil_RecoilEnv.RECOIL_GKS_ENABLED.add(gk);
 };
 
 Recoil_gkx_OSS.setFail = gk => {
-  gks.set(gk, false);
+  Recoil_RecoilEnv.RECOIL_GKS_ENABLED.delete(gk);
 };
 
 Recoil_gkx_OSS.clear = () => {
-  gks.clear();
+  Recoil_RecoilEnv.RECOIL_GKS_ENABLED.clear();
 };
 
 var Recoil_gkx = Recoil_gkx_OSS; // @oss-only
@@ -529,47 +583,6 @@ var Recoil_ReactMode = {
   reactMode,
   isFastRefreshEnabled
 };
-
-const env = {
-  RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED: true
-};
-/**
- * Allow NodeJS/NextJS/etc to set the initial state through process.env variable
- * Note:  we don't assume 'process' is available in all runtime environments
- *
- * @see https://github.com/facebookexperimental/Recoil/issues/733
- */
-
-function applyProcessEnvFlagOverrides() {
-  var _process, _process$env$RECOIL_D, _process$env$RECOIL_D2;
-
-  // note: this check is needed in addition to the check below, runtime error will occur without it!
-  // eslint-disable-next-line fb-www/typeof-undefined
-  if (typeof process === 'undefined') {
-    return;
-  }
-
-  if (((_process = process) === null || _process === void 0 ? void 0 : _process.env) == null) {
-    return;
-  }
-
-  const sanitizedValue = (_process$env$RECOIL_D = process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED) === null || _process$env$RECOIL_D === void 0 ? void 0 : (_process$env$RECOIL_D2 = _process$env$RECOIL_D.toLowerCase()) === null || _process$env$RECOIL_D2 === void 0 ? void 0 : _process$env$RECOIL_D2.trim();
-
-  if (sanitizedValue == null || sanitizedValue === '') {
-    return;
-  }
-
-  const allowedValues = ['true', 'false'];
-
-  if (!allowedValues.includes(sanitizedValue)) {
-    throw Recoil_err(`process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED value must be 'true', 'false', or empty: ${sanitizedValue}`);
-  }
-
-  env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = sanitizedValue === 'true';
-}
-
-applyProcessEnvFlagOverrides();
-var Recoil_RecoilEnv = env;
 
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -8973,8 +8986,6 @@ const {
   DefaultValue: DefaultValue$3
 } = Recoil_Node;
 
-
-
 const {
   RecoilRoot: RecoilRoot$2,
   useRecoilStoreID: useRecoilStoreID$1
@@ -9045,6 +9056,8 @@ const {
   waitForAny: waitForAny$1,
   waitForNone: waitForNone$1
 } = Recoil_WaitFor;
+
+
 
 var Recoil_index = {
   // Types

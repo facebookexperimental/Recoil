@@ -3,6 +3,7 @@
 ## UPCOMING
 **_Add new changes here as they land_**
  - Fix potential unhandled promise rejection in `useRecoilCallback()` (#2075)
+ - Add OSS support for GateKeeper feature toggling via `RecoilEnv.RECOIL_GKS_ENABLED` (#2078)
 
 ## 0.7.6 (2022-10-06)
 
