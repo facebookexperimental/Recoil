@@ -392,36 +392,37 @@ function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
 
   const componentName = useComponentName();
 
-  const subscribe = useCallback(
-    (_storeState, notify) => {
-      const store = storeRef.current;
-      const subscription = subscribeToRecoilValue(
-        store,
-        recoilValue,
-        () => {
-          if (!gkx('recoil_suppress_rerender_in_callback')) {
-            return notify();
-          }
-          // Only re-render if the value has changed.
-          // This will evaluate the atom/selector now as well as when the
-          // component renders, but that may help with prefetching.
-          const newLoadable = getLoadable();
-          if (!prevLoadableRef.current.is(newLoadable)) {
-            notify();
-          }
-          // If the component is suspended then the effect setting prevLoadableRef
-          // will not run.  So, set the previous value here when its subscription
-          // is fired to wake it up.  We can't just rely on this, though, because
-          // this only executes when an atom/selector is dirty and the atom/selector
-          // passed to the hook can dynamically change.
-          prevLoadableRef.current = newLoadable;
-        },
-        componentName,
-      );
-      return subscription.release;
-    },
-    [storeRef, recoilValue, componentName, getLoadable],
-  );
+  const subscribe: (_storeState: empty, notify: () => void) => () => void =
+    useCallback(
+      (_storeState, notify) => {
+        const store = storeRef.current;
+        const subscription: ComponentSubscription = subscribeToRecoilValue(
+          store,
+          recoilValue,
+          () => {
+            if (!gkx('recoil_suppress_rerender_in_callback')) {
+              return notify();
+            }
+            // Only re-render if the value has changed.
+            // This will evaluate the atom/selector now as well as when the
+            // component renders, but that may help with prefetching.
+            const newLoadable = getLoadable();
+            if (!prevLoadableRef.current.is(newLoadable)) {
+              notify();
+            }
+            // If the component is suspended then the effect setting prevLoadableRef
+            // will not run.  So, set the previous value here when its subscription
+            // is fired to wake it up.  We can't just rely on this, though, because
+            // this only executes when an atom/selector is dirty and the atom/selector
+            // passed to the hook can dynamically change.
+            prevLoadableRef.current = newLoadable;
+          },
+          componentName,
+        );
+        return subscription.release;
+      },
+      [storeRef, recoilValue, componentName, getLoadable],
+    );
 
   const source = useRecoilMutableSource();
   if (source == null) {
@@ -429,8 +430,12 @@ function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
       'Recoil hooks must be used in components contained within a <RecoilRoot> component.',
     );
   }
-  const loadable = useMutableSource(source, getLoadableWithTesting, subscribe);
-  const prevLoadableRef = useRef(loadable);
+  const loadable: Loadable<T> = useMutableSource(
+    source,
+    getLoadableWithTesting,
+    subscribe,
+  );
+  const prevLoadableRef: {current: Loadable<T>} = useRef(loadable);
   useEffect(() => {
     prevLoadableRef.current = loadable;
   });

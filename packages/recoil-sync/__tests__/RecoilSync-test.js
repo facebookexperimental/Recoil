@@ -1392,7 +1392,7 @@ test('Unregister store and atoms', () => {
     ],
   });
 
-  const subscriberRefCounts = [];
+  const subscriberRefCounts: Array<number> = [];
   const unregister = jest.fn(idx => {
     subscriberRefCounts[idx]--;
   });
