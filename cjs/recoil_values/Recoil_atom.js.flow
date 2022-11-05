@@ -234,7 +234,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
     store: Store,
     promise: Promise<T | DefaultValue>,
   ): Promise<T | DefaultValue> {
-    const wrappedPromise = promise
+    const wrappedPromise: Promise<T | DefaultValue> = promise
       .then(value => {
         const state = store.getState().nextTree ?? store.getState().currentTree;
 
