@@ -8,26 +8,28 @@ sidebar_label: atomFamily()
 ---
 
 ```jsx
-function atomFamily<T, Parameter>({
+function atomFamily<T, P: Parameter>({
   key: string,
 
-  default:
-    | RecoilValue<T>
-    | Promise<T>
+  default?:
     | T
-    | (Parameter => T | RecoilValue<T> | Promise<T>),
+    | Promise<T>
+    | Loadable<T>
+    | WrappedValue<T>
+    | RecoilValue<T>
+    | (P => T | Promise<T> | Loadable<T> | WrappedValue<T> | RecoilValue<T>),
 
-  effects_UNSTABLE?:
+  effects?:
     | $ReadOnlyArray<AtomEffect<T>>
     | (P => $ReadOnlyArray<AtomEffect<T>>),
 
   dangerouslyAllowMutability?: boolean,
-}): Parameter => RecoilState<T>
+}): P => RecoilState<T>
 ```
 
 - `key` - 내부적으로 atom을 식별하는데 사용되는 고유한 문자열. 이 문자열은 어플리케이션 전체에서 다른 atom과 selector에 대해 고유해야 한다.
-- `default` - atom의 초기값. 직접 값을 입력하거나, 기본 값을 나타내는 `RecoilValue`, `Promise`, 또는 기본값을 가져오는 함수일 수 있습니다. 콜백 함수는 `atomFamily`함수가 호출될 때 사용되는 매개변수의 복사값을 전달 받습니다.
-- `effects_UNSTABLE` - [Atom Effects](/docs/guides/atom-effects)의 family 매개변수를 기반으로 배열을 가져오는 선택적 배열 또는 콜백입니다.
+- `default` - atom의 초기값. atom과 같이, 직접적인 값이거나 `Promise`, `Loadable`, `WrappedValue` 또는 기본값을 나타내는 또 다른 atom/selector가 될 수 있습니다. 또한, `atomFamily`는 매개변수를 전달받아 해당 패밀리 멤버에 대한 기본값을 반환하는 함수일 수 있습니다. 제공되지 않는 경우, atom은 대기 상태가 되고, `Suspense`가 트리거됩니다.
+- `effects` - [Atom Effects](/docs/guides/atom-effects)의 family 매개변수를 기반으로 배열을 가져오는 선택적 배열 또는 콜백입니다.
 - `dangerouslyAllowMutability` - Recoil은 atom 상태 변경에 따라 리렌더링에 atom을 이용하는 컴포넌트에 언제 알릴지를 알 수 있습니다. 만약 atom의 값이 변경된 경우, 원자의 값은 구독하고 있는 컴포넌트에게 제대로 알리지 않고 우회하여 상태가 변경될 수 있습니다. 이 문제를 방지하기 위해 모든 저장된 값은 동결됩니다. 경우에 따라 이 옵션을 사용해 재정의하는 것이 바람직할 수 있습니다.
 
 
