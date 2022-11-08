@@ -3,6 +3,8 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+- Migrate from deprecated `substr()` to `substring()` for browser support (#2089)
+
 ## 0.2.0 (2022-10-06)
 
 - Export `updateItems()` for the `listen` prop callback in `<RecoilSync>` in addition to `updateItem()` and `updateAllKnownItems()`. (#2017, #2035)

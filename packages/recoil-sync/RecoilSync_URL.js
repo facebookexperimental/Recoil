@@ -62,11 +62,11 @@ function parseURL(
       return wrapState(deserialize(`${url.pathname}${url.search}${url.hash}`));
     case 'hash':
       return url.hash
-        ? wrapState(deserialize(decodeURIComponent(url.hash.substr(1))))
+        ? wrapState(deserialize(decodeURIComponent(url.hash.substring(1))))
         : null;
     case 'search':
       return url.search
-        ? wrapState(deserialize(decodeURIComponent(url.search.substr(1))))
+        ? wrapState(deserialize(decodeURIComponent(url.search.substring(1))))
         : null;
     case 'queryParams': {
       const searchParams = new URLSearchParams(url.search);
