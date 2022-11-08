@@ -8,6 +8,7 @@
  * @format
  * @oncall obviz
  */
+
 'use strict';
 
 import type {Loadable, RecoilState, RecoilValue} from '../../Recoil_index';
@@ -178,7 +179,7 @@ testPerf(
   'get n selectors with n dependencies n times',
   ({iterations, perf}) => {
     const atoms = createAtoms(iterations);
-    const testFamily = selectorFamily({
+    const testFamily = selectorFamily<_, number>({
       key: 'PERF-getselectors',
       get: () => () => waitForAll(atoms),
     });

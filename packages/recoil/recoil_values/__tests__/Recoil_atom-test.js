@@ -271,7 +271,7 @@ describe('Valid values', () => {
 
 describe('Defaults', () => {
   testRecoil('default is optional', () => {
-    const myAtom = atom({key: 'atom without default'});
+    const myAtom = atom<$FlowFixMe>({key: 'atom without default'});
     expect(getRecoilStateLoadable(myAtom).state).toBe('loading');
 
     act(() => set(myAtom, 'VALUE'));

@@ -361,7 +361,7 @@ describe('custom', () => {
     function userValidator() {
       throw new Error('MY ERROR');
     }
-    const result = custom(userValidator)();
+    const result = custom<mixed>(userValidator)();
     invariant(result.type === 'failure', 'should fail');
     expect(result.message).toEqual('MY ERROR');
   });

@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
@@ -163,7 +164,10 @@ function makeEmptyStoreState(): StoreState {
     nodeToComponentSubscriptions: new Map(),
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
-    graphsByVersion: new Map().set(currentTree.version, graph()),
+    graphsByVersion: new Map<StateID, Graph>().set(
+      currentTree.version,
+      graph(),
+    ),
     retention: {
       referenceCounts: new Map(),
       nodesRetainedByZone: new Map(),

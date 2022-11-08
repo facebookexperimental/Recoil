@@ -21,6 +21,7 @@ import type {RecoilValueInfo} from './Recoil_FunctionalCore';
 import type {NodeKey, StoreID} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
+import type {Graph} from 'Recoil_GraphTypes';
 
 const {batchUpdates} = require('./Recoil_Batching');
 const {initializeNode, peekNodeInfo} = require('./Recoil_FunctionalCore');
@@ -304,7 +305,10 @@ function cloneStoreState(
     nodeToComponentSubscriptions: new Map(),
     queuedComponentCallbacks_DEPRECATED: [],
     suspendedComponentResolvers: new Set(),
-    graphsByVersion: new Map().set(version, store.getGraph(treeState.version)),
+    graphsByVersion: new Map<StateID, Graph>().set(
+      version,
+      store.getGraph(treeState.version),
+    ),
     retention: {
       referenceCounts: new Map(),
       nodesRetainedByZone: new Map(),

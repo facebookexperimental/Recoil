@@ -8,9 +8,12 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 import type {Store} from '../../core/Recoil_State';
+import type {NodeKey} from 'Recoil_Keys';
 import type {RecoilState} from 'Recoil_RecoilValue';
 import type {Node} from 'react';
 
@@ -122,7 +125,7 @@ describe('ReturnDefaultOrFallback', () => {
     );
     act(() => {
       setUnvalidatedAtomValues(
-        new Map().set('notDefinedYetAtomValidator', 123),
+        new Map<NodeKey, mixed>().set('notDefinedYetAtomValidator', 123),
       );
     });
     theAtom = atom({
@@ -169,7 +172,7 @@ describe('ReturnDefaultOrFallback', () => {
     );
     act(() => {
       setUnvalidatedAtomValues(
-        new Map().set('notDefinedYetAtomWithFallback', 123),
+        new Map<NodeKey, mixed>().set('notDefinedYetAtomWithFallback', 123),
       );
     });
     const fallback = atom<number>({
