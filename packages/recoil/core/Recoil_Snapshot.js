@@ -18,10 +18,10 @@ import type {
   ValueOrUpdater,
 } from '../recoil_values/Recoil_callbackTypes';
 import type {RecoilValueInfo} from './Recoil_FunctionalCore';
+import type {Graph} from './Recoil_GraphTypes';
 import type {NodeKey, StoreID} from './Recoil_Keys';
 import type {RecoilState, RecoilValue} from './Recoil_RecoilValue';
 import type {StateID, Store, StoreState, TreeState} from './Recoil_State';
-import type {Graph} from 'Recoil_GraphTypes';
 
 const {batchUpdates} = require('./Recoil_Batching');
 const {initializeNode, peekNodeInfo} = require('./Recoil_FunctionalCore');
