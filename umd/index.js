@@ -4874,6 +4874,12 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
 
 
+  const {
+    isSSR: isSSR$3
+  } = Recoil_Environment;
+
+
+
 
 
 
@@ -4892,7 +4898,15 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       return loadable.contents;
     } else if (loadable.state === 'loading') {
       const promise = new Promise(resolve => {
-        storeRef.current.getState().suspendedComponentResolvers.add(resolve);
+        const suspendedComponentResolvers = storeRef.current.getState().suspendedComponentResolvers;
+        suspendedComponentResolvers.add(resolve); // SSR should clear out the wake-up resolver if the Promise is resolved
+        // to avoid infinite loops.  (See https://github.com/facebookexperimental/Recoil/pull/2073)
+
+        if (isSSR$3 && Recoil_isPromise(loadable.contents)) {
+          loadable.contents.finally(() => {
+            suspendedComponentResolvers.delete(resolve);
+          });
+        }
       }); // $FlowExpectedError Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
       // @fb-only: promise.displayName = `Recoil State: ${recoilValue.key}`;
 
@@ -5595,7 +5609,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   } = react;
 
   const {
-    isSSR: isSSR$3
+    isSSR: isSSR$4
   } = Recoil_Environment;
 
 
@@ -5715,7 +5729,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     useEffect$4(() => {
       const release = snapshot.retain(); // Release the retain from the rendering call
 
-      if (timeoutID.current && !isSSR$3) {
+      if (timeoutID.current && !isSSR$4) {
         var _releaseRef$current;
 
         window.clearTimeout(timeoutID.current);
@@ -5735,7 +5749,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     }, [snapshot]); // Retain snapshot until above effect is run.
     // Release after a threshold in case component is suspended.
 
-    if (previousSnapshot !== snapshot && !isSSR$3) {
+    if (previousSnapshot !== snapshot && !isSSR$4) {
       // Release the previous snapshot
       if (timeoutID.current) {
         var _releaseRef$current2;

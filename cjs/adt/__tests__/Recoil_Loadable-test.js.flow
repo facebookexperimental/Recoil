@@ -35,7 +35,7 @@ test('Value Loadable', async () => {
 });
 
 test('Error Loadable', async () => {
-  const loadable = loadableWithError(ERROR);
+  const loadable = loadableWithError<$FlowFixMe>(ERROR);
   expect(loadable.state).toBe('hasError');
   expect(loadable.contents).toBe(ERROR);
   expect(() => loadable.getValue()).toThrow(ERROR);
@@ -71,7 +71,7 @@ describe('Loadable mapping', () => {
   });
 
   test('Loadable mapping value to error', () => {
-    const loadable = loadableWithValue('VALUE').map(() => {
+    const loadable = loadableWithValue('VALUE').map<$FlowFixMe>(() => {
       throw ERROR;
     });
     expect(loadable.state).toBe('hasError');
@@ -95,7 +95,7 @@ describe('Loadable mapping', () => {
   });
 
   test('Loadable mapping error', () => {
-    const loadable = loadableWithError(ERROR).map(() => 'NOT_USED');
+    const loadable = loadableWithError<mixed>(ERROR).map(() => 'NOT_USED');
     expect(loadable.state).toBe('hasError');
     expect(loadable.contents).toBe(ERROR);
   });
@@ -116,9 +116,11 @@ describe('Loadable mapping', () => {
     await expect(loadable.toPromise()).rejects.toBe(ERROR);
   });
   test('Loadable mapping promise value to error', async () => {
-    const loadable = loadableWithPromise(Promise.resolve('VALUE')).map(() => {
-      throw ERROR;
-    });
+    const loadable = loadableWithPromise(Promise.resolve('VALUE')).map<mixed>(
+      () => {
+        throw ERROR;
+      },
+    );
     expect(loadable.state).toBe('loading');
     await expect(loadable.toPromise()).rejects.toBe(ERROR);
   });
@@ -181,14 +183,14 @@ test('Loadable Factory Interface', async () => {
   expect(promiseLoadable2.state).toBe('loading');
   await expect(promiseLoadable2.contents).resolves.toBe('ASYNC');
 
-  const errorLoadable = RecoilLoadable.error('ERROR');
+  const errorLoadable = RecoilLoadable.error<mixed>('ERROR');
   expect(errorLoadable.state).toBe('hasError');
   expect(errorLoadable.contents).toBe('ERROR');
   const errorLoadable2 = RecoilLoadable.of(RecoilLoadable.error('ERROR'));
   expect(errorLoadable2.state).toBe('hasError');
   expect(errorLoadable2.contents).toBe('ERROR');
 
-  const loadingLoadable = RecoilLoadable.loading();
+  const loadingLoadable = RecoilLoadable.loading<mixed>();
   expect(loadingLoadable.state).toBe('loading');
 });
 

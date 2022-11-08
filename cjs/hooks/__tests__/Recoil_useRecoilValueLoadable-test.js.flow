@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const {
@@ -65,7 +66,7 @@ testRecoil('useRecoilValueLoadable - loadable with value', async () => {
 });
 
 testRecoil('useRecoilValueLoadable - loadable with error', async () => {
-  const valueSel = errorSelector('ERROR');
+  const valueSel = errorSelector<$FlowFixMe>('ERROR');
   let promise;
   function ReadLoadable() {
     const loadable = useRecoilValueLoadable(valueSel);
@@ -89,7 +90,7 @@ testRecoil('useRecoilValueLoadable - loadable with error', async () => {
 });
 
 testRecoil('useRecoilValueLoadable - loading loadable', async () => {
-  const [valueSel, resolve] = asyncSelector();
+  const [valueSel, resolve] = asyncSelector<string, _>();
   let resolved = false;
   const promises = [];
   function ReadLoadable() {
@@ -149,7 +150,7 @@ testRecoil('useRecoilValueLoadable - loading loadable', async () => {
 testRecoil(
   'useRecoilValueLoadable() with an async throwing selector results in a loadable in error state',
   async () => {
-    const asyncError = selector({
+    const asyncError = selector<mixed>({
       key: 'asyncError',
       get: async () => {
         throw new Error('Test Error');
