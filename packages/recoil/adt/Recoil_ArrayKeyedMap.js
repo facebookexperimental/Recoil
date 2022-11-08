@@ -13,11 +13,12 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const LEAF = {};
 
-const emptyMap = new Map();
+const emptyMap = new Map<mixed, mixed>();
 
 class ArrayKeyedMap<V> {
   _base: Map<any, any> = new Map();

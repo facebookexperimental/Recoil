@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {Loadable} from '../adt/Recoil_Loadable';
@@ -233,7 +234,7 @@ function getDownstreamNodes(
   state: TreeState,
   keys: $ReadOnlySet<NodeKey> | $ReadOnlyArray<NodeKey>,
 ): $ReadOnlySet<NodeKey> {
-  const visitedNodes = new Set();
+  const visitedNodes = new Set<NodeKey>();
   const visitingNodes = Array.from(keys);
   const graph = store.getGraph(state.version);
 

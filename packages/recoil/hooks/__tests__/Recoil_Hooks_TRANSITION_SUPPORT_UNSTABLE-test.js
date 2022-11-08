@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 // Sanity tests for *_TRANSITION_SUPPORT_UNSTABLE() hooks.  The actual tests
@@ -61,7 +62,7 @@ testRecoil('useRecoilValue_TRANSITION_SUPPORT_UNSTABLE', async () => {
     return;
   }
   const myAtom = stringAtom();
-  const [mySelector, resolve] = asyncSelector();
+  const [mySelector, resolve] = asyncSelector<string, _>();
   let setAtom;
   function Component() {
     setAtom = useSetRecoilState(myAtom);
@@ -88,7 +89,7 @@ testRecoil('useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE', async () => {
     return;
   }
   const myAtom = stringAtom();
-  const [mySelector, resolve] = asyncSelector();
+  const [mySelector, resolve] = asyncSelector<string, _>();
   let setAtom;
   function Component() {
     setAtom = useSetRecoilState(myAtom);
@@ -115,7 +116,7 @@ testRecoil('useRecoilState_TRANSITION_SUPPORT_UNSTABLE', async () => {
     return;
   }
   const myAtom = stringAtom();
-  const [myAsyncSelector, resolve] = asyncSelector();
+  const [myAsyncSelector, resolve] = asyncSelector<string, _>();
   const mySelector = selector({
     key: 'useRecoilState_TRANSITION_SUPPORT_UNSTABLE selector',
     get: () => myAsyncSelector,

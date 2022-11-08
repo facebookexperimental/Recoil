@@ -127,7 +127,7 @@ class Registries {
     if (registry != null) {
       return registry;
     }
-    const newRegistry = new Map();
+    const newRegistry = new Map<NodeKey, AtomRegistration<$FlowFixMe>>();
     storeRegistries?.set(externalStoreKey, newRegistry);
     return newRegistry;
   }

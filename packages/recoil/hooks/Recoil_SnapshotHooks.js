@@ -233,7 +233,7 @@ function gotoSnapshot(store: Store, snapshot: Snapshot): void {
   const prev = storeState.nextTree ?? storeState.currentTree;
   const next = snapshot.getStore_INTERNAL().getState().currentTree;
   batchUpdates(() => {
-    const keysToUpdate = new Set();
+    const keysToUpdate = new Set<NodeKey>();
     for (const keys of [prev.atomValues.keys(), next.atomValues.keys()]) {
       for (const key of keys) {
         if (

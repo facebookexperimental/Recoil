@@ -8,7 +8,9 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {RecoilValueReadOnly} from 'Recoil_RecoilValue';
 
 const {
@@ -39,7 +41,7 @@ function getError(recoilValue: RecoilValueReadOnly<mixed>): Error {
 }
 
 testRecoil('errorSelector - string', () => {
-  const mySelector = errorSelector('My Error');
+  const mySelector = errorSelector<mixed>('My Error');
   expect(getError(mySelector).message).toEqual(
     expect.stringContaining('My Error'),
   );

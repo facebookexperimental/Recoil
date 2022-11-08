@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const {
@@ -198,7 +199,7 @@ testRecoil('Goto snapshot with async selector', async () => {
   const snapshot = freshSnapshot();
   snapshot.retain();
 
-  const [mySelector, resolve] = asyncSelector();
+  const [mySelector, resolve] = asyncSelector<string, _>();
 
   let gotoRecoilSnapshot;
   function GotoRecoilSnapshot() {

@@ -550,7 +550,7 @@ describe('Component Subscriptions', () => {
       const [WriteB, updateValueB] = componentThatWritesAtom(atomB);
 
       const Component = (jest.fn(function Read({state}) {
-        const [value] = useRecoilState(state);
+        const [value] = useRecoilState<mixed>(state);
         return value;
       }): any); // flowlint-line unclear-type:off
 

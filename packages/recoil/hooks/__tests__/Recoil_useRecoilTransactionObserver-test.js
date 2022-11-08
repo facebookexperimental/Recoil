@@ -8,7 +8,9 @@
  * @format
  * @oncall perf_viz
  */
+
 'use strict';
+
 import type {Snapshot} from 'Recoil_Snapshot';
 
 const {
@@ -266,7 +268,7 @@ testRecoil('Can observe async selector value', async () => {
   });
   const [WriteAtom, setAtom] = componentThatReadsAndWritesAtom(atomA);
 
-  const [selectorA, resolveA] = asyncSelector();
+  const [selectorA, resolveA] = asyncSelector<string, _>();
 
   const transactions = [];
   renderElements(

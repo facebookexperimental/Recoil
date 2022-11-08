@@ -12,6 +12,7 @@
 'use strict';
 
 import type {Snapshot} from '../Recoil_Snapshot';
+import type {StateID} from 'Recoil_Keys';
 import type {RecoilState, RecoilValueReadOnly} from 'Recoil_RecoilValue';
 
 const {
@@ -145,7 +146,7 @@ testRecoil('getNodes', () => {
 testRecoil(
   'State ID after going to snapshot matches the ID of the snapshot',
   () => {
-    const seenIDs = new Set();
+    const seenIDs = new Set<StateID>();
     const snapshots = [];
     let expectedSnapshotID = null;
 
@@ -245,7 +246,7 @@ testRecoil('Read async selector from snapshot', async () => {
   const otherA = freshSnapshot();
   const otherB = freshSnapshot();
 
-  const [asyncSel, resolve] = asyncSelector();
+  const [asyncSel, resolve] = asyncSelector<string, _>();
   const nestSel = constSelector(asyncSel);
 
   expect(snapshot.getLoadable(asyncSel).state).toEqual('loading');
@@ -312,9 +313,9 @@ testRecoil('Async map of snapshot', async () => {
     key: 'Snapshot Map Async',
     default: 'DEFAULT',
   });
-  const [beforeAsyncSel, resolveBeforeMap] = asyncSelector();
-  const [duringAsyncSel, resolveDuringMap] = asyncSelector();
-  const [afterAsyncSel, resolveAfterMap] = asyncSelector();
+  const [beforeAsyncSel, resolveBeforeMap] = asyncSelector<string, _>();
+  const [duringAsyncSel, resolveDuringMap] = asyncSelector<string, _>();
+  const [afterAsyncSel, resolveAfterMap] = asyncSelector<string, _>();
   const depAsyncSel = selector({
     key: 'snapshot asyncMap dep selector',
     get: () => afterAsyncSel,

@@ -5,7 +5,9 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {Store} from '../Recoil_State';
 import type {MutableSnapshot} from 'Recoil_Snapshot';
 
@@ -200,7 +202,7 @@ describe('initializeState', () => {
   testRecoil(
     'Selectors from global initialization are not canceled',
     async () => {
-      const [asyncSel, resolve] = asyncSelector();
+      const [asyncSel, resolve] = asyncSelector<string, _>();
       const depSel = selector({
         key: 'RecoilRoot - initializeSTate - async selector',
         get: ({get}) => get(asyncSel),

@@ -61,7 +61,11 @@ testRecoil('Works with useTransition', async ({concurrentMode}) => {
   });
 
   // Basic implementation of a cache that suspends:
-  const cache = new Map();
+  const cache = new Map<
+    number,
+    | {promise: null, state: string, value: string}
+    | {promise: Promise<void>, state: string, value: null},
+  >();
   const resolvers = [];
   function getItem(index: number) {
     if (cache.has(index) && cache.get(index)?.state === 'ready') {

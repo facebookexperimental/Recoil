@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const {
@@ -77,7 +78,7 @@ testRecoil('useResetRecoilState - sync selector default', () => {
 
 // Test resetting an atom to a fallback selector with a pending async value
 testRecoil('useResetRecoilState - async selector default', () => {
-  const [mySelector, resolve] = asyncSelector();
+  const [mySelector, resolve] = asyncSelector<string, _>();
   const myAtom = atom({
     key: 'useResetRecoilState/async_selector',
     default: mySelector,
@@ -121,7 +122,10 @@ testRecoil('useResetRecoilState - scoped atom', () => {
 
 // Test resetting an atom to a fallback selector with a pending async value
 testRecoil('useResetRecoilState - atom family', () => {
-  const myAtom = atomFamily({
+  const myAtom = atomFamily<
+    _,
+    {default: string} | {default: string, secondParam: string},
+  >({
     key: 'useResetRecoilState/atomFamily',
     default: ({default: def}) => def,
   });
@@ -178,7 +182,7 @@ testRecoil('useResetRecoilState - parameterized selector', () => {
     key: 'useResetRecoilState/parameterized_selector/atom',
     default: 'default',
   });
-  const mySelector = selectorFamily({
+  const mySelector = selectorFamily<_, string>({
     key: 'useResetRecoilState/parameterized_selector',
     get:
       () =>
