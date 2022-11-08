@@ -41,9 +41,11 @@ const useRetain = require('./Recoil_useRetain');
 const {useCallback, useEffect, useMemo, useRef, useState} = require('react');
 const {setByAddingToSet} = require('recoil-shared/util/Recoil_CopyOnWrite');
 const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
+const {isSSR} = require('recoil-shared/util/Recoil_Environment');
 const err = require('recoil-shared/util/Recoil_err');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
+const isPromise = require('recoil-shared/util/Recoil_isPromise');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 const useComponentName = require('recoil-shared/util/Recoil_useComponentName');
 
@@ -59,7 +61,17 @@ function handleLoadable<T>(
     return loadable.contents;
   } else if (loadable.state === 'loading') {
     const promise = new Promise(resolve => {
-      storeRef.current.getState().suspendedComponentResolvers.add(resolve);
+      const suspendedComponentResolvers =
+        storeRef.current.getState().suspendedComponentResolvers;
+      suspendedComponentResolvers.add(resolve);
+
+      // SSR should clear out the wake-up resolver if the Promise is resolved
+      // to avoid infinite loops.  (See https://github.com/facebookexperimental/Recoil/pull/2073)
+      if (isSSR && isPromise(loadable.contents)) {
+        loadable.contents.finally(() => {
+          suspendedComponentResolvers.delete(resolve);
+        });
+      }
     });
 
     // $FlowExpectedError Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
