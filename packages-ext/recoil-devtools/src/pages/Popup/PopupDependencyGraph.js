@@ -131,7 +131,7 @@ function PopupDependencyGraph(): React.Node {
           nodes={{
             data: nodes,
             getNodeKey: n => n,
-            getNodeName: n => (n.length < 25 ? n : `${n.substr(0, 22)}...`),
+            getNodeName: n => (n.length < 25 ? n : `${n.substring(0, 22)}...`),
             getNodeValue: _n => 1,
           }}
           links={{
