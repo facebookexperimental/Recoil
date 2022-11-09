@@ -19,7 +19,6 @@ const differenceSets = require('recoil-shared/util/Recoil_differenceSets');
 const mapMap = require('recoil-shared/util/Recoil_mapMap');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
-export type {Graph} from './Recoil_GraphTypes';
 
 function makeGraph(): Graph {
   return {

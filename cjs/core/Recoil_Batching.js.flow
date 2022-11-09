@@ -14,11 +14,15 @@ const {
   unstable_batchedUpdates,
 } = require('recoil-shared/util/Recoil_ReactBatchedUpdates');
 
-let batcher = unstable_batchedUpdates;
-
 // flowlint-next-line unclear-type:off
 type Callback = () => any;
 type Batcher = (callback: Callback) => void;
+
+/*
+ * During SSR, unstable_batchedUpdates may be undefined so this
+ * falls back to a basic function that executes the batch
+ */
+let batcher: Batcher = unstable_batchedUpdates || (batchFn => batchFn());
 
 /**
  * Sets the provided batcher function as the batcher function used by Recoil.

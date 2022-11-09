@@ -3431,16 +3431,22 @@
 
   const {
     unstable_batchedUpdates: unstable_batchedUpdates$2
-  } = Recoil_ReactBatchedUpdates;
+  } = Recoil_ReactBatchedUpdates; // flowlint-next-line unclear-type:off
 
-  let batcher = unstable_batchedUpdates$2; // flowlint-next-line unclear-type:off
 
+  /*
+   * During SSR, unstable_batchedUpdates may be undefined so this
+   * falls back to a basic function that executes the batch
+   */
+  let batcher = unstable_batchedUpdates$2 || (batchFn => batchFn());
   /**
    * Sets the provided batcher function as the batcher function used by Recoil.
    *
    * Set the batcher to a custom batcher for your renderer,
    * if you use a renderer other than React DOM or React Native.
    */
+
+
   const setBatcher = newBatcher => {
     batcher = newBatcher;
   };

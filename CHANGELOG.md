@@ -3,9 +3,10 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
- - Fix potential unhandled promise rejection in `useRecoilCallback()` (#2075)
- - Add OSS support for GateKeeper feature toggling via `RecoilEnv.RECOIL_GKS_ENABLED` (#2078)
- - Fix resolving suspense of async selectors used with SSR (#2073, #1960)
+- Fix potential unhandled promise rejection in `useRecoilCallback()` (#2075)
+- Add OSS support for GateKeeper feature toggling via `RecoilEnv.RECOIL_GKS_ENABLED` (#2078)
+- Fix resolving suspense of async selectors used with SSR (#2073, #1960)
+- Fix SSR with some versions of React DOM used with Next.JS 13 (#2082, #2086)
 
 ## 0.7.6 (2022-10-06)
 
