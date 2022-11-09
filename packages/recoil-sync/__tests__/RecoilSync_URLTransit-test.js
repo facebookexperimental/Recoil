@@ -9,6 +9,7 @@
 'use strict';
 
 import type {LocationOption} from '../RecoilSync_URL';
+import type {TransitHandler} from '../RecoilSync_URLTransit';
 
 const {atom, selector} = require('Recoil');
 
@@ -365,7 +366,10 @@ describe('URL Transit - handlers prop', () => {
 
   test('detect unstable handlers', async () => {
     const container = document.createElement('div');
-    function renderWithTransitHandlers(handlers: []) {
+    function renderWithTransitHandlers(
+      // $FlowFixMe[unclear-type]
+      handlers: Array<TransitHandler<any, any>>,
+    ) {
       renderElements(
         <RecoilURLSyncTransit location={{part: 'hash'}} handlers={handlers}>
           <ReadsAtom atom={atomNull} />
@@ -373,8 +377,11 @@ describe('URL Transit - handlers prop', () => {
         container,
       );
     }
-    const handlersA = [];
-    const handlersB = [];
+    // $FlowFixMe[unclear-type]
+    const handlersA: Array<TransitHandler<any, any>> = [];
+
+    // $FlowFixMe[unclear-type]
+    const handlersB: Array<TransitHandler<any, any>> = [];
 
     renderWithTransitHandlers(handlersA);
     renderWithTransitHandlers(handlersA);
