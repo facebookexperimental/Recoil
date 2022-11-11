@@ -257,7 +257,7 @@ function selector<T>(
   }
 
   // This is every discovered dependency across all executions
-  const discoveredDependencyNodeKeys = new Set();
+  const discoveredDependencyNodeKeys = new Set<NodeKey>();
 
   const cache: TreeCacheImplementation<Loadable<T>> = treeCacheFromPolicy(
     cachePolicy ?? {
@@ -423,7 +423,7 @@ function selector<T>(
           );
         }
 
-        const loadable = loadableWithError(errorOrPromise);
+        const loadable = loadableWithError<T>(errorOrPromise);
         resolveAsync(store, state, executionID, loadable, depValues);
         throw errorOrPromise;
       });
@@ -637,7 +637,7 @@ function selector<T>(
           throw CANCELED;
         }
 
-        const loadable = loadableWithError(error);
+        const loadable = loadableWithError<T>(error);
         resolveAsync(store, state, executionID, loadable, existingDeps);
         throw error;
       });
@@ -698,10 +698,10 @@ function selector<T>(
      * execution means the deps we discover below are our best guess at the
      * deps for the current/latest state in the store)
      */
-    const depValues = new Map();
+    const depValues = new Map<NodeKey, Loadable<mixed>>();
 
     function getRecoilValue<S>({key: depKey}: RecoilValue<S>): S {
-      const depLoadable = getNodeLoadable(store, state, depKey);
+      const depLoadable = getNodeLoadable<S>(store, state, depKey);
 
       depValues.set(depKey, depLoadable);
 
@@ -814,7 +814,7 @@ function selector<T>(
     }
 
     // Second, look up in the selector cache and update the deps in the store
-    const depsAfterCacheLookup = new Set();
+    const depsAfterCacheLookup = new Set<NodeKey>();
     try {
       cachedLoadable = cache.get(
         nodeKey => {
@@ -823,7 +823,7 @@ function selector<T>(
             'Cache nodeKey is type string',
           );
 
-          return getNodeLoadable(store, state, nodeKey).contents;
+          return getNodeLoadable<mixed>(store, state, nodeKey).contents;
         },
         {
           onNodeVisit: node => {
@@ -957,7 +957,7 @@ function selector<T>(
 
     function anyDepChanged(execDepValues: DepValues): boolean {
       for (const [depKey, execLoadable] of execDepValues) {
-        if (!getNodeLoadable(store, state, depKey).is(execLoadable)) {
+        if (!getNodeLoadable<mixed>(store, state, depKey).is(execLoadable)) {
           return true;
         }
       }
@@ -1078,7 +1078,7 @@ function selector<T>(
       const message = `Recoil selector has circular dependencies: ${dependencyStack
         .slice(dependencyStack.indexOf(key))
         .join(' \u2192 ')}`;
-      return loadableWithError(err(message));
+      return loadableWithError<T>(err(message));
     }
     dependencyStack.push(key);
     try {
@@ -1095,7 +1095,7 @@ function selector<T>(
     }
     return cache.get(nodeKey => {
       invariant(typeof nodeKey === 'string', 'Cache nodeKey is type string');
-      return peekNodeLoadable(store, state, nodeKey)?.contents;
+      return peekNodeLoadable<mixed>(store, state, nodeKey)?.contents;
     });
   }
 
@@ -1139,7 +1139,7 @@ function selector<T>(
           throw err('Recoil: Async selector sets are not currently supported.');
         }
 
-        const loadable = getNodeLoadable(store, state, depKey);
+        const loadable = getNodeLoadable<S>(store, state, depKey);
 
         if (loadable.state === 'hasValue') {
           return loadable.contents;

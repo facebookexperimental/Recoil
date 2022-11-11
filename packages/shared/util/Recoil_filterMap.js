@@ -19,7 +19,7 @@ function filterMap<TKey, TValue>(
   map: $ReadOnlyMap<TKey, TValue>,
   callback: (value: TValue, key: TKey) => boolean,
 ): Map<TKey, TValue> {
-  const result = new Map();
+  const result = new Map<TKey, TValue>();
   for (const [key, value] of map) {
     if (callback(value, key)) {
       result.set(key, value);
