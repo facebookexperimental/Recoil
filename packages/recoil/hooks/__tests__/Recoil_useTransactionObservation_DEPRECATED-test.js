@@ -8,7 +8,9 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {
   RecoilState,
   RecoilValue,
@@ -191,7 +193,9 @@ testRecoil(
       </>,
     );
     act(() => {
-      setUnvalidatedAtomValues(new Map().set('notDefinedYetAtom', 123));
+      setUnvalidatedAtomValues(
+        new Map<NodeKey, mixed>().set('notDefinedYetAtom', 123),
+      );
     });
     const validator = jest.fn(() => 789);
     theAtom = atom({
@@ -239,7 +243,9 @@ testRecoil(
       </>,
     );
     act(() => {
-      setUnvalidatedAtomValues(new Map().set('someNonvalidatedAtom', 123));
+      setUnvalidatedAtomValues(
+        new Map<NodeKey, mixed>().set('someNonvalidatedAtom', 123),
+      );
     });
     values = new Map();
     act(() => updateValue(1));

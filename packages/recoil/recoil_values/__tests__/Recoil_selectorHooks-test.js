@@ -9,13 +9,17 @@
  * @oncall recoil
  */
 /* eslint-disable fb-www/react-no-useless-fragment */
+
 'use strict';
+
 import type {
   RecoilState,
   RecoilValue,
   RecoilValueReadOnly,
 } from '../../core/Recoil_RecoilValue';
 import type {PersistenceSettings} from '../../recoil_values/Recoil_atom';
+import type {Loadable} from 'Recoil_Loadable';
+import type {WrappedValue} from 'Recoil_Wrapper';
 import type {Node} from 'react';
 
 const {
@@ -340,9 +344,11 @@ describe('Updates', () => {
   testRecoil('Dep of upstream selector can change while pending', async () => {
     const anAtom = counterAtom();
     const [upstreamSel, upstreamResolvers] =
-      asyncSelectorThatPushesPromisesOntoArray(anAtom);
+      asyncSelectorThatPushesPromisesOntoArray<$FlowFixMe | number, _>(anAtom);
     const [downstreamSel, downstreamResolvers] =
-      asyncSelectorThatPushesPromisesOntoArray(upstreamSel);
+      asyncSelectorThatPushesPromisesOntoArray<$FlowFixMe | number, _>(
+        upstreamSel,
+      );
 
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
     const container = renderElements(
@@ -387,7 +393,7 @@ describe('Updates', () => {
   });
 
   testRecoil('Errors are propogated through selectors', () => {
-    const errorThrower = errorSelector('ERROR');
+    const errorThrower = errorSelector<number>('ERROR');
     const [downstreamSelector] = plusOneSelector(errorThrower);
     const container = renderElements(
       <>
@@ -401,7 +407,10 @@ describe('Updates', () => {
     'Rejected promises are propogated through selectors (immediate rejection)',
     async () => {
       const anAtom = counterAtom();
-      const errorThrower = errorThrowingAsyncSelector('ERROR', anAtom);
+      const errorThrower = errorThrowingAsyncSelector<number, _>(
+        'ERROR',
+        anAtom,
+      );
       const [downstreamSelector] = plusOneAsyncSelector(errorThrower);
       const container = renderElements(
         <>
@@ -419,7 +428,7 @@ describe('Updates', () => {
     'Rejected promises are propogated through selectors (later rejection)',
     async () => {
       const anAtom = counterAtom();
-      const [errorThrower, _resolve, reject] = asyncSelector(anAtom);
+      const [errorThrower, _resolve, reject] = asyncSelector<number, _>(anAtom);
       const [downstreamSelector] = plusOneAsyncSelector(errorThrower);
       const container = renderElements(
         <>
@@ -709,7 +718,7 @@ describe('Dynamic Dependencies', () => {
   testRecoil(
     'async selector with changing dependencies finishes execution using original state',
     async () => {
-      const [asyncDep, resolveAsyncDep] = asyncSelector();
+      const [asyncDep, resolveAsyncDep] = asyncSelector<string, _>();
       const anAtom = atom({key: 'atomChangingDeps', default: 3});
 
       const anAsyncSelector = selector({
@@ -965,7 +974,13 @@ describe('Dynamic Dependencies', () => {
 
 describe('Catching Deps', () => {
   testRecoil('selector catching exceptions', () => {
-    const throwingSel = errorSelector('MY ERROR');
+    const throwingSel = errorSelector<
+      | RecoilValue<string>
+      | Promise<string>
+      | Loadable<string>
+      | WrappedValue<string>
+      | string,
+    >('MY ERROR');
     const c1 = renderElements(<ReadsAtom atom={throwingSel} />);
     expect(c1.textContent).toEqual('error');
 
@@ -986,7 +1001,13 @@ describe('Catching Deps', () => {
   });
 
   testRecoil('selector catching exceptions (non Errors)', () => {
-    const throwingSel = selector({
+    const throwingSel = selector<
+      | RecoilValue<string>
+      | Promise<string>
+      | Loadable<string>
+      | WrappedValue<string>
+      | string,
+    >({
       key: '__error/non Error thrown',
       get: () => {
         // eslint-disable-next-line no-throw-literal
@@ -1041,8 +1062,8 @@ describe('Catching Deps', () => {
   });
 
   testRecoil('selector catching all of 2 loads', async () => {
-    const [resolvingSel1, res1] = asyncSelector();
-    const [resolvingSel2, res2] = asyncSelector();
+    const [resolvingSel1, res1] = asyncSelector<string, _>();
+    const [resolvingSel2, res2] = asyncSelector<string, _>();
 
     const bypassSelector = selector({
       key: 'useRecoilState/bypassing selector all',
@@ -1116,8 +1137,8 @@ describe('Catching Deps', () => {
   testRecoil(
     'selector catching promise and resolving asynchronously',
     async () => {
-      const [originalDep, resolveOriginal] = asyncSelector();
-      const [bypassDep, resolveBypass] = asyncSelector();
+      const [originalDep, resolveOriginal] = asyncSelector<string, _>();
+      const [bypassDep, resolveBypass] = asyncSelector<string, _>();
       const catchPromiseSelector = selector({
         key: 'useRecoilState/catch then async',
         get: ({get}) => {
@@ -1407,7 +1428,10 @@ describe('Async Selectors', () => {
     'Async selectors do not re-query when re-subscribed from having no subscribers',
     async () => {
       const anAtom = counterAtom();
-      const [sel, resolvers] = asyncSelectorThatPushesPromisesOntoArray(anAtom);
+      const [sel, resolvers] = asyncSelectorThatPushesPromisesOntoArray<
+        $FlowFixMe | string,
+        _,
+      >(anAtom);
       const [Component, updateValue] = componentThatWritesAtom(anAtom);
       const [Toggle, toggle] = componentThatToggles(
         <ReadsAtom atom={sel} />,
@@ -1442,8 +1466,10 @@ describe('Async Selectors', () => {
 
   testRecoil('Can move out of suspense by changing deps', async () => {
     const anAtom = counterAtom();
-    const [aSelector, resolvers] =
-      asyncSelectorThatPushesPromisesOntoArray(anAtom);
+    const [aSelector, resolvers] = asyncSelectorThatPushesPromisesOntoArray<
+      $FlowFixMe | string,
+      _,
+    >(anAtom);
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
     const container = renderElements(
       <>
@@ -1704,7 +1730,7 @@ describe('Async Selectors', () => {
 
   describe('Async Selector Set', () => {
     testRecoil('set tries to get async value', () => {
-      const myAtom = atom({key: 'selector set get async atom'});
+      const myAtom = atom<void>({key: 'selector set get async atom'});
       const mySelector = selector({
         key: 'selector set get async selector',
         get: () => myAtom,
@@ -1820,7 +1846,7 @@ testRecoil('Change component prop to suspend and wake', () => {
 testRecoil(
   "Releasing snapshot doesn't invalidate pending selector",
   async () => {
-    const [mySelector, resolveSelector] = asyncSelector();
+    const [mySelector, resolveSelector] = asyncSelector<string, _>();
 
     // Initialize selector with snapshot first so it is initialized for both
     // snapshot and root and has separate cleanup handlers for both.
@@ -2380,8 +2406,8 @@ describe('Counts', () => {
     testRecoil(
       'async selector runs the minimum number of times required',
       async () => {
-        const [asyncDep1, resolveAsyncDep1] = asyncSelector();
-        const [asyncDep2, resolveAsyncDep2] = asyncSelector();
+        const [asyncDep1, resolveAsyncDep1] = asyncSelector<string, _>();
+        const [asyncDep2, resolveAsyncDep2] = asyncSelector<string, _>();
 
         let numTimesRan = 0;
 

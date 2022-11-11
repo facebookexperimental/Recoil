@@ -8,10 +8,12 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {Store} from '../../core/Recoil_State';
 import type {Parameter} from 'Recoil_atomFamily';
-import type {StoreID as StoreIDType} from 'Recoil_Keys';
+import type {NodeKey, StoreID as StoreIDType} from 'Recoil_Keys';
 import type {RecoilState} from 'Recoil_RecoilValue';
 import type {Node} from 'react';
 
@@ -79,7 +81,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   store = makeStore();
 
-  pAtom = atomFamily({
+  pAtom = atomFamily<_, {k: string} | {x: string} | {y: string}>({
     key: 'pAtom',
     default: 'fallback',
   });
@@ -159,7 +161,7 @@ describe('Default', () => {
 
   testRecoil('Works with atom default', () => {
     const fallbackAtom = atom({key: 'fallback', default: 0});
-    const hasFallback = atomFamily({
+    const hasFallback = atomFamily<_, {k: string}>({
       key: 'hasFallback',
       default: fallbackAtom,
     });
@@ -172,7 +174,7 @@ describe('Default', () => {
   });
 
   testRecoil('Works with parameterized default', () => {
-    const paramDefaultAtom = atomFamily({
+    const paramDefaultAtom = atomFamily<_, {num: number}>({
       key: 'parameterized default',
       default: ({num}) => num,
     });
@@ -184,7 +186,7 @@ describe('Default', () => {
   });
 
   testRecoil('Parameterized async default', async () => {
-    const paramDefaultAtom = atomFamily({
+    const paramDefaultAtom = atomFamily<_, {num: number}>({
       key: 'parameterized async default',
       default: ({num}) =>
         num === 1 ? Promise.reject(num) : Promise.resolve(num),
@@ -197,7 +199,7 @@ describe('Default', () => {
   });
 
   testRecoil('Parameterized loadable default', async () => {
-    const paramDefaultAtom = atomFamily({
+    const paramDefaultAtom = atomFamily<_, {num: number}>({
       key: 'parameterized loadable default',
       default: ({num}) =>
         num === 1 ? RecoilLoadable.error(num) : RecoilLoadable.of(num),
@@ -215,7 +217,7 @@ describe('Default', () => {
 });
 
 testRecoil('Works with date as parameter', () => {
-  const dateAtomFamily = atomFamily({
+  const dateAtomFamily = atomFamily<_, Date>({
     key: 'dateFamily',
     default: _date => 0,
   });
@@ -227,11 +229,11 @@ testRecoil('Works with date as parameter', () => {
 });
 
 testRecoil('Works with parameterized fallback', () => {
-  const fallbackAtom = atomFamily({
+  const fallbackAtom = atomFamily<_, $FlowFixMe | {num: number}>({
     key: 'parameterized fallback default',
     default: ({num}) => num * 10,
   });
-  const paramFallbackAtom = atomFamily({
+  const paramFallbackAtom = atomFamily<_, {num: number}>({
     key: 'parameterized fallback',
     default: fallbackAtom,
   });
@@ -248,7 +250,7 @@ testRecoil('Works with parameterized fallback', () => {
 });
 
 testRecoil('atomFamily async fallback', async () => {
-  const paramFallback = atomFamily({
+  const paramFallback = atomFamily<_, {}>({
     key: 'paramaterizedAtom async Fallback',
     default: Promise.resolve(42),
   });
@@ -261,7 +263,7 @@ testRecoil('atomFamily async fallback', async () => {
 });
 
 testRecoil('Parameterized fallback with atom and async', async () => {
-  const paramFallback = atomFamily({
+  const paramFallback = atomFamily<_, {param: string}>({
     key: 'parameterized async Fallback',
     default: ({param}) =>
       ({
@@ -419,14 +421,14 @@ testRecoil('Returns the fallback for parameterized atoms', () => {
   );
   act(() => {
     setUnvalidatedAtomValues(
-      new Map().set('notDefinedYetAtomFamilyWithFallback', 123),
+      new Map<NodeKey, mixed>().set('notDefinedYetAtomFamilyWithFallback', 123),
     );
   });
   const fallback = atom<number>({
     key: 'fallback for atomFamily',
     default: 222,
   });
-  theAtom = atomFamily({
+  theAtom = atomFamily<_, Parameter>({
     key: 'notDefinedYetAtomFamilyWithFallback',
     default: fallback,
     persistence_UNSTABLE: {
@@ -486,11 +488,14 @@ testRecoil(
     );
     act(() => {
       setUnvalidatedAtomValues(
-        new Map().set('notDefinedYetAtomFamilyFallbackSel', 123),
+        new Map<NodeKey, mixed>().set(
+          'notDefinedYetAtomFamilyFallbackSel',
+          123,
+        ),
       );
     });
 
-    theAtom = atomFamily({
+    theAtom = atomFamily<_, $FlowFixMe>({
       key: 'notDefinedYetAtomFamilyFallbackSel',
       default: selectorFamily({
         key: 'notDefinedYetAtomFamilyFallbackSelFallback',
@@ -526,7 +531,7 @@ testRecoil('Independent atom subscriptions', ({gks}) => {
       ? 1
       : 0;
 
-  const myAtom = atomFamily({
+  const myAtom = atomFamily<_, string>({
     key: 'atomFamily/independent subscriptions',
     default: 'DEFAULT',
   });

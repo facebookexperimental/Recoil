@@ -14,6 +14,7 @@
 import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 import type {RecoilState} from 'Recoil';
+import type {WrappedValue} from 'Recoil_Wrapper';
 
 const {
   getRecoilTestFn,
@@ -280,7 +281,7 @@ describe('get return types', () => {
 
 describe('Catching Deps', () => {
   testRecoil('selector - catching exceptions', () => {
-    const throwingSel = errorSelector('MY ERROR');
+    const throwingSel = errorSelector<$FlowFixMe>('MY ERROR');
     expect(getValue(throwingSel)).toBeInstanceOf(Error);
 
     const catchingSelector = selector({
@@ -299,7 +300,13 @@ describe('Catching Deps', () => {
   });
 
   testRecoil('selector - catching exception (non Error)', () => {
-    const throwingSel = selector({
+    const throwingSel = selector<
+      | RecoilValue<string>
+      | Promise<string>
+      | Loadable<string>
+      | WrappedValue<string>
+      | string,
+    >({
       key: '__error/non Error thrown',
       get: () => {
         // eslint-disable-next-line no-throw-literal
@@ -752,7 +759,7 @@ describe('Async Selector Set', () => {
   });
 
   testRecoil('set tries to get async value', () => {
-    const myAtom = atom({key: 'selector set get async atom'});
+    const myAtom = atom<string>({key: 'selector set get async atom'});
     const mySelector = selector({
       key: 'selector set get async selector',
       get: () => myAtom,

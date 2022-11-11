@@ -27,7 +27,7 @@ const someSet = require('recoil-shared/util/Recoil_someSet');
 // to be discarded and their resources released.
 const SUSPENSE_TIMEOUT_MS = 120000;
 
-const emptySet = new Set();
+const emptySet = new Set<NodeKey>();
 
 function releaseRetainablesNowOnCurrentTree(
   store: Store,
@@ -43,7 +43,7 @@ function releaseRetainablesNowOnCurrentTree(
     return; // leak memory rather than erase something that's about to be used.
   }
 
-  const nodes = new Set();
+  const nodes = new Set<NodeKey>();
   for (const r of retainables) {
     if (r instanceof RetentionZone) {
       for (const n of nodesRetainedByZone(storeState, r)) {
@@ -74,7 +74,7 @@ function findReleasableNodes(
   return releasableNodes;
 
   function findReleasableNodesInner(searchFromNodes: Set<NodeKey>): void {
-    const releasableNodesFoundThisIteration = new Set();
+    const releasableNodesFoundThisIteration = new Set<NodeKey>();
 
     const downstreams = getDownstreamNodesInTopologicalOrder(
       store,
@@ -125,7 +125,7 @@ function findReleasableNodes(
 
     // If we found any releasable nodes, we need to walk UP from those nodes to
     // find whether their parents can now be released as well:
-    const parents = new Set();
+    const parents = new Set<NodeKey>();
     for (const node of releasableNodesFoundThisIteration) {
       for (const parent of graph.nodeDeps.get(node) ?? emptySet) {
         if (!releasableNodes.has(parent)) {
@@ -150,7 +150,7 @@ function getDownstreamNodesInTopologicalOrder(
   const graph = store.getGraph(treeState.version);
 
   const answer = [];
-  const visited = new Set();
+  const visited = new Set<NodeKey>();
   while (nodes.size > 0) {
     visit(nullthrows(nodes.values().next().value));
   }

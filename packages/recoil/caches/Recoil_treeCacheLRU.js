@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {TreeCacheImplementation} from './Recoil_TreeCacheImplementationType';
@@ -26,7 +27,7 @@ function treeCacheLRU<T>({
 }): TreeCacheImplementation<T> {
   const lruCache = new LRUCache({maxSize});
 
-  const cache = new TreeCache({
+  const cache: TreeCache<T> = new TreeCache({
     name,
     mapNodeValue,
     onHit: node => {

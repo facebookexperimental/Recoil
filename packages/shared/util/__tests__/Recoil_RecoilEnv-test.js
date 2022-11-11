@@ -11,7 +11,9 @@
 
 'use strict';
 
-import {IS_INTERNAL} from 'Recoil_TestingUtils';
+const {
+  IS_INTERNAL,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
 const testOssOnly = IS_INTERNAL ? test.skip : test;
 

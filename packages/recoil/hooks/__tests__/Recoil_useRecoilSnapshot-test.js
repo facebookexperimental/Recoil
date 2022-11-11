@@ -156,7 +156,7 @@ testRecoil('useRecoilSnapshot - goto snapshots', ({strictMode}) => {
 testRecoil(
   'useRecoilSnapshot - async selector',
   async ({strictMode, concurrentMode}) => {
-    const [mySelector, resolve] = asyncSelector();
+    const [mySelector, resolve] = asyncSelector<string, _>();
 
     const snapshots = [];
     function RecoilSnapshotAndSubscribe() {
@@ -187,7 +187,7 @@ testRecoil(
 testRecoil(
   'useRecoilSnapshot - cloned async selector',
   async ({strictMode, concurrentMode}) => {
-    const [mySelector, resolve] = asyncSelector();
+    const [mySelector, resolve] = asyncSelector<string, _>();
 
     const snapshots = [];
     function RecoilSnapshotAndSubscribe() {

@@ -104,7 +104,7 @@ function asyncSelector<T, S>(
 /* eslint-disable jest/valid-expect */
 
 testRecoil('noWait - resolve', async () => {
-  const [dep, resolve] = asyncSelector();
+  const [dep, resolve] = asyncSelector<number, _>();
 
   const pTest = expect(getValue(noWait(dep)).toPromise()).resolves.toBe(42);
 
@@ -116,7 +116,7 @@ testRecoil('noWait - resolve', async () => {
 });
 
 testRecoil('noWait - reject', async () => {
-  const [dep, _resolve, reject] = asyncSelector();
+  const [dep, _resolve, reject] = asyncSelector<$FlowFixMe, _>();
   class MyError extends Error {}
 
   const pTest = expect(
@@ -135,8 +135,8 @@ testRecoil('noWait - reject', async () => {
 // [value, loading]    [value, Promise]    [value, Promise]  Promise         Promise
 // [value, value]      [value, value]      [value, value]    [value, value]  [value, value]
 testRecoil('waitFor - resolve to values', async () => {
-  const [depA, resolveA] = asyncSelector();
-  const [depB, resolveB] = asyncSelector();
+  const [depA, resolveA] = asyncSelector<$FlowFixMe | number, _>();
+  const [depB, resolveB] = asyncSelector<$FlowFixMe | number, _>();
   const deps = [depA, depB];
 
   // Test for initial values
@@ -211,8 +211,8 @@ testRecoil('waitFor - resolve to values', async () => {
 // [error, loading]    [Error, Promise]    [Error, Promise]  Error         Promise
 // [error, error]      [Error, Error]      [Error, Error]    Error         [Error, Error]
 testRecoil('waitFor - rejected', async () => {
-  const [depA, _resolveA, rejectA] = asyncSelector();
-  const [depB, _resolveB, rejectB] = asyncSelector();
+  const [depA, _resolveA, rejectA] = asyncSelector<$FlowFixMe, _>();
+  const [depB, _resolveB, rejectB] = asyncSelector<$FlowFixMe, _>();
   const deps = [depA, depB];
 
   class Error1 extends Error {}
@@ -314,8 +314,8 @@ testRecoil('waitFor - rejected', async () => {
 // [value, loading]    [value, Promise]    [value, Promise]  Promise       Promise
 // [value, error]      [value, Error]      [value, Error]    Error         [value, Error]
 testRecoil('waitFor - resolve then reject', async () => {
-  const [depA, resolveA, _rejectA] = asyncSelector();
-  const [depB, _resolveB, rejectB] = asyncSelector();
+  const [depA, resolveA, _rejectA] = asyncSelector<$FlowFixMe | number, _>();
+  const [depB, _resolveB, rejectB] = asyncSelector<$FlowFixMe | number, _>();
   const deps = [depA, depB];
 
   class Error2 extends Error {}
@@ -420,8 +420,8 @@ testRecoil('waitFor - resolve then reject', async () => {
 // [error, loading]    [Error, Promise]    [Error, Promsie]  Error         Promise
 // [error, value]      [Error, value]      [Error, value]    Error         [Error, value]
 testRecoil('waitFor - reject then resolve', async () => {
-  const [depA, _resolveA, rejectA] = asyncSelector();
-  const [depB, resolveB, _rejectB] = asyncSelector();
+  const [depA, _resolveA, rejectA] = asyncSelector<$FlowFixMe | number, _>();
+  const [depB, resolveB, _rejectB] = asyncSelector<$FlowFixMe | number, _>();
   const deps = [depA, depB];
 
   class Error1 extends Error {}
@@ -518,8 +518,8 @@ testRecoil('waitFor - reject then resolve', async () => {
 
 // Similar as the first test that resolves both dependencies, but with named dependencies.
 testRecoil('waitFor - named dependency version', async () => {
-  const [depA, resolveA] = asyncSelector();
-  const [depB, resolveB] = asyncSelector();
+  const [depA, resolveA] = asyncSelector<$FlowFixMe | number, _>();
+  const [depB, resolveB] = asyncSelector<$FlowFixMe | number, _>();
   const deps = {a: depA, b: depB};
 
   expect(getValue(waitForNone(deps)).a.promiseMaybe()).toBeInstanceOf(Promise);
@@ -588,8 +588,14 @@ testRecoil('waitFor - named dependency version', async () => {
 });
 
 testRecoil('waitForAll - Evaluated concurrently', async () => {
-  const [depA, resolveA, _rejectA, evaluatedA] = asyncSelector();
-  const [depB, _resolveB, _rejectB, evaluatedB] = asyncSelector();
+  const [depA, resolveA, _rejectA, evaluatedA] = asyncSelector<
+    $FlowFixMe | number,
+    _,
+  >();
+  const [depB, _resolveB, _rejectB, evaluatedB] = asyncSelector<
+    $FlowFixMe,
+    _,
+  >();
   const deps = [depA, depB];
 
   expect(evaluatedA()).toBe(false);
@@ -611,7 +617,7 @@ testRecoil('waitForAll - Evaluated concurrently', async () => {
 });
 
 testRecoil('waitForAll - mixed sync and async deps', async () => {
-  const [depA, resolveA] = asyncSelector();
+  const [depA, resolveA] = asyncSelector<$FlowFixMe | number, _>();
   const depB = selector({
     key: 'mydepkeyB',
     get: () => 1,

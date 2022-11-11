@@ -393,7 +393,10 @@ function RecoilRoot_INTERNAL({
     return newGraph;
   };
 
-  const subscribeToTransactions = (callback: Store => void, key: ?NodeKey) => {
+  const subscribeToTransactions = (
+    callback: Store => void,
+    key: ?NodeKey,
+  ): ({release: () => void}) => {
     if (key == null) {
       // Global transaction subscriptions
       const {transactionSubscriptions} = storeRef.current.getState();
@@ -414,7 +417,8 @@ function RecoilRoot_INTERNAL({
       nullthrows(nodeTransactionSubscriptions.get(key)).set(id, callback);
       return {
         release: () => {
-          const subs = nodeTransactionSubscriptions.get(key);
+          const subs: ?Map<number, (_0: Store) => void> =
+            nodeTransactionSubscriptions.get(key);
           if (subs) {
             subs.delete(id);
             if (subs.size === 0) {
@@ -471,7 +475,7 @@ function RecoilRoot_INTERNAL({
     [notifyBatcherOfChange],
   );
 
-  const storeRef = useRefInitOnce(
+  const storeRef: {current: Store} = useRefInitOnce(
     () =>
       storeProp ?? {
         storeID: getNextStoreID(),

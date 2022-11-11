@@ -1,3 +1,8 @@
+/**
+ * (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+ *
+ * @oncall recoil
+ */
 // Mock spies
 const handlers = [];
 const bg = {

@@ -271,7 +271,7 @@ describe('Valid values', () => {
 
 describe('Defaults', () => {
   testRecoil('default is optional', () => {
-    const myAtom = atom({key: 'atom without default'});
+    const myAtom = atom<$FlowFixMe>({key: 'atom without default'});
     expect(getRecoilStateLoadable(myAtom).state).toBe('loading');
 
     act(() => set(myAtom, 'VALUE'));
@@ -482,7 +482,7 @@ describe('Effects', () => {
 
   testRecoil('initialization', () => {
     let inited = false;
-    const myAtom = atom({
+    const myAtom: RecoilState<string> = atom({
       key: 'atom effect init',
       default: 'DEFAULT',
       effects: [
@@ -1506,17 +1506,17 @@ describe('Effects', () => {
 
     testRecoil('async get other atoms', async () => {
       let initTest1 = null;
-      let initTest2 = null;
-      let initTest3 = null;
-      let initTest4 = null;
-      let initTest5 = null;
-      let initTest6 = null;
+      let initTest2: null | void = null;
+      let initTest3: null | void = null;
+      let initTest4: null | void = null;
+      let initTest5: null | void = null;
+      let initTest6: null | void = null;
       let setTest = null;
 
       // StrictMode will render twice
       let firstRender = true;
 
-      const myAtom = atom({
+      const myAtom: RecoilState<string> = atom({
         key: 'atom effect - async get',
         default: 'DEFAULT',
         effects: [
@@ -1563,7 +1563,9 @@ describe('Effects', () => {
         ],
       });
 
-      const asyncAtom = atom({
+      const asyncAtom: RecoilState<
+        Promise<$IMPORTED_TYPE$_DefaultValue> | Promise<string> | string,
+      > = atom({
         key: 'atom effect - other atom async get',
         default: Promise.resolve('ASYNC_DEFAULT'),
         effects: [

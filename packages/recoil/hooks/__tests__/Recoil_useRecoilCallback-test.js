@@ -367,7 +367,7 @@ testRecoil('goes to snapshot', async () => {
 });
 
 testRecoil('Updates are batched', () => {
-  const family = atomFamily({
+  const family = atomFamily<_, number>({
     key: 'useRecoilCallback/batching/family',
     default: 0,
   });

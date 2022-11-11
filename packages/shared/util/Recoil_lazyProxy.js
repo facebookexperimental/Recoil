@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 /**
@@ -27,7 +28,7 @@ function lazyProxy<Base: {[string]: any}, Factories: {[string]: () => any}>(
   ...Base,
   ...$ObjMap<Factories, <F>(() => F) => F>,
 } {
-  const proxy = new Proxy(base, {
+  const proxy: Proxy<Base> = new Proxy(base, {
     // Compute and cache lazy property if not already done.
     get: (target, prop) => {
       if (!(prop in target) && prop in factories) {

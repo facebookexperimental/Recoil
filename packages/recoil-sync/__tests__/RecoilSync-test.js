@@ -107,7 +107,7 @@ test('Write to storage', async () => {
     default: 'DEFAULT',
   });
 
-  const storage = new Map();
+  const storage = new Map<string, mixed>();
 
   const [AtomA, setA, resetA] = componentThatReadsAndWritesAtom(atomA);
   const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
@@ -151,8 +151,8 @@ test('Write to multiple storages', async () => {
     effects: [syncEffect({storeKey: 'B', refine: string()})],
   });
 
-  const storageA = new Map();
-  const storageB = new Map();
+  const storageA = new Map<string, mixed>();
+  const storageB = new Map<string, mixed>();
 
   const [AtomA, setA] = componentThatReadsAndWritesAtom(atomA);
   const [AtomB, setB] = componentThatReadsAndWritesAtom(atomB);
@@ -910,7 +910,7 @@ test('Persist on read', async () => {
     ],
   });
 
-  const storage = new Map();
+  const storage = new Map<string, mixed>();
 
   const container = renderElements(
     <TestRecoilSync storage={storage}>
@@ -959,7 +959,7 @@ test('Persist on read - async', async () => {
     ],
   });
 
-  const storage = new Map();
+  const storage = new Map<string, mixed>();
 
   const container = renderElements(
     <TestRecoilSync storage={storage}>
@@ -1112,8 +1112,8 @@ describe('Complex Mappings', () => {
     });
     const [AtomB, setB, resetB] = componentThatReadsAndWritesAtom(atomB);
 
-    const storage = new Map();
-    const allItemsRef = {current: new Map()};
+    const storage = new Map<string, mixed>();
+    const allItemsRef = {current: new Map<string, mixed>()};
     const container = renderElements(
       <TestRecoilSync storage={storage} allItemsRef={allItemsRef}>
         <ReadsAtom atom={atomA} />
@@ -1392,7 +1392,7 @@ test('Unregister store and atoms', () => {
     ],
   });
 
-  const subscriberRefCounts = [];
+  const subscriberRefCounts: Array<number> = [];
   const unregister = jest.fn(idx => {
     subscriberRefCounts[idx]--;
   });

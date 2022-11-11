@@ -8,7 +8,9 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 import type {RecoilState} from 'Recoil_RecoilValue';
 
@@ -305,7 +307,7 @@ testRecoil('selectorFamily - evaluate to RecoilValue', () => {
 });
 
 testRecoil('selectorFamily - invalid parameter error message', () => {
-  const mySelector = selectorFamily({
+  const mySelector = selectorFamily<_, {foo: () => void}>({
     key: 'function in parameter',
     get: () => () => {},
   });
