@@ -325,7 +325,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       function getInfo_UNSTABLE<S>(
         recoilValue: RecoilValue<S>,
       ): RecoilValueInfo<S> {
-        const info = peekNodeInfo(
+        const info = peekNodeInfo<S>(
           store,
           store.getState().nextTree ?? store.getState().currentTree,
           recoilValue.key,
@@ -467,7 +467,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       // since we are the ones initializing on first use.
       if (!(initValue instanceof DefaultValue)) {
         const initLoadable = isInitError
-          ? loadableWithError(initValue)
+          ? loadableWithError<$FlowFixMe>(initValue)
           : isPromise(initValue)
           ? loadableWithPromise(wrapPendingPromise(store, initValue))
           : loadableWithValue(unwrap(initValue));
@@ -555,7 +555,10 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
 
     cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
 
-    return new Map().set(key, loadableWithValue(newValue));
+    return new Map<NodeKey, Loadable<$FlowFixMe>>().set(
+      key,
+      loadableWithValue(newValue),
+    );
   }
 
   function shouldDeleteConfigOnReleaseAtom() {

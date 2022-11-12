@@ -15,7 +15,12 @@ import type {Loadable} from '../adt/Recoil_Loadable';
 import type {DefaultValue} from '../core/Recoil_Node';
 import type {RecoilState, RecoilValue} from '../core/Recoil_RecoilValue';
 import type {ComponentSubscription} from '../core/Recoil_RecoilValueInterface';
-import type {NodeKey, StoreRef} from '../core/Recoil_State';
+import type {
+  NodeKey,
+  StoreRef,
+  StoreState,
+  TreeState,
+} from '../core/Recoil_State';
 
 const {batchUpdates} = require('../core/Recoil_Batching');
 const {DEFAULT_VALUE} = require('../core/Recoil_Node');
@@ -136,7 +141,7 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
   const subscriptions = useRef<Map<NodeKey, ComponentSubscription>>(new Map());
 
   const unsubscribeFrom = useCallback(
-    key => {
+    (key: NodeKey) => {
       const sub = subscriptions.current.get(key);
       if (sub) {
         sub.release();
@@ -146,11 +151,14 @@ function useRecoilInterface_DEPRECATED(): RecoilInterface {
     [subscriptions],
   );
 
-  const updateState = useCallback((_state, key) => {
-    if (subscriptions.current.has(key)) {
-      forceUpdate([]);
-    }
-  }, []);
+  const updateState = useCallback(
+    (_state: TreeState | StoreState, key: NodeKey) => {
+      if (subscriptions.current.has(key)) {
+        forceUpdate([]);
+      }
+    },
+    [],
+  );
 
   // Effect to add/remove subscriptions as nodes are used
   useEffect(() => {
@@ -342,27 +350,30 @@ function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
   }, [storeRef, recoilValue]);
 
   // Memoize the state to avoid unnecessary rerenders
-  const memoizePreviousSnapshot = useCallback(getState => {
-    let prevState;
-    return () => {
-      const nextState = getState();
-      if (
-        prevState?.loadable.is(nextState.loadable) &&
-        prevState?.key === nextState.key
-      ) {
-        return prevState;
-      }
-      prevState = nextState;
-      return nextState;
-    };
-  }, []);
+  const memoizePreviousSnapshot = useCallback(
+    (getState: () => {key: NodeKey, loadable: Loadable<T>}) => {
+      let prevState;
+      return () => {
+        const nextState = getState();
+        if (
+          prevState?.loadable.is(nextState.loadable) &&
+          prevState?.key === nextState.key
+        ) {
+          return prevState;
+        }
+        prevState = nextState;
+        return nextState;
+      };
+    },
+    [],
+  );
   const getMemoizedSnapshot = useMemo(
     () => memoizePreviousSnapshot(getSnapshot),
     [getSnapshot, memoizePreviousSnapshot],
   );
 
   const subscribe = useCallback(
-    notify => {
+    (notify: () => void) => {
       const store = storeRef.current;
       const subscription = subscribeToRecoilValue(
         store,
@@ -406,7 +417,7 @@ function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
 
   const subscribe: (_storeState: empty, notify: () => void) => () => void =
     useCallback(
-      (_storeState, notify) => {
+      (_storeState, notify: () => void) => {
         const store = storeRef.current;
         const subscription: ComponentSubscription = subscribeToRecoilValue(
           store,
@@ -479,7 +490,7 @@ function useRecoilValueLoadable_TRANSITION_SUPPORT<T>(
 
   // Memoize state snapshots
   const updateState = useCallback(
-    prevState => {
+    (prevState: {key: NodeKey, loadable: Loadable<T>}) => {
       const nextState = getState();
       return prevState.loadable.is(nextState.loadable) &&
         prevState.key === nextState.key
