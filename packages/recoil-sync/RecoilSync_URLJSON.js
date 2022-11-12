@@ -32,13 +32,13 @@ function RecoilURLSyncJSON(options: RecoilURLSyncJSONOptions): React.Node {
     throw err('"href" location is not supported for JSON encoding');
   }
   const serialize = useCallback(
-    x =>
+    (x: mixed) =>
       x === undefined
         ? ''
         : nullthrows(JSON.stringify(x), 'Unable to serialize state with JSON'),
     [],
   );
-  const deserialize = useCallback(x => JSON.parse(x), []);
+  const deserialize = useCallback((x: string) => JSON.parse(x), []);
 
   return <RecoilURLSync {...{...options, serialize, deserialize}} />;
 }

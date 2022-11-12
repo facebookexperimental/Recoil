@@ -19,6 +19,7 @@ import type {
   SyncEffectOptions,
 } from './RecoilSync';
 import type {AtomEffect} from 'Recoil';
+import type {ListenInterface, WriteInterface} from 'RecoilSync';
 import type {CheckerReturnType} from 'refine';
 
 const {DefaultValue, RecoilLoadable} = require('Recoil');
@@ -192,7 +193,7 @@ function RecoilURLSync({
   useEffect(updateCachedState, [updateCachedState]);
 
   const write = useCallback(
-    ({diff, allItems}) => {
+    ({diff, allItems}: WriteInterface) => {
       updateCachedState(); // Just to be safe...
 
       // This could be optimized with an itemKey-based registery if necessary to avoid
@@ -236,14 +237,14 @@ function RecoilURLSync({
     [getURL, loc, pushURL, replaceURL, serialize, storeKey, updateCachedState],
   );
 
-  const read: ReadItem = useCallback(itemKey => {
+  const read: ReadItem = useCallback((itemKey: ItemKey) => {
     return cachedState.current?.has(itemKey)
       ? cachedState.current?.get(itemKey)
       : new DefaultValue();
   }, []);
 
   const listen = useCallback(
-    ({updateAllKnownItems}) => {
+    ({updateAllKnownItems}: ListenInterface) => {
       function handleUpdate() {
         updateCachedState();
         if (cachedState.current != null) {

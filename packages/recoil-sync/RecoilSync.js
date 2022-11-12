@@ -454,7 +454,7 @@ function useRecoilSync({
   );
 
   const updateAllKnownItems = useCallback(
-    itemSnapshot => {
+    (itemSnapshot: ItemSnapshot) => {
       // Reset the value of any items that are registered and not included in
       // the user-provided snapshot.
       const atomRegistry = registries.getAtomRegistry(recoilStoreID, storeKey);

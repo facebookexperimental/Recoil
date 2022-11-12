@@ -110,7 +110,7 @@ function useTransactionObservation_DEPRECATED(
 ) {
   useTransactionSubscription(
     useCallback(
-      store => {
+      (store: Store) => {
         let previousTree = store.getState().previousTree;
         const currentTree = store.getState().currentTree;
         if (!previousTree) {
@@ -158,7 +158,7 @@ function useRecoilTransactionObserver(
 ) {
   useTransactionSubscription(
     useCallback(
-      store => {
+      (store: Store) => {
         const snapshot = cloneSnapshot(store, 'latest');
         const previousSnapshot = cloneSnapshot(store, 'previous');
         callback({
@@ -178,11 +178,11 @@ function useRecoilSnapshot(): Snapshot {
     cloneSnapshot(storeRef.current),
   );
   const previousSnapshot = usePrevious(snapshot);
-  const timeoutID = useRef();
-  const releaseRef = useRef();
+  const timeoutID = useRef<?TimeoutID>();
+  const releaseRef = useRef<?() => void>();
 
   useTransactionSubscription(
-    useCallback(store => setSnapshot(cloneSnapshot(store)), []),
+    useCallback((store: Store) => setSnapshot(cloneSnapshot(store)), []),
   );
 
   // Retain snapshot for duration component is mounted

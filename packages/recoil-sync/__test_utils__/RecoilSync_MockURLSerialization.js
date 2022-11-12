@@ -34,7 +34,7 @@ function TestURLSync({
   children?: React.Node,
 }): React.Node {
   const serialize = useCallback(
-    items => {
+    (items: mixed) => {
       const str = nullthrows(JSON.stringify(items));
       return location.part === 'href'
         ? `/TEST#${encodeURIComponent(str)}`
@@ -43,7 +43,7 @@ function TestURLSync({
     [location.part],
   );
   const deserialize = useCallback(
-    str => {
+    (str: string) => {
       const stateStr =
         location.part === 'href' ? decodeURIComponent(str.split('#')[1]) : str;
       // Skip the default URL parts which don't conform to the serialized standard.

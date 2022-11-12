@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {RecoilValue} from '../core/Recoil_RecoilValue';
@@ -69,7 +70,7 @@ function useRetain_ACTUAL(toRetain: ToRetain): void {
   // API affords us no better option. If we suspend and never commit after some
   // seconds, then release. The 'actual' retain/release in the effect above
   // cancels this.
-  const timeoutID = useRef();
+  const timeoutID = useRef<?TimeoutID>();
   const previousRetainables = usePrevious(retainables);
   if (
     !isSSR &&
