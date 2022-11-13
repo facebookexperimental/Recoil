@@ -24,7 +24,7 @@ const testRecoil = getRecoilTestFn(() => {
 
 describe('treeCacheLRU()', () => {
   testRecoil('getting and setting cache', () => {
-    const cache = treeCacheLRU({maxSize: 10});
+    const cache = treeCacheLRU<$FlowFixMe>({maxSize: 10});
 
     const [route1, loadable1] = [
       [
@@ -64,7 +64,7 @@ describe('treeCacheLRU()', () => {
   });
 
   testRecoil('getting and setting cache (hitting max size)', () => {
-    const cache = treeCacheLRU({maxSize: 2});
+    const cache = treeCacheLRU<$FlowFixMe>({maxSize: 2});
 
     const [route1, loadable1] = [
       [

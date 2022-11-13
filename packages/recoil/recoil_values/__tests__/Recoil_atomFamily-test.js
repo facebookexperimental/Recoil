@@ -152,7 +152,7 @@ testRecoil('Works with non-overlapping sets', () => {
 
 describe('Default', () => {
   testRecoil('default is optional', () => {
-    const myAtom = atom({key: 'atom without default'});
+    const myAtom = atom<$FlowFixMe>({key: 'atom without default'});
     expect(getLoadable(myAtom).state).toBe('loading');
 
     act(() => set(myAtom, 'VALUE'));
