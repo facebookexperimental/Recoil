@@ -46,7 +46,7 @@ const pictureForUserState = selector({
 
 ## GraphQL Query with Parameters
 
-[**`graphQLSelectorFamily()`**](/docs/recoil-relay/api/graphQLSelectorFamily) allows you to use parameters in addition to other Recoil state for computing query variables.  Parameters can be determined basd on a component's props, React state, used in another Recoil selector, etc.
+[**`graphQLSelectorFamily()`**](/docs/recoil-relay/api/graphQLSelectorFamily) allows you to use parameters in addition to other Recoil state for computing query variables.  Parameters can be determined based on a component's props, React state, used in another Recoil selector, etc.
 
 ```jsx
 const userQuery = graphQLSelectorFamily({
