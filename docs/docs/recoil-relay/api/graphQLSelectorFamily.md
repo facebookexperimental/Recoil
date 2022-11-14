@@ -10,7 +10,7 @@ sidebar_label: graphQLSelectorFamily()
 function graphQLSelectorFamily<
   TVariables: Variables,
   TData: $ReadOnly<{[string]: mixed}>,
-  P: Parmaeter = TVariables,
+  P: Parameter = TVariables,
   T = TData,
   TRawResponse = void,
   TMutationVariables: Variables = {},
