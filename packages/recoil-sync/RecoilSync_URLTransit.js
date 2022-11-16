@@ -119,7 +119,7 @@ function RecoilURLSyncTransit({
       }),
     [handlers],
   );
-  const serialize = useCallback(x => writer.write(x), [writer]);
+  const serialize = useCallback((x: mixed) => writer.write(x), [writer]);
 
   const reader = useMemo(
     () =>
@@ -141,7 +141,7 @@ function RecoilURLSyncTransit({
       }),
     [handlers],
   );
-  const deserialize = useCallback(x => reader.read(x), [reader]);
+  const deserialize = useCallback((x: string) => reader.read(x), [reader]);
 
   return <RecoilURLSync {...{...options, serialize, deserialize}} />;
 }

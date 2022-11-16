@@ -14,7 +14,7 @@
 function unionSets<TValue>(
   ...sets: $ReadOnlyArray<$ReadOnlySet<TValue>>
 ): Set<TValue> {
-  const result = new Set();
+  const result = new Set<TValue>();
   for (const set of sets) {
     for (const value of set) {
       result.add(value);

@@ -245,7 +245,7 @@ testRecoil(
 
     let forceUpdate;
     function ReadAtom() {
-      const [_, setValue] = useState({});
+      const [_, setValue] = useState<{}>({});
       forceUpdate = () => setValue({});
       return useRecoilValue(myAtom);
     }

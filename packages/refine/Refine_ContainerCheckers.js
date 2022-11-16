@@ -255,7 +255,7 @@ function set<T>(checker: Checker<T>): Checker<$ReadOnlySet<T>> {
       return failure('value is not a Set', path);
     }
 
-    const out = new Set();
+    const out = new Set<T>();
     const warnings: Array<CheckFailure> = [];
     for (const item of value) {
       const result = checker(item, path.extend('[]'));
@@ -283,7 +283,7 @@ function map<K, V>(
       return failure('value is not a Map', path);
     }
 
-    const out = new Map();
+    const out = new Map<K, $FlowFixMe>();
     const warnings: Array<CheckFailure> = [];
     for (const [k, v] of value.entries()) {
       const keyResult = keyChecker(k, path.extend(`[${k}] key`));

@@ -61,7 +61,10 @@ function Connector({
   devMode = true,
 }: Props): React.Node {
   const transactionIdRef = useRef(0);
-  const connectionRef = useRef(null);
+  const connectionRef = useRef<?{
+    disconnect: () => void,
+    track: (transactionId: number, snapshot: Snapshot) => void,
+  }>(null);
   const goToSnapshot = useGotoRecoilSnapshot();
   const snapshot = useRecoilSnapshot();
   const release = snapshot.retain();

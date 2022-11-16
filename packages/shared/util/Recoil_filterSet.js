@@ -19,7 +19,7 @@ function filterSet<TValue>(
   set: $ReadOnlySet<TValue>,
   callback: (value: TValue) => boolean,
 ): $ReadOnlySet<TValue> {
-  const result = new Set();
+  const result = new Set<TValue>();
   for (const value of set) {
     if (callback(value)) {
       result.add(value);

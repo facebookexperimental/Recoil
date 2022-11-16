@@ -19,7 +19,7 @@ function mapMap<TKey, TValue, TValueOut>(
   map: $ReadOnlyMap<TKey, TValue>,
   callback: (value: TValue, key: TKey) => TValueOut,
 ): Map<TKey, TValueOut> {
-  const result = new Map();
+  const result = new Map<TKey, TValueOut>();
   map.forEach((value, key) => {
     result.set(key, callback(value, key));
   });

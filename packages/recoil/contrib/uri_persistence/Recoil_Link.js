@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {MutableSnapshot, Snapshot} from '../../core/Recoil_Snapshot';
@@ -59,7 +60,7 @@ function LinkToRecoilSnapshot({
   const {onClick, target} = anchorProps;
 
   const onClickWrapper = useCallback(
-    event => {
+    (event: $FlowFixMe) => {
       onClick?.(event);
       if (
         !event.defaultPrevented &&

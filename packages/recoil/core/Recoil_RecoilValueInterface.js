@@ -59,7 +59,7 @@ function getRecoilValueAsLoadable<T>(
     recoverableViolation('Tried to read from a discarded tree', 'recoil');
   }
 
-  const loadable = getNodeLoadable(store, treeState, key);
+  const loadable = getNodeLoadable<T>(store, treeState, key);
 
   if (loadable.state === 'loading') {
     loadable.contents.catch(() => {
@@ -99,7 +99,7 @@ function valueFromValueOrUpdater<T>(
     // Updater form: pass in the current value. Throw if the current value
     // is unavailable (namely when updating an async selector that's
     // pending or errored):
-    const current = getNodeLoadable(store, state, key);
+    const current = getNodeLoadable<$FlowFixMe>(store, state, key);
 
     if (current.state === 'loading') {
       const msg = `Tried to set atom or selector "${key}" using an updater function while the current state is pending, this is not currently supported.`;
@@ -220,7 +220,7 @@ function queueOrPerformStateUpdate(store: Store, action: Action<mixed>): void {
 
 const batchStack: Array<Map<Store, Array<Action<mixed>>>> = [];
 function batchStart(): () => void {
-  const actionsByStore = new Map();
+  const actionsByStore = new Map<Store, Array<Action<mixed>>>();
   batchStack.push(actionsByStore);
   return () => {
     for (const [store, actions] of actionsByStore) {
