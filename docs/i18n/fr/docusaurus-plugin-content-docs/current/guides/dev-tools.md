@@ -44,7 +44,7 @@ function MyApp() {
 
 ## Observation des changements d'état sur demande
 
-Ou, vous pouvez utiliser le hook [**`useRecoilCallback()`**](/docs/api-reference/core/useRecoilCallback) pour obtenir un [**`Snapshot`**](/ docs/api-reference/core/Snapshot) (instantané) à la demande.
+Ou, vous pouvez utiliser le hook [**`useRecoilCallback()`**](/docs/api-reference/core/useRecoilCallback) pour obtenir un [**`Snapshot`**](/docs/api-reference/core/Snapshot) (instantané) à la demande.
 
 ```jsx
 function DebugButton(): React.Node {
