@@ -250,7 +250,7 @@ const friendsInfoQuery = selector({
 
 ## Prélecture
 
-Pour des raisons de performances, vous souhaitez peut-être lancer la récupération *avant* le rendu. De cette façon, la requête peut continuer pendant que le rendu commence. La [Documentation de React](https://reactjs.org/docs/concurrent-mode-suspense.html#start-fetching-early) donnent quelques exemples. Ce modèle fonctionne également avec Recoil.
+Pour des raisons de performances, vous souhaitez peut-être lancer la récupération *avant* le rendu. De cette façon, la requête peut continuer pendant que le rendu commence. La [Documentation de React](https://reactjs.org/docs/concurrent-mode-suspense.html#start-fetching-early) donne quelques exemples. Ce modèle fonctionne également avec Recoil.
 
 Modifions l'exemple ci-dessus pour lancer une récupération des informations sur l'utilisateur suivant dès que l'utilisateur clique sur le bouton pour changer d'utilisateur:
 
