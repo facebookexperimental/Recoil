@@ -77,7 +77,7 @@ function MonApplication() {
 
 ## La gestion d'erreurs
 
-Mais que faire si la demande à échouée ou contient une erreur? Les sélecteurs Recoil peuvent également générer des erreurs qui seront ensuite lancées si un composant tente d'utiliser cette valeur. Cela peut être intercepté avec un React [`<ErrorBoundary>`] (https://reactjs.org/docs/error-boundaries.html). Par exemple:
+Mais que faire si la demande à échouée ou contient une erreur? Les sélecteurs Recoil peuvent également générer des erreurs qui seront ensuite lancées si un composant tente d'utiliser cette valeur. Cela peut être intercepté avec un React [`<ErrorBoundary>`](https://reactjs.org/docs/error-boundaries.html). Par exemple:
 
 ```jsx
 const currentUserNameQuery = selector({
@@ -216,7 +216,7 @@ function MonApplication() {
 
 ## Requêtes concomitantes
 
-Si vous remarquez dans l'exemple ci-dessus, `friendsInfoQuery` utilise une requête pour obtenir les informations de chaque ami. Mais, en faisant cela dans une boucle, ils sont essentiellement sérialisés. Si la recherche est rapide, c'est peut-être ok. Si le coût est cher, vous pouvez utiliser un assistant d'accès concurrentiel tel que [`waitForAll`](/docs/api-reference/utils/waitForAll) pour les exécuter en parallèle. Cet assistant accepte à la fois des tableaux et des objets nommés de dépendances.
+Si vous remarquez dans l'exemple ci-dessus, `friendsInfoQuery` utilise une requête pour obtenir les informations de chaque ami. Mais, en faisant cela dans une boucle, les requêtes seront exécutées séquentiellement. Si la recherche est rapide, cela peut être acceptable. Si le coût est cher, vous pouvez utiliser un assistant d'accès concurrentiel tel que [`waitForAll`](/docs/api-reference/utils/waitForAll) pour les exécuter en parallèle. Cet assistant accepte à la fois des tableaux et des objets nommés de dépendances.
 
 ```jsx
 const friendsInfoQuery = selector({
