@@ -78,9 +78,9 @@ function TodoListFilters() {
     <>
       Filter:
       <select value={filter} onChange={updateFilter}>
-        <option value="Afficher tout">Tout</option>
-        <option value="Afficher Terminés">Terminés</option>
-        <option value="Afficher Non-terminés">Non-terminés</option>
+        <option value="Show All">Tout</option>
+        <option value="Show Completed">Terminés</option>
+        <option value="Show Uncompleted">Non-terminés</option>
       </select>
     </>
   );
