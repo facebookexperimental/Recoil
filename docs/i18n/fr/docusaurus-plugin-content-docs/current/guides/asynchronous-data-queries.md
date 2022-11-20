@@ -279,9 +279,9 @@ function CurrentUserInfo() {
 }
 ```
 
-## Requêter les valeurs par défaut de atomes 
+## Requêter la valeur par défaut d'un atome 
 
-Un modèle courant consiste à utiliser un atome pour représenter un état modifiable local, mais à utiliser un sélecteur pour interroger les valeurs par défaut:
+Un modèle courant consiste à utiliser un atome pour représenter un état modifiable local, mais à utiliser un sélecteur pour interroger sa valeur par défaut:
 
 ```jsx
 const currentUserIDState = atom({
