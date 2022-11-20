@@ -261,7 +261,7 @@ function CurrentUserInfo() {
 
   const changeUser = useRecoilCallback(({snapshot, set}) => userID => {
     snapshot.getLoadable(userInfoQuery(userID)); // prélit les informations utilisateur
-    set(currentUserIDState, userID); // change l'utilisateur courant pour commancer un nouveau rendu
+    set(currentUserIDState, userID); // change l'utilisateur courant pour commencer un nouveau rendu
   });
 
   return (
