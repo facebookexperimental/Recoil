@@ -7,7 +7,7 @@ Effets Atomiques est une nouvelle API expérimentale pour la gestion des effets 
 
 ----
 ## *NOTE IMPORTANTE*
-***Cette API est actuellement en cours de développement et changera. Merci de restez à l'écoute...***
+***Cette API est actuellement en cours de développement et changera. Merci de rester à l'écoute...***
 
 ----
 
