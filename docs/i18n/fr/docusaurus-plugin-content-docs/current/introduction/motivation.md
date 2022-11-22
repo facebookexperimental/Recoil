@@ -8,7 +8,7 @@ Pour des raisons de compatibilité et de simplicité, il est préférable d'util
 - Le contexte ne peut stocker qu'une valeur seule, pas un jeu indéfini de valeures avec chacune leur propre composant consommateurs.
 - Ces deux éléments rendent difficile la fragmentation de code du haut de l'arbre (où l'état doit vivre) vers les feuilles de l'arbre (où l'état est utilisé).
 
-Nous voulons améliorer cela tout en gardant l'API et la sémantique ainsi que le qu'un comportement aussi _React_ que possible.
+Nous voulons améliorer cela tout en gardant l'API et la sémantique ainsi qu'un comportement aussi _React_ que possible.
 
 Recoil définit un graphe orienté orthogonal mais également intrinsèque et attaché à votre arbre React. Les changements d'état découlent des racines de ce graphe (que nous appelons des atomes) à travers des fonctions pures (que nous appelons des sélecteurs) et enfin vers les composants. Avec cette approche:
 
