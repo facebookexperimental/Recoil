@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const {act} = require('ReactTestUtils');
@@ -85,7 +86,7 @@ describe('Atoms', () => {
         expect(get(myAtom)).toEqual(value);
       });
       useEffect(() => {
-        act(() => transact('TRANSACT'));
+        transact('TRANSACT');
       });
       return null;
     }
