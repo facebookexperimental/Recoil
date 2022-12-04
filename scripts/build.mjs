@@ -71,22 +71,26 @@ if (target === 'all' || target == null) {
 
 async function buildAll() {
   console.log('Building all packages...\n');
-  for (const [target, config] of Object.entries(PACKAGES)) {
-    await buildPackage(target, config);
-  }
+  await Promise.all(
+    Object.entries(PACKAGES).map(([target, config]) =>
+      buildPackage(target, config)
+    )
+  );
 }
 
 async function buildPackage(target, config) {
   console.log(`Building ${target}...`);
-  for (const [buildType, packageTypes] of Object.entries(config.builds)) {
-    await buildRollup(
-      `recoil (${buildType})`,
-      createInputOption(buildType, target, config.inputFile),
-      packageTypes.map(type =>
-        createOutputOption(type, target, config.umdName),
-      ),
-    );
-  }
+  await Promise.all(
+    Object.entries(config.builds).map(([buildType, packageTypes]) =>
+      buildRollup(
+        `recoil (${buildType})`,
+        createInputOption(buildType, target, config.inputFile),
+        packageTypes.map((type) =>
+          createOutputOption(type, target, config.umdName)
+        )
+      )
+    )
+  );
 
   console.log('Copying files...');
   fs.copyFile(
@@ -145,9 +149,9 @@ async function buildRollup(name, inputOptions, outputOptionsList) {
     // create a bundle
     const bundle = await rollup(inputOptions);
 
-    for (const outputOptions of outputOptionsList) {
-      await bundle.write(outputOptions);
-    }
+    await Promise.all(
+      outputOptionsList.map((outputOptions) => bundle.write(outputOptions))
+    );
   } catch (error) {
     createErrorHandler(`Build for package ${name} failed!`)(error);
   }
