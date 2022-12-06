@@ -19,7 +19,7 @@ function MyApp() {
   return (
     <RecoilRoot>
       <RecoilRelayEnvironment
-        environment={myEnvironemnt}
+        environment={myEnvironment}
         environmentKey={myEnvironmentKey}>
         {/** My App **/}
       </RecoilRelayEnvironment>
