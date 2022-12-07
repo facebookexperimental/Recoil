@@ -20,7 +20,7 @@ sidebar_label: 介绍
 
 ---
 
-基本思想是可以将 [`syncEffect()`](/docs/recoil-sync/sync-effect) 添加到您希望同步的每个原子，然后将 [`<RecoilSync>`](/docs /recoil-sync/api/RecoilSync) 添加到你的 `<RecoilRoot>` 中以指定如何同步这些原子。 您可以使用内置存储方案，例如 [`<RecoilURLSyncJSON>`](/docs/recoil-sync/url-persistence)、[自己制作 store](/docs/recoil-sync/implement-store)，甚至可以将不同 atom 组同步到不同的 store 中。
+基本思想是可以将 [`syncEffect()`](/docs/recoil-sync/sync-effect) 添加到您希望同步的每个原子，然后将 [`<RecoilSync>`](/docs/recoil-sync/api/RecoilSync) 添加到您的 `<RecoilRoot>` 中以指定如何同步这些原子。 您可以使用内置存储方案，例如 [`<RecoilURLSyncJSON>`](/docs/recoil-sync/url-persistence)、[自己制作 store](/docs/recoil-sync/implement-store)，甚至可以将不同 atom 组同步到不同的 store 中。
 
 ## 案例
 
