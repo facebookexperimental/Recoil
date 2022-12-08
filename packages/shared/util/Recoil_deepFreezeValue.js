@@ -12,6 +12,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const {isReactNative, isWindow} = require('./Recoil_Environment');
