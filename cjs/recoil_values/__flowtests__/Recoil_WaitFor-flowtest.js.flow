@@ -26,9 +26,8 @@ const {
 const numberAtom: RecoilState<number> = atom({key: 'number', default: 0});
 const stringAtom: RecoilState<string> = atom({key: 'string', default: ''});
 
-// eslint-disable-next-line no-unused-vars
 let num: number;
-// eslint-disable-next-line no-unused-vars
+
 let str: string;
 
 //////////////
