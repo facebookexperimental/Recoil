@@ -32,6 +32,7 @@ const {assertion, mixed, writableDict} = require('refine');
 
 type NodeKey = string;
 // $FlowFixMe[reference-before-declaration]
+// $FlowFixMe[underconstrained-implicit-instantiation]
 type ItemState = CheckerReturnType<typeof itemStateChecker>;
 type AtomRegistration = {
   history: HistoryOption,
