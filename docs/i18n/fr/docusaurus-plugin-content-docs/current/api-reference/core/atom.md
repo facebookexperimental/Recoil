@@ -1,5 +1,5 @@
 ---
-title: atome(options)
+title: atom(options)
 sidebar_label: atom()
 ---
 
