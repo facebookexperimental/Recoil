@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const stableStringify = require('../Recoil_stableStringify');

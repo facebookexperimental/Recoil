@@ -96,6 +96,7 @@ function graphQLSelectorFamily<
     | {source: 'remote', response: TData}
     | DefaultValue,
     TVariables | null,
+    // $FlowIssue[incompatible-call]
   >({
     key,
     default: new DefaultValue(),
@@ -120,6 +121,7 @@ function graphQLSelectorFamily<
           graphQLMutationEffect({
             environment,
             mutation: mutations.mutation,
+            // $FlowIssue[missing-local-annot]
             variables: localUpdate => {
               if (
                 // commit mutation only if atom is updated locally

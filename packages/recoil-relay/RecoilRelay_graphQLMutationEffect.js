@@ -84,7 +84,7 @@ function graphQLMutationEffect<
       const mutationID = ++currentMutationID;
       const mutationVariables = variables(newValue);
       if (mutationVariables != null) {
-        commitMutation(environment, {
+        commitMutation<$FlowFixMe>(environment, {
           mutation,
           variables: mutationVariables,
           onError: error => {
