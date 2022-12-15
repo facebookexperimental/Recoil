@@ -386,7 +386,7 @@ describe('Defaults', () => {
   testRecoil('atom default AtomValue ErrorLoadable', () => {
     const myAtom = atom({
       key: 'atom default AtomValue Loadable Error',
-      default: atom.value(RecoilLoadable.error('ERROR')),
+      default: atom.value(RecoilLoadable.error<boolean>('ERROR')),
     });
     expect(isLoadable(getValue(myAtom))).toBe(true);
     expect(getValue(myAtom).errorOrThrow()).toBe('ERROR');
@@ -466,7 +466,7 @@ describe('Effects', () => {
         },
       ],
     });
-    const mySelector = selector({
+    const mySelector = selector<string>({
       key: 'atom effect error selector',
       get: ({get}) => {
         try {
@@ -593,7 +593,7 @@ describe('Effects', () => {
   });
 
   testRecoil('init to undefined', () => {
-    const myAtom = atom({
+    const myAtom = atom<?string>({
       key: 'atom effect init undefined',
       default: 'DEFAULT',
       effects: [({setSelf}) => setSelf('INIT'), ({setSelf}) => setSelf()],

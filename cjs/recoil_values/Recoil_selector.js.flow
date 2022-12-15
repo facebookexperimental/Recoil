@@ -156,9 +156,9 @@ export type ReadWriteSelectorOptions<T> = $ReadOnly<{
   ) => void,
 }>;
 
-export type SelectorOptions<T, P> =
-  | ReadOnlySelectorOptions<T, P>
-  | ReadWriteSelectorOptions<T, P>;
+export type SelectorOptions<T> =
+  | ReadOnlySelectorOptions<T>
+  | ReadWriteSelectorOptions<T>;
 
 export type DepValues = Map<NodeKey, Loadable<mixed>>;
 
