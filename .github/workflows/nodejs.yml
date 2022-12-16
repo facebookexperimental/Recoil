@@ -21,12 +21,12 @@ jobs:
         react: ['17.0.2', '18.1.0']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm i -g yarn
+        cache: yarn
     - run: cd packages-ext/recoil-devtools && yarn install --frozen-lockfile
     - run: yarn install --frozen-lockfile
     - name: Install React (Unix/Mac)
