@@ -41,7 +41,7 @@
   var Recoil_err = err_1;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -591,7 +591,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -680,7 +680,7 @@
   var Recoil_expectationViolation = expectationViolation_1;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -836,7 +836,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -2066,7 +2066,7 @@
   });
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -2102,7 +2102,7 @@
   var Recoil_differenceSets = differenceSets;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -2227,7 +2227,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -2310,7 +2310,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -2332,7 +2332,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -2390,7 +2390,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -2418,7 +2418,7 @@
   var Recoil_filterIterable = filterIterable;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -2680,7 +2680,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -3045,7 +3045,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -3392,7 +3392,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -3416,7 +3416,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -3482,7 +3482,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -3514,7 +3514,7 @@
   var Recoil_concatIterables = concatIterables;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -3541,7 +3541,7 @@
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -4051,7 +4051,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   });
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -4623,7 +4623,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -4777,7 +4777,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_useRetain = useRetain;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -5494,7 +5494,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   };
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -5523,7 +5523,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_filterMap = filterMap;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -5552,7 +5552,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_filterSet = filterSet;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -6183,7 +6183,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_useRecoilTransaction = useRecoilTransaction;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -6842,7 +6842,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_treeCacheFromPolicy = treeCacheFromPolicy;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -6947,7 +6947,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_deepFreezeValue = deepFreezeValue;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -8421,7 +8421,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_atom = atom;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
@@ -8777,7 +8777,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
   var Recoil_errorSelector = errorSelector;
 
   /**
-   * Copyright (c) Facebook, Inc. and its affiliates.
+   * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
    * This source code is licensed under the MIT license found in the
    * LICENSE file in the root directory of this source tree.
