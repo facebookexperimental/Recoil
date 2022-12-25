@@ -3,7 +3,7 @@ title: atom(options)
 sidebar_label: atom()
 ---
 
-An *atom* represents state in Recoil.  The `atom()` function returns a writeable `RecoilState` object.
+An *atom* represents state in Recoil.  The `atom()` function returns a writable `RecoilState` object.
 
 ---
 
