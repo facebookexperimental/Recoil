@@ -13,7 +13,7 @@ function useSetRecoilState<T>(state: RecoilState<T>): SetterOrUpdater<T>;
 type SetterOrUpdater<T> = (T | (T => T)) => void;
 ```
 
-- `state`: état Recoil inscriptible (un [`atome`](/docs/api-reference/core/atom) ou un _writeable_ [`sélecteur`](/docs/api-reference/core/selector))
+- `state`: état Recoil inscriptible (un [`atome`](/docs/api-reference/core/atom) ou un _writable_ [`sélecteur`](/docs/api-reference/core/selector))
 
 Renvoie une fonction setter qui peut être utilisée de manière asynchrone pour changer l'état. Le setter peut recevoir une nouvelle valeur ou une fonction de mise à jour qui reçoit la valeur précédente comme argument.
 

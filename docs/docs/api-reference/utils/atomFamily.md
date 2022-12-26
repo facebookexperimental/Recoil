@@ -3,7 +3,7 @@ title: atomFamily(options)
 sidebar_label: atomFamily()
 ---
 
-Returns a function that returns a writeable `RecoilState` [atom](/docs/api-reference/core/atom).
+Returns a function that returns a writable `RecoilState` [atom](/docs/api-reference/core/atom).
 
 ---
 

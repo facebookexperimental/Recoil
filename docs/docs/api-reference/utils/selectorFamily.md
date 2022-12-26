@@ -3,7 +3,7 @@ title: selectorFamily(options)
 sidebar_label: selectorFamily()
 ---
 
-Returns a function that returns a read-only `RecoilValueReadOnly` or writeable `RecoilState` selector.
+Returns a function that returns a read-only `RecoilValueReadOnly` or writable `RecoilState` selector.
 
 A `selectorFamily` is a powerful pattern that is similar to a [`selector`](/docs/api-reference/core/selector), but allows you to pass parameters to the `get` and `set` callbacks of a `selector`.  The `selectorFamily()` utility returns a function which can be called with user-defined parameters and returns a selector. Each unique parameter value will return the same memoized selector instance.
 
@@ -71,7 +71,7 @@ type CachePolicy =
 
 - `key` - A unique string used to identify the atom internally. This string should be unique with respect to other atoms and selectors in the entire application.
 - `get` - A function that is passed an object of named callbacks that returns the value of the selector, the same as the `selector()` interface. This is wrapped by a function which is passed the parameter from calling the selector family function.
-- `set?` - An optional function that will produce writeable selectors when provided. It should be a function that takes an object of named callbacks, same as the `selector()` interface. This is again wrapped by another function with gets the parameters from calling the selector family function.
+- `set?` - An optional function that will produce writable selectors when provided. It should be a function that takes an object of named callbacks, same as the `selector()` interface. This is again wrapped by another function with gets the parameters from calling the selector family function.
 - `cachePolicy_UNSTABLE` - Defines the behavior of the internal selector cache for **the invidual selectors** that make up the family (it does not control the number of selectors that are stored in the family). Can be useful to control the memory footprint in apps that have selectors with many changing dependencies.
   - `eviction` - can be set to `lru` (which requires that a `maxSize` is set), `keep-all` (default), or `most-recent`. An `lru` cache will evict the least-recently-used value from the selector cache when the size of the cache exceeds `maxSize`. A `keep-all` policy will mean all selector dependencies and their values will be indefinitely stored in the selector cache. A `most-recent` policy will use a cache of size 1 and will retain only the most recently saved set of dependencies and their values.
   - Note the `maxSize` property used alongside `lru` does not control the max size of the family itself, it only controls the eviction policy used in the invidiual selectors that make up the family.

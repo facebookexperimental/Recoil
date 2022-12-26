@@ -12,7 +12,7 @@ Unlike [`useRecoilState()`](/docs/api-reference/core/useRecoilState), this hook 
 ```jsx
 function useRecoilStateLoadable<T>(state: RecoilState<T>): [Loadable<T>, (T | (T => T)) => void]
 ```
-- `state`: a writeable [`atom`](/docs/api-reference/core/atom) or [`selector`](/docs/api-reference/core/selector) that _may_ have some asynchronous operations. The status of the returned loadable will depend on the status of the provided state selector.
+- `state`: a writable [`atom`](/docs/api-reference/core/atom) or [`selector`](/docs/api-reference/core/selector) that _may_ have some asynchronous operations. The status of the returned loadable will depend on the status of the provided state selector.
 
 Returns a [`Loadable`](/docs/api-reference/core/Loadable) for the current state with the interface:
 

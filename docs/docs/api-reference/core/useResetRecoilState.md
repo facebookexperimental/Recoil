@@ -13,7 +13,7 @@ Using `useResetRecoilState()` allows a component to reset the state to its defau
 function useResetRecoilState<T>(state: RecoilState<T>): () => void;
 ```
 
-- `state`: a writeable Recoil state
+- `state`: a writable Recoil state
 
 ### Example
 
