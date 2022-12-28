@@ -32,7 +32,7 @@ type ToRetain =
   | $ReadOnlyArray<RecoilValue<any> | RetentionZone>; // flowlint-line unclear-type:off
 
 function useRetain(toRetain: ToRetain): void {
-  if (!gkx('recoil_memory_managament_2020')) {
+  if (!gkx('recoil_memory_management_2020')) {
     return;
   }
   // eslint-disable-next-line fb-www/react-hooks
@@ -44,7 +44,7 @@ function useRetain_ACTUAL(toRetain: ToRetain): void {
   const retainables = array.map(a => (a instanceof RetentionZone ? a : a.key));
   const storeRef = useStoreRef();
   useEffect(() => {
-    if (!gkx('recoil_memory_managament_2020')) {
+    if (!gkx('recoil_memory_management_2020')) {
       return;
     }
     const store = storeRef.current;

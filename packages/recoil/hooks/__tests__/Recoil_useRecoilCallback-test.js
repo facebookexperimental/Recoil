@@ -684,7 +684,7 @@ describe('Snapshot', () => {
     await expect(selector1Promise).resolves.toBe('DEFAULT');
 
     // Selectors resolving after callback is resolved should be canceled
-    if (gks.includes('recoil_memory_managament_2020')) {
+    if (gks.includes('recoil_memory_management_2020')) {
       act(() => resolveCallback());
       act(() => resolveSelector2());
       await expect(selector2Promise).rejects.toEqual({});

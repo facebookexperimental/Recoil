@@ -26,7 +26,7 @@ const env: RecoilEnv = {
     'recoil_hamt_2020',
     'recoil_sync_external_store',
     'recoil_suppress_rerender_in_callback',
-    'recoil_memory_managament_2020',
+    'recoil_memory_management_2020',
   ]),
 };
 

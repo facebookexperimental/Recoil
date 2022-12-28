@@ -438,8 +438,8 @@ describe('Snapshot Retention', () => {
     expect(rootOnlyCnt).toBe(1);
     expect(snapshotOnlyCnt).toBe(0);
     if (gks.includes('recoil_memory_management_2020')) {
-      expect(rootFirstCnt).toBe(0);
-      expect(snapshotFirstCnt).toBe(0);
+      expect(rootFirstCnt).toBe(1);
+      expect(snapshotFirstCnt).toBe(1);
     }
   });
 });
