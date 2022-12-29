@@ -211,6 +211,12 @@ function endBatch(store: Store) {
     // Ignore commits that are not because of Recoil transactions -- namely,
     // because something above RecoilRoot re-rendered:
     if (nextTree == null) {
+      if (gkx('recoil_memory_managament_2020')) {
+        // Only release retainables if there were no writes during the end of the
+        // batch.  This avoids releasing something we might be about to use.
+        releaseScheduledRetainablesNow(store);
+      }
+
       return;
     }
 
@@ -231,14 +237,6 @@ function endBatch(store: Store) {
       );
     }
     storeState.previousTree = null;
-
-    if (gkx('recoil_memory_managament_2020')) {
-      // Only release retainables if there were no writes during the end of the
-      // batch.  This avoids releasing something we might be about to use.
-      if (nextTree == null) {
-        releaseScheduledRetainablesNow(store);
-      }
-    }
   } finally {
     storeState.commitDepth--;
   }
