@@ -69,7 +69,7 @@ describe('The form state should', () => {
 
 ## Testing Recoil state with asynchronous queries inside of a React component
 
-A common pattern for atoms is using asynchronous queries fetch the state of the atom, in a selector, or as part of an effect. This causes the component to be suspended. However, while testing, the component is suspended will not update in the DOM without acting. To test this scenario, we need a helper function:
+A common pattern for atoms is using asynchronous queries to fetch the state of the atom, in a selector, or as part of an effect. This causes the component to be suspended. However, while testing, the component is suspended and will not update in the DOM without acting. To test this scenario, we need a helper function:
 
 ```jsx
 // act and advance jest timers
