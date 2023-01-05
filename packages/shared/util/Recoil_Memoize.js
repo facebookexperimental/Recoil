@@ -20,7 +20,8 @@ function memoizeWithArgsHash<TArgs: $ReadOnlyArray<mixed>, TReturn>(
   hashFunction: (...TArgs) => string,
 ): (...TArgs) => TReturn {
   let cache;
-  const memoizedFn: (...TArgs) => TReturn = (...args: TArgs): TReturn => {
+
+  return ((...args: TArgs): TReturn => {
     if (!cache) {
       cache = ({}: {[string]: TReturn});
     }
@@ -30,9 +31,7 @@ function memoizeWithArgsHash<TArgs: $ReadOnlyArray<mixed>, TReturn>(
       cache[key] = fn(...args);
     }
     return cache[key];
-  };
-
-  return memoizedFn;
+  }: (...TArgs) => TReturn);
 }
 
 /**
@@ -48,7 +47,8 @@ function memoizeOneWithArgsHash<TArgs: $ReadOnlyArray<mixed>, TReturn>(
   let lastResult: TReturn;
 
   // breaking cache when arguments change
-  const memoizedFn: (...TArgs) => TReturn = (...args: TArgs): TReturn => {
+
+  return ((...args: TArgs): TReturn => {
     const key = hashFunction(...args);
     if (lastKey === key) {
       return lastResult;
@@ -57,9 +57,7 @@ function memoizeOneWithArgsHash<TArgs: $ReadOnlyArray<mixed>, TReturn>(
     lastKey = key;
     lastResult = fn(...args);
     return lastResult;
-  };
-
-  return memoizedFn;
+  }: (...TArgs) => TReturn);
 }
 
 /**
