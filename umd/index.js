@@ -3557,8 +3557,7 @@
 
   function memoizeWithArgsHash(fn, hashFunction) {
     let cache;
-
-    const memoizedFn = (...args) => {
+    return (...args) => {
       if (!cache) {
         cache = {};
       }
@@ -3571,8 +3570,6 @@
 
       return cache[key];
     };
-
-    return memoizedFn;
   }
   /**
    * Caches a function's results based on a comparison of the arguments.
@@ -3585,7 +3582,7 @@
     let lastKey;
     let lastResult; // breaking cache when arguments change
 
-    const memoizedFn = (...args) => {
+    return (...args) => {
       const key = hashFunction(...args);
 
       if (lastKey === key) {
@@ -3596,8 +3593,6 @@
       lastResult = fn(...args);
       return lastResult;
     };
-
-    return memoizedFn;
   }
   /**
    * Caches a function's results based on a comparison of the arguments.

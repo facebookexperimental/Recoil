@@ -3560,8 +3560,7 @@ var Recoil_Environment = {
 
 function memoizeWithArgsHash(fn, hashFunction) {
   let cache;
-
-  const memoizedFn = (...args) => {
+  return (...args) => {
     if (!cache) {
       cache = {};
     }
@@ -3574,8 +3573,6 @@ function memoizeWithArgsHash(fn, hashFunction) {
 
     return cache[key];
   };
-
-  return memoizedFn;
 }
 /**
  * Caches a function's results based on a comparison of the arguments.
@@ -3588,7 +3585,7 @@ function memoizeOneWithArgsHash(fn, hashFunction) {
   let lastKey;
   let lastResult; // breaking cache when arguments change
 
-  const memoizedFn = (...args) => {
+  return (...args) => {
     const key = hashFunction(...args);
 
     if (lastKey === key) {
@@ -3599,8 +3596,6 @@ function memoizeOneWithArgsHash(fn, hashFunction) {
     lastResult = fn(...args);
     return lastResult;
   };
-
-  return memoizedFn;
 }
 /**
  * Caches a function's results based on a comparison of the arguments.
