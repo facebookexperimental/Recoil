@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -156,9 +156,9 @@ export type ReadWriteSelectorOptions<T> = $ReadOnly<{
   ) => void,
 }>;
 
-export type SelectorOptions<T, P> =
-  | ReadOnlySelectorOptions<T, P>
-  | ReadWriteSelectorOptions<T, P>;
+export type SelectorOptions<T> =
+  | ReadOnlySelectorOptions<T>
+  | ReadWriteSelectorOptions<T>;
 
 export type DepValues = Map<NodeKey, Loadable<mixed>>;
 

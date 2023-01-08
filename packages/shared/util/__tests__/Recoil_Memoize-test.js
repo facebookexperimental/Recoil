@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const {
@@ -19,8 +20,11 @@ const {
 describe('memoizeWithArgsHash', () => {
   it('caches functions based on the hash function', () => {
     let i = 0;
-    const f = jest.fn(() => i++);
-    const mem = memoizeWithArgsHash(f, (_a, _b, c) => String(c));
+    const f = jest.fn<$ReadOnlyArray<$FlowFixMe>, _>(() => i++);
+    const mem = memoizeWithArgsHash<$ReadOnlyArray<$FlowFixMe>, _>(
+      f,
+      (_a, _b, c) => String(c),
+    );
     expect(mem()).toBe(0);
     expect(mem(1, 2, 3)).toBe(1);
     expect(mem(0, 0, 3)).toBe(1);
@@ -28,8 +32,11 @@ describe('memoizeWithArgsHash', () => {
   });
   it('handles "hasOwnProperty" as a hash key with no errors', () => {
     let i = 0;
-    const f = jest.fn(() => i++);
-    const mem = memoizeWithArgsHash(f, () => 'hasOwnProperty');
+    const f = jest.fn<$ReadOnlyArray<$FlowFixMe>, _>(() => i++);
+    const mem = memoizeWithArgsHash<$ReadOnlyArray<$FlowFixMe>, _>(
+      f,
+      () => 'hasOwnProperty',
+    );
     expect(mem()).toBe(0);
     expect(() => mem()).not.toThrow();
     expect(mem(1)).toBe(0);
@@ -40,8 +47,8 @@ describe('memoizeWithArgsHash', () => {
 describe('memoizeOneWithArgsHash', () => {
   it('caches functions based on the arguments', () => {
     let i = 0;
-    const f = jest.fn(() => i++);
-    const mem = memoizeOneWithArgsHash(
+    const f = jest.fn<$ReadOnlyArray<$FlowFixMe>, _>(() => i++);
+    const mem = memoizeOneWithArgsHash<$ReadOnlyArray<$FlowFixMe>, _>(
       f,
       (a, b, c) => String(a) + String(b) + String(c),
     );
@@ -54,8 +61,11 @@ describe('memoizeOneWithArgsHash', () => {
   });
   it('caches functions based on partial arguments', () => {
     let i = 0;
-    const f = jest.fn(() => i++);
-    const mem = memoizeOneWithArgsHash(f, (_a, _b, c) => String(c));
+    const f = jest.fn<$ReadOnlyArray<$FlowFixMe>, _>(() => i++);
+    const mem = memoizeOneWithArgsHash<$ReadOnlyArray<$FlowFixMe>, _>(
+      f,
+      (_a, _b, c) => String(c),
+    );
     expect(mem()).toBe(0);
     expect(mem(1, 2, 3)).toBe(1);
     expect(mem(0, 0, 3)).toBe(1);
@@ -69,11 +79,11 @@ describe('memoizeOneWithArgsHash', () => {
 describe('memoizeOneWithArgsHashAndInvalidation', () => {
   it('caches functions based on the arguments', () => {
     let i = 0;
-    const f = jest.fn(() => i++);
-    const [mem, invalidate] = memoizeOneWithArgsHashAndInvalidation(
-      f,
-      (a, b, c) => String(a) + String(b) + String(c),
-    );
+    const f = jest.fn<$ReadOnlyArray<$FlowFixMe>, _>(() => i++);
+    const [mem, invalidate] = memoizeOneWithArgsHashAndInvalidation<
+      $ReadOnlyArray<$FlowFixMe>,
+      _,
+    >(f, (a, b, c) => String(a) + String(b) + String(c));
     expect(mem()).toBe(0);
     expect(mem(1, 2, 3)).toBe(1);
     expect(mem(0, 0, 3)).toBe(2);
@@ -87,11 +97,11 @@ describe('memoizeOneWithArgsHashAndInvalidation', () => {
   });
   it('caches functions based on partial arguments', () => {
     let i = 0;
-    const f = jest.fn(() => i++);
-    const [mem, invalidate] = memoizeOneWithArgsHashAndInvalidation(
-      f,
-      (_a, _b, c) => String(c),
-    );
+    const f = jest.fn<$ReadOnlyArray<$FlowFixMe>, _>(() => i++);
+    const [mem, invalidate] = memoizeOneWithArgsHashAndInvalidation<
+      $ReadOnlyArray<$FlowFixMe>,
+      _,
+    >(f, (_a, _b, c) => String(c));
     expect(mem()).toBe(0);
     expect(mem(1, 2, 3)).toBe(1);
     expect(mem(0, 0, 3)).toBe(1);

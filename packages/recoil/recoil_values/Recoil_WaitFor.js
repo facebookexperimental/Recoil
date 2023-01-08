@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -84,7 +84,7 @@ function wrapResults(
     ? results
     : // Object.getOwnPropertyNames() has consistent key ordering with ES6
       Object.getOwnPropertyNames(dependencies).reduce(
-        (out, key, idx) => ({...out, [key]: results[idx]}),
+        (out, key, idx) => ({...out, [(key: string)]: results[idx]}),
         {},
       );
 }
@@ -101,7 +101,7 @@ function wrapLoadables(
       ? loadableWithValue(results[idx])
       : isPromise(exception)
       ? loadableWithPromise(exception)
-      : loadableWithError(exception),
+      : loadableWithError<mixed>(exception),
   );
   return wrapResults(dependencies, output);
 }

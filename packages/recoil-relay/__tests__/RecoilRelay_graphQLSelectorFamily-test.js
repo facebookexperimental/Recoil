@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -10,6 +10,16 @@
  */
 
 'use strict';
+
+import type {
+  RecoilRelayMockQueriesFeedbackQuery$data,
+  RecoilRelayMockQueriesFeedbackQuery$variables,
+} from 'RecoilRelayMockQueriesFeedbackQuery.graphql';
+import type {
+  RecoilRelayMockQueriesMutation$data,
+  RecoilRelayMockQueriesMutation$rawResponse,
+  RecoilRelayMockQueriesMutation$variables,
+} from 'RecoilRelayMockQueriesMutation.graphql';
 
 const {
   getRecoilTestFn,
@@ -55,7 +65,11 @@ testRecoil('Relay Query with <RecoilRoot>', async () => {
   const {environment, mockEnvironmentKey, renderElements} =
     mockRelayEnvironment();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+  >({
     key: 'graphql query',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -88,7 +102,11 @@ testRecoil('Relay Query with Snapshot Preloaded', async () => {
       Feedback: () => ({seen_count: 123}),
     }),
   );
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+  >({
     key: 'graphql snapshot query preloaded',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -105,7 +123,11 @@ testRecoil('Relay Query Error with <RecoilRoot>', async () => {
   const {environment, mockEnvironmentKey, renderElements} =
     mockRelayEnvironment();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+  >({
     key: 'graphql query error',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -125,7 +147,11 @@ testRecoil('Relay Query Error with <RecoilRoot>', async () => {
 testRecoil('Relay Query Error with Snapshot', async () => {
   const {environment, mockEnvironmentKey, snapshot} = mockRelayEnvironment();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+  >({
     key: 'graphql snapshot query error',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -146,7 +172,11 @@ testRecoil('Relay Query that is already loaded', async () => {
   const {environment, mockEnvironmentKey, renderElements} =
     mockRelayEnvironment();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    void,
+  >({
     key: 'graphql query preloaded',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -170,7 +200,11 @@ testRecoil('Relay Query Deferred', async () => {
   const {environment, mockEnvironmentKey, renderElements} =
     mockRelayEnvironment();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+  >({
     key: 'graphql query deferred',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -225,7 +259,12 @@ testRecoil('mapResponse', async () => {
   const {environment, mockEnvironmentKey, renderElements} =
     mockRelayEnvironment();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    string,
+    ?number,
+  >({
     key: 'graphql mapResponse',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -258,7 +297,12 @@ testRecoil('Using derived state', async () => {
 
   const myAtom = stringAtom();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    string,
+    string,
+  >({
     key: 'graphql derived state',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -292,7 +336,12 @@ testRecoil('null variables', async () => {
   const {environment, mockEnvironmentKey, renderElements} =
     mockRelayEnvironment();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    RecoilRelayMockQueriesFeedbackQuery$variables | null,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+  >({
     key: 'graphql null variables',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -309,7 +358,12 @@ testRecoil('null variables with default', async () => {
   const {environment, mockEnvironmentKey, renderElements} =
     mockRelayEnvironment();
 
-  const query = graphQLSelectorFamily({
+  const query = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    string,
+    RecoilRelayMockQueriesFeedbackQuery$data | string,
+  >({
     key: 'graphql null variables with default',
     environment: mockEnvironmentKey,
     query: testFeedbackQuery,
@@ -326,7 +380,12 @@ testRecoil('null variables with default', async () => {
 testRecoil('pre-fetch query', async () => {
   const {environment, renderElements} = mockRelayEnvironment();
 
-  const myQuery = graphQLSelectorFamily({
+  const myQuery = graphQLSelectorFamily<
+    RecoilRelayMockQueriesFeedbackQuery$variables,
+    RecoilRelayMockQueriesFeedbackQuery$data,
+    string,
+    ?number,
+  >({
     key: 'graphql prefetch',
     environment,
     query: testFeedbackQuery,
@@ -387,7 +446,12 @@ describe('mutations', () => {
     const {environment, mockEnvironmentKey, renderElements} =
       mockRelayEnvironment();
 
-    const query = graphQLSelectorFamily({
+    const query = graphQLSelectorFamily<
+      RecoilRelayMockQueriesFeedbackQuery$variables,
+      RecoilRelayMockQueriesFeedbackQuery$data,
+      string,
+      ?number,
+    >({
       key: 'graphql query local cache',
       environment: mockEnvironmentKey,
       query: testFeedbackQuery,
@@ -421,7 +485,16 @@ describe('mutations', () => {
     const {environment, mockEnvironmentKey, renderElements} =
       mockRelayEnvironment();
 
-    const query = graphQLSelectorFamily({
+    const query = graphQLSelectorFamily<
+      RecoilRelayMockQueriesFeedbackQuery$variables,
+      RecoilRelayMockQueriesFeedbackQuery$data,
+      string,
+      ?string | number,
+      _,
+      RecoilRelayMockQueriesMutation$variables,
+      RecoilRelayMockQueriesMutation$data,
+      RecoilRelayMockQueriesMutation$rawResponse,
+    >({
       key: 'graphql query write-through cache',
       environment: mockEnvironmentKey,
       query: testFeedbackQuery,

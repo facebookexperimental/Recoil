@@ -1,5 +1,5 @@
 /**
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -14,6 +14,7 @@
 import type {Loadable} from '../../adt/Recoil_Loadable';
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
 import type {RecoilState} from 'Recoil';
+import type {RecoilValueReadOnly} from 'Recoil_RecoilValue';
 import type {WrappedValue} from 'Recoil_Wrapper';
 
 const {
@@ -360,15 +361,15 @@ describe('Dependencies', () => {
   // Test that Recoil will throw an error with a useful debug message instead of
   // infinite recurssion when there is a circular dependency
   testRecoil('Detect circular dependencies', () => {
-    const selectorA = selector({
+    const selectorA: RecoilValueReadOnly<$FlowFixMe> = selector({
       key: 'circular/A',
       get: ({get}) => get(selectorC),
     });
-    const selectorB = selector({
+    const selectorB: RecoilValueReadOnly<$FlowFixMe> = selector({
       key: 'circular/B',
       get: ({get}) => get(selectorA),
     });
-    const selectorC = selector({
+    const selectorC: RecoilValueReadOnly<$FlowFixMe> = selector({
       key: 'circular/C',
       get: ({get}) => get(selectorB),
     });

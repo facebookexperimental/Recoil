@@ -1,5 +1,5 @@
 /**
- * Copyright 2015-present Facebook. All Rights Reserved.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * @flow strict
  * @format
