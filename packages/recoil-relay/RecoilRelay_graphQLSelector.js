@@ -72,7 +72,6 @@ function graphQLSelector<
     variables: T => TMutationVariables | null,
   },
 }): RecoilState<T> {
-  // $FlowFixMe[incompatible-call]
   return graphQLSelectorFamily({
     ...options,
     variables: () => cbs =>
