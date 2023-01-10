@@ -40,7 +40,7 @@ function array<V>(valueChecker: Checker<V>): Checker<$ReadOnlyArray<V>> {
     }
 
     const len = value.length;
-    const out = new Array(len);
+    const out = new Array<V>(len);
     const warnings: Array<CheckFailure> = [];
 
     for (let i = 0; i < len; i++) {
@@ -80,7 +80,7 @@ function tuple<Checkers: $ReadOnlyArray<Checker<mixed>>>(
     if (!Array.isArray(value)) {
       return failure('value is not an array', path);
     }
-    const out = new Array(checkers.length);
+    const out = new Array<mixed>(checkers.length);
     const warnings: Array<CheckFailure> = [];
     for (const [i, checker] of checkers.entries()) {
       const result = checker(value[i], path.extend(`[${i}]`));
