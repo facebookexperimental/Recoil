@@ -3,7 +3,7 @@ title: 用于同步 atom 的 effect - syncEffect()
 sidebar_label: 开始同步 atom
 ---
 
-[`syncEffect()`](/docs/recoil-sync/api/syncEffect) 实质是一个 [atom effect](/docs/guides/atom-effects)， 用于标记应该同步的 atom 并使用外部 store 初始化。 唯一必填的选项是用于验证输入数据的 `refine`。 可选的 `itemKey` 选项允许您为这个 atom 指定一个和外部数据项对应的"键"。 如果未指定，则默认使用 atom 的 `key`。 当有多个外部存储的情况下，还可以提供一个 `storeKey` 来匹配要同步的 store 。此外这里还有其他选项，例如用于更复杂情形的 `read` 和 `write`。
+[`syncEffect()`](/docs/recoil-sync/api/syncEffect) 实质是一个 [atom effect](/docs/guides/atom-effects)， 用于标记应该同步的 atom 并使用外部 store 初始化。 唯一必填的选项是用于验证输入数据的 `refine`。 可选的 `itemKey` 选项允许您为这个 atom 指定一个和外部数据项对应的"键"。 如果未指定，则默认使用 atom 的 `key`。 当有多个外部存储的情况下，还可以提供一个 `storeKey` 选项来匹配要使用哪一个 store  同步。此外这里还有其他选项，例如用于更复杂情形的 `read` 和 `write`。
 
 ## 输入验证
 
@@ -40,7 +40,7 @@ syncEffect({ refine: object({
 更多细节可参考 [Refine 文档](/docs/refine/introduction).
 ## itemKey 和 storeKey
 
-`itemKey` 选项用来指定在 Store 中的唯一标识，如果没有指定则默认为 `atom` 的 key。 如果使用了  [`read()`](/docs/recoil-sync/api/syncEffect#read-interface) 或 [`write()`](/docs/recoil-sync/api/syncEffect#write-interface) 那么这个 key 可以被 [改写升级](#upgrade-atom-key) 或 [ 使用多个key对应一个 atom](#多对一)。
+`itemKey` 选项用来指定该项在 Store 中的唯一标识，如果没有指定则默认为 `atom` 的 key。 如果使用了  [`read()`](/docs/recoil-sync/api/syncEffect#read-interface) 或 [`write()`](/docs/recoil-sync/api/syncEffect#write-interface) 那么这个 key 可以被 [改写](#upgrade-atom-key) 或 [ 使用多个key对应一个 atom](#多对一)。
 
 `storeKey` 用来指定使用哪一个 `store` 进行同步，它和带有 `storeKey` 属性的 [`<RecoilSync>`](/docs/recoil-sync/api/RecoilURLSync) 应该一一对应。在[升级atom存储方式](#升级atom存储方式) 或存在 [多store](#syncing-with-multiple-storages) 的场景会很有用。
 
@@ -80,7 +80,7 @@ atomFamily({
 
 ### 升级 atom 的数据类型
 
-如果一个原子被持久化到一个 Store 并且你已经改变了 atom 的类型，你可以使用 Refine 的 [`match()`](/docs/refine/api/Advanced_Checkers#match) 和 [`asType()`](/docs/refine/api/Advanced_Checkers#asType) 升级类型。 下面的示例读取当前为数字但之前存储为字符串或对象的 ID。 它将升级以前的类型，atom 将始终存储最新的类型。
+如果一个 atom 被持久化到一个 Store 并且你已经改变了 atom 的类型，你可以使用 Refine 的 [`match()`](/docs/refine/api/Advanced_Checkers#match) 和 [`asType()`](/docs/refine/api/Advanced_Checkers#asType) 升级类型。 下面的示例读取当前为数字但之前存储为字符串或对象的 ID。 它将升级以前的类型，atom 将始终存储最新的类型。
 
 ```jsx
 const myAtom = atom<number>({
@@ -132,7 +132,7 @@ const myAtom = atom<number>({
 
 ## 同步到多个存储系统中
 
-一个 atom 与多个存储系统同步可能是可取的。 例如，某些 UI 状态的原子可能希望保留可共享 URL 的当前状态，同时还与存储在云中的每个用户默认值同步。 这可以简单地通过组合多个 effect 来完成（您可以使用 [`syncEffect()`](/docs/recoil-sync/api/syncEffect) 或其他effect进行混合和匹配）。 effect 按顺序执行，因此最后一个 effect 将有最高优先级来初始化 atom。
+一个 atom 与多个存储系统同步可能是可取的。 例如，某些表示 UI 状态的 atom 可能希望持久化当前状态到可共享的 URL 中，同时还与存储在云中的每个用户默认值同步。 这可以简单地通过组合多个 effect 来完成（您可以使用 [`syncEffect()`](/docs/recoil-sync/api/syncEffect) 或其他effect进行混合和匹配）。 effect 按顺序执行，因此最后一个 effect 将有最高优先级来初始化 atom。
 
 ```jsx
 const currentTabState = atom<string>({

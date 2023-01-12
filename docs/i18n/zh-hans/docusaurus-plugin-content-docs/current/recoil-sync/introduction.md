@@ -3,7 +3,7 @@ title: Recoil Sync Library
 sidebar_label: 介绍
 ---
 
-[`recoil-sync`](https://www.npmjs.com/package/recoil-sync) 这个 npm 包是 Recoil 的扩展，主要用于将 Recoil 的状态与外部系统进行同步。对于[异步的数据查询](/docs/guides/asynchronous-data-queries) 这种场景，可以使用 selector 或 `useEffect` ，也可以使用 [atom effects](/docs/guides/atom-effects) 对 atom 进行双向数据同步实现相同的功能。 `recoil-sync` 就是在 atom effects 的基础上提供了一些额外的能力:
+[`recoil-sync`](https://www.npmjs.com/package/recoil-sync) 这个 npm 包是 Recoil 的扩展，主要用于将 Recoil 的状态与外部系统进行同步。对于[异步数据查询](/docs/guides/asynchronous-data-queries) 这种场景，可以使用 selector 或 `useEffect` ，也可以使用 [atom effects](/docs/guides/atom-effects) 对 atom 进行双向数据同步实现相同的功能。 `recoil-sync` 是在 atom effects 的基础上提供了一些额外的能力:
 
 
 **批量处理 atom** - 当更新多个 atom 时，可以批量并只和外部系统进行一次交互。这对于维护具有相关性的 atom 状态一致性是比较重要的。

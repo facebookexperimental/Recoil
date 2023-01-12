@@ -3,7 +3,7 @@ title: <RecoilSync> - 用于同步 Recoil 的 Store
 sidebar_label: <RecoilSync>
 ---
 
-[Recoil Sync library](/docs/recoil-sync/introduction) 中的组件，用于[定义外部Store](/docs/recoil-sync/implement-store)，以便 atom 使用 [`syncEffect()` 进行同步 ](/docs/recoil-sync/api/syncEffect)。
+[Recoil Sync library](/docs/recoil-sync/introduction) 中的组件，用于[定义外部Store](/docs/recoil-sync/implement-store)，以便 atom 使用 [`syncEffect()`](/docs/recoil-sync/api/syncEffect) 进行同步 。
 
 ---
 
@@ -34,7 +34,7 @@ type ReadItem = ItemKey =>
   | mixed;
 ```
 
-您可以返回 store 中该项的实际值。 如果 store 中尚未设置或在 store 中不可用，您可以返回`DefaultValue`。 如果需要异步操作从存储中读取，也可以将异步 `Promise` 作为值返回。 您还同样可以返回 [`Loadable`](/docs/api-reference/core/Loadable) 对象，这对于在必要时提供错误状态很有用。
+您可以返回 store 中该项的实际值。 如果 store 中尚未设置或在 store 中不可用，您可以返回 `DefaultValue` 对象。 如果需要异步操作从存储中读取，也可以将异步 `Promise` 作为值返回。 您还同样可以返回 [`Loadable`](/docs/api-reference/core/Loadable) 对象，这对于在必要时提供错误状态很有用。
 
 ## Write Interface
 
@@ -54,7 +54,7 @@ type WriteItems = ({
 - `diff` - 一个 map，包含了元素键和在此次变更事务中更改的新值的映射。
 - `allItems` - 已在此 store 中使用的所有元素项的键和值的映射。
 
-元素项的值可能是一个`DefaultValue`对象，这意味着该项目应该被重置或删除。 如果 [`syncEffect()`](/docs/recoil-sync/api/syncEffect) 指定了 `syncDefault` 选项，那么将提供实际的默认值而不是 `DefaultValue` 占位符对象。
+元素项的值可能是一个 `DefaultValue` 对象，这意味着该项目应该被重置或删除。 如果 [`syncEffect()`](/docs/recoil-sync/api/syncEffect) 指定了 `syncDefault` 选项，那么将提供实际的默认值而不是 `DefaultValue` 占位符对象。
 
 ## Listen Interface
 

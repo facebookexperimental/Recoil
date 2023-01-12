@@ -48,7 +48,7 @@ https://test.com/myapp?CurrentUser=123
 
 ### Part of the URL
 
-您的状态将与 URL 的哪一部分同步是可配置的。 这个配置可以通过 [`location`](/docs/recoil-sync/api/RecoilURLSync#url-location) 属性来指定，例如`{part: 'hash'}` 存储在锚标记中，`{part: 'queryParams '}` 存储为单独的查询参数，或`{part: 'queryParams', param: 'myParam'}` 在单个查询参数中编码。 该库将尝试共存而不是从 URL 中删除其他查询参数。
+您的状态将与 URL 的哪一部分同步是可配置的。 这个配置可以通过 [`location`](/docs/recoil-sync/api/RecoilURLSync#url-location) 属性来指定，例如`{part: 'hash'}` 存储在锚标记中，`{part: 'queryParams '}` 存储为单独的 query search，或 `{part: 'queryParams', param: 'myParam'}` 在单个 query 参数中编码。 该库将尝试共存而不是从 URL 中删除其他查询参数。
 
 ## Push vs Replace
 
