@@ -3,7 +3,7 @@ title: <RecoilURLSyncTransit>
 sidebar_label: <RecoilURLSyncTransit>
 ---
 
-[Recoil Sync library](/docs/recoil-sync/introduction) 中的一个组件，使用 [`syncEffect()`](/docs/recoil-sync/api/syncEffect) 或 [`urlSyncEffect()` 来同步原子 ](/docs/recoil-sync/api/urlSyncEffect) 原子效果与浏览器 URL。
+[Recoil Sync library](/docs/recoil-sync/introduction) 中的一个组件，使用 [`syncEffect()`](/docs/recoil-sync/api/syncEffect) 或 [`urlSyncEffect()`](/docs/recoil-sync/api/urlSyncEffect) 这两个 atom effect 来与浏览器 URL 同步。
 
 这与 [`<RecoilURLSync>`](/docs/recoil-sync/api/RecoilURLSync) 组件相同，除了它提供内置的 [Transit 编码](https://github.com/cognitect/transit-js ).
 
@@ -14,7 +14,7 @@ function RecoilURLSyncTransit(props: {
 }): React.Node
 ```
 
-- **`handlers`** - [自定义类](#custom-classes) 的可选处理程序数组。 重要的是这是一个稳定的或记忆化的数组实例。 否则，您可能会在重新订阅侦听器时错过 URL 更改。
+- **`handlers`** - [自定义类](#custom-classes) 的可选处理程序数组。 重要的是，这需要是一个稳定的或被缓存的的数组实例。 否则，您可能会在重新订阅侦听器时错过 URL 更改。
 
 ---
 
