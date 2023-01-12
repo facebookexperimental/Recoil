@@ -4,7 +4,7 @@ title: 安装
 
 ## NPM
 
-Recoil 的 package 已上传至 <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a>。欲下载最新版本2，请运行如下命令：
+Recoil 的 package 已上传至 <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a>。欲下载最新版本，请运行如下命令：
 
 ```shell
 npm install recoil
