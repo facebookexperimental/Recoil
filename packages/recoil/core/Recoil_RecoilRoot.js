@@ -257,7 +257,7 @@ function Batcher({
 }) {
   const storeRef = useStoreRef();
 
-  const [, setState] = useState([]);
+  const [, setState] = useState(([]: Array<$FlowFixMe>));
   setNotifyBatcherOfChange(() => setState({}));
   useEffect(() => {
     setNotifyBatcherOfChange(() => setState({}));
