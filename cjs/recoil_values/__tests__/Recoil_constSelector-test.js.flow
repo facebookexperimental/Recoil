@@ -8,6 +8,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {RecoilValue} from '../../core/Recoil_RecoilValue';
@@ -59,7 +60,7 @@ testRecoil('constSelector - boolean', () => {
   expect(get(mySelector)).toBe(true);
 });
 testRecoil('constSelector - array', () => {
-  const emptyArraySelector = constSelector([]);
+  const emptyArraySelector = constSelector(([]: Array<$FlowFixMe>));
   expect(get(emptyArraySelector)).toEqual([]);
 
   const numberArray = [1, 2, 3];

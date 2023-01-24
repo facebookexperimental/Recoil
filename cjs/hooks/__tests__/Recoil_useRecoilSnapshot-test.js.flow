@@ -452,7 +452,7 @@ testRecoil('useRecoilSnapshot - re-render', () => {
   const snapshots = [];
   let forceUpdate;
   function RecoilSnapshotAndSubscribe() {
-    const [, setState] = useState([]);
+    const [, setState] = useState(([]: Array<$FlowFixMe>));
     forceUpdate = () => setState([]);
 
     const snapshot = useRecoilSnapshot();
