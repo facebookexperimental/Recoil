@@ -57,7 +57,6 @@ function getNodeValue<T>(recoilValue: RecoilValue<T>): T {
 
 function setNode(recoilValue: RecoilState<string>, value: mixed) {
   setRecoilValue(store, recoilValue, value);
-  // $FlowFixMe[unsafe-addition]
   // $FlowFixMe[cannot-write]
   // $FlowFixMe[unsafe-arithmetic]
   store.getState().currentTree.version++;
