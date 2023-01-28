@@ -95,7 +95,6 @@ function getError(recoilValue): Error {
 
 function setValue<T>(recoilState: RecoilState<T>, value: T) {
   setRecoilValue(store, recoilState, value);
-  // $FlowExpectedError[unsafe-addition]
   // $FlowExpectedError[cannot-write]
   // $FlowFixMe[unsafe-arithmetic]
   store.getState().currentTree.version++;
@@ -103,7 +102,6 @@ function setValue<T>(recoilState: RecoilState<T>, value: T) {
 
 function resetValue<T>(recoilState: RecoilState<T>) {
   setRecoilValue(store, recoilState, new DefaultValue());
-  // $FlowExpectedError[unsafe-addition]
   // $FlowExpectedError[cannot-write]
   // $FlowFixMe[unsafe-arithmetic]
   store.getState().currentTree.version++;
