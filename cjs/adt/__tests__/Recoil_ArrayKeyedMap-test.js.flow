@@ -14,7 +14,7 @@
 const {ArrayKeyedMap} = require('../Recoil_ArrayKeyedMap');
 
 test('basic operation', () => {
-  const m = new ArrayKeyedMap();
+  const m = new ArrayKeyedMap<number>();
   m.set([], 0);
   m.set(['a'], 1);
   m.set(['a', 'b'], 2);
@@ -24,7 +24,7 @@ test('basic operation', () => {
 });
 
 test('enumeration of properties', () => {
-  const m = new ArrayKeyedMap();
+  const m = new ArrayKeyedMap<number>();
   m.set([], 0);
   m.set(['a'], 1);
   m.set(['a', 'b'], 2);
@@ -38,7 +38,7 @@ test('enumeration of properties', () => {
 });
 
 test('copying', () => {
-  const m = new ArrayKeyedMap();
+  const m = new ArrayKeyedMap<number | $FlowFixMe>();
   m.set([], 0);
   m.set(['a'], 1);
   m.set(['a', 'b'], 2);
