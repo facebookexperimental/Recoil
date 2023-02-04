@@ -3,7 +3,7 @@ title: RecoilEnv
 sidebar_label: RecoilEnv
 ---
 
-`RecoilEnv`는 읽거나 쓸 수 있는 Recoil 환경 변수들을 포함하는 객체입니다.
+`RecoilEnv`는 읽거나 쓸 수 있는 Recoil 환경 변수들을 갖는 객체입니다.
 
 * **`RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED`**: `boolean` - 모듈이 정상적으로 reload될 수 있는 NextJS 또는 React의 Fast Refresh를 사용하는 환경에서 중복된 atom/selector key 검사를 비활성화 할 때 유용합니다. 이 설정은 정당한 에러를 포함한 모든 검사를 비활성화하므로, 주의하여 사용하세요.
 * **`RECOIL_GKS_ENABLED`**: `Set<string>` - Recoil은 gatekeepers(GKs)라고 불리는 동작을 변경하는 불안정한 내부 플래그들의 집합을 갖습니다. 이 플래그들은 테스트, 개선, 안정화를 거쳐 점진적으로 Recoil 정기 릴리즈에 반영되었습니다. 이 변수를 통해 추가적인 플래그들에 접근하여 새로운 실험적인 기능들을 시도할 수 있습니다.
