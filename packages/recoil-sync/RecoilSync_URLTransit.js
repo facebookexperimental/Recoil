@@ -143,7 +143,13 @@ function RecoilURLSyncTransit({
   );
   const deserialize = useCallback((x: string) => reader.read(x), [reader]);
 
-  return <RecoilURLSync {...{...options, serialize, deserialize}} />;
+  return (
+    <RecoilURLSync
+      {...options}
+      serialize={serialize}
+      deserialize={deserialize}
+    />
+  );
 }
 
 module.exports = {RecoilURLSyncTransit};

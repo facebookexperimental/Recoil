@@ -40,7 +40,13 @@ function RecoilURLSyncJSON(options: RecoilURLSyncJSONOptions): React.Node {
   );
   const deserialize = useCallback((x: string) => JSON.parse(x), []);
 
-  return <RecoilURLSync {...{...options, serialize, deserialize}} />;
+  return (
+    <RecoilURLSync
+      {...options}
+      serialize={serialize}
+      deserialize={deserialize}
+    />
+  );
 }
 
 module.exports = {RecoilURLSyncJSON};
