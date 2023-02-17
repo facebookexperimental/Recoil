@@ -20,6 +20,7 @@ const {Path, compose, failure, success} = require('./Refine_Checkers');
 
 // Check that the provided value is a plain object and not an instance of some
 // other container type, built-in, or user class.
+// $FlowFixMe[missing-local-annot]
 function isPlainObject<T: {...}>(value: T) {
   // $FlowIssue[method-unbinding]
   if (Object.prototype.toString.call(value) !== '[object Object]') {

@@ -142,6 +142,7 @@ function isConcurrentModeAvailable(): boolean {
 function renderConcurrentReactRoot<Props>(
   container: HTMLElement,
   contents: ReactAbstractElement<Props>,
+  // $FlowFixMe[missing-local-annot]
 ) {
   if (!isConcurrentModeAvailable()) {
     throw err(

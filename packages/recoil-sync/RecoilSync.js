@@ -264,6 +264,7 @@ function writeAtomItemsToDiff<T>(
     });
   const read = (itemKey: ItemKey) =>
     diff.has(itemKey) ? diff.get(itemKey) : readFromStorageRequired(itemKey);
+  // $FlowFixMe[missing-local-annot]
   const write = <S>(k: ItemKey, l: DefaultValue | S) => void diff.set(k, l);
   const reset = (k: ItemKey) => void diff.set(k, DEFAULT_VALUE);
 

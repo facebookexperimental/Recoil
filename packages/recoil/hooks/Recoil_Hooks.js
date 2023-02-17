@@ -102,6 +102,7 @@ function validateRecoilValue<T>(
     | $TEMPORARY$string<'useRecoilValue_TRANSITION_SUPPORT_UNSTABLE'>
     | $TEMPORARY$string<'useResetRecoilState'>
     | $TEMPORARY$string<'useSetRecoilState'>,
+  // $FlowFixMe[missing-local-annot]
 ) {
   if (!isRecoilValue(recoilValue)) {
     throw err(
