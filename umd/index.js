@@ -4919,7 +4919,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     }
   }
 
-  function validateRecoilValue(recoilValue, hookName) {
+  function validateRecoilValue(recoilValue, hookName // $FlowFixMe[missing-local-annot]
+  ) {
     if (!isRecoilValue$2(recoilValue)) {
       throw Recoil_err(`Invalid argument to ${hookName}: expected an atom or selector but got ${String(recoilValue)}`);
     }
@@ -6079,8 +6080,11 @@ This is currently a DEV-only warning but will become a thrown exception in the n
 
       const callbackInterface = Recoil_lazyProxy({ ...(extraInterface !== null && extraInterface !== void 0 ? extraInterface : {}),
         // flowlint-line unclear-type:off
+        // $FlowFixMe[missing-local-annot]
         set: (node, newValue) => setRecoilValue$3(store, node, newValue),
+        // $FlowFixMe[missing-local-annot]
         reset: node => setRecoilValue$3(store, node, DEFAULT_VALUE$5),
+        // $FlowFixMe[missing-local-annot]
         refresh: node => refreshRecoilValue$1(store, node),
         gotoSnapshot: snapshot => gotoSnapshot$1(store, snapshot),
         transact_UNSTABLE: transaction => atomicUpdater$1(store)(transaction)
@@ -7855,7 +7859,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
           }
         }
 
-        function setRecoilState(recoilState, valueOrUpdater) {
+        function setRecoilState(recoilState, valueOrUpdater // $FlowFixMe[missing-local-annot]
+        ) {
           if (syncSelectorSetFinished) {
             const msg = 'Recoil: Async selector sets are not currently supported.';
             Recoil_recoverableViolation(msg);

@@ -73,10 +73,13 @@ function recoilCallback<Args: $ReadOnlyArray<mixed>, Return, ExtraInterface>(
     } = lazyProxy(
       {
         ...(extraInterface ?? ({}: any)), // flowlint-line unclear-type:off
+        // $FlowFixMe[missing-local-annot]
         set: <T>(node: RecoilState<T>, newValue: T | (T => T)) =>
           setRecoilValue(store, node, newValue),
+        // $FlowFixMe[missing-local-annot]
         reset: <T>(node: RecoilState<T>) =>
           setRecoilValue(store, node, DEFAULT_VALUE),
+        // $FlowFixMe[missing-local-annot]
         refresh: <T>(node: RecoilValue<T>) => refreshRecoilValue(store, node),
         gotoSnapshot: snapshot => gotoSnapshot(store, snapshot),
         transact_UNSTABLE: transaction => atomicUpdater(store)(transaction),

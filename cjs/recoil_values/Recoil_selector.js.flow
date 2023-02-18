@@ -1155,6 +1155,7 @@ function selector<T>(
       function setRecoilState<S>(
         recoilState: RecoilState<S>,
         valueOrUpdater: ValueOrUpdater<S>,
+        // $FlowFixMe[missing-local-annot]
       ) {
         if (syncSelectorSetFinished) {
           const msg =
