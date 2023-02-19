@@ -69,20 +69,7 @@ describe('The form state should', () => {
 
 ## Testing Recoil state with asynchronous queries inside of a React component
 
-A common pattern for atoms is using asynchronous queries fetch the state of the atom, in a selector, or as part of an effect. This causes the component to be suspended. However, while testing, the component is suspended will not update in the DOM without acting. To test this scenario, we need a helper function:
-
-```jsx
-// act and advance jest timers
-function flushPromisesAndTimers(): Promise<void> {
-  return act(
-    () =>
-      new Promise(resolve => {
-        setTimeout(resolve, 100);
-        jest.runAllTimers();
-      }),
-  );
-}
-```
+A common pattern for atoms is using asynchronous queries fetch the state of the atom, in a selector, or as part of an effect. This causes the component to be suspended. However, while testing, the component is suspended will not update in the DOM without acting. To test this scenario, we need to use [a helper function](https://testing-library.com/docs/dom-testing-library/api-async/).
 
 ### Example: Title with data returned from asynchronous data query
 
@@ -128,9 +115,8 @@ describe('Title Component', () => {
         </Suspense>
       </RecoilRoot>,
     );
-    await flushPromisesAndTimers();
 
-    expect(screen.getByText(mockState.title)).toBeInTheDocument();
+    await screen.findByText(mockState.title);
     expect(screen.getByText('loading...')).not.toBeInTheDocument();
   });
 });
