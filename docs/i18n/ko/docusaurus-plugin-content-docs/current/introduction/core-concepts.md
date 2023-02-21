@@ -10,7 +10,7 @@ Recoil을 사용하면 _atoms_ (공유 상태)에서 _selectors_ (순수 함수)
 
 Atoms는 상태의 단위이며, 업데이트와 구독이 가능하다. atom이 업데이트되면 각각 구독된 컴포넌트는 새로운 값을 반영하여 다시 렌더링 된다. atoms는 런타임에서 생성될 수도 있다. Atoms는 React의 로컬 컴포넌트의 상태 대신 사용할 수 있다. 동일한 atom이 여러 컴포넌트에서 사용되는 경우 모든 컴포넌트는 상태를 공유한다.
 
-Atoms는 `atom` 함수를 사용해 생성한다.
+Atoms는 `atom`함수를 사용해 생성한다.
 
 ```javascript
 const fontSizeState = atom({
