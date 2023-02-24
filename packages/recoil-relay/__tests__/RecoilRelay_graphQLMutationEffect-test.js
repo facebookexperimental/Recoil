@@ -52,6 +52,7 @@ testRecoil('Atom Mutation', async () => {
       graphQLMutationEffect({
         environment,
         mutation: testFeedbackMutation,
+        // $FlowFixMe[missing-local-annot]
         variables: actor_id => ({data: {feedback_id: 'ID', actor_id}}),
       }),
     ],
@@ -128,9 +129,11 @@ testRecoil('Updaters', async () => {
       graphQLMutationEffect({
         environment,
         mutation: testFeedbackMutation,
+        // $FlowFixMe[missing-local-annot]
         variables: actor_id => ({data: {feedback_id: 'ID', actor_id}}),
         updater_UNSTABLE: updater,
         optimisticUpdater_UNSTABLE: optimisticUpdater,
+        // $FlowFixMe[missing-local-annot]
         optimisticResponse_UNSTABLE: actor_id => ({
           feedback_like: {
             feedback: {id: 'ID'},
@@ -173,6 +176,7 @@ testRecoil('Aborted mutation', async () => {
     key: 'graphql atom mutation abort',
     default: 'DEFAULT',
     effects: [
+      // $FlowFixMe[underconstrained-implicit-instantiation]
       graphQLMutationEffect({
         environment,
         mutation: testFeedbackMutation,

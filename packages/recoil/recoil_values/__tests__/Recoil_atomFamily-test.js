@@ -176,6 +176,7 @@ describe('Default', () => {
   testRecoil('Works with parameterized default', () => {
     const paramDefaultAtom = atomFamily<_, {num: number}>({
       key: 'parameterized default',
+      // $FlowFixMe[missing-local-annot]
       default: ({num}) => num,
     });
     expect(get(paramDefaultAtom({num: 1}))).toBe(1);
@@ -188,6 +189,7 @@ describe('Default', () => {
   testRecoil('Parameterized async default', async () => {
     const paramDefaultAtom = atomFamily<_, {num: number}>({
       key: 'parameterized async default',
+      // $FlowFixMe[missing-local-annot]
       default: ({num}) =>
         num === 1 ? Promise.reject(num) : Promise.resolve(num),
     });
@@ -201,7 +203,9 @@ describe('Default', () => {
   testRecoil('Parameterized loadable default', async () => {
     const paramDefaultAtom = atomFamily<_, {num: number}>({
       key: 'parameterized loadable default',
+      // $FlowFixMe[missing-local-annot]
       default: ({num}) =>
+        // $FlowFixMe[underconstrained-implicit-instantiation]
         num === 1 ? RecoilLoadable.error(num) : RecoilLoadable.of(num),
     });
     expect(getLoadable(paramDefaultAtom({num: 1})).state).toBe('hasError');
@@ -219,6 +223,7 @@ describe('Default', () => {
 testRecoil('Works with date as parameter', () => {
   const dateAtomFamily = atomFamily<_, Date>({
     key: 'dateFamily',
+    // $FlowFixMe[missing-local-annot]
     default: _date => 0,
   });
   expect(get(dateAtomFamily(new Date(2021, 2, 25)))).toBe(0);
@@ -231,6 +236,7 @@ testRecoil('Works with date as parameter', () => {
 testRecoil('Works with parameterized fallback', () => {
   const fallbackAtom = atomFamily<_, $FlowFixMe | {num: number}>({
     key: 'parameterized fallback default',
+    // $FlowFixMe[missing-local-annot]
     default: ({num}) => num * 10,
   });
   const paramFallbackAtom = atomFamily<_, {num: number}>({
@@ -265,6 +271,7 @@ testRecoil('atomFamily async fallback', async () => {
 testRecoil('Parameterized fallback with atom and async', async () => {
   const paramFallback = atomFamily<_, {param: string}>({
     key: 'parameterized async Fallback',
+    // $FlowFixMe[missing-local-annot]
     default: ({param}) =>
       ({
         value: 'value',
@@ -500,7 +507,10 @@ testRecoil(
       default: selectorFamily({
         key: 'notDefinedYetAtomFamilyFallbackSelFallback',
         get:
-          ({num}) =>
+          (
+            // $FlowFixMe[missing-local-annot]
+            {num},
+          ) =>
           () =>
             num === 1 ? 456 : 789,
       }),
@@ -555,6 +565,7 @@ testRecoil('Independent atom subscriptions', ({gks}) => {
       );
     };
 
+    // $FlowFixMe[incompatible-call]
     return [Component, (value: number) => setValue(value), () => numUpdates];
   };
 
@@ -620,6 +631,7 @@ describe('Effects', () => {
     const myFamily = atomFamily({
       key: 'atomFamily effect parameterized init',
       default: 'DEFAULT',
+      // $FlowFixMe[missing-local-annot]
       effects: param => [({setSelf}) => setSelf(param)],
     });
 
@@ -632,7 +644,9 @@ describe('Effects', () => {
 
     const atoms = atomFamily({
       key: 'atomFamily effect cleanup',
+      // $FlowFixMe[missing-local-annot]
       default: p => p,
+      // $FlowFixMe[missing-local-annot]
       effects: p => [
         () => {
           refCounts[p]++;
@@ -687,6 +701,7 @@ describe('Effects', () => {
     const atoms = atomFamily({
       key: 'atomFamily effect - storeID',
       default: 'DEFAULT',
+      // $FlowFixMe[missing-local-annot]
       effects: rootKey => [
         ({storeID, setSelf}) => {
           expect(storeID).toEqual(storeIDs[rootKey]);

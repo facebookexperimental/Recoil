@@ -76,6 +76,7 @@ describe('Atoms', () => {
     });
 
     function Component() {
+      // $FlowFixMe[missing-local-annot]
       const transact = useRecoilTransaction(({set, get}) => value => {
         set(myAtom, 'TMP');
         expect(get(myAtom)).toEqual('TMP');

@@ -253,6 +253,7 @@ describe('TreeCache', () => {
       String(i),
     ]);
 
+    // $FlowFixMe[incompatible-call]
     cache.set(route, 'VALUE');
 
     expect(cache.get(x => x)).toBe('VALUE');

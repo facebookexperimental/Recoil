@@ -211,6 +211,7 @@ function RecoilURLSync({
                 )
                 .map(([, {itemKeys}]) => itemKeys)
                 .reduce(
+                  // $FlowFixMe[missing-local-annot]
                   (itemKeys, keys) => itemKeys.concat(Array.from(keys)),
                   [],
                 ),

@@ -323,9 +323,11 @@ describe('lazy', () => {
   });
 
   it('should allow for recursive types', () => {
+    // $FlowFixMe[recursive-definition]
     const user = object({
       id: number(),
       name: string(),
+      // $FlowFixMe[underconstrained-implicit-instantiation]
       friends: nullable(array(lazy(() => user))),
     });
 

@@ -75,6 +75,7 @@ testRecoil('Sanity Query', async () => {
     },
     mutations: {
       mutation: testFeedbackMutation,
+      // $FlowFixMe[incompatible-call]
       variables: count => ({
         data: {feedback_id: 'ID', actor_id: count?.toString()},
       }),

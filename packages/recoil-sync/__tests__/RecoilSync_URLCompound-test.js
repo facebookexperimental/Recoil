@@ -220,6 +220,7 @@ test('One item to atom family', async () => {
   const myAtoms = atomFamily({
     key: 'recoil-rul-sync one-to-family',
     default: null,
+    // $FlowFixMe[missing-local-annot]
     effects: prop => [oneToFamilyEffect(prop)],
   });
 

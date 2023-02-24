@@ -107,6 +107,7 @@ function plusOneAsyncSelector(
     get: ({get}) => fn(get(dep)),
   });
   return [
+    // $FlowFixMe[incompatible-return]
     sel,
     x => {
       nextTimeoutAmount = x;
@@ -167,6 +168,7 @@ function componentThatReadsAtomWithCommitCount(
   const commit = jest.fn(() => {});
   function ReadAtom() {
     return (
+      // $FlowFixMe[invalid-tuple-arity]
       <Profiler id="test" onRender={commit}>
         {useRecoilValue(recoilState)}
       </Profiler>
@@ -179,6 +181,7 @@ function componentThatToggles(a: Node, b: null) {
   const toggle = {current: () => invariant(false, 'bug in test code')};
   const Toggle = () => {
     const [value, setValue] = useState(false);
+    // $FlowFixMe[incompatible-type]
     toggle.current = () => setValue(v => !v);
     return value ? b : a;
   };
@@ -260,6 +263,7 @@ describe('Render counts', () => {
       const anAtom = counterAtom();
       const [aSelector, _] = plusOneSelector(anAtom);
       const [WriteComp, updateValue] = componentThatWritesAtom(anAtom);
+      // $FlowFixMe[incompatible-call]
       const ReadComp = componentThatReadsTwoAtoms(anAtom, aSelector);
       renderElements(
         <>
@@ -285,6 +289,7 @@ describe('Render counts', () => {
       const [ComponentA, updateValueA] = componentThatWritesAtom(atomA);
       const [ComponentB, updateValueB] = componentThatWritesAtom(atomB);
       const [ReadComp, commit] =
+        // $FlowFixMe[incompatible-call]
         componentThatReadsAtomWithCommitCount(aSelector);
       renderElements(
         <>
@@ -435,7 +440,8 @@ describe('Render counts', () => {
       const selectAFakeId = selectorFamily({
         key: 'selectItem',
         get:
-          _id =>
+          (_id: number) =>
+          // $FlowFixMe[missing-local-annot]
           ({get}) =>
             get(atomA),
       });
@@ -666,6 +672,7 @@ describe('Component Subscriptions', () => {
     () => {
       const anAtom = counterAtom();
       const [aSelector, _selFn] = plusOneSelector(anAtom);
+      // $FlowFixMe[incompatible-call]
       const [_asyncSel, _adjustTimeout] = plusOneAsyncSelector(aSelector);
       // FIXME to implement
     },

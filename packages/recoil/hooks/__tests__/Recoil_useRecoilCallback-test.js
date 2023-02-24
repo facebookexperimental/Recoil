@@ -119,6 +119,7 @@ testRecoil('Sets Recoil values (by queueing them)', async () => {
   );
 
   function Component() {
+    // $FlowFixMe[missing-local-annot]
     cb = useRecoilCallback(({snapshot, set}) => value => {
       set(anAtom, value);
       // eslint-disable-next-line jest/valid-expect
@@ -146,6 +147,7 @@ testRecoil('Reset Recoil values', async () => {
   function Component() {
     setCB = useRecoilCallback(
       ({set}) =>
+        // $FlowFixMe[missing-local-annot]
         value =>
           set(anAtom, value),
     );
@@ -176,6 +178,7 @@ testRecoil('Sets Recoil values from async callback', async () => {
   const pTest = [];
 
   function Component() {
+    // $FlowFixMe[missing-local-annot]
     cb = useRecoilCallback(({snapshot, set}) => async value => {
       set(anAtom, value);
       pTest.push(
@@ -254,6 +257,7 @@ testRecoil('Setter updater sees latest state', () => {
   let cb;
   function Component() {
     setAtom = useSetRecoilState(myAtom);
+    // $FlowFixMe[missing-local-annot]
     cb = useRecoilCallback(({snapshot, set}) => prevValue => {
       // snapshot sees a snapshot with the latest set state
       expect(snapshot.getLoadable(myAtom).contents).toEqual(prevValue);
@@ -557,6 +561,7 @@ describe('Atom Effects', () => {
 describe('Selector Cache', () => {
   testRecoil('Refresh selector cache - transitive', () => {
     const getA = jest.fn(() => 'A');
+    // $FlowFixMe[incompatible-call]
     const selectorA = selector({
       key: 'useRecoilCallback refresh ancestors A',
       get: getA,
@@ -602,6 +607,7 @@ describe('Selector Cache', () => {
     });
 
     let i = 0;
+    // $FlowFixMe[incompatible-call]
     const myselector = selector({
       key: 'useRecoilCallback refresh entire cache selector',
       get: ({get}) => [get(myatom), i++],
@@ -641,6 +647,7 @@ describe('Snapshot', () => {
       resolveCallback;
 
     const myAtom = stringAtom();
+    // $FlowFixMe[incompatible-call]
     const mySelector1 = selector({
       key: 'useRecoilCallback snapshot retain 1',
       get: async ({get}) => {
@@ -650,6 +657,7 @@ describe('Snapshot', () => {
         return get(myAtom);
       },
     });
+    // $FlowFixMe[incompatible-call]
     const mySelector2 = selector({
       key: 'useRecoilCallback snapshot retain 2',
       get: async ({get}) => {
@@ -714,6 +722,7 @@ describe('Snapshot', () => {
       };
 
       setAtom = useRecoilCallback(
+        // $FlowFixMe[missing-local-annot]
         args => async newValue => parentFunction(args, newValue),
       );
       return useRecoilValue(myAtom);

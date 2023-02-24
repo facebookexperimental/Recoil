@@ -116,6 +116,7 @@ function compose<T, V>(
 ): Checker<V> {
   return (value, path = new Path()) => {
     const result = checker(value, path);
+    // $FlowFixMe[incompatible-call]
     return result.type === 'failure' ? result : next(result, path);
   };
 }

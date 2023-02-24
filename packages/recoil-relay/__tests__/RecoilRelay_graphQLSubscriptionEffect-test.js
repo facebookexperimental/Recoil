@@ -48,6 +48,7 @@ testRecoil('GraphQL Subscription', async () => {
 
   const query = atomFamily({
     key: 'graphql remote subscription',
+    // $FlowFixMe[missing-local-annot]
     effects: ({id}) => [
       graphQLSubscriptionEffect({
         environment,

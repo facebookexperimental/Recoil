@@ -149,7 +149,9 @@ describe('Multiple Environments', () => {
     const queryA = graphQLSelectorFamily({
       key: 'graphql multiple environments A',
       environment: envA,
+      // $FlowFixMe[incompatible-call]
       query: testFeedbackQuery,
+      // $FlowFixMe[incompatible-function-indexer]
       variables: id => ({id}),
       mapResponse: data => data.feedback?.seen_count,
     });
@@ -157,7 +159,9 @@ describe('Multiple Environments', () => {
     const queryB = graphQLSelectorFamily({
       key: 'graphql multiple environments B',
       environment: envB,
+      // $FlowFixMe[incompatible-call]
       query: testFeedbackQuery,
+      // $FlowFixMe[incompatible-function-indexer]
       variables: id => ({id}),
       mapResponse: data => data.feedback?.seen_count,
     });
@@ -194,7 +198,9 @@ describe('Multiple Environments', () => {
     const c = renderRecoilElements(
       <ErrorBoundary fallback={e => e.message}>
         <RegisterRelayEnvironments>
+          {/* $FlowFixMe[incompatible-call] */}
           <ReadsAtom atom={queryA('ID')} />
+          {/* $FlowFixMe[incompatible-call] */}
           <ReadsAtom atom={queryB('ID')} />
         </RegisterRelayEnvironments>
       </ErrorBoundary>,
@@ -235,6 +241,7 @@ testRecoil('Relay environment is unloaded', async () => {
         environment: enviornmentKey,
         query: testFeedbackQuery,
         variables: {id: 'ID'},
+        // $FlowFixMe[incompatible-call]
         mapResponse: data => data,
         subscribeToLocalMutations_UNSTABLE: false,
       }),
@@ -247,6 +254,7 @@ testRecoil('Relay environment is unloaded', async () => {
         environment: enviornmentKey,
         query: testFeedbackQuery,
         variables: {id: 'ID'},
+        // $FlowFixMe[incompatible-call]
         mapResponse: data => data,
         subscribeToLocalMutations_UNSTABLE: false,
       }),

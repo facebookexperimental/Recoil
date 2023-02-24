@@ -67,7 +67,10 @@ describe('array', () => {
   });
 
   it('arbitrary depth nested array', () => {
+    // $FlowFixMe[recursive-definition]
+    // $FlowFixMe[underconstrained-implicit-instantiation]
     const check = or(number(), array(lazy(() => check)));
+    // $FlowFixMe[underconstrained-implicit-instantiation]
     const coerce = coercion(array(check));
     expect(coerce(0)).toEqual(null);
     expect(coerce([])).toEqual([]);
@@ -291,6 +294,7 @@ describe('set', () => {
     const coerce = coercion(set(number()));
     expect(coerce(false)).toEqual(null);
     expect(coerce([1, 2])).toEqual(null);
+    // $FlowFixMe[missing-empty-array-annot]
     expect(coerce(new Set([]))).toEqual(new Set([]));
     expect(coerce(new Set([1, 2]))).toEqual(new Set([1, 2]));
     expect(coerce(new Set([1, 2, 2]))).toEqual(new Set([1, 2]));

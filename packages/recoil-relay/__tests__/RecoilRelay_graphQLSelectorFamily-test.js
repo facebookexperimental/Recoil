@@ -399,6 +399,7 @@ testRecoil('pre-fetch query', async () => {
   let setID;
   function Component() {
     const [id, setIDState] = useState('ID1');
+    // $FlowFixMe[missing-local-annot]
     setID = useRecoilCallback(({snapshot}) => async newID => {
       // Pre-fetch the query
       snapshot.getPromise(myQuery(newID));

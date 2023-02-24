@@ -96,6 +96,7 @@ function plusOneAsyncSelector(
     get: ({get}) => fn(get(dep)),
   });
   return [
+    // $FlowFixMe[incompatible-return]
     sel,
     x => {
       nextTimeoutAmount = x;
@@ -131,6 +132,7 @@ testRecoil(
       validator: x => (x: any), // flowlint-line unclear-type:off
     });
     const [aSelector, _] = plusOneSelector(anAtom);
+    // $FlowFixMe[incompatible-call]
     const [anAsyncSelector, __] = plusOneAsyncSelector(aSelector);
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
     const modifiedAtomsList = [];
@@ -198,6 +200,7 @@ testRecoil(
       );
     });
     const validator = jest.fn(() => 789);
+    // $FlowFixMe[incompatible-call]
     theAtom = atom({
       key: 'notDefinedYetAtom',
       default: 456,
@@ -209,6 +212,7 @@ testRecoil(
     act(() => {
       setVisible(true);
     });
+    // $FlowFixMe[invalid-tuple-index]
     expect(validator.mock.calls[0][0]).toBe(123);
     expect(container.textContent).toBe('789');
   },

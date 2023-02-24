@@ -16,6 +16,7 @@ const {useEffect, useRef} = require('react');
 function usePrevious<T>(value: T): T | void {
   const ref = useRef();
   useEffect(() => {
+    // $FlowFixMe[incompatible-type]
     ref.current = value;
   });
   return ref.current;

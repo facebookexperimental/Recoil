@@ -258,8 +258,10 @@ function Batcher({
   const storeRef = useStoreRef();
 
   const [, setState] = useState(([]: Array<$FlowFixMe>));
+  // $FlowFixMe[incompatible-call]
   setNotifyBatcherOfChange(() => setState({}));
   useEffect(() => {
+    // $FlowFixMe[incompatible-call]
     setNotifyBatcherOfChange(() => setState({}));
 
     // If an asynchronous selector resolves after the Batcher is unmounted,

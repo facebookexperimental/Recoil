@@ -60,6 +60,7 @@ function stringify(x: mixed, opt: Options, key?: string): string {
 
   // Arrays handle recursive stringification
   if (Array.isArray(x)) {
+    // $FlowFixMe[missing-local-annot]
     return `[${x.map((v, i) => stringify(v, opt, i.toString()))}]`;
   }
 
@@ -87,6 +88,7 @@ function stringify(x: mixed, opt: Options, key?: string): string {
   // default insertion order.
   if (x instanceof Set) {
     return stringify(
+      // $FlowFixMe[missing-local-annot]
       Array.from(x).sort((a, b) =>
         stringify(a, opt).localeCompare(stringify(b, opt)),
       ),

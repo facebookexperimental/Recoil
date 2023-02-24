@@ -53,11 +53,14 @@ testRecoil('Relay Query with <RecoilRoot>', async () => {
   const query = atomFamily({
     key: 'graphql query',
     default: {feedback: null},
+    // $FlowFixMe[missing-local-annot]
     effects: variables => [
       graphQLQueryEffect({
         environment: mockEnvironmentKey,
         query: testFeedbackQuery,
         variables,
+        // $FlowFixMe[incompatible-variance]
+        // $FlowFixMe[incompatible-call]
         mapResponse: data => data,
         subscribeToLocalMutations_UNSTABLE: false,
       }),
@@ -85,6 +88,7 @@ testRecoil('Relay Query with Snapshot', async () => {
 
   const query = atomFamily({
     key: 'graphql snapshot query',
+    // $FlowFixMe[missing-local-annot]
     effects: variables => [
       graphQLQueryEffect({
         environment: mockEnvironmentKey,
@@ -118,11 +122,14 @@ testRecoil('Relay Query Error with <RecoilRoot>', async () => {
   const query = atomFamily({
     key: 'graphql query error',
     default: {feedback: null},
+    // $FlowFixMe[missing-local-annot]
     effects: variables => [
       graphQLQueryEffect({
         environment: mockEnvironmentKey,
         query: testFeedbackQuery,
         variables,
+        // $FlowFixMe[incompatible-variance]
+        // $FlowFixMe[incompatible-call]
         mapResponse: data => data,
         subscribeToLocalMutations_UNSTABLE: false,
       }),
@@ -143,6 +150,7 @@ testRecoil('Relay Query Error with Snapshot', async () => {
 
   const query = atomFamily({
     key: 'graphql snapshot query error',
+    // $FlowFixMe[missing-local-annot]
     effects: variables => [
       graphQLQueryEffect({
         environment: mockEnvironmentKey,
@@ -177,6 +185,7 @@ testRecoil('Relay Query that is preloaded', async () => {
         environment: mockEnvironmentKey,
         query: testFeedbackQuery,
         variables: {id: 'ID'},
+        // $FlowFixMe[incompatible-call]
         mapResponse: data => data,
         subscribeToLocalMutations_UNSTABLE: false,
       }),
@@ -189,6 +198,7 @@ testRecoil('Relay Query that is preloaded', async () => {
         environment: mockEnvironmentKey,
         query: testFeedbackQuery,
         variables: {id: 'ID'},
+        // $FlowFixMe[incompatible-call]
         mapResponse: data => data,
         subscribeToLocalMutations_UNSTABLE: false,
       }),
@@ -203,6 +213,7 @@ testRecoil('Relay Query that is preloaded', async () => {
         environment: mockEnvironmentKey,
         query: testFeedbackQuery,
         variables: {id: 'ID'},
+        // $FlowFixMe[incompatible-call]
         mapResponse: data => data,
         subscribeToLocalMutations_UNSTABLE: false,
       }),
@@ -252,11 +263,13 @@ testRecoil('Relay Query Deferred', async () => {
   const query = atomFamily({
     key: 'graphql query deferred',
     default: {mode: {id: 'DEFAULT'}},
+    // $FlowFixMe[missing-local-annot]
     effects: variables => [
       graphQLQueryEffect({
         environment: mockEnvironmentKey,
         query: testFeedbackQuery,
         variables,
+        // $FlowFixMe[prop-missing]
         mapResponse: data => data,
         subscribeToLocalMutations_UNSTABLE: false,
       }),
@@ -385,6 +398,7 @@ test('Subscribe to local mutations', async () => {
 
   const query = atomFamily({
     key: 'graphql local subscriptions',
+    // $FlowFixMe[missing-local-annot]
     effects: variables => [
       graphQLQueryEffect({
         environment: mockEnvironmentKey,

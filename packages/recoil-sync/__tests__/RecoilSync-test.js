@@ -199,6 +199,7 @@ test('Read from storage', async () => {
   ]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
@@ -219,6 +220,7 @@ test('Read from storage async', async () => {
   const storage = new Map([['recoil-sync read async', Promise.resolve('A')]]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
     </TestRecoilSync>,
@@ -293,7 +295,11 @@ test('Read from storage error', async () => {
   const mySelector = selectorFamily({
     key: 'recoil-sync read error selector',
     get:
-      ({myAtom}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {myAtom},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) => {
         try {
           return get(myAtom);
@@ -314,6 +320,7 @@ test('Read from storage error', async () => {
   ]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={mySelector({myAtom: atomA})} />
       <ReadsAtom atom={mySelector({myAtom: atomB})} />
@@ -332,31 +339,37 @@ test('Read from storage error', async () => {
 });
 
 test('Read nullable', async () => {
+  // $FlowFixMe[incompatible-call]
   const atomUndefinedA = atom({
     key: 'recoil-sync read undefined A',
     default: 'DEFAULT',
     effects: [syncEffect({refine: literal(undefined)})],
   });
+  // $FlowFixMe[incompatible-call]
   const atomUndefinedB = atom({
     key: 'recoil-sync read undefined B',
     default: 'DEFAULT',
     effects: [syncEffect({refine: literal(undefined)})],
   });
+  // $FlowFixMe[incompatible-call]
   const atomUndefinedC = atom({
     key: 'recoil-sync read undefined C',
     default: 'DEFAULT',
     effects: [syncEffect({refine: literal(undefined)})],
   });
+  // $FlowFixMe[incompatible-call]
   const atomNullA = atom({
     key: 'recoil-sync read null A',
     default: 'DEFAULT',
     effects: [syncEffect({refine: literal(null)})],
   });
+  // $FlowFixMe[incompatible-call]
   const atomNullB = atom({
     key: 'recoil-sync read null B',
     default: 'DEFAULT',
     effects: [syncEffect({refine: literal(null)})],
   });
+  // $FlowFixMe[incompatible-call]
   const atomNullC = atom({
     key: 'recoil-sync read null C',
     default: 'DEFAULT',
@@ -373,6 +386,7 @@ test('Read nullable', async () => {
   ]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomUndefinedA} />
       <ReadsAtom atom={atomUndefinedB} />
@@ -412,6 +426,7 @@ test('Abort read', async () => {
   ]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
@@ -458,6 +473,7 @@ test('Abort vs reset', async () => {
   ]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
@@ -546,6 +562,7 @@ test('Read from storage upgrade - multiple effects', async () => {
   ]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
@@ -622,6 +639,7 @@ test('Read from storage upgrade', async () => {
   ]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atomA} />
       <ReadsAtom atom={atomB} />
@@ -679,7 +697,9 @@ test('Read/Write from storage upgrade', async () => {
   const [AtomC, setC, resetC] = componentThatReadsAndWritesAtom(atomC);
   const container = renderElements(
     <>
+      {/* $FlowFixMe[incompatible-type-arg] */}
       <TestRecoilSync storage={storage1} />
+      {/* $FlowFixMe[incompatible-type-arg] */}
       <TestRecoilSync storage={storage2} storeKey="OTHER_SYNC" />
       <AtomA />
       <AtomB />
@@ -740,10 +760,12 @@ test('Listen to storage', async () => {
   ]);
   const storage2 = new Map([['recoil-sync listen to multiple storage', 'C2']]);
 
-  let updateItem1: (ItemKey, DefaultValue | Loadable<string> | string) => void =
-    () => {
-      throw new Error('Failed to register 1');
-    };
+  let updateItem1: (
+    ItemKey,
+    DefaultValue | Loadable<string> | string,
+  ) => void = () => {
+    throw new Error('Failed to register 1');
+  };
   let updateItems1: ItemSnapshot => void = _ => {
     throw new Error('Failed to register 1');
   };
@@ -756,6 +778,7 @@ test('Listen to storage', async () => {
   const container = renderElements(
     <TestRecoilSync
       storeKey="SYNC_1"
+      // $FlowFixMe[incompatible-type-arg]
       storage={storage1}
       regListen={listenInterface => {
         updateItem1 = listenInterface.updateItem;
@@ -764,6 +787,7 @@ test('Listen to storage', async () => {
       }}>
       <TestRecoilSync
         storeKey="SYNC_2"
+        // $FlowFixMe[incompatible-type-arg]
         storage={storage2}
         regListen={listenInterface => {
           updateItem2 = listenInterface.updateItem;
@@ -1048,6 +1072,7 @@ test('Sync Atom Family', async () => {
   const atoms = atomFamily({
     key: 'recoil-sync atom family',
     default: 'DEFAULT',
+    // $FlowFixMe[missing-local-annot]
     effects: param => [syncEffect({itemKey: param, refine: string()})],
   });
 
@@ -1057,6 +1082,7 @@ test('Sync Atom Family', async () => {
   ]);
 
   const container = renderElements(
+    // $FlowFixMe[incompatible-type-arg]
     <TestRecoilSync storage={storage}>
       <ReadsAtom atom={atoms('a')} />
       <ReadsAtom atom={atoms('b')} />
@@ -1184,6 +1210,7 @@ describe('Complex Mappings', () => {
     const storage = new Map([['other', 'OTHER']]);
 
     const container = renderElements(
+      // $FlowFixMe[incompatible-type-arg]
       <TestRecoilSync storage={storage}>
         <ReadsAtom atom={myAtom} />
       </TestRecoilSync>,
@@ -1202,6 +1229,7 @@ describe('Complex Mappings', () => {
       default: 'DEFAULT',
       effects: [
         syncEffect({
+          // $FlowFixMe[incompatible-call]
           refine: dict(number()),
           read: ({read}) => ({a: read('a'), b: read('b')}),
         }),
@@ -1215,6 +1243,7 @@ describe('Complex Mappings', () => {
     let updateItem;
     const container = renderElements(
       <TestRecoilSync
+        // $FlowFixMe[incompatible-type-arg]
         storage={storage}
         regListen={listenInterface => {
           updateItem = listenInterface.updateItem;
@@ -1246,6 +1275,7 @@ test('Reading before sync hook', async () => {
   const atoms = atomFamily({
     key: 'recoil-sync order',
     default: 'DEFAULT',
+    // $FlowFixMe[missing-local-annot]
     effects: param => [syncEffect({itemKey: param, refine: string()})],
   });
 
@@ -1308,12 +1338,14 @@ test('Sibling <RecoilRoot>', async () => {
   const container = renderElements(
     <>
       <RecoilRoot>
+        {/* $FlowFixMe[incompatible-type-arg] */}
         <TestRecoilSync storage={storageA} />
         <AtomA />
         <SharedInA />
       </RecoilRoot>
       <RecoilRoot>
         <AtomB />
+        {/* $FlowFixMe[incompatible-type-arg] */}
         <TestRecoilSync storage={storageB} />
         <SharedInB />
       </RecoilRoot>
