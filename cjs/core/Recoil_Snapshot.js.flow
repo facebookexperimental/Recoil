@@ -335,6 +335,7 @@ function freshSnapshot(initializeState?: MutableSnapshot => void): Snapshot {
 // Factory to clone a snapshot state
 const [memoizedCloneSnapshot, invalidateMemoizedSnapshot] =
   memoizeOneWithArgsHashAndInvalidation(
+    // $FlowFixMe[missing-local-annot]
     (store, version) => {
       const storeState = store.getState();
       const treeState =

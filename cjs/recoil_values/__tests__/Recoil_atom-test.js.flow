@@ -466,6 +466,7 @@ describe('Effects', () => {
         },
       ],
     });
+    // $FlowFixMe[incompatible-call]
     const mySelector = selector<string>({
       key: 'atom effect error selector',
       get: ({get}) => {
@@ -535,6 +536,7 @@ describe('Effects', () => {
       default: 'DEFAULT',
       effects: [
         ({setSelf}) => {
+          // $FlowFixMe[incompatible-call]
           setSelf(atom.value(Promise.resolve('INIT_PROMISE')));
           setLater = setSelf;
         },
@@ -544,11 +546,13 @@ describe('Effects', () => {
     await expect(getRecoilStateLoadable(myAtom).contents).resolves.toBe(
       'INIT_PROMISE',
     );
+    // $FlowFixMe[incompatible-call]
     act(() => setLater(atom.value(Promise.resolve('LATER_PROMISE'))));
     expect(getRecoilStateLoadable(myAtom).state).toBe('hasValue');
     await expect(getRecoilStateLoadable(myAtom).contents).resolves.toBe(
       'LATER_PROMISE',
     );
+    // $FlowFixMe[incompatible-call]
     act(() => setLater(() => atom.value(Promise.resolve('UPDATER_PROMISE'))));
     expect(getRecoilStateLoadable(myAtom).state).toBe('hasValue');
     await expect(getRecoilStateLoadable(myAtom).contents).resolves.toBe(
@@ -670,6 +674,7 @@ describe('Effects', () => {
 
     // Test setting to undefined
     act(() =>
+      // $FlowFixMe[incompatible-call]
       setAtom(value => {
         expect(value).toEqual('DEFAULT');
         return undefined;
@@ -692,6 +697,7 @@ describe('Effects', () => {
               resolveAtom = resolve;
             }),
           );
+          // $FlowFixMe[invalid-tuple-arity]
           onSet(onSetForSameEffect);
         },
         ({onSet}) => {
@@ -730,6 +736,7 @@ describe('Effects', () => {
       }),
       effects: [
         ({onSet}) => {
+          // $FlowFixMe[invalid-tuple-arity]
           onSet(onSetHandler);
         },
       ],
@@ -850,18 +857,26 @@ describe('Effects', () => {
     const c = renderElements(<ReadsWritesAtom />);
     expect(c.textContent).toEqual('{"patch":"PATCH","value":"DEFAULT"}');
 
+    // $FlowFixMe[missing-local-annot]
+    // $FlowFixMe[incompatible-exact]
     act(() => setAtom(x => ({...x, value: 'SET'})));
     expect(c.textContent).toEqual('{"patch":"PATCH","value":"SET"}');
 
+    // $FlowFixMe[missing-local-annot]
+    // $FlowFixMe[incompatible-exact]
     act(() => setAtom(x => ({...x, value: 'SET2'})));
     expect(c.textContent).toEqual('{"patch":"PATCH","value":"SET2"}');
 
     patch = 'PATCHB';
+    // $FlowFixMe[missing-local-annot]
+    // $FlowFixMe[incompatible-exact]
     act(() => setAtom(x => ({...x, value: 'SET3'})));
     expect(c.textContent).toEqual(
       '{"patch":"PATCHB","value":"TRANSFORM SET3"}',
     );
 
+    // $FlowFixMe[missing-local-annot]
+    // $FlowFixMe[incompatible-exact]
     act(() => setAtom(x => ({...x, value: 'SET4'})));
     expect(c.textContent).toEqual('{"patch":"PATCHB","value":"SET4"}');
   });
@@ -1095,6 +1110,7 @@ describe('Effects', () => {
 
     expect(set1).toEqual(false);
     expect(set2).toEqual(false);
+    // $FlowFixMe[incompatible-call]
     act(() => setA(1));
     expect(set1).toEqual(true);
     expect(set2).toEqual(true);
@@ -1426,6 +1442,7 @@ describe('Effects', () => {
         ],
       });
 
+      // $FlowFixMe[incompatible-call]
       const selThatDependsOnAtom = selector({
         key: 'selThatDependsOnAtom',
         get: ({get}) => get(atomWithEffect),
@@ -1469,6 +1486,7 @@ describe('Effects', () => {
             expect(getInfo_UNSTABLE(otherAtom).loadable?.contents).toBe(
               'OTHER',
             );
+            // $FlowFixMe[incompatible-call]
             setSelf(otherValue);
           },
         ],
@@ -1675,6 +1693,7 @@ describe('Effects', () => {
     const myAtom = atom({
       key: 'atom effect - parentStoreID',
       effects: [
+        // $FlowFixMe[missing-local-annot]
         ({parentStoreID_UNSTABLE, setSelf}) => {
           setSelf(parentStoreID_UNSTABLE);
         },
@@ -1757,6 +1776,7 @@ testRecoil('object is frozen when stored in atom', async () => {
     key: 'atom frozen initialized',
     default: {nested: 'DEFAULT'},
     effects: [
+      // $FlowFixMe[incompatible-call]
       ({setSelf}) => setSelf({state: 'frozen', nested: {state: 'frozen'}}),
     ],
   });

@@ -39,6 +39,7 @@ function treeCacheLRU<T>({
       lruCache.set(node, true);
 
       if (lruNode && cache.size() > maxSize) {
+        // $FlowFixMe[incompatible-call]
         cache.delete(lruNode.key);
       }
     },

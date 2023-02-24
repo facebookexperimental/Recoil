@@ -127,6 +127,7 @@ testRecoil('useResetRecoilState - atom family', () => {
     {default: string} | {default: string, secondParam: string},
   >({
     key: 'useResetRecoilState/atomFamily',
+    // $FlowFixMe[missing-local-annot]
     default: ({default: def}) => def,
   });
 
@@ -144,12 +145,15 @@ testRecoil('useResetRecoilState - atom family', () => {
   );
 
   expect(container.textContent).toBe('"default""default"');
+  // $FlowFixMe[incompatible-call]
   act(() => setValue('set value'));
   expect(container.textContent).toBe('"set value""default"');
   act(() => resetValue());
   expect(container.textContent).toBe('"default""default"');
+  // $FlowFixMe[incompatible-call]
   act(() => setValue('set value A'));
   expect(container.textContent).toBe('"set value A""default"');
+  // $FlowFixMe[incompatible-call]
   act(() => setValueB('set value B'));
   expect(container.textContent).toBe('"set value A""set value B"');
   act(() => resetValueB());
@@ -161,9 +165,11 @@ testRecoil('useResetRecoilState - selector', () => {
     key: 'useResetRecoilState/selector/atom',
     default: 'default',
   });
+  // $FlowFixMe[incompatible-call]
   const mySelector = selector({
     key: 'useResetRecoilState/selector',
     get: ({get}) => get(myAtom),
+    // $FlowFixMe[incompatible-call]
     set: ({set}, value) => set(myAtom, value),
   });
 
@@ -186,10 +192,12 @@ testRecoil('useResetRecoilState - parameterized selector', () => {
     key: 'useResetRecoilState/parameterized_selector',
     get:
       () =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) =>
         get(myAtom),
     set:
       () =>
+      // $FlowFixMe[missing-local-annot]
       ({set}, value) =>
         set(myAtom, value),
   });

@@ -202,6 +202,7 @@ function peekNodeInfo<T>(
       type,
     },
     {
+      // $FlowFixMe[underconstrained-implicit-instantiation]
       loadable: () => peekNodeLoadable(store, state, key),
       isActive: () =>
         storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),

@@ -74,6 +74,7 @@ testRecoil('getNodes', () => {
     atoms('A'),
   );
   const [ReadsAtomB, setAtomB] = componentThatReadsAndWritesAtom(atoms('B'));
+  // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'useRecoilTransactionObserver getNodes selector',
     get: ({get}) => get(atoms('A')) + '-SELECTOR',
@@ -223,6 +224,7 @@ testRecoil('Can observe selector value', async () => {
     default: 'DEFAULT',
   });
 
+  // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'Observer Selector As',
     get: ({get}) => `SELECTOR ${get(atomA)}`,

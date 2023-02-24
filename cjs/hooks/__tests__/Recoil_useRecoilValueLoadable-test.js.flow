@@ -177,14 +177,18 @@ testRecoil(
 testRecoil('two level async', async () => {
   const level2 = selector({
     key: 'useRecoilValueLoadable async level2',
+    // $FlowFixMe[incompatible-call]
     get: () => new Promise(resolve => setTimeout(() => resolve('level2'))),
   });
 
+  // $FlowFixMe[incompatible-call]
   const level1 = selector({
     key: 'useRecoilValueLoadable async level1',
     get: async ({get}) => {
       const level2Value = get(level2);
       return await new Promise(resolve =>
+        // $FlowFixMe[incompatible-call]
+        // $FlowFixMe[incompatible-type]
         setTimeout(() => resolve(`level1 + ${level2Value}`)),
       );
     },

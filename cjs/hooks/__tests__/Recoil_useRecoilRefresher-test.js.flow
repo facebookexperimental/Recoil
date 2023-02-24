@@ -79,6 +79,7 @@ testRecoil('useRecoilRefresher - clears entire cache', async () => {
   });
 
   let i = 0;
+  // $FlowFixMe[incompatible-call]
   const myselector = selector({
     key: 'useRecoilRefresher entire cache selector',
     get: ({get}) => [get(myatom), i++],
@@ -108,6 +109,7 @@ testRecoil('useRecoilRefresher - clears entire cache', async () => {
 
 testRecoil('useRecoilRefresher - clears ancestor selectors', async () => {
   const getA = jest.fn(() => 'A');
+  // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'useRecoilRefresher ancestors A',
     get: getA,

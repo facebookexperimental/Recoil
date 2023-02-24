@@ -566,6 +566,7 @@ function useRecoilValueLoadable_LEGACY<T>(
         }
         const newLoadable = getLoadable();
         if (!prevLoadableRef.current?.is(newLoadable)) {
+          // $FlowFixMe[incompatible-call]
           forceUpdate(newLoadable);
         }
         prevLoadableRef.current = newLoadable;
@@ -591,6 +592,7 @@ function useRecoilValueLoadable_LEGACY<T>(
      */
     if (storeState.nextTree) {
       store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
+        // $FlowFixMe[incompatible-type]
         prevLoadableRef.current = null;
         forceUpdate([]);
       });
@@ -600,6 +602,7 @@ function useRecoilValueLoadable_LEGACY<T>(
       }
       const newLoadable = getLoadable();
       if (!prevLoadableRef.current?.is(newLoadable)) {
+        // $FlowFixMe[incompatible-call]
         forceUpdate(newLoadable);
       }
       prevLoadableRef.current = newLoadable;

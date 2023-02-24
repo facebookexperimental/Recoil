@@ -141,6 +141,7 @@ function plusOneAsyncSelector(
     get: ({get}) => fn(get(dep)),
   });
   return [
+    // $FlowFixMe[incompatible-return]
     sel,
     x => {
       nextTimeoutAmount = x;
@@ -164,6 +165,7 @@ function asyncSelectorThatPushesPromisesOntoArray<T, S>(
   dep: RecoilValue<S>,
 ): [RecoilValue<T>, $ReadOnlyArray<[(T) => void, (mixed) => void]>] {
   const promises: Array<[(T) => void, (mixed) => void]> = [];
+  // $FlowFixMe[incompatible-call]
   const sel = selector<T>({
     key: `selector${nextID++}`,
     get: ({get}) => {
@@ -200,6 +202,7 @@ function componentThatReadsAtomWithCommitCount(
   const commit = jest.fn(() => {});
   function ReadAtom() {
     return (
+      // $FlowFixMe[invalid-tuple-arity]
       <Profiler id="test" onRender={commit}>
         {useRecoilValue(recoilState)}
       </Profiler>
@@ -212,6 +215,7 @@ function componentThatToggles(a: Node, b: null) {
   const toggle = {current: () => invariant(false, 'bug in test code')};
   const Toggle = () => {
     const [value, setValue] = useState(false);
+    // $FlowFixMe[incompatible-type]
     toggle.current = () => setValue(v => !v);
     return value ? b : a;
   };
@@ -261,6 +265,7 @@ describe('Updates', () => {
   testRecoil('Selectors can depend on other selectors', () => {
     const anAtom = counterAtom();
     const [selectorA, _] = plusOneSelector(anAtom);
+    // $FlowFixMe[incompatible-call]
     const [selectorB, __] = plusOneSelector(selectorA);
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
     const container = renderElements(
@@ -446,9 +451,11 @@ describe('Updates', () => {
 
 testRecoil('Selectors can be invertible', () => {
   const anAtom = counterAtom();
+  // $FlowFixMe[incompatible-call]
   const aSelector = selector({
     key: 'invertible1',
     get: ({get}) => get(anAtom),
+    // $FlowFixMe[incompatible-call]
     set: ({set}, newValue) => set(anAtom, newValue),
   });
 
@@ -469,6 +476,7 @@ describe('Dynamic Dependencies', () => {
   testRecoil('Selector dependencies can change over time', () => {
     const atomA = counterAtom();
     const atomB = counterAtom();
+    // $FlowFixMe[incompatible-call]
     const aSelector = selector({
       key: 'depsChange',
       get: ({get}) => {
@@ -510,6 +518,7 @@ describe('Dynamic Dependencies', () => {
     const inputAtom = counterAtom();
 
     // Depends on inputAtom only when switchAtom is true:
+    // $FlowFixMe[incompatible-call]
     const aSelector = selector<number>({
       key: 'gainsDeps',
       get: ({get}) => {
@@ -569,6 +578,7 @@ describe('Dynamic Dependencies', () => {
 
     const [observedSelector, selectorFn] = plusOneSelector(atomC);
 
+    // $FlowFixMe[incompatible-call]
     const aSelector = selector({
       key: 'transactionally',
       get: ({get}) => {
@@ -617,6 +627,7 @@ describe('Dynamic Dependencies', () => {
         default: 'Async Dep Value',
       });
 
+      // $FlowFixMe[incompatible-call]
       const selectorWithAsyncDeps = selector({
         key: 'selectorTrackDepsIncrementally',
         get: async ({get}) => {
@@ -663,6 +674,7 @@ describe('Dynamic Dependencies', () => {
       const resolvingSel2 = resolvingAsyncSelector(2);
       const anAtom3 = atom({key: 'atomTrackedAsync3', default: 3});
 
+      // $FlowFixMe[incompatible-call]
       const selectorWithAsyncDeps = selector({
         key: 'selectorNotCacheIncDeps',
         get: async ({get}) => {
@@ -721,6 +733,7 @@ describe('Dynamic Dependencies', () => {
       const [asyncDep, resolveAsyncDep] = asyncSelector<string, _>();
       const anAtom = atom({key: 'atomChangingDeps', default: 3});
 
+      // $FlowFixMe[incompatible-call]
       const anAsyncSelector = selector({
         key: 'selectorWithChangingDeps',
         get: ({get}) => {
@@ -794,6 +807,7 @@ describe('Dynamic Dependencies', () => {
       const anAtom = atom<number>({key: 'anAtom', default: 0});
       const anotherAtom = atom<number>({key: 'anotherAtom', default: 0});
 
+      // $FlowFixMe[incompatible-call]
       const aSelector = selector({
         key: 'aSelector',
         get: ({get}) => {
@@ -841,6 +855,7 @@ describe('Dynamic Dependencies', () => {
     });
 
     let selectorEvaluations = 0;
+    // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector dynamic deps selector',
       get: async ({get}) => {
@@ -848,12 +863,14 @@ describe('Dynamic Dependencies', () => {
         await Promise.resolve();
         const sw = get(myAtom);
         if (sw === 'A') {
+          // $FlowFixMe[unsafe-addition]
           return 'RESOLVED_' + get(myAtomA);
         }
         if (sw === 'B') {
           return 'RESOLVED_' + get(myAtomB);
         }
         if (sw === 'C') {
+          // $FlowFixMe[unsafe-addition]
           return 'RESOLVED_' + get(myAtomC);
         }
         await new Promise(() => {});
@@ -864,6 +881,7 @@ describe('Dynamic Dependencies', () => {
     // doesn't suspend while the selector is pending async results.
     // Otherwise the component may trigger re-evaluations when it wakes up
     // and provide a false-positive.
+    // $FlowFixMe[incompatible-call]
     const wrapperSelector = selector({
       key: 'selector dynamic deps wrapper',
       get: ({get}) => {
@@ -984,6 +1002,7 @@ describe('Catching Deps', () => {
     const c1 = renderElements(<ReadsAtom atom={throwingSel} />);
     expect(c1.textContent).toEqual('error');
 
+    // $FlowFixMe[incompatible-call]
     const catchingSelector = selector({
       key: 'useRecoilState/catching selector',
       get: ({get}) => {
@@ -1018,6 +1037,7 @@ describe('Catching Deps', () => {
     const c1 = renderElements(<ReadsAtom atom={throwingSel} />);
     expect(c1.textContent).toEqual('error');
 
+    // $FlowFixMe[incompatible-call]
     const catchingSelector = selector({
       key: 'useRecoilState/catching selector',
       get: ({get}) => {
@@ -1036,6 +1056,7 @@ describe('Catching Deps', () => {
 
   testRecoil('selector catching loads', async () => {
     const resolvingSel = resolvingAsyncSelector('READY');
+    // $FlowFixMe[incompatible-call]
     const bypassSelector = selector({
       key: 'useRecoilState/bypassing selector',
       get: ({get}) => {
@@ -1065,6 +1086,7 @@ describe('Catching Deps', () => {
     const [resolvingSel1, res1] = asyncSelector<string, _>();
     const [resolvingSel2, res2] = asyncSelector<string, _>();
 
+    // $FlowFixMe[incompatible-call]
     const bypassSelector = selector({
       key: 'useRecoilState/bypassing selector all',
       get: ({get}) => {
@@ -1103,6 +1125,7 @@ describe('Catching Deps', () => {
   testRecoil('selector catching any of 2 loads', async () => {
     const resolvingSel1 = resolvingAsyncSelector('READY');
     const resolvingSel2 = resolvingAsyncSelector('READY');
+    // $FlowFixMe[incompatible-call]
     const bypassSelector = selector({
       key: 'useRecoilState/bypassing selector any',
       get: ({get}) => {
@@ -1139,6 +1162,7 @@ describe('Catching Deps', () => {
     async () => {
       const [originalDep, resolveOriginal] = asyncSelector<string, _>();
       const [bypassDep, resolveBypass] = asyncSelector<string, _>();
+      // $FlowFixMe[incompatible-call]
       const catchPromiseSelector = selector({
         key: 'useRecoilState/catch then async',
         get: ({get}) => {
@@ -1172,6 +1196,7 @@ describe('Catching Deps', () => {
   testRecoil('selector catching promise 2', async () => {
     let dependencyPromiseTest;
     const resolvingSel = resolvingAsyncSelector('READY');
+    // $FlowFixMe[incompatible-call]
     const catchPromiseSelector = selector({
       key: 'useRecoilState/catch then async 2',
       get: ({get}) => {
@@ -1228,6 +1253,7 @@ describe('Async Selectors', () => {
 
   testRecoil('Blocked on dependency', async () => {
     const resolvingSel = resolvingAsyncSelector('READY');
+    // $FlowFixMe[incompatible-call]
     const blockedSelector = selector({
       key: 'useRecoilState/blocked selector',
       get: ({get}) => get(resolvingSel),
@@ -1275,6 +1301,7 @@ describe('Async Selectors', () => {
       get: async () => 'READY',
     });
 
+    // $FlowFixMe[incompatible-call]
     const sel1 = selector({
       key: 'MySelector',
       get: async ({get}) => {
@@ -1373,6 +1400,7 @@ describe('Async Selectors', () => {
     async () => {
       jest.useFakeTimers();
       const anAtom = counterAtom();
+      // $FlowFixMe[incompatible-call]
       const aSelector = selector({
         key: 'alternatingSelector',
         get: ({get}) => {
@@ -1384,6 +1412,7 @@ describe('Async Selectors', () => {
             return x;
           } else {
             return new Promise(resolve => {
+              // $FlowFixMe[incompatible-call]
               setTimeout(() => resolve(x), 100);
             });
           }
@@ -1495,6 +1524,7 @@ describe('Async Selectors', () => {
     jest.useFakeTimers();
     const anAtom = counterAtom();
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
+    // $FlowFixMe[incompatible-call]
     const sel = selector({
       key: `selector${nextID++}`,
       get: ({get}) => {
@@ -1529,6 +1559,7 @@ describe('Async Selectors', () => {
         key: `atom${nextID++}`,
         default: {value: 0},
       });
+      // $FlowFixMe[incompatible-call]
       const mySelector = selector({
         key: `selector${nextID++}`,
         get: ({get}) => get(myAtom).value,
@@ -1552,6 +1583,7 @@ describe('Async Selectors', () => {
       expect(commit).toHaveBeenCalledTimes(BASE_CALLS + 1);
 
       // Set selector to a pending state should cause component to suspend
+      // $FlowFixMe[incompatible-call]
       act(() => updateValue({value: new Promise(() => {})}));
       act(() => jest.runAllTimers());
       await flushPromisesAndTimers();
@@ -1615,6 +1647,7 @@ describe('Async Selectors', () => {
         key: 'notifiesAllStores/snapshots/b',
         get: async () =>
           new Promise(r => {
+            // $FlowFixMe[incompatible-type]
             resolve = r;
           }),
       });
@@ -1640,9 +1673,11 @@ describe('Async Selectors', () => {
           set(switchAtom, true); // cause us to then read from the pending selector
         });
 
+        // $FlowFixMe[incompatible-type]
         return query.state === 'hasValue' ? query.contents : 'loading';
       }
 
+      // $FlowFixMe[incompatible-type-arg]
       const c = renderElements(<TestComponent />);
       expect(c.textContent).toEqual('foo');
 
@@ -1674,6 +1709,7 @@ describe('Async Selectors', () => {
         key: 'notifiesAllStores/twoRoots/b',
         get: async () =>
           new Promise(r => {
+            // $FlowFixMe[incompatible-type]
             resolve = r;
           }),
       });
@@ -1688,11 +1724,13 @@ describe('Async Selectors', () => {
           shouldQuery ? selectorB : selectorA,
         );
         setSwitch(setShouldQuery);
+        // $FlowFixMe[incompatible-type]
         return query.state === 'hasValue' ? query.contents : 'loading';
       }
 
       let setRootASelector;
       const rootA = renderElements(
+        // $FlowFixMe[incompatible-type-arg]
         <TestComponent
           setSwitch={setSelector => {
             setRootASelector = setSelector;
@@ -1701,6 +1739,7 @@ describe('Async Selectors', () => {
       );
       let setRootBSelector;
       const rootB = renderElements(
+        // $FlowFixMe[incompatible-type-arg]
         <TestComponent
           setSwitch={setSelector => {
             setRootBSelector = setSelector;
@@ -1767,10 +1806,12 @@ testRecoil('Updating with changed selector', ({gks}) => {
     key: 'selector change rerender / atomB',
     default: {value: 'BAR'},
   });
+  // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'selector change rerender / selectorA',
     get: ({get}) => get(atomA).value,
   });
+  // $FlowFixMe[incompatible-call]
   const selectorB = selector({
     key: 'selector change rerender / selectorB',
     get: ({get}) => get(atomB).value,
@@ -1782,6 +1823,7 @@ testRecoil('Updating with changed selector', ({gks}) => {
     const [side, setSideState] = useState('A');
     setSide = setSideState;
 
+    // $FlowFixMe[missing-local-annot]
     setB = useRecoilCallback(({snapshot, gotoSnapshot}) => value => {
       gotoSnapshot(
         snapshot.map(({set}) => {
@@ -1875,9 +1917,11 @@ testRecoil(
 describe('Multiple stores', () => {
   testRecoil('sync in multiple', () => {
     const myAtom = atom({key: 'selector stores sync atom', default: 'DEFAULT'});
+    // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector stores sync selector',
       get: () => myAtom,
+      // $FlowFixMe[incompatible-call]
       set: ({set}, newValue) => set(myAtom, newValue),
     });
 
@@ -1928,8 +1972,10 @@ describe('Multiple stores', () => {
       get: async ({get}) => {
         const side = get(myAtom);
         const str = await promises[side];
+        // $FlowFixMe[unsafe-addition]
         return side + ':' + str;
       },
+      // $FlowFixMe[incompatible-call]
       set: ({set}, newValue) => set(myAtom, newValue),
     });
 
@@ -1952,9 +1998,11 @@ describe('Multiple stores', () => {
 
     expect(c.textContent).toBe('LOADING_ALOADING_B');
 
+    // $FlowFixMe[incompatible-call]
     act(() => setAtomA('STALE'));
     expect(c.textContent).toBe('LOADING_ALOADING_B');
 
+    // $FlowFixMe[incompatible-call]
     act(() => setAtomA('UPDATE'));
     expect(c.textContent).toBe('LOADING_ALOADING_B');
 
@@ -1976,6 +2024,7 @@ describe('Multiple stores', () => {
     await flushPromisesAndTimers(); // Double flush for open source environment
     expect(c.textContent).toBe('"UPDATE:RESOLVE_A""DEFAULT:RESOLVE_B"');
 
+    // $FlowFixMe[incompatible-call]
     act(() => setAtomB('UPDATE'));
     expect(c.textContent).toBe('"UPDATE:RESOLVE_A""UPDATE:RESOLVE_A"');
   });
@@ -2012,6 +2061,7 @@ describe('Multiple stores', () => {
       get: async ({get}) => {
         const side = get(switchAtom);
         return (
+          // $FlowFixMe[unsafe-addition]
           side +
           ':' +
           (side === 'STALE'
@@ -2021,6 +2071,7 @@ describe('Multiple stores', () => {
             : get(atomB))
         );
       },
+      // $FlowFixMe[incompatible-call]
       set: ({set}, newValue) => set(switchAtom, newValue),
     });
 
@@ -2043,9 +2094,11 @@ describe('Multiple stores', () => {
 
     expect(c.textContent).toBe('LOADING_ALOADING_B');
 
+    // $FlowFixMe[incompatible-call]
     act(() => setAtomB('STALE'));
     expect(c.textContent).toBe('LOADING_ALOADING_B');
 
+    // $FlowFixMe[incompatible-call]
     act(() => setAtomB('B'));
     expect(c.textContent).toBe('LOADING_ALOADING_B');
 
@@ -2064,6 +2117,7 @@ describe('Multiple stores', () => {
     await flushPromisesAndTimers(); // Double flush for open source environment
     expect(c.textContent).toBe('"A:RESOLVE_A""B:RESOLVE_B"');
 
+    // $FlowFixMe[incompatible-call]
     act(() => setAtomA('B'));
     expect(c.textContent).toBe('"B:RESOLVE_B""B:RESOLVE_B"');
   });
@@ -2094,6 +2148,7 @@ describe('Multiple stores', () => {
     // doesn't suspend while the selector is pending async results.
     // Otherwise the component may trigger re-evaluations when it wakes up
     // and provide a false-positive.
+    // $FlowFixMe[incompatible-call]
     const wrapperSelector = selector({
       key: 'selector stores dynamic deps wrapper',
       get: ({get}) => {
@@ -2225,6 +2280,7 @@ describe('Multiple stores', () => {
       default: 'DEFAULT',
     });
 
+    // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector stores diverging selector',
       get: async ({get}) => {
@@ -2295,6 +2351,7 @@ describe('Multiple stores', () => {
     const addDepsPromise = new Promise(resolve => {
       addDeps = resolve;
     });
+    // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector stores diverged selector',
       get: async ({get}) => {
@@ -2411,6 +2468,7 @@ describe('Counts', () => {
 
         let numTimesRan = 0;
 
+        // $FlowFixMe[incompatible-call]
         const selectorWithAsyncDeps = selector({
           key: 'selectorRunsMinTimes',
           get: async ({get}) => {
@@ -2449,6 +2507,7 @@ describe('Counts', () => {
         key: 'selector same value rerender / atom',
         default: {value: 'DEFAULT'},
       });
+      // $FlowFixMe[incompatible-call]
       const mySelector = selector({
         key: 'selector - same value rerender',
         get: ({get}) => get(myAtom).value,

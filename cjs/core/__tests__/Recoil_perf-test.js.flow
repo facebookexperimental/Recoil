@@ -77,6 +77,7 @@ function createAtoms(num: number): Array<RecoilState<string>> {
 }
 
 const helpersSelector = () =>
+  // $FlowFixMe[incompatible-call]
   selector({
     key: `PERF-helpers-${nextAtomKey++}`,
     get: ({getCallback}) => ({
@@ -116,7 +117,8 @@ testPerf('get n selectors', ({iterations, perf}) => {
   const testFamily = selectorFamily({
     key: 'PERF-getselectors',
     get:
-      id =>
+      (id: number) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) =>
         get(atoms[id]) + get(atoms[0]),
   });
@@ -162,7 +164,8 @@ testPerf('get n selectors n times', ({iterations, perf}) => {
   const testFamily = selectorFamily({
     key: 'PERF-getselectors',
     get:
-      id =>
+      (id: number) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) =>
         get(atoms[id]) + get(atoms[0]),
   });

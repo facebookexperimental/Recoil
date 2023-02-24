@@ -151,6 +151,7 @@ describe('Loadable mapping', () => {
 
   test('Loadable mapping promise to loadable error', async () => {
     const loadable = loadableWithPromise(Promise.resolve('VALUE')).map(() =>
+      // $FlowFixMe[underconstrained-implicit-instantiation]
       loadableWithError(ERROR),
     );
     expect(loadable.state).toBe('loading');
@@ -186,6 +187,7 @@ test('Loadable Factory Interface', async () => {
   const errorLoadable = RecoilLoadable.error<mixed>('ERROR');
   expect(errorLoadable.state).toBe('hasError');
   expect(errorLoadable.contents).toBe('ERROR');
+  // $FlowFixMe[underconstrained-implicit-instantiation]
   const errorLoadable2 = RecoilLoadable.of(RecoilLoadable.error('ERROR'));
   expect(errorLoadable2.state).toBe('hasError');
   expect(errorLoadable2.contents).toBe('ERROR');
@@ -210,6 +212,7 @@ describe('Loadable All', () => {
       RecoilLoadable.all([
         RecoilLoadable.of('x'),
         RecoilLoadable.of(123),
+        // $FlowFixMe[underconstrained-implicit-instantiation]
         RecoilLoadable.error('ERROR'),
       ]).contents,
     ).toEqual('ERROR');
@@ -245,6 +248,7 @@ describe('Loadable All', () => {
       RecoilLoadable.all({
         str: RecoilLoadable.of('x'),
         num: RecoilLoadable.of(123),
+        // $FlowFixMe[underconstrained-implicit-instantiation]
         err: RecoilLoadable.error('ERROR'),
       }).contents,
     ).toEqual('ERROR');

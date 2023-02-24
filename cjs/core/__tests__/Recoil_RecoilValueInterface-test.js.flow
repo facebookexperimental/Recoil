@@ -56,6 +56,7 @@ const testRecoil = getRecoilTestFn(() => {
 
   dependsOnDependsOnA = selector({
     key: 'dependsOnDependsOnA',
+    // $FlowFixMe[unsafe-addition]
     get: ({get}) => get(dependsOnA) + 1,
   });
 
@@ -141,6 +142,7 @@ testRecoil('selector function is evaluated only on first read', () => {
 
 testRecoil('selector cache refresh', () => {
   const getA = jest.fn(() => 'A');
+  // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'useRecoilRefresher ancestors A',
     get: getA,

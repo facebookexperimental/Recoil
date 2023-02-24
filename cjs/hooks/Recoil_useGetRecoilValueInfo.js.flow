@@ -16,6 +16,7 @@ const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 function useGetRecoilValueInfo(): <T>(RecoilValue<T>) => RecoilValueInfo<T> {
   const storeRef = useStoreRef();
 
+  // $FlowFixMe[incompatible-return]
   return <T>({key}): RecoilValueInfo<T> =>
     peekNodeInfo<T>(
       storeRef.current,

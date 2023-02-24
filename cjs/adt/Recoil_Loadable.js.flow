@@ -183,6 +183,7 @@ class LoadingLoadable<T> extends BaseLoadable<T> {
           // $FlowIssue[incompatible-return]
           return next;
         })
+        // $FlowFixMe[incompatible-call]
         .catch(e => {
           if (isPromise(e)) {
             // we were "suspended," try again
@@ -274,6 +275,7 @@ function loadableAll<
       // $FlowIssue[incompatible-call]
       output.map(outputs =>
         Object.getOwnPropertyNames(inputs).reduce(
+          // $FlowFixMe[invalid-computed-prop]
           (out, key, idx) => ({...out, [key]: outputs[idx]}),
           {},
         ),

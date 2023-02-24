@@ -59,7 +59,11 @@ testRecoil('selectorFamily - number parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/number',
     get:
-      multiplier =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        multiplier,
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) =>
         get(myAtom) * multiplier,
   });
@@ -75,6 +79,7 @@ testRecoil('selectorFamily - number parameter', () => {
 testRecoil('selectorFamily - array parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/array',
+    // $FlowFixMe[missing-local-annot]
     get: numbers => () => numbers.reduce((x, y) => x + y, 0),
   });
 
@@ -87,7 +92,11 @@ testRecoil('selectorFamily - object parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/object',
     get:
-      ({multiplier}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {multiplier},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) =>
         get(myAtom) * multiplier,
   });
@@ -104,7 +113,11 @@ testRecoil('selectorFamily - date parameter', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/date',
     get:
-      date =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        date,
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) => {
         const daysToAdd = get(myAtom);
         const returnDate = new Date(date);
@@ -125,7 +138,11 @@ testRecoil('Works with supersets', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/supersets',
     get:
-      ({multiplier}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {multiplier},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) =>
         get(myAtom) * multiplier,
   });
@@ -139,11 +156,19 @@ testRecoil('selectorFamily - writable', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/writable',
     get:
-      ({multiplier}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {multiplier},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) =>
         get(myAtom) * multiplier,
     set:
-      ({multiplier}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {multiplier},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({set}, num) =>
         set(myAtom, num instanceof DefaultValue ? num : num / multiplier),
   });
@@ -163,7 +188,11 @@ testRecoil('selectorFamily - value caching', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/value caching',
     get:
-      ({multiplier}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {multiplier},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) => {
         evals++;
         return get(myAtom) * multiplier;
@@ -200,7 +229,11 @@ testRecoil('selectorFamily - reference caching', () => {
   const mySelector = selectorFamily({
     key: 'selectorFamily/reference caching',
     get:
-      ({multiplier}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {multiplier},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) => {
         evals++;
         return get(myAtom) * multiplier;
@@ -266,7 +299,11 @@ testRecoil('selectorFamily - mutability', () => {
   const myImmutableSelector = selectorFamily({
     key: 'selectorFamily/immutable',
     get:
-      ({key}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {key},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) => ({[key]: get(myAtom)}),
   });
   set(myAtom, 42);
@@ -281,7 +318,11 @@ testRecoil('selectorFamily - mutability', () => {
   const myMutableSelector = selectorFamily({
     key: 'selectorFamily/mutable',
     get:
-      ({key}) =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        {key},
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) => ({[key]: get(myAtom)}),
     dangerouslyAllowMutability: true,
   });

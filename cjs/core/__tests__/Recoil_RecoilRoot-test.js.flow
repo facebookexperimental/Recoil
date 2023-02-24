@@ -82,9 +82,11 @@ describe('initializeState', () => {
       key: 'RecoilRoot - initializeState - selector',
       default: 'DEFAULT',
     });
+    // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'RecoilRoot - initializeState - selector selector',
       get: ({get}) => get(myAtom),
+      // $FlowFixMe[incompatible-call]
       set: ({set}, newValue) => set(myAtom, newValue),
     });
 
@@ -203,6 +205,7 @@ describe('initializeState', () => {
     'Selectors from global initialization are not canceled',
     async () => {
       const [asyncSel, resolve] = asyncSelector<string, _>();
+      // $FlowFixMe[incompatible-call]
       const depSel = selector({
         key: 'RecoilRoot - initializeSTate - async selector',
         get: ({get}) => get(asyncSel),

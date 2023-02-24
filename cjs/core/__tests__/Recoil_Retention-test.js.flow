@@ -220,6 +220,7 @@ describe('Retention of and via selectors', () => {
         return;
       }
       const anAtom = atomRetainedBy('components');
+      // $FlowFixMe[incompatible-call]
       const aSelector = selector({
         key: '...',
         retainedBy_UNSTABLE: 'components',
@@ -260,11 +261,14 @@ describe('Retention of and via selectors', () => {
         },
       });
       function SubscribesToSelector() {
+        // $FlowFixMe[incompatible-type]
         return useRecoilValue(aSelector);
       }
+      // $FlowFixMe[incompatible-type-arg]
       const c = renderElements(<SubscribesToSelector />);
       expect(c.textContent).toEqual('loading');
       expect(evalCount).toBe(1);
+      // $FlowFixMe[incompatible-call]
       act(() => resolve(123));
       // We need to let the selector promise resolve but NOT flush timeouts because
       // we do release after suspending after a timeout and we don't want that
@@ -301,6 +305,7 @@ describe('Retention of and via selectors', () => {
         // Test without using Suspense to avoid complications with Jest promises
         // and timeouts when using Suspense. This doesn't affect what's under test.
         const l = useRecoilValueLoadable(aSelector);
+        // $FlowFixMe[incompatible-type]
         return l.state === 'loading' ? 'loading' : l.getValue();
       }
       const [Switch, setMounted] = switchComponent(true);
@@ -313,11 +318,13 @@ describe('Retention of and via selectors', () => {
       expect(c.textContent).toEqual('loading');
       expect(evalCount).toBe(1);
       act(() => setMounted(false)); // release selector while promise is in flight
+      // $FlowFixMe[incompatible-call]
       act(() => resolve(123));
       await flushPromises();
       act(() => setMounted(true));
       expect(evalCount).toBe(2); // selector must be re-evaluated because the resolved value is not in cache
       expect(c.textContent).toEqual('loading');
+      // $FlowFixMe[incompatible-call]
       act(() => resolve(123));
       await flushPromises();
       expect(c.textContent).toEqual('123');
@@ -337,6 +344,7 @@ describe('Retention of and via selectors', () => {
       });
       const depA = atomRetainedBy('components');
       const depB = atomRetainedBy('components');
+      // $FlowFixMe[incompatible-call]
       const theSelector = selector({
         key: 'sel',
         get: ({get}) => {

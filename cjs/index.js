@@ -280,7 +280,8 @@ class LoadingLoadable extends BaseLoadable {
 
 
       return next;
-    }).catch(e => {
+    }) // $FlowFixMe[incompatible-call]
+    .catch(e => {
       if (Recoil_isPromise(e)) {
         // we were "suspended," try again
         return e.then(() => this.map(map).contents);
@@ -319,7 +320,8 @@ function loadableAll(inputs) {
   return Array.isArray(inputs) ? // $FlowIssue[incompatible-return]
   output : // Object.getOwnPropertyNames() has consistent key ordering with ES6
   // $FlowIssue[incompatible-call]
-  output.map(outputs => Object.getOwnPropertyNames(inputs).reduce((out, key, idx) => ({ ...out,
+  output.map(outputs => Object.getOwnPropertyNames(inputs).reduce( // $FlowFixMe[invalid-computed-prop]
+  (out, key, idx) => ({ ...out,
     [key]: outputs[idx]
   }), {}));
 }
@@ -2623,6 +2625,7 @@ function peekNodeInfo(store, state, key) {
   return Recoil_lazyProxy({
     type
   }, {
+    // $FlowFixMe[underconstrained-implicit-instantiation]
     loadable: () => peekNodeLoadable(store, state, key),
     isActive: () => storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
     isSet: () => type === 'selector' ? false : state.atomValues.has(key),
@@ -3959,7 +3962,8 @@ function freshSnapshot(initializeState) {
 } // Factory to clone a snapshot state
 
 
-const [memoizedCloneSnapshot, invalidateMemoizedSnapshot$2] = memoizeOneWithArgsHashAndInvalidation$1((store, version) => {
+const [memoizedCloneSnapshot, invalidateMemoizedSnapshot$2] = memoizeOneWithArgsHashAndInvalidation$1( // $FlowFixMe[missing-local-annot]
+(store, version) => {
   var _storeState$nextTree;
 
   const storeState = store.getState();
@@ -4344,9 +4348,11 @@ function Batcher({
   setNotifyBatcherOfChange
 }) {
   const storeRef = useStoreRef();
-  const [, setState] = useState([]);
+  const [, setState] = useState([]); // $FlowFixMe[incompatible-call]
+
   setNotifyBatcherOfChange(() => setState({}));
   useEffect(() => {
+    // $FlowFixMe[incompatible-call]
     setNotifyBatcherOfChange(() => setState({})); // If an asynchronous selector resolves after the Batcher is unmounted,
     // notifyBatcherOfChange will still be called. An error gets thrown whenever
     // setState is called after a component is already unmounted, so this sets
@@ -4661,6 +4667,7 @@ const {
 function usePrevious(value) {
   const ref = useRef$2();
   useEffect$1(() => {
+    // $FlowFixMe[incompatible-type]
     ref.current = value;
   });
   return ref.current;
@@ -5274,6 +5281,7 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
       const newLoadable = getLoadable();
 
       if (!((_prevLoadableRef$curr = prevLoadableRef.current) !== null && _prevLoadableRef$curr !== void 0 && _prevLoadableRef$curr.is(newLoadable))) {
+        // $FlowFixMe[incompatible-call]
         forceUpdate(newLoadable);
       }
 
@@ -5298,6 +5306,7 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
 
     if (storeState.nextTree) {
       store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
+        // $FlowFixMe[incompatible-type]
         prevLoadableRef.current = null;
         forceUpdate([]);
       });
@@ -5311,6 +5320,7 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
       const newLoadable = getLoadable();
 
       if (!((_prevLoadableRef$curr2 = prevLoadableRef.current) !== null && _prevLoadableRef$curr2 !== void 0 && _prevLoadableRef$curr2.is(newLoadable))) {
+        // $FlowFixMe[incompatible-call]
         forceUpdate(newLoadable);
       }
 
@@ -5831,7 +5841,8 @@ const {
 } = Recoil_RecoilRoot;
 
 function useGetRecoilValueInfo() {
-  const storeRef = useStoreRef$4();
+  const storeRef = useStoreRef$4(); // $FlowFixMe[incompatible-return]
+
   return ({
     key
   }) => peekNodeInfo$2(storeRef.current, storeRef.current.getState().currentTree, key);
@@ -6638,6 +6649,7 @@ function treeCacheLRU({
       lruCache.set(node, true);
 
       if (lruNode && cache.size() > maxSize) {
+        // $FlowFixMe[incompatible-call]
         cache.delete(lruNode.key);
       }
     }
@@ -6700,6 +6712,7 @@ function stringify(x, opt, key) {
 
 
   if (Array.isArray(x)) {
+    // $FlowFixMe[missing-local-annot]
     return `[${x.map((v, i) => stringify(v, opt, i.toString()))}]`;
   } // If an object defines a toJSON() method, then use that to override the
   // serialization.  This matches the behavior of JSON.stringify().
@@ -6728,7 +6741,8 @@ function stringify(x, opt, key) {
 
 
   if (x instanceof Set) {
-    return stringify(Array.from(x).sort((a, b) => stringify(a, opt).localeCompare(stringify(b, opt))), opt, key);
+    return stringify( // $FlowFixMe[missing-local-annot]
+    Array.from(x).sort((a, b) => stringify(a, opt).localeCompare(stringify(b, opt))), opt, key);
   } // Anything else that is iterable serialize as an Array.
 
 
@@ -8011,7 +8025,8 @@ function baseAtom(options) {
     }));
   }
 
-  let defaultLoadable = Recoil_isPromise(options.default) ? unwrapPromise(options.default) : isLoadable$2(options.default) ? options.default.state === 'loading' ? unwrapPromise(options.default.contents) : options.default : loadableWithValue$3(unwrap(options.default));
+  let defaultLoadable = Recoil_isPromise(options.default) ? unwrapPromise(options.default) : isLoadable$2(options.default) ? options.default.state === 'loading' ? unwrapPromise(options.default.contents) : options.default : // $FlowFixMe[incompatible-call]
+  loadableWithValue$3(unwrap(options.default));
   maybeFreezeValueOrPromise(defaultLoadable.contents);
   let cachedAnswerForUnvalidatedValue = undefined; // Cleanup handlers for this atom
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
@@ -8113,7 +8128,8 @@ function baseAtom(options) {
           return retValue instanceof DefaultValue$2 ? peekAtom(store, initState) // flowlint-line unclear-type:off
           : Recoil_isPromise(retValue) ? loadableWithPromise$2(retValue.then(v => v instanceof DefaultValue$2 ? // Cast T to S
           defaultLoadable.toPromise() // flowlint-line unclear-type:off
-          : v)) : loadableWithValue$3(retValue);
+          : v)) : // $FlowFixMe[incompatible-call]
+          loadableWithValue$3(retValue);
         }
 
         return getRecoilValueAsLoadable$4(store, recoilValue);
@@ -8166,7 +8182,8 @@ function baseAtom(options) {
           setRecoilValue$4(store, node, typeof valueOrUpdater === 'function' ? currentValue => {
             const newValue = unwrap( // cast to any because we can't restrict T from being a function without losing support for opaque types
             valueOrUpdater(currentValue) // flowlint-line unclear-type:off
-            );
+            ); // $FlowFixMe[incompatible-type]
+
             pendingSetSelf = {
               effect,
               value: newValue
@@ -8396,7 +8413,8 @@ function atomWithFallback(options) {
     // flowlint-line unclear-type: off
     effects_UNSTABLE: options.effects_UNSTABLE // flowlint-line unclear-type: off
 
-  });
+  }); // $FlowFixMe[incompatible-call]
+
   const sel = Recoil_selector({
     key: `${options.key}__withFallback`,
     get: ({
@@ -8405,6 +8423,7 @@ function atomWithFallback(options) {
       const baseValue = get(base);
       return baseValue instanceof DefaultValue$2 ? options.default : baseValue;
     },
+    // $FlowFixMe[incompatible-call]
     set: ({
       set
     }, newValue) => set(base, newValue),

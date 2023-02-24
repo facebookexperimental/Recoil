@@ -71,7 +71,7 @@ testRecoil('Works with useTransition', async ({concurrentMode}) => {
     if (cache.has(index) && cache.get(index)?.state === 'ready') {
       return cache.get(index)?.value;
     } else if (cache.has(index)) {
-      throw cache.get(index)?.promise; // eslint-disable-line no-throw-literal
+      throw cache.get(index)?.promise;
     } else {
       const promise = new Promise(resolve => {
         const onComplete = () => {
@@ -89,6 +89,7 @@ testRecoil('Works with useTransition', async ({concurrentMode}) => {
         value: null,
         promise,
       };
+      // $FlowFixMe[incompatible-call]
       cache.set(index, newEntry);
       throw promise;
     }
@@ -171,11 +172,16 @@ testRecoil('useRecoilValue()', async ({concurrentMode}) => {
   const query = selectorFamily({
     key: 'useRecoilValue selector',
     get:
-      param =>
+      (
+        // $FlowFixMe[missing-local-annot]
+        param,
+      ) =>
+      // $FlowFixMe[missing-local-annot]
       ({get}) => {
         const value = get(myAtom);
         return new Promise(resolve => {
           resolvers.push(resolve);
+          // $FlowFixMe[incompatible-type]
         }).then(str => `${param} ${value} ${str}`);
       },
   });
@@ -290,11 +296,16 @@ testRecoil(
     const query = selectorFamily({
       key: 'TRANSITION_SUPPORT_UNSTABLE selector',
       get:
-        param =>
+        (
+          // $FlowFixMe[missing-local-annot]
+          param,
+        ) =>
+        // $FlowFixMe[missing-local-annot]
         ({get}) => {
           const value = get(myAtom);
           return new Promise(resolve => {
             resolvers.push(resolve);
+            // $FlowFixMe[incompatible-type]
           }).then(str => `${param} ${value} ${str}`);
         },
     });
