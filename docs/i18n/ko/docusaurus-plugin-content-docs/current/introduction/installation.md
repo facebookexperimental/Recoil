@@ -28,7 +28,7 @@ Recoil 빌드는 ES5로 트랜스파일 되지 않으므로, Recoil을 ES5와 �
 
 ## CDN
 
-버전 0.0.11 이후, Recoil은 `<script>` 태그에 직접 사용될 수 있는 UMD 빌드를 제공하며 `Recoil` 심볼을 글로벌 네임스페이스에 노출시킨다. 최신 버전으로부터 예기치 않은 손상을 방지하기 위해 안정된 특정 버전 번호 및 빌드에 연결시키는 것이 좋다.
+버전 0.0.11 이후, Recoil은 `<script>` 태그에 직접 사용될 수 있는 UMD 빌드를 제공하며 `Recoil` 심볼을 글로벌 네임스페이스에 노출한다. 최신 버전으로부터 예기치 않은 손상을 방지하기 위해 안정된 특정 버전 번호 및 빌드에 연결하는 것이 좋다.
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/recoil@0.0.11/umd/recoil.production.js"></script>
@@ -38,7 +38,7 @@ CDN의 모든 Recoil 파일은 [jsdelivr](https://www.jsdelivr.com/package/npm/r
 
 ## ESLint
 
-프로젝트에서 [eslint-plugin-react-hooks](https://www.npmjs.com/package/eslint-plugin-react-hooks)을 사용하는 경우. 예를 들어 다음과 같이 eslint 설정을 사용하는 경우:
+프로젝트에서 [eslint-plugin-react-hooks](https://www.npmjs.com/package/eslint-plugin-react-hooks)을 사용하는 경우, 예를 들어 다음과 같이 eslint 설정을 사용하는 경우:
 
 ```json
 // 이전의 .eslint 설정
