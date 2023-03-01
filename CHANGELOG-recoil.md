@@ -3,6 +3,8 @@
 ## UPCOMING
 **_Add new changes here as they land_**
 
+## 0.7.7 (2023-03-01)
+
 - Fix potential unhandled promise rejection in `useRecoilCallback()` (#2075)
 - Add OSS support for GateKeeper feature toggling via `RecoilEnv.RECOIL_GKS_ENABLED` (#2078)
 - Fix resolving suspense of async selectors used with SSR (#2073, #1960)
