@@ -220,6 +220,7 @@ type LoadingDepsState = {
   loadingDepPromise: Promise<mixed> | null,
 };
 
+// $FlowFixMe[missing-empty-array-annot]
 const dependencyStack = []; // for detecting circular dependencies.
 const waitingStores: Map<ExecutionID, Set<Store>> = new Map();
 
@@ -1080,6 +1081,7 @@ function selector<T>(
         .join(' \u2192 ')}`;
       return loadableWithError<T>(err(message));
     }
+    // $FlowFixMe[incompatible-call]
     dependencyStack.push(key);
     try {
       return fn();

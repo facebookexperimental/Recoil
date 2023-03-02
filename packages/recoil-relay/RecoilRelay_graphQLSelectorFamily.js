@@ -115,6 +115,7 @@ function graphQLSelectorFamily<
               variables: vars,
               // $FlowIssue[incompatible-call] Type is opaque, no way to refine
               subscription: query,
+              // $FlowFixMe[missing-local-annot]
               mapResponse: response => ({source: 'remote', response}),
             }),
         mutations &&
