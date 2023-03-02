@@ -239,7 +239,8 @@ function loadableAllArray<Inputs: $ReadOnlyArray<Loadable<mixed>>>(
   inputs: Inputs,
 ): Loadable<UnwrapLoadables<Inputs>> {
   return inputs.every(i => i.state === 'hasValue')
-    ? loadableWithValue(inputs.map(i => i.contents))
+    ? // $FlowFixMe[incompatible-return]
+      loadableWithValue(inputs.map(i => i.contents))
     : inputs.some(i => i.state === 'hasError')
     ? loadableWithError(
         nullthrows(

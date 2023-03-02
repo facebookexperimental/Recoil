@@ -310,7 +310,8 @@
   }
 
   function loadableAllArray(inputs) {
-    return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
+    return inputs.every(i => i.state === 'hasValue') ? // $FlowFixMe[incompatible-return]
+    loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
   }
 
   function loadableAll(inputs) {
@@ -7061,6 +7062,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
    * manage them over time.
    */
 
+  // $FlowFixMe[missing-empty-array-annot]
   const dependencyStack = []; // for detecting circular dependencies.
 
   const waitingStores = new Map();
@@ -7794,7 +7796,8 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       if (dependencyStack.includes(key)) {
         const message = `Recoil selector has circular dependencies: ${dependencyStack.slice(dependencyStack.indexOf(key)).join(' \u2192 ')}`;
         return loadableWithError$1(Recoil_err(message));
-      }
+      } // $FlowFixMe[incompatible-call]
+
 
       dependencyStack.push(key);
 
