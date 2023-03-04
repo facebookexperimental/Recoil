@@ -3,7 +3,7 @@ title: useSetRecoilState(state)
 sidebar_label: useSetRecoilState()
 ---
 
-Returns a setter function for updating the value of writeable Recoil state.
+Returns a setter function for updating the value of writable Recoil state.
 
 ---
 
@@ -13,7 +13,7 @@ function useSetRecoilState<T>(state: RecoilState<T>): SetterOrUpdater<T>;
 type SetterOrUpdater<T> = (T | (T => T)) => void;
 ```
 
-- `state`: writeable Recoil state (an [`atom`](/docs/api-reference/core/atom) or a _writeable_ [`selector`](/docs/api-reference/core/selector))
+- `state`: writable Recoil state (an [`atom`](/docs/api-reference/core/atom) or a _writable_ [`selector`](/docs/api-reference/core/selector))
 
 Returns a setter function which can be used asynchronously to change the state.  The setter may either be passed a new value or an updater function which receives the previous value as an argument.
 

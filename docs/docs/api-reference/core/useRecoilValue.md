@@ -19,7 +19,7 @@ function useRecoilValue<T>(state: RecoilValue<T>): T;
 
 ---
 
-This is the recommended hook to use when a component intends to read state without writing to it, as this hook works with both **read-only state** and **writeable state**. Atoms are writeable state while selectors may be either read-only or writeable. See [`selector()`](/docs/api-reference/core/selector) for more info.
+This is the recommended hook to use when a component intends to read state without writing to it, as this hook works with both **read-only state** and **writable state**. Atoms are writable state while selectors may be either read-only or writable. See [`selector()`](/docs/api-reference/core/selector) for more info.
 
 Using this hook in a React component will subscribe the component to re-render when the state is updated.  This hook may throw if the state has an error or is pending asynchronous resolution.  Please see [this guide](/docs/guides/asynchronous-data-queries).
 

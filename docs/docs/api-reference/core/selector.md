@@ -3,7 +3,7 @@ title: selector(options)
 sidebar_label: selector()
 ---
 
-*Selectors* represent a function, or **derived state** in Recoil.  You can think of them as similar to an "idempotent" or "pure function" without side-effects that always returns the same value for a given set of dependency values.  If only a `get` function is provided, the selector is read-only and returns a `RecoilValueReadOnly` object.  If a `set` is also provided, it returns a writeable `RecoilState` object.
+*Selectors* represent a function, or **derived state** in Recoil.  You can think of them as similar to an "idempotent" or "pure function" without side-effects that always returns the same value for a given set of dependency values.  If only a `get` function is provided, the selector is read-only and returns a `RecoilValueReadOnly` object.  If a `set` is also provided, it returns a writable `RecoilState` object.
 
 Recoil manages atom and selector state changes to know when to notify components subscribing to that selector to re-render.  If an object value of a selector is mutated directly it may bypass this and avoid properly notifying subscribing components.  To help detect bugs, Recoil will freeze selector value objects in development mode.
 
@@ -52,7 +52,7 @@ type CachePolicy =
 - `get` - A function that evaluates the value for the derived state.  It may return either a value directly, an asynchronous `Promise`, a `Loadable`, or another atom or selector representing the same type.  To set the selector value directly to something like a `Promise` or `Loadable`, you can wrap it with `selector.value(...)`.  This callback is passed an object as the first parameter containing the following properties:
   - `get()` - a function used to retrieve values from other atoms/selectors. All atoms/selectors passed to this function will be implicitly added to a list of **dependencies** for the selector. If any of the selector's dependencies change, the selector will re-evaluate.
   - `getCallback()` - a function for creating Recoil-aware callbacks with a [callback interface](/docs/api-reference/core/useRecoilCallback#callback-interface).  See [example](/docs/api-reference/core/selector#returning-objects-with-callbacks) below.
-- `set?` - If this property is set, the selector will return **writeable** state. A function that is passed an object of callbacks as the first parameter and the new incoming value.  The incoming value may be a value of type `T` or maybe an object of type `DefaultValue` if the user reset the selector.  The callbacks include:
+- `set?` - If this property is set, the selector will return **writable** state. A function that is passed an object of callbacks as the first parameter and the new incoming value.  The incoming value may be a value of type `T` or maybe an object of type `DefaultValue` if the user reset the selector.  The callbacks include:
   - `get()` - a function used to retrieve values from other atoms/selectors. This function will not subscribe the selector to the given atoms/selectors.
   - `set()` - a function used to set the values of upstream Recoil state. The first parameter is the Recoil state and the second parameter is the new value.  The new value may be an updater function or a `DefaultValue` object to propagate reset actions.
   - `reset()` - a function used to reset to the default values of upstream Recoil state. The only parameter is the Recoil state.
@@ -94,7 +94,7 @@ const mySelector = selector({
 });
 ```
 
-### Writeable Selectors
+### writable Selectors
 
 A bi-directional selector receives the incoming value as a parameter and can use that to propagate the changes back upstream along the data-flow graph.  Because the user may either set the selector with a new value or reset the selector, the incoming value is either of the same type that the selector represents or a `DefaultValue` object which represents a reset action.
 

@@ -75,7 +75,7 @@ class MutableSnapshot {
 }
 ```
 
-Notice that `set()` and `reset()` have the same signature as callbacks provided to a writeable selector's `set` property, but they only effect the new snapshot, not the current state.
+Notice that `set()` and `reset()` have the same signature as callbacks provided to a writable selector's `set` property, but they only effect the new snapshot, not the current state.
 
 ## Going to a Snapshot
 
