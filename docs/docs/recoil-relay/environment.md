@@ -28,7 +28,7 @@ function MyApp() {
 
 ### Environment Provider
 
-To use Relay hooks, such as for committing mutations, with your environment the [`<RelayEnvironmentProvider>`](https://relay.dev/docs/api-reference/relay-environment-provider) component is still required.  For your convenience there is a [**`<RecoilRelayEnvrironmentProvider>`**](/docs/recoil-relay/api/RecoilRelayEnvironmentProvider) component which combines both [`<RecoilRelayEnvironment>`](/docs/recoil-relay/api/RecoilRelayEnvironment) and [`<RelayEnvironmentProvider>`](https://relay.dev/docs/api-reference/relay-environment-provider).
+To use Relay hooks, such as for committing mutations, with your environment the [`<RelayEnvironmentProvider>`](https://relay.dev/docs/api-reference/relay-environment-provider) component is still required.  For your convenience there is a [**`<RecoilRelayEnvironmentProvider>`**](/docs/recoil-relay/api/RecoilRelayEnvironmentProvider) component which combines both [`<RecoilRelayEnvironment>`](/docs/recoil-relay/api/RecoilRelayEnvironment) and [`<RelayEnvironmentProvider>`](https://relay.dev/docs/api-reference/relay-environment-provider).
 
 ```jsx
 const myEnvironmentKey = new EnvironmentKey('My Environment');
