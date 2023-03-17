@@ -331,6 +331,7 @@ testRecoil('Async map of snapshot', async () => {
     // Test that depAsyncSel is first used while mapping the snapshot.
     // If the snapshot is auto-released too early the async selector will be
     // canceled.
+    // $FlowFixMe[unused-promise]
     getPromise(depAsyncSel);
     // Test that mapped snapshot is not auto-released too early
     await flushPromisesAndTimers();

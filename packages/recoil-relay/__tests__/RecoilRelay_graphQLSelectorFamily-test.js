@@ -402,6 +402,7 @@ testRecoil('pre-fetch query', async () => {
     // $FlowFixMe[missing-local-annot]
     setID = useRecoilCallback(({snapshot}) => async newID => {
       // Pre-fetch the query
+      // $FlowFixMe[unused-promise]
       snapshot.getPromise(myQuery(newID));
 
       // Mock the query response

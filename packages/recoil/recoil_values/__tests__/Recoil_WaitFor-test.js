@@ -602,6 +602,7 @@ testRecoil('waitForAll - Evaluated concurrently', async () => {
   expect(evaluatedA()).toBe(false);
   expect(evaluatedB()).toBe(false);
 
+  // $FlowFixMe[unused-promise]
   getPromise(waitForAll(deps));
   await flushPromisesAndTimers();
 
@@ -610,6 +611,7 @@ testRecoil('waitForAll - Evaluated concurrently', async () => {
   expect(evaluatedB()).toBe(true);
 
   resolveA(0);
+  // $FlowFixMe[unused-promise]
   getPromise(waitForAll(deps));
   await flushPromisesAndTimers();
 
