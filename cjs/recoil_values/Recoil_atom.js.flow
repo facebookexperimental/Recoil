@@ -206,6 +206,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       : options.default
     : // $FlowFixMe[incompatible-call]
       loadableWithValue(unwrap(options.default));
+  // $FlowFixMe[unused-promise]
   maybeFreezeValueOrPromise(defaultLoadable.contents);
 
   let cachedAnswerForUnvalidatedValue: void | Loadable<T> = undefined;
@@ -474,6 +475,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           : isPromise(initValue)
           ? loadableWithPromise(wrapPendingPromise(store, initValue))
           : loadableWithValue(unwrap(initValue));
+        // $FlowFixMe[unused-promise]
         maybeFreezeValueOrPromise(initLoadable.contents);
         initState.atomValues.set(key, initLoadable);
 
@@ -554,6 +556,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       return new Map();
     }
 
+    // $FlowFixMe[unused-promise]
     maybeFreezeValueOrPromise(newValue);
 
     cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use

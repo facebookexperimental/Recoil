@@ -679,6 +679,7 @@ describe('Snapshot', () => {
     }
 
     renderElements(<Component />);
+    // $FlowFixMe[unused-promise]
     callback?.();
     const selector1Promise = callbackSnapshot?.getPromise(mySelector1);
     const selector2Promise = callbackSnapshot?.getPromise(mySelector2);

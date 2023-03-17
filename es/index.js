@@ -8023,7 +8023,8 @@ function baseAtom(options) {
   }
 
   let defaultLoadable = Recoil_isPromise(options.default) ? unwrapPromise(options.default) : isLoadable$2(options.default) ? options.default.state === 'loading' ? unwrapPromise(options.default.contents) : options.default : // $FlowFixMe[incompatible-call]
-  loadableWithValue$3(unwrap(options.default));
+  loadableWithValue$3(unwrap(options.default)); // $FlowFixMe[unused-promise]
+
   maybeFreezeValueOrPromise(defaultLoadable.contents);
   let cachedAnswerForUnvalidatedValue = undefined; // Cleanup handlers for this atom
   // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
@@ -8269,7 +8270,8 @@ function baseAtom(options) {
       if (!(initValue instanceof DefaultValue$2)) {
         var _store$getState$nextT5;
 
-        const initLoadable = isInitError ? loadableWithError$2(initValue) : Recoil_isPromise(initValue) ? loadableWithPromise$2(wrapPendingPromise(store, initValue)) : loadableWithValue$3(unwrap(initValue));
+        const initLoadable = isInitError ? loadableWithError$2(initValue) : Recoil_isPromise(initValue) ? loadableWithPromise$2(wrapPendingPromise(store, initValue)) : loadableWithValue$3(unwrap(initValue)); // $FlowFixMe[unused-promise]
+
         maybeFreezeValueOrPromise(initLoadable.contents);
         initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
         // This could happen if the atom was first initialized in an action that
@@ -8329,7 +8331,8 @@ function baseAtom(options) {
       }
     } else if (!state.nonvalidatedAtoms.has(key) && newValue instanceof DefaultValue$2) {
       return new Map();
-    }
+    } // $FlowFixMe[unused-promise]
+
 
     maybeFreezeValueOrPromise(newValue);
     cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
