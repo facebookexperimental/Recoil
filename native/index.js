@@ -9110,7 +9110,7 @@ var Recoil_index = {
   DefaultValue: DefaultValue$3,
   isRecoilValue: isRecoilValue$5,
   RecoilLoadable,
-  // Global Recoil environment settiongs
+  // Global Recoil environment settings
   RecoilEnv: Recoil_RecoilEnv,
   // Recoil Root
   RecoilRoot: RecoilRoot$2,

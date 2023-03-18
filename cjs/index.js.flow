@@ -92,7 +92,7 @@ module.exports = {
   isRecoilValue,
   RecoilLoadable,
 
-  // Global Recoil environment settiongs
+  // Global Recoil environment settings
   RecoilEnv,
 
   // Recoil Root

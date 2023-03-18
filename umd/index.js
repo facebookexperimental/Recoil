@@ -9110,7 +9110,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
     DefaultValue: DefaultValue$3,
     isRecoilValue: isRecoilValue$5,
     RecoilLoadable,
-    // Global Recoil environment settiongs
+    // Global Recoil environment settings
     RecoilEnv: Recoil_RecoilEnv,
     // Recoil Root
     RecoilRoot: RecoilRoot$2,
