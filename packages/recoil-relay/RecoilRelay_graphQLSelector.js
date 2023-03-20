@@ -63,7 +63,8 @@ function graphQLSelector<
   query:
     | Query<TVariables, TData, TRawResponse>
     | GraphQLSubscription<TVariables, TData, TRawResponse>,
-  variables: TVariables | (({get: GetRecoilValue}) => TVariables | null),
+  // The order of union members below is important to prevent errors at the call-site
+  variables: (({get: GetRecoilValue}) => TVariables | null) | TVariables,
   mapResponse: (TData, {get: GetRecoilValue, variables: TVariables}) => T,
   // The default value to use if variables returns null
   default?: T,
