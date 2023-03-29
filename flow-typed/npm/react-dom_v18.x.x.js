@@ -1,3 +1,8 @@
+/**
+ * (c) Meta Platforms, Inc. and affiliates. Confidential and proprietary.
+ *
+ * @oncall recoil
+ */
 // flow-typed signature: de0a47185086152df6ab4a598943384d
 // flow-typed version: cf9120ecbb/react-dom_v18.x.x/flow_>=v0.127.x
 
