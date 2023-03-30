@@ -91,6 +91,7 @@ function asyncSelector<T, S>(
   // $FlowFixMe[incompatible-call]
   const sel = selector({
     key: `AsyncSelector${id++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => {
       evaluated = true;
       if (dep != null) {
@@ -99,6 +100,7 @@ function asyncSelector<T, S>(
       return promise;
     },
   });
+  // $FlowFixMe[incompatible-return]
   return [sel, resolve, reject, () => evaluated];
 }
 

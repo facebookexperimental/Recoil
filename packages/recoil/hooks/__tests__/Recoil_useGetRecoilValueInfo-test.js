@@ -46,10 +46,12 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
   // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'useGetRecoilValueInfo A',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(myAtom),
   });
   const selectorB = selector({
     key: 'useGetRecoilValueInfo B',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(selectorA) + get(myAtom),
   });
 

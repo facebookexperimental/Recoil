@@ -168,8 +168,10 @@ testRecoil('useResetRecoilState - selector', () => {
   // $FlowFixMe[incompatible-call]
   const mySelector = selector({
     key: 'useResetRecoilState/selector',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(myAtom),
     // $FlowFixMe[incompatible-call]
+    // $FlowFixMe[missing-local-annot]
     set: ({set}, value) => set(myAtom, value),
   });
 

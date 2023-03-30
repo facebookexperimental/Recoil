@@ -153,6 +153,7 @@ testRecoil('Goto snapshot with dependent async selector', async () => {
   // $FlowFixMe[incompatible-call]
   const mySelector = selector({
     key: 'selector for async snapshot',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => {
       const dep = get(myAtom);
       return Promise.resolve(dep);

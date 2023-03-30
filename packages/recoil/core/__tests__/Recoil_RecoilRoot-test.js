@@ -85,8 +85,10 @@ describe('initializeState', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'RecoilRoot - initializeState - selector selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => get(myAtom),
       // $FlowFixMe[incompatible-call]
+      // $FlowFixMe[missing-local-annot]
       set: ({set}, newValue) => set(myAtom, newValue),
     });
 
@@ -208,6 +210,7 @@ describe('initializeState', () => {
       // $FlowFixMe[incompatible-call]
       const depSel = selector({
         key: 'RecoilRoot - initializeSTate - async selector',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => get(asyncSel),
       });
 
