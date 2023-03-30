@@ -92,6 +92,7 @@ testRecoil('getNodes', () => {
   // $FlowFixMe[incompatible-call]
   const mySelector = selector({
     key: 'snapshot getNodes selector',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(myAtom) + '-SELECTOR',
   });
   expect(Array.from(getNodes_UNSTABLE()).length).toEqual(2);
@@ -361,10 +362,12 @@ testRecoil('getInfo', () => {
   // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'getInfo A',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(myAtom),
   });
   const selectorB = selector({
     key: 'getInfo B',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(selectorA) + get(myAtom),
   });
 

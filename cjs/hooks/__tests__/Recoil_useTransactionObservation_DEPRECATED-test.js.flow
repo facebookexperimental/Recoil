@@ -75,6 +75,7 @@ function plusOneSelector(dep: RecoilValue<number>) {
   const fn = jest.fn(x => x + 1);
   const sel = selector({
     key: `selector${nextID++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => fn(get(dep)),
   });
   return [sel, fn];
@@ -93,6 +94,7 @@ function plusOneAsyncSelector(
   });
   const sel = selector({
     key: `selector${nextID++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => fn(get(dep)),
   });
   return [

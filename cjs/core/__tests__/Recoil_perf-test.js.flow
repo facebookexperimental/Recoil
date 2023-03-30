@@ -80,6 +80,7 @@ const helpersSelector = () =>
   // $FlowFixMe[incompatible-call]
   selector({
     key: `PERF-helpers-${nextAtomKey++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({getCallback}) => ({
       getSnapshot: getCallback(
         ({snapshot}) =>

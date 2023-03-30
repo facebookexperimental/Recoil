@@ -231,14 +231,17 @@ testRecoil('Subscriptions', async () => {
   // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'useRecoilSnapshot Subscriptions A',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(myAtom),
   });
   const selectorB = selector({
     key: 'useRecoilSnapshot Subscriptions B',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(selectorA) + get(myAtom),
   });
   const selectorC = selector({
     key: 'useRecoilSnapshot Subscriptions C',
+    // $FlowFixMe[missing-local-annot]
     get: async ({get}) => {
       const ret = get(selectorA) + get(selectorB);
       await Promise.resolve();

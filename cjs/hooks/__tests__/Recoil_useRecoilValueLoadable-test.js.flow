@@ -184,6 +184,7 @@ testRecoil('two level async', async () => {
   // $FlowFixMe[incompatible-call]
   const level1 = selector({
     key: 'useRecoilValueLoadable async level1',
+    // $FlowFixMe[missing-local-annot]
     get: async ({get}) => {
       const level2Value = get(level2);
       return await new Promise(resolve =>
@@ -198,8 +199,10 @@ testRecoil('two level async', async () => {
   function ReadPromise() {
     const loadable = useRecoilValueLoadable(level1);
     promises.push(loadable.toPromise());
+    // $FlowFixMe[incompatible-type]
     return loadable.getValue();
   }
+  // $FlowFixMe[incompatible-type-arg]
   const c = renderElements(<ReadPromise />);
   expect(c.textContent).toEqual('loading');
 

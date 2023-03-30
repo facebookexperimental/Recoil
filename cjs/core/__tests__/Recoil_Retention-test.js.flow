@@ -224,6 +224,7 @@ describe('Retention of and via selectors', () => {
       const aSelector = selector({
         key: '...',
         retainedBy_UNSTABLE: 'components',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           return get(anAtom);
         },
@@ -252,6 +253,7 @@ describe('Retention of and via selectors', () => {
       const aSelector = selector({
         key: '......',
         retainedBy_UNSTABLE: 'components',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           evalCount++;
           get(anAtom);
@@ -293,6 +295,7 @@ describe('Retention of and via selectors', () => {
       const aSelector = selector({
         key: 'retention/asyncSettlesAfterRelease',
         retainedBy_UNSTABLE: 'components',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           evalCount++;
           get(anAtom);
@@ -347,6 +350,7 @@ describe('Retention of and via selectors', () => {
       // $FlowFixMe[incompatible-call]
       const theSelector = selector({
         key: 'sel',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           if (get(switchAtom)) {
             return get(depB);

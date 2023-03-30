@@ -77,6 +77,7 @@ testRecoil('getNodes', () => {
   // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'useRecoilTransactionObserver getNodes selector',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(atoms('A')) + '-SELECTOR',
   });
   const c = renderElements(
@@ -227,6 +228,7 @@ testRecoil('Can observe selector value', async () => {
   // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'Observer Selector As',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => `SELECTOR ${get(atomA)}`,
   });
 
