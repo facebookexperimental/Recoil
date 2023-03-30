@@ -127,6 +127,7 @@ testRecoil('selector get', () => {
   // $FlowFixMe[incompatible-call]
   const selectorRO = selector({
     key: 'selector/get',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(staticSel),
   });
 
@@ -142,7 +143,9 @@ testRecoil('selector set', () => {
   // $FlowFixMe[incompatible-call]
   const selectorRW = selector({
     key: 'selector/set',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(myAtom),
+    // $FlowFixMe[missing-local-annot]
     set: ({set}, newValue) =>
       set(
         myAtom,
@@ -169,6 +172,7 @@ testRecoil('selector reset', () => {
   // $FlowFixMe[incompatible-call]
   const selectorRW = selector({
     key: 'selector/reset',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(myAtom),
     set: ({reset}) => reset(myAtom),
   });
@@ -278,6 +282,7 @@ describe('get return types', () => {
     const mySelector = selector({
       key: 'selector/output SelectorValue loadable error',
       // $FlowFixMe[incompatible-call]
+      // $FlowFixMe[underconstrained-implicit-instantiation]
       get: () => selector.value(RecoilLoadable.error('ERROR')),
     });
 
@@ -305,6 +310,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const catchingSelector = selector({
       key: 'selector/catching selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         try {
           return get(throwingSel);
@@ -336,6 +342,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const catchingSelector = selector({
       key: 'selector/catching selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         try {
           return get(throwingSel);
@@ -356,6 +363,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const blockedSelector = selector({
       key: 'selector/blocked selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => get(loadingSel),
     });
     expect(getValue(blockedSelector) instanceof Promise).toBe(true);
@@ -363,6 +371,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const bypassSelector = selector({
       key: 'selector/bypassing selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         try {
           return get(loadingSel);
@@ -413,10 +422,12 @@ describe('Dependencies', () => {
       // $FlowFixMe[incompatible-call]
       const upstreamAsyncSelector = selector({
         key: 'distinct loading dependencies/upstreamAsyncSelector',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => Promise.resolve(get(upstreamAtom)),
       });
       const directSelector = selector({
         key: 'distinct loading dependencies/directSelector',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => get(upstreamAsyncSelector),
       });
 
@@ -445,6 +456,7 @@ describe('Dependencies', () => {
       // $FlowFixMe[incompatible-call]
       const bNode = selector({
         key: 'bNode',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           bNodeRunCount++;
           const a = get(aNode);
@@ -456,6 +468,7 @@ describe('Dependencies', () => {
       // $FlowFixMe[incompatible-call]
       const cNode = selector({
         key: 'cNode',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           cNodeRunCount++;
           const a = get(aNode);
@@ -466,6 +479,7 @@ describe('Dependencies', () => {
       let dNodeRunCount = 0;
       const dNode = selector({
         key: 'dNode',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           dNodeRunCount++;
           const value = get(aNode) ? get(bNode) : get(cNode);
@@ -502,6 +516,7 @@ describe('Dependencies', () => {
       // $FlowFixMe[incompatible-call]
       const selectorB = selector({
         key: 'selb-rerun-opt-test',
+        // $FlowFixMe[missing-local-annot]
         get: async ({get}) => {
           await Promise.resolve();
 
@@ -514,6 +529,7 @@ describe('Dependencies', () => {
 
       const selectorC = selector({
         key: 'sela-rerun-opt-test',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           numTimesCStartedToRun++;
 
@@ -598,6 +614,7 @@ describe('Dependencies', () => {
 
       const asyncSel = selector({
         key: 'asyncSel',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           const atomVal = get(baseAtom);
 
@@ -611,6 +628,7 @@ describe('Dependencies', () => {
 
       const selWithAsyncDep = selector({
         key: 'selWithAsyncDep',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           return get(asyncSel);
         },
@@ -651,6 +669,7 @@ describe('Dependencies', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector dynamic dep after await selector',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         await Promise.resolve();
         get(myAtom);
@@ -690,6 +709,7 @@ describe('Dependencies', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector dynamic dep after pending selector',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         await Promise.resolve();
         get(myAtom);
@@ -723,6 +743,7 @@ describe('Async Selector Set', () => {
       key: 'selector async set',
       get: () => null,
       // $FlowExpectedError[incompatible-call]
+      // $FlowFixMe[missing-local-annot]
       set: async ({set}, x) => set(myAtom, x),
     });
 
@@ -740,6 +761,7 @@ describe('Async Selector Set', () => {
       key: 'selector / async set not supported / async set method',
       get: () => myAtom,
       // Set should not be async, this test checks that it throws an error.
+      // $FlowFixMe[missing-local-annot]
       set: async ({set, reset}, newVal) => {
         await Promise.resolve();
         newVal instanceof DefaultValue ? reset(myAtom) : set(myAtom, 'SET');
@@ -751,6 +773,7 @@ describe('Async Selector Set', () => {
     const mySelector2 = selector({
       key: 'selector / async set not supported / async upstream call',
       get: () => myAtom,
+      // $FlowFixMe[missing-local-annot]
       set: ({set, reset}, newVal) => {
         if (newVal instanceof DefaultValue) {
           resetAttempt = Promise.resolve().then(() => {
@@ -813,6 +836,7 @@ describe('User-thrown promises', () => {
       // $FlowFixMe[incompatible-call]
       const selWithUserThrownPromise = selector({
         key: 'selWithUserThrownPromise',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           const loadable = get(noWait(asyncDep));
 
@@ -865,6 +889,7 @@ describe('User-thrown promises', () => {
       // $FlowFixMe[incompatible-call]
       const selWithUserThrownPromise = selector({
         key: 'selWithUserThrownPromise',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           const a = get(myAtomA);
 
@@ -901,6 +926,7 @@ describe('User-thrown promises', () => {
       // $FlowFixMe[incompatible-call]
       const selWithUserThrownPromise = selector({
         key: 'selWithUserThrownPromise',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           const loadable = get(noWait(asyncDep));
 
@@ -914,6 +940,7 @@ describe('User-thrown promises', () => {
 
       const selThatDependsOnSelWithUserThrownPromise = selector({
         key: 'selThatDependsOnSelWithUserThrownPromise',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => get(selWithUserThrownPromise),
       });
 
@@ -953,6 +980,7 @@ testRecoil('selectors cannot mutate values in get() or set()', () => {
   // $FlowFixMe[incompatible-call]
   const userSelector = selector({
     key: 'userSelector',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => {
       const user = get(userState);
 
@@ -1000,6 +1028,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector - getCallback',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) => {
         return {
           onClick: getCallback(
@@ -1029,6 +1058,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector getCallback snapshot',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) =>
         // $FlowFixMe[missing-local-annot]
         getCallback(({snapshot}) => param => ({
@@ -1051,6 +1081,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const setSelector = selector({
       key: 'selector getCallback set',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) =>
         // $FlowFixMe[missing-local-annot]
         getCallback(({set}) => param => {
@@ -1060,6 +1091,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const resetSelector = selector({
       key: 'selector getCallback reset',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) =>
         getCallback(({reset}) => () => {
           reset(myAtom);
@@ -1082,6 +1114,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const setSelector = selector({
       key: 'selector getCallback transact set',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) =>
         // $FlowFixMe[missing-local-annot]
         getCallback(({transact_UNSTABLE}) => param => {
@@ -1096,6 +1129,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const resetSelector = selector({
       key: 'selector getCallback transact',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) =>
         getCallback(({transact_UNSTABLE}) => () => {
           transact_UNSTABLE(({reset}) => reset(myAtom));
@@ -1114,6 +1148,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector getCallback node',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) =>
         // $FlowFixMe[missing-local-annot]
         getCallback(({node, snapshot}) => param => ({
@@ -1132,6 +1167,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector getCallback node refresh',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) => {
         const cachedExternalValue = externalValue;
         return getCallback(({node, refresh}) => () => ({
@@ -1158,6 +1194,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector getCallback guard',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) => {
         const callback = getCallback(() => () => {});
         expect(() => callback()).toThrow();
@@ -1170,6 +1207,7 @@ describe('getCallback', () => {
     // $FlowFixMe[incompatible-call]
     const myAsyncSelector = selector({
       key: 'selector getCallback guard async',
+      // $FlowFixMe[missing-local-annot]
       get: async ({getCallback}) => {
         const callback = getCallback(() => () => {});
         await Promise.resolve();
@@ -1184,6 +1222,7 @@ describe('getCallback', () => {
   testRecoil('Callback can be used from thrown error', async () => {
     const mySelector = selector({
       key: 'selector getCallback from error',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) => {
         // eslint-disable-next-line no-throw-literal
         // $FlowFixMe[missing-local-annot]
@@ -1196,6 +1235,7 @@ describe('getCallback', () => {
 
     const myAsyncSelector = selector({
       key: 'selector getCallback from error async',
+      // $FlowFixMe[missing-local-annot]
       get: ({getCallback}) => {
         return Promise.reject({callback: getCallback(() => x => x)});
       },
@@ -1217,6 +1257,7 @@ testRecoil('Report error with inconsistent values', () => {
   // $FlowFixMe[incompatible-call]
   const mySelector = selector({
     key: 'selector report invalid change',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => {
       get(depA);
       if (invalidInput) {
@@ -1321,6 +1362,7 @@ testRecoil('Selector values are frozen', async () => {
   // $FlowFixMe[incompatible-call]
   const fwdMixedSelector = selector({
     key: 'selector frozen mixed fwd',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => {
       get(upstreamMixedSelector);
       return {state: 'frozen'};

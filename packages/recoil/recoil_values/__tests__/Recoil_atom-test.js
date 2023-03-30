@@ -1445,6 +1445,7 @@ describe('Effects', () => {
       // $FlowFixMe[incompatible-call]
       const selThatDependsOnAtom = selector({
         key: 'selThatDependsOnAtom',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => get(atomWithEffect),
       });
 

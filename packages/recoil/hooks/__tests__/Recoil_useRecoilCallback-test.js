@@ -610,6 +610,7 @@ describe('Selector Cache', () => {
     // $FlowFixMe[incompatible-call]
     const myselector = selector({
       key: 'useRecoilCallback refresh entire cache selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => [get(myatom), i++],
     });
 
@@ -650,6 +651,7 @@ describe('Snapshot', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector1 = selector({
       key: 'useRecoilCallback snapshot retain 1',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         await new Promise(resolve => {
           resolveSelector = resolve;
@@ -660,6 +662,7 @@ describe('Snapshot', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector2 = selector({
       key: 'useRecoilCallback snapshot retain 2',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         await new Promise(resolve => {
           resolveSelector2 = resolve;

@@ -86,6 +86,7 @@ function plusOneSelector(dep: RecoilValue<number>) {
   const fn = jest.fn(x => x + 1);
   const sel = selector({
     key: `selector${nextID++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => fn(get(dep)),
   });
   return [sel, fn];
@@ -104,6 +105,7 @@ function plusOneAsyncSelector(
   });
   const sel = selector({
     key: `selector${nextID++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => fn(get(dep)),
   });
   return [
@@ -122,6 +124,7 @@ function additionSelector(
   const fn = jest.fn((a, b) => a + b);
   const sel = selector({
     key: `selector${nextID++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => fn(get(depA), get(depB)),
   });
   return [sel, fn];
@@ -624,12 +627,14 @@ describe('Component Subscriptions', () => {
       const selectorMapFn1 = jest.fn(x => x);
       const sel1 = selector({
         key: 'selUpstream',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => selectorMapFn1(get(atomA)),
       });
 
       const selectorMapFn2 = jest.fn(x => x);
       const sel2 = selector({
         key: 'selDownstream',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => selectorMapFn2(get(sel1)),
       });
 

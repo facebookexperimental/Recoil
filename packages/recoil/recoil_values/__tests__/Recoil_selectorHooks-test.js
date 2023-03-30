@@ -120,6 +120,7 @@ function plusOneSelector(dep: RecoilValue<number>) {
   const fn = jest.fn(x => x + 1);
   const sel = selector({
     key: `selector${nextID++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => fn(get(dep)),
   });
   return [sel, fn];
@@ -138,6 +139,7 @@ function plusOneAsyncSelector(
   });
   const sel = selector({
     key: `selector${nextID++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => fn(get(dep)),
   });
   return [
@@ -156,6 +158,7 @@ function additionSelector(
   const fn = jest.fn((a, b) => a + b);
   const sel = selector({
     key: `selector${nextID++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => fn(get(depA), get(depB)),
   });
   return [sel, fn];
@@ -454,8 +457,10 @@ testRecoil('Selectors can be invertible', () => {
   // $FlowFixMe[incompatible-call]
   const aSelector = selector({
     key: 'invertible1',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(anAtom),
     // $FlowFixMe[incompatible-call]
+    // $FlowFixMe[missing-local-annot]
     set: ({set}, newValue) => set(anAtom, newValue),
   });
 
@@ -479,6 +484,7 @@ describe('Dynamic Dependencies', () => {
     // $FlowFixMe[incompatible-call]
     const aSelector = selector({
       key: 'depsChange',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         const a = get(atomA);
         if (a === 1337) {
@@ -581,6 +587,7 @@ describe('Dynamic Dependencies', () => {
     // $FlowFixMe[incompatible-call]
     const aSelector = selector({
       key: 'transactionally',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         const a = get(atomA);
         const b = get(atomB);
@@ -630,6 +637,7 @@ describe('Dynamic Dependencies', () => {
       // $FlowFixMe[incompatible-call]
       const selectorWithAsyncDeps = selector({
         key: 'selectorTrackDepsIncrementally',
+        // $FlowFixMe[missing-local-annot]
         get: async ({get}) => {
           await Promise.resolve(); // needed to simulate discovering a dependency asynchronously
           return get(anAtom);
@@ -677,6 +685,7 @@ describe('Dynamic Dependencies', () => {
       // $FlowFixMe[incompatible-call]
       const selectorWithAsyncDeps = selector({
         key: 'selectorNotCacheIncDeps',
+        // $FlowFixMe[missing-local-annot]
         get: async ({get}) => {
           const val1 = get(resolvingSel1);
 
@@ -736,6 +745,7 @@ describe('Dynamic Dependencies', () => {
       // $FlowFixMe[incompatible-call]
       const anAsyncSelector = selector({
         key: 'selectorWithChangingDeps',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           const atomValueBefore = get(anAtom);
 
@@ -810,6 +820,7 @@ describe('Dynamic Dependencies', () => {
       // $FlowFixMe[incompatible-call]
       const aSelector = selector({
         key: 'aSelector',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           return get(anAtom);
         },
@@ -858,6 +869,7 @@ describe('Dynamic Dependencies', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector dynamic deps selector',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         selectorEvaluations++;
         await Promise.resolve();
@@ -884,6 +896,7 @@ describe('Dynamic Dependencies', () => {
     // $FlowFixMe[incompatible-call]
     const wrapperSelector = selector({
       key: 'selector dynamic deps wrapper',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         const loadable = get(noWait(mySelector));
         return loadable.state === 'loading' ? 'loading' : loadable.contents;
@@ -1005,6 +1018,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const catchingSelector = selector({
       key: 'useRecoilState/catching selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         try {
           return get(throwingSel);
@@ -1040,6 +1054,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const catchingSelector = selector({
       key: 'useRecoilState/catching selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         try {
           return get(throwingSel);
@@ -1059,6 +1074,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const bypassSelector = selector({
       key: 'useRecoilState/bypassing selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         try {
           const value = get(resolvingSel);
@@ -1089,6 +1105,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const bypassSelector = selector({
       key: 'useRecoilState/bypassing selector all',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         let ready = 0;
         try {
@@ -1128,6 +1145,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const bypassSelector = selector({
       key: 'useRecoilState/bypassing selector any',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         let ready = 0;
         for (const resolvingSel of [resolvingSel1, resolvingSel2]) {
@@ -1165,6 +1183,7 @@ describe('Catching Deps', () => {
       // $FlowFixMe[incompatible-call]
       const catchPromiseSelector = selector({
         key: 'useRecoilState/catch then async',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           try {
             return get(originalDep);
@@ -1199,6 +1218,7 @@ describe('Catching Deps', () => {
     // $FlowFixMe[incompatible-call]
     const catchPromiseSelector = selector({
       key: 'useRecoilState/catch then async 2',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         try {
           return get(resolvingSel);
@@ -1256,6 +1276,7 @@ describe('Async Selectors', () => {
     // $FlowFixMe[incompatible-call]
     const blockedSelector = selector({
       key: 'useRecoilState/blocked selector',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => get(resolvingSel),
     });
 
@@ -1304,6 +1325,7 @@ describe('Async Selectors', () => {
     // $FlowFixMe[incompatible-call]
     const sel1 = selector({
       key: 'MySelector',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         await Promise.resolve();
         return get(sel2);
@@ -1403,6 +1425,7 @@ describe('Async Selectors', () => {
       // $FlowFixMe[incompatible-call]
       const aSelector = selector({
         key: 'alternatingSelector',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => {
           const x = get(anAtom);
           if (x === 1337) {
@@ -1527,6 +1550,7 @@ describe('Async Selectors', () => {
     // $FlowFixMe[incompatible-call]
     const sel = selector({
       key: `selector${nextID++}`,
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         const x = get(anAtom);
         return Promise.resolve(x + 1);
@@ -1562,6 +1586,7 @@ describe('Async Selectors', () => {
       // $FlowFixMe[incompatible-call]
       const mySelector = selector({
         key: `selector${nextID++}`,
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => get(myAtom).value,
       });
 
@@ -1809,11 +1834,13 @@ testRecoil('Updating with changed selector', ({gks}) => {
   // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'selector change rerender / selectorA',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(atomA).value,
   });
   // $FlowFixMe[incompatible-call]
   const selectorB = selector({
     key: 'selector change rerender / selectorB',
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(atomB).value,
   });
 
@@ -1922,6 +1949,7 @@ describe('Multiple stores', () => {
       key: 'selector stores sync selector',
       get: () => myAtom,
       // $FlowFixMe[incompatible-call]
+      // $FlowFixMe[missing-local-annot]
       set: ({set}, newValue) => set(myAtom, newValue),
     });
 
@@ -1969,6 +1997,7 @@ describe('Multiple stores', () => {
     });
     const mySelector = selector({
       key: 'selector stores async selector',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         const side = get(myAtom);
         const str = await promises[side];
@@ -1976,6 +2005,7 @@ describe('Multiple stores', () => {
         return side + ':' + str;
       },
       // $FlowFixMe[incompatible-call]
+      // $FlowFixMe[missing-local-annot]
       set: ({set}, newValue) => set(myAtom, newValue),
     });
 
@@ -2058,6 +2088,7 @@ describe('Multiple stores', () => {
 
     const mySelector = selector({
       key: 'selector stores derived selector',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         const side = get(switchAtom);
         return (
@@ -2072,6 +2103,7 @@ describe('Multiple stores', () => {
         );
       },
       // $FlowFixMe[incompatible-call]
+      // $FlowFixMe[missing-local-annot]
       set: ({set}, newValue) => set(switchAtom, newValue),
     });
 
@@ -2136,6 +2168,7 @@ describe('Multiple stores', () => {
     };
     const mySelector = selector({
       key: 'selector stores dynamic deps',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         await Promise.resolve();
         const x = get(myAtom);
@@ -2151,6 +2184,7 @@ describe('Multiple stores', () => {
     // $FlowFixMe[incompatible-call]
     const wrapperSelector = selector({
       key: 'selector stores dynamic deps wrapper',
+      // $FlowFixMe[missing-local-annot]
       get: ({get}) => {
         const loadable = get(noWait(mySelector));
         return loadable.state === 'loading' ? 'loading' : loadable.contents;
@@ -2283,6 +2317,7 @@ describe('Multiple stores', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector stores diverging selector',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         await Promise.resolve();
         const value = get(myAtom);
@@ -2354,6 +2389,7 @@ describe('Multiple stores', () => {
     // $FlowFixMe[incompatible-call]
     const mySelector = selector({
       key: 'selector stores diverged selector',
+      // $FlowFixMe[missing-local-annot]
       get: async ({get}) => {
         await addDepsPromise;
         const value = get(myAtom);
@@ -2471,6 +2507,7 @@ describe('Counts', () => {
         // $FlowFixMe[incompatible-call]
         const selectorWithAsyncDeps = selector({
           key: 'selectorRunsMinTimes',
+          // $FlowFixMe[missing-local-annot]
           get: async ({get}) => {
             numTimesRan++;
             return get(asyncDep1) + get(asyncDep2);
@@ -2510,6 +2547,7 @@ describe('Counts', () => {
       // $FlowFixMe[incompatible-call]
       const mySelector = selector({
         key: 'selector - same value rerender',
+        // $FlowFixMe[missing-local-annot]
         get: ({get}) => get(myAtom).value,
       });
 

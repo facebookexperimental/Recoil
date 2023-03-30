@@ -265,6 +265,7 @@ function asyncSelector<T, S>(
   // $FlowFixMe[incompatible-call]
   const sel = selector({
     key: `AsyncSelector${id++}`,
+    // $FlowFixMe[missing-local-annot]
     get: ({get}) => {
       if (dep != null) {
         get(dep);
