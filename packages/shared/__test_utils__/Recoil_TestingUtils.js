@@ -128,7 +128,7 @@ function renderLegacyReactRoot<Props>(
   container: HTMLElement,
   contents: ReactAbstractElement<Props>,
 ) {
-  ReactDOM.render(contents, container, 'Recoil_TestingUtils.js');
+  ReactDOM.render(contents, container);
 }
 
 // @fb-only: const createRoot = ReactDOMComet.createRoot;
