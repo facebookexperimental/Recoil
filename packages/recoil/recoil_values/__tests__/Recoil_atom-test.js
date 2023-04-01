@@ -722,6 +722,45 @@ describe('Effects', () => {
     expect(onSetForSameEffect).toHaveBeenCalledTimes(0);
   });
 
+  testRecoil('set promise via updater', async () => {
+    let resolveAtom;
+    let validated;
+    const onSetForSameEffect = jest.fn(() => {});
+    const myAtom = atom({
+      key: 'atom effect init set promise',
+      default: 'DEFAULT',
+      effects: [
+        ({setSelf, onSet}) => {
+          setSelf(() => {
+            return new Promise(resolve => {
+              resolveAtom = resolve;
+            });
+          });
+          // $FlowFixMe[invalid-tuple-arity]
+          onSet(onSetForSameEffect);
+        },
+        ({onSet}) => {
+          onSet(value => {
+            expect(value).toEqual('RESOLVE');
+            validated = true;
+          });
+        },
+      ],
+    });
+
+    const c = renderElements(<ReadsAtom atom={myAtom} />);
+    expect(c.textContent).toEqual('loading');
+
+    act(() => resolveAtom?.('RESOLVE'));
+    await flushPromisesAndTimers();
+    act(() => undefined);
+    expect(c.textContent).toEqual('"RESOLVE"');
+    expect(validated).toEqual(true);
+
+    // onSet() should not be called for this hook's setSelf()
+    expect(onSetForSameEffect).toHaveBeenCalledTimes(0);
+  });
+
   testRecoil('set default promise', async () => {
     let setValue = 'RESOLVE_DEFAULT';
     const onSetHandler = jest.fn(newValue => {

@@ -9,26 +9,42 @@
  * @oncall recoil
  */
 
- import {
+import {
   atom,
   atomFamily,
-  constSelector, DefaultValue,
-  errorSelector, isRecoilValue,
-  noWait, readOnlySelector, RecoilBridge, RecoilRoot,
-  RecoilValue, RecoilState, RecoilValueReadOnly,
+  constSelector,
+  DefaultValue,
+  errorSelector,
+  isRecoilValue,
+  noWait,
+  readOnlySelector,
+  RecoilBridge,
+  RecoilRoot,
+  RecoilValue,
+  RecoilState,
+  RecoilValueReadOnly,
   selector,
   selectorFamily,
   Snapshot,
   snapshot_UNSTABLE,
-  useGetRecoilValueInfo_UNSTABLE, useGotoRecoilSnapshot,
-  useRecoilBridgeAcrossReactRoots_UNSTABLE, useRecoilCallback,
-  useRecoilSnapshot, useRecoilState,
+  useGetRecoilValueInfo_UNSTABLE,
+  useGotoRecoilSnapshot,
+  useRecoilBridgeAcrossReactRoots_UNSTABLE,
+  useRecoilCallback,
+  useRecoilSnapshot,
+  useRecoilState,
   useRecoilStateLoadable,
-  useRecoilTransactionObserver_UNSTABLE, useRecoilValue,
+  useRecoilTransactionObserver_UNSTABLE,
+  useRecoilValue,
   useRecoilValueLoadable,
-  useResetRecoilState, useSetRecoilState,
-  waitForAll, waitForAllSettled, waitForAny, waitForNone,
-  Loadable, RecoilLoadable,
+  useResetRecoilState,
+  useSetRecoilState,
+  waitForAll,
+  waitForAllSettled,
+  waitForAny,
+  waitForNone,
+  Loadable,
+  RecoilLoadable,
   useRecoilTransaction_UNSTABLE,
   useRecoilRefresher_UNSTABLE,
   useRecoilStoreID,
@@ -97,20 +113,20 @@ selector({
 
 const readOnlySelectorSel = selector({
   key: 'ReadOnlySelector',
-  get: ({ get }) => {
-      get(myAtom) + 10;
-      get(mySelector1);
-      get(5); // $ExpectError
-      return 5;
+  get: ({get}) => {
+    get(myAtom) + 10;
+    get(mySelector1);
+    get(5); // $ExpectError
+    return 5;
   },
 });
 
 const writeableSelector = selector({
   key: 'WriteableSelector',
-  get: ({ get }) => {
+  get: ({get}) => {
     return get(mySelector1) + 10;
   },
-  set: ({ get, set, reset }) => {
+  set: ({get, set, reset}) => {
     get(myAtom);
     set(myAtom, 5);
     set(myAtom, 'hello'); // $ExpectError
@@ -124,26 +140,30 @@ const writeableSelector = selector({
 
 const callbackSelector = selector({
   key: 'CallbackSelector',
-  get: ({ getCallback }) => {
-    return getCallback(({snapshot, set, reset, refresh, transact_UNSTABLE}) => () => {
-      set(myAtom, 5);
-      reset(myAtom);
-      refresh(myAtom);
+  get: ({getCallback}) => {
+    return getCallback(
+      ({snapshot, set, reset, refresh, transact_UNSTABLE}) =>
+        () => {
+          set(myAtom, 5);
+          reset(myAtom);
+          refresh(myAtom);
 
-      transact_UNSTABLE(({get, set, reset}) => {
-        get(myAtom); // $ExpectType number
-        set(myAtom, 5);
-        reset(myAtom);
-      });
+          transact_UNSTABLE(({get, set, reset}) => {
+            get(myAtom); // $ExpectType number
+            set(myAtom, 5);
+            reset(myAtom);
+          });
 
-      const ret = snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
-      return ret;
-    });
-  }
+          const ret = snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
+          return ret;
+        },
+    );
+  },
 });
 useRecoilValue(callbackSelector); // $ExpectType () => Promise<number>
 
-const selectorError1 = selector({ // $ExpectError
+// $ExpectError
+const selectorError1 = selector({
   key: 'SelectorError1',
   // Missing get()
 });
@@ -164,8 +184,9 @@ selectorError3;
 
 // RecoilRoot
 RecoilRoot({children: React.createElement('div')}); // $ExpectType ReactElement<any, any> | null
-RecoilRoot({ // $ExpectType ReactElement<any, any> | null
-  initializeState: ({ set, reset }) => {
+// $ExpectType ReactElement<any, any> | null
+RecoilRoot({
+  initializeState: ({set, reset}) => {
     set(myAtom, 5);
     reset(myAtom);
 
@@ -176,11 +197,13 @@ RecoilRoot({ // $ExpectType ReactElement<any, any> | null
   },
   children: React.createElement('div'),
 });
-RecoilRoot({ // $ExpectType ReactElement<any, any> | null
+// $ExpectType ReactElement<any, any> | null
+RecoilRoot({
   override: true,
   children: React.createElement('div'),
 });
-RecoilRoot({ // $ExpectType ReactElement<any, any> | null
+// $ExpectType ReactElement<any, any> | null
+RecoilRoot({
   override: false,
   children: React.createElement('div'),
 });
@@ -301,85 +324,91 @@ useRecoilState_TRANSITION_SUPPORT_UNSTABLE(writeableSelector); // $ExpectType [n
 useRecoilState_TRANSITION_SUPPORT_UNSTABLE(readOnlySelectorSel); // $ExpectError
 useRecoilState_TRANSITION_SUPPORT_UNSTABLE({}); // $ExpectError
 
-useRecoilCallback(({ snapshot, set, reset, refresh, gotoSnapshot, transact_UNSTABLE }) => async () => {
-  snapshot; // $ExpectType Snapshot
-  snapshot.getID(); // $ExpectType SnapshotID
-  await snapshot.getPromise(mySelector1); // $ExpectType number
-  const loadable: Loadable<number> = snapshot.getLoadable(mySelector1);
+useRecoilCallback(
+  ({snapshot, set, reset, refresh, gotoSnapshot, transact_UNSTABLE}) =>
+    async () => {
+      snapshot; // $ExpectType Snapshot
+      snapshot.getID(); // $ExpectType SnapshotID
+      await snapshot.getPromise(mySelector1); // $ExpectType number
+      const loadable: Loadable<number> = snapshot.getLoadable(mySelector1);
 
-  gotoSnapshot(snapshot);
+      gotoSnapshot(snapshot);
 
-  gotoSnapshot(3); // $ExpectError
-  gotoSnapshot(myAtom); // $ExpectError
+      gotoSnapshot(3); // $ExpectError
+      gotoSnapshot(myAtom); // $ExpectError
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const state: 'hasValue' | 'hasError' | 'loading' = loadable.state;
-  loadable.contents; // $ExpectType any
-  switch (loadable.state) {
-    case 'hasValue':
-      loadable.contents; // $ExpectType number
-      break;
-    case 'hasError':
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const state: 'hasValue' | 'hasError' | 'loading' = loadable.state;
       loadable.contents; // $ExpectType any
-      break;
-    case 'loading':
-      loadable.contents; // $ExpectType Promise<number>
-      break;
-  }
+      switch (loadable.state) {
+        case 'hasValue':
+          loadable.contents; // $ExpectType number
+          break;
+        case 'hasError':
+          loadable.contents; // $ExpectType any
+          break;
+        case 'loading':
+          loadable.contents; // $ExpectType Promise<number>
+          break;
+      }
 
-  set(myAtom, 5);
-  set(myAtom, 'hello'); // $ExpectError
-  reset(myAtom);
-  refresh(myAtom);
+      set(myAtom, 5);
+      set(myAtom, 'hello'); // $ExpectError
+      reset(myAtom);
+      refresh(myAtom);
 
-  const release = snapshot.retain(); // $ExpectType () => void
-  release(); // $ExpectType void
-  snapshot.isRetained(); // $ExpectType boolean
+      const release = snapshot.retain(); // $ExpectType () => void
+      release(); // $ExpectType void
+      snapshot.isRetained(); // $ExpectType boolean
 
-  transact_UNSTABLE(({get, set, reset}) => {
-    const x: number = get(myAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
-    set(myAtom, 1);
-    set(myAtom, x => x + 1);
-    reset(myAtom);
-  });
-});
+      transact_UNSTABLE(({get, set, reset}) => {
+        const x: number = get(myAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
+        set(myAtom, 1);
+        set(myAtom, x => x + 1);
+        reset(myAtom);
+      });
+    },
+);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const transact: (p: number) => void = useRecoilTransaction_UNSTABLE(({get, set, reset}) => (p: number) => {
-  const x: number = get(myAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
-  set(myAtom, 1);
-  set(myAtom, x => x + 1);
-  reset(myAtom);
-});
+const transact: (p: number) => void = useRecoilTransaction_UNSTABLE(
+  ({get, set, reset}) =>
+    (p: number) => {
+      const x: number = get(myAtom); // eslint-disable-line @typescript-eslint/no-unused-vars
+      set(myAtom, 1);
+      set(myAtom, x => x + 1);
+      reset(myAtom);
+    },
+);
 
 /**
  * useRecoilTransactionObserver_UNSTABLE()
  */
 {
-  useRecoilTransactionObserver_UNSTABLE(
-    ({snapshot, previousSnapshot}) => {
-      snapshot.getLoadable(myAtom); // $ExpectType Loadable<number>
-      snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
-      snapshot.getPromise(mySelector2); // $ExpectType Promise<string>
+  useRecoilTransactionObserver_UNSTABLE(({snapshot, previousSnapshot}) => {
+    snapshot.getLoadable(myAtom); // $ExpectType Loadable<number>
+    snapshot.getPromise(mySelector1); // $ExpectType Promise<number>
+    snapshot.getPromise(mySelector2); // $ExpectType Promise<string>
 
-      previousSnapshot.getLoadable(myAtom); // $ExpectType Loadable<number>
-      previousSnapshot.getPromise(mySelector1); // $ExpectType Promise<number>
-      previousSnapshot.getPromise(mySelector2); // $ExpectType Promise<string>
+    previousSnapshot.getLoadable(myAtom); // $ExpectType Loadable<number>
+    previousSnapshot.getPromise(mySelector1); // $ExpectType Promise<number>
+    previousSnapshot.getPromise(mySelector2); // $ExpectType Promise<string>
 
-      for (const node of Array.from(snapshot.getNodes_UNSTABLE({isModified: true}))) {
-          const loadable = snapshot.getLoadable(node); // $ExpectType Loadable<unknown>
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const state: 'hasValue' | 'hasError' | 'loading' = loadable.state;
-      }
-    },
-  );
+    for (const node of Array.from(
+      snapshot.getNodes_UNSTABLE({isModified: true}),
+    )) {
+      const loadable = snapshot.getLoadable(node); // $ExpectType Loadable<unknown>
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const state: 'hasValue' | 'hasError' | 'loading' = loadable.state;
+    }
+  });
 }
 
 /**
  * useGotoRecoilSnapshot()
  */
 {
-  const snapshot: Snapshot = ({} as any);
+  const snapshot: Snapshot = {} as any;
 
   const gotoSnap = useGotoRecoilSnapshot();
 
@@ -412,7 +441,8 @@ const transact: (p: number) => void = useRecoilTransaction_UNSTABLE(({get, set, 
  * useRecoilBridgeAcrossReactRoots()
  */
 {
-  const RecoilBridgeComponent: typeof RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE();
+  const RecoilBridgeComponent: typeof RecoilBridge =
+    useRecoilBridgeAcrossReactRoots_UNSTABLE();
   RecoilBridgeComponent({children: React.createElement('div')});
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   RecoilBridgeComponent({
@@ -459,11 +489,13 @@ isRecoilValue(mySelector1);
     atomFamily<number, number>({key: 'MyAtomFamilyWithoutDefault'});
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const myAsyncAtomFamily: (number: number) => RecoilState<number> =
-    atomFamily<number, number>({
-      key: 'MyAsyncAtomFamily',
-      default: (param: number) => Promise.resolve(param),
-    });
+  const myAsyncAtomFamily: (number: number) => RecoilState<number> = atomFamily<
+    number,
+    number
+  >({
+    key: 'MyAsyncAtomFamily',
+    default: (param: number) => Promise.resolve(param),
+  });
 }
 
 /**
@@ -472,11 +504,13 @@ isRecoilValue(mySelector1);
 {
   const mySelectorFam = selectorFamily({
     key: 'myAtomFam1',
-    get: (param: number) => ({ get }) => {
-      get(mySelector1); // $ExpectType number
+    get:
+      (param: number) =>
+      ({get}) => {
+        get(mySelector1); // $ExpectType number
 
-      return param;
-    },
+        return param;
+      },
   });
 
   const atm = mySelectorFam(2); // $ExpectType RecoilValueReadOnly<number>
@@ -488,10 +522,12 @@ isRecoilValue(mySelector1);
 
   const mySelectorFamWritable = selectorFamily({
     key: 'myAtomFam1',
-    get: (param: number) => ({ get }) => {
-      get(mySelector1); // $ExpectType number
-      return param;
-    },
+    get:
+      (param: number) =>
+      ({get}) => {
+        get(mySelector1); // $ExpectType number
+        return param;
+      },
     set: (param: number) => () => {
       param; // $ExpectType number
     },
@@ -512,27 +548,36 @@ isRecoilValue(mySelector1);
   }
   const myJsonSerializableSelectorFam = selectorFamily({
     key: 'mySelectorFam1',
-    get: (param: {date: Date, class: MySerializableClass}) => () =>
-      (param.date.toString() + JSON.stringify(param.class.toJSON())),
+    get: (param: {date: Date; class: MySerializableClass}) => () =>
+      param.date.toString() + JSON.stringify(param.class.toJSON()),
   });
-  myJsonSerializableSelectorFam({ date: new Date(), class: new MySerializableClass() });
+  myJsonSerializableSelectorFam({
+    date: new Date(),
+    class: new MySerializableClass(),
+  });
 
   const callbackSelectorFamily = selectorFamily({
     key: 'CallbackSelector',
-    get: (param: number) => ({ getCallback }) => {
-      return getCallback(({snapshot}) => async (num: number) => {
-        num; // $ExpectType number
-        const ret = await snapshot.getPromise(mySelectorFamWritable(param + num)); // $ExpectType number
-        return ret;
-      });
-    }
+    get:
+      (param: number) =>
+      ({getCallback}) => {
+        return getCallback(({snapshot}) => async (num: number) => {
+          num; // $ExpectType number
+          // $ExpectType number
+          const ret = await snapshot.getPromise(
+            mySelectorFamWritable(param + num),
+          );
+          return ret;
+        });
+      },
   });
   useRecoilValue(callbackSelectorFamily('hi')); // $ExpectError
   const cb = useRecoilValue(callbackSelectorFamily(1)); // $ExpectType (num: number) => Promise<number>
   cb('hi'); // $ExpectError
   cb(2); // $ExpectType
 
-  const selectorFamilyError1 = selectorFamily({ // $ExpectError
+  // $ExpectError
+  const selectorFamilyError1 = selectorFamily({
     key: 'SelectorFamilyError1',
     // Missing get()
   });
@@ -547,7 +592,11 @@ isRecoilValue(mySelector1);
 
   const selectorFamilyError3 = selectorFamily({
     key: 'SelectorFamilyError3',
-    get: () => ({badCallback}) => null, // $ExpectError
+    get:
+      () =>
+      // $ExpectError
+      ({badCallback}) =>
+        null,
   });
   selectorFamilyError3;
 }
@@ -559,7 +608,7 @@ isRecoilValue(mySelector1);
   const mySel = constSelector(1);
   const mySel2 = constSelector('hello');
   const mySel3 = constSelector([1, 2]);
-  const mySel4 = constSelector({ a: 1, b: '2' });
+  const mySel4 = constSelector({a: 1, b: '2'});
 
   useRecoilValue(mySel); // $ExpectType 1
   useRecoilValue(mySel2); // $ExpectType "hello"
@@ -612,7 +661,7 @@ isRecoilValue(mySelector1);
   const strSel: RecoilValueReadOnly<string> = {} as any;
 
   const mySel = waitForNone([numSel, strSel]);
-  const mySel2 = waitForNone({ a: numSel, b: strSel });
+  const mySel2 = waitForNone({a: numSel, b: strSel});
 
   useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
   useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
@@ -629,7 +678,7 @@ isRecoilValue(mySelector1);
   const strSel: RecoilValueReadOnly<string> = {} as any;
 
   const mySel = waitForAny([numSel, strSel]);
-  const mySel2 = waitForAny({ a: numSel, b: strSel });
+  const mySel2 = waitForAny({a: numSel, b: strSel});
 
   useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
   useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
@@ -646,7 +695,7 @@ isRecoilValue(mySelector1);
   const strSel: RecoilValueReadOnly<string> = {} as any;
 
   const mySel = waitForAll([numSel, strSel]);
-  const mySel2 = waitForAll({ a: numSel, b: strSel });
+  const mySel2 = waitForAll({a: numSel, b: strSel});
 
   useRecoilValue(mySel)[0]; // $ExpectType number
   useRecoilValue(mySel)[1]; // $ExpectType string
@@ -663,7 +712,7 @@ isRecoilValue(mySelector1);
   const strSel: RecoilValueReadOnly<string> = {} as any;
 
   const mySel = waitForAllSettled([numSel, strSel]);
-  const mySel2 = waitForAllSettled({ a: numSel, b: strSel });
+  const mySel2 = waitForAllSettled({a: numSel, b: strSel});
 
   useRecoilValue(mySel)[0]; // $ExpectType Loadable<number>
   useRecoilValue(mySel)[1]; // $ExpectType Loadable<string>
@@ -676,17 +725,41 @@ isRecoilValue(mySelector1);
  * effects on atom()
  */
 {
-  atom({
+  atom<number>({
     key: 'thisismyrandomkey',
     default: 0,
     effects: [
-      ({node, storeID, trigger, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
+      ({
+        node,
+        storeID,
+        trigger,
+        setSelf,
+        onSet,
+        resetSelf,
+        getPromise,
+        getLoadable,
+        getInfo_UNSTABLE,
+      }) => {
         node; // $ExpectType RecoilState<number>
         storeID; // $ExpectType StoreID
         trigger; // $ExpectType "set" | "get"
 
+        setSelf(new DefaultValue());
         setSelf(1);
         setSelf('a'); // $ExpectError
+        setSelf(Promise.resolve(new DefaultValue()));
+        setSelf(Promise.resolve(1));
+        setSelf(Promise.resolve('a')); // $ExpectError
+        setSelf(() => new DefaultValue());
+        setSelf(() => 1);
+        setSelf(() => 'a'); // $ExpectError
+        setSelf(() => Promise.resolve(new DefaultValue()));
+        setSelf(() => Promise.resolve(1));
+        setSelf(() => Promise.resolve('a')); // $ExpectError
+        setSelf(old => {
+          old; // $ExpectType number | DefaultValue
+          return old;
+        });
 
         onSet((val, oldVal, isReset) => {
           val; // $ExpectType number
@@ -719,16 +792,40 @@ isRecoilValue(mySelector1);
   atomFamily({
     key: 'myrandomatomfamilykey',
     default: (param: number) => param,
-    effects: (param) => [
-      ({node, storeID, trigger, setSelf, onSet, resetSelf, getPromise, getLoadable, getInfo_UNSTABLE}) => {
+    effects: param => [
+      ({
+        node,
+        storeID,
+        trigger,
+        setSelf,
+        onSet,
+        resetSelf,
+        getPromise,
+        getLoadable,
+        getInfo_UNSTABLE,
+      }) => {
         param; // $ExpectType number
 
         node; // $ExpectType RecoilState<number>
         storeID; // $ExpectType StoreID
         trigger; // $ExpectType "set" | "get"
 
+        setSelf(new DefaultValue());
         setSelf(1);
         setSelf('a'); // $ExpectError
+        setSelf(Promise.resolve(new DefaultValue()));
+        setSelf(Promise.resolve(1));
+        setSelf(Promise.resolve('a')); // $ExpectError
+        setSelf(() => new DefaultValue());
+        setSelf(() => 1);
+        setSelf(() => 'a'); // $ExpectError
+        setSelf(() => Promise.resolve(new DefaultValue()));
+        setSelf(() => Promise.resolve(1));
+        setSelf(() => Promise.resolve('a')); // $ExpectError
+        setSelf(old => {
+          old; // $ExpectType number | DefaultValue
+          return old;
+        });
 
         onSet(val => {
           val; // $ExpectType number
@@ -756,19 +853,17 @@ isRecoilValue(mySelector1);
  * snapshot_UNSTABLE()
  */
 {
-  snapshot_UNSTABLE(
-    mutableSnapshot => mutableSnapshot.set(myAtom, 1)
-  )
-  .getLoadable(mySelector1)
-  .valueOrThrow();
+  snapshot_UNSTABLE(mutableSnapshot => mutableSnapshot.set(myAtom, 1))
+    .getLoadable(mySelector1)
+    .valueOrThrow();
 }
 
 {
   snapshot_UNSTABLE(
-    mutableSnapshot => mutableSnapshot.set(myAtom, '1') // $ExpectError
+    mutableSnapshot => mutableSnapshot.set(myAtom, '1'), // $ExpectError
   )
-  .getLoadable(mySelector1)
-  .valueOrThrow();
+    .getLoadable(mySelector1)
+    .valueOrThrow();
 }
 
 /**
@@ -780,13 +875,13 @@ isRecoilValue(mySelector1);
     get: () => {},
     cachePolicy_UNSTABLE: {
       eviction: 'keep-all',
-    }
+    },
   });
 
   selector({
     key: 'ReadOnlySelectorSel_cachePolicy3',
     get: () => {},
-    cachePolicy_UNSTABLE: { eviction: 'lru' }, // $ExpectError
+    cachePolicy_UNSTABLE: {eviction: 'lru'}, // $ExpectError
   });
 
   selector({
@@ -795,7 +890,7 @@ isRecoilValue(mySelector1);
     cachePolicy_UNSTABLE: {
       eviction: 'lru',
       maxSize: 10,
-    }
+    },
   });
 
   selector({
@@ -803,7 +898,7 @@ isRecoilValue(mySelector1);
     get: () => {},
     cachePolicy_UNSTABLE: {
       eviction: 'most-recent',
-    }
+    },
   });
 
   selectorFamily({
@@ -811,13 +906,13 @@ isRecoilValue(mySelector1);
     get: () => () => {},
     cachePolicy_UNSTABLE: {
       eviction: 'keep-all',
-    }
+    },
   });
 
   selectorFamily({
     key: 'ReadOnlySelectorFSel_cachePolicy3',
     get: () => () => {},
-    cachePolicy_UNSTABLE: { eviction: 'lru' }, // $ExpectError
+    cachePolicy_UNSTABLE: {eviction: 'lru'}, // $ExpectError
   });
 
   selectorFamily({
@@ -826,7 +921,7 @@ isRecoilValue(mySelector1);
     cachePolicy_UNSTABLE: {
       eviction: 'lru',
       maxSize: 10,
-    }
+    },
   });
 
   selectorFamily({
@@ -834,7 +929,7 @@ isRecoilValue(mySelector1);
     get: () => () => {},
     cachePolicy_UNSTABLE: {
       eviction: 'most-recent',
-    }
+    },
   });
 }
 
@@ -843,7 +938,7 @@ isRecoilValue(mySelector1);
 /**
  * Loadable Factory Tests
  */
- {
+{
   RecoilLoadable.of('x'); // $ExpectType Loadable<string>
   RecoilLoadable.of(Promise.resolve('x')); // $ExpectType Loadable<string>
   RecoilLoadable.of(RecoilLoadable.of('x')); // $ExpectType Loadable<string>
