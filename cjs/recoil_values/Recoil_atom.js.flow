@@ -120,7 +120,9 @@ type NewValueOrUpdater<T> =
   | DefaultValue
   | Promise<T | DefaultValue>
   | WrappedValue<T>
-  | ((T | DefaultValue) => T | DefaultValue | WrappedValue<T>);
+  | ((
+      T | DefaultValue,
+    ) => T | DefaultValue | Promise<T | DefaultValue> | WrappedValue<T>);
 
 // Effect is called the first time a node is used with a <RecoilRoot>
 export type AtomEffect<T> = ({
@@ -135,7 +137,9 @@ export type AtomEffect<T> = ({
     | DefaultValue
     | Promise<T | DefaultValue>
     | WrappedValue<T>
-    | ((T | DefaultValue) => T | DefaultValue | WrappedValue<T>),
+    | ((
+        T | DefaultValue,
+      ) => T | DefaultValue | Promise<T | DefaultValue> | WrappedValue<T>),
   ) => void,
   resetSelf: () => void,
 
@@ -377,10 +381,15 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
               node,
               typeof valueOrUpdater === 'function'
                 ? (currentValue: $FlowFixMe) => {
-                    const newValue = unwrap(
+                    const updatedValue =
                       // cast to any because we can't restrict T from being a function without losing support for opaque types
-                      (valueOrUpdater: any)(currentValue), // flowlint-line unclear-type:off
-                    );
+                      (valueOrUpdater: any)(currentValue); // flowlint-line unclear-type:off
+                    if (isPromise(updatedValue)) {
+                      throw err(
+                        'Setting atoms to async values is not yet implemented.',
+                      );
+                    }
+                    const newValue = unwrap(updatedValue);
                     // $FlowFixMe[incompatible-type]
                     pendingSetSelf = {effect, value: newValue};
                     return newValue;

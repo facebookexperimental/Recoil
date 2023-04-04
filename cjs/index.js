@@ -8184,9 +8184,14 @@ function baseAtom(options) {
           }
 
           setRecoilValue$4(store, node, typeof valueOrUpdater === 'function' ? currentValue => {
-            const newValue = unwrap( // cast to any because we can't restrict T from being a function without losing support for opaque types
-            valueOrUpdater(currentValue) // flowlint-line unclear-type:off
-            ); // $FlowFixMe[incompatible-type]
+            const updatedValue = // cast to any because we can't restrict T from being a function without losing support for opaque types
+            valueOrUpdater(currentValue); // flowlint-line unclear-type:off
+
+            if (Recoil_isPromise(updatedValue)) {
+              throw Recoil_err('Setting atoms to async values is not yet implemented.');
+            }
+
+            const newValue = unwrap(updatedValue); // $FlowFixMe[incompatible-type]
 
             pendingSetSelf = {
               effect,
