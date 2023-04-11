@@ -241,7 +241,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
         const state = store.getState().nextTree ?? store.getState().currentTree;
 
         if (state.atomValues.get(key)?.contents === wrappedPromise) {
-          markRecoilValueModified(store, node)
+          markRecoilValueModified(store, node);
           setRecoilValue(store, node, value);
         }
 
@@ -250,7 +250,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       .catch(error => {
         const state = store.getState().nextTree ?? store.getState().currentTree;
         if (state.atomValues.get(key)?.contents === wrappedPromise) {
-          markRecoilValueModified(store, node)
+          markRecoilValueModified(store, node);
           setRecoilValueLoadable(store, node, loadableWithError(error));
         }
         throw error;

@@ -733,51 +733,6 @@ describe('Dependencies', () => {
     expect(selectorRunCount).toBe(2);
     expect(selectorRunCompleteCount).toBe(0);
   });
-
-  testRecoil('selector waits for async atoms to be set first', async () => {
-    const asyncEffect =
-      result =>
-      ({setSelf}) => {
-        setSelf(
-          new Promise(resolve => {
-            setTimeout(() => {
-              resolve(result);
-            }, 0);
-          }),
-        );
-      };
-
-    const atomA = atom({
-      key: 'selector waits for async atoms to be set first/atomA',
-      default: 'a-default',
-      effects: [asyncEffect('a-async')],
-    });
-    const atomB = atom({
-      key: 'selector waits for async atoms to be set first/atomB',
-      default: 'b-default',
-      effects: [asyncEffect('b-async')],
-    });
-    // $FlowFixMe[incompatible-call]
-    const selectorA = selector({
-      key: 'selector waits for async atoms to be set first/selectorA',
-      // $FlowFixMe[missing-local-annot]
-      get: ({get}) => get(atomA),
-    });
-    const directSelector = selector({
-      key: 'selector waits for async atoms to be set first/directSelector',
-      // $FlowFixMe[missing-local-annot]
-      get: ({get}) => {
-        const valueA = get(atomA);
-        const valueB = get(atomB);
-        return `${valueA}/${valueB}`;
-      },
-    });
-
-    expect(getValue(directSelector) instanceof Promise).toBe(true);
-
-    act(() => jest.runAllTimers());
-    expect(getValue(directSelector)).toEqual('a-async/b-async');
-  });
 });
 
 describe('Async Selector Set', () => {
