@@ -48,6 +48,7 @@ const {
   useMemo,
   useRef,
   useState,
+  memo
 } = require('react');
 const err = require('recoil-shared/util/Recoil_err');
 const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
@@ -360,12 +361,12 @@ function initialStoreState(
 }
 
 let nextID = 0;
-function RecoilRoot_INTERNAL({
+const RecoilRoot_INTERNAL = memo(({
   initializeState_DEPRECATED,
   initializeState,
   store_INTERNAL: storeProp, // For use with React "context bridging"
   children,
-}: InternalProps): React.Node {
+}: InternalProps): React.Node => {
   // prettier-ignore
   // @fb-only: useEffect(() => {
     // @fb-only: if (gkx('recoil_usage_logging')) {
@@ -538,7 +539,7 @@ function RecoilRoot_INTERNAL({
       </MutableSourceContext.Provider>
     </AppContext.Provider>
   );
-}
+})
 
 type Props =
   | {
@@ -564,7 +565,7 @@ type Props =
       children: React.Node,
     };
 
-function RecoilRoot(props: Props): React.Node {
+const RecoilRoot = memo((props: Props): React.Node => {
   const {override, ...propsExceptOverride} = props;
 
   const ancestorStoreRef = useStoreRef();
@@ -575,7 +576,7 @@ function RecoilRoot(props: Props): React.Node {
   }
 
   return <RecoilRoot_INTERNAL {...propsExceptOverride} />;
-}
+})
 
 function useRecoilStoreID(): StoreID {
   return useStoreRef().current.storeID;
