@@ -2,19 +2,27 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://recoiljs.org/blog</id>
     <title>Recoil Blog</title>
-    <updated>2022-10-11T00:00:00.000Z</updated>
+    <updated>2023-03-01T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://recoiljs.org/blog"/>
     <subtitle>Recoil Blog</subtitle>
     <icon>https://recoiljs.org/img/favicon.png</icon>
-    <rights>Copyright © 2022 Facebook, Inc.</rights>
+    <rights>Copyright © 2023 Facebook, Inc.</rights>
+    <entry>
+        <title type="html"><![CDATA[Recoil 0.7.7]]></title>
+        <id>/2023/03/01/recoil-0.7.7-release</id>
+        <link href="https://recoiljs.org/blog/2023/03/01/recoil-0.7.7-release"/>
+        <updated>2023-03-01T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[- Fix potential unhandled promise rejection in useRecoilCallback() (#2075)]]></summary>
+        <content type="html"><![CDATA[<ul><li>Fix potential unhandled promise rejection in <code>useRecoilCallback()</code> (<a href="https://github.com/facebookexperimental/Recoil/pull/2075">#2075</a>)</li><li>Add OSS support for <a href="/docs/api-reference/core/RecoilEnv#recoilenv">GateKeeper</a> feature toggling via <code>RecoilEnv.RECOIL_GKS_ENABLED</code> (<a href="https://github.com/facebookexperimental/Recoil/pull/2078">#2078</a>)</li><li>Fix resolving suspense of async selectors used with SSR (<a href="https://github.com/facebookexperimental/Recoil/pull/2073">#2073</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/1960">#1960</a>)</li><li>Fix SSR with some versions of React DOM used with Next.JS 13 (<a href="https://github.com/facebookexperimental/Recoil/pull/2082">#2082</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2086">#2086</a>)</li></ul>]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Recoil 0.7.6]]></title>
         <id>/2022/10/11/recoil-0.7.6-release</id>
         <link href="https://recoiljs.org/blog/2022/10/11/recoil-0.7.6-release"/>
         <updated>2022-10-11T00:00:00.000Z</updated>
         <summary type="html"><![CDATA[- Expose flag to disable "duplicate atom key" checking / logging, as it was too noisy in environments such as NextJS or some dev environments using Fast Refresh. (#733, #2020, #2046)]]></summary>
-        <content type="html"><![CDATA[<ul><li><p>Expose flag to disable &quot;duplicate atom key&quot; checking / logging, as it was too noisy in environments such as NextJS or some dev environments using Fast Refresh. (<a href="https://github.com/facebookexperimental/Recoil/pull/733">#733</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2020">#2020</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2046">#2046</a>)</p><ul><li>Import <code>RecoilEnv</code> from the recoil package, and set <code>RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false</code> in code to disable the checking and logging.</li><li>We also support <code>process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED=false</code> in NodeJS environments such as NextJs</li><li><strong><em>Caution</em></strong>: This disables all checks for duplicate atom keys including legitimate errors, so use with caution!</li></ul></li><li><p>Workaround for React 18 environments with nested renderers that don&#x27;t support <code>useSyncExternalStore()</code>. (<a href="https://github.com/facebookexperimental/Recoil/pull/2001">#2001</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2010">#2010</a>)</p></li></ul>]]></content>
+        <content type="html"><![CDATA[<ul><li><p>Expose flag to disable &quot;duplicate atom key&quot; checking / logging, as it was too noisy in environments such as NextJS or some dev environments using Fast Refresh. (<a href="https://github.com/facebookexperimental/Recoil/pull/733">#733</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2020">#2020</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2046">#2046</a>)</p><ul><li>Import <a href="/docs/api-reference/core/RecoilEnv#recoilenv"><code>RecoilEnv</code></a> from the recoil package, and set <code>RecoilEnv.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED = false</code> in code to disable the checking and logging.</li><li>We also support <code>process.env.RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED=false</code> in NodeJS environments such as NextJs</li><li><strong><em>Caution</em></strong>: This disables all checks for duplicate atom keys including legitimate errors, so use with caution!</li></ul></li><li><p>Workaround for React 18 environments with nested renderers that don&#x27;t support <code>useSyncExternalStore()</code>. (<a href="https://github.com/facebookexperimental/Recoil/pull/2001">#2001</a>, <a href="https://github.com/facebookexperimental/Recoil/pull/2010">#2010</a>)</p></li></ul>]]></content>
     </entry>
     <entry>
         <title type="html"><![CDATA[Recoil Sync 0.2]]></title>
