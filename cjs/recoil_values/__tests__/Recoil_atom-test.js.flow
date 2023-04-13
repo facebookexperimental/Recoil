@@ -560,6 +560,69 @@ describe('Effects', () => {
     );
   });
 
+  testRecoil(
+    'atom initialized with promise update downstream selectors when resolved',
+    async () => {
+      let resolveA = null;
+      let resolveB = null;
+
+      const atomA = atom({
+        key: 'downstream selectors when resolved/atomA',
+        default: 'a-default',
+        effects: [
+          ({setSelf}) => {
+            setSelf(
+              new Promise(resolve => {
+                resolveA = resolve;
+              }),
+            );
+          },
+        ],
+      });
+      const atomB = atom({
+        key: 'downstream selectors when resolved/atomB',
+        default: 'b-default',
+        effects: [
+          ({setSelf}) => {
+            setSelf(
+              new Promise(resolve => {
+                resolveB = resolve;
+              }),
+            );
+          },
+        ],
+      });
+      // $FlowFixMe[incompatible-call]
+      const selectorA = selector({
+        key: 'downstream selectors when resolved/selectorA',
+        // $FlowFixMe[missing-local-annot]
+        get: ({get}) => get(atomA),
+      });
+      const directSelector = selector({
+        key: 'downstream selectors when resolved/directSelector',
+        // $FlowFixMe[missing-local-annot]
+        get: ({get}) => {
+          const valueA = get(selectorA);
+          const valueB = get(atomB);
+          return `${valueA}/${valueB}`;
+        },
+      });
+
+      const c = renderElements(<ReadsAtom atom={directSelector} />);
+      expect(c.textContent).toEqual('loading');
+
+      act(() => resolveA?.('a-async'));
+      await flushPromisesAndTimers();
+
+      expect(c.textContent).toEqual('loading');
+
+      act(() => resolveB?.('b-async'));
+      await flushPromisesAndTimers();
+
+      expect(c.textContent).toEqual('"a-async/b-async"');
+    },
+  );
+
   testRecoil('order of effects', () => {
     const myAtom = atom({
       key: 'atom effect order',

@@ -8057,6 +8057,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         const state = (_store$getState$nextT = store.getState().nextTree) !== null && _store$getState$nextT !== void 0 ? _store$getState$nextT : store.getState().currentTree;
 
         if (((_state$atomValues$get = state.atomValues.get(key)) === null || _state$atomValues$get === void 0 ? void 0 : _state$atomValues$get.contents) === wrappedPromise) {
+          markRecoilValueModified$2(store, node);
           setRecoilValue$4(store, node, value);
         }
 
@@ -8067,6 +8068,7 @@ This is currently a DEV-only warning but will become a thrown exception in the n
         const state = (_store$getState$nextT2 = store.getState().nextTree) !== null && _store$getState$nextT2 !== void 0 ? _store$getState$nextT2 : store.getState().currentTree;
 
         if (((_state$atomValues$get2 = state.atomValues.get(key)) === null || _state$atomValues$get2 === void 0 ? void 0 : _state$atomValues$get2.contents) === wrappedPromise) {
+          markRecoilValueModified$2(store, node);
           setRecoilValueLoadable$2(store, node, loadableWithError$2(error));
         }
 
