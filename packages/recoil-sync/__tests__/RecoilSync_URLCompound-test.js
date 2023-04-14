@@ -8,36 +8,44 @@
 
 'use strict';
 
-const React = require('react');
-const {DefaultValue, atom, atomFamily} = require('Recoil');
+const {
+  getRecoilTestFn,
+} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {assertion, dict, nullable, number, string} = require('refine');
 
-const {
-  encodeURL,
-  expectURL,
-  gotoURL,
-} = require('../__test_utils__/RecoilSync_MockURLSerialization');
-const {
+let React,
+  DefaultValue,
+  atom,
+  atomFamily,
   act,
   componentThatReadsAndWritesAtom,
   renderElements,
-} = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
-const {
-  setConcurrentMode,
-} = require('recoil-shared/__test_utils__/Recoil_ReactRenderModes');
+  encodeURL,
+  expectURL,
+  gotoURL,
+  syncEffect,
+  RecoilURLSyncJSON;
 
-const {syncEffect} = require('../RecoilSync');
-const {RecoilURLSyncJSON} = require('../RecoilSync_URLJSON');
+const testRecoil = getRecoilTestFn(() => {
+  React = require('react');
+  ({DefaultValue, atom, atomFamily} = require('Recoil'));
 
-beforeEach(() => {
-  setConcurrentMode(true);
+  ({act} = require('ReactTestUtils'));
+  ({
+    componentThatReadsAndWritesAtom,
+    renderElements,
+  } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
+  ({
+    encodeURL,
+    expectURL,
+    gotoURL,
+  } = require('../__test_utils__/RecoilSync_MockURLSerialization'));
+
+  ({syncEffect} = require('../RecoilSync'));
+  ({RecoilURLSyncJSON} = require('../RecoilSync_URLJSON'));
 });
 
-afterEach(() => {
-  setConcurrentMode(false);
-});
-
-test('Upgrade item ID', async () => {
+testRecoil('Upgrade item ID', async () => {
   const loc = {part: 'queryParams'};
 
   const myAtom = atom({
@@ -75,7 +83,7 @@ test('Upgrade item ID', async () => {
   expectURL([[loc, {}]]);
 });
 
-test('Many items to one atom', async () => {
+testRecoil('Many items to one atom', async () => {
   const loc = {part: 'queryParams'};
 
   const manyToOneSyncEffct = () =>
@@ -133,7 +141,7 @@ test('Many items to one atom', async () => {
   expectURL([[loc, {}]]);
 });
 
-test('One item to multiple atoms', async () => {
+testRecoil('One item to multiple atoms', async () => {
   const loc = {part: 'queryParams'};
   const input = assertion(dict(nullable(number())));
 
@@ -208,7 +216,7 @@ test('One item to multiple atoms', async () => {
   ]);
 });
 
-test('One item to atom family', async () => {
+testRecoil('One item to atom family', async () => {
   const loc = {part: 'queryParams'};
   const input = assertion(dict(nullable(number())));
 
