@@ -8,23 +8,26 @@
 
 'use strict';
 
-const {act} = require('ReactTestUtils');
+const React = require('react');
 const {DefaultValue, atom, atomFamily} = require('Recoil');
-const {setConcurrentMode} = require('Recoil_ReactRenderModes');
+const {assertion, dict, nullable, number, string} = require('refine');
 
 const {
   encodeURL,
   expectURL,
   gotoURL,
 } = require('../__test_utils__/RecoilSync_MockURLSerialization');
-const {syncEffect} = require('../RecoilSync');
-const {RecoilURLSyncJSON} = require('../RecoilSync_URLJSON');
-const React = require('react');
 const {
+  act,
   componentThatReadsAndWritesAtom,
   renderElements,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
-const {assertion, dict, nullable, number, string} = require('refine');
+const {
+  setConcurrentMode,
+} = require('recoil-shared/__test_utils__/Recoil_ReactRenderModes');
+
+const {syncEffect} = require('../RecoilSync');
+const {RecoilURLSyncJSON} = require('../RecoilSync_URLJSON');
 
 beforeEach(() => {
   setConcurrentMode(true);
