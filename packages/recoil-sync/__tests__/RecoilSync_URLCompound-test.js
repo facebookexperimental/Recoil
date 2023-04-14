@@ -10,6 +10,7 @@
 
 const {act} = require('ReactTestUtils');
 const {DefaultValue, atom, atomFamily} = require('Recoil');
+const {setConcurrentMode} = require('Recoil_ReactRenderModes');
 
 const {
   encodeURL,
@@ -24,6 +25,14 @@ const {
   renderElements,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 const {assertion, dict, nullable, number, string} = require('refine');
+
+beforeEach(() => {
+  setConcurrentMode(true);
+});
+
+afterEach(() => {
+  setConcurrentMode(false);
+});
 
 test('Upgrade item ID', async () => {
   const loc = {part: 'queryParams'};
