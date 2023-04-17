@@ -24,7 +24,7 @@ function atom<T>({
 
 ---
 
-Recoil 管理 atom 的 state 变化，以便通知订阅该 atom 的组件何时重新渲染，所以你需使用下面列出的钩子函数来改变 atom 的 state。如果一个存储在 atom 中的对象被直接 mutated，它可能会绕过钩子，在没有正确触发订阅的情况下导致 state 的变化，为了帮助大家检测 bug，Recoil 会在开发模式下 freeze 存储在 atom 中的对象。
+Recoil 会负责将这些 atom 的 state 的变化通知到订阅了这些 atom 的组件，并告诉这些组件进行重新渲染。所以你应该使用下面列出的这些 hooks 来修改 atom 的状态，如果一个 atom 内部存储的对象被直接地改变（而不是通过对应的 hooks 改变）的时候，可能造成的情况是，这次改变会绕过这些 hooks 去修改atom内部的 state 进而导致不能及时的通知订阅了该 atom 的组件。为了帮助大家检测类似于这种情况的 bug，Recoil 会在开发模式下 freeze 存储在 atom 中的对象。
 
 通常，你需要使用以下 hook 来与 atom 搭配使用。
 
