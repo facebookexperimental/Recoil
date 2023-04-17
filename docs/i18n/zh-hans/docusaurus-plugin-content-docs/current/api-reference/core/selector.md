@@ -202,8 +202,7 @@ function ResultsSection() {
 
 有时 selector 可以用来返回包含回调的对象。这些回调有助于访问 Recoil 的状态。例如查询 typeahead 或点击处理程序。下面示例中使用一个 selector 来生成菜单项，点击事件可以访问 Recoil 状态。当把这些对象传递给 React 组件上下文之外的框架或逻辑时，会很有益处。
 
-此回调与使用 [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback) 之间是一致的。请注意，由 `getCallback()` 返回的回调可以作为一个同步回调使用，用以访问 Recoil 状态，它不应该在评估 selector 本身时被调用。
-
+此回调与使用 [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback) 之间是一致的。注意，通过 `getCallback()` 返回的回调函数可以作为一个异步回调函数在后面访问Recoil的状态时使用，但在计算selector本身的value的时候不应该调用它。
 ```jsx
 const menuItemState = selectorFamily({
   key: 'MenuItem',
