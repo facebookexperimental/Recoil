@@ -63,7 +63,6 @@ function or<A, B>(aChecker: Checker<A>, bChecker: Checker<B>): Checker<A | B> {
       return success(b.value, b.warnings);
     }
 
-    // $FlowFixMe[incompatible-call]
     return unionFailure('value did not match any types in or()', path, [a, b]);
   };
 }
@@ -89,7 +88,6 @@ function union<V>(...checkers: $ReadOnlyArray<Checker<V>>): Checker<V> {
 
     return unionFailure(
       'value did not match any types in union',
-      // $FlowFixMe[incompatible-call]
       path,
       failures,
     );
@@ -364,10 +362,8 @@ function custom<T>(
       const checked = checkValue(value);
       return checked != null
         ? success(checked, [])
-        : // $FlowFixMe[incompatible-call]
-          failure(failureMessage, path);
+        : failure(failureMessage, path);
     } catch (error) {
-      // $FlowFixMe[incompatible-call]
       return failure(error.message, path);
     }
   };

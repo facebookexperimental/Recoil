@@ -43,7 +43,6 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
     key: 'useGetRecoilValueInfo atom',
     default: 'DEFAULT',
   });
-  // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'useGetRecoilValueInfo A',
     // $FlowFixMe[missing-local-annot]
@@ -98,7 +97,6 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
       [],
     );
   }
-  // $FlowFixMe[incompatible-call]
   expect(getNodeInfo(selectorB)).toMatchObject({
     loadable: undefined,
     isActive: false,
@@ -106,12 +104,9 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
     isModified: false,
     type: 'selector',
   });
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getNodeInfo(selectorB).deps)).toEqual([]);
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getNodeInfo(selectorB).subscribers.nodes)).toEqual([]);
   if (gks.includes('recoil_infer_component_names')) {
-    // $FlowFixMe[incompatible-call]
     expect(Array.from(getNodeInfo(selectorB).subscribers.components)).toEqual(
       [],
     );
@@ -169,7 +164,6 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
       [],
     );
   }
-  // $FlowFixMe[incompatible-call]
   expect(getNodeInfo(selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
@@ -180,14 +174,11 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
     isModified: false,
     type: 'selector',
   });
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getNodeInfo(selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getNodeInfo(selectorB).subscribers.nodes)).toEqual([]);
   if (gks.includes('recoil_infer_component_names')) {
-    // $FlowFixMe[incompatible-call]
     expect(Array.from(getNodeInfo(selectorB).subscribers.components)).toEqual([
       {name: 'ReadsAtom'},
     ]);
@@ -230,7 +221,6 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
       [],
     );
   }
-  // $FlowFixMe[incompatible-call]
   expect(getNodeInfo(selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
@@ -241,14 +231,11 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
     isModified: false,
     type: 'selector',
   });
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getNodeInfo(selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getNodeInfo(selectorB).subscribers.nodes)).toEqual([]);
   if (gks.includes('recoil_infer_component_names')) {
-    // $FlowFixMe[incompatible-call]
     expect(Array.from(getNodeInfo(selectorB).subscribers.components)).toEqual([
       {name: 'ReadsAtom'},
     ]);
@@ -297,7 +284,6 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
       [],
     );
   }
-  // $FlowFixMe[incompatible-call]
   expect(getNodeInfo(selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
@@ -308,14 +294,11 @@ testRecoil('useGetRecoilValueInfo', ({gks}) => {
     isModified: false,
     type: 'selector',
   });
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getNodeInfo(selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getNodeInfo(selectorB).subscribers.nodes)).toEqual([]);
   if (gks.includes('recoil_infer_component_names')) {
-    // $FlowFixMe[incompatible-call]
     expect(Array.from(getNodeInfo(selectorB).subscribers.components)).toEqual([
       {name: 'ReadsAtom'},
     ]);

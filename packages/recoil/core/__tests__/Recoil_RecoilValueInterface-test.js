@@ -57,7 +57,6 @@ const testRecoil = getRecoilTestFn(() => {
 
   dependsOnDependsOnA = selector({
     key: 'dependsOnDependsOnA',
-    // $FlowFixMe[unsafe-addition]
     // $FlowFixMe[missing-local-annot]
     get: ({get}) => get(dependsOnA) + 1,
   });

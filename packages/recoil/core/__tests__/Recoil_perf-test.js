@@ -77,7 +77,6 @@ function createAtoms(num: number): Array<RecoilState<string>> {
 }
 
 const helpersSelector = () =>
-  // $FlowFixMe[incompatible-call]
   selector({
     key: `PERF-helpers-${nextAtomKey++}`,
     // $FlowFixMe[missing-local-annot]

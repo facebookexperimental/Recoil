@@ -117,11 +117,9 @@ testRecoil('useRecoilState_TRANSITION_SUPPORT_UNSTABLE', async () => {
   }
   const myAtom = stringAtom();
   const [myAsyncSelector, resolve] = asyncSelector<string, _>();
-  // $FlowFixMe[incompatible-call]
   const mySelector = selector({
     key: 'useRecoilState_TRANSITION_SUPPORT_UNSTABLE selector',
     get: () => myAsyncSelector,
-    // $FlowFixMe[incompatible-call]
     // $FlowFixMe[missing-local-annot]
     set: ({set}, newValue) => set(myAtom, newValue),
   });

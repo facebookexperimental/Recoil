@@ -79,7 +79,6 @@ testRecoil('useRecoilRefresher - clears entire cache', async () => {
   });
 
   let i = 0;
-  // $FlowFixMe[incompatible-call]
   const myselector = selector({
     key: 'useRecoilRefresher entire cache selector',
     // $FlowFixMe[missing-local-annot]
