@@ -226,7 +226,6 @@ const errorThrowingAsyncSelector: <T, S>(
   msg,
   dep: ?RecoilValue<S>,
 ): RecoilValueReadOnly<T> =>
-  // $FlowFixMe[incompatible-call]
   selector<T>({
     key: `AsyncErrorThrowingSelector${id++}`,
     get: ({get}) => {
@@ -246,7 +245,6 @@ const resolvingAsyncSelector: <T>(T) => RecoilValue<T> = <T>(
   });
 
 const loadingAsyncSelector: () => RecoilValueReadOnly<void> = () =>
-  // $FlowFixMe[incompatible-call]
   selector({
     key: `LoadingSelector${id++}`,
     get: () => new Promise(() => {}),
@@ -263,7 +261,6 @@ function asyncSelector<T, S>(
     resolve = res;
     reject = rej;
   });
-  // $FlowFixMe[incompatible-call]
   const sel = selector({
     key: `AsyncSelector${id++}`,
     // $FlowFixMe[missing-local-annot]

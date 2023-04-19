@@ -210,7 +210,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       : options.default
     : // $FlowFixMe[incompatible-call]
       loadableWithValue(unwrap(options.default));
-  // $FlowFixMe[unused-promise]
+  // $FlowFixMe[unused-promise](site=www)
   maybeFreezeValueOrPromise(defaultLoadable.contents);
 
   let cachedAnswerForUnvalidatedValue: void | Loadable<T> = undefined;
@@ -486,7 +486,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
           : isPromise(initValue)
           ? loadableWithPromise(wrapPendingPromise(store, initValue))
           : loadableWithValue(unwrap(initValue));
-        // $FlowFixMe[unused-promise]
+        // $FlowFixMe[unused-promise](site=www)
         maybeFreezeValueOrPromise(initLoadable.contents);
         initState.atomValues.set(key, initLoadable);
 
@@ -567,7 +567,7 @@ function baseAtom<T>(options: BaseAtomOptions<T>): RecoilState<T> {
       return new Map();
     }
 
-    // $FlowFixMe[unused-promise]
+    // $FlowFixMe[unused-promise](site=www)
     maybeFreezeValueOrPromise(newValue);
 
     cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
@@ -681,14 +681,12 @@ function atomWithFallback<T>(
     effects_UNSTABLE: (options.effects_UNSTABLE: any), // flowlint-line unclear-type: off
   });
 
-  // $FlowFixMe[incompatible-call]
   const sel = selector<T>({
     key: `${options.key}__withFallback`,
     get: ({get}) => {
       const baseValue = get(base);
       return baseValue instanceof DefaultValue ? options.default : baseValue;
     },
-    // $FlowFixMe[incompatible-call]
     set: ({set}, newValue) => set(base, newValue),
     // This selector does not need to cache as it is a wrapper selector
     // and the selector within the wrapper selector will have a cache

@@ -150,7 +150,6 @@ testRecoil('Goto snapshot with dependent async selector', async () => {
     default: 'DEFAULT',
   });
   const [ReadsAndWritesAtom, setAtom] = componentThatReadsAndWritesAtom(myAtom);
-  // $FlowFixMe[incompatible-call]
   const mySelector = selector({
     key: 'selector for async snapshot',
     // $FlowFixMe[missing-local-annot]

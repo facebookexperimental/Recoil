@@ -89,7 +89,6 @@ testRecoil('getNodes', () => {
   expect(snapshot.getLoadable(nodesAfterGet[0]).contents).toEqual('DEFAULT');
 
   // Test selectors
-  // $FlowFixMe[incompatible-call]
   const mySelector = selector({
     key: 'snapshot getNodes selector',
     // $FlowFixMe[missing-local-annot]
@@ -359,7 +358,6 @@ testRecoil('getInfo', () => {
     key: 'snapshot getInfo atom',
     default: 'DEFAULT',
   });
-  // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'getInfo A',
     // $FlowFixMe[missing-local-annot]
@@ -392,7 +390,6 @@ testRecoil('getInfo', () => {
   expect(Array.from(getInfo(snapshot, selectorA).subscribers.nodes)).toEqual(
     [],
   );
-  // $FlowFixMe[incompatible-call]
   expect(getInfo(snapshot, selectorB)).toMatchObject({
     loadable: undefined,
     isActive: false,
@@ -400,9 +397,7 @@ testRecoil('getInfo', () => {
     isModified: false,
     type: 'selector',
   });
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getInfo(snapshot, selectorB).deps)).toEqual([]);
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getInfo(snapshot, selectorB).subscribers.nodes)).toEqual(
     [],
   );
@@ -433,7 +428,6 @@ testRecoil('getInfo', () => {
   expect(Array.from(getInfo(snapshot, selectorA).subscribers.nodes)).toEqual(
     expect.arrayContaining([selectorB]),
   );
-  // $FlowFixMe[incompatible-call]
   expect(getInfo(snapshot, selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
@@ -444,11 +438,9 @@ testRecoil('getInfo', () => {
     isModified: false,
     type: 'selector',
   });
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getInfo(snapshot, selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getInfo(snapshot, selectorB).subscribers.nodes)).toEqual(
     [],
   );
@@ -480,7 +472,6 @@ testRecoil('getInfo', () => {
   expect(Array.from(getInfo(setSnapshot, selectorA).subscribers.nodes)).toEqual(
     expect.arrayContaining([selectorB]),
   );
-  // $FlowFixMe[incompatible-call]
   expect(getInfo(setSnapshot, selectorB)).toMatchObject({
     loadable: expect.objectContaining({state: 'hasValue', contents: 'SETSET'}),
     isActive: true,
@@ -488,11 +479,9 @@ testRecoil('getInfo', () => {
     isModified: false,
     type: 'selector',
   });
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getInfo(setSnapshot, selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getInfo(setSnapshot, selectorB).subscribers.nodes)).toEqual(
     [],
   );
@@ -524,7 +513,6 @@ testRecoil('getInfo', () => {
   expect(
     Array.from(getInfo(resetSnapshot, selectorA).subscribers.nodes),
   ).toEqual(expect.arrayContaining([selectorB]));
-  // $FlowFixMe[incompatible-call]
   expect(getInfo(resetSnapshot, selectorB)).toMatchObject({
     loadable: expect.objectContaining({
       state: 'hasValue',
@@ -535,12 +523,10 @@ testRecoil('getInfo', () => {
     isModified: false,
     type: 'selector',
   });
-  // $FlowFixMe[incompatible-call]
   expect(Array.from(getInfo(resetSnapshot, selectorB).deps)).toEqual(
     expect.arrayContaining([myAtom, selectorA]),
   );
   expect(
-    // $FlowFixMe[incompatible-call]
     Array.from(getInfo(resetSnapshot, selectorB).subscribers.nodes),
   ).toEqual([]);
 });

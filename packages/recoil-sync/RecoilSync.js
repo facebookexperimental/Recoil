@@ -222,7 +222,6 @@ function readAtomItems<T>(
       : readFromStorageRequired(itemKey);
 
     if (RecoilLoadable.isLoadable(value)) {
-      // $FlowIssue[incompatible-type]
       const loadable: Loadable<mixed> = value;
       if (loadable.state === 'hasError') {
         throw loadable.contents;

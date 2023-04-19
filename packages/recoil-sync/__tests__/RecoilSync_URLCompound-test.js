@@ -104,7 +104,6 @@ testRecoil('Many items to one atom', async () => {
           return;
         }
         for (const key of Object.keys(newValue)) {
-          // $FlowFixMe[prop-missing]
           write(key, newValue[key]);
         }
       },

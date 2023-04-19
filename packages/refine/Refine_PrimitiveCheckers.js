@@ -36,8 +36,7 @@ function literal<T: string | boolean | number | null | void>(
   return (value, path = new Path()) => {
     return value === literalValue
       ? success(literalValue, [])
-      : // $FlowFixMe[incompatible-call]
-        failure(`value is not literal ${str(literalValue) ?? 'void'}`, path);
+      : failure(`value is not literal ${str(literalValue) ?? 'void'}`, path);
   };
 }
 
@@ -49,8 +48,7 @@ function bool(): Checker<boolean> {
   return (value, path = new Path()) =>
     typeof value === 'boolean'
       ? success(value, [])
-      : // $FlowFixMe[incompatible-call]
-        failure('value is not a boolean', path);
+      : failure('value is not a boolean', path);
 }
 
 /**
@@ -60,8 +58,7 @@ function number(): Checker<number> {
   return (value, path = new Path()) =>
     typeof value === 'number'
       ? success(value, [])
-      : // $FlowFixMe[incompatible-call]
-        failure('value is not a number', path);
+      : failure('value is not a number', path);
 }
 
 /**
@@ -72,12 +69,10 @@ function number(): Checker<number> {
 function string(regex?: RegExp): Checker<string> {
   return (value, path = new Path()) => {
     if (typeof value !== 'string') {
-      // $FlowFixMe[incompatible-call]
       return failure('value is not a string', path);
     }
 
     if (regex != null && !regex.test(value)) {
-      // $FlowFixMe[incompatible-call]
       return failure(`value does not match regex: ${regex.toString()}`, path);
     }
 
@@ -129,14 +124,12 @@ function stringLiterals<T: {+[string]: mixed}>(
 ): Checker<$Values<T>> {
   return (value, path = new Path()) => {
     if (typeof value !== 'string') {
-      // $FlowFixMe[incompatible-call]
       return failure('value must be a string', path);
     }
     const out = enumValues[value];
     if (out == null) {
       return failure(
         `value is not one of ${Object.keys(enumValues).join(', ')}`,
-        // $FlowFixMe[incompatible-call]
         path,
       );
     }
@@ -169,7 +162,6 @@ function enumObject<T: {+[string]: string} | {+[string]: number}>(
     const value = typeof rawValue === 'number' ? rawValue.toString() : rawValue;
     const result = stringLiteralsChecker(value, path);
     if (result.type === 'success' && typeof result.value !== typeof rawValue) {
-      // $FlowFixMe[incompatible-call]
       return failure('input must be the same type as the enum values', path);
     }
     return result;
@@ -189,11 +181,9 @@ function enumObject<T: {+[string]: string} | {+[string]: number}>(
 function date(): Checker<Date> {
   return (value, path = new Path()) => {
     if (!(value instanceof Date)) {
-      // $FlowFixMe[incompatible-call]
       return failure('value is not a date', path);
     }
     if (isNaN(value)) {
-      // $FlowFixMe[incompatible-call]
       return failure('invalid date', path);
     }
     return success(value, []);

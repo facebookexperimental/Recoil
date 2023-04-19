@@ -98,7 +98,6 @@ function plusOneAsyncSelector(
     get: ({get}) => fn(get(dep)),
   });
   return [
-    // $FlowFixMe[incompatible-return]
     sel,
     x => {
       nextTimeoutAmount = x;
@@ -134,7 +133,6 @@ testRecoil(
       validator: x => (x: any), // flowlint-line unclear-type:off
     });
     const [aSelector, _] = plusOneSelector(anAtom);
-    // $FlowFixMe[incompatible-call]
     const [anAsyncSelector, __] = plusOneAsyncSelector(aSelector);
     const [Component, updateValue] = componentThatWritesAtom(anAtom);
     const modifiedAtomsList = [];

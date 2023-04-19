@@ -228,7 +228,6 @@ testRecoil('Subscriptions', async () => {
     key: 'useRecoilSnapshot Subscriptions atom',
     default: 'ATOM',
   });
-  // $FlowFixMe[incompatible-call]
   const selectorA = selector({
     key: 'useRecoilSnapshot Subscriptions A',
     // $FlowFixMe[missing-local-annot]

@@ -180,7 +180,6 @@ class LoadingLoadable<T> extends BaseLoadable<T> {
                 return nextLoadable.contents;
             }
           }
-          // $FlowIssue[incompatible-return]
           return next;
         })
         // $FlowFixMe[incompatible-call]

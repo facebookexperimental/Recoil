@@ -37,7 +37,6 @@ function isPlainObject<T: {...}>(value: T) {
 function array<V>(valueChecker: Checker<V>): Checker<$ReadOnlyArray<V>> {
   return (value, path = new Path()) => {
     if (!Array.isArray(value)) {
-      // $FlowFixMe[incompatible-call]
       return failure('value is not an array', path);
     }
 
@@ -47,7 +46,6 @@ function array<V>(valueChecker: Checker<V>): Checker<$ReadOnlyArray<V>> {
 
     for (let i = 0; i < len; i++) {
       const element = value[i];
-      // $FlowFixMe[incompatible-use]
       const result = valueChecker(element, path.extend(`[${i}]`));
       if (result.type === 'failure') {
         return failure(result.message, result.path);
@@ -81,13 +79,11 @@ function tuple<Checkers: $ReadOnlyArray<Checker<mixed>>>(
 ): Checker<$TupleMap<Checkers, <T>(Checker<T>) => T>> {
   return (value, path = new Path()) => {
     if (!Array.isArray(value)) {
-      // $FlowFixMe[incompatible-call]
       return failure('value is not an array', path);
     }
     const out = new Array<mixed>(checkers.length);
     const warnings: Array<CheckFailure> = [];
     for (const [i, checker] of checkers.entries()) {
-      // $FlowFixMe[incompatible-use]
       const result = checker(value[i], path.extend(`[${i}]`));
       if (result.type === 'failure') {
         return failure(result.message, result.path);
@@ -110,14 +106,12 @@ function dict<V>(
 ): Checker<$ReadOnly<{[key: string]: V}>> {
   return (value, path = new Path()) => {
     if (typeof value !== 'object' || value === null || !isPlainObject(value)) {
-      // $FlowFixMe[incompatible-call]
       return failure('value is not an object', path);
     }
 
     const out: {[key: string]: V} = {};
     const warnings: Array<CheckFailure> = [];
     for (const [key, element] of Object.entries(value)) {
-      // $FlowFixMe[incompatible-use]
       const result = valueChecker(element, path.extend(`.${key}`));
 
       if (result.type === 'failure') {
@@ -215,7 +209,6 @@ function object<
 
   return (value, path = new Path()) => {
     if (typeof value !== 'object' || value === null || !isPlainObject(value)) {
-      // $FlowFixMe[incompatible-call]
       return failure('value is not an object', path);
     }
 
@@ -238,7 +231,6 @@ function object<
         element = value.hasOwnProperty(key) ? value[key] : undefined;
       }
 
-      // $FlowFixMe[incompatible-use]
       const result = check(element, path.extend(`.${key}`));
 
       if (result.type === 'failure') {
@@ -261,14 +253,12 @@ function object<
 function set<T>(checker: Checker<T>): Checker<$ReadOnlySet<T>> {
   return (value, path = new Path()) => {
     if (!(value instanceof Set)) {
-      // $FlowFixMe[incompatible-call]
       return failure('value is not a Set', path);
     }
 
     const out = new Set<T>();
     const warnings: Array<CheckFailure> = [];
     for (const item of value) {
-      // $FlowFixMe[incompatible-use]
       const result = checker(item, path.extend('[]'));
       if (result.type === 'failure') {
         return failure(result.message, result.path);
@@ -291,19 +281,16 @@ function map<K, V>(
 ): Checker<$ReadOnlyMap<K, V>> {
   return (value, path = new Path()) => {
     if (!(value instanceof Map)) {
-      // $FlowFixMe[incompatible-call]
       return failure('value is not a Map', path);
     }
 
     const out = new Map<K, $FlowFixMe>();
     const warnings: Array<CheckFailure> = [];
     for (const [k, v] of value.entries()) {
-      // $FlowFixMe[incompatible-use]
       const keyResult = keyChecker(k, path.extend(`[${k}] key`));
       if (keyResult.type === 'failure') {
         return failure(keyResult.message, keyResult.path);
       }
-      // $FlowFixMe[incompatible-use]
       const valueResult = valueChecker(v, path.extend(`[${k}]`));
       if (valueResult.type === 'failure') {
         return failure(valueResult.message, valueResult.path);
