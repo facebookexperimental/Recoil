@@ -270,8 +270,7 @@ class LoadingLoadable extends BaseLoadable {
           case 'loading':
             return nextLoadable.contents;
         }
-      } // $FlowIssue[incompatible-return]
-
+      }
 
       return next;
     }) // $FlowFixMe[incompatible-call]
@@ -8023,7 +8022,7 @@ function baseAtom(options) {
   }
 
   let defaultLoadable = Recoil_isPromise(options.default) ? unwrapPromise(options.default) : isLoadable$2(options.default) ? options.default.state === 'loading' ? unwrapPromise(options.default.contents) : options.default : // $FlowFixMe[incompatible-call]
-  loadableWithValue$3(unwrap(options.default)); // $FlowFixMe[unused-promise]
+  loadableWithValue$3(unwrap(options.default)); // $FlowFixMe[unused-promise](site=www)
 
   maybeFreezeValueOrPromise(defaultLoadable.contents);
   let cachedAnswerForUnvalidatedValue = undefined; // Cleanup handlers for this atom
@@ -8277,7 +8276,7 @@ function baseAtom(options) {
       if (!(initValue instanceof DefaultValue$2)) {
         var _store$getState$nextT5;
 
-        const initLoadable = isInitError ? loadableWithError$2(initValue) : Recoil_isPromise(initValue) ? loadableWithPromise$2(wrapPendingPromise(store, initValue)) : loadableWithValue$3(unwrap(initValue)); // $FlowFixMe[unused-promise]
+        const initLoadable = isInitError ? loadableWithError$2(initValue) : Recoil_isPromise(initValue) ? loadableWithPromise$2(wrapPendingPromise(store, initValue)) : loadableWithValue$3(unwrap(initValue)); // $FlowFixMe[unused-promise](site=www)
 
         maybeFreezeValueOrPromise(initLoadable.contents);
         initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
@@ -8338,7 +8337,7 @@ function baseAtom(options) {
       }
     } else if (!state.nonvalidatedAtoms.has(key) && newValue instanceof DefaultValue$2) {
       return new Map();
-    } // $FlowFixMe[unused-promise]
+    } // $FlowFixMe[unused-promise](site=www)
 
 
     maybeFreezeValueOrPromise(newValue);
@@ -8420,8 +8419,7 @@ function atomWithFallback(options) {
     // flowlint-line unclear-type: off
     effects_UNSTABLE: options.effects_UNSTABLE // flowlint-line unclear-type: off
 
-  }); // $FlowFixMe[incompatible-call]
-
+  });
   const sel = Recoil_selector({
     key: `${options.key}__withFallback`,
     get: ({
@@ -8430,7 +8428,6 @@ function atomWithFallback(options) {
       const baseValue = get(base);
       return baseValue instanceof DefaultValue$2 ? options.default : baseValue;
     },
-    // $FlowFixMe[incompatible-call]
     set: ({
       set
     }, newValue) => set(base, newValue),

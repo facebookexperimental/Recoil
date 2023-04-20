@@ -466,7 +466,6 @@ describe('Effects', () => {
         },
       ],
     });
-    // $FlowFixMe[incompatible-call]
     const mySelector = selector<string>({
       key: 'atom effect error selector',
       get: ({get}) => {
@@ -592,7 +591,6 @@ describe('Effects', () => {
           },
         ],
       });
-      // $FlowFixMe[incompatible-call]
       const selectorA = selector({
         key: 'downstream selectors when resolved/selectorA',
         // $FlowFixMe[missing-local-annot]
@@ -935,7 +933,6 @@ describe('Effects', () => {
               !(newValue instanceof DefaultValue) &&
               newValue.patch != patch
             ) {
-              // $FlowFixMe[prop-missing]
               setSelf({value: 'TRANSFORM_ALT ' + newValue.value, patch});
             }
           });
@@ -946,7 +943,6 @@ describe('Effects', () => {
               !(newValue instanceof DefaultValue) &&
               newValue.patch != patch
             ) {
-              // $FlowFixMe[prop-missing]
               setSelf({value: 'TRANSFORM ' + newValue.value, patch});
             }
           });
@@ -1544,7 +1540,6 @@ describe('Effects', () => {
         ],
       });
 
-      // $FlowFixMe[incompatible-call]
       const selThatDependsOnAtom = selector({
         key: 'selThatDependsOnAtom',
         // $FlowFixMe[missing-local-annot]

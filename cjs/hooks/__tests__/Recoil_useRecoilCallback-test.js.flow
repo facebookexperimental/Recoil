@@ -607,7 +607,6 @@ describe('Selector Cache', () => {
     });
 
     let i = 0;
-    // $FlowFixMe[incompatible-call]
     const myselector = selector({
       key: 'useRecoilCallback refresh entire cache selector',
       // $FlowFixMe[missing-local-annot]
@@ -648,7 +647,6 @@ describe('Snapshot', () => {
       resolveCallback;
 
     const myAtom = stringAtom();
-    // $FlowFixMe[incompatible-call]
     const mySelector1 = selector({
       key: 'useRecoilCallback snapshot retain 1',
       // $FlowFixMe[missing-local-annot]
@@ -659,7 +657,6 @@ describe('Snapshot', () => {
         return get(myAtom);
       },
     });
-    // $FlowFixMe[incompatible-call]
     const mySelector2 = selector({
       key: 'useRecoilCallback snapshot retain 2',
       // $FlowFixMe[missing-local-annot]

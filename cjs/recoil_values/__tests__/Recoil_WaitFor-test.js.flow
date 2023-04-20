@@ -88,7 +88,6 @@ function asyncSelector<T, S>(
     resolve = res;
     reject = rej;
   });
-  // $FlowFixMe[incompatible-call]
   const sel = selector({
     key: `AsyncSelector${id++}`,
     // $FlowFixMe[missing-local-annot]
