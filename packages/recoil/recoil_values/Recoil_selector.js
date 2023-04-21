@@ -1102,6 +1102,9 @@ function selector<T>(
   }
 
   function selectorGet(store: Store, state: TreeState): Loadable<T> {
+    if (store.skipCircularDependencyDetection_DANGEROUS === true) {
+      return getSelectorLoadableAndUpdateDeps(store, state);
+    }
     return detectCircularDependencies(() =>
       getSelectorLoadableAndUpdateDeps(store, state),
     );
