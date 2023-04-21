@@ -132,6 +132,7 @@ export type Store = $ReadOnly<{
   getGraph: StateID => Graph,
   subscribeToTransactions: ((Store) => void, ?NodeKey) => {release: () => void},
   addTransactionMetadata: ({...}) => void,
+  skipCircularDependencyDetection_DANGEROUS?: boolean,
 }>;
 
 export type StoreRef = {

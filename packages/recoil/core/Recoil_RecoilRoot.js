@@ -65,6 +65,7 @@ type InternalProps = {
   initializeState?: MutableSnapshot => void,
   store_INTERNAL?: Store,
   children: React.Node,
+  skipCircularDependencyDetection_DANGEROUS?: boolean,
 };
 
 function notInAContext() {
@@ -365,6 +366,7 @@ function RecoilRoot_INTERNAL({
   initializeState,
   store_INTERNAL: storeProp, // For use with React "context bridging"
   children,
+  skipCircularDependencyDetection_DANGEROUS,
 }: InternalProps): React.Node {
   // prettier-ignore
   // @fb-only: useEffect(() => {
@@ -486,6 +488,7 @@ function RecoilRoot_INTERNAL({
         getGraph,
         subscribeToTransactions,
         addTransactionMetadata,
+        skipCircularDependencyDetection_DANGEROUS,
       },
   );
   if (storeProp != null) {
@@ -550,6 +553,7 @@ type Props =
       store_INTERNAL?: Store,
       override?: true,
       children: React.Node,
+      skipCircularDependencyDetection_DANGEROUS?: boolean,
     }
   | {
       store_INTERNAL?: Store,
@@ -562,6 +566,7 @@ type Props =
        */
       override: false,
       children: React.Node,
+      skipCircularDependencyDetection_DANGEROUS?: boolean,
     };
 
 function RecoilRoot(props: Props): React.Node {
