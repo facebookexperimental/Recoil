@@ -4433,7 +4433,8 @@ function RecoilRoot_INTERNAL({
   initializeState,
   store_INTERNAL: storeProp,
   // For use with React "context bridging"
-  children
+  children,
+  skipCircularDependencyDetection_DANGEROUS
 }) {
   // prettier-ignore
   // @fb-only: useEffect(() => {
@@ -4557,7 +4558,8 @@ function RecoilRoot_INTERNAL({
     replaceState,
     getGraph,
     subscribeToTransactions,
-    addTransactionMetadata
+    addTransactionMetadata,
+    skipCircularDependencyDetection_DANGEROUS
   });
 
   if (storeProp != null) {
@@ -7822,6 +7824,10 @@ function selector(options) {
   }
 
   function selectorGet(store, state) {
+    if (store.skipCircularDependencyDetection_DANGEROUS === true) {
+      return getSelectorLoadableAndUpdateDeps(store, state);
+    }
+
     return detectCircularDependencies(() => getSelectorLoadableAndUpdateDeps(store, state));
   }
 
