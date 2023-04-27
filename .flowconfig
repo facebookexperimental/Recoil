@@ -39,13 +39,6 @@ module.name_mapper='relay-test-utils' -> '<PROJECT_ROOT>/node_modules/relay-test
 exact_by_default=true
 babel_loose_array_spread=true
 enums=true
-exact_empty_objects=true
-
-inference_mode=constrain_writes
-
-experimental.enforce_local_inference_annotations=true
-experimental.enforce_this_annotations=true
-experimental.enforce_class_annotations=true
 
 [strict]
 deprecated-type
@@ -59,4 +52,4 @@ untyped-type-import
 all=warn
 
 [version]
-^0.185.2
+^0.204.1

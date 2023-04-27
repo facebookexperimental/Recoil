@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-type JestMockFn<TArguments: $ReadOnlyArray<*>, TReturn> = {
+type JestMockFn<TArguments: $ReadOnlyArray<any>, TReturn> = {
   (...args: TArguments): TReturn,
   /**
    * An object for introspecting mock calls
@@ -620,7 +620,7 @@ interface JestExpectType {
    * Use .toBeInstanceOf(Class) to check that an object is an instance of a
    * class.
    */
-  toBeInstanceOf(cls: Class<*>): void;
+  toBeInstanceOf(cls: Class<any>): void;
   /**
    * .toBeNull() is the same as .toBe(null) but the error messages are a bit
    * nicer.
@@ -811,7 +811,7 @@ type JestObjectType = {
    * Returns a new, unused mock function. Optionally takes a mock
    * implementation.
    */
-  fn<TArguments: $ReadOnlyArray<*>, TReturn>(
+  fn<TArguments: $ReadOnlyArray<any>, TReturn>(
     implementation?: (...args: TArguments) => TReturn
   ): JestMockFn<TArguments, TReturn>,
   /**

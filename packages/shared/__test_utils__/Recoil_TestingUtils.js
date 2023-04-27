@@ -166,6 +166,7 @@ function renderUnwrappedElements(
     renderReactRoot(
       div,
       isStrictModeEnabled() ? (
+        // $FlowFixMe[incompatible-call]
         <StrictMode>{elements}</StrictMode>
       ) : (
         // $FlowFixMe[incompatible-call]
