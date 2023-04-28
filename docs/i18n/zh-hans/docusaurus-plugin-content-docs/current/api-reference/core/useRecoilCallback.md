@@ -3,7 +3,7 @@ title: useRecoilCallback(callback, deps)
 sidebar_label: useRecoilCallback()
 ---
 
-这个钩子类似于 [*`useCallback()`*](https://reactjs.org/docs/hooks-reference.html#usecallback)，但将为你的回调提供一个 API，以便与 Recoil 状态一起工作。这个钩子可以用来构造一个回调，这个回调可以访问 Recoil 状态的只读 [`Snapshot`](/docs/api-reference/core/Snapshot)，并且能够异步更新当前的 Recoil 状态。
+这个钩子类似于 [*`useCallback()`*](https://react.dev/reference/react/useCallback)，但将为你的回调提供一个 API，以便与 Recoil 状态一起工作。这个钩子可以用来构造一个回调，这个回调可以访问 Recoil 状态的只读 [`Snapshot`](/docs/api-reference/core/Snapshot)，并且能够异步更新当前的 Recoil 状态。
 
 使用这种钩子的一些情况：
 * 异步读取 Recoil 状态，而无需订阅 React 组件在原子或选择器更新时重新渲染。
@@ -29,7 +29,7 @@ function useRecoilCallback<Args, ReturnValue>(
 ```
 
 * **`callback`** - 用户回调函数，有一个提供回调接口的包装函数。改变状态的回调将被排队，以异步更新当前的 Recoil 状态。封装函数的类型签名与返回的回调函数的类型签名相匹配。
-* **`deps`** - 用于记忆回调的一组可选的依赖项。和 `useCallback()` 一样，产生的回调默认不会被备忘，每次渲染都会产生一个新的函数。你可以传递一个空数组，以始终返回相同的函数实例。如果你在 `deps` 数组中传递数值，如果任何对 dep 的引用平等性发生变化，一个新的函数将被使用。然后，这些值可以在你的回调主体中使用而不会变质。参见 [`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback) 你可以 [更新 eslint](/docs/introduction/installation#eslint) 来帮助确保这一点被正确使用。
+* **`deps`** - 用于记忆回调的一组可选的依赖项。和 `useCallback()` 一样，产生的回调默认不会被备忘，每次渲染都会产生一个新的函数。你可以传递一个空数组，以始终返回相同的函数实例。如果你在 `deps` 数组中传递数值，如果任何对 dep 的引用平等性发生变化，一个新的函数将被使用。然后，这些值可以在你的回调主体中使用而不会变质。参见 [`useCallback`](https://react.dev/reference/react/useCallback) 你可以 [更新 eslint](/docs/introduction/installation#eslint) 来帮助确保这一点被正确使用。
 
 回调接口：
 * **`snapshot`** - [`Snapshot`](/docs/api-reference/core/Snapshot) 提供了一个只读的 Recoil 原子状态，当回调的当前事务开始时，它与 React 批次一起提交。 虽然原子值是静态的，但异步选择器可能仍在等待或解决。

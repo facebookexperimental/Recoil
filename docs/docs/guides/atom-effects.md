@@ -3,7 +3,7 @@ title: Atom Effects
 sidebar_label: Atom Effects
 ---
 
-Atom effects are an API for managing side-effects and synchronizing or initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are similar to [React effects](https://reactjs.org/docs/hooks-effect.html), but are defined as part of the atom definition, so each atom can specify and compose their own policies.  Also check out the [**`recoil-sync`**](/docs/recoil-sync/introduction) library for some implementations of syncing (such as [**URL persistence**](/docs/recoil-sync/url-persistence)) or more advanced use cases.
+Atom effects are an API for managing side-effects and synchronizing or initializing Recoil atoms.  They have a variety of useful applications such as state persistence, state synchronization, managing history, logging, &c.  They are similar to [React effects](https://react.dev/learn/synchronizing-with-effects), but are defined as part of the atom definition, so each atom can specify and compose their own policies.  Also check out the [**`recoil-sync`**](/docs/recoil-sync/introduction) library for some implementations of syncing (such as [**URL persistence**](/docs/recoil-sync/url-persistence)) or more advanced use cases.
 
 An *atom effect* is a *function* with the following definition.
 
@@ -78,7 +78,7 @@ See [`useGetRecoilValueInfo()`](/docs/api-reference/core/useGetRecoilValueInfo) 
 
 ### Compared to React Effects
 
-Atom effects could mostly be implemented via React [`useEffect()`](https://reactjs.org/docs/hooks-reference.html#useeffect).  However, the set of atoms are created outside of a React context, and it can be difficult to manage effects from within React components, particularly for dynamically created atoms.  They also cannot be used to initialize the initial atom value or be used with server-side rendering.  Using atom effects also co-locates the effects with the atom definitions.
+Atom effects could mostly be implemented via React [`useEffect()`](https://react.dev/reference/react/useEffect).  However, the set of atoms are created outside of a React context, and it can be difficult to manage effects from within React components, particularly for dynamically created atoms.  They also cannot be used to initialize the initial atom value or be used with server-side rendering.  Using atom effects also co-locates the effects with the atom definitions.
 
 ```jsx
 const myState = atom({key: 'Key', default: null});

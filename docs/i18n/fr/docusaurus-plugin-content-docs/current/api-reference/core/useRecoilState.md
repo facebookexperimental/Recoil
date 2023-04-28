@@ -17,7 +17,7 @@ type SetterOrUpdater<T> = (T | (T => T)) => void;
 
 - `state`: un [`atome`](/docs/api-reference/core/atom) ou un [`selecteur`](/docs/api-reference/core/selector) _inscriptible_. Les sélecteurs inscriptibles sont des sélecteurs qui ont à la fois un `get` et un `set` dans leur définition tandis que les sélecteurs en lecture seule n'ont qu'un `get`.
 
-Cette API est similaire au hook React [`useState()`](https://reactjs.org/docs/hooks-reference.html#usestate) sauf qu'il prend un état Recoil au lieu d'une valeur par défaut comme argument. Il retourne un tuple de la valeur actuelle de l'état et une fonction de définition. La fonction de définition peut prendre une nouvelle valeur comme argument ou une fonction de mise à jour qui reçoit la valeur précédente en tant que paramètre.
+Cette API est similaire au hook React [`useState()`](https://react.dev/reference/react/useState) sauf qu'il prend un état Recoil au lieu d'une valeur par défaut comme argument. Il retourne un tuple de la valeur actuelle de l'état et une fonction de définition. La fonction de définition peut prendre une nouvelle valeur comme argument ou une fonction de mise à jour qui reçoit la valeur précédente en tant que paramètre.
 
 ---
 

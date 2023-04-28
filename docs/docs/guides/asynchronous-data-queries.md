@@ -61,7 +61,7 @@ function CurrentUserInfo() {
 
 The interface of the selector is the same, so the component using this selector doesn't need to care if it was backed with synchronous atom state, derived selector state, or asynchronous queries!
 
-But, since React render functions are synchronous, what will it render before the promise resolves? Recoil is designed to work with [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) to handle pending data. Wrapping your component with a Suspense boundary will catch any descendants that are still pending and render a fallback UI:
+But, since React render functions are synchronous, what will it render before the promise resolves? Recoil is designed to work with [React Suspense](https://react.dev/reference/react/Suspense) to handle pending data. Wrapping your component with a Suspense boundary will catch any descendants that are still pending and render a fallback UI:
 
 ```jsx
 function MyApp() {
@@ -77,7 +77,7 @@ function MyApp() {
 
 ## Error Handling
 
-But what if the request has an error? Recoil selectors can also throw errors which will then be thrown if a component tries to use that value. This can be caught with a React [`<ErrorBoundary>`](https://reactjs.org/docs/error-boundaries.html). For example:
+But what if the request has an error? Recoil selectors can also throw errors which will then be thrown if a component tries to use that value. This can be caught with a React [`<ErrorBoundary>`](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary). For example:
 
 ```jsx
 const currentUserNameQuery = selector({

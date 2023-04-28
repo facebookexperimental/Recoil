@@ -3,7 +3,7 @@ title: useRecoilCallback(callback, deps)
 sidebar_label: useRecoilCallback()
 ---
 
-이 hook은 [*`useCallback()`*](https://reactjs.org/docs/hooks-reference.html#usecallback)과 비슷합니다만 Recoil 상태(state)에서 callback이 동작하도록 API를 제공합니다. 이 hook은 비동기적으로 현재의 Recoil 상태를 업데이트하는 기술과 Recoil 상태의 읽기 전용 [`Snapshot`](/docs/api-reference/core/Snapshot) 에 접근할 수 있는 callback을 구축하기 위해 사용될 수 있습니다.
+이 hook은 [*`useCallback()`*](https://react.dev/reference/react/useCallback)과 비슷합니다만 Recoil 상태(state)에서 callback이 동작하도록 API를 제공합니다. 이 hook은 비동기적으로 현재의 Recoil 상태를 업데이트하는 기술과 Recoil 상태의 읽기 전용 [`Snapshot`](/docs/api-reference/core/Snapshot) 에 접근할 수 있는 callback을 구축하기 위해 사용될 수 있습니다.
 
 이 hook을 사용하기 위한 동기로는 다음을 포함할 수 있습니다:
 * atom 혹은 selector가 업데이트 될 때 리렌더링하기 위해 React 컴포넌트를 구독하지 않고 비동기적으로 Recoil 상태를 읽기 위해 사용하기
@@ -29,7 +29,7 @@ function useRecoilCallback<Args, ReturnValue>(
 ```
 
 * **`callback`** - 콜백 인터페이스를 제공하는 래퍼 함수가 있는 유저 콜백 함수. 상태를 변경하는 콜백은 현재 Recoil 상태를 비동기로 업데이트 하기 위해 대기합니다. 래핑된 함수의 타입 시그니처는 리턴된 콜백의 타입 시그니처와 일치합니다.
-* **`deps`** - 콜백을 메모하기 위한 선택적 의존성 모음입니다. `useCallback()`처럼, 생성된 콜백은 기본적으로 메모되지 않고 렌더링 할 때마다 새로운 함수를 생성합니다. 빈 배열을 넘겨 항상 동일한 함수 인스턴스를 반환하게 할 수도 있습니다. 만약 `deps` 배열에 값을 전달하고 dep의 참조 동등성이 변경되면 새로운 함수가 사용됩니다. 그러면 그 값들은 콜백의 몸체 내에서 오래되지 않게 사용될 수 있습니다. ([`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback) 을 확인해주세요) [eslint를 업데이트](/docs/introduction/installation#eslint) 하여 이것이 올바르게 사용되고 있는지 확인할 수 있습니다.
+* **`deps`** - 콜백을 메모하기 위한 선택적 의존성 모음입니다. `useCallback()`처럼, 생성된 콜백은 기본적으로 메모되지 않고 렌더링 할 때마다 새로운 함수를 생성합니다. 빈 배열을 넘겨 항상 동일한 함수 인스턴스를 반환하게 할 수도 있습니다. 만약 `deps` 배열에 값을 전달하고 dep의 참조 동등성이 변경되면 새로운 함수가 사용됩니다. 그러면 그 값들은 콜백의 몸체 내에서 오래되지 않게 사용될 수 있습니다. ([`useCallback`](https://react.dev/reference/react/useCallback) 을 확인해주세요) [eslint를 업데이트](/docs/introduction/installation#eslint) 하여 이것이 올바르게 사용되고 있는지 확인할 수 있습니다.
 
 콜백 인터페이스:
 * **`snapshot`** - Snapshot은 콜백이 호출 된 현재 트랜잭션이 시작될 때 React batch로 커밋된 Recoil atom 상태의 읽기 전용 보기를 제공합니다. atom 값은 정적이지만, 비동기 selector는 여전히 보류중이거나 resolve 될 수 있습니다.

@@ -61,7 +61,7 @@ function CurrentUserInfo() {
 
 Selector의 인터페이스는 동일하므로 컴포넌트에서는 selector를 사용하면서 동기 atom 상태나 파생된 selector 상태, 혹은 비동기 쿼리를 지원하는지 신경쓰지 않아도 괜찮습니다!
 
-하지만, React 렌더 함수가 동기인데 promise가 resolve 되기 전에 무엇을 렌더 할 수 있을까요? Recoil은 보류중인 데이터를 다루기 위해 [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html)와 함께 동작하도록 디자인되어 있습니다. 컴포넌트를 Suspense의 경계로 감싸는 것으로 아직 보류중인 하위 항목들을 잡아내고 대체하기 위한 UI를 렌더합니다.
+하지만, React 렌더 함수가 동기인데 promise가 resolve 되기 전에 무엇을 렌더 할 수 있을까요? Recoil은 보류중인 데이터를 다루기 위해 [React Suspense](https://react.dev/reference/react/Suspense)와 함께 동작하도록 디자인되어 있습니다. 컴포넌트를 Suspense의 경계로 감싸는 것으로 아직 보류중인 하위 항목들을 잡아내고 대체하기 위한 UI를 렌더합니다.
 
 ```jsx
 function MyApp() {
@@ -77,7 +77,7 @@ function MyApp() {
 
 ## Error Handling (에러 처리하기)
 
-만약 요청에 에러가 있다면 어떻게 해야 할까요? Recoil selector는 컴포넌트에서 특정 값을 사용하려고 할 때에 어떤 에러가 생길지에 대한 에러를 던질 수 있습니다. 이는 React [`<ErrorBoundary>`](https://reactjs.org/docs/error-boundaries.html)로 잡을 수 있습니다. 예를 들자면:
+만약 요청에 에러가 있다면 어떻게 해야 할까요? Recoil selector는 컴포넌트에서 특정 값을 사용하려고 할 때에 어떤 에러가 생길지에 대한 에러를 던질 수 있습니다. 이는 React [`<ErrorBoundary>`](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)로 잡을 수 있습니다. 예를 들자면:
 
 ```jsx
 const currentUserNameQuery = selector({

@@ -3,7 +3,7 @@ title: useRecoilCallback(callback, deps)
 sidebar_label: useRecoilCallback()
 ---
 
-Ce hook est similaire à [*`useCallback()`*](https://reactjs.org/docs/hooks-reference.html#usecallback), mais fournira également une API pour que vos rappels fonctionnent avec l'état Recoil. Ce hook peut être utilisé pour construire un callback qui a accès à un [`Snapshot`](/docs/api-reference/core/Snapshot) en lecture seule de l'état Recoil et la possibilité de mettre à jour de manière asynchrone l'état Recoil actuel.
+Ce hook est similaire à [*`useCallback()`*](https://react.dev/reference/react/useCallback), mais fournira également une API pour que vos rappels fonctionnent avec l'état Recoil. Ce hook peut être utilisé pour construire un callback qui a accès à un [`Snapshot`](/docs/api-reference/core/Snapshot) en lecture seule de l'état Recoil et la possibilité de mettre à jour de manière asynchrone l'état Recoil actuel.
 
 Certaines motivations pour utiliser ce crochet peuvent inclure:
 * Lire l'état Recoil de manière asynchrone sans souscrire à un composant React pour effectuer un nouveau rendu si l'atome ou le sélecteur est mis à jour.
@@ -29,7 +29,7 @@ function useRecoilCallback<Args, ReturnValue>(
 ```
 
 * **`callback`** - La fonction de rappel utilisateur avec une fonction wrapper qui fournit une interface de rappel. Les rappels pour changer l'état seront mis en file d'attente pour mettre à jour de manière asynchrone l'état Recoil actuel. La signature de type de la fonction encapsulée correspond à la signature de type du rappel renvoyé.
-* **`deps`** - Un ensemble optionnel de dépendances pour mémoriser le rappel. Comme `useCallback()`, le callback produit ne sera pas mémorisé par défaut et produira une nouvelle fonction à chaque rendu. Vous pouvez transmettre un tableau vide pour toujours renvoyer la même instance de fonction. Si vous passez des valeurs dans le tableau `deps`, une nouvelle fonction sera utilisée si l'égalité de référence de tout dep change. Ces valeurs peuvent ensuite être utilisées à partir du corps de votre rappel sans devenir obsolètes. (Voir [`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback)) Vous pouvez [mettre à jour eslint](/docs/introduction/installation#eslint) pour vous assurer qu'il est utilisé correctement .
+* **`deps`** - Un ensemble optionnel de dépendances pour mémoriser le rappel. Comme `useCallback()`, le callback produit ne sera pas mémorisé par défaut et produira une nouvelle fonction à chaque rendu. Vous pouvez transmettre un tableau vide pour toujours renvoyer la même instance de fonction. Si vous passez des valeurs dans le tableau `deps`, une nouvelle fonction sera utilisée si l'égalité de référence de tout dep change. Ces valeurs peuvent ensuite être utilisées à partir du corps de votre rappel sans devenir obsolètes. (Voir [`useCallback`](https://react.dev/reference/react/useCallback)) Vous pouvez [mettre à jour eslint](/docs/introduction/installation#eslint) pour vous assurer qu'il est utilisé correctement .
 
 Interface de rappel:
 * **`snapshot`** - Le [`Snapshot`](/docs/api-reference/core/Snapshot) fournit un aperçu en lecture seule de l'état de l'atome Recoil engagé avec un lot React lorsque la transaction actuelle, le rappel est appelé de commencé. Alors que les valeurs d'atome sont statiques, les sélecteurs asynchrones peuvent encore être en attente ou être résolus.

@@ -61,7 +61,7 @@ function CurrentUserInfo() {
 
 L'interface du sélecteur est la même, donc le composant utilisant ce sélecteur n'a pas besoin de se soucier si la value provient d'un état d'atome synchrone, d'un état de sélecteur dérivé ou de requêtes asynchrones!
 
-Mais, puisque les fonctions de rendu de React sont synchrones, que rendront-t-elles avant la résolution de la promesse? Recoil est conçu pour fonctionner avec [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) pour gérer les données en attente. Envelopper votre composant avec une limite `Suspense` interceptera tous les descendants qui sont toujours en attente et rendra une interface utilisateur de secours:
+Mais, puisque les fonctions de rendu de React sont synchrones, que rendront-t-elles avant la résolution de la promesse? Recoil est conçu pour fonctionner avec [React Suspense](https://react.dev/reference/react/Suspense) pour gérer les données en attente. Envelopper votre composant avec une limite `Suspense` interceptera tous les descendants qui sont toujours en attente et rendra une interface utilisateur de secours:
 
 ```jsx
 function MonApplication() {
@@ -77,7 +77,7 @@ function MonApplication() {
 
 ## La gestion d'erreurs
 
-Mais que faire si la demande à échouée ou contient une erreur? Les sélecteurs Recoil peuvent également générer des erreurs qui seront ensuite lancées si un composant tente d'utiliser cette valeur. Cela peut être intercepté avec un React [`<ErrorBoundary>`](https://reactjs.org/docs/error-boundaries.html). Par exemple:
+Mais que faire si la demande à échouée ou contient une erreur? Les sélecteurs Recoil peuvent également générer des erreurs qui seront ensuite lancées si un composant tente d'utiliser cette valeur. Cela peut être intercepté avec un React [`<ErrorBoundary>`](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary). Par exemple:
 
 ```jsx
 const currentUserNameQuery = selector({

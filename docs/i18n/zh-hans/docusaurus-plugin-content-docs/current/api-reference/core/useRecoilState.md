@@ -17,7 +17,7 @@ type SetterOrUpdater<T> = (T | (T => T)) => void;
 
 - `state`: 一个 [`atom`](/docs/api-reference/core/atom) 或一个 _可写_ 的 [`selector`](/docs/api-reference/core/selector)。可写的 selector 在其定义的同时具有 `get` 和 `set` 函数，而只读 selector 只有一个 `get`。
 
-本 API 和 React 的 [`useState()`](https://reactjs.org/docs/hooks-reference.html#usestate) hook 类似，区别在于 `useRecoilState` 的参数使用 Recoil state 代替了 `useState()` 的默认值。它返回由 state 的当前值和 setter 函数组成的元组。Setter 函数的参数可以是新值，也可以是一个以之前的值为参数的更新器函数。
+本 API 和 React 的 [`useState()`](https://react.dev/reference/react/useState) hook 类似，区别在于 `useRecoilState` 的参数使用 Recoil state 代替了 `useState()` 的默认值。它返回由 state 的当前值和 setter 函数组成的元组。Setter 函数的参数可以是新值，也可以是一个以之前的值为参数的更新器函数。
 
 ---
 

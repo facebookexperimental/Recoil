@@ -5,7 +5,7 @@ sidebar_label: useRecoilValueLoadable()
 
 此 hook 用来读取异步 selector 的值。使用此 hook 会使组件隐式地订阅给定的 state。
 
-与 [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue) 不同，当此 hook 从异步 selector（为了和 [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) 一起工作）读取数据时，不会抛出 `Error` 或 `Promise`，它会返回一个 [`Loadable`](/docs/api-reference/core/Loadable) 对象。
+与 [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue) 不同，当此 hook 从异步 selector（为了和 [React Suspense](https://react.dev/reference/react/Suspense) 一起工作）读取数据时，不会抛出 `Error` 或 `Promise`，它会返回一个 [`Loadable`](/docs/api-reference/core/Loadable) 对象。
 
 ---
 

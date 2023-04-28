@@ -37,7 +37,7 @@ Ideally, components would re-render only when they absolutely have to (when the 
 
 ## Optimization #1: `React.memo()`
 
-To mitigate the issue of child components re-rendering unnecessarily, we can make use of [`React.memo()`](https://reactjs.org/docs/react-api.html#reactmemo), which memoizes a component based on the **props** passed to that component:
+To mitigate the issue of child components re-rendering unnecessarily, we can make use of [`React.memo()`](https://react.dev/reference/react/memo), which memoizes a component based on the **props** passed to that component:
 
 ```js
 const TodoItem = React.memo(({item}) => ...);

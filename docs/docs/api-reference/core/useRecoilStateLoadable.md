@@ -5,7 +5,7 @@ sidebar_label: useRecoilStateLoadable()
 
 This hook is intended to be used for reading the value of asynchronous selectors. This hook will implicitly subscribe the component to the given state.
 
-Unlike [`useRecoilState()`](/docs/api-reference/core/useRecoilState), this hook will not throw an `Error` or `Promise` when reading from an asynchronous selector (for the purpose of working alongside [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html)). Instead, this hook returns a [`Loadable`](/docs/api-reference/core/Loadable) object for the value along with the setter callback.
+Unlike [`useRecoilState()`](/docs/api-reference/core/useRecoilState), this hook will not throw an `Error` or `Promise` when reading from an asynchronous selector (for the purpose of working alongside [React Suspense](https://react.dev/reference/react/Suspense)). Instead, this hook returns a [`Loadable`](/docs/api-reference/core/Loadable) object for the value along with the setter callback.
 
 ---
 

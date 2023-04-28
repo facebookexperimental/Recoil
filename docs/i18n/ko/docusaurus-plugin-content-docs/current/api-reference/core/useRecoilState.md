@@ -17,7 +17,7 @@ type SetterOrUpdater<T> = (T | (T => T)) => void;
 
 - `state`: [`atom`](/docs/api-reference/core/atom) 혹은 *쓰기가능*한 selector. 읽기 전용 [`selector`](/docs/api-reference/core/selector)가 `get`만 가지고 있을 때, *쓰기가능*한 selector는  `get` 과  `set` 를 정의에 가지고 있습니다.
 
-이 API는 기본값 대신 React Recoil 상태를 인수로 받는 다는 점만 빼면 [`useState()`](https://reactjs.org/docs/hooks-reference.html#usestate) hook과 비슷합니다. 상태와 setter 함수의 최신 값의 튜플을 리턴합니다. setter 함수는 새로운 값을 인수로 받거나 이전 값을 매개변수로 받는 updater 함수를 취합니다.
+이 API는 기본값 대신 React Recoil 상태를 인수로 받는 다는 점만 빼면 [`useState()`](https://react.dev/reference/react/useState) hook과 비슷합니다. 상태와 setter 함수의 최신 값의 튜플을 리턴합니다. setter 함수는 새로운 값을 인수로 받거나 이전 값을 매개변수로 받는 updater 함수를 취합니다.
 
 ---
 

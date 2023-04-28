@@ -26,7 +26,7 @@ function useRecoilTransaction_UNSTABLE<Args>(
 ```
 
 * **`callback`** - User callback function with a wrapper function that provides the transaction interface.  ***This function must be pure without any side-effects.***
-* **`deps`** - An optional set of dependencies for memoizing the callback.  Like `useCallback()`, the produced transaction callback will not be memoized by default and will produce a new function with each render.  You can pass an empty array to always return the same function instance.  If you pass values in the `deps` array, a new function will be used if the reference equality of any dep changes.  Those values can then be used from within the body of your callback without getting stale.  (See [`useCallback`](https://reactjs.org/docs/hooks-reference.html#usecallback))  You can [update eslint](/docs/introduction/installation#eslint) to help ensure this is used correctly.
+* **`deps`** - An optional set of dependencies for memoizing the callback.  Like `useCallback()`, the produced transaction callback will not be memoized by default and will produce a new function with each render.  You can pass an empty array to always return the same function instance.  If you pass values in the `deps` array, a new function will be used if the reference equality of any dep changes.  Those values can then be used from within the body of your callback without getting stale.  (See [`useCallback`](https://react.dev/reference/react/useCallback))  You can [update eslint](/docs/introduction/installation#eslint) to help ensure this is used correctly.
 
 Transaction Interface:
 * **`get`** - Get the current value for the requested Recoil state, reflecting any writes performed earlier in the transaction.  This currently only supports synchronous atoms.
