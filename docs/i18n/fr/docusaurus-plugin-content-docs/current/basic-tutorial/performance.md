@@ -37,7 +37,7 @@ Dans l'idéal, les composants ne seraient re-rendu que lorsqu'ils doivent absolu
 
 ## Optimisation # 1: `React.memo ()`
 
-Pour atténuer le problème du ré-rendu des composants enfants inutilement, nous pouvons utiliser [`React.memo()`] (https://reactjs.org/docs/react-api.html#reactmemo), qui mémorise un composant basé sur les **props** passés à ce composant:
+Pour atténuer le problème du ré-rendu des composants enfants inutilement, nous pouvons utiliser [`React.memo()`] (https://react.dev/reference/react/memo), qui mémorise un composant basé sur les **props** passés à ce composant:
 
 ```js
 const TodoItem = React.memo(({item}) => ...);

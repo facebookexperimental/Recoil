@@ -5,7 +5,7 @@ sidebar_label: useRecoilValueLoadable()
 
 Ce hook est destiné à être utilisé pour lire la valeur des sélecteurs asynchrones. Ce hook abonnera implicitement le composant à l'état donné.
 
-Contrairement à [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue), ce hook ne lancera pas une `Error` ou une `Promise` lors de la lecture à partir d'un sélecteur asynchrone (dans le but de travailler avec [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html)). Au lieu de cela, ce hook renvoie un objet [`Loadable`](/docs/api-reference/core/Loadable).
+Contrairement à [`useRecoilValue()`](/docs/api-reference/core/useRecoilValue), ce hook ne lancera pas une `Error` ou une `Promise` lors de la lecture à partir d'un sélecteur asynchrone (dans le but de travailler avec [React Suspense](https://react.dev/reference/react/Suspense)). Au lieu de cela, ce hook renvoie un objet [`Loadable`](/docs/api-reference/core/Loadable).
 
 ---
 

@@ -5,7 +5,7 @@ sidebar_label: useRecoilStateLoadable()
 
 此钩子可用于读取异步 selector 的值。为获取到指定状态值，此钩子将隐含地订阅对应组件。
 
-与 [`useRecoilState()`](/docs/api-reference/core/useRecoilState) 不同，当读取异步 selector 时，这个钩子不会抛出一个 `Error` 或`Promise` (为了能与 [React Suspense](https://reactjs.org/docs/concurrent-mode-suspense.html) 共存)。相反，这个钩子会返回一个 [`Loadable`](/docs/api-reference/core/Loadable) 对象的值以及 setter 回调。
+与 [`useRecoilState()`](/docs/api-reference/core/useRecoilState) 不同，当读取异步 selector 时，这个钩子不会抛出一个 `Error` 或`Promise` (为了能与 [React Suspense](https://react.dev/reference/react/Suspense) 共存)。相反，这个钩子会返回一个 [`Loadable`](/docs/api-reference/core/Loadable) 对象的值以及 setter 回调。
 
 ---
 

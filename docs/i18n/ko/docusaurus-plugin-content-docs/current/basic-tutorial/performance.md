@@ -37,7 +37,7 @@ title: 'Bonus: Performance'
 
 ## 최적화 #1: `React.memo()`
 
-하위 컴포넌트가 불필요하게 다시 렌더링되는 문제를 완화하기 위해 우리는 그 컴포넌트에 전달된 **props**를 기반으로 컴포넌트를 기억하는 [`React.memo()`](https://reactjs.org/docs/react-api.html#reactmemo)를 사용할 수 있다.
+하위 컴포넌트가 불필요하게 다시 렌더링되는 문제를 완화하기 위해 우리는 그 컴포넌트에 전달된 **props**를 기반으로 컴포넌트를 기억하는 [`React.memo()`](https://react.dev/reference/react/memo)를 사용할 수 있다.
 
 ```js
 const TodoItem = React.memo(({item}) => ...);

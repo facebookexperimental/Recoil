@@ -15,10 +15,10 @@ sidebar_label: RecoilEnv
 
   사용 가능한 플래그 목록 일부:
   * `recoil_hamt_2020` (기본적으로 활성화됨) - `Map<K, V>` 구현을 [hash array mapped trie](https://en.wikipedia.org/wiki/Hash_array_mapped_trie)로 변경
-  * `recoil_sync_external_store` (기본적으로 활성화됨) - 사용중인 버전의 React에서 [`useSyncExternalStore`](https://reactjs.org/docs/hooks-reference.html#usesyncexternalstore)를 제공한다면 이에 대한 지원을 활성화함
+  * `recoil_sync_external_store` (기본적으로 활성화됨) - 사용중인 버전의 React에서 [`useSyncExternalStore`](https://react.dev/reference/react/useSyncExternalStore)를 제공한다면 이에 대한 지원을 활성화함
   * `recoil_suppress_rerender_in_callback` (기본적으로 활성화됨) - 레퍼런스 동치로 비교했을 때 selector의 값이 변경되지 않았다면 컴포넌트의 리렌더링을 방지함
   * `recoil_memory_managament_2020` (기본적으로 활성화됨) - atom과 selector의 컨텐츠가 어떠한 컴포넌트에서도 사용되지 않는다면 자동으로 메모리에서 해제하여 가비지 컬렉션을 수행함
-  * `recoil_transition_support` - [`useTransition`](https://reactjs.org/docs/hooks-reference.html#usetransition) 지원을 활성화함; `recoil_sync_external_store`보다 우선하여 적용됨
+  * `recoil_transition_support` - [`useTransition`](https://react.dev/reference/react/useTransition) 지원을 활성화함; `recoil_sync_external_store`보다 우선하여 적용됨
 
 ## NodeJS
 

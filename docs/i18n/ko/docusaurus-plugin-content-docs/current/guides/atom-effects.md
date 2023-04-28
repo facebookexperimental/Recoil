@@ -3,7 +3,7 @@ title: Atom Effects
 sidebar_label: Atom Effects
 ---
 
-Atom Effects는 부수효과를 관리하고 Recoil의 atom을 초기화 또는 동기화하기 위한 API입니다. Atom Effects는 state persistence(상태 지속성), state synchronization(상태 동기화), managing history(히스토리 관리), logging(로깅) 등등 유용한 어플리케이션을 여럿 가지고 있습니다. 이는 [React effects](https://reactjs.org/docs/hooks-effect.html)와도 유사하지만, Atom Effects는 atom 정의의 일부로 정의되므로 각 atom은 자체적인 정책들을 지정하고 구성할 수 있습니다.
+Atom Effects는 부수효과를 관리하고 Recoil의 atom을 초기화 또는 동기화하기 위한 API입니다. Atom Effects는 state persistence(상태 지속성), state synchronization(상태 동기화), managing history(히스토리 관리), logging(로깅) 등등 유용한 어플리케이션을 여럿 가지고 있습니다. 이는 [React effects](https://react.dev/learn/synchronizing-with-effects)와도 유사하지만, Atom Effects는 atom 정의의 일부로 정의되므로 각 atom은 자체적인 정책들을 지정하고 구성할 수 있습니다.
 
 *Atom Effect*는 다음의 정의를 따르는 함수입니다.
 
