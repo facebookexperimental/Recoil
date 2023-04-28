@@ -1244,6 +1244,7 @@ function selector<T>(
 // $FlowFixMe[missing-local-annot]
 selector.value = value => new WrappedValue(value);
 
+// $FlowFixMe[incompatible-cast]
 module.exports = (selector: {
   <T>(ReadOnlySelectorOptions<T>): RecoilValueReadOnly<T>,
   <T>(ReadWriteSelectorOptions<T>): RecoilState<T>,

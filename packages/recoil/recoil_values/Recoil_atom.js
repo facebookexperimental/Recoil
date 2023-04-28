@@ -703,6 +703,7 @@ function atomWithFallback<T>(
 // $FlowFixMe[missing-local-annot]
 atom.value = value => new WrappedValue(value);
 
+// $FlowFixMe[incompatible-exact]
 module.exports = (atom: {
   <T>(AtomOptions<T>): RecoilState<T>,
   value: <S>(S) => WrappedValue<S>,
