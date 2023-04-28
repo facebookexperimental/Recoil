@@ -7950,7 +7950,8 @@ function selector(options) {
 // $FlowFixMe[missing-local-annot]
 
 
-selector.value = value => new WrappedValue$1(value);
+selector.value = value => new WrappedValue$1(value); // $FlowFixMe[incompatible-cast]
+
 
 var Recoil_selector = selector;
 
@@ -8451,7 +8452,8 @@ function atomWithFallback(options) {
 } // $FlowFixMe[missing-local-annot]
 
 
-atom.value = value => new WrappedValue$2(value);
+atom.value = value => new WrappedValue$2(value); // $FlowFixMe[incompatible-exact]
+
 
 var Recoil_atom = atom;
 
