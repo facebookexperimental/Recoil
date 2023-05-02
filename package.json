@@ -74,7 +74,7 @@
     "eslint-plugin-relay": "^1.8.3",
     "eslint-plugin-rulesdir": "^0.2.0",
     "eslint-plugin-unused-imports": "^2.0.0",
-    "flow-bin": "0.204.1",
+    "flow-bin": "0.205.0",
     "flow-copy-source": "^2.0.9",
     "flow-interfaces-chrome": "^0.6.0",
     "flow-typed": "^3.7.0",
