@@ -155,7 +155,7 @@ function renderConcurrentReactRoot<Props>(
 }
 
 function renderUnwrappedElements(
-  elements: ?React.Node,
+  elements: React.Node,
   container?: ?HTMLDivElement,
 ): HTMLDivElement {
   const div = container ?? document.createElement('div');
@@ -166,6 +166,7 @@ function renderUnwrappedElements(
     renderReactRoot(
       div,
       isStrictModeEnabled() ? (
+        // $FlowFixMe[incompatible-call] // @oss-only
         <StrictMode>{elements}</StrictMode>
       ) : (
         // $FlowFixMe[incompatible-call]
