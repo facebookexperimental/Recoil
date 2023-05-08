@@ -1,0 +1,132 @@
+---
+title: Atoms
+sidebar_label: Atoms
+---
+
+Los átomos son la fuente de datos para el estado de nuestra aplicación. En nuestra lista de tareas, la estructura será un arreglo de objetos donde cada tarea es representada por un objeto.
+
+Llamaremos nuestra lista de átomos `todoListState` y crearemos esta lista usando la función que se llama `atom()`:
+
+```javascript
+const todoListState = atom({
+  key: 'todoListState',
+  default: [],
+});
+```
+
+Le asignaremos a nuestro átomo un `key` único y estableceremos un arreglo vacío al valor de `default`. Para leer el contenido del átomo, podemos usar el hook llamado `useRecoilValue()` en nuestro componente de `TodoList`:
+
+```jsx
+function TodoList() {
+  const todoList = useRecoilValue(todoListState);
+
+  return (
+    <>
+      {/* <TodoListStats /> */}
+      {/* <TodoListFilters /> */}
+      <TodoItemCreator />
+
+      {todoList.map((todoItem) => (
+        <TodoItem item={todoItem} />
+      ))}
+    </>
+  );
+}
+```
+
+El componente que ha sido marcado como una mención sera implementado en la sección por seguir.
+
+Para poder crear nuestra lista de tareas, necesitamos poder acceder la función de "setter". De esta manera podremos actualizar el contenido de nuestro `todoListState`. Podemos usar el hook `useSetRecoilState` para obtener la función de "setter" en nuestro componente de "TodoItemCreator":
+
+```jsx
+function TodoItemCreator() {
+  const [inputValue, setInputValue] = useState('');
+  const setTodoList = useSetRecoilState(todoListState);
+
+  const addItem = () => {
+    setTodoList((oldTodoList) => [
+      ...oldTodoList,
+      {
+        id: getId(),
+        text: inputValue,
+        isComplete: false,
+      },
+    ]);
+    setInputValue('');
+  };
+
+  const onChange = ({target: {value}}) => {
+    setInputValue(value);
+  };
+
+  return (
+    <div>
+      <input type="text" value={inputValue} onChange={onChange} />
+      <button onClick={addItem}>Add</button>
+    </div>
+  );
+}
+
+// utility for creating unique Id
+let id = 0;
+function getId() {
+  return id++;
+}
+```
+
+Observe que estamos utilizando el modo **updater** de la función "setter". De esta manera podemos crear nuestra nueva lista de tareas la cual esta basada en nuestra lista de tareas anterior.
+
+El componente `TodoItem` mostrara el valor de una tarea. Al mismo tiempo permitirá que usted le haga un cambio al texto o elimine la tarea. Usaremos `useRecoilState()` para leer `todoListState` y así poder obtener la función "setter" para actualizar el texto de la tarea, marcarla completa, y eliminarla:
+
+```jsx
+function TodoItem({item}) {
+  const [todoList, setTodoList] = useRecoilState(todoListState);
+  const index = todoList.findIndex((listItem) => listItem === item);
+
+  const editItemText = ({target: {value}}) => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      text: value,
+    });
+
+    setTodoList(newList);
+  };
+
+  const toggleItemCompletion = () => {
+    const newList = replaceItemAtIndex(todoList, index, {
+      ...item,
+      isComplete: !item.isComplete,
+    });
+
+    setTodoList(newList);
+  };
+
+  const deleteItem = () => {
+    const newList = removeItemAtIndex(todoList, index);
+
+    setTodoList(newList);
+  };
+
+  return (
+    <div>
+      <input type="text" value={item.text} onChange={editItemText} />
+      <input
+        type="checkbox"
+        checked={item.isComplete}
+        onChange={toggleItemCompletion}
+      />
+      <button onClick={deleteItem}>X</button>
+    </div>
+  );
+}
+
+function replaceItemAtIndex(arr, index, newValue) {
+  return [...arr.slice(0, index), newValue, ...arr.slice(index + 1)];
+}
+
+function removeItemAtIndex(arr, index) {
+  return [...arr.slice(0, index), ...arr.slice(index + 1)];
+}
+```
+
+¡Y así no más obtenemos una lista de tareas completamente funcionalidad! En la próxima sección veremos como podemos usar selectors para llevar nuestra lista al siguiente nivel.

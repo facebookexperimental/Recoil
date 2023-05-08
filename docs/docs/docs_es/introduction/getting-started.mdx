@@ -1,0 +1,128 @@
+---
+title: Comencemos
+---
+
+
+## Create React App
+Recoil es una librería para el manejo de estado en React, y por lo tanto necesitas tener React instalado y corriendo para poder usarlo. La forma más fácil y recomendada para usar una aplicación con React es instalando el proyecto [Create React App](https://github.com/facebook/create-react-app#creating-an-app):
+
+```shell
+npx create-react-app my-app
+```
+
+> [`npx`](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) es una herramienta para correr paquetes que viene con npm 5.2+ o en cualquier versión más reciente, leer las [instrucciones para versiones viejas de npm](https://gist.github.com/gaearon/4064d3c23a77c74a3614c498a8bb1c5f).
+
+Para ver más formas sobre cómo instalar el proyecto de Create React App, mira la [documentación oficial](https://github.com/facebook/create-react-app#creating-an-app).
+
+## Instalación
+
+Recoil está disponible en <a href="https://www.npmjs.com/get-npm" target="_blank">npm</a>. Para instalar la última versión estable ejecuta el siguiente comando:
+
+```shell
+npm install recoil
+```
+
+O si usas <a href="https://classic.yarnpkg.com/en/docs/install/" target="_blank">yarn</a>:
+
+```shell
+yarn add recoil
+```
+
+## RecoilRoot
+
+Los componentes que usan el estado de Recoil necesitan tener un `RecoilRoot` en algún lugar, un buen sitio es, en tu componente principal:
+
+
+```jsx
+import React from 'react';
+import {
+  RecoilRoot,
+  atom,
+  selector,
+  useRecoilState,
+  useRecoilValue,
+} from 'recoil';
+
+function App() {
+  return (
+    <RecoilRoot>
+      <CharacterCounter />
+    </RecoilRoot>
+  );
+}
+```
+
+Vamos a implementar el componente `CharacterCounter` en la siguiente sección.
+
+## Átomo
+
+Un átomo representa una parte del estado. Los átomos pueden ser leídos y actualizados desde cualquier componente. Los componentes que leen valores de un átomo son implícitamente suscritos a ese átomo. Por lo tanto, cada cambio en el átomo re-renderizará todos esos componentes suscritos.
+
+```javascript
+const textState = atom({
+  key: 'textState', // identificador único (con respecto a los demás átomos y selectores)
+  default: '', // valor por defecto (también conocido como valor inicial)
+});
+```
+
+Los componentes que necesitan leer y actualizar valores en el átomo deberán de usar `useRecoilState()`, como se muestra aquí abajo:
+
+```jsx
+function CharacterCounter() {
+  return (
+    <div>
+      <TextInput />
+      <CharacterCount />
+    </div>
+  );
+}
+
+function TextInput() {
+  const [text, setText] = useRecoilState(textState);
+
+  const onChange = (event) => {
+    setText(event.target.value);
+  };
+
+  return (
+    <div>
+      <input type="text" value={text} onChange={onChange} />
+      <br />
+      Echo: {text}
+    </div>
+  );
+}
+```
+
+## Selector
+
+Un **selector** representa una parte de **estado derivado**. Un estado derivado es una **transformación** del estado. Puedes imaginarlo como el resultado de pasar el estado a una función pura, que modifica el estado de alguna forma:
+
+```jsx
+const charCountState = selector({
+  key: 'charCountState', // identificador único (con respecto a los demás átomos y selectores)
+  get: ({get}) => {
+    const text = get(textState);
+
+    return text.length;
+  },
+});
+```
+
+Podemos usar el hook `useRecoilValue()` para leer el valor de `charCountState`:
+
+```jsx
+function CharacterCount() {
+  const count = useRecoilValue(charCountState);
+
+  return <>Character Count: {count}</>;
+}
+```
+
+## Demostración
+
+Aquí esta el producto final:
+
+import GettingStarted from '../../../src/components/introduction/GettingStarted';
+
+<GettingStarted />+
