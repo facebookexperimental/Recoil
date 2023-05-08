@@ -251,6 +251,8 @@ If your persisted data needs to be retrieved asynchronously, you can either [use
 
 Below we will use `AsyncLocalStorage` or `localForage` as an example of an asynchronous store.
 
+localForage is a wrapper library that smoothes the rough landscape of browser databases.
+
 ### Initialize with `Promise`
 
 By synchronously calling `setSelf()` with a `Promise`, you'll be able to wrap the components inside of the `<RecoilRoot/>` with a `<Suspense/>` component to show a fallback while waiting for `Recoil` to load the persisted values.  `<Suspense>` will show a fallback until the `Promise` provided to `setSelf()` resolves.  If the atom is set to a value before the `Promise` resolves then the initialized value will be ignored.
