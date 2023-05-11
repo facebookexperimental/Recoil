@@ -7,7 +7,9 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
+
 import type {Node} from '../../../types/DevtoolsTypes';
 
 const {getStyle} = require('../../../utils/getStyle');
@@ -30,13 +32,9 @@ type KeyProps = {
   isRoot?: boolean,
 };
 
-function ItemLabel({
-  name,
-  node,
-  isRoot = false,
-}: KeyProps): React$Element<'span'> {
+function ItemLabel({name, node, isRoot = false}: KeyProps): React$MixedElement {
   return (
-    <span style={getStyle(styles, {label: true, isRoot: isRoot})}>
+    <span style={getStyle(styles, {label: true, isRoot})}>
       <NodeName name={name} node={node} />:
     </span>
   );

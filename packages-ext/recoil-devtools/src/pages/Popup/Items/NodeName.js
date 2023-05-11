@@ -7,6 +7,7 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 import type {Node} from '../../../types/DevtoolsTypes';
@@ -35,10 +36,7 @@ type KeyProps = {
   node: ?Node,
 };
 
-export default function NodeName({
-  name,
-  node,
-}: KeyProps): React$Element<'span'> {
+export default function NodeName({name, node}: KeyProps): React$MixedElement {
   return (
     <span style={styles.label}>
       {node?.type === 'selector' && (
