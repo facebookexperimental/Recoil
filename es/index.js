@@ -314,6 +314,7 @@ function loadableAll(inputs) {
   return Array.isArray(inputs) ? // $FlowIssue[incompatible-return]
   output : // Object.getOwnPropertyNames() has consistent key ordering with ES6
   // $FlowIssue[incompatible-call]
+  // $FlowFixMe[incompatible-return] Pre-supress errors for Flow 0.207.0
   output.map(outputs => Object.getOwnPropertyNames(inputs).reduce( // $FlowFixMe[invalid-computed-prop]
   (out, key, idx) => ({ ...out,
     [key]: outputs[idx]
