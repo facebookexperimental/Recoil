@@ -52,4 +52,4 @@ untyped-type-import
 all=warn
 
 [version]
-^0.205.0
+^0.207.0
