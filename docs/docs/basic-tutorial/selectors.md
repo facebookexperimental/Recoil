@@ -142,6 +142,8 @@ function TodoListStats() {
 }
 ```
 
+Note that in the current implementation `TodoListStats` will re-render even when there are no apparent changes to the `todoListStatsState`, for example when you edit a `TodoItem`. This is because all downstream subscribers of an atom or selector will update when a dependency updates.
+
 To summarize, we've created a todo list app that meets all of our requirements:
 
 - Add todo items
