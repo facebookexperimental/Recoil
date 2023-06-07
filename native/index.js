@@ -4101,6 +4101,7 @@ function useRefInitOnce(initialValue) {
 
 var Recoil_useRefInitOnce = useRefInitOnce;
 
+// @fb-only: const FBLogger = require('FBLogger');
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
@@ -4151,6 +4152,7 @@ const {
 
 
 const {
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -4427,6 +4429,20 @@ function initialStoreState(initializeState) {
   return storeState;
 }
 
+let warned = false;
+
+function RecoilSuspenseWarning() {
+  // prettier-ignore
+  if (!warned) {
+    warned = true;
+    console.warn( // @oss-only
+    // @fb-only: FBLogger('recoil', 'root_suspended').warn(
+    'Suspended <RecoilRoot> detected. The children of <RecoilRoot> should be wrapped in a <Suspense> boundary since RecoilRoot is not designed to suspend.');
+  }
+
+  return null;
+}
+
 let nextID = 0;
 
 function RecoilRoot_INTERNAL({
@@ -4440,17 +4456,10 @@ function RecoilRoot_INTERNAL({
   // prettier-ignore
   // @fb-only: useEffect(() => {
   // @fb-only: if (gkx('recoil_usage_logging')) {
-  // @fb-only: try {
   // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
   // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
   // @fb-only: path: URI.getRequestURI().getPath(),
   // @fb-only: }));
-  // @fb-only: } catch {
-  // @fb-only: recoverableViolation(
-  // @fb-only: 'Error when logging Recoil Usage event',
-  // @fb-only: 'recoil',
-  // @fb-only: );
-  // @fb-only: }
   // @fb-only: }
   // @fb-only: }, []);
   let storeStateRef; // eslint-disable-line prefer-const
@@ -4593,7 +4602,9 @@ function RecoilRoot_INTERNAL({
     value: mutableSource
   }, /*#__PURE__*/react.createElement(Batcher, {
     setNotifyBatcherOfChange: setNotifyBatcherOfChange
-  }), children));
+  }), Recoil_gkx('recoil_suspense_warning') ? /*#__PURE__*/react.createElement(Suspense, {
+    fallback: /*#__PURE__*/react.createElement(RecoilSuspenseWarning, null)
+  }, children) : children));
 }
 
 function RecoilRoot(props) {

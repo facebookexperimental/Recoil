@@ -17,6 +17,7 @@ import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
 
+// @fb-only: const FBLogger = require('FBLogger');
 // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
 // @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
 // @fb-only: const URI = require('URI');
@@ -42,6 +43,7 @@ const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
 const {freshSnapshot} = require('./Recoil_Snapshot');
 const React = require('react');
 const {
+  Suspense,
   useCallback,
   useContext,
   useEffect,
@@ -360,6 +362,19 @@ function initialStoreState(
   return storeState;
 }
 
+let warned = false;
+function RecoilSuspenseWarning() {
+  // prettier-ignore
+  if (!warned) {
+    warned = true;
+    console.warn( // @oss-only
+    // @fb-only: FBLogger('recoil', 'root_suspended').warn(
+      'Suspended <RecoilRoot> detected. The children of <RecoilRoot> should be wrapped in a <Suspense> boundary since RecoilRoot is not designed to suspend.',
+    );
+  }
+  return null;
+}
+
 let nextID = 0;
 function RecoilRoot_INTERNAL({
   initializeState_DEPRECATED,
@@ -371,17 +386,10 @@ function RecoilRoot_INTERNAL({
   // prettier-ignore
   // @fb-only: useEffect(() => {
     // @fb-only: if (gkx('recoil_usage_logging')) {
-      // @fb-only: try {
-        // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
-          // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
-          // @fb-only: path: URI.getRequestURI().getPath(),
-        // @fb-only: }));
-      // @fb-only: } catch {
-        // @fb-only: recoverableViolation(
-          // @fb-only: 'Error when logging Recoil Usage event',
-          // @fb-only: 'recoil',
-        // @fb-only: );
-      // @fb-only: }
+      // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+        // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
+        // @fb-only: path: URI.getRequestURI().getPath(),
+      // @fb-only: }));
     // @fb-only: }
   // @fb-only: }, []);
 
@@ -537,7 +545,11 @@ function RecoilRoot_INTERNAL({
     <AppContext.Provider value={storeRef}>
       <MutableSourceContext.Provider value={mutableSource}>
         <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
-        {children}
+        {gkx('recoil_suspense_warning') ? (
+          <Suspense fallback={<RecoilSuspenseWarning />}>{children}</Suspense>
+        ) : (
+          children
+        )}
       </MutableSourceContext.Provider>
     </AppContext.Provider>
   );
