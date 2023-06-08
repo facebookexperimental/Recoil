@@ -340,7 +340,7 @@ testRecoil('selectorFamily - evaluate to RecoilValue', () => {
   const atomB = atom({key: 'selectorFamily/const atom B', default: 'B'});
   const mySelector = selectorFamily<string, string>({
     key: 'selectorFamily/',
-    get: param => () => param === 'a' ? atomA : atomB,
+    get: param => () => (param === 'a' ? atomA : atomB),
   });
 
   expect(getValue(mySelector('a'))).toEqual('A');

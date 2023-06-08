@@ -277,7 +277,7 @@ testRecoil('Parameterized fallback with atom and async', async () => {
         value: 'value',
         atom: atom({key: `param async fallback atom ${id++}`, default: 'atom'}),
         async: Promise.resolve('async'),
-      }[param]),
+      })[param],
   });
 
   const valueCont = renderElements(
