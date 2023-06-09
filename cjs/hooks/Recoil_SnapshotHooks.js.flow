@@ -151,10 +151,7 @@ function useTransactionObservation_DEPRECATED(
 }
 
 function useRecoilTransactionObserver(
-  callback: ({
-    snapshot: Snapshot,
-    previousSnapshot: Snapshot,
-  }) => void,
+  callback: ({snapshot: Snapshot, previousSnapshot: Snapshot}) => void,
 ) {
   useTransactionSubscription(
     useCallback(
