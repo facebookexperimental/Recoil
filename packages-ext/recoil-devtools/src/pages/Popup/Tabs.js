@@ -22,7 +22,6 @@ const styles = {
     height: 36,
     cursor: 'pointer',
     fontSize: '16px',
-    display: 'flex',
     alignItems: 'center',
     boxSizing: 'border-box',
     outline: 'none',
