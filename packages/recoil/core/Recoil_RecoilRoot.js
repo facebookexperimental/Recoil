@@ -12,7 +12,6 @@
 'use strict';
 
 import type {NodeKey, StateID, StoreID} from './Recoil_Keys';
-import type {MutableSource} from './Recoil_ReactMode';
 import type {RecoilValue} from './Recoil_RecoilValue';
 import type {MutableSnapshot} from './Recoil_Snapshot';
 import type {Store, StoreRef, StoreState, TreeState} from './Recoil_State';
@@ -37,7 +36,7 @@ const {
 const {graph} = require('./Recoil_Graph');
 const {cloneGraph} = require('./Recoil_Graph');
 const {getNextStoreID} = require('./Recoil_Keys');
-const {createMutableSource, reactMode} = require('./Recoil_ReactMode');
+const {reactMode} = require('./Recoil_ReactMode');
 const {applyAtomValueWrites} = require('./Recoil_RecoilValueInterface');
 const {releaseScheduledRetainablesNow} = require('./Recoil_Retention');
 const {freshSnapshot} = require('./Recoil_Snapshot');
@@ -47,12 +46,10 @@ const {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } = require('react');
 const err = require('recoil-shared/util/Recoil_err');
-const expectationViolation = require('recoil-shared/util/Recoil_expectationViolation');
 const gkx = require('recoil-shared/util/Recoil_gkx');
 const nullthrows = require('recoil-shared/util/Recoil_nullthrows');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
@@ -123,20 +120,6 @@ function startNextTreeIfNeeded(store: Store): void {
 
 const AppContext = React.createContext<StoreRef>({current: defaultStore});
 const useStoreRef = (): StoreRef => useContext(AppContext);
-
-// $FlowExpectedError[incompatible-call]
-const MutableSourceContext = React.createContext<MutableSource>(null);
-function useRecoilMutableSource(): MutableSource {
-  const mutableSource = useContext(MutableSourceContext);
-  if (mutableSource == null) {
-    expectationViolation(
-      'Attempted to use a Recoil hook outside of a <RecoilRoot>. ' +
-        '<RecoilRoot> must be an ancestor of any component that uses ' +
-        'Recoil hooks.',
-    );
-  }
-  return mutableSource;
-}
 
 function notifyComponents(
   store: Store,
@@ -514,15 +497,6 @@ function RecoilRoot_INTERNAL({
       : makeEmptyStoreState(),
   );
 
-  const mutableSource = useMemo(
-    () =>
-      createMutableSource?.(
-        storeStateRef,
-        () => storeStateRef.current.currentTree.version,
-      ),
-    [storeStateRef],
-  );
-
   // Cleanup when the <RecoilRoot> is unmounted
   useEffect(() => {
     // React is free to call effect cleanup handlers and effects at will, the
@@ -543,14 +517,12 @@ function RecoilRoot_INTERNAL({
 
   return (
     <AppContext.Provider value={storeRef}>
-      <MutableSourceContext.Provider value={mutableSource}>
-        <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
-        {gkx('recoil_suspense_warning') ? (
-          <Suspense fallback={<RecoilSuspenseWarning />}>{children}</Suspense>
-        ) : (
-          children
-        )}
-      </MutableSourceContext.Provider>
+      <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
+      {gkx('recoil_suspense_warning') ? (
+        <Suspense fallback={<RecoilSuspenseWarning />}>{children}</Suspense>
+      ) : (
+        children
+      )}
     </AppContext.Provider>
   );
 }
@@ -601,7 +573,6 @@ function useRecoilStoreID(): StoreID {
 module.exports = {
   RecoilRoot,
   useStoreRef,
-  useRecoilMutableSource,
   useRecoilStoreID,
   notifyComponents_FOR_TESTING: notifyComponents,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications,

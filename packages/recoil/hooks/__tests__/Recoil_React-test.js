@@ -8,20 +8,20 @@
  * @format
  * @oncall recoil
  */
+
 'use strict';
 
 const {
   getRecoilTestFn,
 } = require('recoil-shared/__test_utils__/Recoil_TestingUtils');
 
-let React,
-  useState,
-  flushSync,
-  act,
-  atom,
-  renderElements,
-  useRecoilState,
-  reactMode;
+let React;
+let useState;
+let flushSync;
+let act;
+let atom;
+let renderElements;
+let useRecoilState;
 
 const testRecoil = getRecoilTestFn(() => {
   React = require('react');
@@ -34,18 +34,10 @@ const testRecoil = getRecoilTestFn(() => {
   ({
     renderElements,
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
-  ({reactMode} = require('../../core/Recoil_ReactMode'));
   ({useRecoilState} = require('../Recoil_Hooks'));
 });
 
-testRecoil('Sync React and Recoil state changes', ({gks}) => {
-  if (
-    reactMode().mode === 'MUTABLE_SOURCE' &&
-    !gks.includes('recoil_suppress_rerender_in_callback')
-  ) {
-    return;
-  }
-
+testRecoil('Sync React and Recoil state changes', () => {
   const myAtom = atom({key: 'sync react recoil', default: 0});
 
   let setReact, setRecoil;
@@ -74,14 +66,7 @@ testRecoil('Sync React and Recoil state changes', ({gks}) => {
   expect(c.textContent).toBe('1 - 1');
 });
 
-testRecoil('React and Recoil state change ordering', ({gks}) => {
-  if (
-    reactMode().mode === 'MUTABLE_SOURCE' &&
-    !gks.includes('recoil_suppress_rerender_in_callback')
-  ) {
-    return;
-  }
-
+testRecoil('React and Recoil state change ordering', () => {
   const myAtom = atom({key: 'sync react recoil', default: 0});
 
   let setReact, setRecoil;

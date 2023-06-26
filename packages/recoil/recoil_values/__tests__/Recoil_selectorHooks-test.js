@@ -1613,8 +1613,7 @@ describe('Async Selectors', () => {
       expect(commit).toHaveBeenCalledTimes(
         BASE_CALLS +
           3 +
-          ((reactMode().mode === 'LEGACY' ||
-            reactMode().mode === 'MUTABLE_SOURCE') &&
+          (reactMode().mode === 'LEGACY' &&
           !gks.includes('recoil_suppress_rerender_in_callback')
             ? 1
             : 0),
