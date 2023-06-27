@@ -269,8 +269,7 @@ testRecoil('useRecoilValue()', async ({concurrentMode}) => {
   // Transition with both React and Recoil state
   act(startBothTransition);
   expect(c.textContent).toBe(
-    concurrentMode &&
-      (reactMode().concurrent || reactMode().mode === 'MUTABLE_SOURCE')
+    concurrentMode && reactMode().concurrent
       ? 'React:1 Recoil:2 [IN TRANSITION] | 1 1 2 RESOLVED'
       : 'React:2 Recoil:3 | LOADING',
   );

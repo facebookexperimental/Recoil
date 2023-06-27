@@ -477,18 +477,14 @@ var recoverableViolation_1 = recoverableViolation;
 
 var Recoil_recoverableViolation = recoverableViolation_1;
 
-var _createMutableSource, _useMutableSource, _useSyncExternalStore;
+var _useSyncExternalStore;
 
 
 
 
 
+ // https://github.com/reactwg/react-18/discussions/86
 
-
-const createMutableSource = // flowlint-next-line unclear-type:off
-(_createMutableSource = react.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : react.unstable_createMutableSource;
-const useMutableSource = // flowlint-next-line unclear-type:off
-(_useMutableSource = react.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : react.unstable_useMutableSource; // https://github.com/reactwg/react-18/discussions/86
 
 const useSyncExternalStore = // flowlint-next-line unclear-type:off
 (_useSyncExternalStore = react.useSyncExternalStore) !== null && _useSyncExternalStore !== void 0 ? _useSyncExternalStore : // flowlint-next-line unclear-type:off
@@ -547,18 +543,6 @@ function reactMode() {
     };
   }
 
-  if (Recoil_gkx('recoil_mutable_source') && useMutableSource != null && typeof window !== 'undefined' && !window.$disableRecoilValueMutableSource_TEMP_HACK_DO_NOT_USE) {
-    return Recoil_gkx('recoil_suppress_rerender_in_callback') ? {
-      mode: 'MUTABLE_SOURCE',
-      early: true,
-      concurrent: true
-    } : {
-      mode: 'MUTABLE_SOURCE',
-      early: false,
-      concurrent: false
-    };
-  }
-
   return Recoil_gkx('recoil_suppress_rerender_in_callback') ? {
     mode: 'LEGACY',
     early: true,
@@ -578,8 +562,6 @@ function isFastRefreshEnabled() {
 }
 
 var Recoil_ReactMode = {
-  createMutableSource,
-  useMutableSource,
   useSyncExternalStore,
   currentRendererSupportsUseSyncExternalStore,
   reactMode,
@@ -2987,7 +2969,7 @@ function subscribeToRecoilValue(store, {
 
   const mode = reactMode$1();
 
-  if (mode.early && (mode.mode === 'LEGACY' || mode.mode === 'MUTABLE_SOURCE')) {
+  if (mode.early && mode.mode === 'LEGACY') {
     const nextTree = store.getState().nextTree;
 
     if (nextTree && nextTree.dirtyAtoms.has(key)) {
@@ -4132,7 +4114,6 @@ const {
 } = Recoil_Keys;
 
 const {
-  createMutableSource: createMutableSource$1,
   reactMode: reactMode$2
 } = Recoil_ReactMode;
 
@@ -4155,12 +4136,9 @@ const {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef: useRef$1,
   useState
 } = react;
-
-
 
 
 
@@ -4222,20 +4200,7 @@ const AppContext = react.createContext({
   current: defaultStore
 });
 
-const useStoreRef = () => useContext(AppContext); // $FlowExpectedError[incompatible-call]
-
-
-const MutableSourceContext = react.createContext(null);
-
-function useRecoilMutableSource() {
-  const mutableSource = useContext(MutableSourceContext);
-
-  if (mutableSource == null) {
-    Recoil_expectationViolation('Attempted to use a Recoil hook outside of a <RecoilRoot>. ' + '<RecoilRoot> must be an ancestor of any component that uses ' + 'Recoil hooks.');
-  }
-
-  return mutableSource;
-}
+const useStoreRef = () => useContext(AppContext);
 
 function notifyComponents(store, storeState, treeState) {
   const dependentNodes = getDownstreamNodes$2(store, treeState, treeState.dirtyAtoms);
@@ -4575,8 +4540,7 @@ function RecoilRoot_INTERNAL({
     storeRef.current = storeProp;
   }
 
-  storeStateRef = Recoil_useRefInitOnce(() => initializeState_DEPRECATED != null ? initialStoreState_DEPRECATED(storeRef.current, initializeState_DEPRECATED) : initializeState != null ? initialStoreState(initializeState) : makeEmptyStoreState$2());
-  const mutableSource = useMemo(() => createMutableSource$1 === null || createMutableSource$1 === void 0 ? void 0 : createMutableSource$1(storeStateRef, () => storeStateRef.current.currentTree.version), [storeStateRef]); // Cleanup when the <RecoilRoot> is unmounted
+  storeStateRef = Recoil_useRefInitOnce(() => initializeState_DEPRECATED != null ? initialStoreState_DEPRECATED(storeRef.current, initializeState_DEPRECATED) : initializeState != null ? initialStoreState(initializeState) : makeEmptyStoreState$2()); // Cleanup when the <RecoilRoot> is unmounted
 
   useEffect(() => {
     // React is free to call effect cleanup handlers and effects at will, the
@@ -4597,13 +4561,11 @@ function RecoilRoot_INTERNAL({
   }, [storeRef]);
   return /*#__PURE__*/react.createElement(AppContext.Provider, {
     value: storeRef
-  }, /*#__PURE__*/react.createElement(MutableSourceContext.Provider, {
-    value: mutableSource
   }, /*#__PURE__*/react.createElement(Batcher, {
     setNotifyBatcherOfChange: setNotifyBatcherOfChange
   }), Recoil_gkx('recoil_suspense_warning') ? /*#__PURE__*/react.createElement(Suspense, {
     fallback: /*#__PURE__*/react.createElement(RecoilSuspenseWarning, null)
-  }, children) : children));
+  }, children) : children);
 }
 
 function RecoilRoot(props) {
@@ -4629,7 +4591,6 @@ function useRecoilStoreID() {
 var Recoil_RecoilRoot = {
   RecoilRoot,
   useStoreRef,
-  useRecoilMutableSource,
   useRecoilStoreID,
   notifyComponents_FOR_TESTING: notifyComponents,
   sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications
@@ -4857,12 +4818,10 @@ const {
 const {
   currentRendererSupportsUseSyncExternalStore: currentRendererSupportsUseSyncExternalStore$1,
   reactMode: reactMode$3,
-  useMutableSource: useMutableSource$1,
   useSyncExternalStore: useSyncExternalStore$1
 } = Recoil_ReactMode;
 
 const {
-  useRecoilMutableSource: useRecoilMutableSource$1,
   useStoreRef: useStoreRef$2
 } = Recoil_RecoilRoot;
 
@@ -4883,7 +4842,7 @@ const {
 const {
   useCallback: useCallback$1,
   useEffect: useEffect$3,
-  useMemo: useMemo$1,
+  useMemo,
   useRef: useRef$4,
   useState: useState$1
 } = react;
@@ -5026,7 +4985,7 @@ function useRecoilInterface_DEPRECATED() {
     });
     return () => currentSubscriptions.forEach((_, key) => unsubscribeFrom(key));
   }, [componentName, storeRef, unsubscribeFrom, updateState]);
-  return useMemo$1(() => {
+  return useMemo(() => {
     // eslint-disable-next-line no-shadow
     function useSetRecoilState(recoilState) {
       if (process.env.NODE_ENV !== "production") {
@@ -5142,7 +5101,7 @@ function useRecoilValueLoadable_SYNC_EXTERNAL_STORE(recoilValue) {
       return nextState;
     };
   }, []);
-  const getMemoizedSnapshot = useMemo$1(() => memoizePreviousSnapshot(getSnapshot), [getSnapshot, memoizePreviousSnapshot]);
+  const getMemoizedSnapshot = useMemo(() => memoizePreviousSnapshot(getSnapshot), [getSnapshot, memoizePreviousSnapshot]);
   const subscribe = useCallback$1(notify => {
     const store = storeRef.current;
     const subscription = subscribeToRecoilValue$1(store, recoilValue, notify, componentName);
@@ -5153,69 +5112,12 @@ function useRecoilValueLoadable_SYNC_EXTERNAL_STORE(recoilValue) {
   ).loadable;
 }
 
-function useRecoilValueLoadable_MUTABLE_SOURCE(recoilValue) {
-  const storeRef = useStoreRef$2();
-  const getLoadable = useCallback$1(() => {
-    var _storeState$nextTree3;
-
-    const store = storeRef.current;
-    const storeState = store.getState();
-    const treeState = reactMode$3().early ? (_storeState$nextTree3 = storeState.nextTree) !== null && _storeState$nextTree3 !== void 0 ? _storeState$nextTree3 : storeState.currentTree : storeState.currentTree;
-    return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
-  }, [storeRef, recoilValue]);
-  const getLoadableWithTesting = useCallback$1(() => {
-    if (process.env.NODE_ENV !== "production") {
-      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
-    }
-
-    return getLoadable();
-  }, [getLoadable]);
-  const componentName = Recoil_useComponentName();
-  const subscribe = useCallback$1((_storeState, notify) => {
-    const store = storeRef.current;
-    const subscription = subscribeToRecoilValue$1(store, recoilValue, () => {
-      if (!Recoil_gkx('recoil_suppress_rerender_in_callback')) {
-        return notify();
-      } // Only re-render if the value has changed.
-      // This will evaluate the atom/selector now as well as when the
-      // component renders, but that may help with prefetching.
-
-
-      const newLoadable = getLoadable();
-
-      if (!prevLoadableRef.current.is(newLoadable)) {
-        notify();
-      } // If the component is suspended then the effect setting prevLoadableRef
-      // will not run.  So, set the previous value here when its subscription
-      // is fired to wake it up.  We can't just rely on this, though, because
-      // this only executes when an atom/selector is dirty and the atom/selector
-      // passed to the hook can dynamically change.
-
-
-      prevLoadableRef.current = newLoadable;
-    }, componentName);
-    return subscription.release;
-  }, [storeRef, recoilValue, componentName, getLoadable]);
-  const source = useRecoilMutableSource$1();
-
-  if (source == null) {
-    throw Recoil_err('Recoil hooks must be used in components contained within a <RecoilRoot> component.');
-  }
-
-  const loadable = useMutableSource$1(source, getLoadableWithTesting, subscribe);
-  const prevLoadableRef = useRef$4(loadable);
-  useEffect$3(() => {
-    prevLoadableRef.current = loadable;
-  });
-  return loadable;
-}
-
 function useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue) {
   const storeRef = useStoreRef$2();
   const componentName = Recoil_useComponentName(); // Accessors to get the current state
 
   const getLoadable = useCallback$1(() => {
-    var _storeState$nextTree4;
+    var _storeState$nextTree3;
 
     if (process.env.NODE_ENV !== "production") {
       recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
@@ -5223,7 +5125,7 @@ function useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue) {
 
     const store = storeRef.current;
     const storeState = store.getState();
-    const treeState = reactMode$3().early ? (_storeState$nextTree4 = storeState.nextTree) !== null && _storeState$nextTree4 !== void 0 ? _storeState$nextTree4 : storeState.currentTree : storeState.currentTree;
+    const treeState = reactMode$3().early ? (_storeState$nextTree3 = storeState.nextTree) !== null && _storeState$nextTree3 !== void 0 ? _storeState$nextTree3 : storeState.currentTree : storeState.currentTree;
     return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
   }, [storeRef, recoilValue]);
   const getState = useCallback$1(() => ({
@@ -5259,7 +5161,7 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
   const [, forceUpdate] = useState$1([]);
   const componentName = Recoil_useComponentName();
   const getLoadable = useCallback$1(() => {
-    var _storeState$nextTree5;
+    var _storeState$nextTree4;
 
     if (process.env.NODE_ENV !== "production") {
       recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
@@ -5267,7 +5169,7 @@ function useRecoilValueLoadable_LEGACY(recoilValue) {
 
     const store = storeRef.current;
     const storeState = store.getState();
-    const treeState = reactMode$3().early ? (_storeState$nextTree5 = storeState.nextTree) !== null && _storeState$nextTree5 !== void 0 ? _storeState$nextTree5 : storeState.currentTree : storeState.currentTree;
+    const treeState = reactMode$3().early ? (_storeState$nextTree4 = storeState.nextTree) !== null && _storeState$nextTree4 !== void 0 ? _storeState$nextTree4 : storeState.currentTree : storeState.currentTree;
     return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
   }, [storeRef, recoilValue]);
   const loadable = getLoadable();
@@ -5364,7 +5266,6 @@ function useRecoilValueLoadable(recoilValue) {
     // don't want to break users if it can be avoided. As the current renderer can
     // change at runtime, we need to dynamically check and fallback if necessary.
     SYNC_EXTERNAL_STORE: currentRendererSupportsUseSyncExternalStore$1() ? useRecoilValueLoadable_SYNC_EXTERNAL_STORE : useRecoilValueLoadable_TRANSITION_SUPPORT,
-    MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
     LEGACY: useRecoilValueLoadable_LEGACY
   }[reactMode$3().mode](recoilValue);
 }
@@ -5858,10 +5759,6 @@ function useGetRecoilValueInfo() {
 var Recoil_useGetRecoilValueInfo = useGetRecoilValueInfo;
 
 const {
-  reactMode: reactMode$4
-} = Recoil_ReactMode;
-
-const {
   RecoilRoot: RecoilRoot$1,
   useStoreRef: useStoreRef$5
 } = Recoil_RecoilRoot;
@@ -5869,19 +5766,12 @@ const {
 
 
 const {
-  useMemo: useMemo$2
+  useMemo: useMemo$1
 } = react;
 
 function useRecoilBridgeAcrossReactRoots() {
-  // The test fails when using useMutableSource(), but only if act() is used
-  // for the nested root.  So, this may only be a testing environment issue.
-  if (reactMode$4().mode === 'MUTABLE_SOURCE') {
-    // eslint-disable-next-line fb-www/no-console
-    console.warn('Warning: There are known issues using useRecoilBridgeAcrossReactRoots() in recoil_mutable_source rendering mode.  Please consider upgrading to recoil_sync_external_store mode.');
-  }
-
   const store = useStoreRef$5().current;
-  return useMemo$2(() => {
+  return useMemo$1(() => {
     // eslint-disable-next-line no-shadow
     function RecoilBridge({
       children
@@ -6188,12 +6078,12 @@ const {
 } = Recoil_RecoilRoot;
 
 const {
-  useMemo: useMemo$3
+  useMemo: useMemo$2
 } = react;
 
 function useRecoilTransaction(fn, deps) {
   const storeRef = useStoreRef$8();
-  return useMemo$3(() => (...args) => {
+  return useMemo$2(() => (...args) => {
     const atomicUpdate = atomicUpdater$2(storeRef.current);
     atomicUpdate(transactionInterface => {
       fn(transactionInterface)(...args);

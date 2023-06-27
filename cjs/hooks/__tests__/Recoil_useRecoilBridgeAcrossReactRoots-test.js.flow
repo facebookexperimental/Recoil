@@ -24,7 +24,6 @@ let React,
   renderUnwrappedElements,
   useEffect,
   useRef,
-  reactMode,
   act,
   RecoilRoot,
   useRecoilStoreID,
@@ -37,7 +36,6 @@ const testRecoil = getRecoilTestFn(() => {
   ({useEffect, useRef} = React);
   ({act} = require('ReactTestUtils'));
 
-  ({reactMode} = require('../../core/Recoil_ReactMode'));
   ({
     renderElements,
     renderUnwrappedElements,
@@ -65,14 +63,7 @@ function NestedReactRoot({children}: $TEMPORARY$object<{children: Node}>) {
 
 testRecoil(
   'useRecoilBridgeAcrossReactRoots - create a context bridge',
-  async ({concurrentMode}) => {
-    // Test fails with useRecoilBridgeAcrossReactRoots() and useMutableSource().
-    // It only reproduces if act() is used in renderElements() for the nested
-    // root, so it may just be a testing environment issue.
-    if (concurrentMode && reactMode().mode === 'MUTABLE_SOURCE') {
-      return;
-    }
-
+  async () => {
     const myAtom = atom({
       key: 'useRecoilBridgeAcrossReactRoots - context bridge',
       default: 'DEFAULT',

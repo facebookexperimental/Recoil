@@ -27,13 +27,9 @@ const {DEFAULT_VALUE} = require('../core/Recoil_Node');
 const {
   currentRendererSupportsUseSyncExternalStore,
   reactMode,
-  useMutableSource,
   useSyncExternalStore,
 } = require('../core/Recoil_ReactMode');
-const {
-  useRecoilMutableSource,
-  useStoreRef,
-} = require('../core/Recoil_RecoilRoot');
+const {useStoreRef} = require('../core/Recoil_RecoilRoot');
 const {isRecoilValue} = require('../core/Recoil_RecoilValue');
 const {
   AbstractRecoilValue,
@@ -394,78 +390,6 @@ function useRecoilValueLoadable_SYNC_EXTERNAL_STORE<T>(
   ).loadable;
 }
 
-function useRecoilValueLoadable_MUTABLE_SOURCE<T>(
-  recoilValue: RecoilValue<T>,
-): Loadable<T> {
-  const storeRef = useStoreRef();
-
-  const getLoadable = useCallback(() => {
-    const store = storeRef.current;
-    const storeState = store.getState();
-    const treeState = reactMode().early
-      ? storeState.nextTree ?? storeState.currentTree
-      : storeState.currentTree;
-    return getRecoilValueAsLoadable(store, recoilValue, treeState);
-  }, [storeRef, recoilValue]);
-  const getLoadableWithTesting = useCallback(() => {
-    if (__DEV__) {
-      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
-    }
-    return getLoadable();
-  }, [getLoadable]);
-
-  const componentName = useComponentName();
-
-  const subscribe: (_storeState: empty, notify: () => void) => () => void =
-    useCallback(
-      (_storeState, notify: () => void) => {
-        const store = storeRef.current;
-        const subscription: ComponentSubscription = subscribeToRecoilValue(
-          store,
-          recoilValue,
-          () => {
-            if (!gkx('recoil_suppress_rerender_in_callback')) {
-              return notify();
-            }
-            // Only re-render if the value has changed.
-            // This will evaluate the atom/selector now as well as when the
-            // component renders, but that may help with prefetching.
-            const newLoadable = getLoadable();
-            if (!prevLoadableRef.current.is(newLoadable)) {
-              notify();
-            }
-            // If the component is suspended then the effect setting prevLoadableRef
-            // will not run.  So, set the previous value here when its subscription
-            // is fired to wake it up.  We can't just rely on this, though, because
-            // this only executes when an atom/selector is dirty and the atom/selector
-            // passed to the hook can dynamically change.
-            prevLoadableRef.current = newLoadable;
-          },
-          componentName,
-        );
-        return subscription.release;
-      },
-      [storeRef, recoilValue, componentName, getLoadable],
-    );
-
-  const source = useRecoilMutableSource();
-  if (source == null) {
-    throw err(
-      'Recoil hooks must be used in components contained within a <RecoilRoot> component.',
-    );
-  }
-  const loadable: Loadable<T> = useMutableSource(
-    source,
-    getLoadableWithTesting,
-    subscribe,
-  );
-  const prevLoadableRef: {current: Loadable<T>} = useRef(loadable);
-  useEffect(() => {
-    prevLoadableRef.current = loadable;
-  });
-  return loadable;
-}
-
 function useRecoilValueLoadable_TRANSITION_SUPPORT<T>(
   recoilValue: RecoilValue<T>,
 ): Loadable<T> {
@@ -638,7 +562,6 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
     SYNC_EXTERNAL_STORE: currentRendererSupportsUseSyncExternalStore()
       ? useRecoilValueLoadable_SYNC_EXTERNAL_STORE
       : useRecoilValueLoadable_TRANSITION_SUPPORT,
-    MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
     LEGACY: useRecoilValueLoadable_LEGACY,
   }[reactMode().mode](recoilValue);
 }

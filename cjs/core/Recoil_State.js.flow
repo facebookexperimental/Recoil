@@ -57,9 +57,8 @@ export type TreeState = $ReadOnly<{
 // when atom values change and async requests resolve, and suspendedComponentResolvers
 // is updated when components are suspended.
 export type StoreState = {
-  // The "current" TreeState being either directly read from (legacy) or passed
-  // to useMutableSource (when in use). It is replaced with nextTree when
-  // a transaction is completed or async request finishes:
+  // The "current" TreeState being either directly read from (legacy). It is replaced
+  // with nextTree when a transaction is completed or async request finishes:
   currentTree: TreeState,
 
   // The TreeState that is written to when during the course of a transaction
