@@ -518,11 +518,7 @@ function RecoilRoot_INTERNAL({
   return (
     <AppContext.Provider value={storeRef}>
       <Batcher setNotifyBatcherOfChange={setNotifyBatcherOfChange} />
-      {gkx('recoil_suspense_warning') ? (
-        <Suspense fallback={<RecoilSuspenseWarning />}>{children}</Suspense>
-      ) : (
-        children
-      )}
+      <Suspense fallback={<RecoilSuspenseWarning />}>{children}</Suspense>
     </AppContext.Provider>
   );
 }
