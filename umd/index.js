@@ -4564,9 +4564,9 @@ This is currently a DEV-only warning but will become a thrown exception in the n
       value: storeRef
     }, /*#__PURE__*/react.createElement(Batcher, {
       setNotifyBatcherOfChange: setNotifyBatcherOfChange
-    }), Recoil_gkx('recoil_suspense_warning') ? /*#__PURE__*/react.createElement(Suspense, {
+    }), /*#__PURE__*/react.createElement(Suspense, {
       fallback: /*#__PURE__*/react.createElement(RecoilSuspenseWarning, null)
-    }, children) : children);
+    }, children));
   }
 
   function RecoilRoot(props) {
