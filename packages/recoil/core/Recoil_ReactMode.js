@@ -15,23 +15,6 @@ const React = require('react');
 const gkx = require('recoil-shared/util/Recoil_gkx');
 const recoverableViolation = require('recoil-shared/util/Recoil_recoverableViolation');
 
-export opaque type MutableSource = {};
-
-const createMutableSource: <StoreState, Version>(
-  {current: StoreState},
-  () => Version,
-) => MutableSource =
-  // flowlint-next-line unclear-type:off
-  (React: any).createMutableSource ?? (React: any).unstable_createMutableSource;
-
-const useMutableSource: <StoreState, T>(
-  MutableSource,
-  () => T,
-  (StoreState, () => void) => () => void,
-) => T =
-  // flowlint-next-line unclear-type:off
-  (React: any).useMutableSource ?? (React: any).unstable_useMutableSource;
-
 // https://github.com/reactwg/react-18/discussions/86
 const useSyncExternalStore: <T>(
   subscribe: (() => void) => () => void,
@@ -73,11 +56,7 @@ function currentRendererSupportsUseSyncExternalStore(): boolean {
   return isUseSyncExternalStoreSupported;
 }
 
-type ReactMode =
-  | 'TRANSITION_SUPPORT'
-  | 'SYNC_EXTERNAL_STORE'
-  | 'MUTABLE_SOURCE'
-  | 'LEGACY';
+type ReactMode = 'TRANSITION_SUPPORT' | 'SYNC_EXTERNAL_STORE' | 'LEGACY';
 
 /**
  * mode: The React API and approach to use for syncing state with React
@@ -98,17 +77,6 @@ function reactMode(): {mode: ReactMode, early: boolean, concurrent: boolean} {
     return {mode: 'SYNC_EXTERNAL_STORE', early: true, concurrent: false};
   }
 
-  if (
-    gkx('recoil_mutable_source') &&
-    useMutableSource != null &&
-    typeof window !== 'undefined' &&
-    !window.$disableRecoilValueMutableSource_TEMP_HACK_DO_NOT_USE
-  ) {
-    return gkx('recoil_suppress_rerender_in_callback')
-      ? {mode: 'MUTABLE_SOURCE', early: true, concurrent: true}
-      : {mode: 'MUTABLE_SOURCE', early: false, concurrent: false};
-  }
-
   return gkx('recoil_suppress_rerender_in_callback')
     ? {mode: 'LEGACY', early: true, concurrent: false}
     : {mode: 'LEGACY', early: false, concurrent: false};
@@ -122,8 +90,6 @@ function isFastRefreshEnabled(): boolean {
 }
 
 module.exports = {
-  createMutableSource,
-  useMutableSource,
   useSyncExternalStore,
   currentRendererSupportsUseSyncExternalStore,
   reactMode,
