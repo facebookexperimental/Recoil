@@ -56,7 +56,7 @@ atom({
 
 ### Atom Families
 
-Atoms in an [atom family](/docs/api-reference/utils/atomFamily) can also by synchronized with [`syncEffect()`](/docs/recoil-sync/api/syncEffect).  Each individual atom in the family is treated as a separate item to sync.  The default item key will include a serialization of the family parameter.  If you specify your own `itemKey` then you should also encode the family parameter to uniquely identify each atom; the parameter can be obtained by using a callback for the atom family `effects` option.
+Atoms in an [atom family](/docs/api-reference/utils/atomFamily) can also be synchronized with [`syncEffect()`](/docs/recoil-sync/api/syncEffect).  Each individual atom in the family is treated as a separate item to sync.  The default item key will include a serialization of the family parameter.  If you specify your own `itemKey` then you should also encode the family parameter to uniquely identify each atom; the parameter can be obtained by using a callback for the atom family `effects` option.
 
 ```jsx
 atomFamily({
