@@ -5,7 +5,7 @@ sidebar_label: selectorFamily()
 
 읽기 전용 `RecoilValueReadOnly` 또는 수정 가능한 `RecoilState` selector를 반환하는 함수를 반환합니다.
 
-`selectorFamily`는 [`selector`](/docs/api-reference/core/selector)와 유사한 강력한 패턴입니다. 다만, `get`, `set`, `selector`의 콜백을 매개변수로 전달할 수 있다는 점이 다릅니다. `selectorFamily()` 유틸리티는 사용자 정의 매개변수로 호출 할 수 있는 함수를 반환하고 seletor를 반환합니다. 각 고유 매개 변수값은 메모이징된 동일한 selector 인스턴스를 반환합니다.
+`selectorFamily`는 [`selector`](/docs/api-reference/core/selector)와 유사한 강력한 패턴입니다. 다만, `get`, `set`, `selector`의 콜백을 매개변수로 전달할 수 있다는 점이 다릅니다. `selectorFamily()` 유틸리티는 사용자 정의 매개변수로 호출 할 수 있는 함수를 반환하고 selector를 반환합니다. 각 고유 매개 변수값은 메모이징된 동일한 selector 인스턴스를 반환합니다.
 
 ---
 
@@ -49,7 +49,7 @@ type ResetRecoilValue = <T>(RecoilState<T>) => void;
 
 - `key` - 내부적으로 atom을 식별하는데 사용되는 고유한 문자열. 이 문자열은 어플리케이션 전체에서 다른 atom과 selector에 대해 고유해야 한다.
 - `get` - selector의 값을 반환하는 명명된 콜백들의 객체를 전달하는 함수입니다.`selector()` 인터페이스와 동일합니다. get은 selector family 함수 호출에서 매개변수를 전달하는 함수에 의해 래핑됩니다.
-- `set?` - 제공 될 때 쓰기 가능한 selector를 생성하는 선택적 함수입니다. `selector()` 인터페이스와 동일하게, 명명된 콜백의 객체를 취하는 함수여야 합니다. set은 seletor family 함수 호출에서 매개변수를 가져오는 다른 함수에 의해 다시 래핑됩니다.
+- `set?` - 제공 될 때 쓰기 가능한 selector를 생성하는 선택적 함수입니다. `selector()` 인터페이스와 동일하게, 명명된 콜백의 객체를 취하는 함수여야 합니다. set은 selector family 함수 호출에서 매개변수를 가져오는 다른 함수에 의해 다시 래핑됩니다.
 
 ---
 
