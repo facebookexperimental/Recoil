@@ -36,7 +36,7 @@ Transaction Interface:
 
 ### Transaction Example
 
-Suppose we have two atoms, `positionState` and `headingState`, and we'd like to update them together as part of a single action, where the new value of `positionState` is a function of *both* the current value of `positionState` and `headingState`.
+`positionState`과 `headingState`라는 두 아톰(atom)이 있다 가정하고, `positionState`과 `headingState`의 현재 값을 이용해 새로운 `positionState`를 만드는 함수의 단일 동작(single action)으로 두 아톰을 *함께* 업데이트하고자 합니다. 
 
 ```jsx
 const goForward = useRecoilTransaction_UNSTABLE(({get, set}) => (distance) => {
@@ -49,9 +49,9 @@ const goForward = useRecoilTransaction_UNSTABLE(({get, set}) => (distance) => {
 });
 ```
 
-Then you can execute the transaction by just calling `goForward(distance)` in an event handler.  This will update state based on the *current* values, not the state when the components rendered.
+이벤트 핸들러 안 `goForward(distance)`를 호출하여 트랜잭션을 실행하면 state는 컴포넌트가 렌더링될 때의 state가 아닌 *현재*값을 기반으로 업데이트 될 것입니다. 
 
-You can also read the values of previous writes during a transaction.  Because no other updates will be committed while the updater is executing, you will see a consistent store of state.
+트랜잭션 중엔 이전에 쓴 값(previous writes)을 읽을 수도 있습니다. 업데이트가 진행될 때 다른 업데이트는 반영되지 않기 때문에 일관적인 state의 저장소가 표시됩니다.
 
 ```jsx
 const moveInAnL = useRecoilTransaction_UNSTABLE(({get, set}) => () => {
@@ -78,7 +78,7 @@ const moveInAnL = useRecoilTransaction_UNSTABLE(({get, set}) => () => {
 
 ### Reducer Example
 
-This hook is also useful for implementing reducer patterns to execute actions over multiple atoms:
+아래 훅은 여러개의 아톰에 대한 동작(action)을 실행하는 리듀서(reducer) 패턴을 구현할 때 유용합니다. 
 
 ```jsx
 const reducer = useRecoilTransaction_UNSTABLE(({get, set}) => action => {
@@ -100,9 +100,9 @@ const reducer = useRecoilTransaction_UNSTABLE(({get, set}) => action => {
 
 ### Current Limitations and Future Vision
 
-* Transactions currently only support atoms, not yet selectors.  This support can be added in the future.
-* Atoms with default values that are selectors are also not yet supported.
-* Atoms that are read must have a synchronous value.  If it is in an error state or an asynchronous pending state, then the transaction will throw an error.  It would be possible to support pending dependencies by aborting the transaction if a dependency is pending and then re-starting the transaction when it is available.  This is consistent with how the selector `get()` is implemented.
-* Transactions do not have a return value.  If we want to have some notification a transaction completes, or use transactions to request slow data, or to request data from event handlers, then we could have a transaction return a `Promise` to a return value.
-* Transactions must be synchronous.  There is a proposal to allow asynchronous transactions.  The user could provide an `async` transaction callback function which could use `await`.  The atomic update of all sets would not be applied, however, until the `Promise` returned by the transaction is fully resolved.
-* Transactions must not have any side-effects.  If you require side-effects, then use [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback) instead.
+* 현재 트랜잭션은 atom만 지원하고 selector는 지원하지 않습니다. 미래에 추가될 예정입니다.
+* 기본값이 selector인 atom또한 현재는 지원하지 않습니다.
+* 읽은 atom은 반드시 동기 값을 가져야 합니다. 만약 에러 state이거나 비동기적으로 펜딩된 state이면 트랜잭션은 에러를 발생시킵니다. 디펜던시가 펜딩 중인 경우 트랜잭션을 중지하고 가능한 경우 트랜잭션을 다시 시작하여 펜딩 중인 디펜던시를 지원할 수 있습니다. selector의 `get()`의 구현 방식과 동일합니다.
+* 트랜잭션은 리턴값을 가지지 않습니다. 트랜잭션 완료를 알려주는 알림을 받고싶거나 slow data를 요청하는 트랜잭션을 사용하거나, 이벤트 핸들러로부터 데이터를 요청하는 경우에 트랜잭션은 `Promise`를 반환할 수 있습니다.
+* 트랜잭션은 반드시 동기적이어야 합니다. 비동기 트랜잭션을 허용하자는 제안이 있습니다. 사용자는 `await`을 사용할 수 있는 `async` 트랜잭션 콜백 함수를 제공할 수 있습니다. 하지만, 트랜잭션이 반환하는 `Promise`가 완전히 해결되기 전까지는 모든 원자 업데이트(atomic update)가 적용되지 않습니다. 
+* 트랜잭션은 반드시 어떠한 side-effect도 없어야합니다. side-effect가 필요한 경우엔 [`useRecoilCallback()`](/docs/api-reference/core/useRecoilCallback)을 사용할 수 있습니다.
