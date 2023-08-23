@@ -84,7 +84,7 @@ function graphQLMutationEffect<
       const mutationID = ++currentMutationID;
       const mutationVariables = variables(newValue);
       if (mutationVariables != null) {
-        commitMutation<$FlowFixMe>(environment, {
+        commitMutation(environment, {
           mutation,
           variables: mutationVariables,
           onError: error => {
@@ -100,6 +100,8 @@ function graphQLMutationEffect<
           },
           updater,
           optimisticUpdater,
+          /* $FlowFixMe[incompatible-call] error exposed when improving flow
+           * typing of commitMutation */
           optimisticResponse: optimisticResponse?.(newValue),
           uploadables,
         });
