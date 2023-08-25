@@ -56,6 +56,9 @@ module.exports = {
       },
     },
   },
+  customFields:{
+    mendableAnonKey: "d7e9fa70-ec4f-461e-be18-b67874609340",
+  },
   themeConfig: {
     announcementBar: {
       id: 'support_ukraine',
