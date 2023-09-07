@@ -313,6 +313,7 @@ describe('Retention of and via selectors', () => {
 
       const c = renderElements(
         <Switch>
+          {/* $FlowFixMe[incompatible-type-arg] */}
           <SubscribesToSelector />
         </Switch>,
       );
