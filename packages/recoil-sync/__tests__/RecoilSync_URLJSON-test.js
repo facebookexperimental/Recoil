@@ -14,6 +14,7 @@ const {atom} = require('Recoil');
 
 const {syncEffect} = require('../RecoilSync');
 const {RecoilURLSyncJSON} = require('../RecoilSync_URLJSON');
+const {urlSyncEffect} = require('../RecoilSync_URL');
 const React = require('react');
 const {
   ReadsAtom,
@@ -34,44 +35,48 @@ const {
 const atomUndefined = atom({
   key: 'void',
   default: undefined,
-  effects: [syncEffect({refine: literal(undefined), syncDefault: true})],
+  effects: [urlSyncEffect({refine: literal(undefined), syncDefault: true})],
 });
 const atomNull = atom({
   key: 'null',
   default: null,
-  effects: [syncEffect({refine: literal(null), syncDefault: true})],
+  effects: [urlSyncEffect({refine: literal(null), syncDefault: true})],
 });
 const atomBoolean = atom({
   key: 'boolean',
   default: true,
-  effects: [syncEffect({refine: bool(), syncDefault: true})],
+  effects: [urlSyncEffect({refine: bool(), syncDefault: true})],
 });
 const atomNumber = atom({
   key: 'number',
   default: 123,
-  effects: [syncEffect({refine: number(), syncDefault: true})],
+  effects: [urlSyncEffect({refine: number(), syncDefault: true})],
 });
 const atomString = atom({
   key: 'string',
   default: 'STRING',
-  effects: [syncEffect({refine: string(), syncDefault: true})],
+  effects: [
+    urlSyncEffect({refine: string(), syncDefault: true, history: 'push'}),
+  ],
 });
 const atomArray = atom({
   key: 'array',
   default: [1, 'a'],
-  effects: [syncEffect({refine: tuple(number(), string()), syncDefault: true})],
+  effects: [
+    urlSyncEffect({refine: tuple(number(), string()), syncDefault: true}),
+  ],
 });
 const atomObject = atom({
   key: 'object',
   default: {foo: [1, 2]},
   effects: [
-    syncEffect({refine: object({foo: array(number())}), syncDefault: true}),
+    urlSyncEffect({refine: object({foo: array(number())}), syncDefault: true}),
   ],
 });
 const atomDate = atom({
   key: 'date',
   default: new Date('7:00 GMT October 26, 1985'),
-  effects: [syncEffect({refine: jsonDate(), syncDefault: true})],
+  effects: [urlSyncEffect({refine: jsonDate(), syncDefault: true})],
 });
 
 async function testJSON(

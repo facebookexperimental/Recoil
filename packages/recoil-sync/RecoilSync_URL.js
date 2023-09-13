@@ -53,10 +53,25 @@ const unwrapState = (state: ItemSnapshot): ItemState =>
       .filter(([, value]) => !(value instanceof DefaultValue)),
   );
 
+function getAtomKeys(storeKey: StoreKey): ?Set<Array<ItemKey>> {
+  const atomRegistry = registries.get(storeKey);
+  const atomKeys =
+    atomRegistry != null
+      ? new Set(
+          Array.from(atomRegistry)
+            .filter(([, {itemKeys}]) => Array.from(itemKeys))
+            .map(([, {itemKeys}]) => itemKeys)
+            .reduce((itemKeys, keys) => itemKeys.concat(Array.from(keys)), []),
+        )
+      : null;
+  return atomKeys;
+}
+
 function parseURL(
   href: string,
   loc: LocationOption,
   deserialize: string => mixed,
+  storeKey: StoreKey,
 ): ?ItemSnapshot {
   const url = new URL(href);
   switch (loc.part) {
@@ -77,9 +92,18 @@ function parseURL(
         const stateStr = searchParams.get(param);
         return stateStr != null ? wrapState(deserialize(stateStr)) : new Map();
       }
+
+      // identify atoms to avoid serializing them
+      const itemsToPush = getAtomKeys(storeKey);
+
       return new Map(
         Array.from(searchParams.entries()).map(([key, value]) => {
           try {
+            if (itemsToPush && !itemsToPush.has(key)) {
+              // don't serialize unmanaged params
+              return [key, value];
+            }
+
             return [key, deserialize(value)];
           } catch (error) {
             return [key, RecoilLoadable.error(error)];
@@ -96,6 +120,7 @@ function encodeURL(
   loc: LocationOption,
   items: ItemSnapshot,
   serialize: mixed => string,
+  storeKey: StoreKey,
 ): string {
   const url = new URL(href);
   switch (loc.part) {
@@ -113,10 +138,16 @@ function encodeURL(
       if (param != null) {
         searchParams.set(param, serialize(unwrapState(items)));
       } else {
+        const managedItems = getAtomKeys(storeKey);
         for (const [itemKey, value] of items.entries()) {
           value instanceof DefaultValue
             ? searchParams.delete(itemKey)
-            : searchParams.set(itemKey, serialize(value));
+            : searchParams.set(
+                itemKey,
+                !managedItems || managedItems.has(itemKey)
+                  ? serialize(value)
+                  : value,
+              );
         }
       }
       url.search = searchParams.toString();
@@ -184,7 +215,12 @@ function RecoilURLSync({
     [loc.part, loc.queryParam], // eslint-disable-line fb-www/react-hooks-deps
   );
   const updateCachedState: () => void = useCallback(() => {
-    cachedState.current = parseURL(getURL(), memoizedLoc, deserialize);
+    cachedState.current = parseURL(
+      getURL(),
+      memoizedLoc,
+      deserialize,
+      storeKey,
+    );
   }, [getURL, memoizedLoc, deserialize]);
   const cachedState = useRef<?ItemSnapshot>(null);
   // Avoid executing updateCachedState() on each render
@@ -226,13 +262,13 @@ function RecoilURLSync({
             replaceItems.set(key, value);
           }
         }
-        replaceURL(encodeURL(getURL(), loc, replaceItems, serialize));
+        replaceURL(encodeURL(getURL(), loc, replaceItems, serialize, storeKey));
 
         // Next, push the URL with any atoms that caused a new URL history entry
-        pushURL(encodeURL(getURL(), loc, allItems, serialize));
+        pushURL(encodeURL(getURL(), loc, allItems, serialize, storeKey));
       } else {
         // Just replace the URL with the new state
-        replaceURL(encodeURL(getURL(), loc, allItems, serialize));
+        replaceURL(encodeURL(getURL(), loc, allItems, serialize, storeKey));
       }
       cachedState.current = allItems;
     },
