@@ -18,15 +18,15 @@ const webpack = require('webpack');
 const WriteFilePlugin = require('write-file-webpack-plugin');
 
 // load the secrets
-var alias = {
+const alias = {
   'react-dom': '@hot-loader/react-dom',
 };
 
-var buildFolder = 'recoil_devtools_ext';
+const buildFolder = 'recoil_devtools_ext';
 
-var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
+const secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js');
 
-var fileExtensions = [
+const fileExtensions = [
   'jpg',
   'jpeg',
   'png',
@@ -43,7 +43,7 @@ if (fileSystem.existsSync(secretsPath)) {
   alias['secrets'] = secretsPath;
 }
 
-var options = {
+const options = {
   mode: env.NODE_ENV || 'development',
   entry: {
     popup: path.join(__dirname, 'src', 'pages', 'Popup', 'PopupScript.js'),
