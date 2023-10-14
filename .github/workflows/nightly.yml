@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     # config GIT so it can do git push
     - uses: fregante/setup-git-user@v1
     - name: Use Node.js 16.x
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: 16.x
-    - run: npm i -g yarn
+        cache: yarn
     - run: yarn install --frozen-lockfile
     - run: yarn deploy-nightly
