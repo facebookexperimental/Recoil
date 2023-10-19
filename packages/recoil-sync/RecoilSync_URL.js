@@ -57,6 +57,7 @@ function parseURL(
   href: string,
   loc: LocationOption,
   deserialize: string => mixed,
+  isQueryString: boolean,
 ): ?ItemSnapshot {
   const url = new URL(href);
   switch (loc.part) {
@@ -73,6 +74,9 @@ function parseURL(
     case 'queryParams': {
       const searchParams = new URLSearchParams(url.search);
       const {param} = loc;
+      if (isQueryString) {
+        return wrapState(deserialize(url.search));
+      }
       if (param != null) {
         const stateStr = searchParams.get(param);
         return stateStr != null ? wrapState(deserialize(stateStr)) : new Map();
@@ -96,21 +100,33 @@ function encodeURL(
   loc: LocationOption,
   items: ItemSnapshot,
   serialize: mixed => string,
+  isQueryString: boolean,
 ): string {
   const url = new URL(href);
   switch (loc.part) {
     case 'href':
       return serialize(unwrapState(items));
     case 'hash':
-      url.hash = encodeURIComponent(serialize(unwrapState(items)));
+      if (isQueryString) {
+        url.hash = encodeURIComponent(serialize(items));
+      } else {
+        url.hash = encodeURIComponent(serialize(unwrapState(items)));
+      }
       break;
     case 'search':
-      url.search = encodeURIComponent(serialize(unwrapState(items)));
+      if (isQueryString) {
+        url.search = encodeURIComponent(serialize(items));
+      } else {
+        url.search = encodeURIComponent(serialize(unwrapState(items)));
+      }
       break;
     case 'queryParams': {
       const {param} = loc;
       const searchParams = new URLSearchParams(url.search);
-      if (param != null) {
+      if (isQueryString) {
+        url.search = serialize(items);
+        break;
+      } else if (param != null) {
         searchParams.set(param, serialize(unwrapState(items)));
       } else {
         for (const [itemKey, value] of items.entries()) {
@@ -146,6 +162,7 @@ export type RecoilURLSyncOptions = {
   children: React.Node,
   storeKey?: StoreKey,
   location: LocationOption,
+  isQueryString: boolean,
   serialize: mixed => string,
   deserialize: string => mixed,
   browserInterface?: BrowserInterface,
@@ -164,6 +181,7 @@ const DEFAULT_BROWSER_INTERFACE = {
 function RecoilURLSync({
   storeKey,
   location: loc,
+  isQueryString = false,
   serialize,
   deserialize,
   browserInterface,
@@ -184,7 +202,12 @@ function RecoilURLSync({
     [loc.part, loc.queryParam], // eslint-disable-line fb-www/react-hooks-deps
   );
   const updateCachedState: () => void = useCallback(() => {
-    cachedState.current = parseURL(getURL(), memoizedLoc, deserialize);
+    cachedState.current = parseURL(
+      getURL(),
+      memoizedLoc,
+      deserialize,
+      isQueryString,
+    );
   }, [getURL, memoizedLoc, deserialize]);
   const cachedState = useRef<?ItemSnapshot>(null);
   // Avoid executing updateCachedState() on each render
@@ -226,13 +249,17 @@ function RecoilURLSync({
             replaceItems.set(key, value);
           }
         }
-        replaceURL(encodeURL(getURL(), loc, replaceItems, serialize));
+        replaceURL(
+          encodeURL(getURL(), loc, replaceItems, serialize, isQueryString),
+        );
 
         // Next, push the URL with any atoms that caused a new URL history entry
-        pushURL(encodeURL(getURL(), loc, allItems, serialize));
+        pushURL(encodeURL(getURL(), loc, allItems, serialize, isQueryString));
       } else {
         // Just replace the URL with the new state
-        replaceURL(encodeURL(getURL(), loc, allItems, serialize));
+        replaceURL(
+          encodeURL(getURL(), loc, allItems, serialize, isQueryString),
+        );
       }
       cachedState.current = allItems;
     },
