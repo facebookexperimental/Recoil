@@ -70,6 +70,7 @@ const {useRecoilCallback} = require('./hooks/Recoil_useRecoilCallback');
 const useRecoilRefresher = require('./hooks/Recoil_useRecoilRefresher');
 const useRecoilTransaction = require('./hooks/Recoil_useRecoilTransaction');
 const useRetain = require('./hooks/Recoil_useRetain');
+const useRecoilSelector = require('./hooks/Recoil_useRecoilSelector');
 const atom = require('./recoil_values/Recoil_atom');
 const atomFamily = require('./recoil_values/Recoil_atomFamily');
 const constSelector = require('./recoil_values/Recoil_constSelector');
@@ -130,6 +131,7 @@ module.exports = {
   useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
   useRecoilState_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilSelector,
 
   // Hooks for complex operations
   useRecoilCallback,
