@@ -177,7 +177,7 @@ function getDownstreamNodesInTopologicalOrder(
 }
 
 function releaseNode(store: Store, treeState: TreeState, node: NodeKey) {
-  if (!gkx('recoil_memory_managament_2020')) {
+  if (!gkx('recoil_memory_management_2020')) {
     return;
   }
 
@@ -260,7 +260,7 @@ function updateRetainCount(
   retainable: Retainable,
   delta: 1 | -1,
 ): void {
-  if (!gkx('recoil_memory_managament_2020')) {
+  if (!gkx('recoil_memory_management_2020')) {
     return;
   }
   const map = store.getState().retention.referenceCounts;
@@ -273,7 +273,7 @@ function updateRetainCount(
 }
 
 function updateRetainCountToZero(store: Store, retainable: Retainable): void {
-  if (!gkx('recoil_memory_managament_2020')) {
+  if (!gkx('recoil_memory_management_2020')) {
     return;
   }
   const map = store.getState().retention.referenceCounts;
@@ -282,7 +282,7 @@ function updateRetainCountToZero(store: Store, retainable: Retainable): void {
 }
 
 function releaseScheduledRetainablesNow(store: Store) {
-  if (!gkx('recoil_memory_managament_2020')) {
+  if (!gkx('recoil_memory_management_2020')) {
     return;
   }
   const state = store.getState();

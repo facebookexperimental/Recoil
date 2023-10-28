@@ -50,10 +50,10 @@ const testRecoil = getRecoilTestFn(() => {
   } = require('recoil-shared/__test_utils__/Recoil_TestingUtils'));
   gkx = require('recoil-shared/util/Recoil_gkx');
 
-  const initialGKValue = gkx('recoil_memory_managament_2020');
-  gkx.setPass('recoil_memory_managament_2020');
+  const initialGKValue = gkx('recoil_memory_management_2020');
+  gkx.setPass('recoil_memory_management_2020');
   return () => {
-    initialGKValue || gkx.setFail('recoil_memory_managament_2020');
+    initialGKValue || gkx.setFail('recoil_memory_management_2020');
   };
 });
 

@@ -91,7 +91,7 @@ function startNextTreeIfNeeded(store: Store): void {
   const storeState = store.getState();
   if (storeState.nextTree === null) {
     if (
-      gkx('recoil_memory_managament_2020') &&
+      gkx('recoil_memory_management_2020') &&
       gkx('recoil_release_on_cascading_update_killswitch_2021')
     ) {
       // If this is a cascading update (that is, rendering due to one state change
@@ -218,7 +218,7 @@ function endBatch(store: Store) {
     }
     storeState.previousTree = null;
 
-    if (gkx('recoil_memory_managament_2020')) {
+    if (gkx('recoil_memory_management_2020')) {
       // Only release retainables if there were no writes during the end of the
       // batch.  This avoids releasing something we might be about to use.
       if (nextTree == null) {

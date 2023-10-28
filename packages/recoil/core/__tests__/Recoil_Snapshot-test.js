@@ -546,7 +546,7 @@ describe('Retention', () => {
     expect(() => snapshot.retain()).not.toThrow('released');
     window.__DEV__ = devStatus;
 
-    // TODO enable when recoil_memory_managament_2020 is enforced
+    // TODO enable when recoil_memory_management_2020 is enforced
     // expect(() => snapshot.getID()).toThrow('release');
   });
 

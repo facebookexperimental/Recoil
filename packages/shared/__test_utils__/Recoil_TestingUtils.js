@@ -411,7 +411,7 @@ const WWW_GKS_TO_TEST = QUICK_TEST
       [
         'recoil_hamt_2020',
         'recoil_sync_external_store',
-        'recoil_memory_managament_2020',
+        'recoil_memory_management_2020',
       ],
     ]
   : [
@@ -428,7 +428,7 @@ const WWW_GKS_TO_TEST = QUICK_TEST
         'recoil_hamt_2020',
         'recoil_sync_external_store',
         'recoil_suppress_rerender_in_callback',
-        'recoil_memory_managament_2020',
+        'recoil_memory_management_2020',
         'recoil_release_on_cascading_update_killswitch_2021',
       ],
       // Experimental mode for useTransition() support:

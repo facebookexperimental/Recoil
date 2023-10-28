@@ -152,7 +152,7 @@ class Snapshot {
       this._store.getState().nodeCleanupFunctions.forEach(cleanup => cleanup());
       this._store.getState().nodeCleanupFunctions.clear();
 
-      if (!gkx('recoil_memory_managament_2020')) {
+      if (!gkx('recoil_memory_management_2020')) {
         return;
       }
       // Temporarily nerfing this to allow us to find broken call sites without
@@ -172,7 +172,7 @@ class Snapshot {
   }
 
   checkRefCount_INTERNAL(): void {
-    if (gkx('recoil_memory_managament_2020') && this._refCount <= 0) {
+    if (gkx('recoil_memory_management_2020') && this._refCount <= 0) {
       if (__DEV__) {
         recoverableViolation(retainWarning, 'recoil');
       }

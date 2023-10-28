@@ -546,7 +546,7 @@ function useRecoilValueLoadable<T>(recoilValue: RecoilValue<T>): Loadable<T> {
   if (__DEV__) {
     validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
   }
-  if (gkx('recoil_memory_managament_2020')) {
+  if (gkx('recoil_memory_management_2020')) {
     // eslint-disable-next-line fb-www/react-hooks
     useRetain(recoilValue);
   }
@@ -679,7 +679,7 @@ function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE<T>(
       );
     }
   }
-  if (gkx('recoil_memory_managament_2020')) {
+  if (gkx('recoil_memory_management_2020')) {
     // eslint-disable-next-line fb-www/react-hooks
     useRetain(recoilValue);
   }

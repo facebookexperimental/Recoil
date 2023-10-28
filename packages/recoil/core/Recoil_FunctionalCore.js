@@ -35,7 +35,7 @@ function initializeRetentionForNode(
   nodeKey: NodeKey,
   retainedBy: RetainedBy,
 ): () => void {
-  if (!gkx('recoil_memory_managament_2020')) {
+  if (!gkx('recoil_memory_management_2020')) {
     return () => undefined;
   }
   const {nodesRetainedByZone} = store.getState().retention;
@@ -57,7 +57,7 @@ function initializeRetentionForNode(
   }
 
   return () => {
-    if (!gkx('recoil_memory_managament_2020')) {
+    if (!gkx('recoil_memory_management_2020')) {
       return;
     }
     const {retention} = store.getState();

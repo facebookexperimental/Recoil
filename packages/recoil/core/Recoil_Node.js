@@ -163,7 +163,7 @@ function getNodeMaybe(key: NodeKey): void | Node<any> {
 const configDeletionHandlers = new Map<NodeKey, () => void>();
 
 function deleteNodeConfigIfPossible(key: NodeKey): void {
-  if (!gkx('recoil_memory_managament_2020')) {
+  if (!gkx('recoil_memory_management_2020')) {
     return;
   }
   const node = nodes.get(key);
@@ -175,7 +175,7 @@ function deleteNodeConfigIfPossible(key: NodeKey): void {
 }
 
 function setConfigDeletionHandler(key: NodeKey, fn: void | (() => void)): void {
-  if (!gkx('recoil_memory_managament_2020')) {
+  if (!gkx('recoil_memory_management_2020')) {
     return;
   }
   if (fn === undefined) {

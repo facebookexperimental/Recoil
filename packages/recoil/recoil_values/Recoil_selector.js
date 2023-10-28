@@ -274,7 +274,7 @@ function selector<T>(
   let liveStoresCount = 0;
 
   function selectorIsLive() {
-    return !gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
+    return !gkx('recoil_memory_management_2020') || liveStoresCount > 0;
   }
 
   function selectorInit(store: Store): () => void {
