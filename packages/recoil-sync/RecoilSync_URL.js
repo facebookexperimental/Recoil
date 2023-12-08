@@ -39,7 +39,10 @@ type AtomRegistration = {
   itemKeys: Set<ItemKey>,
 };
 
-const registries: Map<StoreKey, Map<NodeKey, AtomRegistration>> = new Map();
+const registries: Map<
+  StoreKey,
+  Map<{nodeKey: NodeKey}, AtomRegistration>,
+> = new Map();
 
 const itemStateChecker = writableDict(mixed());
 const refineState = assertion(itemStateChecker);
@@ -285,7 +288,8 @@ function urlSyncEffect<T>({
     if (atomRegistry == null) {
       throw err('Error with atom registration');
     }
-    atomRegistry.set(effectArgs.node.key, {
+    const key = {nodeKey: effectArgs.node.key};
+    atomRegistry.set(key, {
       history,
       itemKeys: new Set([options.itemKey ?? effectArgs.node.key]),
     });
@@ -295,7 +299,7 @@ function urlSyncEffect<T>({
 
     // Cleanup atom option registration
     return () => {
-      atomRegistry.delete(effectArgs.node.key);
+      atomRegistry.delete(key);
       cleanup?.();
     };
   };
