@@ -140,4 +140,4 @@ function PaneView() {
 
 ## Persistence
 
-Persistence observers and [atom effects](/docs/guides/atom-effects) will sync the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to [serializable parameters](/docs/api-reference/utils/atomFamily#parameter-type). Custom classes or functions are not allowed.
+Persistence observers and [atom effects](/docs/guides/atom-effects) will sync the state for each parameter value as a distinct atom with a unique key based on serialization of the parameter value used. Therefore, it is important to use [serializable parameters](/docs/api-reference/utils/atomFamily#parameter-type). Custom classes or functions are not allowed.
