@@ -12,7 +12,7 @@ npx create-react-app my-app
 
 > [`npx`](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b)는 npm 5.2+ 이상에서 함께 제공되는 패키지 실행 도구다. 오래된 버전의 npm은 이 [설명](https://gist.github.com/gaearon/4064d3c23a77c74a3614c498a8bb1c5f)을 보면된다.
 
-Create React App을 설치하는 더 많은 방법은 [공식 문서](https://github.com/facebook/create-react-app#creating-an-app)을 보면된다.
+Create React App을 설치하는 더 많은 방법은 [공식 문서](https://github.com/facebook/create-react-app#creating-an-app)를 보면 된다.
 
 ## 설치
 
@@ -59,8 +59,8 @@ function App() {
 
 ```javascript
 const textState = atom({
-  key: 'textState', // unique ID (with respect to other atoms/selectors)
-  default: '', // default value (aka initial value)
+  key: 'textState', // 고유한 아이디 (다른 atoms/selectors에 대한)
+  default: '', // 기본 값 (또는 초기 값)
 });
 ```
 
@@ -99,7 +99,7 @@ function TextInput() {
 
 ```jsx
 const charCountState = selector({
-  key: 'charCountState', // unique ID (with respect to other atoms/selectors)
+  key: 'charCountState', // 고유한 아이디 (다른 atoms/selectors에 대한)
   get: ({get}) => {
     const text = get(textState);
 
