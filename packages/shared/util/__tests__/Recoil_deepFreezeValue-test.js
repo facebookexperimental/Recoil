@@ -43,6 +43,14 @@ describe('deepFreezeValue', () => {
     ).not.toThrow();
   });
 
+  test('don\'t freeze Proxy objects', () => {
+    const obj = {test: new Proxy({}, {})};
+    expect(() => deepFreezeValue(obj)).not.toThrow();
+    expect(() => deepFreezeValue(obj.test)).not.toThrow();
+    expect(Object.isFrozen(obj)).toBe(true);
+    expect(Object.isFrozen(obj.test)).toBe(false);
+  });
+
   test('check no error: object with Window property', () => {
     if (typeof window === 'undefined') {
       return;

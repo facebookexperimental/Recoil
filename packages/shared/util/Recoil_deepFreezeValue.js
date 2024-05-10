@@ -83,7 +83,17 @@ function deepFreezeValue(value: mixed) {
     if (Object.prototype.hasOwnProperty.call(value, key)) {
       const prop = value[key];
       // Prevent infinite recurssion for circular references.
-      if (typeof prop === 'object' && prop != null && !Object.isFrozen(prop)) {
+      const objectNotFrozen = typeof prop === 'object' && prop != null && !Object.isFrozen(prop);
+
+      // Don't try to freeze proxy objects
+      // 1. Object.freeze() on a proxy proxy with not frozen target will throw
+      // 2. Freeze of the proxy target can break proxy handler behavior
+      // 3. So with 1 and 2, better to leave proxy frozen state up to consumer
+      const isObjectAProxy = prop !== null 
+        && typeof prop === 'object' 
+        && Object.getPrototypeOf(prop) !== Object.getPrototypeOf({});
+
+      if (objectNotFrozen && !isObjectAProxy) {
         deepFreezeValue(prop);
       }
     }
