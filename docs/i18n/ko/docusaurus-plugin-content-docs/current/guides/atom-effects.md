@@ -134,7 +134,7 @@ const history: Array<{
 const historyEffect = name => ({setSelf, onSet}) => {
   onSet((newValue, oldValue) => {
     history.push({
-      label: `${name}: ${JSON.serialize(oldValue)} -> ${JSON.serialize(newValue)}`,
+      label: `${name}: ${JSON.stringify(oldValue)} -> ${JSON.stringify(newValue)}`,
       undo: () => {
         setSelf(oldValue);
       },
